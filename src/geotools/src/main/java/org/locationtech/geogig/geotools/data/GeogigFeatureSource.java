@@ -188,7 +188,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final Filter filter = (Filter) query.getFilter().accept(new SimplifyingFilterVisitor(),
                 null);
         final CoordinateReferenceSystem crs = getSchema().getCoordinateReferenceSystem();
-        if (Filter.INCLUDE.equals(filter) && oldRoot == null && ChangeType.ADDED.equals(changeType)) {
+        if (Filter.INCLUDE.equals(filter) && oldRoot == null && ChangeType.ADDED.equals(changeType())) {
             NodeRef typeRef = getTypeRef();
             ReferencedEnvelope bounds = new ReferencedEnvelope(crs);
             typeRef.getNode().expand(bounds);
@@ -232,7 +232,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 .getMaxFeatures();
 
         int size;
-        if (Filter.INCLUDE.equals(filter) && oldRoot == null && ChangeType.ADDED.equals(changeType)) {
+        if (Filter.INCLUDE.equals(filter) && oldRoot == null && ChangeType.ADDED.equals(changeType())) {
             RevTree tree = getTypeTree();
             size = (int) tree.size();
             if (offset != null) {

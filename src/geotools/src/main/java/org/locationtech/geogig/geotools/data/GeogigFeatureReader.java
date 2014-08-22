@@ -107,7 +107,6 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         checkNotNull(headRef);
         checkNotNull(oldHeadRef);
         checkNotNull(changeType);
-        LOGGER.info(getClass().getSimpleName() + ": screenMap is " + screenMap);
         this.schema = schema;
         this.offset = offset;
         this.maxFeatures = maxFeatures;

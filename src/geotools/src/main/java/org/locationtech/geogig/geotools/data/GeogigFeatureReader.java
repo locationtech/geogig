@@ -31,11 +31,14 @@ import org.geotools.referencing.crs.DefaultEngineeringCRS;
 import org.geotools.renderer.ScreenMap;
 import org.geotools.util.logging.Logging;
 import org.locationtech.geogig.api.Bounded;
+import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.FeatureBuilder;
+import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevFeature;
+import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
@@ -80,7 +83,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
     @Nullable
     private Integer maxFeatures;
 
-    private ScreenMap screenMap;
+    private ScreenMapFilter screenMapFilter;
 
     /**
      * @param context
@@ -108,7 +111,6 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         this.schema = schema;
         this.offset = offset;
         this.maxFeatures = maxFeatures;
-        this.screenMap = screenMap;
 
         final String effectiveHead = headRef == null ? Ref.WORK_HEAD : headRef;
         final String effectiveOldHead = oldHeadRef == null ? RevTree.EMPTY_TREE_ID.toString()
@@ -133,7 +135,9 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         }
         diffOp.setChangeTypeFilter(changeType(changeType));
         if (screenMap != null) {
-            diffOp.setCustomFilter(new ScreenMapFilter(screenMap));
+            LOGGER.fine("Using screenmap filter");
+            screenMapFilter = new ScreenMapFilter(screenMap);
+            diffOp.setCustomFilter(screenMapFilter);
         }
 
         Iterator<DiffEntry> diffs = diffOp.call();
@@ -223,7 +227,11 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
 
     @Override
     public boolean hasNext() {
-        return features.hasNext();
+        boolean hasNext = features.hasNext();
+        if (!hasNext && screenMapFilter != null) {
+            LOGGER.fine("ScreenMap filtering: " + screenMapFilter.stats());
+        }
+        return hasNext;
     }
 
     @SuppressWarnings("unchecked")
@@ -338,27 +346,79 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
 
     private static class ScreenMapFilter implements Predicate<Bounded> {
 
+        static final class Stats {
+            private long skippedTrees, skippedBuckets, skippedFeatures;
+
+            private long acceptedTrees, acceptedBuckets, acceptedFeatures;
+
+            void add(final Bounded b, final boolean skip) {
+                Node n = b instanceof Node ? (Node) b : null;
+                Bucket bucket = b instanceof Bucket ? (Bucket) b : null;
+                if (skip) {
+                    if (bucket == null) {
+                        if (n.getType() == TYPE.FEATURE) {
+                            skippedFeatures++;
+                        } else {
+                            skippedTrees++;
+                        }
+                    } else {
+                        skippedBuckets++;
+                    }
+                } else {
+                    if (bucket == null) {
+                        if (n.getType() == TYPE.FEATURE) {
+                            acceptedFeatures++;
+                        } else {
+                            acceptedTrees++;
+                        }
+                    } else {
+                        acceptedBuckets++;
+                    }
+                }
+            }
+
+            @Override
+            public String toString() {
+                return String.format(
+                        "skipped/accepted: Features(%,d/%,d) Buckets(%,d/%,d) Trees(%,d/%,d)",
+                        skippedFeatures, acceptedFeatures, skippedBuckets, acceptedBuckets,
+                        skippedTrees, acceptedTrees);
+            }
+        }
+
         private ScreenMap screenMap;
+
+        private Envelope envelope = new Envelope();
+
+        private Stats stats = new Stats();
 
         public ScreenMapFilter(ScreenMap screenMap) {
             this.screenMap = screenMap;
         }
 
+        public Stats stats() {
+            return stats;
+        }
+
         @Override
-        public boolean apply(Bounded b) {
-            Envelope envelope = new Envelope();
+        public boolean apply(@Nullable Bounded b) {
+            if (b == null) {
+                return false;
+            }
+            envelope.setToNull();
             b.expand(envelope);
-            boolean applies;
+            if (envelope.isNull()) {
+                return true;
+            }
+            boolean skip;
             try {
-                applies = screenMap.checkAndSet(envelope);
+                skip = screenMap.checkAndSet(envelope);
             } catch (TransformException e) {
                 e.printStackTrace();
                 return true;
             }
-            if (!applies) {
-                LOGGER.info("Filtered " + b);
-            }
-            return applies;
+            stats.add(b, skip);
+            return !skip;
         }
 
     }

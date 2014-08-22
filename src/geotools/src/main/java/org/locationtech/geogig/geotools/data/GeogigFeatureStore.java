@@ -76,7 +76,7 @@ class GeogigFeatureStore extends ContentFeatureStore {
                 GeogigFeatureStore.this.setTransaction(transaction);
             }
         };
-
+        super.hints = delegate.getSupportedHints();
     }
 
     /** We handle events internally */

@@ -37,6 +37,8 @@ import org.locationtech.geogig.api.plumbing.diff.DiffTreeVisitor.Consumer;
 import org.locationtech.geogig.api.plumbing.diff.DiffTreeVisitor.ForwardingConsumer;
 import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -53,6 +55,8 @@ import com.google.common.collect.Lists;
  */
 public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         Supplier<Iterator<DiffEntry>> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DiffTree.class);
 
     private final List<String> pathFilters = Lists.newLinkedList();
 
@@ -207,7 +211,9 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
                 try {
                     visitor.walk(consumer);
                 } catch (RuntimeException e) {
+                    LOGGER.error("Error traversing diffs", e);
                     producerErrors.add(e);
+                    diffProducer.finished = true;
                 }
             }
         };

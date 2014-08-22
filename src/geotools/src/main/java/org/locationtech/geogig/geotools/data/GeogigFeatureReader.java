@@ -28,7 +28,9 @@ import org.geotools.filter.spatial.ReprojectingFilterVisitor;
 import org.geotools.filter.visitor.SpatialFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
+import org.geotools.renderer.ScreenMap;
 import org.geotools.util.logging.Logging;
+import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.FeatureBuilder;
 import org.locationtech.geogig.api.NodeRef;
@@ -50,6 +52,7 @@ import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.identity.Identifier;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -77,6 +80,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
     @Nullable
     private Integer maxFeatures;
 
+    private ScreenMap screenMap;
+
     /**
      * @param context
      * @param schema
@@ -91,7 +96,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
     public GeogigFeatureReader(final Context context, final SimpleFeatureType schema,
             final Filter origFilter, final String typeTreePath, final String headRef,
             String oldHeadRef, ChangeType changeType, @Nullable Integer offset,
-            @Nullable Integer maxFeatures) {
+            @Nullable Integer maxFeatures, @Nullable ScreenMap screenMap) {
         checkNotNull(context);
         checkNotNull(schema);
         checkNotNull(origFilter);
@@ -99,10 +104,11 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         checkNotNull(headRef);
         checkNotNull(oldHeadRef);
         checkNotNull(changeType);
-
+        LOGGER.info(getClass().getSimpleName() + ": screenMap is " + screenMap);
         this.schema = schema;
         this.offset = offset;
         this.maxFeatures = maxFeatures;
+        this.screenMap = screenMap;
 
         final String effectiveHead = headRef == null ? Ref.WORK_HEAD : headRef;
         final String effectiveOldHead = oldHeadRef == null ? RevTree.EMPTY_TREE_ID.toString()
@@ -126,6 +132,9 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
             diffOp.setBoundsFilter(queryBounds);
         }
         diffOp.setChangeTypeFilter(changeType(changeType));
+        if (screenMap != null) {
+            diffOp.setCustomFilter(new ScreenMapFilter(screenMap));
+        }
 
         Iterator<DiffEntry> diffs = diffOp.call();
 
@@ -325,5 +334,32 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         SpatialFilterVisitor spatialFilterVisitor = new SpatialFilterVisitor();
         filter.accept(spatialFilterVisitor, null);
         return spatialFilterVisitor.hasSpatialFilter();
+    }
+
+    private static class ScreenMapFilter implements Predicate<Bounded> {
+
+        private ScreenMap screenMap;
+
+        public ScreenMapFilter(ScreenMap screenMap) {
+            this.screenMap = screenMap;
+        }
+
+        @Override
+        public boolean apply(Bounded b) {
+            Envelope envelope = new Envelope();
+            b.expand(envelope);
+            boolean applies;
+            try {
+                applies = screenMap.checkAndSet(envelope);
+            } catch (TransformException e) {
+                e.printStackTrace();
+                return true;
+            }
+            if (!applies) {
+                LOGGER.info("Filtered " + b);
+            }
+            return applies;
+        }
+
     }
 }

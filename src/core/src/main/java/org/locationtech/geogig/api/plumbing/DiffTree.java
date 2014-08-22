@@ -39,6 +39,7 @@ import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
@@ -66,6 +67,8 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
     private boolean reportTrees;
 
     private boolean recursive;
+
+    private Predicate<Bounded> customFilter;
 
     /**
      * Constructs a new instance of the {@code DiffTree} operation with the given parameters.
@@ -137,6 +140,11 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         return this;
     }
 
+    public DiffTree setCustomFilter(Predicate<Bounded> customFilter) {
+        this.customFilter = customFilter;
+        return this;
+    }
+
     public DiffTree setChangeTypeFilter(@Nullable ChangeType changeType) {
         this.changeTypeFilter = changeType;
         return this;
@@ -183,6 +191,9 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
             @Override
             public void run() {
                 Consumer consumer = diffProducer;
+                if (customFilter != null) {// evaluated the latest
+                    consumer = new DiffTreeVisitor.FilteringConsumer(consumer, customFilter);
+                }
                 if (changeTypeFilter != null) {
                     consumer = new ChangeTypeFilteringDiffConsumer(changeTypeFilter, consumer);
                 }
@@ -190,7 +201,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
                     consumer = new BoundsFilteringDiffConsumer(boundsFilter, consumer,
                             stagingDatabase());
                 }
-                if (!pathFilters.isEmpty()) {
+                if (!pathFilters.isEmpty()) {// evaluated the former
                     consumer = new PathFilteringDiffConsumer(pathFilters, consumer);
                 }
                 try {

@@ -28,6 +28,7 @@ import org.geotools.factory.Hints;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.renderer.ScreenMap;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
@@ -44,6 +45,8 @@ import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -52,7 +55,9 @@ import com.google.common.base.Preconditions;
  *
  */
 class GeogigFeatureSource extends ContentFeatureSource {
-
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeogigFeatureSource.class);
+    
     private GeoGigDataStore.ChangeType changeType;
 
     private String oldRoot;
@@ -75,6 +80,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
     public GeogigFeatureSource(ContentEntry entry, @Nullable Query query) {
         super(entry, query);
         Preconditions.checkArgument(entry.getDataStore() instanceof GeoGigDataStore);
+        LOGGER.info("Created new GeogigFeatureSource");
     }
 
     /**
@@ -84,6 +90,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
     @Override
     protected void addHints(Set<Hints.Key> hints) {
         hints.add(Hints.FEATURE_DETACHED);
+        hints.add(Hints.SCREENMAP);
     }
 
     @Override
@@ -196,7 +203,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
             Integer offset = query.getStartIndex();
             Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null : query
                     .getMaxFeatures();
-            features = getNativeReader(filter, offset, maxFeatures);
+            ScreenMap screenMap = (ScreenMap) query.getHints().get(Hints.SCREENMAP);
+            features = getNativeReader(filter, offset, maxFeatures, screenMap);
         } else {
             features = getReader(query);
         }
@@ -238,7 +246,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
 
         FeatureReader<SimpleFeatureType, SimpleFeature> features;
         if (isNaturalOrder(query.getSortBy())) {
-            features = getNativeReader(filter, offset, maxFeatures);
+            ScreenMap screenMap = (ScreenMap) query.getHints().get(Hints.SCREENMAP);
+            features = getNativeReader(filter, offset, maxFeatures, screenMap);
         } else {
             features = getReader(query);
         }
@@ -266,11 +275,12 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null : query
                 .getMaxFeatures();
         final Filter filter = query.getFilter();
+        final ScreenMap screenMap = (ScreenMap) query.getHints().get(Hints.SCREENMAP);
 
         if (naturalOrder) {
-            reader = getNativeReader(filter, startIndex, maxFeatures);
+            reader = getNativeReader(filter, startIndex, maxFeatures, screenMap);
         } else {
-            reader = getNativeReader(filter, null, null);
+            reader = getNativeReader(filter, null, null, screenMap);
             // sorting
             reader = new SortedFeatureReader(DataUtilities.simple(reader), query);
             if (startIndex > 0) {
@@ -296,8 +306,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
     }
 
     private FeatureReader<SimpleFeatureType, SimpleFeature> getNativeReader(Filter filter,
-            @Nullable Integer offset, @Nullable Integer maxFeatures) {
-
+            @Nullable Integer offset, @Nullable Integer maxFeatures, @Nullable ScreenMap screenMap) {
+        LOGGER.info("GeoGigFeatureSource.getNativeReader: screenMap is " + screenMap);
         filter = (Filter) filter.accept(new SimplifyingFilterVisitor(), null);
 
         GeogigFeatureReader<SimpleFeatureType, SimpleFeature> nativeReader;
@@ -313,8 +323,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         GeoGigDataStore.ChangeType changeType = changeType();
         nativeReader = new GeogigFeatureReader<SimpleFeatureType, SimpleFeature>(context, schema,
                 filter, featureTypeTreePath, rootRef, compareRootRef, changeType, offset,
-                maxFeatures);
-
+                maxFeatures, screenMap);
         return nativeReader;
     }
 

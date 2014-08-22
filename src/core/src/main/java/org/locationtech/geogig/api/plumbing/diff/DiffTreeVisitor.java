@@ -22,6 +22,7 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
@@ -34,6 +35,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.ListMultimap;
@@ -547,5 +549,53 @@ public class DiffTreeVisitor {
         public void endBucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
             delegate.endBucket(bucketIndex, bucketDepth, left, right);
         }
+    }
+
+    public static class FilteringConsumer extends ForwardingConsumer {
+
+        private final Predicate<Bounded> predicate;
+
+        public FilteringConsumer(final Consumer delegate, final Predicate<Bounded> predicate) {
+            super(delegate);
+            this.predicate = predicate;
+        }
+
+        @Override
+        public void feature(Node left, Node right) {
+            if (predicate.apply(left) || predicate.apply(right)) {
+                super.feature(left, right);
+            }
+        }
+
+        @Override
+        public boolean tree(Node left, Node right) {
+            if (predicate.apply(left) || predicate.apply(right)) {
+                return super.tree(left, right);
+            }
+            return false;
+        }
+
+        @Override
+        public void endTree(Node left, Node right) {
+            if (predicate.apply(left) || predicate.apply(right)) {
+                super.endTree(left, right);
+            }
+        }
+
+        @Override
+        public boolean bucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
+            if (predicate.apply(left) || predicate.apply(right)) {
+                return super.bucket(bucketIndex, bucketDepth, left, right);
+            }
+            return false;
+        }
+
+        @Override
+        public void endBucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
+            if (predicate.apply(left) || predicate.apply(right)) {
+                super.endBucket(bucketIndex, bucketDepth, left, right);
+            }
+        }
+
     }
 }

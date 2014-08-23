@@ -11,9 +11,7 @@ package org.locationtech.geogig.di.caching;
 import java.util.Iterator;
 
 import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.di.Decorator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ForwardingObjectDatabase;
@@ -223,13 +221,10 @@ class ObjectDatabaseCacheInterceptor {
             if (object == null) {
                 return false;
             }
-            if (object instanceof RevFeatureType) {
-                return true;
-            }
-            if ((object instanceof RevTree) && ((RevTree) object).buckets().isPresent()) {
-                return true;
-            }
-            return false;
+//            if ((object instanceof RevTree) && ((RevTree) object).features().isPresent()) {
+//                return false;
+//            }
+            return true;
         }
     }
 

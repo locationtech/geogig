@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.geotools.feature.GeometryAttributeImpl;
 import org.geotools.feature.type.AttributeDescriptorImpl;
 import org.geotools.feature.type.Types;
@@ -42,33 +44,40 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
 
 /**
  */
 public class GeogigSimpleFeature implements SimpleFeature {
 
+    private static final GeometryFactory DEFAULT_GEOM_FACTORY = new GeometryFactory();
+
     private final FeatureId id;
+
+    private @Nullable Node node;
 
     private SimpleFeatureType featureType;
 
     /**
      * The actual values held by this feature
      */
-    private List<Optional<Object>> revFeatureValues;
+    private Supplier<? extends List<Optional<Object>>> revFeatureValues;
+
+    // WARN! not to be accessed but by #getValues()
+    private List<Optional<Object>> resolvedValues;
 
     /**
      * The attribute name -> position index
      */
     private Map<String, Integer> nameToRevTypeIndex;
-
-    private BiMap<Integer, Integer> typeToRevTypeIndex;
 
     /**
      * The set of user data attached to the feature (lazily created)
@@ -79,6 +88,10 @@ public class GeogigSimpleFeature implements SimpleFeature {
      * The set of user data attached to each attribute (lazily created)
      */
     private Map<Object, Object>[] attributeUserData;
+
+    private final int defaultGeomIndex;
+
+    private final boolean defaultGeomIsPoint;
 
     /**
      * Fast construction of a new feature.
@@ -94,20 +107,46 @@ public class GeogigSimpleFeature implements SimpleFeature {
      * @param nameToRevTypeInded - attribute name to value index mapping
      */
     public GeogigSimpleFeature(ImmutableList<Optional<Object>> values,
+            SimpleFeatureType featureType, FeatureId id, Map<String, Integer> nameToRevTypeInded) {
+
+        this(Suppliers.ofInstance(values), featureType, id, nameToRevTypeInded, null);
+    }
+
+    public GeogigSimpleFeature(Supplier<? extends List<Optional<Object>>> values,
             SimpleFeatureType featureType, FeatureId id, Map<String, Integer> nameToRevTypeInded,
-            BiMap<Integer, Integer> typeToRevTypeIndex) {
+            @Nullable Node node) {
         this.id = id;
         this.featureType = featureType;
         this.revFeatureValues = values;
         this.nameToRevTypeIndex = nameToRevTypeInded;
-        this.typeToRevTypeIndex = typeToRevTypeIndex;
+        this.node = node;
+        Integer defaultGeomIndex = nameToRevTypeInded.get(null);
+        if (defaultGeomIndex == null) {
+            this.defaultGeomIndex = -1;
+            defaultGeomIsPoint = false;
+        } else {
+            this.defaultGeomIndex = defaultGeomIndex.intValue();
+            Class<?> binding = featureType.getGeometryDescriptor().getType().getBinding();
+            defaultGeomIsPoint = Point.class.isAssignableFrom(binding);
+        }
     }
 
     private List<Optional<Object>> mutableValues() {
-        if (revFeatureValues instanceof ImmutableList) {
-            revFeatureValues = Lists.newArrayList(revFeatureValues);
+        List<Optional<Object>> values = getValues();
+        if (values instanceof ImmutableList) {
+            values = new ArrayList<>(getValues());
+            resolvedValues = null;
+            revFeatureValues = Suppliers.ofInstance(values);
+            return getValues();
         }
-        return revFeatureValues;
+        return values;
+    }
+
+    private List<Optional<Object>> getValues() {
+        if (resolvedValues == null) {
+            resolvedValues = revFeatureValues.get();
+        }
+        return resolvedValues;
     }
 
     @Override
@@ -120,28 +159,27 @@ public class GeogigSimpleFeature implements SimpleFeature {
         return id.getID();
     }
 
-    public int getNumberOfAttributes() {
-        return revFeatureValues.size();
-    }
-
     @Override
     public Object getAttribute(int index) throws IndexOutOfBoundsException {
-        int revTypeIndex = typeToRevTypeIndex(index);
-        return revFeatureValues.get(revTypeIndex).orNull();
-    }
-
-    private int typeToRevTypeIndex(int index) {
-        int revTypeIndex = typeToRevTypeIndex.get(Integer.valueOf(index)).intValue();
-        return revTypeIndex;
+        if (node != null && index == defaultGeomIndex && defaultGeomIsPoint
+                && (resolvedValues == null || resolvedValues instanceof ImmutableList)) {
+            Envelope e = new Envelope();
+            node.expand(e);
+            if (e.isNull()) {
+                return null;
+            }
+            return DEFAULT_GEOM_FACTORY.createPoint(new Coordinate(e.getMinX(), e.getMinY()));
+        }
+        return getValues().get(index).orNull();
     }
 
     @Override
     public Object getAttribute(String name) {
-        Integer revTypeIndex = nameToRevTypeIndex.get(name);
-        if (revTypeIndex != null)
-            return revFeatureValues.get(revTypeIndex).orNull();
-        else
+        Integer index = nameToRevTypeIndex.get(name);
+        if (index == null) {
             return null;
+        }
+        return getAttribute(index.intValue());
     }
 
     @Override
@@ -151,7 +189,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
 
     @Override
     public int getAttributeCount() {
-        return revFeatureValues.size();
+        return featureType.getAttributeCount();
     }
 
     @Override
@@ -168,7 +206,8 @@ public class GeogigSimpleFeature implements SimpleFeature {
     public Object getDefaultGeometry() {
         // should be specified in the index as the default key (null)
         Integer idx = nameToRevTypeIndex.get(null);
-        Object defaultGeometry = idx != null ? revFeatureValues.get(idx).orNull() : null;
+        List<Optional<Object>> values = getValues();
+        Object defaultGeometry = idx != null ? values.get(idx).orNull() : null;
 
         // not found? do we have a default geometry at all?
         if (defaultGeometry == null) {
@@ -176,7 +215,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
             if (geometryDescriptor != null) {
                 Integer defaultGeomIndex = nameToRevTypeIndex.get(geometryDescriptor.getName()
                         .getLocalPart());
-                defaultGeometry = revFeatureValues.get(defaultGeomIndex.intValue()).get();
+                defaultGeometry = values.get(defaultGeomIndex.intValue()).get();
             }
         }
 
@@ -200,8 +239,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
         Object converted = Converters.convert(value, binding);
 
         // finally set the value into the feature
-        Integer revFeatureIndex = typeToRevTypeIndex.get(index);
-        mutableValues().set(revFeatureIndex.intValue(), Optional.fromNullable(converted));
+        mutableValues().set(index, Optional.fromNullable(converted));
     }
 
     @Override
@@ -210,8 +248,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
         if (revTypeIndex == null) {
             throw new IllegalAttributeException(null, "Unknown attribute " + name);
         }
-        Integer schemaIndex = typeToRevTypeIndex.inverse().get(revTypeIndex);
-        setAttribute(schemaIndex, value);
+        setAttribute(revTypeIndex.intValue(), value);
     }
 
     @Override
@@ -244,22 +281,25 @@ public class GeogigSimpleFeature implements SimpleFeature {
     public BoundingBox getBounds() {
         CoordinateReferenceSystem crs = featureType.getCoordinateReferenceSystem();
         Envelope bounds = ReferencedEnvelope.create(crs);
-
-        Optional<Object> o;
-        for (int i = 0; i < revFeatureValues.size(); i++) {
-            o = revFeatureValues.get(i);
-            if (o.isPresent() && o.get() instanceof Geometry) {
-                Geometry g = (Geometry) o.get();
-                // TODO: check userData for crs... and ensure its of the same
-                // crs as the feature type
-                if (bounds.isNull()) {
-                    bounds.init(JTS.bounds(g, crs));
-                } else {
-                    bounds.expandToInclude(JTS.bounds(g, crs));
+        if (node == null) {
+            Optional<Object> o;
+            List<Optional<Object>> values = getValues();
+            for (int i = 0; i < values.size(); i++) {
+                o = values.get(i);
+                if (o.isPresent() && o.get() instanceof Geometry) {
+                    Geometry g = (Geometry) o.get();
+                    // TODO: check userData for crs... and ensure its of the same
+                    // crs as the feature type
+                    if (bounds.isNull()) {
+                        bounds.init(JTS.bounds(g, crs));
+                    } else {
+                        bounds.expandToInclude(JTS.bounds(g, crs));
+                    }
                 }
             }
+        } else {
+            node.expand(bounds);
         }
-
         return (BoundingBox) bounds;
     }
 
@@ -312,15 +352,14 @@ public class GeogigSimpleFeature implements SimpleFeature {
 
     @Override
     public Property getProperty(String name) {
-        final Integer revTypeIdx = nameToRevTypeIndex.get(name);
-        if (revTypeIdx == null) {
+        AttributeDescriptor descriptor = featureType.getDescriptor(name);
+        if (descriptor == null) {
             return null;
         } else {
-            int index = typeToRevTypeIndex.inverse().get(revTypeIdx).intValue();
-            AttributeDescriptor descriptor = featureType.getDescriptor(index);
+            Integer index = nameToRevTypeIndex.get(name).intValue();
             if (descriptor instanceof GeometryDescriptor) {
-                return new GeometryAttributeImpl(revFeatureValues.get(revTypeIdx.intValue())
-                        .orNull(), (GeometryDescriptor) descriptor, null);
+                Object value = getAttribute(index);
+                return new GeometryAttributeImpl(value, (GeometryDescriptor) descriptor, null);
             } else {
                 return new Attribute(index);
             }
@@ -336,7 +375,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
     public void setValue(Collection<Property> values) {
         int index = 0;
         for (Property p : values) {
-            mutableValues().set(typeToRevTypeIndex(index), Optional.fromNullable(p.getValue()));
+            mutableValues().set(index, Optional.fromNullable(p.getValue()));
             index++;
         }
     }
@@ -418,7 +457,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
             return false;
         }
 
-        for (int i = 0, ii = revFeatureValues.size(); i < ii; i++) {
+        for (int i = 0, ii = getAttributeCount(); i < ii; i++) {
             Object otherAtt = feat.getAttribute(i);
 
             if (!Objects.equal(otherAtt, getAttribute(i))) {
@@ -445,14 +484,13 @@ public class GeogigSimpleFeature implements SimpleFeature {
 
         @Override
         public Attribute set(int index, Property element) {
-            Integer revFeatureIdx = typeToRevTypeIndex.get(Integer.valueOf(index));
-            mutableValues().set(revFeatureIdx, Optional.fromNullable(element.getValue()));
+            mutableValues().set(index, Optional.fromNullable(element.getValue()));
             return null;
         }
 
         @Override
         public int size() {
-            return revFeatureValues.size();
+            return getAttributeCount();
         }
     }
 
@@ -500,7 +538,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
         public Map<Object, Object> getUserData() {
             // lazily create the user data holder
             if (attributeUserData == null)
-                attributeUserData = new HashMap[revFeatureValues.size()];
+                attributeUserData = new HashMap[getAttributeCount()];
             // lazily create the attribute user data
             if (attributeUserData[index] == null)
                 attributeUserData[index] = new HashMap<Object, Object>();
@@ -509,7 +547,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
 
         @Override
         public Object getValue() {
-            return revFeatureValues.get(typeToRevTypeIndex.get(index)).orNull();
+            return getValues().get(index).orNull();
         }
 
         @Override
@@ -519,7 +557,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
 
         @Override
         public void setValue(Object newValue) {
-            mutableValues().set(typeToRevTypeIndex(index), Optional.fromNullable(newValue));
+            mutableValues().set(index, Optional.fromNullable(newValue));
         }
 
         /**
@@ -658,24 +696,9 @@ public class GeogigSimpleFeature implements SimpleFeature {
         return typeAttNameToRevTypeIndex;
     }
 
-    public static BiMap<Integer, Integer> buildTypeToRevTypeIndex(RevFeatureType revType) {
-
-        List<PropertyDescriptor> sortedDescriptors = revType.sortedDescriptors();
-        List<PropertyDescriptor> unsortedDescriptors = ImmutableList.copyOf(revType.type()
-                .getDescriptors());
-
-        Map<Integer, Integer> typeToRevTypeIndex = Maps.newHashMap();
-        for (int revFeatureIndex = 0; revFeatureIndex < sortedDescriptors.size(); revFeatureIndex++) {
-            PropertyDescriptor prop = sortedDescriptors.get(revFeatureIndex);
-            int typeIndex = unsortedDescriptors.indexOf(prop);
-            typeToRevTypeIndex.put(Integer.valueOf(typeIndex), Integer.valueOf(revFeatureIndex));
-        }
-        return ImmutableBiMap.copyOf(typeToRevTypeIndex);
-    }
-
     @Override
     public void validate() throws IllegalAttributeException {
-        for (int i = 0; i < revFeatureValues.size(); i++) {
+        for (int i = 0; i < getAttributeCount(); i++) {
             AttributeDescriptor descriptor = getType().getDescriptor(i);
             Types.validate(descriptor, getAttribute(i));
         }

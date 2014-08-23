@@ -60,7 +60,7 @@ abstract class CacheFactory {
             this.cache = NO_CACHE;
             return;
         }
-        final int maxSize = getConfig("maxSize", 50 * 1000);
+        final int maxSize = getConfig("maxSize", 100_000);
         final int concurrencyLevel = getConfig("concurrencyLevel", 0);
         if (concurrencyLevel == 0) {
             this.cache = new SimpleCache<ObjectId, RevObject>(maxSize);

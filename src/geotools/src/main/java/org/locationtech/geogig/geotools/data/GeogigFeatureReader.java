@@ -37,7 +37,6 @@ import org.locationtech.geogig.api.FeatureBuilder;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.DiffTree;
@@ -95,11 +94,13 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
      * @param offset
      * @param maxFeatures
      * @param changeType
+     * @param ignoreAttributes
      */
     public GeogigFeatureReader(final Context context, final SimpleFeatureType schema,
             final Filter origFilter, final String typeTreePath, final String headRef,
             String oldHeadRef, ChangeType changeType, @Nullable Integer offset,
-            @Nullable Integer maxFeatures, @Nullable ScreenMap screenMap) {
+            @Nullable Integer maxFeatures, @Nullable ScreenMap screenMap,
+            final boolean ignoreAttributes) {
         checkNotNull(context);
         checkNotNull(schema);
         checkNotNull(origFilter);
@@ -277,12 +278,10 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
 
         @Override
         public SimpleFeature apply(final NodeRef featureRef) {
-            Optional<RevFeature> revFeature = parseRevFeatureCommand.setObjectId(
-                    featureRef.objectId()).call(RevFeature.class);
-            Preconditions.checkState(revFeature.isPresent());
+            final Node node = featureRef.getNode();
+            final String id = featureRef.name();
 
-            String id = featureRef.name();
-            Feature feature = featureBuilder.build(id, revFeature.get());
+            Feature feature = featureBuilder.buildLazy(id, node, parseRevFeatureCommand);
             return (SimpleFeature) feature;
         }
     };

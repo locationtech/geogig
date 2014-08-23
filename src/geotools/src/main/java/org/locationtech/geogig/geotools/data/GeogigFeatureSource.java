@@ -26,6 +26,7 @@ import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.data.store.ContentState;
 import org.geotools.factory.Hints;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.filter.Filters;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.renderer.ScreenMap;
@@ -55,9 +56,9 @@ import com.google.common.base.Preconditions;
  *
  */
 class GeogigFeatureSource extends ContentFeatureSource {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(GeogigFeatureSource.class);
-    
+
     private GeoGigDataStore.ChangeType changeType;
 
     private String oldRoot;
@@ -80,7 +81,6 @@ class GeogigFeatureSource extends ContentFeatureSource {
     public GeogigFeatureSource(ContentEntry entry, @Nullable Query query) {
         super(entry, query);
         Preconditions.checkArgument(entry.getDataStore() instanceof GeoGigDataStore);
-        LOGGER.info("Created new GeogigFeatureSource");
     }
 
     /**
@@ -188,7 +188,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final Filter filter = (Filter) query.getFilter().accept(new SimplifyingFilterVisitor(),
                 null);
         final CoordinateReferenceSystem crs = getSchema().getCoordinateReferenceSystem();
-        if (Filter.INCLUDE.equals(filter) && oldRoot == null && ChangeType.ADDED.equals(changeType())) {
+        if (Filter.INCLUDE.equals(filter) && oldRoot == null
+                && ChangeType.ADDED.equals(changeType())) {
             NodeRef typeRef = getTypeRef();
             ReferencedEnvelope bounds = new ReferencedEnvelope(crs);
             typeRef.getNode().expand(bounds);
@@ -204,7 +205,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
             Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null : query
                     .getMaxFeatures();
             ScreenMap screenMap = (ScreenMap) query.getHints().get(Hints.SCREENMAP);
-            features = getNativeReader(filter, offset, maxFeatures, screenMap);
+            features = getNativeReader(Query.NO_NAMES, filter, offset, maxFeatures, screenMap);
         } else {
             features = getReader(query);
         }
@@ -232,7 +233,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 .getMaxFeatures();
 
         int size;
-        if (Filter.INCLUDE.equals(filter) && oldRoot == null && ChangeType.ADDED.equals(changeType())) {
+        if (Filter.INCLUDE.equals(filter) && oldRoot == null
+                && ChangeType.ADDED.equals(changeType())) {
             RevTree tree = getTypeTree();
             size = (int) tree.size();
             if (offset != null) {
@@ -247,7 +249,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
         FeatureReader<SimpleFeatureType, SimpleFeature> features;
         if (isNaturalOrder(query.getSortBy())) {
             ScreenMap screenMap = (ScreenMap) query.getHints().get(Hints.SCREENMAP);
-            features = getNativeReader(filter, offset, maxFeatures, screenMap);
+            features = getNativeReader(Query.NO_NAMES, filter, offset, maxFeatures, screenMap);
         } else {
             features = getReader(query);
         }
@@ -276,11 +278,11 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 .getMaxFeatures();
         final Filter filter = query.getFilter();
         final ScreenMap screenMap = (ScreenMap) query.getHints().get(Hints.SCREENMAP);
-
+        final String[] propertyNames = query.getPropertyNames();
         if (naturalOrder) {
-            reader = getNativeReader(filter, startIndex, maxFeatures, screenMap);
+            reader = getNativeReader(propertyNames, filter, startIndex, maxFeatures, screenMap);
         } else {
-            reader = getNativeReader(filter, null, null, screenMap);
+            reader = getNativeReader(propertyNames, filter, null, null, screenMap);
             // sorting
             reader = new SortedFeatureReader(DataUtilities.simple(reader), query);
             if (startIndex > 0) {
@@ -305,9 +307,15 @@ class GeogigFeatureSource extends ContentFeatureSource {
         return false;
     }
 
-    private FeatureReader<SimpleFeatureType, SimpleFeature> getNativeReader(Filter filter,
-            @Nullable Integer offset, @Nullable Integer maxFeatures, @Nullable ScreenMap screenMap) {
-        LOGGER.info("GeoGigFeatureSource.getNativeReader: screenMap is " + screenMap);
+    /**
+     * @param propertyNames properties to retrieve, empty array for no properties at all
+     *        {@link Query#NO_NAMES}, {@code null} means all properties {@link Query#ALL_NAMES}
+     */
+    private FeatureReader<SimpleFeatureType, SimpleFeature> getNativeReader(
+            @Nullable String[] propertyNames, Filter filter, @Nullable Integer offset,
+            @Nullable Integer maxFeatures, @Nullable ScreenMap screenMap) {
+
+        LOGGER.trace("GeoGigFeatureSource.getNativeReader: using screenMap filter");
         filter = (Filter) filter.accept(new SimplifyingFilterVisitor(), null);
 
         GeogigFeatureReader<SimpleFeatureType, SimpleFeature> nativeReader;
@@ -315,15 +323,21 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final String rootRef = getRootRef();
         final String featureTypeTreePath = getTypeTreePath();
 
-        final SimpleFeatureType schema = getSchema();
+        final SimpleFeatureType fullType = getSchema();
 
+        boolean ignoreAttributes = false;
+        if (propertyNames != null && propertyNames.length == 0) {
+            String[] inProcessFilteringAttributes = Filters.attributeNames(filter, fullType);
+            ignoreAttributes = inProcessFilteringAttributes.length == 0;
+        }
+
+        final String compareRootRef = oldRoot();
+        final GeoGigDataStore.ChangeType changeType = changeType();
         final Context context = getCommandLocator();
 
-        String compareRootRef = oldRoot();
-        GeoGigDataStore.ChangeType changeType = changeType();
-        nativeReader = new GeogigFeatureReader<SimpleFeatureType, SimpleFeature>(context, schema,
+        nativeReader = new GeogigFeatureReader<SimpleFeatureType, SimpleFeature>(context, fullType,
                 filter, featureTypeTreePath, rootRef, compareRootRef, changeType, offset,
-                maxFeatures, screenMap);
+                maxFeatures, screenMap, ignoreAttributes);
         return nativeReader;
     }
 

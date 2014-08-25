@@ -17,11 +17,16 @@ Project Lead: `Gabriel Roldan <https://github.com/groldan>`_
 
 Status: A 1.0-beta1 version has been released and it is available for download, with a full commandline interface to import data and work with repositories.
 
-License - GeoGig is proudly open source:
+License
+=======
+
+GeoGig is proudly open source:
 
 * Source code is distributed under an `Eclipse Distribution License <LICENSE.txt>`_ license (which is a BSD 3 Clause License) unless otherwise stated.
 * Varint: is from the Apache Mahout project and is distributed under the `Apache License Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_ .
 * DiffMatchPath: is from Neil Fraser and is distributed under the `Apache License Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_ .
+
+For details review `About This Content<about.html>`_ and the `Eclipse Foundation Software User Agreement<notice.html>`_.
 
 Download
 =========

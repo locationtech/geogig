@@ -313,9 +313,13 @@ class GeogigFeatureSource extends ContentFeatureSource {
      */
     private FeatureReader<SimpleFeatureType, SimpleFeature> getNativeReader(
             @Nullable String[] propertyNames, Filter filter, @Nullable Integer offset,
-            @Nullable Integer maxFeatures, @Nullable ScreenMap screenMap) {
+            @Nullable Integer maxFeatures, @Nullable final ScreenMap screenMap) {
 
-        LOGGER.trace("GeoGigFeatureSource.getNativeReader: using screenMap filter");
+        if (screenMap == null) {
+            LOGGER.trace("GeoGigFeatureSource.getNativeReader: no screenMap provided");
+        } else {
+            LOGGER.trace("GeoGigFeatureSource.getNativeReader: using screenMap filter");
+        }
         filter = (Filter) filter.accept(new SimplifyingFilterVisitor(), null);
 
         GeogigFeatureReader<SimpleFeatureType, SimpleFeature> nativeReader;

@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
@@ -29,7 +28,6 @@ import org.geotools.filter.visitor.SpatialFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
 import org.geotools.renderer.ScreenMap;
-import org.geotools.util.logging.Logging;
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Context;
@@ -55,6 +53,8 @@ import org.opengis.filter.identity.Identifier;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -70,7 +70,7 @@ import com.vividsolutions.jts.geom.Envelope;
 class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements FeatureReader<T, F>,
         Iterator<F> {
 
-    private static final Logger LOGGER = Logging.getLogger(GeogigFeatureReader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeogigFeatureReader.class);
 
     private SimpleFeatureType schema;
 
@@ -82,7 +82,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
     @Nullable
     private Integer maxFeatures;
 
-    private ScreenMapFilter screenMapFilter;
+    @Nullable
+    private final ScreenMapFilter screenMapFilter;
 
     /**
      * @param context
@@ -99,7 +100,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
     public GeogigFeatureReader(final Context context, final SimpleFeatureType schema,
             final Filter origFilter, final String typeTreePath, final String headRef,
             String oldHeadRef, ChangeType changeType, @Nullable Integer offset,
-            @Nullable Integer maxFeatures, @Nullable ScreenMap screenMap,
+            @Nullable Integer maxFeatures, @Nullable final ScreenMap screenMap,
             final boolean ignoreAttributes) {
         checkNotNull(context);
         checkNotNull(schema);
@@ -135,9 +136,12 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         }
         diffOp.setChangeTypeFilter(changeType(changeType));
         if (screenMap != null) {
-            LOGGER.fine("Using screenmap filter");
-            screenMapFilter = new ScreenMapFilter(screenMap);
+            LOGGER.trace("Created GeogigFeatureReader with screenMapFilter");
+            this.screenMapFilter = new ScreenMapFilter(screenMap);
             diffOp.setCustomFilter(screenMapFilter);
+        } else {
+            this.screenMapFilter = null;
+            LOGGER.trace("Created GeogigFeatureReader without screenMapFilter");
         }
 
         Iterator<DiffEntry> diffs = diffOp.call();
@@ -223,14 +227,15 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
 
     @Override
     public void close() throws IOException {
+        if (screenMapFilter != null) {
+            LOGGER.debug("GeoGigFeatureReader.close(): ScreenMap filtering: {}",
+                    screenMapFilter.stats());
+        }
     }
 
     @Override
     public boolean hasNext() {
         boolean hasNext = features.hasNext();
-        if (!hasNext && screenMapFilter != null) {
-            LOGGER.fine("ScreenMap filtering: " + screenMapFilter.stats());
-        }
         return hasNext;
     }
 
@@ -321,7 +326,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         if (hasSpatialFilter(filter)) {
             CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
             if (crs == null) {
-                LOGGER.fine("Not reprojecting filter to native CRS because feature type does not declare a CRS");
+                LOGGER.trace("Not reprojecting filter to native CRS because feature type does not declare a CRS");
 
             } else {
 

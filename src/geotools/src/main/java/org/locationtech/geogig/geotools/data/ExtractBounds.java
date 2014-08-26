@@ -8,10 +8,15 @@
 
 package org.locationtech.geogig.geotools.data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.geotools.filter.visitor.DefaultFilterVisitor;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.filter.expression.Literal;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -21,19 +26,28 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 class ExtractBounds extends DefaultFilterVisitor {
 
-    @Override
-    public @Nullable
-    Envelope visit(Literal literal, @Nullable Object data) {
+    private CoordinateReferenceSystem nativeCrs;
 
-        Envelope env = (Envelope) data;
+    private List<ReferencedEnvelope> bounds = new ArrayList<>(2);
+
+    public ExtractBounds(final CoordinateReferenceSystem nativeCrs) {
+        this.nativeCrs = nativeCrs;
+    }
+
+    @Override
+    public List<ReferencedEnvelope> visit(Literal literal, @Nullable Object data) {
+
         Object value = literal.getValue();
         if (value instanceof Geometry) {
-            if (env == null) {
-                env = new Envelope();
+            Geometry geom = (Geometry) value;
+            Envelope literalEnvelope = geom.getEnvelopeInternal();
+            CoordinateReferenceSystem crs = nativeCrs;
+            if (geom.getUserData() instanceof CoordinateReferenceSystem) {
+                crs = (CoordinateReferenceSystem) geom.getUserData();
             }
-            Envelope literalEnvelope = ((Geometry) value).getEnvelopeInternal();
-            env.expandToInclude(literalEnvelope);
+            ReferencedEnvelope bbox = new ReferencedEnvelope(literalEnvelope, crs);
+            bounds.add(bbox);
         }
-        return env;
+        return bounds;
     }
 }

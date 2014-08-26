@@ -320,7 +320,9 @@ class GeogigFeatureSource extends ContentFeatureSource {
         } else {
             LOGGER.trace("GeoGigFeatureSource.getNativeReader: using screenMap filter");
         }
+        LOGGER.trace("Query filter: {}", filter);
         filter = (Filter) filter.accept(new SimplifyingFilterVisitor(), null);
+        LOGGER.trace("Simplified filter: {}", filter);
 
         GeogigFeatureReader<SimpleFeatureType, SimpleFeature> nativeReader;
 

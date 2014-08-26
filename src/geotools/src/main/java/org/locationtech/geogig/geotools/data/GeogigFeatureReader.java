@@ -72,6 +72,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeogigFeatureReader.class);
 
+    private static final FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2();
+
     private SimpleFeatureType schema;
 
     private Iterator<SimpleFeature> features;
@@ -124,25 +126,29 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
                 typeTreeRefSpec);
 
         final Filter filter = reprojectFilter(origFilter);
-        final ReferencedEnvelope queryBounds = getQueryBounds(filter);
 
         DiffTree diffOp = context.command(DiffTree.class);
         diffOp.setOldVersion(effectiveOldHead);
         diffOp.setNewVersion(effectiveHead);
-        List<String> pathFilters = resolvePathFilters(typeTreePath, filter);
+
+        final List<String> pathFilters = resolvePathFilters(typeTreePath, filter);
         diffOp.setPathFilter(pathFilters);
-        if (!queryBounds.isEmpty()) {
-            diffOp.setBoundsFilter(queryBounds);
-        }
-        diffOp.setChangeTypeFilter(changeType(changeType));
+
         if (screenMap != null) {
-            LOGGER.trace("Created GeogigFeatureReader with screenMapFilter");
+            LOGGER.trace("Created GeogigFeatureReader with screenMap, assuming it's renderer query");
             this.screenMapFilter = new ScreenMapFilter(screenMap);
             diffOp.setCustomFilter(screenMapFilter);
         } else {
             this.screenMapFilter = null;
             LOGGER.trace("Created GeogigFeatureReader without screenMapFilter");
         }
+
+        final ReferencedEnvelope queryBounds = getQueryBounds(filter, screenMap != null);
+        if (!queryBounds.isEmpty()) {
+            LOGGER.trace("{}: query bounds: {}", getClass().getSimpleName(), queryBounds);
+            diffOp.setBoundsFilter(queryBounds);
+        }
+        diffOp.setChangeTypeFilter(changeType(changeType));
 
         Iterator<DiffEntry> diffs = diffOp.call();
 
@@ -305,17 +311,50 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
     }
 
     @Nullable
-    private ReferencedEnvelope getQueryBounds(Filter filterInNativeCrs) {
+    private ReferencedEnvelope getQueryBounds(Filter filterInNativeCrs,
+            final boolean isRenderingQuery) {
+
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
         if (crs == null) {
             crs = DefaultEngineeringCRS.GENERIC_2D;
         }
         ReferencedEnvelope queryBounds = new ReferencedEnvelope(crs);
-        Envelope bounds = (Envelope) filterInNativeCrs.accept(new ExtractBounds(), queryBounds);
+        @SuppressWarnings("unchecked")
+        List<ReferencedEnvelope> bounds = (List<ReferencedEnvelope>) filterInNativeCrs.accept(
+                new ExtractBounds(crs), null);
         if (bounds != null) {
-            queryBounds.expandToInclude(bounds);
+            expandToInclude(queryBounds, bounds, isRenderingQuery);
         }
         return queryBounds;
+    }
+
+    private void expandToInclude(ReferencedEnvelope queryBounds, List<ReferencedEnvelope> bounds,
+            boolean isRenderingQuery) {
+
+        if (isRenderingQuery) {
+            /*
+             * HACK!: if it's a rendering query, the renderer may be sending multiple envelopes, one
+             * of which can be way larger than the CRS's valid area, to account for continuous map
+             * wrapping, but it kills our performance
+             */
+            ReferencedEnvelope smaller = null;
+            for (ReferencedEnvelope e : bounds) {
+                if (smaller == null) {
+                    smaller = e;
+                } else {
+                    ReferencedEnvelope biggest = smaller.getArea() > e.getArea() ? smaller : e;
+                    LOGGER.info("Ignoring biggest query envelope: {}", biggest);
+                    smaller = smaller.getArea() < e.getArea() ? smaller : e;
+                }
+            }
+            if (smaller != null) {
+                queryBounds.expandToInclude(smaller);
+            }
+        } else {
+            for (ReferencedEnvelope e : bounds) {
+                queryBounds.expandToInclude(e);
+            }
+        }
     }
 
     /**
@@ -330,11 +369,10 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
 
             } else {
 
-                FilterFactory2 factory = CommonFactoryFinder.getFilterFactory2();
+                filter = (Filter) filter.accept(
+                        new ReprojectingFilterVisitor(filterFactory, schema),
 
-                filter = (Filter) filter.accept(new ReprojectingFilterVisitor(factory, schema),
-
-                null);
+                        null);
 
             }
         }

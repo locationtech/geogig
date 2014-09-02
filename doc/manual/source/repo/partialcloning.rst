@@ -184,8 +184,8 @@ If you run the ``cat`` command to describe the commit that you have added, it wi
 	COMMIT
 	tree    058c752144ed2b6e58b0e648af0a9dc821d88487
 	parents    00f6bd73f763ebc7db440770506d70f5362a37b3
-	author    volaya    volaya@opengeo.org    1366618413840    7200000
-	committer    volaya    volaya@opengeo.org    1366618413840    7200000
+	author    volaya    volaya@boundlessgeo.com    1366618413840    7200000
+	committer    volaya    volaya@boundlessgeo.com    1366618413840    7200000
 	message    Modified feature
 
 The ``parent`` property links a commit to the one (or several ones if it is a merge commit) that it derives from. This is what allows a GeoGig repository to communicate with other repositories and push and pull commits and data, knowing when is it possible to push and when a cloned repository is outdated and its changes cannot be pushed without risking losing data.

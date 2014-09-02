@@ -24,7 +24,7 @@ The list of all commits made so far can be obtained by using the ``log`` command
 
 	$ geogig log
 	Commit:  5852e6949ba71039fded67e7f4980af4f8773869
-	Author:  volaya <volaya@opengeo.org>
+	Author:  volaya <volaya@boundlessgeo.com>
 	Date:    (1 day ago) 2013-02-25 15:31:24 +0100
 	Subject: First commit
 

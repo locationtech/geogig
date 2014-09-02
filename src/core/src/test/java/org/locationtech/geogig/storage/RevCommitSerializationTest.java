@@ -35,7 +35,7 @@ public abstract class RevCommitSerializationTest extends Assert {
     public void before() {
         this.factory = getObjectSerializingFactory();
         ObjectId treeId = ObjectId.forString("treeid");
-        testCommit = testCommit(treeId, "groldan", "groldan@opengeo.org", 5000L, "jd",
+        testCommit = testCommit(treeId, "groldan", "groldan@boundlessgeo.com", 5000L, "jd",
                 "jd@lmnsolutions.com", 10000L, "test message", ObjectId.forString("first parent"));
     }
 
@@ -131,13 +131,13 @@ public abstract class RevCommitSerializationTest extends Assert {
         CommitBuilder builder = new CommitBuilder();
         String author = "groldan";
         builder.setAuthor(author);
-        String authorEmail = "groldan@opengeo.org";
+        String authorEmail = "groldan@boundlessgeo.com";
         builder.setAuthorEmail(authorEmail);
         builder.setAuthorTimestamp(currentTime);
         builder.setAuthorTimeZoneOffset(timeZoneOffset);
         String committer = "mleslie";
         builder.setCommitter(committer);
-        String committerEmail = "mleslie@opengeo.org";
+        String committerEmail = "mleslie@boundlessgeo.com";
         builder.setCommitterEmail(committerEmail);
         builder.setCommitterTimestamp(currentTime);
         builder.setCommitterTimeZoneOffset(timeZoneOffset);

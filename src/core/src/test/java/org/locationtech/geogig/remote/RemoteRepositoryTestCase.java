@@ -140,7 +140,7 @@ public abstract class RemoteRepositoryTestCase {
             repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                     .setValue("Gabriel Roldan").call();
             repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
-                    .setValue("groldan@opengeo.org").call();
+                    .setValue("groldan@boundlessgeo.com").call();
         }
 
         public void tearDown() throws IOException {

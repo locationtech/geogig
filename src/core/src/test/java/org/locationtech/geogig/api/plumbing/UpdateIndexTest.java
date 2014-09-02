@@ -20,7 +20,7 @@ public class UpdateIndexTest extends RepositoryTestCase {
     @Override
     protected void setUpInternal() throws Exception {
         injector.configDatabase().put("user.name", "groldan");
-        injector.configDatabase().put("user.email", "groldan@opengeo.org");
+        injector.configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }
 
     @Test

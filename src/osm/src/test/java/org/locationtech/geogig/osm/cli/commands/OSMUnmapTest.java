@@ -49,7 +49,7 @@ public class OSMUnmapTest extends Assert {
         cli.setPlatform(platform);
         cli.execute("init");
         cli.execute("config", "user.name", "Gabriel Roldan");
-        cli.execute("config", "user.email", "groldan@opengeo.org");
+        cli.execute("config", "user.email", "groldan@boundlessgeo.com");
         assertTrue(new File(workingDirectory, ".geogig").exists());
         // import with mapping
         String filename = OSMImportOp.class.getResource("nodes.xml").getFile();

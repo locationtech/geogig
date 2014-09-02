@@ -544,7 +544,7 @@ Your OSM data should now be in your GeoGig repository, and a new commit should h
 
 	$ geogig log
 	Commit:  d972aa12d9fdf9ac4192fb81da131e77c3867acf
-	Author:  volaya <volaya@opengeo.org>
+	Author:  volaya <volaya@boundlessgeo.com>
 	Date:    (4 minutes ago) 2013-06-03 14:37:21 +0300
 	Subject: Updated OSM data
 
@@ -571,12 +571,12 @@ and then add and commit it
 	[...]
 	$ geogig log
 	Commit: a465736fdabc6d6b5a3289499bba695328a6b43c 	        
-	Author:  volaya <volaya@opengeo.org>
+	Author:  volaya <volaya@boundlessgeo.com>
 	Date:    (15 seconds ago) 2013-05-21 12:37:33 +0300
 	Subject: Edited OSM data
 
 	Commit:  58b84cee8f4817b96804324e83d10c31174da695
-	Author:  volaya <volaya@opengeo.org>
+	Author:  volaya <volaya@boundlessgeo.com>
 	Date:    (3 minutes ago) 2013-05-21 12:34:30 +0300
 	Subject: Update OSM to changeset 16215593
 

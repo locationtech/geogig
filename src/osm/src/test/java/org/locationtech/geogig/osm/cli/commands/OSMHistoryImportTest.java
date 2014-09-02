@@ -75,7 +75,7 @@ public class OSMHistoryImportTest extends Assert {
     @Test
     public void test() throws Exception {
         cli.execute("config", "user.name", "Gabriel Roldan");
-        cli.execute("config", "user.email", "groldan@opengeo.org");
+        cli.execute("config", "user.email", "groldan@boundlessgeo.com");
         cli.execute("osm", "import-history", fakeOsmApiUrl, "--to", "10");
 
         GeoGIG geogig = cli.getGeogig();

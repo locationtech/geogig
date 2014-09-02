@@ -35,12 +35,12 @@ If, as it happens in this case, you want to refer not to the last commit, but to
 
 	$ geogig log
 	Commit:  c3bf45d6539a0d946a9f61e5ec17474d39529bb5
-	Author:  volaya <volaya@opengeo.org>
+	Author:  volaya <volaya@boundlessgeo.com>
 	Date:    (43 seconds ago) 2013-02-25 15:31:41 +0100
 	Subject: modified parks
 
 	Commit:  955e67d93d230029b748dac2939c76ced6c28bc2
-	Author:  volaya <volaya@opengeo.org>
+	Author:  volaya <volaya@boundlessgeo.com>
 	Date:    (1 day ago) 2013-02-25 15:31:24 +0100
 	Subject: first commit
 

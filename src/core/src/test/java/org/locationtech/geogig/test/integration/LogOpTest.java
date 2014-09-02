@@ -570,11 +570,11 @@ public class LogOpTest extends RepositoryTestCase {
     public void testAuthorFilter() throws Exception {
         insertAndAdd(points1);
         final RevCommit firstCommit = geogig.command(CommitOp.class)
-                .setAuthor("firstauthor", "firstauthor@opengeo.org").call();
+                .setAuthor("firstauthor", "firstauthor@boundlessgeo.com").call();
 
         insertAndAdd(lines1);
         final RevCommit secondCommit = geogig.command(CommitOp.class)
-                .setAuthor("secondauthor", "secondauthor@opengeo.org").call();
+                .setAuthor("secondauthor", "secondauthor@boundlessgeo.com").call();
 
         Iterator<RevCommit> iterator = logOp.setAuthor("firstauthor").call();
         assertNotNull(iterator);
@@ -593,11 +593,11 @@ public class LogOpTest extends RepositoryTestCase {
     public void testCommitterFilter() throws Exception {
         insertAndAdd(points1);
         final RevCommit firstCommit = geogig.command(CommitOp.class)
-                .setCommitter("firstcommitter", "firstcommitter@opengeo.org").call();
+                .setCommitter("firstcommitter", "firstcommitter@boundlessgeo.com").call();
 
         insertAndAdd(lines1);
         final RevCommit secondCommit = geogig.command(CommitOp.class)
-                .setAuthor("secondcommitter", "secondcommitter@opengeo.org").call();
+                .setAuthor("secondcommitter", "secondcommitter@boundlessgeo.com").call();
 
         Iterator<RevCommit> iterator = logOp.setAuthor("firstcommitter").call();
         assertNotNull(iterator);

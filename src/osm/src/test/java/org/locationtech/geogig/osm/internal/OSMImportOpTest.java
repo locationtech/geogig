@@ -36,7 +36,7 @@ public class OSMImportOpTest extends RepositoryTestCase {
     @Override
     protected void setUpInternal() throws Exception {
         repo.configDatabase().put("user.name", "groldan");
-        repo.configDatabase().put("user.email", "groldan@opengeo.org");
+        repo.configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }
 
     @Rule

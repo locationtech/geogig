@@ -38,8 +38,8 @@ public class RevCommitTextSerializationTest extends RevCommitSerializationTest {
         OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8");
         writer.write(TYPE.COMMIT.name() + "\n");
         writer.write("tree\t" + ObjectId.forString("TREE_ID_STRING") + "\n");
-        writer.write("author\tvolaya\tvolaya@opengeo.org\n");
-        writer.write("commiter\tvolaya<volaya@opengeo.org>\n");
+        writer.write("author\tvolaya\tvolaya@boundlessgeo.com\n");
+        writer.write("commiter\tvolaya<volaya@boundlessgeo.com>\n");
         writer.write("timestamp\t" + Long.toString(12345678) + "\n");
         writer.write("message\tMy message\n");
         writer.flush();
@@ -59,8 +59,8 @@ public class RevCommitTextSerializationTest extends RevCommitSerializationTest {
         writer.write(TYPE.COMMIT.name() + "\n");
         writer.write("tree\t" + ObjectId.forString("TREE_ID_STRING") + "\n");
         writer.write("parents\t" + ObjectId.forString("PARENT_ID_STRING") + "\n");
-        writer.write("author\tvolaya volaya@opengeo.org\n");
-        writer.write("commiter\tvolaya volaya@opengeo.org\n");
+        writer.write("author\tvolaya volaya@boundlessgeo.com\n");
+        writer.write("commiter\tvolaya volaya@boundlessgeo.com\n");
         writer.write("timestamp\t" + Long.toString(12345678) + "\n");
         writer.write("message\tMy message\n");
         writer.flush();

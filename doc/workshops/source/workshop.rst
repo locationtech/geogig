@@ -335,7 +335,7 @@ You can explore the repository history using the ``log`` command.
 
     $ geogig log
     Commit:  fc9e9e6d97e979293a028857d275eef31e8a0ce5
-    Author:  volaya <volaya@opengeo.org>
+    Author:  volaya <volaya@boundlessgeo.com>
     Date:    (9 minutes ago) 2013-10-31 10:57:02 +0100
     Subject: Initial add
 
@@ -441,12 +441,12 @@ The history of the repository now contains two different snapshots. The output o
 
     $ geogig log    
     Commit:  c1a072734c9de17dc98dfec74d8ce169b94b90c2
-    Author:  volaya <volaya@opengeo.org>
+    Author:  volaya <volaya@boundlessgeo.com>
     Date:    (1 minutes ago) 2013-10-31 11:45:07 +0100
     Subject: Added building
 
     Commit:  fc9e9e6d97e979293a028857d275eef31e8a0ce5
-    Author:  volaya <volaya@opengeo.org>
+    Author:  volaya <volaya@boundlessgeo.com>
     Date:    (49 minutes ago) 2013-10-31 10:57:02 +0100
     Subject: Initial add
 
@@ -514,12 +514,12 @@ Right now, both repositories are identical. You can check that by moving into th
     $ cd geogig-ethiopia-clone
     $ geogig log
     Commit:  c1a072734c9de17dc98dfec74d8ce169b94b90c2
-    Author:  volaya <volaya@opengeo.org>
+    Author:  volaya <volaya@boundlessgeo.com>
     Date:    (1 minutes ago) 2013-10-31 11:45:07 +0100
     Subject: Added building
 
     Commit:  fc9e9e6d97e979293a028857d275eef31e8a0ce5
-    Author:  volaya <volaya@opengeo.org>
+    Author:  volaya <volaya@boundlessgeo.com>
     Date:    (49 minutes ago) 2013-10-31 10:57:02 +0100
     Subject: Initial add
 

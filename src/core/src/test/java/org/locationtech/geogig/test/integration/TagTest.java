@@ -28,7 +28,7 @@ public class TagTest extends RepositoryTestCase {
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("groldan").call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
-                .setValue("groldan@opengeo.org").call();
+                .setValue("groldan@boundlessgeo.com").call();
     }
 
     @Test

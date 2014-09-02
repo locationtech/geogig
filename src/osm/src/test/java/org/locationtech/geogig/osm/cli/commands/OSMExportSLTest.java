@@ -52,7 +52,7 @@ public class OSMExportSLTest extends Assert {
         cli.setPlatform(platform);
         cli.execute("init");
         cli.execute("config", "user.name", "Gabriel Roldan");
-        cli.execute("config", "user.email", "groldan@opengeo.org");
+        cli.execute("config", "user.email", "groldan@boundlessgeo.com");
         assertTrue(new File(workingDirectory, ".geogig").exists());
 
         // Use in-memory database to test whether we can load Spatialite extension

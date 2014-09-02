@@ -41,30 +41,30 @@ The ``--stats`` option prints an additional line with the number of objects that
 	$geogig log --stats
 	Commit:  6f250c0c74d9cb852405818f4a5e50aa971d543c
 	Merge: 7aa528dda1534a
-	Author:  volaya <volaya@opengeo.org>
+	Author:  volaya <volaya@boundlessgeo.com>
 	Date:    (1 day ago) 2013-03-14 10:05:06 +0100
 	Subject: Merge branch1
 
 	Commit:  7aa528d3d3437ca8015f1dcfb8a61e197aa09dbe
-	Author:  volaya <volaya@opengeo.org>
+	Author:  volaya <volaya@boundlessgeo.com>
 	Date:    (1 day ago) 2013-03-14 10:05:02 +0100
 	Subject: Changed unit in area field
 	Changes: 0 features added, 5 changed, 0 deleted.
 
 	Commit:  da1534a4aae8a1b29974c040c9fb44be426c58f8
-	Author:  volaya <volaya@opengeo.org>
+	Author:  volaya <volaya@boundlessgeo.com>
 	Date:    (1 day ago) 2013-03-14 10:04:49 +0100
 	Subject: Added missing feature
 	Changes: 1 features added, 0 changed, 0 deleted.
 
 	Commit:  159b517523e05083a18f5626439017663610deeb
-	Author:  volaya <volaya@opengeo.org>
+	Author:  volaya <volaya@boundlessgeo.com>
 	Date:    (1 day ago) 2013-03-14 10:04:36 +0100
 	Subject: Minor changes
 	Changes:1 features added, 4 changed, 0 deleted.
 
 	Commit:  6cda554ac1af6c0fad1841b5b36018bd107d926d
-	Author:  volaya <volaya@opengeo.org>
+	Author:  volaya <volaya@boundlessgeo.com>
 	Date:    (1 day ago) 2013-03-14 10:04:27 +0100
 	Subject: First import
 
@@ -208,14 +208,14 @@ The command takes a single parameter, which is the path to the feature to analyz
 ::
 
 	$ geogig blame parks/1
-	parktype: 2d13209 volaya volaya@opengeo.org 2013-12-29 03:57:08
-	area: ea7d536 volaya volaya@opengeo.org 2013-57-12 03:57:32
-	perimeter: 2d13209 volaya volaya@opengeo.org 2013-12-29 03:57:08
-	the_geom: 2d13209 volaya volaya@opengeo.org 2013-12-29 03:57:08
-	name: 2d13209 volaya volaya@opengeo.org 2013-12-29 05:22:16
-	owner: 2d13209 volaya volaya@opengeo.org 2013-12-29 03:57:08
-	usage: a1d6e2c volaya volaya@opengeo.org 2013-12-29 03:55:28
-	agency: 2d13209 volaya volaya@opengeo.org 2013-12-29 03:57:08
+	parktype: 2d13209 volaya volaya@boundlessgeo.com 2013-12-29 03:57:08
+	area: ea7d536 volaya volaya@boundlessgeo.com 2013-57-12 03:57:32
+	perimeter: 2d13209 volaya volaya@boundlessgeo.com 2013-12-29 03:57:08
+	the_geom: 2d13209 volaya volaya@boundlessgeo.com 2013-12-29 03:57:08
+	name: 2d13209 volaya volaya@boundlessgeo.com 2013-12-29 05:22:16
+	owner: 2d13209 volaya volaya@boundlessgeo.com 2013-12-29 03:57:08
+	usage: a1d6e2c volaya volaya@boundlessgeo.com 2013-12-29 03:55:28
+	agency: 2d13209 volaya volaya@boundlessgeo.com 2013-12-29 03:57:08
 
 You can see that, along with the commit ID, the information about the corresponding author and commit time is displayed.
 

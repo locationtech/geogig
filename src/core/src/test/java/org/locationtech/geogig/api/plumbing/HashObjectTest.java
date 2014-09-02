@@ -83,9 +83,9 @@ public class HashObjectTest extends RepositoryTestCase {
 
         CommitBuilder b = new CommitBuilder();
         b.setAuthor("groldan");
-        b.setAuthorEmail("groldan@opengeo.org");
+        b.setAuthorEmail("groldan@boundlessgeo.com");
         b.setCommitter("jdeolive");
-        b.setCommitterEmail("jdeolive@opengeo.org");
+        b.setCommitterEmail("jdeolive@boundlessgeo.com");
         b.setMessage("cool this works");
         b.setCommitterTimestamp(1000);
         b.setCommitterTimeZoneOffset(5);
@@ -221,8 +221,8 @@ public class HashObjectTest extends RepositoryTestCase {
     @Test
     public void testHashTags() throws Exception {
 
-        RevPerson tagger = new RevPersonImpl("volaya", "volaya@opengeo.org", -1000, -1);
-        RevPerson tagger2 = new RevPersonImpl("groldan", "groldan@opengeo.org", 10000, 0);
+        RevPerson tagger = new RevPersonImpl("volaya", "volaya@boundlessgeo.com", -1000, -1);
+        RevPerson tagger2 = new RevPersonImpl("groldan", "groldan@boundlessgeo.com", 10000, 0);
         RevTag tag = new RevTagImpl(null, "tag1", ObjectId.forString("fake commit id"), "message",
                 tagger);
         RevTag tag2 = new RevTagImpl(null, "tag2", ObjectId.forString("another fake commit id"),

@@ -164,7 +164,7 @@ public abstract class RepositoryTestCase extends Assert {
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("Gabriel Roldan").call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
-                .setValue("groldan@opengeo.org").call();
+                .setValue("groldan@boundlessgeo.com").call();
 
         pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
         modifiedPointsType = DataUtilities.createType(pointsNs, pointsName, modifiedPointsTypeSpec);

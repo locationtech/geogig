@@ -38,9 +38,9 @@ public class CommitBuilderTest extends TestCase {
     public void testBuildFull() throws Exception {
         CommitBuilder b = new CommitBuilder();
         b.setAuthor("groldan");
-        b.setAuthorEmail("groldan@opengeo.org");
+        b.setAuthorEmail("groldan@boundlessgeo.com");
         b.setCommitter("jdeolive");
-        b.setCommitterEmail("jdeolive@opengeo.org");
+        b.setCommitterEmail("jdeolive@boundlessgeo.com");
         b.setMessage("cool this works");
         b.setCommitterTimestamp(1000);
         b.setCommitterTimeZoneOffset(10);
@@ -62,9 +62,9 @@ public class CommitBuilderTest extends TestCase {
         assertEquals(treeId, build.getTreeId());
         assertEquals(parentIds, build.getParentIds());
         assertEquals("groldan", build.getAuthor().getName().get());
-        assertEquals("groldan@opengeo.org", build.getAuthor().getEmail().get());
+        assertEquals("groldan@boundlessgeo.com", build.getAuthor().getEmail().get());
         assertEquals("jdeolive", build.getCommitter().getName().get());
-        assertEquals("jdeolive@opengeo.org", build.getCommitter().getEmail().get());
+        assertEquals("jdeolive@boundlessgeo.com", build.getCommitter().getEmail().get());
         assertEquals("cool this works", build.getMessage());
         assertEquals(1000L, build.getCommitter().getTimestamp());
         assertEquals(10, build.getCommitter().getTimeZoneOffset());
@@ -76,9 +76,9 @@ public class CommitBuilderTest extends TestCase {
     public void testPassingNullToSetParentIds() throws Exception {
         CommitBuilder b = new CommitBuilder();
         b.setAuthor("groldan");
-        b.setAuthorEmail("groldan@opengeo.org");
+        b.setAuthorEmail("groldan@boundlessgeo.com");
         b.setCommitter("jdeolive");
-        b.setCommitterEmail("jdeolive@opengeo.org");
+        b.setCommitterEmail("jdeolive@boundlessgeo.com");
         b.setMessage("cool this works");
         b.setAuthorTimestamp(1000);
 
@@ -95,9 +95,9 @@ public class CommitBuilderTest extends TestCase {
     public void testNoMessage() throws Exception {
         CommitBuilder b = new CommitBuilder();
         b.setAuthor("groldan");
-        b.setAuthorEmail("groldan@opengeo.org");
+        b.setAuthorEmail("groldan@boundlessgeo.com");
         b.setCommitter("jdeolive");
-        b.setCommitterEmail("jdeolive@opengeo.org");
+        b.setCommitterEmail("jdeolive@boundlessgeo.com");
         b.setMessage(null);
         b.setAuthorTimestamp(1000);
 
@@ -120,9 +120,9 @@ public class CommitBuilderTest extends TestCase {
     public void testNoAuthorTimeStamp() throws Exception {
         CommitBuilder b = new CommitBuilder();
         b.setAuthor("groldan");
-        b.setAuthorEmail("groldan@opengeo.org");
+        b.setAuthorEmail("groldan@boundlessgeo.com");
         b.setCommitter("jdeolive");
-        b.setCommitterEmail("jdeolive@opengeo.org");
+        b.setCommitterEmail("jdeolive@boundlessgeo.com");
         b.setCommitterTimestamp(1000);
         b.setMessage("cool this works");
 
@@ -134,9 +134,9 @@ public class CommitBuilderTest extends TestCase {
 
         CommitBuilder b = new CommitBuilder();
         b.setAuthor("groldan");
-        b.setAuthorEmail("groldan@opengeo.org");
+        b.setAuthorEmail("groldan@boundlessgeo.com");
         b.setCommitter("jdeolive");
-        b.setCommitterEmail("jdeolive@opengeo.org");
+        b.setCommitterEmail("jdeolive@boundlessgeo.com");
         b.setMessage("cool this works");
         b.setAuthorTimestamp(1000);
 
@@ -155,8 +155,8 @@ public class CommitBuilderTest extends TestCase {
 
         assertEquals("groldan", builder.getAuthor());
         assertEquals("jdeolive", builder.getCommitter());
-        assertEquals("groldan@opengeo.org", builder.getAuthorEmail());
-        assertEquals("jdeolive@opengeo.org", builder.getCommitterEmail());
+        assertEquals("groldan@boundlessgeo.com", builder.getAuthorEmail());
+        assertEquals("jdeolive@boundlessgeo.com", builder.getCommitterEmail());
         assertEquals(commit1.getMessage(), builder.getMessage());
         assertEquals(commit1.getParentIds(), builder.getParentIds());
         assertEquals(commit1.getTreeId(), builder.getTreeId());

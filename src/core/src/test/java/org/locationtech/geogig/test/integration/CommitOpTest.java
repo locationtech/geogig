@@ -54,7 +54,7 @@ public class CommitOpTest extends RepositoryTestCase {
         // TODO: author/committer roles need to be defined better, but for
         // now they are the same thing.
         injector.configDatabase().put("user.name", "groldan");
-        injector.configDatabase().put("user.email", "groldan@opengeo.org");
+        injector.configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }
 
     @Test
@@ -79,7 +79,7 @@ public class CommitOpTest extends RepositoryTestCase {
         assertFalse(commit.parentN(0).isPresent());
         assertNotNull(commit.getId());
         assertEquals("groldan", commit.getAuthor().getName().get());
-        assertEquals("groldan@opengeo.org", commit.getAuthor().getEmail().get());
+        assertEquals("groldan@boundlessgeo.com", commit.getAuthor().getEmail().get());
 
         ObjectId treeId = commit.getTreeId();
 
@@ -499,7 +499,7 @@ public class CommitOpTest extends RepositoryTestCase {
     public void testCommitUsingCommit() throws Exception {
         insertAndAdd(points1);
         final RevCommit commit = geogig.command(CommitOp.class)
-                .setCommitter("anothercommitter", "anothercommitter@opengeo.org").call();
+                .setCommitter("anothercommitter", "anothercommitter@boundlessgeo.com").call();
         insertAndAdd(points2);
         RevCommit commit2 = geogig.command(CommitOp.class).setCommit(commit).call();
         assertEquals(commit.getMessage(), commit2.getMessage());
@@ -512,7 +512,7 @@ public class CommitOpTest extends RepositoryTestCase {
         String message = "A message";
         insertAndAdd(points1);
         final RevCommit commit = geogig.command(CommitOp.class)
-                .setCommitter("anothercommitter", "anothercommitter@opengeo.org").call();
+                .setCommitter("anothercommitter", "anothercommitter@boundlessgeo.com").call();
         insertAndAdd(points2);
         RevCommit commit2 = geogig.command(CommitOp.class).setCommit(commit).setMessage(message)
                 .call();

@@ -17,17 +17,20 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.geotools.data.DataStoreFactorySpi;
-import org.geotools.data.DataAccessFactory.Param;
 import org.geotools.util.KVP;
 import org.locationtech.geogig.api.ContextBuilder;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.repository.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
 public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeoGigDataStoreFactory.class);
 
     /** GEO_GIG */
     public static final String DISPLAY_NAME = "GeoGIG";
@@ -120,8 +123,12 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             // the create option is set
             return repository instanceof File && ((File) repository).isDirectory()
                     || Boolean.TRUE.equals(CREATE.lookUp(params));
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ignoreMe) {
+            //
+        }
+        if (params.containsKey(REPOSITORY.key)) {
+            LOGGER.warn("Unable to process parameter %s: '%s'", REPOSITORY.key,
+                    params.get(REPOSITORY.key));
         }
         return false;
     }

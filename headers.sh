@@ -3,16 +3,13 @@ function update_header() {
    FILE=$1
    AUTHOR=$2
    YEAR=$3
-   MODIFIED=$4
-   
+   MODIFIED=$4   
    if [ "${YEAR}" = "${MODIFIED}" ]
    then
       COPYRIGHT="Copyright (c) ${YEAR} Boundless and others."
    else
       COPYRIGHT="Copyright (c) ${YEAR}-${MODIFIED} Boundless and others."
    fi
-   
-      
    #echo "Looking for ${FILE}"
    if [ -f "${FILE}" ]
    then

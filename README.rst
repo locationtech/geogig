@@ -25,6 +25,7 @@ GeoGig is proudly open source:
 * Source code is distributed under an `Eclipse Distribution License <LICENSE.txt>`_ license (which is a BSD 3 Clause License) unless otherwise stated.
 * Varint: is from the Apache Mahout project and is distributed under the `Apache License Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_ .
 * DiffMatchPath: is from Neil Fraser and is distributed under the `Apache License Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_ .
+* XMLReader: is from osmosis and has been released into the public domain
 
 For details review `About This Content<about.html>`_ and the `Eclipse Foundation Software User Agreement<notice.html>`_.
 

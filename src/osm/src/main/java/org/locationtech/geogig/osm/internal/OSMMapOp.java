@@ -12,6 +12,7 @@ package org.locationtech.geogig.osm.internal;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.osm.internal.log.OSMMappingLogEntry;
 import org.locationtech.geogig.osm.internal.log.WriteOSMMappingEntries;
 import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -111,11 +111,12 @@ public class OSMMapOp extends AbstractGeoGigOp<RevTree> {
             FeatureMapFlusher insertsByParent = new FeatureMapFlusher(workingTree());
             while (iterator.hasNext()) {
                 Feature feature = iterator.next();
-                Optional<MappedFeature> newFeature = mapping.map(feature);
-                if (newFeature.isPresent()) {
-                    String path = newFeature.get().getPath();
-                    SimpleFeature sf = (SimpleFeature) newFeature.get().getFeature();
-                    insertsByParent.put(path, sf);
+                List<MappedFeature> mappedFeatures = mapping.map(feature);
+                if (!mappedFeatures.isEmpty()) {
+                    for (MappedFeature mapped : mappedFeatures) {
+                        String path = mapped.getPath();
+                        insertsByParent.put(path, mapped);
+                    }
                 }
             }
             insertsByParent.flushAll();

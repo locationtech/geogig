@@ -486,10 +486,11 @@ public class OSMImportOp extends AbstractGeoGigOp<Optional<OSMReport>> {
                 @Nullable
                 Feature feature = converter.toFeature(entity, geom);
                 if (mapping != null && feature != null) {
-                    Optional<MappedFeature> mapped = mapping.map(feature);
-                    if (mapped.isPresent()) {
-                        MappedFeature mappedFeature = mapped.get();
-                        target.put(mappedFeature);
+                    List<MappedFeature> mapped = mapping.map(feature);
+                    if (!mapped.isEmpty()) {
+                        for (MappedFeature m : mapped) {
+                            target.put(m);
+                        }
                     }
                 }
                 if (feature == null || noRaw) {

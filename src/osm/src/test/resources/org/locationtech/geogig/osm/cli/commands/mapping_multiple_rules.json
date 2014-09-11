@@ -1,0 +1,34 @@
+{
+  "rules":[
+    {
+      "name":"osm_roads",
+      "filter":
+      {
+         "highway":[
+           "tertiary","residential","service","secondary","track","footway","path","unclassified","primary",
+           "trunk","motorway","construction","proposed","cycleway","living_street","steps", "road", "pedestrian",
+           "construction","bridleway","platform","proposed" 
+         ]
+      },
+      "fields":
+      {
+        "geom":{"name":"geom", "type":"LINESTRING"},
+        "status": {"name":"status", "type":"STRING"},
+        "name":{"name":"name", "type":"STRING"}
+      }
+    },
+    {
+      "name":"osm_roads_main",
+      "filter":
+      {
+         "highway":["motorway","trunk","primary"]
+      },
+      "fields":
+      {
+        "geom":{"name":"geom", "type":"LINESTRING"},
+        "status": {"name":"status", "type":"STRING"},
+        "name":{"name":"name", "type":"STRING"}
+      }
+    }
+  ]
+}

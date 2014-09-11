@@ -9,19 +9,25 @@
  */
 package org.locationtech.geogig.osm.internal;
 
+import static com.google.common.collect.Sets.*;
+import static com.google.common.base.Preconditions.*;
+
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.Node;
+import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.osm.internal.log.ResolveOSMMappingLogFolder;
+import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
@@ -29,6 +35,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class OSMImportOpTest extends RepositoryTestCase {
     @Rule
@@ -169,6 +176,30 @@ public class OSMImportOpTest extends RepositoryTestCase {
         file = new File(osmMapFolder, geogig.getRepository().workingTree().getTree().getId()
                 .toString());
         assertFalse(file.exists());
+    }
+
+    @Test
+    public void testImportMultipleRules() {
+        final Mapping mapping;
+        final File data = new File(getClass().getResource("ways.xml").getFile());
+        {
+            final File mappingsFile = new File(getClass().getResource(
+                    "../cli/commands/mapping_multiple_rules.json").getFile());
+            checkState(data.exists());
+            checkState(mappingsFile.exists());
+            mapping = Mapping.fromFile(mappingsFile.getAbsolutePath());
+            checkState(2 == mapping.getRules().size(), "expected 2 rules, got %s", mapping
+                    .getRules().size());
+        }
+
+        geogig.command(OSMImportOp.class).setDataSource(data.getAbsolutePath()).setMapping(mapping)
+                .setNoRaw(true).call();
+        WorkingTree workingTree = geogig.getContext().workingTree();
+        List<NodeRef> featureTypeTrees = workingTree.getFeatureTypeTrees();
+        assertEquals(2, featureTypeTrees.size());
+        Set<String> expectedNames = newHashSet("osm_roads", "osm_roads_main");
+        assertTrue(expectedNames.contains(featureTypeTrees.get(0).name()));
+        assertTrue(expectedNames.contains(featureTypeTrees.get(1).name()));
     }
 
 }

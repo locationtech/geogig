@@ -97,7 +97,7 @@
   <way id="51502277" version="2" timestamp="2011-10-16T07:42:20Z" changeset="9569574" uid="55687" user="dschuwa">
     <nd ref="345117527"/>
     <nd ref="269237867"/>
-    <tag k="highway" v="residential"/>
+    <tag k="highway" v="motorway"/>
     <tag k="lit" v="yes"/>
     <tag k="name" v="Gielgenstraße"/>
   </way>

@@ -22,6 +22,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -51,16 +52,20 @@ public class Mapping {
      * @param feature the feature to transform
      * @return
      */
-    public Optional<MappedFeature> map(Feature feature) {
+    public List<MappedFeature> map(Feature feature) {
+        if (feature == null) {
+            return ImmutableList.of();
+        }
         String tagsString = (String) ((SimpleFeature) feature).getAttribute("tags");
         Collection<Tag> tags = OSMUtils.buildTagsCollectionFromString(tagsString);
+        ImmutableList.Builder<MappedFeature> builder = ImmutableList.<MappedFeature> builder();
         for (MappingRule rule : rules) {
             Optional<Feature> newFeature = rule.apply(feature, tags);
             if (newFeature.isPresent()) {
-                return Optional.of(new MappedFeature(rule.getName(), newFeature.get()));
+                builder.add(new MappedFeature(rule.getName(), newFeature.get()));
             }
         }
-        return Optional.absent();
+        return builder.build();
     }
 
     /**

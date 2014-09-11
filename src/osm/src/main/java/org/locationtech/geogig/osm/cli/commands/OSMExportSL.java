@@ -13,19 +13,17 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.cli.porcelain.AbstractSLCommand;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
-import org.locationtech.geogig.osm.internal.MappedFeature;
 import org.locationtech.geogig.osm.internal.Mapping;
 import org.locationtech.geogig.osm.internal.MappingRule;
 import org.opengis.feature.Feature;
@@ -41,7 +39,7 @@ import com.google.common.base.Preconditions;
 import com.vividsolutions.jts.awt.PointShapeFactory.Point;
 
 /**
- * Exports OSM into a PostGIS database, using a data mapping
+ * Exports OSM into a SpatiaLite database, using a data mapping
  * 
  * @see ExportOp
  */
@@ -65,25 +63,58 @@ public class OSMExportSL extends AbstractSLCommand implements CLICommand {
         final Mapping mapping = Mapping.fromFile(mappingFile);
         List<MappingRule> rules = mapping.getRules();
         checkParameter(!rules.isEmpty(), "No rules are defined in the specified mapping");
+
+        for (MappingRule rule : rules) {
+            exportRule(rule, cli);
+        }
+    }
+
+    private void exportRule(final MappingRule rule, final GeogigCLI cli) throws IOException {
         Function<Feature, Optional<Feature>> function = new Function<Feature, Optional<Feature>>() {
-
             @Override
-            @Nullable
-            public Optional<Feature> apply(@Nullable Feature feature) {
-                Optional<MappedFeature> mapped = mapping.map(feature);
-                if (mapped.isPresent()) {
-                    return Optional.of(mapped.get().getFeature());
-                }
-                return Optional.absent();
+            public Optional<Feature> apply(Feature feature) {
+                Optional<Feature> mapped = rule.apply(feature);
+                return mapped;
             }
-
         };
 
-        SimpleFeatureType outputFeatureType = mapping.getRules().get(0).getFeatureType();
+        SimpleFeatureType outputFeatureType = rule.getFeatureType();
         String path = getOriginTreesFromOutputFeatureType(outputFeatureType);
         DataStore dataStore = getDataStore();
+        try {
+            final String tableName = ensureTableExists(outputFeatureType, dataStore);
+            final SimpleFeatureSource source = dataStore.getFeatureSource(tableName);
 
-        String tableName = outputFeatureType.getName().getLocalPart();
+            if (!(source instanceof SimpleFeatureStore)) {
+                throw new CommandFailedException("Could not create feature store.");
+            }
+            final SimpleFeatureStore store = (SimpleFeatureStore) source;
+            if (overwrite) {
+                try {
+                    store.removeFeatures(Filter.INCLUDE);
+                } catch (IOException e) {
+                    throw new CommandFailedException("Error truncating table " + tableName, e);
+                }
+            }
+            ExportOp op = cli.getGeogig().command(ExportOp.class).setFeatureStore(store)
+                    .setPath(path).setFeatureTypeConversionFunction(function);
+            try {
+                op.setProgressListener(cli.getProgressListener()).call();
+                cli.getConsole().println("OSM data exported successfully to " + tableName);
+            } catch (IllegalArgumentException iae) {
+                throw new InvalidParameterException(iae.getMessage(), iae);
+            } catch (GeoToolsOpException e) {
+                throw new CommandFailedException("Could not export. Error:" + e.statusCode.name(),
+                        e);
+            }
+        } finally {
+            dataStore.dispose();
+        }
+    }
+
+    private String ensureTableExists(SimpleFeatureType outputFeatureType, DataStore dataStore)
+            throws IOException {
+        final String tableName = outputFeatureType.getName().getLocalPart();
         if (Arrays.asList(dataStore.getTypeNames()).contains(tableName)) {
             if (!overwrite) {
                 throw new CommandFailedException(
@@ -93,35 +124,10 @@ public class OSMExportSL extends AbstractSLCommand implements CLICommand {
             try {
                 dataStore.createSchema(outputFeatureType);
             } catch (IOException e) {
-                throw new CommandFailedException("Cannot create new table in database");
+                throw new CommandFailedException("Cannot create new table " + tableName);
             }
         }
-
-        final SimpleFeatureSource featureSource = dataStore.getFeatureSource(tableName);
-
-        if (!(featureSource instanceof SimpleFeatureStore)) {
-            throw new CommandFailedException("Could not create feature store.");
-        }
-
-        final SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
-        if (overwrite) {
-            try {
-                featureStore.removeFeatures(Filter.INCLUDE);
-            } catch (IOException e) {
-                throw new CommandFailedException("Error removing features from the database.", e);
-            }
-        }
-        ExportOp op = cli.getGeogig().command(ExportOp.class).setFeatureStore(featureStore)
-                .setPath(path).setFeatureTypeConversionFunction(function);
-        try {
-            op.setProgressListener(cli.getProgressListener()).call();
-            cli.getConsole().println("OSM data exported successfully to " + tableName);
-        } catch (IllegalArgumentException iae) {
-            throw new org.locationtech.geogig.cli.InvalidParameterException(iae.getMessage(), iae);
-        } catch (GeoToolsOpException e) {
-            throw new CommandFailedException("Could not export. Error:" + e.statusCode.name(), e);
-        }
-
+        return tableName;
     }
 
     private String getOriginTreesFromOutputFeatureType(SimpleFeatureType featureType) {

@@ -130,7 +130,8 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         final ProgressListener progressListener = getProgressListener();
 
         progressListener.started();
-        progressListener.setDescription("Exporting " + path + "... ");
+        progressListener.setDescription("Exporting from " + path + " to "
+                + targetStore.getName().getLocalPart() + "... ");
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> asFeatureCollection = new BaseFeatureCollection<SimpleFeatureType, SimpleFeature>() {
 

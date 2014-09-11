@@ -13,7 +13,6 @@ import org.geotools.data.DataUtilities;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
-import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -74,10 +73,6 @@ public final class TestFeatures {
     public static Feature lines2;
 
     public static Feature lines3;
-
-    static {
-        Logging.ALL.forceMonolineConsoleOutput(java.util.logging.Level.SEVERE);
-    }
 
     public static void setupFeatures() throws Exception {
         pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);

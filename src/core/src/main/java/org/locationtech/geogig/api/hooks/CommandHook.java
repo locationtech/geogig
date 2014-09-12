@@ -11,6 +11,7 @@ package org.locationtech.geogig.api.hooks;
 
 import java.util.ServiceLoader;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
@@ -32,7 +33,8 @@ public interface CommandHook {
     public <C extends AbstractGeoGigOp<?>> C pre(C command)
             throws CannotRunGeogigOperationException;
 
-    public <T> T post(AbstractGeoGigOp<T> command, Object retVal, boolean success) throws Exception;
+    public <T> T post(AbstractGeoGigOp<T> command, @Nullable Object retVal,
+            @Nullable RuntimeException exception) throws Exception;
 
     public boolean appliesTo(Class<? extends AbstractGeoGigOp<?>> clazz);
 }

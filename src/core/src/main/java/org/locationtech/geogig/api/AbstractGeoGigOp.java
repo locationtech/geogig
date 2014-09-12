@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -44,7 +46,8 @@ public abstract class AbstractGeoGigOp<T> {
     public static interface CommandListener {
         public void preCall(AbstractGeoGigOp<?> command);
 
-        public void postCall(AbstractGeoGigOp<?> command, Object result, boolean success);
+        public void postCall(AbstractGeoGigOp<?> command, @Nullable Object result,
+                @Nullable RuntimeException exception);
     }
 
     /**
@@ -128,10 +131,10 @@ public abstract class AbstractGeoGigOp<T> {
         notifyPre();
         try {
             T result = _call();
-            notifyPost(result, true);
+            notifyPost(result, null);
             return result;
         } catch (RuntimeException e) {
-            notifyPost(null, false);
+            notifyPost(null, e);
             throw e;
         }
     }
@@ -147,12 +150,12 @@ public abstract class AbstractGeoGigOp<T> {
         }
     }
 
-    private void notifyPost(T result, boolean success) {
+    private void notifyPost(@Nullable T result, @Nullable RuntimeException exception) {
         if (listeners == null) {
             return;
         }
         for (CommandListener l : listeners) {
-            l.postCall(this, result, success);
+            l.postCall(this, result, exception);
         }
     }
 

@@ -16,6 +16,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 
+import javax.annotation.Nullable;
+
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,12 +58,12 @@ public class CommandHookChain {
         }
     }
 
-    public Object runPostHooks(Object retVal, boolean success) {
+    public Object runPostHooks(@Nullable Object retVal, @Nullable RuntimeException exception) {
         AbstractGeoGigOp<?> command = target;
 
         for (CommandHook hook : hooks) {
             try {
-                retVal = hook.post(command, retVal, success);
+                retVal = hook.post(command, retVal, exception);
             } catch (Exception e) {
                 // this exception should not be thrown in a post-execution hook, but just in case,
                 // we swallow it and ignore it

@@ -41,12 +41,14 @@ class ShellScriptHook implements CommandHook {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T post(AbstractGeoGigOp<T> command, Object retVal, boolean success) throws Exception {
+    public <T> T post(AbstractGeoGigOp<T> command, @Nullable Object retVal,
+            @Nullable RuntimeException exception) throws Exception {
 
         if (postScript == null) {
             return (T) retVal;
         }
 
+        boolean success = exception == null;
         if (success) {
             Scripting.runShellScript(preScript);
         }

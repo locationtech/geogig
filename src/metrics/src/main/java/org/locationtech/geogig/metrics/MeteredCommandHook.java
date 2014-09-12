@@ -15,6 +15,8 @@ import static org.locationtech.geogig.metrics.MetricsModule.METRICS_LOGGER;
 
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
+
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.hooks.CannotRunGeogigOperationException;
@@ -67,7 +69,8 @@ public class MeteredCommandHook implements CommandHook {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T post(AbstractGeoGigOp<T> command, Object retVal, boolean success) throws Exception {
+    public <T> T post(AbstractGeoGigOp<T> command, @Nullable Object retVal,
+            @Nullable RuntimeException exception) throws Exception {
 
         CallStack stack = (CallStack) command.getClientData().get("metrics.callStack");
         if (stack == null || command.context().repository() == null) {
@@ -76,6 +79,7 @@ public class MeteredCommandHook implements CommandHook {
 
         final Platform platform = command.context().platform();
         long endTime = platform.nanoTime();
+        boolean success = exception == null;
         stack = CallStack.pop(endTime, success);
         long ellapsed = stack.getEllapsedNanos();
 

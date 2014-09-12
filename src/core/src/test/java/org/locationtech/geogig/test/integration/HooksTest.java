@@ -198,8 +198,9 @@ public class HooksTest extends RepositoryTestCase {
 
     /**
      * This command hook is discoverable through the {@link ServiceLoader} SPI as there's a
-     * {@code org.locationtech.geogig.api.hooks.CommandHook} file in {@code src/test/resources/META-INF/services}
-     * but the static ENABLED flag must be set by the test case for it to be run.
+     * {@code org.locationtech.geogig.api.hooks.CommandHook} file in
+     * {@code src/test/resources/META-INF/services} but the static ENABLED flag must be set by the
+     * test case for it to be run.
      */
     public static final class ClasspathHookTest implements CommandHook {
         private static boolean ENABLED = false;
@@ -253,7 +254,7 @@ public class HooksTest extends RepositoryTestCase {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> T post(AbstractGeoGigOp<T> command, Object retVal, boolean success)
+        public <T> T post(AbstractGeoGigOp<T> command, Object retVal, RuntimeException exception)
                 throws Exception {
             checkState(ENABLED);
             POST_OP = command;

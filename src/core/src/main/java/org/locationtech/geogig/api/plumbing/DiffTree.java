@@ -268,7 +268,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
     }
 
     private ObjectDatabase resolveSource(ObjectId treeId) {
-        return objectDatabase().equals(treeId) ? objectDatabase() : stagingDatabase();
+        return objectDatabase().exists(treeId) ? objectDatabase() : stagingDatabase();
     }
 
     private static class ChangeTypeFilteringDiffConsumer extends ForwardingConsumer {

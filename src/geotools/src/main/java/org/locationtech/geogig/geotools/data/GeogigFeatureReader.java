@@ -92,6 +92,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
     @Nullable
     private final ScreenMapFilter screenMapFilter;
 
+    private Context context;
+
     /**
      * @param context
      * @param schema
@@ -109,6 +111,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
             String oldHeadRef, ChangeType changeType, @Nullable Integer offset,
             @Nullable Integer maxFeatures, @Nullable final ScreenMap screenMap,
             final boolean ignoreAttributes) {
+        this.context = context;
         checkNotNull(context);
         checkNotNull(schema);
         checkNotNull(origFilter);
@@ -148,7 +151,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
             LOGGER.trace("Created GeogigFeatureReader without screenMapFilter");
         }
 
-        final ReferencedEnvelope queryBounds = getQueryBounds(filter, screenMap != null);
+        final ReferencedEnvelope queryBounds = getQueryBounds(filter);
         if (!queryBounds.isEmpty()) {
             LOGGER.trace("{}: query bounds: {}", getClass().getSimpleName(), queryBounds);
             diffOp.setBoundsFilter(queryBounds);
@@ -289,9 +292,9 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         return featureRefs;
     }
 
-    private static class FetchFunction implements Function<List<NodeRef>, Iterator<SimpleFeature>> {
+    private class FetchFunction implements Function<List<NodeRef>, Iterator<SimpleFeature>> {
 
-        private static class AsFeature implements Function<RevObject, SimpleFeature> {
+        private class AsFeature implements Function<RevObject, SimpleFeature> {
 
             private final FeatureBuilder featureBuilder;
 
@@ -319,6 +322,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
 
         private final FeatureBuilder featureBuilder;
 
+        // RevObjectParse parser = context.command(RevObjectParse.class);
         public FetchFunction(ObjectDatabase source, SimpleFeatureType schema) {
             this.featureBuilder = new FeatureBuilder(schema);
             this.source = source;
@@ -326,6 +330,17 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
 
         @Override
         public Iterator<SimpleFeature> apply(List<NodeRef> refs) {
+            // Envelope env = new Envelope();
+            // List<SimpleFeature> features = new ArrayList<>(refs.size());
+            // for(NodeRef ref : refs){
+            // env.setToNull();
+            // String id = ref.name();
+            // Node node = ref.getNode();
+            // SimpleFeature feature = (SimpleFeature) featureBuilder.buildLazy(id, node, parser);
+            // features.add(feature);
+            // }
+            // return features.iterator();
+
             // handle the case where more than one feature has the same hash
             ArrayListMultimap<ObjectId, String> fidIndex = ArrayListMultimap.create();
             for (NodeRef ref : refs) {
@@ -375,9 +390,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         }
     }
 
-    @Nullable
-    private ReferencedEnvelope getQueryBounds(Filter filterInNativeCrs,
-            final boolean isRenderingQuery) {
+    private ReferencedEnvelope getQueryBounds(Filter filterInNativeCrs) {
 
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
         if (crs == null) {
@@ -388,37 +401,14 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         List<ReferencedEnvelope> bounds = (List<ReferencedEnvelope>) filterInNativeCrs.accept(
                 new ExtractBounds(crs), null);
         if (bounds != null) {
-            expandToInclude(queryBounds, bounds, isRenderingQuery);
+            expandToInclude(queryBounds, bounds);
         }
         return queryBounds;
     }
 
-    private void expandToInclude(ReferencedEnvelope queryBounds, List<ReferencedEnvelope> bounds,
-            boolean isRenderingQuery) {
-
-        if (isRenderingQuery) {
-            /*
-             * HACK!: if it's a rendering query, the renderer may be sending multiple envelopes, one
-             * of which can be way larger than the CRS's valid area, to account for continuous map
-             * wrapping, but it kills our performance
-             */
-            ReferencedEnvelope smaller = null;
-            for (ReferencedEnvelope e : bounds) {
-                if (smaller == null) {
-                    smaller = e;
-                } else {
-                    ReferencedEnvelope biggest = smaller.getArea() > e.getArea() ? smaller : e;
-                    LOGGER.info("Ignoring biggest query envelope: {}", biggest);
-                    smaller = smaller.getArea() < e.getArea() ? smaller : e;
-                }
-            }
-            if (smaller != null) {
-                queryBounds.expandToInclude(smaller);
-            }
-        } else {
-            for (ReferencedEnvelope e : bounds) {
-                queryBounds.expandToInclude(e);
-            }
+    private void expandToInclude(ReferencedEnvelope queryBounds, List<ReferencedEnvelope> bounds) {
+        for (ReferencedEnvelope e : bounds) {
+            queryBounds.expandToInclude(e);
         }
     }
 

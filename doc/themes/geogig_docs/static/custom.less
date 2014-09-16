@@ -5,31 +5,12 @@
 @ltgray: #a5a5a5;
 @veryltblue: #ddecf3;
 
-@import url('bootstrap/bootstrap.less');
-
-.font-face (@family, @file-base, @weight: normal, @style: normal) {
-  @font-face {
-    font-family: @family;
-    src: url("@{file-base}.eot");
-    src: url("@{file-base}.eot?#iefix") format("embedded-opentype"),
-         url("@{file-base}.woff") format("woff"),
-         url("@{file-base}.ttf") format("truetype"),
-         url("@{file-base}.svg#@{family}") format("svg");
-    font-weight: @weight;
-    font-style: @style;
-  }
-}
-
-.font-face("Cantarell", "/fonts/cantarell-regular", normal);
-.font-face("Proxima Nova", "/fonts/proximanova-light", 300);
-.font-face("Proxima Nova", "/fonts/proximanova-semibold", bold);
 
 body {
-	font-family: 'Cantarell', sans-serif;
-	font-weight: 400;
+	font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+	font-weight: normal;
 	font-size: 18px;
-    background: url(../_static/ticks.png) repeat;
-
+  background: url(../_static/ticks.png) repeat;
 }
 
 p {
@@ -54,7 +35,7 @@ a {
 header {
 	background: @black;
 
-	.navbar .nav > li > a {	
+	.navbar .nav > li > a {
 		font-size: .8em;
 		color: @ltblue;
 		text-shadow: none;
@@ -63,7 +44,7 @@ header {
 		padding: 5px 15px;
 		line-height: normal;
 		text-transform: uppercase;
-	
+
 		&:hover, &:focus {
 			color: white;
 			background-color: @ltblue;
@@ -72,7 +53,7 @@ header {
 }
 
 h1, h2, h3, h4, h5 {
-	font-family: 'Proxima Nova', Helvetica, Arial, sans-serif;
+	font-family: 'Open Sans', Helvetica, Arial, sans-serif;
 	font-weight: bold;
 }
 
@@ -82,19 +63,28 @@ h1, h2, h3, h4, h5 {
 	h1 {
 		text-shadow:  2px 2px 0px #333;
 		color: @ltblue;
+		margin-bottom: 15px;
+		display: inline;
 	}
 
 }
 
 .navbar-brand {
-	background: url(../_static/logo.png) no-repeat 10% 100%;
-	padding-left: 125px;
+	background: url(../_static/logo.png) no-repeat 0% 0%;
 	margin-top: 5px;
 	margin-bottom: 5px;
+	padding: 15px 15px;
+	height: 100px !important;
 
 	&:hover {
-		background: url(../_static/logo_hover.png) no-repeat 10% 100%;
+		background: url(../_static/logo_hover.png) no-repeat 0% 0%;
 		h1 { color: @mdblue; }
+	}
+	h1 {
+		margin-bottom: 15px;
+		margin-left: 110px;
+		display: inline-block;
+		margin-top: 15px;
 	}
 }
 
@@ -102,7 +92,7 @@ h1, h2, h3, h4, h5 {
 	position: fixed;
 	width: 100%;
 	border-top: @black 45px solid;
-	z-index: 1;
+	z-index: 0;
 
 	@media (max-width: 767px) {
 		display: none;
@@ -136,17 +126,17 @@ h1, h2, h3, h4, h5 {
 
 .subheading {
 	background-color: @black;
-	
+
 	margin-top: -35px;
 
 	.byline {
-		font-family: 'Proxima Nova', Helvetica, Arial, sans-serif;
+		font-family: 'Open Sans', Helvetica, Arial, sans-serif;
 		font-weight: 300;
 		font-size: .8em;
 		color: #777;
 		text-transform: uppercase;
-		padding: 10px 10px 10px 87px;
-		margin: 0 10px 10px 25px;
+		padding: 0 10px 10px 87px;
+		margin: 5px 10px 10px 25px;
 		float: left;
 
 		@media (max-width: 480px) {
@@ -249,7 +239,7 @@ h1, h2, h3, h4, h5 {
 
 	&:after {
 		margin: -143px 0 20px;
-		
+
 	}
 }
 
@@ -267,7 +257,7 @@ h1, h2, h3, h4, h5 {
 		list-style-type: none;
 		font-size: 14px;
 
-		a { 
+		a {
 			padding: 0 0.5em 0 0.5em;
 			font-size: 14px;
 			color: @mdblue;
@@ -286,19 +276,19 @@ li.toctree-l1 {
 		font-size: 1.2em;
 		list-style-type: none;
 		line-height: 1.8em;
-		a { 
-			color: @mdblue; 
+		a {
+			color: @mdblue;
 			font-weight: bold;
-			font-family: proximanova-semibold, helvetica, arial, sans-serif;
+			font-family: "Open Sans", helvetica, arial, sans-serif;
 		}
 	}
 li.toctree-l2 {
 	font-size: 0.8em;
 	line-height: 1.8em;
 	list-style-type: none;
-	a { 
-		color: #666; 
-		font-family: cantarell-regular, arial, sans-serif;
+	a {
+		color: #666;
+		font-family: "Open Sans", arial, sans-serif;
 		font-weight: normal;
 	}
 }
@@ -307,17 +297,37 @@ li.toctree-l3 {
 	font-size: 0.8em;
 	line-height: 1.8em;
 	list-style-type: none;
-	a { 
-		color: #666; 
-		font-family: cantarell-regular, arial, sans-serif;
+	a {
+		color: #666;
+		font-family: "Open Sans", arial, sans-serif;
 		font-weight: normal;
 	}
+}
+
+li ul {
+	margin-top: .5em !important;
+}
+
+ul.simple li {
+	list-style-type: disc;
 }
 
 
 #geogig-user-manual  {
 	margin-left: 1.5em;
 	margin-bottom: 2em;
+}
+
+.section {
+	margin-top: 40px;
+	h1 {
+			font-size: 1.75em;
+			margin: 1em 0;
+		}
+	h2 {
+		font-size: 1.4em;
+		margin: .8em 0;
+	}
 }
 
 /*-----------------------
@@ -336,7 +346,7 @@ Sidebar
 		margin: 0.4em 0 0 1.5em;
 	}
 
-	li > a.reference{ 
+	li > a.reference{
 		font-size: 0.8em;
 		padding-bottom: 0.05em;
 
@@ -382,8 +392,8 @@ Sidebar
 }
 
 #quick-search-query {
-	color: #999999; 
-	font-size: 0.8em; 
+	color: #999999;
+	font-size: 0.8em;
 	width:100%;
 	border-radius: 3px;
 }
@@ -441,12 +451,16 @@ Sidebar
 	border-top: 1px solid #666;
 	text-align: right;
 	margin-bottom: 2em;
-	a { 
+	a {
 		color: @mdblue;
 	}
 	.leftwise {
 		float: left;
 	}
+}
+
+.figure {
+	margin-bottom: 20px;
 }
 
 

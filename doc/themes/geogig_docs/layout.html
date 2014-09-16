@@ -42,7 +42,7 @@
         </form>
 
 
-        <div class="btn-group-vertical" id="docs_toc"> 
+        <div class="btn-group-vertical" id="docs_toc">
           <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
           <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
           <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
@@ -116,8 +116,9 @@
   {%- endif %}
   <title>{{ title|striptags }}{{ titlesuffix }}</title>
   {%- block basecss %}
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="{{ pathto('_static/screen.css', 1) }}" type="text/css" media="screen, projection" />
-  <link rel="stylesheet" href="{{ pathto('_static/print.css', 1) }}" type="text/css" media="print" /> 
+  <link rel="stylesheet" href="{{ pathto('_static/print.css', 1) }}" type="text/css" media="print" />
   <!--[if IE]>
   <link rel="stylesheet" href="{{ pathto('_static/blueprint/ie.css', 1) }}" type="text/css" media="screen, projection" />
   <![endif]-->
@@ -129,9 +130,11 @@
   <link rel="alternate" type="{{ type|e(true) }}" title="{{ title|e(true) }}" href="{{ link|e(true) }}" />
   {%- endfor %}
   {%- else %}
-  <link rel="stylesheet" href="{{ pathto('_static/' + style, 1) }}" type="text/css" />
   <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
+   <link rel="stylesheet" href="{{ pathto('_static/bootstrap.min.css', 1) }}" type="text/css" />
   <link rel="stylesheet" href="{{ pathto('_static/offcanvas.css', 1) }}" type="text/css" />
+  <link rel="stylesheet" href="{{ pathto('_static/' + style, 1) }}" type="text/css" />
+
   {%- endif %}
   {%- if builder != 'htmlhelp' %}
   <script type="text/javascript">
@@ -217,7 +220,7 @@
       <div id="content">
       <div class="container">
         <div class="row row-offcanvas row-offcanvas-right">
-          <div class="col-md-8"> 
+          <div class="col-md-8">
             <div class="row pull-right">
              <div class="visible-sm visible-xs" id="menu-btn">
                 <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">

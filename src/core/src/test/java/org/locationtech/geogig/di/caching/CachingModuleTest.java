@@ -9,9 +9,8 @@
  */
 package org.locationtech.geogig.di.caching;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -20,6 +19,8 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.SchemaException;
@@ -114,9 +115,8 @@ public class CachingModuleTest {
             }
         };
 
-        Context injector = Guice
-                .createInjector(Modules.override(new CachingModule()).with(module)).getInstance(
-                        org.locationtech.geogig.api.Context.class);
+        Context injector = Guice.createInjector(Modules.override(new CachingModule()).with(module))
+                .getInstance(org.locationtech.geogig.api.Context.class);
 
         odb = injector.objectDatabase();
         index = injector.stagingDatabase();
@@ -171,21 +171,9 @@ public class CachingModuleTest {
     }
 
     @Test
-    public void testGetCacheHit() {
-        when(odbCache.getIfPresent(eq(o1.getId()))).thenReturn(o1);
+    public void testGetCacheHit() throws ExecutionException {
+        when(odbCache.get(eq(o1.getId()), any(Callable.class))).thenReturn(o1);
         assertSame(o1, odb.get(o1.getId()));
     }
 
-    @Test
-    public void testGetCacheMiss() {
-        when(odbCache.getIfPresent(eq(o3.getId()))).thenReturn(null);
-        RevObject actual = odb.get(o3.getId());
-        assertNotSame(o3, actual);
-        assertEquals(o3, actual);
-
-        when(indexCache.getIfPresent(eq(s3.getId()))).thenReturn(null);
-        actual = index.get(s3.getId());
-        assertNotSame(s3, actual);
-        assertEquals(s3, actual);
-    }
 }

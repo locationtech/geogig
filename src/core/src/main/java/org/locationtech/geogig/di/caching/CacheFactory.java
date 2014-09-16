@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.di.caching;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
@@ -62,21 +60,17 @@ abstract class CacheFactory {
             this.cache = NO_CACHE;
             return;
         }
-        final int maxSize = getConfig("maxSize", 100_000);
-        final int concurrencyLevel = getConfig("concurrencyLevel", 0);
-        if (concurrencyLevel == 0) {
-            this.cache = new SimpleCache<ObjectId, RevObject>(maxSize);
-            LOGGER.debug("Cache '{}' configured with maxSize: {}", configKeywordPrefix, maxSize);
-            return;
-        }
+        final int maxSize = getConfig("maxSize", 50_000);
+        final int concurrencyLevel = getConfig("concurrencyLevel", 4);
 
-        final int expireSeconds = getConfig("expireSeconds", 30);
+        final int expireSeconds = getConfig("expireSeconds", 300);
         final int initialCapacity = getConfig("initialCapacity", 10 * 1000);
         CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
         cacheBuilder = cacheBuilder.maximumSize(maxSize);
         cacheBuilder.expireAfterAccess(expireSeconds, TimeUnit.SECONDS);
         cacheBuilder.initialCapacity(initialCapacity);
         cacheBuilder.concurrencyLevel(concurrencyLevel);
+        cacheBuilder.softValues();
 
         try {
             this.cache = cacheBuilder.build();
@@ -130,7 +124,11 @@ abstract class CacheFactory {
         @Override
         public RevObject get(ObjectId key, Callable<? extends RevObject> valueLoader)
                 throws ExecutionException {
-            return null;
+            try {
+                return valueLoader.call();
+            } catch (Exception e) {
+                throw new ExecutionException(e);
+            }
         }
 
         @Override
@@ -183,91 +181,4 @@ abstract class CacheFactory {
             // do nothing
         }
     };
-
-    public static class SimpleCache<K, V> implements Cache<K, V> {
-
-        private static class LinkedCache<K, V> extends LinkedHashMap<K, V> {
-            private static final long serialVersionUID = 1L;
-
-            private final int maxEntries;
-
-            public LinkedCache(int maxEntries) {
-                this.maxEntries = maxEntries;
-            }
-
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-                return size() > maxEntries;
-            }
-        };
-
-        private Map<K, V> map;
-
-        public SimpleCache(int maxEntries) {
-            map = Collections.synchronizedMap(new LinkedCache<K, V>(maxEntries));
-        }
-
-        @Override
-        public V getIfPresent(Object key) {
-            return map.get(key);
-        }
-
-        @Override
-        public V get(K key, Callable<? extends V> valueLoader) throws ExecutionException {
-            throw new UnsupportedOperationException("not in use");
-        }
-
-        @Override
-        public ImmutableMap<K, V> getAllPresent(Iterable<?> keys) {
-            throw new UnsupportedOperationException("not in use");
-        }
-
-        @Override
-        public void put(K key, V value) {
-            map.put(key, value);
-        }
-
-        @Override
-        public void putAll(Map<? extends K, ? extends V> m) {
-            map.putAll(m);
-        }
-
-        @Override
-        public void invalidate(Object key) {
-            map.remove(key);
-        }
-
-        @Override
-        public void invalidateAll(Iterable<?> keys) {
-            for (Object k : keys) {
-                map.remove(k);
-            }
-        }
-
-        @Override
-        public void invalidateAll() {
-            map.clear();
-        }
-
-        @Override
-        public long size() {
-            return map.size();
-        }
-
-        @Override
-        public CacheStats stats() {
-            return new CacheStats(0, 0, 0, 0, 0, 0);
-        }
-
-        @Override
-        public ConcurrentMap<K, V> asMap() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void cleanUp() {
-            map.clear();
-        }
-
-    }
 }

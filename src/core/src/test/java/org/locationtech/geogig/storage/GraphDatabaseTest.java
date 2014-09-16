@@ -62,13 +62,13 @@ public abstract class GraphDatabaseTest {
 
     @Test
     public void testNodes() throws IOException {
-        ObjectId rootId = ObjectId.forString("root commit");
+        ObjectId rootId = ObjectId.forString("root");
         ImmutableList<ObjectId> parents = ImmutableList.of();
         database.put(rootId, parents);
-        ObjectId commit1 = ObjectId.forString("commit1");
+        ObjectId commit1 = ObjectId.forString("c1");
         parents = ImmutableList.of(rootId);
         database.put(commit1, parents);
-        ObjectId commit2 = ObjectId.forString("commit2");
+        ObjectId commit2 = ObjectId.forString("c2");
         parents = ImmutableList.of(commit1);
         database.put(commit2, parents);
 

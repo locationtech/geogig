@@ -99,6 +99,10 @@ public class PushOp extends AbstractGeoGigOp<Boolean> {
         return this;
     }
 
+    public Optional<Remote> getRemote() {
+        return remoteSupplier.get();
+    }
+
     /**
      * Executes the push operation.
      * 

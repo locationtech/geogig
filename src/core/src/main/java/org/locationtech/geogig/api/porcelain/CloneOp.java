@@ -60,6 +60,13 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
     }
 
     /**
+     * Get the repository URL to be cloned
+     */
+    public Optional<String> getRepositoryURL() {
+        return Optional.fromNullable(repositoryURL);
+    }
+
+    /**
      * @param username user name for the repository
      * @return {@code this}
      */

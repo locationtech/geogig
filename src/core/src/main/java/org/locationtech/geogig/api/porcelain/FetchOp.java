@@ -125,6 +125,10 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
         return this;
     }
 
+    public List<Remote> getRemotes() {
+        return ImmutableList.copyOf(remotes);
+    }
+
     /**
      * Executes the fetch operation.
      * 

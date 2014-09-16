@@ -63,6 +63,13 @@ public class LsRemote extends AbstractGeoGigOp<ImmutableSet<Ref>> {
     }
 
     /**
+     * Find the remote to be listed
+     */
+    public Optional<Remote> getRemote() {
+        return remote.get();
+    }
+
+    /**
      * @param getHeads tells whether to retrieve remote heads, defaults to {@code true}
      * @return {@code this}
      */

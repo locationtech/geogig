@@ -2,7 +2,7 @@
 .. _geogig-osm-import-history:
 
 geogig-osmimporthistory documentation
-##############################
+#####################################
 
 
 

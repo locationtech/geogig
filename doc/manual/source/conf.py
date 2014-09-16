@@ -140,6 +140,9 @@ html_title = project + " " + release + " " + manual
 # template names.
 #html_additional_pages = {}
 
+# Extra files to be copied
+html_extra_path = ['./tutorial_data.zip']
+
 # If false, no module index is generated.
 #html_domain_indices = True 
 

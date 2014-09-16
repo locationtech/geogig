@@ -170,10 +170,9 @@ You can abort the merge operation and restore it to the original state it had be
 
 
 
-..
+.. Commenting this out here for now but saving it
 
-  Commenting this out here for now but saving it
-
+::
 
   geogig conflicts
   $geogig conflicts

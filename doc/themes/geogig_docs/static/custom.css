@@ -144,25 +144,22 @@ h5 {
   line-height: 1.2em;
   text-transform: uppercase;
 }
-#main .download {
-  background: url(../_static/zipfile.png) no-repeat 10%;
+#main .download.docutils {
   border: #7eb5d3 4px solid;
-  width: 250px;
-  padding: 15px 10px 15px 80px;
-  margin: 10px 10px 40px 30px;
-  font-size: .75em;
+  padding: 15px 10px;
+  font-size: .8em;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
   text-align: left;
+  display: inline-block;
 }
 @media (max-width: 480px) {
-  #main .download {
+  #main .download.docutils {
     margin-left: 48px;
   }
 }
-#main .download:hover {
-  background: url(../_static/zip_hover.png) no-repeat 10%;
+#main .download.docutils:hover {
   background-color: #7eb5d3;
   color: white;
 }

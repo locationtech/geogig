@@ -77,9 +77,7 @@ GeoGig supports hooks for the following operations:
 * ``import``
 * ``export``  
 
-::
-
-  Commenting out the parameters until they can be fleshed out
+..  Commenting out the parameters until they can be fleshed out
 
   - ``commit``
     Parameters:

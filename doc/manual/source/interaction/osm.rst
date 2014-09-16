@@ -250,7 +250,7 @@ The following mapping will copy all ways to a feature type that only contains th
 
 	{"rules":[
 	  {
-      "name":"all_ways",
+           "name":"all_ways",
 	    "filter":{},
 	    "fields":{
 	      "geom":{"name":"geom","type":"LINESTRING"}
@@ -264,7 +264,7 @@ To get all the entities that have a given tag, independently of the tag value, u
 
  	{"rules":[
  	  {
-      "name":"power",
+           "name":"power",
  	    "filter":{
  	      "power":[]
  	    },
@@ -280,6 +280,7 @@ Any way/node that matches any of the supplied filters will pass through the rule
 You can make tags mandatory by adding them to the exclude section, with a ``null`` value. That will exclude all elements that do not have the tag, instead of the ones that have it or have a specific value for it.
 
 ::
+
 	{"rules":[
 	  {
 		"name":"namedhighways",
@@ -299,7 +300,7 @@ That mapping will match all highways, except those that do not have a name. Only
 
 ::
 
- 	{"rules":[
+  {"rules":[
     {
       "name":"buildings",
       "filter":{
@@ -340,7 +341,7 @@ Notice that, although only one of the above values can be used, it has to be put
 
 ::
 
- 	{"rules":[
+  {"rules":[
     {
       "name":"buildings",
       "filter":{
@@ -370,8 +371,9 @@ The following fields are available. Notice that the names are case-sensitive an 
 * ``version``
 
 Here's an example of using the ``defaultFields`` entry in the JSON definition. This mapping will add the fields containing the changeset and timestamp of each feature, copying the corresponding value in the original OSM feature, without any transformation.
+::
 
- 	{"rules":[
+  {"rules":[
     {
       "name":"buildings",
       "filter":{
@@ -481,7 +483,7 @@ Let's say that you have run the ``export-pg`` command to export your nodes to a 
 
 	{"rules":[
 	  {
-      "name":"firestations",
+           "name":"firestations",
 	    "filter":{
 	      "amenity":["fire_station"]
 	    },
@@ -517,6 +519,7 @@ All the work done by the unmap command takes place on the working tree. That is,
 In the case of ways, the ``nodes`` field will be recomputed based on the geometry. If the geometry has changed and new points have been added to the corresponding line of polygon, new nodes will be added accordingly.
 
 The unmapping operation also considers deleted features, by comparing with the state of your mapped tree just after the last mapping operation (that's the reason why a commit is created after mapping, to be able to locate that snapshot). All features that have been deleted from those that existed at that commit just after the mapping was performed, will be deleted from the canonical trees as well. A deleted way will not cause its corresponding nodes to be deleted, but only the canonical representation of the way itself.
+
 
 An OSM workflow using GeoGig
 -----------------------------
@@ -589,7 +592,7 @@ Create a file named ``mapping.json`` in your GeoGig repository folder, with the 
 	
 	{"rules":[
 	  {
-      "name":"power",
+           "name":"power",
 	    "filter":{
 	      "power":["tower", "pole"]
 	    },

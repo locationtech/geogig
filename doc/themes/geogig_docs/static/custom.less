@@ -167,24 +167,21 @@ h1, h2, h3, h4, h5 {
 		text-transform: uppercase;
 	}
 
-	.download {
-		background: url(../_static/zipfile.png) no-repeat 10%;
+	.download.docutils {
 		border: @ltblue 4px solid;
-		width: 250px;
-		padding: 15px 10px 15px 80px;
-		margin: 10px 10px 40px 30px;
-		font-size: .75em;
+		padding: 15px 10px;
+		font-size: .8em;
 		-webkit-border-radius: 5px;
 		-moz-border-radius: 5px;
 		border-radius: 5px;
 		text-align: left;
+		display: inline-block;
 
 		@media (max-width: 480px) {
 			margin-left: 48px;
 		}
 
 		&:hover {
-			background: url(../_static/zip_hover.png) no-repeat 10%;
 			background-color: @ltblue;
 			color: white;
 		}

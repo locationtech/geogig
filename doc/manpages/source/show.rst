@@ -24,7 +24,7 @@ The reference can be a SHA-1, a full refspec, or just a path. If a path is used,
 OPTIONS
 *******
 
---raw	Shows a raw machine-readable description instead. This matches the output of the ``cat`` command, except in the case of a feature, where it includes the names of the feature attributes, while the ``cat`` command includes the type of them and not the names. The ``show`` command always outputs a decorated version including attribute names taken from the corresponding feature type.
+--raw	 Shows a raw machine-readable description instead. This matches the output of the ``cat`` command, except in the case of a feature, where it includes the names of the feature attributes, while the ``cat`` command includes the type of them and not the names. The ``show`` command always outputs a decorated version including attribute names taken from the corresponding feature type.
 
 
 SEE ALSO

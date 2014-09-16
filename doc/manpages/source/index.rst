@@ -13,6 +13,7 @@ Contents:
     add.rst
     apply.rst
     branch.rst
+    cat.rst
     checkout.rst
     cherrypick.rst
     clean.rst
@@ -70,3 +71,4 @@ Contents:
     sqlserverlist.rst
     status.rst
     tag.rst
+

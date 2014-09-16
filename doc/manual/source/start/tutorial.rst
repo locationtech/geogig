@@ -47,7 +47,7 @@ Now your GeoGig repository is ready to manage and version your geospatial data. 
 Sample data
 -----------
 
-:download:`Download the tutorial sample data <http://geogig.org/tutorial_data.zip>`
+:download:`Download the tutorial sample data <../tutorial_data.zip>`
 
 This archive contains multiple directories, named ``snapshot1`` through ``snapshot5``. Each directory contains a single shapefile, that all contain slight variations. For the purposes of this tutorial, each shapefile will be considered a "snapshot" of the data in time. We will use these snapshots to simulate the creation and editing of the data in GeoGig.
 

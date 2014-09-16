@@ -12,11 +12,14 @@ package org.locationtech.geogig.api.plumbing.diff;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Maps.uniqueIndex;
 import static com.google.common.collect.Sets.newTreeSet;
 import static com.google.common.collect.Sets.union;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -29,6 +32,7 @@ import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.repository.SpatialOps;
@@ -252,6 +256,11 @@ public class DiffTreeVisitor {
         final SortedSet<Integer> bucketIndexes = Sets.newTreeSet(Sets.union(leftBuckets.keySet(),
                 nodesByBucket.keySet()));
 
+        // get all buckets at once, to leverage ObjectDatabase optimizations
+        final Map<ObjectId, RevObject> bucketTrees;
+        bucketTrees = uniqueIndex(leftSource.getAll(transform(leftBuckets.values(), BUCKET_ID)),
+                OBJECT_ID);
+
         for (Integer bucketIndex : bucketIndexes) {
             Bucket leftBucket = leftBuckets.get(bucketIndex);
             List<Node> rightNodes = nodesByBucket.get(bucketIndex);// never returns null, but empty
@@ -259,11 +268,13 @@ public class DiffTreeVisitor {
                 traverseLeafLeaf(consumer, Iterators.<Node> emptyIterator(), rightNodes.iterator());
             } else if (rightNodes.isEmpty()) {
                 if (consumer.bucket(bucketIndex, bucketDepth, leftBucket, null)) {
-                    traverseBucketBucket(consumer, leftBucket, null, bucketDepth);
+                    RevTree leftTree = (RevTree) bucketTrees.get(leftBucket.id());
+                    // traverseBucketBucket(consumer, leftTree, RevTree.EMPTY, bucketDepth);
+                    traverseTree(consumer, leftTree, RevTree.EMPTY, bucketDepth + 1);
                 }
                 consumer.endBucket(bucketIndex, bucketDepth, leftBucket, null);
             } else {
-                RevTree leftTree = leftSource.getTree(leftBucket.id());
+                RevTree leftTree = (RevTree) bucketTrees.get(leftBucket.id());
                 if (leftTree.buckets().isPresent()) {
                     traverseBucketLeaf(consumer, leftTree, rightNodes.iterator(), bucketDepth + 1);
                 } else {
@@ -272,6 +283,20 @@ public class DiffTreeVisitor {
             }
         }
     }
+
+    private static final Function<Bucket, ObjectId> BUCKET_ID = new Function<Bucket, ObjectId>() {
+        @Override
+        public ObjectId apply(Bucket b) {
+            return b.id();
+        }
+    };
+
+    private static final Function<RevObject, ObjectId> OBJECT_ID = new Function<RevObject, ObjectId>() {
+        @Override
+        public ObjectId apply(RevObject o) {
+            return o.getId();
+        }
+    };
 
     /**
      * Compares a bucket tree (i.e. its size is greater than {@link RevTree#NORMALIZED_SIZE_LIMIT}
@@ -296,6 +321,11 @@ public class DiffTreeVisitor {
         final SortedSet<Integer> bucketIndexes = Sets.newTreeSet(Sets.union(rightBuckets.keySet(),
                 nodesByBucket.keySet()));
 
+        // get all buckets at once, to leverage ObjectDatabase optimizations
+        final Map<ObjectId, RevObject> bucketTrees;
+        bucketTrees = uniqueIndex(rightSource.getAll(transform(rightBuckets.values(), BUCKET_ID)),
+                OBJECT_ID);
+
         for (Integer bucketIndex : bucketIndexes) {
             Bucket rightBucket = rightBuckets.get(bucketIndex);
             List<Node> leftNodes = nodesByBucket.get(bucketIndex);// never returns null, but empty
@@ -303,11 +333,13 @@ public class DiffTreeVisitor {
                 traverseLeafLeaf(consumer, leftNodes.iterator(), Iterators.<Node> emptyIterator());
             } else if (leftNodes.isEmpty()) {
                 if (consumer.bucket(bucketIndex, bucketDepth, null, rightBucket)) {
-                    traverseBucketBucket(consumer, null, rightBucket, bucketDepth);
+                    RevTree rightTree = (RevTree) bucketTrees.get(rightBucket.id());
+                    // traverseBucketBucket(consumer, RevTree.EMPTY, rightTree, bucketDepth);
+                    traverseTree(consumer, RevTree.EMPTY, rightTree, bucketDepth + 1);
                 }
                 consumer.endBucket(bucketIndex, bucketDepth, null, rightBucket);
             } else {
-                RevTree rightTree = rightSource.getTree(rightBucket.id());
+                RevTree rightTree = (RevTree) bucketTrees.get(rightBucket.id());
                 if (rightTree.buckets().isPresent()) {
                     traverseLeafBucket(consumer, leftNodes.iterator(), rightTree, bucketDepth + 1);
                 } else {
@@ -332,31 +364,6 @@ public class DiffTreeVisitor {
         };
         ListMultimap<Integer, Node> nodesByBucket = Multimaps.index(nodes, keyFunction);
         return nodesByBucket;
-    }
-
-    /**
-     * Traverse two buckets and notify their differences to the {@code consumer}.
-     * <p>
-     * If this method is called than its guaranteed that the two buckets are note equal (one of them
-     * may be null though), and that either {@link Consumer#bucket} or {@link Consumer#tree}
-     * returned {@code true}.
-     * <p>
-     * Called by {@link #handleBucketLeaf} or {@link #handleLeafBucket} when comparing a leaf tree
-     * with a bucket tree, for a given bucket in the bucket tree there are no nodes in the leaf tree
-     * that would fall on that bucket, hence one of the bucket arguments will always be null.
-     * 
-     * @precondition {@code left == null || right == null}
-     * @see #traverseBucketBucket(Consumer, RevTree, RevTree, int)
-     */
-    private void traverseBucketBucket(Consumer consumer, @Nullable final Bucket left,
-            @Nullable final Bucket right, final int bucketDepth) {
-
-        checkArgument(left == null || right == null);
-
-        RevTree leftTree = left == null ? RevTree.EMPTY : leftSource.getTree(left.id());
-        RevTree rightTree = right == null ? RevTree.EMPTY : rightSource.getTree(right.id());
-
-        traverseTree(consumer, leftTree, rightTree, bucketDepth + 1);
     }
 
     /**

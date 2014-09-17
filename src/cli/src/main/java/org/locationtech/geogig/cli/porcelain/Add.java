@@ -89,6 +89,7 @@ public class Add extends AbstractCommand implements CLICommand {
         List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
 
         console.print("Counting unstaged elements...");
+        console.flush();
         DiffObjectCount unstaged = geogig.getRepository().workingTree().countUnstaged(pathFilter);
         if (0 == unstaged.count() && conflicts.isEmpty()) {
             console.println();

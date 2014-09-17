@@ -1,5 +1,5 @@
 body {
-  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  font-family: 'Cantarell', Helvetica, Arial, sans-serif;
   font-weight: normal;
   font-size: 18px;
   background: url(../_static/ticks.png) repeat;
@@ -247,7 +247,7 @@ li.toctree-l2 {
 }
 li.toctree-l2 a {
   color: #666;
-  font-family: "Open Sans", arial, sans-serif;
+  font-family: "Cantarell", arial, sans-serif;
   font-weight: normal;
 }
 li.toctree-l3 {
@@ -257,7 +257,7 @@ li.toctree-l3 {
 }
 li.toctree-l3 a {
   color: #666;
-  font-family: "Open Sans", arial, sans-serif;
+  font-family: "Cantarell", arial, sans-serif;
   font-weight: normal;
 }
 li ul {

@@ -145,7 +145,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         return this;
     }
 
-    public DiffTree setCustomFilter(Predicate<Bounded> customFilter) {
+    public DiffTree setCustomFilter(@Nullable Predicate<Bounded> customFilter) {
         this.customFilter = customFilter;
         return this;
     }
@@ -192,7 +192,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
 
         final List<RuntimeException> producerErrors = new LinkedList<>();
 
-        Thread producerThread = new Thread() {
+        Thread producerThread = new Thread("DiffTree producer thread") {
             @Override
             public void run() {
                 Consumer consumer = diffProducer;
@@ -214,6 +214,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
                 } catch (RuntimeException e) {
                     LOGGER.error("Error traversing diffs", e);
                     producerErrors.add(e);
+                } finally {
                     diffProducer.finished = true;
                 }
             }

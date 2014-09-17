@@ -60,7 +60,6 @@ public class DeepMove extends AbstractGeoGigOp<ObjectId> {
 
     private ObjectDatabase odb;
 
-    
     /**
      * @param toIndex if {@code true} moves the object from the repository's object database to the
      *        index database instead
@@ -109,7 +108,7 @@ public class DeepMove extends AbstractGeoGigOp<ObjectId> {
      *         used and hence no such information it available
      */
     @Override
-    protected  ObjectId _call() {
+    protected ObjectId _call() {
         ObjectDatabase from = toIndex ? objectDatabase() : stagingDatabase();
         ObjectDatabase to = toIndex ? stagingDatabase() : objectDatabase();
 
@@ -257,7 +256,9 @@ public class DeepMove extends AbstractGeoGigOp<ObjectId> {
 
     private void moveTree(final ObjectId treeId, final ObjectDatabase from,
             final ObjectDatabase to, final Set<ObjectId> metadataIds) {
-
+        if (to.exists(treeId)) {
+            return;
+        }
         Supplier<Iterator<NodeRef>> refs = command(LsTreeOp.class).setReference(treeId.toString())
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES);
 
@@ -370,7 +371,7 @@ public class DeepMove extends AbstractGeoGigOp<ObjectId> {
     protected ObjectDatabase objectDatabase() {
         return this.odb == null ? super.objectDatabase() : this.odb;
     }
-    
+
     public DeepMove setFrom(ObjectDatabase odb) {
         this.odb = odb;
         return this;

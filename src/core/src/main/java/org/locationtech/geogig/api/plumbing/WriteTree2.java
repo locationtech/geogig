@@ -19,6 +19,8 @@ import java.util.SortedSet;
 import javax.annotation.Nullable;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.api.Bounded;
+import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
@@ -303,9 +305,31 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         final ObjectId rightTreeId = rightTreeRef == null ? RevTree.EMPTY_TREE_ID : rightTreeRef
                 .objectId();
 
-        Supplier<Iterator<DiffEntry>> diffs = command(DiffTree.class).setRecursive(false)
-                .setReportTrees(false).setOldTree(leftTreeId).setNewTree(rightTreeId)
-                .setPathFilter(strippedPathFilters);
+        final Predicate<Bounded> existsFilter = new Predicate<Bounded>() {
+
+            private final ObjectDatabase targetDb = repositoryDatabase;
+
+            @Override
+            public boolean apply(Bounded input) {
+                ObjectId id = null;
+                if (input instanceof Node && TYPE.TREE.equals(((Node) input).getType())) {
+                    id = ((Node) input).getObjectId();
+                } else if (input instanceof Bucket) {
+                    Bucket b = (Bucket) input;
+                    id = b.id();
+                }
+                if (id != null) {
+                    if (targetDb.exists(id)) {
+                        LOGGER.trace("Ignoring {}. Already exists in target database.", input);
+                        return false;
+                    }
+                }
+                return true;
+            }
+        };
+        DiffTree diffs = command(DiffTree.class).setRecursive(false).setReportTrees(false)
+                .setOldTree(leftTreeId).setNewTree(rightTreeId).setPathFilter(strippedPathFilters)
+                .setCustomFilter(existsFilter);
 
         // move new blobs from the index to the repository (note: this could be parallelized)
         Supplier<Iterator<Node>> nodesToMove = asNodeSupplierOfNewContents(diffs,
@@ -318,6 +342,9 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
         final RevTreeBuilder builder = currentLeftTree.builder(repositoryDatabase);
 
+        // remove the exists filter, we need to create the new trees taking into account all the
+        // nodes
+        diffs.setCustomFilter(null);
         Iterator<DiffEntry> iterator = diffs.get();
         if (!strippedPathFilters.isEmpty()) {
             final Set<String> expected = Sets.newHashSet(strippedPathFilters);

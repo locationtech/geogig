@@ -14,7 +14,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.api.RevTree.NORMALIZED_SIZE_LIMIT;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
@@ -337,11 +340,11 @@ public class RevTreeBuilder {
             Preconditions.checkState(deletes.isEmpty());
 
             changedBucketIndexes = ImmutableSet.copyOf(changesByBucket.keySet());
-
+            final Map<Integer, RevTree> bucketTrees = getBucketTrees(changedBucketIndexes);
             List<RevTree> newLeafTreesToSave = Lists.newArrayList();
 
             for (Integer bucketIndex : changedBucketIndexes) {
-                final RevTree currentBucketTree = getBucketTree(bucketIndex);
+                final RevTree currentBucketTree = bucketTrees.get(bucketIndex);
                 final int bucketDepth = this.depth + 1;
                 final RevTreeBuilder bucketTreeBuilder = new RevTreeBuilder(this.db,
                         currentBucketTree, bucketDepth, this.pendingWritesCache);
@@ -409,6 +412,35 @@ public class RevTreeBuilder {
         unnamedTree = RevTreeImpl.createNodeTree(ObjectId.NULL, accSize, accChildTreeCount,
                 this.bucketTreesByBucket);
         return unnamedTree;
+    }
+
+    private Map<Integer, RevTree> getBucketTrees(ImmutableSet<Integer> changedBucketIndexes) {
+        Map<Integer, RevTree> bucketTrees = new HashMap<>();
+        List<Integer> missing = new ArrayList<>(changedBucketIndexes.size());
+        for (Integer bucketIndex : changedBucketIndexes) {
+            Bucket bucket = bucketTreesByBucket.get(bucketIndex);
+            RevTree cached = bucket == null ? RevTree.EMPTY : pendingWritesCache.get(bucket.id());
+            if (cached == null) {
+                missing.add(bucketIndex);
+            } else {
+                bucketTrees.put(bucketIndex, cached);
+            }
+        }
+        if (!missing.isEmpty()) {
+            Map<ObjectId, Integer> ids = Maps.uniqueIndex(missing,
+                    new Function<Integer, ObjectId>() {
+                        @Override
+                        public ObjectId apply(Integer index) {
+                            return bucketTreesByBucket.get(index).id();
+                        }
+                    });
+            Iterator<RevObject> all = db.getAll(ids.keySet());
+            while (all.hasNext()) {
+                RevObject next = all.next();
+                bucketTrees.put(ids.get(next.getId()), (RevTree) next);
+            }
+        }
+        return bucketTrees;
     }
 
     /**

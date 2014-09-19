@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.geotools.data;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.notNull;
 import static com.google.common.collect.Iterators.filter;
@@ -41,7 +42,8 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.DiffTree;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
+import org.locationtech.geogig.api.plumbing.FindTreeChild;
+import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -127,11 +129,18 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         final String effectiveOldHead = oldHeadRef == null ? RevTree.EMPTY_TREE_ID.toString()
                 : oldHeadRef;
         final String typeTreeRefSpec = effectiveHead + ":" + typeTreePath;
-        final Optional<RevTree> parentTree = context.command(RevObjectParse.class)
-                .setRefSpec(typeTreeRefSpec).call(RevTree.class);
 
-        Preconditions.checkArgument(parentTree.isPresent(), "Feature type tree not found: %s",
-                typeTreeRefSpec);
+        final Optional<ObjectId> rootTreeId = context.command(ResolveTreeish.class)
+                .setTreeish(effectiveHead).call();
+
+        checkArgument(rootTreeId.isPresent(), "HEAD ref does not resolve to a tree: %s",
+                effectiveHead);
+
+        final RevTree rootTree = context.stagingDatabase().getTree(rootTreeId.get());
+
+        final Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class)
+                .setParent(rootTree).setChildPath(typeTreePath).call();
+        checkArgument(typeTreeRef.isPresent(), "Feature type tree not found: %s", typeTreeRefSpec);
 
         final Filter filter = reprojectFilter(origFilter);
 
@@ -151,9 +160,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
             LOGGER.trace("Created GeogigFeatureReader without screenMapFilter");
         }
 
-        final ReferencedEnvelope queryBounds = getQueryBounds(filter);
+        ReferencedEnvelope queryBounds = getQueryBounds(filter, typeTreeRef.get());
         if (!queryBounds.isEmpty()) {
-            LOGGER.trace("{}: query bounds: {}", getClass().getSimpleName(), queryBounds);
             diffOp.setBoundsFilter(queryBounds);
         }
         diffOp.setChangeTypeFilter(changeType(changeType));
@@ -250,6 +258,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
     @Override
     public void close() throws IOException {
         if (screenMapFilter != null) {
+            System.err.println(screenMapFilter.stats());
             LOGGER.debug("GeoGigFeatureReader.close(): ScreenMap filtering: {}",
                     screenMapFilter.stats());
         }
@@ -390,7 +399,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         }
     }
 
-    private ReferencedEnvelope getQueryBounds(Filter filterInNativeCrs) {
+    private ReferencedEnvelope getQueryBounds(Filter filterInNativeCrs, NodeRef typeTreeRef) {
 
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
         if (crs == null) {
@@ -400,8 +409,21 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         @SuppressWarnings("unchecked")
         List<ReferencedEnvelope> bounds = (List<ReferencedEnvelope>) filterInNativeCrs.accept(
                 new ExtractBounds(crs), null);
-        if (bounds != null) {
+        if (bounds != null && !bounds.isEmpty()) {
             expandToInclude(queryBounds, bounds);
+
+            ReferencedEnvelope fullBounds;
+            fullBounds = new ReferencedEnvelope(crs);
+            typeTreeRef.expand(fullBounds);
+
+            Envelope clipped = fullBounds.intersection(queryBounds);
+            LOGGER.trace("query bounds: {}", queryBounds);
+            queryBounds = new ReferencedEnvelope(crs);
+            queryBounds.expandToInclude(clipped);
+            LOGGER.trace("clipped query bounds: {}", queryBounds);
+            if (queryBounds.equals(fullBounds)) {
+                queryBounds.setToNull();
+            }
         }
         return queryBounds;
     }

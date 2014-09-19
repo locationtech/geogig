@@ -396,6 +396,15 @@ public class PreOrderDiffWalk {
         ImmutableSortedMap<Integer, Bucket> rb = right.buckets().get();
         TreeSet<Integer> availableIndexes = newTreeSet(union(lb.keySet(), rb.keySet()));
 
+        // get all buckets at once, to leverage ObjectDatabase optimizations
+        final Map<ObjectId, RevObject> leftBucketTrees;
+        leftBucketTrees = uniqueIndex(leftSource.getAll(transform(lb.values(), BUCKET_ID)),
+                OBJECT_ID);
+
+        final Map<ObjectId, RevObject> rightBucketTrees;
+        rightBucketTrees = uniqueIndex(rightSource.getAll(transform(rb.values(), BUCKET_ID)),
+                OBJECT_ID);
+
         @Nullable
         Bucket lbucket;
         @Nullable
@@ -407,8 +416,10 @@ public class PreOrderDiffWalk {
                 continue;
             }
             if (consumer.bucket(index.intValue(), bucketDepth, lbucket, rbucket)) {
-                RevTree ltree = lbucket == null ? RevTree.EMPTY : leftSource.getTree(lbucket.id());
-                RevTree rtree = rbucket == null ? RevTree.EMPTY : rightSource.getTree(rbucket.id());
+                RevTree ltree = lbucket == null ? RevTree.EMPTY : (RevTree) leftBucketTrees
+                        .get(lbucket.id());
+                RevTree rtree = rbucket == null ? RevTree.EMPTY : (RevTree) rightBucketTrees
+                        .get(rbucket.id());
                 traverseTree(consumer, ltree, rtree, bucketDepth + 1);
             }
             consumer.endBucket(index.intValue(), bucketDepth, lbucket, rbucket);

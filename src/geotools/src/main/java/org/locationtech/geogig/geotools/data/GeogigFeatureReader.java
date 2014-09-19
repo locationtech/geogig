@@ -258,7 +258,6 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
     @Override
     public void close() throws IOException {
         if (screenMapFilter != null) {
-            System.err.println(screenMapFilter.stats());
             LOGGER.debug("GeoGigFeatureReader.close(): ScreenMap filtering: {}",
                     screenMapFilter.stats());
         }

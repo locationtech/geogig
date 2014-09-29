@@ -90,6 +90,10 @@ public class RemoteAddOp extends AbstractGeoGigOp<Remote> {
         return this;
     }
 
+    public String getName() {
+        return name;
+    }
+
     /**
      * @param url the URL of the remote
      * @return {@code this}
@@ -97,6 +101,10 @@ public class RemoteAddOp extends AbstractGeoGigOp<Remote> {
     public RemoteAddOp setURL(String url) {
         this.url = url;
         return this;
+    }
+
+    public String getURL() {
+        return url;
     }
 
     /**
@@ -108,6 +116,10 @@ public class RemoteAddOp extends AbstractGeoGigOp<Remote> {
         return this;
     }
 
+    public String getBranch() {
+        return branch;
+    }
+
     /**
      * @param username user name for the repository
      * @return {@code this}
@@ -115,6 +127,10 @@ public class RemoteAddOp extends AbstractGeoGigOp<Remote> {
     public RemoteAddOp setUserName(String username) {
         this.username = username;
         return this;
+    }
+
+    public String getUserName() {
+        return username;
     }
 
     /**
@@ -126,6 +142,10 @@ public class RemoteAddOp extends AbstractGeoGigOp<Remote> {
         return this;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
     /**
      * @param mapped whether or not this is a mapped remote
      * @return {@code this}
@@ -135,4 +155,7 @@ public class RemoteAddOp extends AbstractGeoGigOp<Remote> {
         return this;
     }
 
+    public boolean isMapped() {
+        return mapped;
+    }
 }

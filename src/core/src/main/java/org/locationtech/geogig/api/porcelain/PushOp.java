@@ -79,6 +79,10 @@ public class PushOp extends AbstractGeoGigOp<Boolean> {
         return this;
     }
 
+    public List<String> getRefSpecs() {
+        return refSpecs;
+    }
+
     /**
      * @param remoteName the name or URL of a remote repository to push to
      * @return {@code this}
@@ -86,6 +90,18 @@ public class PushOp extends AbstractGeoGigOp<Boolean> {
     public PushOp setRemote(final String remoteName) {
         checkNotNull(remoteName);
         return setRemote(command(RemoteResolve.class).setName(remoteName));
+    }
+
+    public String getRemoteName() {
+        if (remoteSupplier == null) {
+            return null;
+        }
+        String name = null;
+        Optional<Remote> remote = this.remoteSupplier.get();
+        if (remote.isPresent()) {
+            name = remote.get().getName();
+        }
+        return name;
     }
 
     /**

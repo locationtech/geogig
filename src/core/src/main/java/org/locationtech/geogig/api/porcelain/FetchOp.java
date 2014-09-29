@@ -34,6 +34,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.DeduplicationService;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -68,6 +69,10 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
         return this;
     }
 
+    public boolean isAll() {
+        return all;
+    }
+
     /**
      * @param prune if {@code true}, remote tracking branches that no longer exist will be removed
      *        locally.
@@ -76,6 +81,10 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
     public FetchOp setPrune(final boolean prune) {
         this.prune = prune;
         return this;
+    }
+
+    public boolean isPrune() {
+        return prune;
     }
 
     /**
@@ -92,6 +101,10 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
         return this;
     }
 
+    public Integer getDepth() {
+        return this.depth.orNull();
+    }
+
     /**
      * If full depth is set on a shallow clone, then the full history will be fetched.
      * 
@@ -103,6 +116,10 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
         return this;
     }
 
+    public boolean isFullDepth() {
+        return fullDepth;
+    }
+
     /**
      * @param remoteName the name or URL of a remote repository to fetch from
      * @return {@code this}
@@ -110,6 +127,16 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
     public FetchOp addRemote(final String remoteName) {
         Preconditions.checkNotNull(remoteName);
         return addRemote(command(RemoteResolve.class).setName(remoteName));
+    }
+
+    public List<String> getRemoteNames() {
+        return Lists.transform(this.remotes, new Function<Remote, String>() {
+
+            @Override
+            public String apply(Remote remote) {
+                return remote.getName();
+            }
+        });
     }
 
     /**
@@ -136,7 +163,7 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
      * @see org.locationtech.geogig.api.AbstractGeoGigOp#call()
      */
     @Override
-    protected  FetchResult _call() {
+    protected FetchResult _call() {
         if (all) {
             // Add all remotes to list.
             ImmutableList<Remote> localRemotes = command(RemoteListOp.class).call();

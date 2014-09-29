@@ -93,6 +93,10 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
         return this;
     }
 
+    public Optional<String> getBranch() {
+        return branch;
+    }
+
     /**
      * @param depth the depth of the clone, if depth is < 1, then a full clone s performed
      * @return {@code this}
@@ -104,6 +108,10 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
         return this;
     }
 
+    public Optional<Integer> getDepth() {
+        return depth;
+    }
+
     /**
      * Executes the clone operation.
      * 
@@ -111,7 +119,7 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
      * @see org.locationtech.geogig.api.AbstractGeoGigOp#call()
      */
     @Override
-    protected  Void _call() {
+    protected Void _call() {
         Preconditions.checkArgument(repositoryURL != null && !repositoryURL.isEmpty(),
                 "No repository specified to clone from.");
         Repository repository = repository();

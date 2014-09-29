@@ -59,6 +59,10 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         return this;
     }
 
+    public boolean isAll() {
+        return all;
+    }
+
     /**
      * @param rebase if {@code true}, perform a rebase on the remote branch instead of a merge
      * @return {@code this}
@@ -66,6 +70,10 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
     public PullOp setRebase(final boolean rebase) {
         this.rebase = rebase;
         return this;
+    }
+
+    public boolean isRebase() {
+        return rebase;
     }
 
     /**
@@ -82,6 +90,10 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         return this;
     }
 
+    public Integer getDepth() {
+        return depth.orNull();
+    }
+
     /**
      * If full depth is set on a shallow clone, then the full history will be pulled.
      * 
@@ -93,6 +105,10 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         return this;
     }
 
+    public boolean isFullDepth() {
+        return fullDepth;
+    }
+
     /**
      * @param refSpec the refspec of a remote branch
      * @return {@code this}
@@ -102,6 +118,10 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         return this;
     }
 
+    public List<String> getRefSpecs() {
+        return refSpecs;
+    }
+
     /**
      * @param remoteName the name or URL of a remote repository to fetch from
      * @return {@code this}
@@ -109,6 +129,18 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
     public PullOp setRemote(final String remoteName) {
         Preconditions.checkNotNull(remoteName);
         return setRemote(command(RemoteResolve.class).setName(remoteName));
+    }
+
+    public String getRemoteName() {
+        if (remote == null) {
+            return null;
+        }
+        String name = null;
+        Optional<Remote> remote = this.remote.get();
+        if (remote.isPresent()) {
+            name = remote.get().getName();
+        }
+        return name;
     }
 
     /**
@@ -132,6 +164,14 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         this.authorName = Optional.fromNullable(authorName);
         this.authorEmail = Optional.fromNullable(authorEmail);
         return this;
+    }
+
+    public String getAuthor() {
+        return authorName.orNull();
+    }
+
+    public String getAuthorEmail() {
+        return authorEmail.orNull();
     }
 
     /**

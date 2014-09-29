@@ -88,4 +88,8 @@ public class RemoteRemoveOp extends AbstractGeoGigOp<Remote> {
         return this;
     }
 
+    public String getName() {
+        return name;
+    }
+
 }

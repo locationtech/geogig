@@ -128,8 +128,8 @@ public abstract class AbstractGeoGigOp<T> {
      * @see java.util.concurrent.Callable#call()
      */
     public final T call() {
-        notifyPre();
         try {
+            notifyPre();
             T result = _call();
             notifyPost(result, null);
             return result;

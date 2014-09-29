@@ -41,7 +41,7 @@ public class RemoteException extends RuntimeException {
      * @param statusCode the status code for this exception
      */
     public RemoteException(Exception e, StatusCode statusCode) {
-        super(e);
+        super(String.valueOf(statusCode), e);
         this.statusCode = statusCode;
     }
 }

@@ -177,7 +177,8 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
             addRemote("origin");
         }
 
-        getProgressListener().started();
+        final ProgressListener progressListener = getProgressListener();
+        progressListener.started();
 
         Optional<Integer> repoDepth = repository().getDepth();
         if (repoDepth.isPresent()) {
@@ -201,8 +202,6 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
         FetchResult result = new FetchResult();
 
         for (Remote remote : remotes) {
-            ProgressListener subProgress = this.subProgress(100.f / remotes.size());
-            subProgress.started();
             final ImmutableSet<Ref> remoteRemoteRefs = command(LsRemote.class)
                     .setRemote(Suppliers.ofInstance(Optional.of(remote)))
                     .retrieveTags(!remote.getMapped() && (!repoDepth.isPresent() || fullDepth))
@@ -254,7 +253,6 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
                 for (ChangedRef ref : needUpdate) {
                     if (ref.getType() != ChangeTypes.REMOVED_REF) {
                         refCount++;
-                        subProgress.setProgress((refCount * 100.f) / needUpdate.size());
 
                         Optional<Integer> newFetchLimit = depth;
                         // If we haven't specified a depth, but this is a shallow repository, set
@@ -266,8 +264,7 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
                         }
                         // Fetch updated data from this ref
                         Ref newRef = ref.getNewRef();
-                        Optional<Ref> oldRef = Optional.fromNullable(ref.getOldRef());
-                        remoteRepoInstance.fetchNewData(oldRef, newRef, newFetchLimit, subProgress);
+                        remoteRepoInstance.fetchNewData(newRef, newFetchLimit, progressListener);
 
                         if (repoDepth.isPresent() && !fullDepth) {
                             // Update the repository depth if it is deeper than before.
@@ -312,7 +309,6 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
                     Throwables.propagate(e);
                 }
             }
-            subProgress.complete();
         }
 
         if (fullDepth) {
@@ -321,7 +317,7 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
                     .setScope(ConfigScope.LOCAL).setName(Repository.DEPTH_CONFIG_KEY).call();
         }
 
-        getProgressListener().complete();
+        progressListener.complete();
 
         return result;
     }

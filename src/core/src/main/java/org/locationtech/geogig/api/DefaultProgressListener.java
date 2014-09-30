@@ -33,12 +33,12 @@ public class DefaultProgressListener implements ProgressListener {
     /**
      * {@code true} if the action is canceled.
      */
-    protected boolean canceled = false;
+    protected volatile boolean canceled = false;
 
     /**
      * {@code true} if the action has already been completed.
      */
-    protected boolean completed = false;
+    protected volatile boolean completed = false;
 
     /**
      * The maximum expected value of the progress.

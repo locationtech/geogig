@@ -13,8 +13,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
@@ -34,13 +38,14 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.ForEachRef;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.diff.PostOrderDiffWalk;
 import org.locationtech.geogig.api.plumbing.diff.PostOrderDiffWalk.Consumer;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Optional;
@@ -156,21 +161,18 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
      * @param fetchLimit the maximum depth to fetch
      */
     @Override
-    public void fetchNewData(Optional<Ref> oldRef, Ref ref, Optional<Integer> fetchLimit,
-            ProgressListener progress) {
+    public void fetchNewData(Ref ref, Optional<Integer> fetchLimit, ProgressListener progress) {
 
         CommitTraverser traverser = getFetchTraverser(fetchLimit);
 
         try {
             progress.setDescription("Fetching objects from " + ref.getName());
+            progress.setProgress(0);
             traverser.traverse(ref.getObjectId());
-            while (!traverser.commits.isEmpty()) {
-                Optional<ObjectId> oldHeadId = Optional.absent();
-                if (oldRef.isPresent()) {
-                    oldHeadId = Optional.of(oldRef.get().getObjectId());
-                }
-                ObjectId newHeadId = traverser.commits.pop();
-                walkHead(oldHeadId, newHeadId, true, progress);
+            List<ObjectId> toSend = new LinkedList<ObjectId>(traverser.commits);
+            Collections.reverse(toSend);// send oldest commits first
+            for (ObjectId newHeadId : toSend) {
+                walkHead(newHeadId, true, progress);
             }
 
         } catch (Exception e) {
@@ -196,14 +198,11 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         CommitTraverser traverser = getPushTraverser(remoteRef);
 
         traverser.traverse(ref.getObjectId());
+        progress.setDescription("Uploading objects to " + refspec);
+        progress.setProgress(0);
         while (!traverser.commits.isEmpty()) {
-            Optional<ObjectId> oldHeadId = Optional.absent();
-            if (remoteRef.isPresent()) {
-                oldHeadId = Optional.of(remoteRef.get().getObjectId());
-            }
-            ObjectId newHeadId = traverser.commits.pop();
-            progress.setDescription("Uploading objects to " + refspec);
-            walkHead(oldHeadId, newHeadId, false, progress);
+            ObjectId commitId = traverser.commits.pop();
+            walkHead(commitId, false, progress);
         }
 
         String nameToSet = remoteRef.isPresent() ? remoteRef.get().getName() : Ref.HEADS_PREFIX
@@ -234,8 +233,9 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         remoteGeoGig.command(UpdateRef.class).setName(refspec).setDelete(true).call();
     }
 
-    protected void walkHead(final Optional<ObjectId> oldHeadId, final ObjectId newHeadId,
-            final boolean fetch, final ProgressListener progress) {
+    protected void walkHead(final ObjectId newHeadId, final boolean fetch,
+            final ProgressListener progress) {
+
         Repository from = localRepository;
         Repository to = remoteGeoGig.getRepository();
         if (fetch) {
@@ -250,31 +250,33 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
 
         RevCommit commit = null;
         RevTag tag = null;
-        RevTree tree = null;
 
         if (object.getType().equals(TYPE.COMMIT)) {
             commit = (RevCommit) object;
-            tree = fromDb.getTree(commit.getTreeId());
         } else if (object.getType().equals(TYPE.TAG)) {
             tag = (RevTag) object;
             commit = fromDb.getCommit(tag.getCommitId());
-            tree = fromDb.getTree(commit.getTreeId());
-        }
-        if (tree != null) {
-            RevTree oldTree = RevTree.EMPTY;
-            if (oldHeadId.isPresent()) {
-                ObjectId objectId = oldHeadId.get();
-                Optional<ObjectId> treeId = to.command(ResolveTreeish.class).setTreeish(objectId)
-                        .call();
-                if (treeId.isPresent()) {
-                    oldTree = toDb.getTree(treeId.get());
-                }
-            }
-            progress.setProgress(0);
-            copyNewObjects(oldTree, tree, fromDb, toDb, progress);
-            Preconditions.checkState(toDb.exists(tree.getId()));
         }
         if (commit != null) {
+            final RevTree newTree = fromDb.getTree(commit.getTreeId());
+            List<ObjectId> parentIds = new ArrayList<>(commit.getParentIds());
+            if (parentIds.isEmpty()) {
+                parentIds.add(ObjectId.NULL);
+            }
+            RevTree oldTree = RevTree.EMPTY;
+            // the diff against each parent is not working. For some reason some buckets that are
+            // equal between the two ends of the comparison never get transferred (at some point
+            // they shouldn't be equal and so the Consumer notified of it/them). Yet with the target
+            // databse exists check for each tree the performance is good enough.
+            // for (ObjectId parentId : parentIds) {
+            // if (!parentId.isNull()) {
+            // RevCommit parent = fromDb.getCommit(parentId);
+            // oldTree = fromDb.getTree(parent.getTreeId());
+            // }
+            copyNewObjects(oldTree, newTree, fromDb, toDb, progress);
+            // }
+            Preconditions.checkState(toDb.exists(newTree.getId()));
+
             toDb.put(commit);
         }
         if (tag != null) {
@@ -290,7 +292,16 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         checkNotNull(toDb);
         checkNotNull(progress);
 
-        PostOrderDiffWalk diffWalk = new PostOrderDiffWalk(oldTree, newTree, toDb, fromDb);
+        // the diff walk uses fromDb as both left and right data source since we're comparing what
+        // we have in the "origin" database against trees on the same repository
+        PostOrderDiffWalk diffWalk = new PostOrderDiffWalk(oldTree, newTree, fromDb, fromDb);
+
+        // holds object ids that need to be copied to the target db. Pruned when it reaches a
+        // threshold.
+        final Set<ObjectId> ids = new HashSet<ObjectId>();
+
+        // This filter further refines the post order diff walk by making it ignore trees/buckets
+        // that are already present in the target db
         Predicate<Bounded> filter = new Predicate<Bounded>() {
 
             @Override
@@ -298,18 +309,30 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
                 if (b == null) {
                     return false;
                 }
+                if (progress.isCanceled()) {
+                    return false;// abort traversal
+                }
                 ObjectId id;
                 if (b instanceof Node) {
-                    id = ((Node) b).getObjectId();
+                    Node node = (Node) b;
+                    if (RevObject.TYPE.TREE.equals(node.getType())) {
+                        // check of existence of trees only. For features the diff filtering is good
+                        // enough and checking for existence on each feature would be killer
+                        // performance wise
+                        id = node.getObjectId();
+                    } else {
+                        return true;
+                    }
                 } else {
                     id = ((Bucket) b).id();
                 }
-                boolean exists = toDb.exists(id);
+                boolean exists = ids.contains(id) || toDb.exists(id);
                 return !exists;
             }
         };
 
-        final Set<ObjectId> ids = new TreeSet<ObjectId>();
+        // receives notifications of feature/bucket/tree diffs. Only interested in the "new"/right
+        // side of the comparisons
         Consumer consumer = new Consumer() {
             final int bulkSize = 10_000;
 
@@ -365,11 +388,10 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         if (ids.isEmpty()) {
             return;
         }
-        // System.err.printf("Copying %,d objects...", ids.size());
-        // Stopwatch sw = Stopwatch.createStarted();
-        to.putAll(from.getAll(ids));
-        // System.err.printf(" %,d objects copied in %s.\n", ids.size(), sw.stop());
-        progress.setProgress(progress.getProgress() + ids.size());
+        CountingListener countingListener = BulkOpListener.newCountingListener();
+        to.putAll(from.getAll(ids), countingListener);
+        int inserted = countingListener.inserted();
+        progress.setProgress(progress.getProgress() + inserted);
     }
 
     /**

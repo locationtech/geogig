@@ -195,12 +195,12 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
      * @param fetchLimit the maximum depth to fetch
      */
     @Override
-    public void fetchNewData(Optional<Ref> oldRef, Ref ref, Optional<Integer> fetchLimit,
-            ProgressListener progress) {
+    public void fetchNewData(Ref ref, Optional<Integer> fetchLimit, ProgressListener progress) {
 
         CommitTraverser traverser = getFetchTraverser(fetchLimit);
 
         try {
+            progress.setDescription("Fetching objects from " + ref.getName());
             traverser.traverse(ref.getObjectId());
             List<ObjectId> want = new LinkedList<ObjectId>();
             want.addAll(traverser.commits);
@@ -208,7 +208,8 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
             Set<ObjectId> have = new HashSet<ObjectId>();
             have.addAll(traverser.have);
             while (!want.isEmpty()) {
-                fetchMoreData(want, have);
+                progress.setProgress(0);
+                fetchMoreData(want, have, progress);
             }
         } catch (Exception e) {
             Throwables.propagate(e);
@@ -228,6 +229,9 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
         checkPush(ref, remoteRef);
         beginPush();
 
+        progress.setDescription("Uploading objects to " + refspec);
+        progress.setProgress(0);
+
         CommitTraverser traverser = getPushTraverser(remoteRef);
 
         traverser.traverse(ref.getObjectId());
@@ -238,7 +242,7 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
 
         Deduplicator deduplicator = deduplicationService.createDeduplicator();
         try {
-            sendPackedObjects(toSend, have, deduplicator);
+            sendPackedObjects(toSend, have, deduplicator, progress);
         } finally {
             deduplicator.release();
         }
@@ -255,7 +259,7 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
     }
 
     private void sendPackedObjects(final List<ObjectId> toSend, final Set<ObjectId> roots,
-            Deduplicator deduplicator) {
+            Deduplicator deduplicator, final ProgressListener progress) {
         Set<ObjectId> sent = new HashSet<ObjectId>();
         while (!toSend.isEmpty()) {
             try {
@@ -263,6 +267,7 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
                     @Override
                     public void callback(Supplier<RevObject> supplier) {
                         RevObject object = supplier.get();
+                        progress.setProgress(progress.getProgress() + 1);
                         if (object instanceof RevCommit) {
                             RevCommit commit = (RevCommit) object;
                             toSend.remove(commit.getId());
@@ -398,8 +403,10 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
      * 
      * @param want a list of ObjectIds that need to be fetched
      * @param have a list of ObjectIds that are in common with the remote repository
+     * @param progress
      */
-    private void fetchMoreData(final List<ObjectId> want, final Set<ObjectId> have) {
+    private void fetchMoreData(final List<ObjectId> want, final Set<ObjectId> have,
+            final ProgressListener progress) {
         final JsonObject message = createFetchMessage(want, have);
         final URL resourceURL;
         try {
@@ -408,7 +415,6 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
             throw Throwables.propagate(e);
         }
 
-        System.err.println("Fetching from " + resourceURL.toExternalForm());
         final HttpURLConnection connection;
         try {
             final Gson gson = new Gson();
@@ -427,15 +433,14 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
             throw Throwables.propagate(e);
         }
 
-        System.err.println("Request sent. Waiting for response...");
         final HttpUtils.ReportingInputStream in = HttpUtils.getResponseStream(connection);
-        System.err.println("Processing response...");
 
         BinaryPackedObjects unpacker = new BinaryPackedObjects(localRepository.objectDatabase());
         BinaryPackedObjects.Callback callback = new BinaryPackedObjects.Callback() {
             @Override
             public void callback(Supplier<RevObject> supplier) {
                 RevObject object = supplier.get();
+                progress.setProgress(progress.getProgress() + 1);
                 if (object instanceof RevCommit) {
                     RevCommit commit = (RevCommit) object;
                     want.remove(commit.getId());
@@ -454,10 +459,12 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
         IngestResults ingestResults = unpacker.ingest(in, callback);
         sw.stop();
 
-        System.err
-                .printf("Processed %,d objects.\nInserted: %,d.\nExisting: %,d.\nTime to process: %s.\nCompressed size: %,d bytes.\nUncompressed size: %,d bytes.\n",
+        String msg = String
+                .format("Processed %,d objects. Inserted: %,d. Existing: %,d. Time: %s. Compressed size: %,d bytes. Uncompressed size: %,d bytes.",
                         ingestResults.total(), ingestResults.getInserted(),
                         ingestResults.getExisting(), sw, in.compressedSize(), in.unCompressedSize());
+        LOGGER.info(msg);
+        progress.setDescription(msg);
     }
 
     private JsonObject createFetchMessage(List<ObjectId> want, Set<ObjectId> have) {

@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.GlobalContextBuilder;
+import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.Remote;
 import org.locationtech.geogig.api.SymRef;
@@ -128,8 +129,8 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
                     .checkArgument(branch.isPresent(), "No branch specified for sparse clone.");
         }
 
-        getProgressListener().started();
-        getProgressListener().setProgress(0.f);
+        ProgressListener progressListener = getProgressListener();
+        progressListener.started();
 
         // Set up origin
         Remote remote = command(RemoteAddOp.class).setName("origin").setURL(repositoryURL)
@@ -166,7 +167,7 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
         }
 
         // Fetch remote data
-        command(FetchOp.class).setDepth(depth.or(0)).setProgressListener(subProgress(90.f)).call();
+        command(FetchOp.class).setDepth(depth.or(0)).setProgressListener(progressListener).call();
 
         // Set up remote tracking branches
         final ImmutableSet<Ref> remoteRefs = command(LsRemote.class).retrieveTags(false)
@@ -198,7 +199,6 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
                     .setName("branches." + branchName + ".merge")
                     .setValue(Ref.HEADS_PREFIX + remoteRef.localName()).call();
         }
-        getProgressListener().setProgress(95.f);
 
         if (!emptyRepo) {
             // checkout branch
@@ -219,7 +219,7 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
             }
         }
 
-        getProgressListener().complete();
+        progressListener.complete();
 
         return null;
     }

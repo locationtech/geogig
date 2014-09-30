@@ -59,15 +59,14 @@ public interface IRemoteRepo {
      * @param fetchLimit the maximum depth to fetch
      * @param subProgress
      */
-    public void fetchNewData(Optional<Ref> oldRef, Ref newRef, Optional<Integer> fetchLimit,
-            ProgressListener progress);
+    public void fetchNewData(Ref newRef, Optional<Integer> fetchLimit, ProgressListener progress);
 
     /**
      * Push all new objects from the specified {@link Ref} to the remote.
      * 
      * @param ref the local ref that points to new commit data
      */
-    public void pushNewData(Ref ref) throws SynchronizationException;
+    public void pushNewData(Ref ref, ProgressListener progress) throws SynchronizationException;
 
     /**
      * Push all new objects from the specified {@link Ref} to the given refspec.

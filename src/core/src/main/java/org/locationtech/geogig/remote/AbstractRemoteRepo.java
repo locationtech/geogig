@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.remote;
 
-import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
@@ -235,8 +234,8 @@ abstract class AbstractRemoteRepo implements IRemoteRepo {
      * @param ref the local ref that points to new commit data
      */
     @Override
-    public void pushNewData(Ref ref) throws SynchronizationException {
-        pushNewData(ref, ref.getName(), DefaultProgressListener.NULL);
+    public void pushNewData(Ref ref, ProgressListener progress) throws SynchronizationException {
+        pushNewData(ref, ref.getName(), progress);
     }
 
     /**

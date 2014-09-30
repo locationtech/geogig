@@ -18,7 +18,7 @@ Feature: "push" command
      When I modify and add a feature
       And I run the command "commit -m Commit6"
       And I run the command "push"
-     Then it should answer ""
+     Then the response should start with "Uploading objects to refs/heads/master"
      
   Scenario: Try to push a symbolic reference
     Given I am in an empty directory

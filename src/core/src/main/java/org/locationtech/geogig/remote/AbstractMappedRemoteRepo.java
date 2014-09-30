@@ -177,8 +177,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param fetchLimit the maximum depth to fetch, note, a sparse clone cannot be a shallow clone
      */
     @Override
-    public final void fetchNewData(Optional<Ref> oldRef, Ref ref, Optional<Integer> fetchLimit,
-            ProgressListener progress) {
+    public final void fetchNewData(Ref ref, Optional<Integer> fetchLimit, ProgressListener progress) {
         Preconditions.checkState(!fetchLimit.isPresent(), "A sparse clone cannot be shallow.");
         FetchCommitGatherer gatherer = new FetchCommitGatherer(getRemoteWrapper(), localRepository);
 
@@ -320,8 +319,8 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param ref the local ref that points to new commit data
      */
     @Override
-    public void pushNewData(Ref ref) throws SynchronizationException {
-        pushNewData(ref, ref.getName(), DefaultProgressListener.NULL);
+    public void pushNewData(Ref ref, ProgressListener progress) throws SynchronizationException {
+        pushNewData(ref, ref.getName(), progress);
     }
 
     /**

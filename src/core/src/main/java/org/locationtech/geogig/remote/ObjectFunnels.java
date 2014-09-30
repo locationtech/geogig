@@ -14,11 +14,15 @@ import java.io.OutputStream;
 
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Supplier;
 import com.google.common.io.CountingOutputStream;
 
 public class ObjectFunnels {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ObjectFunnels.class);
 
     public static ObjectFunnel newFunnel(OutputStream out, ObjectSerializingFactory serializer) {
         return new DirectFunnel(out, serializer);
@@ -86,8 +90,9 @@ public class ObjectFunnels {
             if (currentTarget == null) {
                 currentTarget = new CountingOutputStream(outputFactory.get());
             } else if (currentTarget.getCount() >= byteSoftLimit) {
-                System.err.printf("Closing stream and opening a new one, reached %,d bytes.\n",
-                        currentTarget.getCount());
+                LOGGER.info(String.format(
+                        "Closing stream and opening a new one, reached %,d bytes.\n",
+                        currentTarget.getCount()));
                 currentTarget.close();
                 currentTarget = new CountingOutputStream(outputFactory.get());
             }

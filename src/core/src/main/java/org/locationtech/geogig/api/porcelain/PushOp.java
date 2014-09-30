@@ -235,7 +235,7 @@ public class PushOp extends AbstractGeoGigOp<Boolean> {
             if (null == remoteRefSpec) {
                 localRemoteRefName = Ref.append(Ref.REMOTES_PREFIX, remote.getName() + "/"
                         + localRef.localName());
-                remoteRepo.pushNewData(localRef);
+                remoteRepo.pushNewData(localRef, getProgressListener());
             } else {
                 localRemoteRefName = Ref.append(Ref.REMOTES_PREFIX, remote.getName() + "/"
                         + remoteRefSpec);

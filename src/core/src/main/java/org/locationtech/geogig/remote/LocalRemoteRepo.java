@@ -171,35 +171,32 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
     @Override
     public void pushNewData(Ref ref, String refspec) throws SynchronizationException {
         Optional<Ref> remoteRef = remoteGeoGig.command(RefParse.class).setName(refspec).call();
-        remoteRef = remoteRef.or(remoteGeoGig.command(RefParse.class).setName(Ref.TAGS_PREFIX + refspec).call());
+        remoteRef = remoteRef.or(remoteGeoGig.command(RefParse.class)
+                .setName(Ref.TAGS_PREFIX + refspec).call());
         checkPush(ref, remoteRef);
 
         CommitTraverser traverser = getPushTraverser(remoteRef);
 
-        try {
-            traverser.traverse(ref.getObjectId());
-            while (!traverser.commits.isEmpty()) {
-                walkHead(traverser.commits.pop(), false);
+        traverser.traverse(ref.getObjectId());
+        while (!traverser.commits.isEmpty()) {
+            walkHead(traverser.commits.pop(), false);
+        }
+
+        String nameToSet = remoteRef.isPresent() ? remoteRef.get().getName() : Ref.HEADS_PREFIX
+                + refspec;
+
+        Ref updatedRef = remoteGeoGig.command(UpdateRef.class).setName(nameToSet)
+                .setNewValue(ref.getObjectId()).call().get();
+
+        Ref remoteHead = headRef();
+        if (remoteHead instanceof SymRef) {
+            if (((SymRef) remoteHead).getTarget().equals(updatedRef.getName())) {
+                remoteGeoGig.command(UpdateSymRef.class).setName(Ref.HEAD)
+                        .setNewValue(ref.getName()).call();
+                RevCommit commit = remoteGeoGig.getRepository().getCommit(ref.getObjectId());
+                remoteGeoGig.getRepository().workingTree().updateWorkHead(commit.getTreeId());
+                remoteGeoGig.getRepository().index().updateStageHead(commit.getTreeId());
             }
-
-            String nameToSet =
-                remoteRef.isPresent() ? remoteRef.get().getName() : Ref.HEADS_PREFIX + refspec;
-
-            Ref updatedRef = remoteGeoGig.command(UpdateRef.class).setName(nameToSet)
-                    .setNewValue(ref.getObjectId()).call().get();
-
-            Ref remoteHead = headRef();
-            if (remoteHead instanceof SymRef) {
-                if (((SymRef) remoteHead).getTarget().equals(updatedRef.getName())) {
-                    remoteGeoGig.command(UpdateSymRef.class).setName(Ref.HEAD)
-                            .setNewValue(ref.getName()).call();
-                    RevCommit commit = remoteGeoGig.getRepository().getCommit(ref.getObjectId());
-                    remoteGeoGig.getRepository().workingTree().updateWorkHead(commit.getTreeId());
-                    remoteGeoGig.getRepository().index().updateStageHead(commit.getTreeId());
-                }
-            }
-        } catch (Exception e) {
-            Throwables.propagate(e);
         }
     }
 
@@ -236,14 +233,15 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         }
     }
 
-    protected void walkCommit(ObjectId commitId, Repository from, Repository to, ObjectInserter objectInserter) {
+    protected void walkCommit(ObjectId commitId, Repository from, Repository to,
+            ObjectInserter objectInserter) {
         Optional<RevObject> object = from.command(RevObjectParse.class).setObjectId(commitId)
                 .call();
         if (object.isPresent() && object.get().getType().equals(TYPE.COMMIT)) {
-               RevCommit commit = (RevCommit) object.get();
-               walkTree(commit.getTreeId(), from, to, objectInserter);
+            RevCommit commit = (RevCommit) object.get();
+            walkTree(commit.getTreeId(), from, to, objectInserter);
 
-               objectInserter.insert(commit);
+            objectInserter.insert(commit);
         }
     }
 

@@ -241,36 +241,40 @@ abstract class AbstractRemoteRepo implements IRemoteRepo {
      * Determine if it is safe to push to the remote repository.
      * 
      * @param ref the ref to push
-     * @param remoteRef the ref to push to
-     * @throws SynchronizationException
+     * @param remoteRefOpt the ref to push to
+     * @throws SynchronizationException if its not safe or possible to push to the given remote ref
+     *         (see {@link StatusCode} for the possible reasons)
      */
-    protected void checkPush(Ref ref, Optional<Ref> remoteRef) throws SynchronizationException {
-        if (remoteRef.isPresent()) {
-            if (remoteRef.get() instanceof SymRef) {
-                throw new SynchronizationException(StatusCode.CANNOT_PUSH_TO_SYMBOLIC_REF);
-            }
-            if (remoteRef.get().getObjectId().equals(ref.getObjectId())) {
-                // The branches are equal, no need to push.
+    protected void checkPush(Ref ref, Optional<Ref> remoteRefOpt) throws SynchronizationException {
+        if (!remoteRefOpt.isPresent()) {
+            return;// safe to push
+        }
+        final Ref remoteRef = remoteRefOpt.get();
+        if (remoteRef instanceof SymRef) {
+            throw new SynchronizationException(StatusCode.CANNOT_PUSH_TO_SYMBOLIC_REF);
+        }
+        final ObjectId remoteObjectId = remoteRef.getObjectId();
+        final ObjectId localObjectId = ref.getObjectId();
+        if (remoteObjectId.equals(localObjectId)) {
+            // The branches are equal, no need to push.
+            throw new SynchronizationException(StatusCode.NOTHING_TO_PUSH);
+        } else if (localRepository.blobExists(remoteObjectId)) {
+            Optional<ObjectId> ancestor = localRepository.command(FindCommonAncestor.class)
+                    .setLeftId(remoteObjectId).setRightId(localObjectId).call();
+            if (!ancestor.isPresent()) {
+                // There is no common ancestor, a push will overwrite history
+                throw new SynchronizationException(StatusCode.REMOTE_HAS_CHANGES);
+            } else if (ancestor.get().equals(localObjectId)) {
+                // My last commit is the common ancestor, the remote already has my data.
                 throw new SynchronizationException(StatusCode.NOTHING_TO_PUSH);
-            } else if (localRepository.blobExists(remoteRef.get().getObjectId())) {
-                Optional<ObjectId> ancestor = localRepository.command(FindCommonAncestor.class)
-                        .setLeftId(remoteRef.get().getObjectId()).setRightId(ref.getObjectId())
-                        .call();
-                if (!ancestor.isPresent()) {
-                    // There is no common ancestor, a push will overwrite history
-                    throw new SynchronizationException(StatusCode.REMOTE_HAS_CHANGES);
-                } else if (ancestor.get().equals(ref.getObjectId())) {
-                    // My last commit is the common ancestor, the remote already has my data.
-                    throw new SynchronizationException(StatusCode.NOTHING_TO_PUSH);
-                } else if (!ancestor.get().equals(remoteRef.get().getObjectId())) {
-                    // The remote branch's latest commit is not my ancestor, a push will cause a
-                    // loss of history.
-                    throw new SynchronizationException(StatusCode.REMOTE_HAS_CHANGES);
-                }
-            } else if (!remoteRef.get().getObjectId().equals(ObjectId.NULL)) {
-                // The remote has data that I do not, a push will cause this data to be lost.
+            } else if (!ancestor.get().equals(remoteObjectId)) {
+                // The remote branch's latest commit is not my ancestor, a push will cause a
+                // loss of history.
                 throw new SynchronizationException(StatusCode.REMOTE_HAS_CHANGES);
             }
+        } else if (!remoteObjectId.isNull()) {
+            // The remote has data that I do not, a push will cause this data to be lost.
+            throw new SynchronizationException(StatusCode.REMOTE_HAS_CHANGES);
         }
     }
 

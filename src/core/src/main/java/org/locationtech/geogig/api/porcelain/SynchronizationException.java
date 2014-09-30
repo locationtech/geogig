@@ -19,7 +19,16 @@ public class SynchronizationException extends RuntimeException {
      * Possible status codes for Push exceptions.
      */
     public enum StatusCode {
-        NOTHING_TO_PUSH, REMOTE_HAS_CHANGES, HISTORY_TOO_SHALLOW, CANNOT_PUSH_TO_SYMBOLIC_REF
+        /**
+         * The branches are equal, no need to push/my last commit is the common ancestor, the remote
+         * already has my data.
+         */
+        NOTHING_TO_PUSH,
+        /**
+         * There is no common ancestor, a push will overwrite history; or the remote branch's latest
+         * commit is not my ancestor, a push will cause a loss of history.
+         */
+        REMOTE_HAS_CHANGES, HISTORY_TOO_SHALLOW, CANNOT_PUSH_TO_SYMBOLIC_REF
     }
 
     public StatusCode statusCode;

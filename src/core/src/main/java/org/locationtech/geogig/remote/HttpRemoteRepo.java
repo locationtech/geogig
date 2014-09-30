@@ -229,11 +229,9 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
 
         traverser.traverse(ref.getObjectId());
 
-        List<ObjectId> toSend = new LinkedList<ObjectId>();
-        toSend.addAll(traverser.commits);
+        List<ObjectId> toSend = new LinkedList<ObjectId>(traverser.commits);
         Collections.reverse(toSend);
-        Set<ObjectId> have = new HashSet<ObjectId>();
-        have.addAll(traverser.have);
+        Set<ObjectId> have = new HashSet<ObjectId>(traverser.have);
 
         Deduplicator deduplicator = deduplicationService.createDeduplicator();
         try {

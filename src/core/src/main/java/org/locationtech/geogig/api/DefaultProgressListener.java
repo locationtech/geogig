@@ -17,6 +17,9 @@ package org.locationtech.geogig.api;
  * 
  */
 public class DefaultProgressListener implements ProgressListener {
+
+    public static final ProgressListener NULL = new DefaultProgressListener();
+
     /**
      * Description of the current action.
      */

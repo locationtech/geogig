@@ -33,9 +33,9 @@ import org.locationtech.geogig.api.plumbing.diff.BoundsFilteringDiffConsumer;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.plumbing.diff.DiffPathTracker;
-import org.locationtech.geogig.api.plumbing.diff.DiffTreeVisitor;
-import org.locationtech.geogig.api.plumbing.diff.DiffTreeVisitor.Consumer;
-import org.locationtech.geogig.api.plumbing.diff.DiffTreeVisitor.ForwardingConsumer;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.ForwardingConsumer;
 import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.slf4j.Logger;
@@ -182,7 +182,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
 
         ObjectDatabase leftSource = resolveSource(oldTree.getId());
         ObjectDatabase rightSource = resolveSource(newTree.getId());
-        final DiffTreeVisitor visitor = new DiffTreeVisitor(oldTree, newTree, leftSource,
+        final PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource,
                 rightSource);
 
         final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(100);
@@ -197,7 +197,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
             public void run() {
                 Consumer consumer = diffProducer;
                 if (customFilter != null) {// evaluated the latest
-                    consumer = new DiffTreeVisitor.FilteringConsumer(consumer, customFilter);
+                    consumer = new PreOrderDiffWalk.FilteringConsumer(consumer, customFilter);
                 }
                 if (changeTypeFilter != null) {
                     consumer = new ChangeTypeFilteringDiffConsumer(changeTypeFilter, consumer);

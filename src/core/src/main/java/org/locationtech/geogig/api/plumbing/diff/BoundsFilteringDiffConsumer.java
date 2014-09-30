@@ -21,7 +21,7 @@ import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.plumbing.diff.DiffTreeVisitor.Consumer;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -34,7 +34,7 @@ import com.google.common.base.Throwables;
  * A {@link Consumer} decorator that filters {@link Node nodes} by a bounding box intersection check
  * before delegating.
  */
-public final class BoundsFilteringDiffConsumer extends DiffTreeVisitor.ForwardingConsumer {
+public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.ForwardingConsumer {
 
     private DiffPathTracker tracker = new DiffPathTracker();
 
@@ -43,7 +43,7 @@ public final class BoundsFilteringDiffConsumer extends DiffTreeVisitor.Forwardin
     private ObjectDatabase ftypeSource;
 
     public BoundsFilteringDiffConsumer(ReferencedEnvelope bounds,
-            DiffTreeVisitor.Consumer delegate, ObjectDatabase ftypeSource) {
+            PreOrderDiffWalk.Consumer delegate, ObjectDatabase ftypeSource) {
         super(delegate);
         this.boundsFilter = bounds;
         this.ftypeSource = ftypeSource;

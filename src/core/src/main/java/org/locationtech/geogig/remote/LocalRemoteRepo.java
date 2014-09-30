@@ -9,15 +9,22 @@
  */
 package org.locationtech.geogig.remote;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
+import javax.annotation.Nullable;
+
+import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevObject;
@@ -27,12 +34,14 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.ForEachRef;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
+import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
+import org.locationtech.geogig.api.plumbing.diff.PostOrderDiffWalk;
+import org.locationtech.geogig.api.plumbing.diff.PostOrderDiffWalk.Consumer;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.ObjectInserter;
+import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -147,14 +156,21 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
      * @param fetchLimit the maximum depth to fetch
      */
     @Override
-    public void fetchNewData(Ref ref, Optional<Integer> fetchLimit) {
+    public void fetchNewData(Optional<Ref> oldRef, Ref ref, Optional<Integer> fetchLimit,
+            ProgressListener progress) {
 
         CommitTraverser traverser = getFetchTraverser(fetchLimit);
 
         try {
+            progress.setDescription("Fetching objects from " + ref.getName());
             traverser.traverse(ref.getObjectId());
             while (!traverser.commits.isEmpty()) {
-                walkHead(traverser.commits.pop(), true);
+                Optional<ObjectId> oldHeadId = Optional.absent();
+                if (oldRef.isPresent()) {
+                    oldHeadId = Optional.of(oldRef.get().getObjectId());
+                }
+                ObjectId newHeadId = traverser.commits.pop();
+                walkHead(oldHeadId, newHeadId, true, progress);
             }
 
         } catch (Exception e) {
@@ -169,7 +185,9 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
      * @param refspec the refspec to push to
      */
     @Override
-    public void pushNewData(Ref ref, String refspec) throws SynchronizationException {
+    public void pushNewData(final Ref ref, final String refspec, final ProgressListener progress)
+            throws SynchronizationException {
+
         Optional<Ref> remoteRef = remoteGeoGig.command(RefParse.class).setName(refspec).call();
         remoteRef = remoteRef.or(remoteGeoGig.command(RefParse.class)
                 .setName(Ref.TAGS_PREFIX + refspec).call());
@@ -179,7 +197,13 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
 
         traverser.traverse(ref.getObjectId());
         while (!traverser.commits.isEmpty()) {
-            walkHead(traverser.commits.pop(), false);
+            Optional<ObjectId> oldHeadId = Optional.absent();
+            if (remoteRef.isPresent()) {
+                oldHeadId = Optional.of(remoteRef.get().getObjectId());
+            }
+            ObjectId newHeadId = traverser.commits.pop();
+            progress.setDescription("Uploading objects to " + refspec);
+            walkHead(oldHeadId, newHeadId, false, progress);
         }
 
         String nameToSet = remoteRef.isPresent() ? remoteRef.get().getName() : Ref.HEADS_PREFIX
@@ -210,7 +234,8 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         remoteGeoGig.command(UpdateRef.class).setName(refspec).setDelete(true).call();
     }
 
-    protected void walkHead(ObjectId headId, boolean fetch) {
+    protected void walkHead(final Optional<ObjectId> oldHeadId, final ObjectId newHeadId,
+            final boolean fetch, final ProgressListener progress) {
         Repository from = localRepository;
         Repository to = remoteGeoGig.getRepository();
         if (fetch) {
@@ -218,80 +243,133 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             to = from;
             from = tmp;
         }
-        ObjectInserter objectInserter = to.newObjectInserter();
-        Optional<RevObject> object = from.command(RevObjectParse.class).setObjectId(headId).call();
+        final ObjectDatabase fromDb = from.objectDatabase();
+        final ObjectDatabase toDb = to.objectDatabase();
 
-        if (object.isPresent()) {
-            if (object.get().getType().equals(TYPE.COMMIT)) {
-                RevCommit commit = (RevCommit) object.get();
-                walkTree(commit.getTreeId(), from, to, objectInserter);
-            } else if (object.get().getType().equals(TYPE.TAG)) {
-                RevTag tag = (RevTag) object.get();
-                walkCommit(tag.getCommitId(), from, to, objectInserter);
-            }
-            objectInserter.insert(object.get());
+        final RevObject object = fromDb.get(newHeadId);
+
+        RevCommit commit = null;
+        RevTag tag = null;
+        RevTree tree = null;
+
+        if (object.getType().equals(TYPE.COMMIT)) {
+            commit = (RevCommit) object;
+            tree = fromDb.getTree(commit.getTreeId());
+        } else if (object.getType().equals(TYPE.TAG)) {
+            tag = (RevTag) object;
+            commit = fromDb.getCommit(tag.getCommitId());
+            tree = fromDb.getTree(commit.getTreeId());
         }
-    }
-
-    protected void walkCommit(ObjectId commitId, Repository from, Repository to,
-            ObjectInserter objectInserter) {
-        Optional<RevObject> object = from.command(RevObjectParse.class).setObjectId(commitId)
-                .call();
-        if (object.isPresent() && object.get().getType().equals(TYPE.COMMIT)) {
-            RevCommit commit = (RevCommit) object.get();
-            walkTree(commit.getTreeId(), from, to, objectInserter);
-
-            objectInserter.insert(commit);
-        }
-    }
-
-    private void walkTree(ObjectId treeId, Repository from, Repository to,
-            ObjectInserter objectInserter) {
-        // See if we already have it
-        if (to.objectDatabase().exists(treeId)) {
-            return;
-        }
-
-        Optional<RevObject> object = from.command(RevObjectParse.class).setObjectId(treeId).call();
-        if (object.isPresent() && object.get().getType().equals(TYPE.TREE)) {
-            RevTree tree = (RevTree) object.get();
-
-            objectInserter.insert(tree);
-            // walk subtrees
-            if (tree.buckets().isPresent()) {
-                for (Bucket bucket : tree.buckets().get().values()) {
-                    walkTree(bucket.id(), from, to, objectInserter);
-                }
-            } else {
-                // get new objects
-                for (Iterator<Node> children = tree.children(); children.hasNext();) {
-                    Node ref = children.next();
-                    moveObject(ref.getObjectId(), from, to, objectInserter);
-                    ObjectId metadataId = ref.getMetadataId().or(ObjectId.NULL);
-                    if (!metadataId.isNull()) {
-                        moveObject(metadataId, from, to, objectInserter);
-                    }
+        if (tree != null) {
+            RevTree oldTree = RevTree.EMPTY;
+            if (oldHeadId.isPresent()) {
+                ObjectId objectId = oldHeadId.get();
+                Optional<ObjectId> treeId = to.command(ResolveTreeish.class).setTreeish(objectId)
+                        .call();
+                if (treeId.isPresent()) {
+                    oldTree = toDb.getTree(treeId.get());
                 }
             }
+            progress.setProgress(0);
+            copyNewObjects(oldTree, tree, fromDb, toDb, progress);
+            Preconditions.checkState(toDb.exists(tree.getId()));
+        }
+        if (commit != null) {
+            toDb.put(commit);
+        }
+        if (tag != null) {
+            toDb.put(tag);
         }
     }
 
-    private void moveObject(ObjectId objectId, Repository from, Repository to,
-            ObjectInserter objectInserter) {
-        // See if we already have it
-        if (to.objectDatabase().exists(objectId)) {
+    private void copyNewObjects(RevTree oldTree, RevTree newTree, final ObjectDatabase fromDb,
+            final ObjectDatabase toDb, final ProgressListener progress) {
+        checkNotNull(oldTree);
+        checkNotNull(newTree);
+        checkNotNull(fromDb);
+        checkNotNull(toDb);
+        checkNotNull(progress);
+
+        PostOrderDiffWalk diffWalk = new PostOrderDiffWalk(oldTree, newTree, toDb, fromDb);
+        Predicate<Bounded> filter = new Predicate<Bounded>() {
+
+            @Override
+            public boolean apply(@Nullable Bounded b) {
+                if (b == null) {
+                    return false;
+                }
+                ObjectId id;
+                if (b instanceof Node) {
+                    id = ((Node) b).getObjectId();
+                } else {
+                    id = ((Bucket) b).id();
+                }
+                boolean exists = toDb.exists(id);
+                return !exists;
+            }
+        };
+
+        final Set<ObjectId> ids = new TreeSet<ObjectId>();
+        Consumer consumer = new Consumer() {
+            final int bulkSize = 10_000;
+
+            @Override
+            public void feature(@Nullable Node left, Node right) {
+                add(left);
+                add(right);
+            }
+
+            @Override
+            public void tree(@Nullable Node left, Node right) {
+                add(left);
+                add(right);
+            }
+
+            private void add(@Nullable Node node) {
+                if (node == null) {
+                    return;
+                }
+                ids.add(node.getObjectId());
+                Optional<ObjectId> metadataId = node.getMetadataId();
+                if (metadataId.isPresent()) {
+                    ids.add(metadataId.get());
+                }
+                checkLimitAndCopy();
+            }
+
+            @Override
+            public void bucket(int bucketIndex, int bucketDepth, @Nullable Bucket left, Bucket right) {
+                if (left != null) {
+                    ids.add(left.id());
+                }
+                if (right != null) {
+                    ids.add(right.id());
+                }
+                checkLimitAndCopy();
+            }
+
+            private void checkLimitAndCopy() {
+                if (ids.size() >= bulkSize) {
+                    copy(ids, fromDb, toDb, progress);
+                    ids.clear();
+                }
+            }
+        };
+        diffWalk.walk(filter, consumer);
+        // copy remaining objects
+        copy(ids, fromDb, toDb, progress);
+    }
+
+    private void copy(Set<ObjectId> ids, ObjectDatabase from, ObjectDatabase to,
+            ProgressListener progress) {
+        if (ids.isEmpty()) {
             return;
         }
-
-        Optional<RevObject> childObject = from.command(RevObjectParse.class).setObjectId(objectId)
-                .call();
-        if (childObject.isPresent()) {
-            RevObject revObject = childObject.get();
-            if (TYPE.TREE.equals(revObject.getType())) {
-                walkTree(objectId, from, to, objectInserter);
-            }
-            objectInserter.insert(revObject);
-        }
+        // System.err.printf("Copying %,d objects...", ids.size());
+        // Stopwatch sw = Stopwatch.createStarted();
+        to.putAll(from.getAll(ids));
+        // System.err.printf(" %,d objects copied in %s.\n", ids.size(), sw.stop());
+        progress.setProgress(progress.getProgress() + ids.size());
     }
 
     /**

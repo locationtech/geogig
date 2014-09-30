@@ -14,7 +14,7 @@ import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.diff.DiffTreeVisitor.Consumer;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 /**
@@ -22,10 +22,10 @@ import org.locationtech.geogig.storage.ObjectDatabase;
  * traversal's two trees.
  * 
  * <p>
- * Use {@link DiffCountConsumer#get() consumer.get()} after {@link DiffTreeVisitor#walk(Consumer)
+ * Use {@link DiffCountConsumer#get() consumer.get()} after {@link PreOrderDiffWalk#walk(Consumer)
  * visitor.walk(consumer)} to get the resulting {@link DiffObjectCount}.
  */
-public class DiffCountConsumer implements DiffTreeVisitor.Consumer {
+public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
 
     private ObjectDatabase db;
 

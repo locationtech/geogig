@@ -51,13 +51,13 @@ import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
- * Provides a means to "walk" the differences between two {@link RevTree trees} in depth first order
+ * Provides a means to "walk" the differences between two {@link RevTree trees} in in-order order
  * and emit diff events to a {@link Consumer}, which can choose to skip parts of the walk when it
  * had collected enough information for its purpose and don't need to go further down a given pair
  * of trees (either named or bucket).
  */
 @ParametersAreNonnullByDefault
-public class DiffTreeVisitor {
+public class PreOrderDiffWalk {
 
     private static final NodeStorageOrder ORDER = new NodeStorageOrder();
 
@@ -69,7 +69,7 @@ public class DiffTreeVisitor {
 
     private final ObjectDatabase rightSource;
 
-    public DiffTreeVisitor(RevTree left, RevTree right, ObjectDatabase leftSource,
+    public PreOrderDiffWalk(RevTree left, RevTree right, ObjectDatabase leftSource,
             ObjectDatabase rightSource) {
 
         checkNotNull(left, "left");

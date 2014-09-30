@@ -39,7 +39,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
-import org.locationtech.geogig.api.plumbing.diff.DiffTreeVisitor.Consumer;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
@@ -47,13 +47,13 @@ import org.mockito.ArgumentCaptor;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-public class DiffTreeVisitorTest {
+public class PreOrderDiffWalkTest {
 
     private ObjectDatabase leftSource;
 
     private ObjectDatabase rightSource;
 
-    private DiffTreeVisitor.Consumer consumer;
+    private PreOrderDiffWalk.Consumer consumer;
 
     @Before
     public void beforeTest() {
@@ -66,7 +66,7 @@ public class DiffTreeVisitorTest {
     }
 
     /**
-     * Creates a root node for the given tree as the one {@link DiffTreeVisitor} should use to start
+     * Creates a root node for the given tree as the one {@link PreOrderDiffWalk} should use to start
      * the traversal
      */
     private Node nodeFor(RevTree root) {
@@ -78,7 +78,7 @@ public class DiffTreeVisitorTest {
     public void testSameRootTree() {
         RevTree left = createFeaturesTree(leftSource, "f", 10).build();
         RevTree right = left;
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         visitor.walk(consumer);
 
@@ -89,7 +89,7 @@ public class DiffTreeVisitorTest {
     public void testSameChildTree() {
         RevTree left = createFeaturesTree(leftSource, "f", 10).build();
         RevTree right = left;
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         visitor.walk(consumer);
 
@@ -100,7 +100,7 @@ public class DiffTreeVisitorTest {
     public void testCallsRootNode() {
         RevTree left = createFeaturesTree(leftSource, "f", 1).build();
         RevTree right = createFeaturesTree(rightSource, "f", 2).build();
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         visitor.walk(consumer);
 
@@ -126,7 +126,7 @@ public class DiffTreeVisitorTest {
         // two leaf trees
         RevTree left = createFeaturesTree(leftSource, "f", 3).build();
         RevTree right = createFeaturesTree(rightSource, "f", 5).build();
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         final Node lroot = nodeFor(left);
         final Node rroot = nodeFor(right);
@@ -160,7 +160,7 @@ public class DiffTreeVisitorTest {
         // two leaf trees
         RevTree left = createFeaturesTree(leftSource, "f", 5).build();
         RevTree right = createFeaturesTree(rightSource, "f", 3).build();
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         final Node lroot = nodeFor(left);
         final Node rroot = nodeFor(right);
@@ -195,7 +195,7 @@ public class DiffTreeVisitorTest {
         ObjectId metadataId = ObjectId.forString("fake");
         RevTree left = createTreesTree(leftSource, 2, 100, metadataId).build();
         RevTree right = createTreesTree(rightSource, 3, 100, metadataId).build();
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         final Node lroot = nodeFor(left);
         final Node rroot = nodeFor(right);
@@ -233,7 +233,7 @@ public class DiffTreeVisitorTest {
         ObjectId metadataId = ObjectId.forString("fake");
         RevTree left = createTreesTree(leftSource, 2, 10, metadataId).build();
         RevTree right = createTreesTree(rightSource, 3, 10, metadataId).build();
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         final Node lroot = nodeFor(left);
         final Node rroot = nodeFor(right);
@@ -264,7 +264,7 @@ public class DiffTreeVisitorTest {
         assertDepth(left, leftSource, 2);
         assertDepth(right, rightSource, 2);
 
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         final Node lroot = nodeFor(left);
         final Node rroot = nodeFor(right);
@@ -297,7 +297,7 @@ public class DiffTreeVisitorTest {
         ObjectId metadataId = ObjectId.forString("fake");
         RevTree left = createTreesTree(leftSource, 3, 10, metadataId).build();
         RevTree right = createTreesTree(rightSource, 2, 10, metadataId).build();
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         final Node lroot = nodeFor(left);
         final Node rroot = nodeFor(right);
@@ -336,7 +336,7 @@ public class DiffTreeVisitorTest {
 
             right = builder.build();
         }
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         when(consumer.tree(any(Node.class), any(Node.class))).thenReturn(true);
         visitor.walk(consumer);
@@ -371,7 +371,7 @@ public class DiffTreeVisitorTest {
         RevTree right = createFeaturesTree(rightSource, "f", RevTree.NORMALIZED_SIZE_LIMIT + 2)
                 .build();
 
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         when(consumer.tree(any(Node.class), any(Node.class))).thenReturn(true);
         when(consumer.bucket(anyInt(), anyInt(), any(Bucket.class), any(Bucket.class))).thenReturn(
@@ -394,7 +394,7 @@ public class DiffTreeVisitorTest {
         RevTree right = createFeaturesTree(rightSource, "f",
                 RevTree.MAX_BUCKETS * RevTree.NORMALIZED_SIZE_LIMIT + 1).build();
 
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         when(consumer.tree(any(Node.class), any(Node.class))).thenReturn(true);
         when(consumer.bucket(anyInt(), anyInt(), any(Bucket.class), any(Bucket.class))).thenReturn(
@@ -421,7 +421,7 @@ public class DiffTreeVisitorTest {
         RevTree left = createFeaturesTree(leftSource, "f", leftsize).build();
         RevTree right = createFeaturesTree(rightSource, "f", 1).build();
 
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         // consume all
         when(consumer.tree(any(Node.class), any(Node.class))).thenReturn(true);
@@ -453,7 +453,7 @@ public class DiffTreeVisitorTest {
         RevTree left = createFeaturesTree(leftSource, "f", 1).build();
         RevTree right = createFeaturesTree(rightSource, "f", rightsize).build();
 
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         // consume all
         when(consumer.tree(any(Node.class), any(Node.class))).thenReturn(true);
@@ -528,7 +528,7 @@ public class DiffTreeVisitorTest {
         RevTree right = createFeaturesTree(rightSource, "f", rightsize, leftsize - overlapCount,
                 true).build();
 
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         // consume all
         when(consumer.tree(any(Node.class), any(Node.class))).thenReturn(true);
@@ -582,7 +582,7 @@ public class DiffTreeVisitorTest {
         RevTree leftRoot = createFeaturesTree(leftSource, "f", leftsize, rightsize - overlapCount,
                 true).build();
 
-        DiffTreeVisitor visitor = new DiffTreeVisitor(leftRoot, rightRoot, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(leftRoot, rightRoot, leftSource, rightSource);
 
         // consume all
         when(consumer.tree(any(Node.class), any(Node.class))).thenReturn(true);
@@ -612,7 +612,7 @@ public class DiffTreeVisitorTest {
      *
      */
     private int getTreeDepth(RevTree tree, ObjectDatabase source, final int depth) {
-        DiffTreeVisitor visitor = new DiffTreeVisitor(tree, RevTree.EMPTY, source, source);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(tree, RevTree.EMPTY, source, source);
         final AtomicInteger maxDepth = new AtomicInteger();
         visitor.walk(new Consumer() {
 
@@ -653,7 +653,7 @@ public class DiffTreeVisitorTest {
         RevTree left = createFeaturesTree(leftSource, "f", leftsize).build();
         RevTree right = createFeaturesTree(rightSource, "f", 1).build();
 
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
 
         // consume all
         when(consumer.tree(any(Node.class), any(Node.class))).thenReturn(true);

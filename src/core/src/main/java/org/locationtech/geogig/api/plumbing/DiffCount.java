@@ -20,7 +20,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.DiffCountConsumer;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.plumbing.diff.DiffTreeVisitor;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.storage.StagingDatabase;
 
@@ -83,10 +83,10 @@ public class DiffCount extends AbstractGeoGigOp<DiffObjectCount> {
 
         DiffObjectCount diffCount;
         StagingDatabase index = stagingDatabase();
-        DiffTreeVisitor visitor = new DiffTreeVisitor(oldTree, newTree, index, index);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, index, index);
 
         DiffCountConsumer counter = new DiffCountConsumer(index);
-        DiffTreeVisitor.Consumer filter = counter;
+        PreOrderDiffWalk.Consumer filter = counter;
         if (!pathFilters.isEmpty()) {
             filter = new PathFilteringDiffConsumer(pathFilters, counter);
         }

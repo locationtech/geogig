@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevObject;
@@ -194,7 +195,8 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
      * @param fetchLimit the maximum depth to fetch
      */
     @Override
-    public void fetchNewData(Ref ref, Optional<Integer> fetchLimit) {
+    public void fetchNewData(Optional<Ref> oldRef, Ref ref, Optional<Integer> fetchLimit,
+            ProgressListener progress) {
 
         CommitTraverser traverser = getFetchTraverser(fetchLimit);
 
@@ -220,7 +222,8 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
      * @param refspec the remote branch to push to
      */
     @Override
-    public void pushNewData(Ref ref, String refspec) throws SynchronizationException {
+    public void pushNewData(Ref ref, String refspec, ProgressListener progress)
+            throws SynchronizationException {
         Optional<Ref> remoteRef = HttpUtils.getRemoteRef(repositoryURL, refspec);
         checkPush(ref, remoteRef);
         beginPush();

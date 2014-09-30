@@ -14,20 +14,20 @@ import java.util.List;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.plumbing.diff.DiffTreeVisitor.Consumer;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 
 /**
  * A {@link Consumer} decorator that checks for whether each tree/bucket/feature event applies to
  * the provided list of filters before delegating to the actual {@code DiffTreeVisitor.Consumer},
  * which hence will only be notified of the events that apply to the given path filters.
  */
-public class PathFilteringDiffConsumer extends DiffTreeVisitor.ForwardingConsumer {
+public class PathFilteringDiffConsumer extends PreOrderDiffWalk.ForwardingConsumer {
 
     private DiffPathTracker tracker;
 
     private DiffPathFilter filter;
 
-    public PathFilteringDiffConsumer(List<String> pathFilters, DiffTreeVisitor.Consumer delegate) {
+    public PathFilteringDiffConsumer(List<String> pathFilters, PreOrderDiffWalk.Consumer delegate) {
         super(delegate);
         this.tracker = new DiffPathTracker();
         this.filter = new DiffPathFilter(pathFilters);

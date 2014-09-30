@@ -11,6 +11,7 @@ package org.locationtech.geogig.remote;
 
 import java.io.IOException;
 
+import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
 
@@ -54,9 +55,12 @@ public interface IRemoteRepo {
      * Fetch all new objects from the specified {@link Ref} from the remote.
      * 
      * @param ref the remote ref that points to new commit data
+     * @param newRef
      * @param fetchLimit the maximum depth to fetch
+     * @param subProgress
      */
-    public void fetchNewData(Ref ref, Optional<Integer> fetchLimit);
+    public void fetchNewData(Optional<Ref> oldRef, Ref newRef, Optional<Integer> fetchLimit,
+            ProgressListener progress);
 
     /**
      * Push all new objects from the specified {@link Ref} to the remote.
@@ -71,7 +75,8 @@ public interface IRemoteRepo {
      * @param ref the local ref that points to new commit data
      * @param refspec the refspec to push to
      */
-    public void pushNewData(Ref ref, String refspec) throws SynchronizationException;
+    public void pushNewData(Ref ref, String refspec, ProgressListener progress)
+            throws SynchronizationException;
 
     /**
      * Delete the given refspec from the remote repository.

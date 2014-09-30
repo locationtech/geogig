@@ -265,14 +265,16 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
                             newFetchLimit = repoDepth;
                         }
                         // Fetch updated data from this ref
-                        remoteRepoInstance.fetchNewData(ref.getNewRef(), newFetchLimit);
+                        Ref newRef = ref.getNewRef();
+                        Optional<Ref> oldRef = Optional.fromNullable(ref.getOldRef());
+                        remoteRepoInstance.fetchNewData(oldRef, newRef, newFetchLimit, subProgress);
 
                         if (repoDepth.isPresent() && !fullDepth) {
                             // Update the repository depth if it is deeper than before.
                             int newDepth;
                             try {
                                 newDepth = repository().graphDatabase().getDepth(
-                                        ref.getNewRef().getObjectId());
+                                        newRef.getObjectId());
                             } catch (IllegalStateException e) {
                                 throw new RuntimeException(ref.toString(), e);
                             }
@@ -287,7 +289,7 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
                         }
 
                         // Update the ref
-                        Ref updatedRef = updateLocalRef(ref.getNewRef(), remote, localRemoteRefs);
+                        Ref updatedRef = updateLocalRef(newRef, remote, localRemoteRefs);
                         ref.setNewRef(updatedRef);
                     }
                 }

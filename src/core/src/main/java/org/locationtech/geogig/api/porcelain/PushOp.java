@@ -239,7 +239,7 @@ public class PushOp extends AbstractGeoGigOp<Boolean> {
             } else {
                 localRemoteRefName = Ref.append(Ref.REMOTES_PREFIX, remote.getName() + "/"
                         + remoteRefSpec);
-                remoteRepo.pushNewData(localRef, remoteRefSpec);
+                remoteRepo.pushNewData(localRef, remoteRefSpec, getProgressListener());
             }
         } catch (SynchronizationException e) {
             if (e.statusCode == StatusCode.NOTHING_TO_PUSH) {

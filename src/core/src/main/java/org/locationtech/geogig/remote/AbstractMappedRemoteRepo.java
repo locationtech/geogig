@@ -22,8 +22,10 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.locationtech.geogig.api.CommitBuilder;
+import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.IniRepositoryFilter;
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RepositoryFilter;
 import org.locationtech.geogig.api.RevCommit;
@@ -174,7 +176,9 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param ref the remote ref that points to new commit data
      * @param fetchLimit the maximum depth to fetch, note, a sparse clone cannot be a shallow clone
      */
-    public final void fetchNewData(Ref ref, Optional<Integer> fetchLimit) {
+    @Override
+    public final void fetchNewData(Optional<Ref> oldRef, Ref ref, Optional<Integer> fetchLimit,
+            ProgressListener progress) {
         Preconditions.checkState(!fetchLimit.isPresent(), "A sparse clone cannot be shallow.");
         FetchCommitGatherer gatherer = new FetchCommitGatherer(getRemoteWrapper(), localRepository);
 
@@ -317,7 +321,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      */
     @Override
     public void pushNewData(Ref ref) throws SynchronizationException {
-        pushNewData(ref, ref.getName());
+        pushNewData(ref, ref.getName(), DefaultProgressListener.NULL);
     }
 
     /**
@@ -327,7 +331,8 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param refspec the refspec to push to
      */
     @Override
-    public void pushNewData(Ref ref, String refspec) throws SynchronizationException {
+    public void pushNewData(Ref ref, String refspec, ProgressListener progress)
+            throws SynchronizationException {
         Optional<Ref> remoteRef = getRemoteRef(refspec);
         checkPush(ref, remoteRef);
         beginPush();

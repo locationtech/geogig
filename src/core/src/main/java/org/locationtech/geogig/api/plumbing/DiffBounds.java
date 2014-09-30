@@ -30,7 +30,7 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.DiffSummary;
-import org.locationtech.geogig.api.plumbing.diff.DiffTreeVisitor;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.type.FeatureType;
@@ -115,10 +115,10 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
 
         ObjectDatabase leftSource = resolveSafeDb(leftRefSpec);
         ObjectDatabase rightSource = resolveSafeDb(rightRefSpec);
-        DiffTreeVisitor visitor = new DiffTreeVisitor(left, right, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
         CoordinateReferenceSystem crs = resolveCrs();
         BoundsWalk walk = new BoundsWalk(crs, stagingDatabase());
-        DiffTreeVisitor.Consumer consumer = walk;
+        PreOrderDiffWalk.Consumer consumer = walk;
         if (!pathFilters.isEmpty()) {
             consumer = new PathFilteringDiffConsumer(pathFilters, walk);
         }
@@ -161,7 +161,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         return stagingDatabase().getTree(id.get());
     }
 
-    private static class BoundsWalk implements DiffTreeVisitor.Consumer {
+    private static class BoundsWalk implements PreOrderDiffWalk.Consumer {
 
         private DiffSummary<BoundingBox, BoundingBox> result;
 

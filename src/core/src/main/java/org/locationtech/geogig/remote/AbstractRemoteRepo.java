@@ -9,7 +9,9 @@
  */
 package org.locationtech.geogig.remote;
 
+import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
@@ -234,7 +236,7 @@ abstract class AbstractRemoteRepo implements IRemoteRepo {
      */
     @Override
     public void pushNewData(Ref ref) throws SynchronizationException {
-        pushNewData(ref, ref.getName());
+        pushNewData(ref, ref.getName(), DefaultProgressListener.NULL);
     }
 
     /**

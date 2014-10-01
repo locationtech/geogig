@@ -10,20 +10,20 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map.Entry;
 
 import jline.console.ConsoleReader;
 
 import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.porcelain.FetchResult;
-import org.locationtech.geogig.api.porcelain.FetchResult.ChangedRef;
-import org.locationtech.geogig.api.porcelain.FetchResult.ChangedRef.ChangeTypes;
+import org.locationtech.geogig.api.porcelain.TransferSummary;
+import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef;
+import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef.ChangeTypes;
 
 class FetchResultPrinter {
 
-    public static void print(FetchResult result, ConsoleReader console) throws IOException {
-        for (Entry<String, List<ChangedRef>> entry : result.getChangedRefs().entrySet()) {
+    public static void print(TransferSummary result, ConsoleReader console) throws IOException {
+        for (Entry<String, Collection<ChangedRef>> entry : result.getChangedRefs().entrySet()) {
             console.println("From " + entry.getKey());
 
             for (ChangedRef ref : entry.getValue()) {

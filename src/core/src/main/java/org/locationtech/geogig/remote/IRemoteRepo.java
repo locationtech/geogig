@@ -11,8 +11,12 @@ package org.locationtech.geogig.remote;
 
 import java.io.IOException;
 
+import javax.annotation.Nullable;
+
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
+import org.locationtech.geogig.api.plumbing.ReceivePack;
+import org.locationtech.geogig.api.plumbing.SendPack;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
 
 import com.google.common.base.Optional;
@@ -52,7 +56,9 @@ public interface IRemoteRepo {
     public Ref headRef();
 
     /**
-     * Fetch all new objects from the specified {@link Ref} from the remote.
+     * Fetch all new objects from the specified {@link Ref} from the remote by invoking
+     * {@link SendPack} in the remote repository with the local repository as the send-pack's
+     * remote.
      * 
      * @param ref the remote ref that points to new commit data
      * @param newRef
@@ -62,14 +68,16 @@ public interface IRemoteRepo {
     public void fetchNewData(Ref newRef, Optional<Integer> fetchLimit, ProgressListener progress);
 
     /**
-     * Push all new objects from the specified {@link Ref} to the remote.
+     * Push all new objects from the specified {@link Ref} by invoking {@link ReceivePack} in the
+     * remote repository with the local repository as the receive-pack's remote.
      * 
      * @param ref the local ref that points to new commit data
      */
     public void pushNewData(Ref ref, ProgressListener progress) throws SynchronizationException;
 
     /**
-     * Push all new objects from the specified {@link Ref} to the given refspec.
+     * Push all new objects from the specified {@link Ref} to the given refspec by invoking
+     * {@link ReceivePack} in the remote repository.
      * 
      * @param ref the local ref that points to new commit data
      * @param refspec the refspec to push to
@@ -81,8 +89,9 @@ public interface IRemoteRepo {
      * Delete the given refspec from the remote repository.
      * 
      * @param refspec the refspec to delete
+     * @return the deleted ref, {@link Optional#absent() absent} if it didn't exist
      */
-    public void deleteRef(String refspec);
+    public @Nullable Optional<Ref> deleteRef(String refspec);
 
     /**
      * @return the depth of the repository, or {@link Optional#absent} if the repository is not

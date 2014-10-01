@@ -194,7 +194,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         Preconditions.checkArgument(remoteRepo.isPresent(), "Remote could not be resolved.");
         getProgressListener().started();
 
-        FetchResult fetchResult = command(FetchOp.class).addRemote(remote).setDepth(depth.or(0))
+        TransferSummary fetchResult = command(FetchOp.class).addRemote(remote).setDepth(depth.or(0))
                 .setFullDepth(fullDepth).setAll(all).setProgressListener(subProgress(80.f)).call();
 
         result.setFetchResult(fetchResult);

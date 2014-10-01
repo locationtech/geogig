@@ -63,8 +63,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @param injector the Guice injector for the new repository
      * @param workingDirectory the directory of the remote repository
      */
-    public LocalMappedRemoteRepo(Context injector, File workingDirectory,
-            Repository localRepository) {
+    public LocalMappedRemoteRepo(Context injector, File workingDirectory, Repository localRepository) {
         super(localRepository);
         this.injector = injector;
         this.workingDirectory = workingDirectory;
@@ -162,8 +161,10 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @param refspec the refspec to delete
      */
     @Override
-    public void deleteRef(String refspec) {
-        remoteGeoGig.command(UpdateRef.class).setName(refspec).setDelete(true).call();
+    public Optional<Ref> deleteRef(String refspec) {
+        Optional<Ref> deletedRef = remoteGeoGig.command(UpdateRef.class).setName(refspec)
+                .setDelete(true).call();
+        return deletedRef;
     }
 
     /**
@@ -186,18 +187,20 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @return the updated ref
      */
     @Override
-    protected Ref updateRemoteRef(String refspec, ObjectId commitId, boolean delete) {
-        Ref updatedRef = remoteGeoGig.command(UpdateRef.class).setName(refspec)
-                .setNewValue(commitId).setDelete(delete).call().get();
+    protected Optional<Ref> updateRemoteRef(String refspec, ObjectId commitId, boolean delete) {
+        Optional<Ref> updatedRef = remoteGeoGig.command(UpdateRef.class).setName(refspec)
+                .setNewValue(commitId).setDelete(delete).call();
 
-        Ref remoteHead = headRef();
-        if (remoteHead instanceof SymRef) {
-            if (((SymRef) remoteHead).getTarget().equals(updatedRef.getName())) {
-                remoteGeoGig.command(UpdateSymRef.class).setName(Ref.HEAD)
-                        .setNewValue(updatedRef.getName()).call();
-                RevCommit commit = remoteGeoGig.getRepository().getCommit(commitId);
-                remoteGeoGig.getRepository().workingTree().updateWorkHead(commit.getTreeId());
-                remoteGeoGig.getRepository().index().updateStageHead(commit.getTreeId());
+        if (updatedRef.isPresent()) {
+            final Ref remoteHead = headRef();
+            if (remoteHead instanceof SymRef) {
+                if (((SymRef) remoteHead).getTarget().equals(updatedRef.get().getName())) {
+                    remoteGeoGig.command(UpdateSymRef.class).setName(Ref.HEAD)
+                            .setNewValue(updatedRef.get().getName()).call();
+                    RevCommit commit = remoteGeoGig.getRepository().getCommit(commitId);
+                    remoteGeoGig.getRepository().workingTree().updateWorkHead(commit.getTreeId());
+                    remoteGeoGig.getRepository().index().updateStageHead(commit.getTreeId());
+                }
             }
         }
         return updatedRef;

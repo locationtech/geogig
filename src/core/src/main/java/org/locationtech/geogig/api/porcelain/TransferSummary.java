@@ -9,23 +9,25 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
+import static com.google.common.base.Preconditions.*;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.locationtech.geogig.api.Ref;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ArrayListMultimap;
 
 /**
  *
  */
-public class FetchResult {
+public class TransferSummary {
 
-    private Map<String, List<ChangedRef>> changedRefs = Maps.newHashMap();
+    private ArrayListMultimap<String, ChangedRef> changedRefs = ArrayListMultimap.create();
 
-    public Map<String, List<ChangedRef>> getChangedRefs() {
-        return changedRefs;
+    public Map<String, Collection<ChangedRef>> getChangedRefs() {
+        return changedRefs.asMap();
     }
 
     static public class ChangedRef {
@@ -72,17 +74,37 @@ public class FetchResult {
         @Override
         public String toString() {
             return Objects.toStringHelper(ChangedRef.class) //
-                .addValue(type) //
-                .addValue(oldRef) //
-                .addValue(newRef) //
-                .toString();
+                    .addValue(type) //
+                    .addValue(oldRef) //
+                    .addValue(newRef) //
+                    .toString();
         }
+    }
+
+    public void add(final String remoteURL, final ChangedRef changeResult) {
+        checkNotNull(remoteURL);
+        checkNotNull(changeResult);
+        changedRefs.put(remoteURL, changeResult);
+    }
+
+    public void addAll(final String remoteURL, final List<ChangedRef> changes) {
+        checkNotNull(remoteURL);
+        checkNotNull(changes);
+        for (ChangedRef cr : changes) {
+            checkNotNull(cr);
+        }
+        changedRefs.putAll(remoteURL, changes);
     }
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(FetchResult.class) //
-            .addValue(getChangedRefs()) //
-            .toString();
+        return Objects.toStringHelper(TransferSummary.class) //
+                .addValue(changedRefs) //
+                .toString();
     }
+
+    public boolean isEmpty() {
+        return changedRefs.isEmpty();
+    }
+
 }

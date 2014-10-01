@@ -19,7 +19,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.porcelain.FetchResult;
+import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.api.porcelain.PullOp;
 import org.locationtech.geogig.api.porcelain.PullResult;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
@@ -102,7 +102,7 @@ public class Pull extends AbstractCommand implements CLICommand {
             final PullResult result = pull.call();
 
             ConsoleReader console = cli.getConsole();
-            FetchResult fetchResult = result.getFetchResult();
+            TransferSummary fetchResult = result.getFetchResult();
             FetchResultPrinter.print(fetchResult, console);
 
             final Ref oldRef = result.getOldRef();

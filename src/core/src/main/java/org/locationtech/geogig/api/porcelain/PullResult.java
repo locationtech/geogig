@@ -22,7 +22,7 @@ public class PullResult {
 
     private String remoteName = null;
 
-    private FetchResult fetchResult = null;
+    private TransferSummary fetchResult = null;
 
     private Optional<MergeReport> mergeReport = Optional.absent();
 
@@ -34,11 +34,11 @@ public class PullResult {
         this.remoteName = remoteName;
     }
 
-    public FetchResult getFetchResult() {
+    public TransferSummary getFetchResult() {
         return fetchResult;
     }
 
-    void setFetchResult(FetchResult fetchResult) {
+    void setFetchResult(TransferSummary fetchResult) {
         this.fetchResult = fetchResult;
     }
 

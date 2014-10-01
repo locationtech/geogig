@@ -396,9 +396,10 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param refspec the ref to update
      * @param commitId the new value of the ref
      * @param delete if true, the remote ref will be deleted
-     * @return the updated ref
+     * @return the updated ref, or {@link Optional#absent() absent} if it didn't exist
      */
-    protected abstract Ref updateRemoteRef(String refspec, ObjectId commitId, boolean delete);
+    protected abstract Optional<Ref> updateRemoteRef(String refspec, ObjectId commitId,
+            boolean delete);
 
     /**
      * Pushes a sparse commit to a remote repository and updates all mappings.

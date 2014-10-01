@@ -44,6 +44,7 @@ import org.locationtech.geogig.api.Remote;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.plumbing.LsRemote;
+import org.locationtech.geogig.api.plumbing.SendPack;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CloneOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
@@ -265,8 +266,11 @@ public abstract class RemoteRepositoryTestCase {
     }
 
     protected PushOp push() {
+        SendPack sendPack = spy(localGeogig.geogig.command(SendPack.class));
+        doReturn(Optional.of(remoteRepo)).when(sendPack).getRemoteRepo(any(Remote.class));
+
         PushOp push = spy(localGeogig.geogig.command(PushOp.class));
-        doReturn(Optional.of(remoteRepo)).when(push).getRemoteRepo(any(Remote.class));
+        doReturn(sendPack).when(push).command(eq(SendPack.class));
 
         FetchOp fetch = fetch();
         // when(push.command(FetchOp.class)).thenReturn(fetch);

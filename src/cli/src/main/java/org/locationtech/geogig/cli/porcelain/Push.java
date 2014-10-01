@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.locationtech.geogig.api.porcelain.PushOp;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
+import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
@@ -63,8 +64,8 @@ public class Push extends AbstractCommand implements CLICommand {
         }
         try {
             // TODO: listen on progress?
-            boolean dataPushed = push.call();
-            if (!dataPushed) {
+            TransferSummary dataPushed = push.call();
+            if (dataPushed.isEmpty()) {
                 cli.getConsole().println("Nothing to push.");
             }
         } catch (SynchronizationException e) {

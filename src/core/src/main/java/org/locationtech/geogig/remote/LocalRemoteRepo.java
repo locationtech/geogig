@@ -229,8 +229,10 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
      * @param refspec the refspec to delete
      */
     @Override
-    public void deleteRef(String refspec) {
-        remoteGeoGig.command(UpdateRef.class).setName(refspec).setDelete(true).call();
+    public Optional<Ref> deleteRef(String refspec) {
+        Optional<Ref> deletedRef = remoteGeoGig.command(UpdateRef.class).setName(refspec)
+                .setDelete(true).call();
+        return deletedRef;
     }
 
     protected void walkHead(final ObjectId newHeadId, final boolean fetch,

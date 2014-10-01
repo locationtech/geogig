@@ -15,7 +15,7 @@ import java.util.List;
 import jline.console.ConsoleReader;
 
 import org.locationtech.geogig.api.porcelain.FetchOp;
-import org.locationtech.geogig.api.porcelain.FetchResult;
+import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -76,7 +76,7 @@ public class Fetch extends AbstractCommand implements CLICommand {
                     "Depth operations can only be used on a shallow clone.");
         }
 
-        FetchResult result;
+        TransferSummary result;
         try {
             FetchOp fetch = cli.getGeogig().command(FetchOp.class);
             fetch.setProgressListener(cli.getProgressListener());

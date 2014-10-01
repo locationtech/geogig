@@ -230,17 +230,17 @@ class HttpUtils {
      * @param delete if true, the ref will be deleted
      * @return the updated ref
      */
-    public static Ref updateRemoteRef(URL repositoryURL, String refspec, ObjectId newValue,
-            boolean delete) {
+    public static Optional<Ref> updateRemoteRef(URL repositoryURL, String refspec,
+            ObjectId newValue, boolean delete) {
         HttpURLConnection connection = null;
         Ref updatedRef = null;
         try {
             String expanded;
-            if (!delete) {
+            if (delete) {
+                expanded = repositoryURL.toString() + "/updateref?name=" + refspec + "&delete=true";
+            } else {
                 expanded = repositoryURL.toString() + "/updateref?name=" + refspec + "&newValue="
                         + newValue.toString();
-            } else {
-                expanded = repositoryURL.toString() + "/updateref?name=" + refspec + "&delete=true";
             }
 
             connection = connect(expanded);
@@ -281,7 +281,7 @@ class HttpUtils {
         } finally {
             consumeErrStreamAndCloseConnection(connection);
         }
-        return updatedRef;
+        return Optional.fromNullable(updatedRef);
     }
 
     /**

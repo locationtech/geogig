@@ -12,6 +12,7 @@ package org.locationtech.geogig.web.api.commands;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.porcelain.PushOp;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
+import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -72,13 +73,13 @@ public class PushWebOp extends AbstractWebAPICommand {
         }
 
         try {
-            final Boolean dataPushed = command.setAll(pushAll).setRemote(remoteName).call();
+            final TransferSummary dataPushed = command.setAll(pushAll).setRemote(remoteName).call();
             context.setResponseContent(new CommandResponse() {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
                     out.writeElement("Push", "Success");
-                    out.writeElement("dataPushed", dataPushed.toString());
+                    out.writeElement("dataPushed", String.valueOf(!dataPushed.isEmpty()));
                     out.finish();
                 }
             });

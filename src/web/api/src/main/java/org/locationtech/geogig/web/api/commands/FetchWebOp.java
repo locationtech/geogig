@@ -11,7 +11,7 @@ package org.locationtech.geogig.web.api.commands;
 
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.porcelain.FetchOp;
-import org.locationtech.geogig.api.porcelain.FetchResult;
+import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -75,7 +75,7 @@ public class FetchWebOp extends AbstractWebAPICommand {
         command.addRemote(remote);
 
         try {
-            final FetchResult result = command.setAll(fetchAll).setPrune(prune).call();
+            final TransferSummary result = command.setAll(fetchAll).setPrune(prune).call();
             context.setResponseContent(new CommandResponse() {
                 @Override
                 public void write(ResponseWriter out) throws Exception {

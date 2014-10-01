@@ -26,8 +26,8 @@ import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigScope;
-import org.locationtech.geogig.api.porcelain.FetchResult.ChangedRef;
-import org.locationtech.geogig.api.porcelain.FetchResult.ChangedRef.ChangeTypes;
+import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef;
+import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef.ChangeTypes;
 import org.locationtech.geogig.remote.IRemoteRepo;
 import org.locationtech.geogig.remote.RemoteUtils;
 import org.locationtech.geogig.repository.Hints;
@@ -48,7 +48,7 @@ import com.google.common.collect.Lists;
  * Fetches named heads or tags from one or more other repositories, along with the objects necessary
  * to complete them.
  */
-public class FetchOp extends AbstractGeoGigOp<FetchResult> {
+public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
     private boolean all;
 
@@ -163,7 +163,7 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
      * @see org.locationtech.geogig.api.AbstractGeoGigOp#call()
      */
     @Override
-    protected FetchResult _call() {
+    protected TransferSummary _call() {
         if (all) {
             // Add all remotes to list.
             ImmutableList<Remote> localRemotes = command(RemoteListOp.class).call();
@@ -199,7 +199,7 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
             fullDepth = false;
         }
 
-        FetchResult result = new FetchResult();
+        TransferSummary result = new TransferSummary();
 
         for (Remote remote : remotes) {
             final ImmutableSet<Ref> remoteRemoteRefs = command(LsRemote.class)
@@ -292,7 +292,7 @@ public class FetchOp extends AbstractGeoGigOp<FetchResult> {
                 }
 
                 if (needUpdate.size() > 0) {
-                    result.getChangedRefs().put(remote.getFetchURL(), needUpdate);
+                    result.addAll(remote.getFetchURL(), needUpdate);
                 }
 
                 // Update HEAD ref

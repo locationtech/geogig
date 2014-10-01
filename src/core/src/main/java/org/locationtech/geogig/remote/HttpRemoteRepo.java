@@ -380,10 +380,11 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
      * Delete a {@link Ref} from the remote repository.
      * 
      * @param refspec the ref to delete
+     * @return
      */
     @Override
-    public void deleteRef(String refspec) {
-        HttpUtils.updateRemoteRef(repositoryURL, refspec, null, true);
+    public Optional<Ref> deleteRef(String refspec) {
+        return HttpUtils.updateRemoteRef(repositoryURL, refspec, null, true);
     }
 
     private void beginPush() {

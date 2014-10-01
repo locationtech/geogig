@@ -54,10 +54,10 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.api.porcelain.BlameReport;
-import org.locationtech.geogig.api.porcelain.FetchResult;
-import org.locationtech.geogig.api.porcelain.FetchResult.ChangedRef;
 import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.api.porcelain.PullResult;
+import org.locationtech.geogig.api.porcelain.TransferSummary;
+import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef;
 import org.locationtech.geogig.api.porcelain.ValueAndCommit;
 import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
@@ -684,10 +684,10 @@ public class ResponseWriter {
         out.writeEndElement();
     }
 
-    public void writeFetchResponse(FetchResult result) throws XMLStreamException {
+    public void writeFetchResponse(TransferSummary result) throws XMLStreamException {
         out.writeStartElement("Fetch");
         if (result.getChangedRefs().entrySet().size() > 0) {
-            for (Entry<String, List<ChangedRef>> entry : result.getChangedRefs().entrySet()) {
+            for (Entry<String, Collection<ChangedRef>> entry : result.getChangedRefs().entrySet()) {
                 out.writeStartElement("Remote");
                 writeElement("remoteName", entry.getKey());
                 for (ChangedRef ref : entry.getValue()) {

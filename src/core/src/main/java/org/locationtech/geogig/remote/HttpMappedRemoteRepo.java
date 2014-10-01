@@ -197,8 +197,8 @@ class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @param refspec the ref to delete
      */
     @Override
-    public void deleteRef(String refspec) {
-        updateRemoteRef(refspec, null, true);
+    public Optional<Ref> deleteRef(String refspec) {
+        return updateRemoteRef(refspec, null, true);
     }
 
     /**
@@ -427,7 +427,7 @@ class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @return the updated ref
      */
     @Override
-    protected Ref updateRemoteRef(String refspec, ObjectId commitId, boolean delete) {
+    protected Optional<Ref> updateRemoteRef(String refspec, ObjectId commitId, boolean delete) {
         return HttpUtils.updateRemoteRef(repositoryURL, refspec, commitId, delete);
     }
 

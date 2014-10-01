@@ -13,53 +13,39 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.Remote;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.hooks.Hookable;
 import org.locationtech.geogig.api.plumbing.ForEachRef;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.porcelain.SynchronizationException.StatusCode;
-import org.locationtech.geogig.remote.IRemoteRepo;
-import org.locationtech.geogig.remote.RemoteUtils;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.DeduplicationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.locationtech.geogig.api.plumbing.SendPack;
+import org.locationtech.geogig.api.plumbing.SendPack.TransferableRef;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 
 /**
  * Update remote refs along with associated objects.
  * 
  * <b>NOTE:</b> so far we don't have the ability to merge non conflicting changes. Instead, the diff
- * list we get acts on whole objects, , so its possible that this operation overrites non
+ * list we get acts on whole objects, , so its possible that this operation overrides non
  * conflicting changes when pushing a branch that has non conflicting changes at both sides. This
  * needs to be revisited once we get more merge tools.
  */
-public class PushOp extends AbstractGeoGigOp<Boolean> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PushOp.class);
+@Hookable(name = "push")
+public class PushOp extends AbstractGeoGigOp<TransferSummary> {
 
     private boolean all;
 
     private List<String> refSpecs = new ArrayList<String>();
 
-    private Supplier<Optional<Remote>> remoteSupplier;
+    private String remoteName;
 
     /**
      * @param all if {@code true}, push all refs under refs/heads/
@@ -89,34 +75,20 @@ public class PushOp extends AbstractGeoGigOp<Boolean> {
      */
     public PushOp setRemote(final String remoteName) {
         checkNotNull(remoteName);
-        return setRemote(command(RemoteResolve.class).setName(remoteName));
-    }
-
-    public String getRemoteName() {
-        if (remoteSupplier == null) {
-            return null;
-        }
-        String name = null;
-        Optional<Remote> remote = this.remoteSupplier.get();
-        if (remote.isPresent()) {
-            name = remote.get().getName();
-        }
-        return name;
-    }
-
-    /**
-     * @param remoteSupplier a supplier for the remote repository to push to
-     * @return {@code this}
-     */
-    public PushOp setRemote(Supplier<Optional<Remote>> remoteSupplier) {
-        checkNotNull(remoteSupplier);
-        this.remoteSupplier = remoteSupplier;
-
+        this.remoteName = remoteName;
         return this;
     }
 
+    public String getRemoteName() {
+        return remoteName;
+    }
+
     public Optional<Remote> getRemote() {
-        return remoteSupplier.get();
+        try {
+            return Optional.of(resolveRemote(remoteName));
+        } catch (Exception e) {
+            return Optional.absent();
+        }
     }
 
     /**
@@ -126,131 +98,82 @@ public class PushOp extends AbstractGeoGigOp<Boolean> {
      * @see org.locationtech.geogig.api.AbstractGeoGigOp#call()
      */
     @Override
-    protected Boolean _call() {
-        if (remoteSupplier == null) {
-            setRemote("origin");
-        }
+    protected TransferSummary _call() {
 
-        final Remote remote = resolveRemote();
-        final IRemoteRepo remoteRepo = openRemoteRepo(remote);
-        boolean dataPushed = false;
-        try {
-            dataPushed = callInternal(remote, remoteRepo, dataPushed);
-        } finally {
-            try {
-                remoteRepo.close();
-            } catch (IOException e) {
-                Throwables.propagate(e);
-            }
-        }
+        final String remoteName = this.remoteName == null ? "origin" : this.remoteName;
 
-        return dataPushed;
+        final Remote remote = resolveRemote(remoteName);
+
+        final List<TransferableRef> refsToPush = resolveRefs();
+
+        SendPack sendPack = command(SendPack.class);
+        sendPack.setRemote(remote);
+        sendPack.setRefs(refsToPush);
+        sendPack.setProgressListener(getProgressListener());
+        TransferSummary result = sendPack.call();
+        return result;
     }
 
-    private boolean callInternal(final Remote remote, final IRemoteRepo remoteRepo,
-            boolean dataPushed) {
+    private List<TransferableRef> resolveRefs() {
+        List<TransferableRef> refsToPush = new ArrayList<>();
 
-        if (!refSpecs.isEmpty()) {
-            for (String refspec : refSpecs) {
+        List<String> refSpecsArg = this.refSpecs;
+
+        if (refSpecsArg.isEmpty()) {
+            if (all) {
+                ImmutableSet<Ref> localRefs = getLocalRefs();
+                for (Ref ref : localRefs) {
+                    String localRef = ref.getName();
+                    String remoteRef = null;
+                    boolean forceUpdate = false;
+                    boolean delete = false;
+                    refsToPush.add(new TransferableRef(localRef, remoteRef, forceUpdate, delete));
+                }
+            } else {
+                // push current branch
+                Ref currentBranch = resolveHeadTarget();
+                String localRef = currentBranch.getName();
+                String remoteRef = null;
+                boolean forceUpdate = false;
+                boolean delete = false;
+                refsToPush.add(new TransferableRef(localRef, remoteRef, forceUpdate, delete));
+            }
+        } else {
+            for (String refspec : refSpecsArg) {
                 String[] refs = refspec.split(":");
                 if (refs.length == 0) {
                     refs = new String[2];
-                    refs[0] = "";
-                    refs[1] = "";
+                    refs[0] = resolveHeadTarget().getName();
+                    refs[1] = null;
+                } else {
+                    if (refs[0].startsWith("+")) {
+                        refs[0] = refs[0].substring(1);
+                    }
+                    for (int i = 0; i < refs.length; i++) {
+                        if (refs[i].trim().isEmpty()) {
+                            refs[i] = null;
+                        }
+                    }
                 }
                 checkArgument(refs.length < 3,
                         "Invalid refspec, please use [+][<localref>][:][<remoteref>].");
 
-                // @todo: REVISIT! looks like 'force' is being ignored
-                final boolean force = refspec.length() > 0 && refspec.charAt(0) == '+';
-                final String localrefspec = refs[0].substring(force ? 1 : 0);
-                final String remoterefspec = (refs.length == 2 ? refs[1] : localrefspec);
-
-                if (localrefspec.isEmpty()) {
-                    if (remoterefspec.isEmpty()) {
-                        // push current branch
-                        Ref currentBranch = resolveHeadTarget();
-                        dataPushed = push(remoteRepo, remote, currentBranch, null);
-                    } else {
-                        // delete the remote branch matching remoteref
-                        remoteRepo.deleteRef(remoterefspec);
-                    }
-                } else {
-                    Optional<Ref> local = refParse(localrefspec);
-                    checkArgument(local.isPresent(), "Local ref '%s' could not be resolved.",
-                            localrefspec);
-                    // push the localref branch to the remoteref branch
-                    Ref localRef = local.get();
-                    dataPushed = push(remoteRepo, remote, localRef, remoterefspec);
-                }
-
-            }
-        } else {
-            List<Ref> refsToPush = new ArrayList<Ref>();
-            if (all) {
-                ImmutableSet<Ref> localRefs = getLocalRefs();
-                refsToPush.addAll(localRefs);
-            } else {
-                // push current branch
-                Ref currentBranch = resolveHeadTarget();
-                refsToPush.add(currentBranch);
-            }
-
-            for (Ref localRef : refsToPush) {
-                String remoteRef = null;
-                dataPushed = push(remoteRepo, remote, localRef, remoteRef);
+                boolean force = refspec.startsWith("+");
+                String localrefspec = refs[0];
+                boolean delete = localrefspec == null;
+                String remoterefspec = refs[refs.length == 2 ? 1 : 0];
+                refsToPush.add(new TransferableRef(localrefspec, remoterefspec, force, delete));
             }
         }
-        return dataPushed;
+        return refsToPush;
     }
 
-    private IRemoteRepo openRemoteRepo(final Remote remote) {
-        final IRemoteRepo remoteRepo;
-        Optional<IRemoteRepo> resolvedRemoteRepo = getRemoteRepo(remote);
-        checkState(resolvedRemoteRepo.isPresent(), "Failed to connect to the remote.");
+    private Remote resolveRemote(String remoteName) {
+        Optional<Remote> pushRemote = command(RemoteResolve.class).setName(remoteName).call();
 
-        remoteRepo = resolvedRemoteRepo.get();
-        try {
-            remoteRepo.open();
-        } catch (IOException e) {
-            Throwables.propagate(e);
-        }
-        return remoteRepo;
-    }
-
-    private Remote resolveRemote() {
-        final Remote remote;
-        Optional<Remote> pushRemote = remoteSupplier.get();
         checkArgument(pushRemote.isPresent(), "Remote could not be resolved.");
 
-        remote = pushRemote.get();
-        return remote;
-    }
-
-    private boolean push(IRemoteRepo remoteRepo, Remote remote, Ref localRef,
-            @Nullable String remoteRefSpec) {
-
-        String localRemoteRefName;
-        try {
-            if (null == remoteRefSpec) {
-                localRemoteRefName = Ref.append(Ref.REMOTES_PREFIX, remote.getName() + "/"
-                        + localRef.localName());
-                remoteRepo.pushNewData(localRef, getProgressListener());
-            } else {
-                localRemoteRefName = Ref.append(Ref.REMOTES_PREFIX, remote.getName() + "/"
-                        + remoteRefSpec);
-                remoteRepo.pushNewData(localRef, remoteRefSpec, getProgressListener());
-            }
-        } catch (SynchronizationException e) {
-            if (e.statusCode == StatusCode.NOTHING_TO_PUSH) {
-                return false;
-            }
-            throw Throwables.propagate(e);
-        }
-
-        LOGGER.info("Pushing {} to {}({})", localRef, localRemoteRefName, remoteRefSpec);
-        updateRef(localRef.getObjectId(), localRemoteRefName);
-        return true;
+        return pushRemote.get();
     }
 
     private ImmutableSet<Ref> getLocalRefs() {
@@ -259,7 +182,7 @@ public class PushOp extends AbstractGeoGigOp<Boolean> {
 
             @Override
             public boolean apply(Ref input) {
-                return input.getName().startsWith(prefix);
+                return !(input instanceof SymRef) && input.getName().startsWith(prefix);
             }
         };
         ImmutableSet<Ref> localRefs = command(ForEachRef.class).setFilter(filter).call();
@@ -276,24 +199,8 @@ public class PushOp extends AbstractGeoGigOp<Boolean> {
         return headTarget.get();
     }
 
-    private void updateRef(ObjectId objectId, String refName) {
-        this.command(UpdateRef.class).setNewValue(objectId).setName(refName).call();
-    }
-
     private Optional<Ref> refParse(String refSpec) {
         return command(RefParse.class).setName(refSpec).call();
     }
 
-    /**
-     * @param remote the remote to get
-     * @return an interface for the remote repository
-     */
-    public Optional<IRemoteRepo> getRemoteRepo(Remote remote) {
-        Hints remoteHints = new Hints();
-        remoteHints.set(Hints.REMOTES_READ_ONLY, Boolean.FALSE);
-        Repository localRepository = repository();
-        DeduplicationService deduplicationService = context.deduplicationService();
-        return RemoteUtils.newRemote(GlobalContextBuilder.builder.build(remoteHints), remote,
-                localRepository, deduplicationService);
-    }
 }

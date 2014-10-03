@@ -105,7 +105,8 @@ public class Log extends AbstractCommand implements CLICommand {
         if (args.decoration) {
             Optional<Ref> head = geogig.command(RefParse.class).setName(Ref.HEAD).call();
             refs.put(head.get().getObjectId(), Ref.HEAD);
-            ImmutableSet<Ref> set = geogig.command(ForEachRef.class).call();
+            ImmutableSet<Ref> set = geogig.command(ForEachRef.class)
+                    .setPrefixFilter(Ref.REFS_PREFIX).call();
             for (Ref ref : set) {
                 ObjectId id = ref.getObjectId();
                 if (refs.containsKey(id)) {
@@ -116,7 +117,8 @@ public class Log extends AbstractCommand implements CLICommand {
             }
         }
         if (args.all) {
-            ImmutableSet<Ref> refs = geogig.command(ForEachRef.class).call();
+            ImmutableSet<Ref> refs = geogig.command(ForEachRef.class)
+                    .setPrefixFilter(Ref.REFS_PREFIX).call();
             List<ObjectId> list = Lists.newArrayList();
             for (Ref ref : refs) {
                 list.add(ref.getObjectId());

@@ -26,6 +26,7 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -50,20 +51,28 @@ public class ShowRef extends AbstractCommand implements CLICommand {
         GeoGIG geogig = cli.getGeogig();
 
         ForEachRef op = geogig.command(ForEachRef.class);
-        if (!patterns.isEmpty()) {
-            Predicate<Ref> filter = new Predicate<Ref>() {
-                @Override
-                public boolean apply(Ref ref) {
-                    for (String pattern : patterns) {
-                        if (ref != null && ref.getName().endsWith("/" + pattern)) {
-                            return true;
-                        }
-                    }
+
+        Predicate<Ref> filter = new Predicate<Ref>() {
+            @Override
+            public boolean apply(Ref ref) {
+                String name = ref.getName();
+                if (!name.startsWith(Ref.REFS_PREFIX)) {
                     return false;
                 }
-            };
-            op.setFilter(filter);
-        }
+                boolean match = patterns.isEmpty() ? true : false;
+                for (String pattern : patterns) {
+                    if (Strings.isNullOrEmpty(pattern)) {
+                        match = true;
+                    } else if (name.endsWith("/" + pattern)) {
+                        match = true;
+                        break;
+                    }
+                }
+                return match;
+            }
+        };
+        op.setFilter(filter);
+
         ImmutableSet<Ref> refs = op.call();
 
         for (Ref ref : refs) {

@@ -26,6 +26,7 @@ import org.locationtech.geogig.api.porcelain.RebaseOp;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
@@ -105,6 +106,20 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
                 "Cannot end a transaction within a transaction!");
         Preconditions.checkArgument(transaction != null, "No transaction was specified!");
 
+        try {
+            if (!cancel) {
+                updateRefs();
+            }
+        } finally {
+            // Erase old refs
+            transaction.close();
+        }
+
+        // Success
+        return true;
+    }
+
+    private void updateRefs() {
         final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
         final String currentBranch;
         if (currHead.isPresent() && currHead.get() instanceof SymRef) {
@@ -113,88 +128,82 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
             currentBranch = "";
         }
 
-        if (!cancel) {
-            ImmutableSet<Ref> changedRefs = getChangedRefs();
-            // Lock the repository
-            try {
-                refDatabase().lock();
-            } catch (TimeoutException e) {
-                Throwables.propagate(e);
-            }
-
-            try {
-                // Update refs
-                for (Ref ref : changedRefs) {
-                    Ref updatedRef = ref;
-
-                    Optional<Ref> repoRef = command(RefParse.class).setName(ref.getName()).call();
-                    if (repoRef.isPresent() && repositoryChanged(repoRef.get())) {
-                        if (rebase) {
-                            // Try to rebase
-                            transaction.command(CheckoutOp.class).setSource(ref.getName())
-                                    .setForce(true).call();
-                            try {
-                                transaction
-                                        .command(RebaseOp.class)
-                                        .setUpstream(
-                                                Suppliers.ofInstance(repoRef.get().getObjectId()))
-                                        .call();
-                            } catch (RebaseConflictsException e) {
-                                Throwables.propagate(e);
-                            }
-                            updatedRef = transaction.command(RefParse.class).setName(ref.getName())
-                                    .call().get();
-                        } else {
-                            // sync transactions have to use merge to prevent divergent history
-                            transaction.command(CheckoutOp.class).setSource(ref.getName())
-                                    .setForce(true).call();
-                            try {
-                                transaction
-                                        .command(MergeOp.class)
-                                        .setAuthor(authorName.orNull(), authorEmail.orNull())
-                                        .addCommit(
-                                                Suppliers.ofInstance(repoRef.get().getObjectId()))
-                                        .call();
-                            } catch (NothingToCommitException e) {
-                                // The repo commit is already in our history, this is a fast
-                                // forward.
-                            }
-                            updatedRef = transaction.command(RefParse.class).setName(ref.getName())
-                                    .call().get();
-                        }
-                    }
-                    command(UpdateRef.class).setName(ref.getName())
-                            .setNewValue(updatedRef.getObjectId()).call();
-
-                    if (currentBranch.equals(ref.getName())) {
-                        // Update HEAD, WORK_HEAD and STAGE_HEAD
-                        command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(ref.getName())
-                                .call();
-                        command(UpdateRef.class).setName(Ref.WORK_HEAD)
-                                .setNewValue(updatedRef.getObjectId()).call();
-                        command(UpdateRef.class).setName(Ref.STAGE_HEAD)
-                                .setNewValue(updatedRef.getObjectId()).call();
-                    }
-                }
-
-                // TODO: What happens if there are unstaged or staged changes in the repository when
-                // a transaction is committed?
-            } finally {
-                // Unlock the repository
-                refDatabase().unlock();
-            }
-
+        ImmutableSet<Ref> changedRefs = getChangedRefs();
+        // Lock the repository
+        try {
+            refDatabase().lock();
+        } catch (TimeoutException e) {
+            Throwables.propagate(e);
         }
 
-        // Erase old refs
-        transaction.close();
+        try {
+            // Update refs
+            for (Ref ref : changedRefs) {
+                Ref updatedRef = ref;
 
-        // Success
-        return true;
+                Optional<Ref> repoRef = command(RefParse.class).setName(ref.getName()).call();
+                if (repoRef.isPresent() && repositoryChanged(repoRef.get())) {
+                    if (rebase) {
+                        // Try to rebase
+                        transaction.command(CheckoutOp.class).setSource(ref.getName())
+                                .setForce(true).call();
+                        try {
+                            transaction.command(RebaseOp.class)
+                                    .setUpstream(Suppliers.ofInstance(repoRef.get().getObjectId()))
+                                    .call();
+                        } catch (RebaseConflictsException e) {
+                            Throwables.propagate(e);
+                        }
+                        updatedRef = transaction.command(RefParse.class).setName(ref.getName())
+                                .call().get();
+                    } else {
+                        // sync transactions have to use merge to prevent divergent history
+                        transaction.command(CheckoutOp.class).setSource(ref.getName())
+                                .setForce(true).call();
+                        try {
+                            transaction.command(MergeOp.class)
+                                    .setAuthor(authorName.orNull(), authorEmail.orNull())
+                                    .addCommit(Suppliers.ofInstance(repoRef.get().getObjectId()))
+                                    .call();
+                        } catch (NothingToCommitException e) {
+                            // The repo commit is already in our history, this is a fast
+                            // forward.
+                        }
+                        updatedRef = transaction.command(RefParse.class).setName(ref.getName())
+                                .call().get();
+                    }
+                }
+                command(UpdateRef.class).setName(ref.getName())
+                        .setNewValue(updatedRef.getObjectId()).call();
+
+                if (currentBranch.equals(ref.getName())) {
+                    // Update HEAD, WORK_HEAD and STAGE_HEAD
+                    command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(ref.getName()).call();
+                    command(UpdateRef.class).setName(Ref.WORK_HEAD)
+                            .setNewValue(updatedRef.getObjectId()).call();
+                    command(UpdateRef.class).setName(Ref.STAGE_HEAD)
+                            .setNewValue(updatedRef.getObjectId()).call();
+                }
+            }
+
+            // TODO: What happens if there are unstaged or staged changes in the repository when
+            // a transaction is committed?
+        } finally {
+            // Unlock the repository
+            refDatabase().unlock();
+        }
     }
 
     private ImmutableSet<Ref> getChangedRefs() {
-        return transaction.command(ForEachRef.class).setPrefixFilter(Ref.REFS_PREFIX).call();
+        Predicate<Ref> nonTxFilter = new Predicate<Ref>() {
+            @Override
+            public boolean apply(Ref ref) {
+                String name = ref.getName();
+                return name.startsWith(Ref.REFS_PREFIX)// ignore HEAD,WORK_HEAD, etc
+                        && !name.startsWith(Ref.TRANSACTIONS_PREFIX);// ignore transactions
+            }
+        };
+        return transaction.command(ForEachRef.class).setFilter(nonTxFilter).call();
     }
 
     private boolean repositoryChanged(Ref ref) {

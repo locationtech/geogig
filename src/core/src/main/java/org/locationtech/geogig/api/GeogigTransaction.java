@@ -40,10 +40,6 @@ import com.google.common.base.Preconditions;
  */
 public class GeogigTransaction implements Context {
 
-    public static final String TRANSACTIONS_NAMESPACE = "transactions";
-
-    public static final String TRANSACTIONS_DIR = TRANSACTIONS_NAMESPACE + "/";
-
     private UUID transactionId;
 
     private Context injector;

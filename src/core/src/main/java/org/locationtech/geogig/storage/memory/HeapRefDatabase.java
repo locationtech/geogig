@@ -10,13 +10,16 @@
 package org.locationtech.geogig.storage.memory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.api.Ref.TRANSACTIONS_PREFIX;
 
 import java.util.Map;
 
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.storage.AbstractRefDatabase;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -122,6 +125,20 @@ public class HeapRefDatabase extends AbstractRefDatabase {
         refs.put(name, val);
     }
 
+    private static class RefPrefixPredicate implements Predicate<String> {
+
+        private final String prefix;
+
+        RefPrefixPredicate(final String prefix) {
+            this.prefix = prefix;
+        }
+
+        @Override
+        public boolean apply(String refName) {
+            return refName.startsWith(prefix);
+        }
+    }
+
     /**
      * @return all known references under the "refs" namespace (i.e. not top level ones like HEAD,
      *         etc), key'ed by ref name
@@ -129,27 +146,17 @@ public class HeapRefDatabase extends AbstractRefDatabase {
     @Override
     public Map<String, String> getAll() {
 
-        Predicate<String> keyPredicate = new Predicate<String>() {
-
-            @Override
-            public boolean apply(String refName) {
-                return refName.startsWith("refs/");
-            }
-        };
-        return Maps.filterKeys(ImmutableMap.copyOf(this.refs), keyPredicate);
+        Predicate<String> filter = Predicates.not(new RefPrefixPredicate(TRANSACTIONS_PREFIX));
+        Map<String, String> allButTransactions = Maps.filterKeys(ImmutableMap.copyOf(this.refs),
+                filter);
+        return allButTransactions;
     }
 
     @Override
     public Map<String, String> getAll(final String prefix) {
-
-        Predicate<String> keyPredicate = new Predicate<String>() {
-
-            @Override
-            public boolean apply(String refName) {
-                return refName.startsWith(prefix);
-            }
-        };
-        return Maps.filterKeys(ImmutableMap.copyOf(this.refs), keyPredicate);
+        Preconditions.checkNotNull(prefix);
+        Predicate<String> filter = new RefPrefixPredicate(prefix);
+        return Maps.filterKeys(ImmutableMap.copyOf(this.refs), filter);
     }
 
     @Override
@@ -173,7 +180,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
     public void configure() {
         // No-op
     }
-    
+
     @Override
     public void checkConfig() {
         // No-op

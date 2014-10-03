@@ -25,14 +25,17 @@ import java.util.Map;
 
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.AbstractRefDatabase;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.inject.Inject;
@@ -102,11 +105,8 @@ public class FileRefDatabase extends AbstractRefDatabase {
     @Override
     public String getRef(String name) {
         checkNotNull(name);
-        File refFile = toFile(name);
-        if (!refFile.exists() || refFile.isDirectory()) {
-            return null;
-        }
-        String value = readRef(refFile);
+
+        String value = getInternal(name);
         if (value == null) {
             return null;
         }
@@ -125,11 +125,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
     @Override
     public String getSymRef(String name) {
         checkNotNull(name);
-        File refFile = toFile(name);
-        if (!refFile.exists() || refFile.isDirectory()) {
-            return null;
-        }
-        String value = readRef(refFile);
+        String value = getInternal(name);
         if (value == null) {
             return null;
         }
@@ -137,6 +133,16 @@ public class FileRefDatabase extends AbstractRefDatabase {
             throw new IllegalArgumentException(name + " is not a symbolic ref: '" + value + "'");
         }
         return value.substring("ref: ".length());
+
+    }
+
+    private String getInternal(String name) {
+        File refFile = toFile(name);
+        if (!refFile.exists() || refFile.isDirectory()) {
+            return null;
+        }
+        String value = readRef(refFile);
+        return value;
     }
 
     /**
@@ -253,13 +259,30 @@ public class FileRefDatabase extends AbstractRefDatabase {
         }
     }
 
-    /**
-     * @return all known references under the "refs" namespace (i.e. not top level ones like HEAD,
-     *         etc), key'ed by ref name
-     */
     @Override
     public Map<String, String> getAll() {
-        return getAll("refs");
+        Builder<String, String> builder = ImmutableMap.<String, String> builder();
+
+        builder.putAll(getAll(Ref.HEADS_PREFIX));
+        builder.putAll(getAll(Ref.TAGS_PREFIX));
+        builder.putAll(getAll(Ref.REMOTES_PREFIX));
+
+        addIfPresent(builder, Ref.CHERRY_PICK_HEAD);
+        addIfPresent(builder, Ref.ORIG_HEAD);
+        addIfPresent(builder, Ref.HEAD);
+        addIfPresent(builder, Ref.WORK_HEAD);
+        addIfPresent(builder, Ref.STAGE_HEAD);
+        addIfPresent(builder, Ref.MERGE_HEAD);
+
+        ImmutableMap<String, String> all = builder.build();
+        return all;
+    }
+
+    private void addIfPresent(Builder<String, String> builder, String name) {
+        String value = getInternal(name);
+        if (value != null) {
+            builder.put(name, value);
+        }
     }
 
     /**
@@ -267,6 +290,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      */
     @Override
     public Map<String, String> getAll(String namespace) {
+        Preconditions.checkNotNull(namespace);
         File refsRoot;
         try {
             Optional<URL> envHome = new ResolveGeogigDir(platform).call();

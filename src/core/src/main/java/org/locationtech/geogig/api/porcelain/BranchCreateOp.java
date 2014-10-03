@@ -94,7 +94,7 @@ public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
 
     protected  Ref _call() {
         checkState(branchName != null, "branch name was not provided");
-        final String branchRefPath = Ref.HEADS_PREFIX + branchName;
+        final String branchRefPath = Ref.append(Ref.HEADS_PREFIX, branchName);
         checkArgument(force || !command(RefParse.class).setName(branchRefPath).call().isPresent(),
                 "A branch named '" + branchName + "' already exists.");
 

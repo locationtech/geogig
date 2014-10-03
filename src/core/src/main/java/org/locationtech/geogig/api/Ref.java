@@ -79,6 +79,12 @@ public class Ref implements Comparable<Ref> {
     public static final String HEADS_PREFIX = REFS_PREFIX + "heads/";
 
     /**
+     * Directory prefix for transaction refs (i.e. where all refs are copied for a specific
+     * transaction under {@code TRANSACTIONS_PREFIX + "/<transaction id>/}
+     */
+    public static final String TRANSACTIONS_PREFIX = REFS_PREFIX + "transactions/";
+
+    /**
      * By convention, the origin of the repository
      */
     public static final String ORIGIN = "refs/remotes/origin";

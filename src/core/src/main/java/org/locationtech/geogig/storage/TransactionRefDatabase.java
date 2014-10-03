@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage;
 
+import static org.locationtech.geogig.api.Ref.TRANSACTIONS_PREFIX;
 import static org.locationtech.geogig.api.Ref.append;
 
 import java.util.Map;
@@ -35,8 +36,8 @@ import com.google.common.collect.Maps;
  * namespace.
  * <p>
  * This is so that every command created through the {@link GeogigTransaction transaction} used as a
- * {@link Context}, as well as the transaction specific {@link Index} and {@link WorkingTree}
- * , are given this instance of {@code RefDatabase} and can do its work without ever noticing its
+ * {@link Context}, as well as the transaction specific {@link Index} and {@link WorkingTree} , are
+ * given this instance of {@code RefDatabase} and can do its work without ever noticing its
  * "running inside a transaction". For the command nothing changes.
  * <p>
  * {@link TransactionRefDatabase#create() create()} shall be called before this decorator gets used
@@ -60,8 +61,7 @@ public class TransactionRefDatabase implements RefDatabase {
 
     public TransactionRefDatabase(final RefDatabase refDb, final UUID transactionId) {
         this.refDb = refDb;
-        this.txRootNamespace = append(GeogigTransaction.TRANSACTIONS_NAMESPACE,
-                transactionId.toString());
+        this.txRootNamespace = append(TRANSACTIONS_PREFIX, transactionId.toString());
         this.txNamespace = append(txRootNamespace, "changed");
         this.txOrigNamespace = append(txRootNamespace, "orig");
     }
@@ -81,26 +81,20 @@ public class TransactionRefDatabase implements RefDatabase {
         refDb.create();
 
         // copy HEADS
-        String headValue = readRef(Ref.HEAD);
-        if (headValue != null) {
-            insertRef(toInternal(Ref.HEAD), headValue);
-        }
+        copyIfPresent(Ref.HEAD, Ref.WORK_HEAD, Ref.STAGE_HEAD, Ref.CHERRY_PICK_HEAD,
+                Ref.MERGE_HEAD, Ref.ORIG_HEAD);
 
-        String workHeadValue = readRef(Ref.WORK_HEAD);
-        if (workHeadValue != null) {
-            insertRef(toInternal(Ref.WORK_HEAD), workHeadValue);
-        }
+        copyAll(refDb.getAll(Ref.HEADS_PREFIX));
+        copyAll(refDb.getAll(Ref.REMOTES_PREFIX));
+        copyAll(refDb.getAll(Ref.TAGS_PREFIX));
+    }
 
-        String stageHeadValue = readRef(Ref.STAGE_HEAD);
-        if (stageHeadValue != null) {
-            insertRef(toInternal(Ref.STAGE_HEAD), stageHeadValue);
-        }
-
-        Map<String, String> origRefs = refDb.getAll(Ref.HEADS_PREFIX);
-        Map<String, String> thisTxRefs = toOrigInternal(origRefs);
-
-        for (Entry<String, String> entry : thisTxRefs.entrySet()) {
-            insertRef(entry.getKey(), entry.getValue());
+    private void copyIfPresent(String... refNames) {
+        for (String refName : refNames) {
+            String workHeadValue = readRef(refName);
+            if (workHeadValue != null) {
+                insertRef(toInternal(refName), workHeadValue);
+            }
         }
     }
 
@@ -112,6 +106,14 @@ public class TransactionRefDatabase implements RefDatabase {
             value = refDb.getSymRef(name);
         }
         return value;
+    }
+
+    private void copyAll(Map<String, String> origRefs) {
+        Map<String, String> thisTxRefs = toOrigInternal(origRefs);
+
+        for (Entry<String, String> entry : thisTxRefs.entrySet()) {
+            insertRef(entry.getKey(), entry.getValue());
+        }
     }
 
     private void insertRef(String name, String value) {
@@ -278,13 +280,13 @@ public class TransactionRefDatabase implements RefDatabase {
         return txValue;
     }
 
-	@Override
-	public void configure() {
-		// No-op
-	}
-	
-	@Override
-	public void checkConfig() {
-	    // No-op
-	}
+    @Override
+    public void configure() {
+        // No-op
+    }
+
+    @Override
+    public void checkConfig() {
+        // No-op
+    }
 }

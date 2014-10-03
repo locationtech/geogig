@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage;
 
+import static org.locationtech.geogig.api.Ref.TRANSACTIONS_PREFIX;
 import static org.locationtech.geogig.api.Ref.append;
 
 import java.util.Iterator;
@@ -56,8 +57,7 @@ public class TransactionStagingDatabase implements StagingDatabase {
      */
     public TransactionStagingDatabase(final StagingDatabase database, final UUID transactionId) {
         this.database = database;
-        this.txNamespace = append(
-                append(GeogigTransaction.TRANSACTIONS_NAMESPACE, transactionId.toString()),
+        this.txNamespace = append(append(TRANSACTIONS_PREFIX, transactionId.toString()),
                 "conflicts");
     }
 
@@ -122,8 +122,7 @@ public class TransactionStagingDatabase implements StagingDatabase {
      * Pass through to the original {@link StagingDatabase}.
      */
     @Override
-    public @Nullable
-    RevObject getIfPresent(ObjectId id) {
+    public @Nullable RevObject getIfPresent(ObjectId id) {
         return database.getIfPresent(id);
     }
 
@@ -131,8 +130,7 @@ public class TransactionStagingDatabase implements StagingDatabase {
      * Pass through to the original {@link StagingDatabase}.
      */
     @Override
-    public @Nullable
-    <T extends RevObject> T getIfPresent(ObjectId id, Class<T> type)
+    public @Nullable <T extends RevObject> T getIfPresent(ObjectId id, Class<T> type)
             throws IllegalArgumentException {
         return database.getIfPresent(id, type);
     }

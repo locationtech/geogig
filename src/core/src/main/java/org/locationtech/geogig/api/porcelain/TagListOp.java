@@ -18,7 +18,6 @@ import org.locationtech.geogig.api.plumbing.ForEachRef;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -30,15 +29,8 @@ public class TagListOp extends AbstractGeoGigOp<ImmutableList<RevTag>> {
 
     @Override
     protected ImmutableList<RevTag> _call() {
-
-        final Predicate<Ref> filter = new Predicate<Ref>() {
-            @Override
-            public boolean apply(Ref input) {
-                return input.getName().startsWith(Ref.TAGS_PREFIX);
-            }
-        };
-
-        List<Ref> refs = Lists.newArrayList(command(ForEachRef.class).setFilter(filter).call());
+        List<Ref> refs = Lists.newArrayList(command(ForEachRef.class).setPrefixFilter(
+                Ref.TAGS_PREFIX).call());
         List<RevTag> list = Lists.newArrayList();
         for (Ref ref : refs) {
             Optional<RevTag> tag = command(RevObjectParse.class).setObjectId(ref.getObjectId())

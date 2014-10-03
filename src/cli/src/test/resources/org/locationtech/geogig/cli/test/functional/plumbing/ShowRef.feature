@@ -1,4 +1,4 @@
-Feature: "merge" command
+Feature: "show-ref" command
     In order to know the branches in a geogig repository
     As a Geogig User
     I want list all references

@@ -131,7 +131,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         // we get a a list of commits to apply on top of the squashed commits
         List<RevCommit> commits = getCommitsAfterUntil();
 
-        ImmutableSet<Ref> refs = command(ForEachRef.class).setPrefixFilter("refs/heads").call();
+        ImmutableSet<Ref> refs = command(ForEachRef.class).setPrefixFilter(Ref.HEADS_PREFIX).call();
 
         // we create a list of all parents of those squashed commits, in case they are
         // merge commits. The resulting commit will have all these parents

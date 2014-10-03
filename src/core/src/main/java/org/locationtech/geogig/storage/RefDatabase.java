@@ -13,6 +13,7 @@ import java.io.Closeable;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.di.Singleton;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
@@ -21,7 +22,7 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
  * 
  */
 @Singleton
-public interface RefDatabase extends Closeable{
+public interface RefDatabase extends Closeable {
 
     /**
      * Locks access to the main repository refs.
@@ -87,11 +88,18 @@ public interface RefDatabase extends Closeable{
     public abstract String remove(String refName);
 
     /**
-     * @return all known references under the "refs" namespace (i.e. not top level ones like HEAD,
-     *         etc), key'ed by ref name
+     * @return all known references, including top level ones like HEAD, WORK_HEAD, and STAGE_HEAD,
+     *         but not including transaction references (e.g. the ones under the
+     *         {@link Ref#TRANSACTIONS_PREFIX transactions/} prefix.
      */
     public abstract Map<String, String> getAll();
 
+    /**
+     * All refs under a specific prefix (.e.g. {@code /}, {@code /refs}, {@code /refs/remotes}, etc
+     * 
+     * @param prefix
+     * @return
+     */
     public abstract Map<String, String> getAll(final String prefix);
 
     /**

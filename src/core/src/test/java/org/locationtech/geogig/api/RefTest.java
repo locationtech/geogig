@@ -125,25 +125,17 @@ public class RefTest extends RepositoryTestCase {
 
     @Test
     public void testAppendAndChild() {
-        String ref = "ref1";
-        ref = Ref.append(Ref.HEADS_PREFIX, ref);
-        assertEquals(Ref.HEADS_PREFIX + "ref1", ref);
-        ref = Ref.child(Ref.HEADS_PREFIX, ref);
-        assertEquals("ref1", ref);
+        assertEquals("refs/heads/ref1", Ref.append(Ref.HEADS_PREFIX, "ref1"));
+        assertEquals("ref1", Ref.child(Ref.HEADS_PREFIX, "refs/heads/ref1"));
 
-        ref = Ref.append("", ref);
-        assertEquals("ref1", ref);
+        assertEquals("ref1", Ref.append("", "ref1"));
 
-        ref = Ref.append(Ref.HEADS_PREFIX, ref + "/");
-        assertEquals(Ref.HEADS_PREFIX + "ref1", ref);
+        assertEquals("refs/heads/ref1", Ref.append(Ref.HEADS_PREFIX, "ref1/"));
 
-        ref = Ref.child(Ref.HEADS_PREFIX.substring(0, Ref.HEADS_PREFIX.length() - 1), ref);
-        assertEquals("ref1", ref);
+        assertEquals("ref1", Ref.child("refs/heads", "refs/heads/ref1"));
 
-        ref = Ref.append(Ref.HEADS_PREFIX, "/" + ref);
-        assertEquals(Ref.HEADS_PREFIX + "ref1", ref);
+        assertEquals("refs/heads/ref1", Ref.append(Ref.HEADS_PREFIX, "/ref1"));
 
-        ref = Ref.append(ref, "");
-        assertEquals(Ref.HEADS_PREFIX + "ref1", ref);
+        assertEquals("refs/heads/ref1", Ref.append("refs/heads/ref1", ""));
     }
 }

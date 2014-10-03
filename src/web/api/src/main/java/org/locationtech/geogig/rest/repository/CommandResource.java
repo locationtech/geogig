@@ -9,6 +9,11 @@
  */
 package org.locationtech.geogig.rest.repository;
 
+import static org.locationtech.geogig.rest.Variants.CSV;
+import static org.locationtech.geogig.rest.Variants.CSV_MEDIA_TYPE;
+import static org.locationtech.geogig.rest.Variants.JSON;
+import static org.locationtech.geogig.rest.Variants.XML;
+import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
 import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 
 import java.io.IOException;
@@ -25,6 +30,8 @@ import javax.xml.stream.XMLStreamWriter;
 import org.codehaus.jettison.mapped.MappedNamespaceConvention;
 import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
 import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.rest.RestletException;
+import org.locationtech.geogig.rest.WriterRepresentation;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -50,15 +57,6 @@ import com.google.common.base.Preconditions;
  */
 public class CommandResource extends Resource {
 
-    private static final MediaType CSV_MEDIA_TYPE = new MediaType("text/csv",
-            "Comma-separated Values");
-
-    private static final Variant JSON = new Variant(MediaType.APPLICATION_JSON);
-
-    private static final Variant XML = new Variant(MediaType.APPLICATION_XML);
-
-    private static final Variant CSV = new Variant(CSV_MEDIA_TYPE);
-
     @Override
     public void init(Context context, Request request, Response response) {
         super.init(context, request, response);
@@ -70,18 +68,7 @@ public class CommandResource extends Resource {
 
     @Override
     public Variant getPreferredVariant() {
-        Request request = getRequest();
-        String extension = RESTUtils.getStringAttribute(request, "extension");
-        if ("xml".equals(extension)) {
-            return XML;
-        }
-        if ("json".equals(extension)) {
-            return JSON;
-        }
-        if ("csv".equals(extension)) {
-            return CSV;
-        }
-        return super.getPreferredVariant();
+        return getVariantByExtension(getRequest(), getVariants()).or(super.getPreferredVariant());
     }
 
     @Override
@@ -220,7 +207,7 @@ public class CommandResource extends Resource {
         }
     }
 
-    static class JettisonRepresentation extends WriterRepresentation {
+    public static class JettisonRepresentation extends WriterRepresentation {
 
         final CommandResponse impl;
 

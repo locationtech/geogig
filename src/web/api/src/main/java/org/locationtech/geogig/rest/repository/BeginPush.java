@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
+import org.locationtech.geogig.rest.WriterRepresentation;
 import org.locationtech.geogig.web.api.commands.PushManager;
 import org.restlet.Context;
 import org.restlet.data.ClientInfo;

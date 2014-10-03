@@ -35,6 +35,7 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
+import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.opengis.feature.simple.SimpleFeature;

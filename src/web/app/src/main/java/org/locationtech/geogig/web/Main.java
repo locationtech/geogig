@@ -21,6 +21,8 @@ import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
 import org.locationtech.geogig.cli.CLIContextBuilder;
+import org.locationtech.geogig.rest.TaskStatusResource;
+import org.locationtech.geogig.rest.osm.OSMRouter;
 import org.locationtech.geogig.rest.repository.CommandResource;
 import org.locationtech.geogig.rest.repository.FixedEncoder;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
@@ -98,9 +100,15 @@ public class Main extends Application {
                 request.getAttributes().put(RepositoryProvider.KEY, repoProvider);
             }
         };
-        RepositoryRouter root = new RepositoryRouter();
+        Router repo = new RepositoryRouter();
+        Router osm = new OSMRouter();
 
-        router.attach("/repo", root);
+        router.attach("/tasks", TaskStatusResource.class);
+        router.attach("/tasks/{taskId}.{extension}", TaskStatusResource.class);
+        router.attach("/tasks/{taskId}", TaskStatusResource.class);
+
+        router.attach("/osm", osm);
+        router.attach("/repo", repo);
         router.attach("/{command}.{extension}", CommandResource.class);
         router.attach("/{command}", CommandResource.class);
 

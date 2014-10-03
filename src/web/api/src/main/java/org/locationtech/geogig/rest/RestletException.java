@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.rest.repository;
+package org.locationtech.geogig.rest;
 
 import javax.annotation.Nullable;
 

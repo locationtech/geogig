@@ -83,6 +83,14 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
         return remoteName;
     }
 
+    public Optional<Remote> getRemote() {
+        try {
+            return Optional.of(resolveRemote(remoteName));
+        } catch (IllegalArgumentException e) {
+            return Optional.absent();
+        }
+    }
+
     /**
      * Executes the push operation.
      * 

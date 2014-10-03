@@ -18,6 +18,7 @@ import java.util.List;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.rest.WriterRepresentation;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;

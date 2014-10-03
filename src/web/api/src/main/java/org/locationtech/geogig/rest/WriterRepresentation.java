@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.rest.repository;
+package org.locationtech.geogig.rest;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,7 +21,7 @@ import org.restlet.resource.OutputRepresentation;
 /**
  *
  */
-abstract class WriterRepresentation extends OutputRepresentation {
+public abstract class WriterRepresentation extends OutputRepresentation {
 
     public WriterRepresentation(MediaType mediaType) {
         super(mediaType);

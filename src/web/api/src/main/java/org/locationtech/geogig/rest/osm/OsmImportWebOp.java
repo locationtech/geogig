@@ -6,6 +6,7 @@ import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 
 import java.net.URL;
 
+import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.osm.internal.Mapping;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
@@ -71,6 +72,7 @@ public class OsmImportWebOp extends Resource {
         command.setMapping(mapping);
         command.setMessage(message);
         command.setNoRaw(noRaw);
+        command.setProgressListener(new DefaultProgressListener());
 
         AsyncCommand<Optional<OSMReport>> asyncCommand;
 
@@ -79,7 +81,7 @@ public class OsmImportWebOp extends Resource {
         asyncCommand = AsyncContext.get().run(command, description);
 
         final String rootPath = request.getRootRef().toString();
-        Representation rep = new OSMImportRepresentation(MediaType.APPLICATION_XML, asyncCommand,
+        Representation rep = new OSMReportRepresentation(MediaType.APPLICATION_XML, asyncCommand,
                 rootPath);
         getResponse().setEntity(rep);
     }

@@ -32,6 +32,7 @@ import org.locationtech.geogig.repository.FeatureToDelete;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.openstreetmap.osmosis.core.OsmosisRuntimeException;
 import org.openstreetmap.osmosis.core.container.v0_6.ChangeContainer;
 import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer;
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
@@ -236,10 +237,16 @@ public class OSMApplyDiffOp extends AbstractGeoGigOp<Optional<OSMReport>> {
 
         @Override
         public void complete() {
-            progressListener.setProgress(count);
-            progressListener.complete();
-            target.finish();
-            pointCache.dispose();
+            try {
+                progressListener.setProgress(count);
+                progressListener.complete();
+            } finally {
+                try {
+                    target.noMoreInput();
+                } finally {
+                    pointCache.dispose();
+                }
+            }
         }
 
         @Override
@@ -249,6 +256,10 @@ public class OSMApplyDiffOp extends AbstractGeoGigOp<Optional<OSMReport>> {
 
         @Override
         public void process(ChangeContainer container) {
+            if (progressListener.isCanceled()) {
+                target.cancel();
+                throw new OsmosisRuntimeException("Cancelled by user");
+            }
             final EntityContainer entityContainer = container.getEntityContainer();
             final Entity entity = entityContainer.getEntity();
             final ChangeAction changeAction = container.getAction();

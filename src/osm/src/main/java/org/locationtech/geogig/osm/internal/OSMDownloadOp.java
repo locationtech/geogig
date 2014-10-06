@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.api.porcelain.NothingToCommitException;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
@@ -161,7 +162,8 @@ public class OSMDownloadOp extends AbstractGeoGigOp<Optional<OSMReport>> {
                     + "No changes were made to the repository.\n"
                     + "To check the downloaded elements, use the --saveto and"
                     + " --keep-files options and verify the intermediate file.");
-
+        } catch (NothingToCommitException alreadyUpToDate) {
+            throw alreadyUpToDate;
         } catch (RuntimeException e) {
             throw new IllegalStateException(
                     "Failed to fetch data from overpass server. (Did you try to use a standard OSM server instead?) "

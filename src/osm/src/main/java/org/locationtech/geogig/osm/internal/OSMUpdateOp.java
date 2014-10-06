@@ -130,20 +130,22 @@ public class OSMUpdateOp extends AbstractGeoGigOp<Optional<OSMReport>> {
         if (!report.isPresent()) {
             return report;
         }
+        if (!getProgressListener().isCanceled()) {
+            command(CheckoutOp.class).setSource(((SymRef) currHead.get()).getTarget()).call();
 
-        command(CheckoutOp.class).setSource(((SymRef) currHead.get()).getTarget()).call();
-
-        Optional<Ref> upstreamRef = command(RefParse.class).setName(OSMUtils.OSM_FETCH_BRANCH)
-                .call();
-        Supplier<ObjectId> commitSupplier = Suppliers.ofInstance(upstreamRef.get().getObjectId());
-        if (rebase) {
-            getProgressListener().setDescription("Rebasing updated features...");
-            command(RebaseOp.class).setUpstream(commitSupplier)
-                    .setProgressListener(getProgressListener()).call();
-        } else {
-            getProgressListener().setDescription("Merging updated features...");
-            command(MergeOp.class).addCommit(commitSupplier)
-                    .setProgressListener(getProgressListener()).call();
+            Optional<Ref> upstreamRef = command(RefParse.class).setName(OSMUtils.OSM_FETCH_BRANCH)
+                    .call();
+            Supplier<ObjectId> commitSupplier = Suppliers.ofInstance(upstreamRef.get()
+                    .getObjectId());
+            if (rebase) {
+                getProgressListener().setDescription("Rebasing updated features...");
+                command(RebaseOp.class).setUpstream(commitSupplier)
+                        .setProgressListener(getProgressListener()).call();
+            } else {
+                getProgressListener().setDescription("Merging updated features...");
+                command(MergeOp.class).addCommit(commitSupplier)
+                        .setProgressListener(getProgressListener()).call();
+            }
         }
         return report;
     }

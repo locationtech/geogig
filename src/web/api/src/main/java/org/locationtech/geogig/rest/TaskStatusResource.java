@@ -23,6 +23,18 @@ import org.restlet.resource.Variant;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 
+/**
+ * Resource for {@code /osm/tasks /tasksId[?params]}
+ * <p>
+ * Params:
+ * <ul>
+ * <li>If no taskId is given, returns a list of tasks, whether they're in a waiting, running,
+ * finished, or failed status. Done tasks (either finished or failed) are automatically pruned after
+ * 10 minutes.
+ * <li>prune: boolean, whether to prune a finished task (requires a taskId)
+ * <li>cancel: boolean, if true, an attempt to cancel the tasks given by {@code taskId} is made.
+ * </ul>
+ */
 public class TaskStatusResource extends Resource {
 
     @Override
@@ -45,6 +57,8 @@ public class TaskStatusResource extends Resource {
         final String taskId = getStringAttribute(request, "taskId");
         final boolean prune = Boolean.valueOf(getRequest().getResourceRef().getQueryAsForm()
                 .getFirstValue("prune"));
+        final boolean cancel = Boolean.valueOf(getRequest().getResourceRef().getQueryAsForm()
+                .getFirstValue("cancel"));
         final AsyncContext asyncContext = AsyncContext.get();
 
         MediaType mediaType = variant.getMediaType();
@@ -56,6 +70,7 @@ public class TaskStatusResource extends Resource {
         }
 
         Optional<AsyncCommand<?>> cmd;
+
         if (prune) {
             cmd = asyncContext.getAndPruneIfFinished(taskId);
         } else {
@@ -64,7 +79,19 @@ public class TaskStatusResource extends Resource {
         if (!cmd.isPresent()) {
             throw new RestletException("Task not found: " + taskId, Status.CLIENT_ERROR_NOT_FOUND);
         }
+
         AsyncCommand<?> command = cmd.get();
+        if (cancel) {
+            command.tryCancel();
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+            if (prune) {
+                asyncContext.getAndPruneIfFinished(taskId);
+            }
+        }
         return Representations.newRepresentation(command, mediaType, rootPath);
     }
 

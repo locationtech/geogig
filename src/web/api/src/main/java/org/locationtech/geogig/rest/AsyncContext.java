@@ -11,6 +11,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.DefaultProgressListener;
@@ -25,7 +26,7 @@ public class AsyncContext {
     public static final String CONTEXT_KEY = "GeoGigAsyncContext";
 
     public static enum Status {
-        WAITING, RUNNING, FINISHED, FAILED
+        WAITING, RUNNING, FINISHED, FAILED, CANCELLED
     }
 
     private static AsyncContext INSTANCE;
@@ -95,6 +96,8 @@ public class AsyncContext {
 
     public static class AsyncCommand<T> {
 
+        private static AtomicLong ID_SEQ = new AtomicLong();
+
         private CommandCall<T> command;
 
         private Future<T> future;
@@ -107,7 +110,14 @@ public class AsyncContext {
             this.command = command;
             this.future = future;
             this.description = description;
-            this.taskId = UUID.randomUUID().toString();
+            this.taskId = String.valueOf(ID_SEQ.incrementAndGet());
+        }
+
+        public Optional<UUID> getTransactionId() {
+            if (command.tx == null) {
+                return Optional.absent();
+            }
+            return Optional.of(command.tx.getTransactionId());
         }
 
         public Status getStatus() {
@@ -142,6 +152,12 @@ public class AsyncContext {
         public Class<? extends AbstractGeoGigOp<?>> getCommandClass() {
             return (Class<? extends AbstractGeoGigOp<?>>) command.commandClass;
         }
+
+        public void tryCancel() {
+            if (!isDone()) {
+                command.command.getProgressListener().cancel();
+            }
+        }
     }
 
     private static class CommandCall<T> implements Callable<T> {
@@ -166,6 +182,10 @@ public class AsyncContext {
 
         @Override
         public T call() throws Exception {
+            if (command.getProgressListener().isCanceled()) {
+                this.status = Status.CANCELLED;
+                return null;
+            }
             this.status = Status.RUNNING;
             try {
                 if (wrapInTransaction) {
@@ -174,16 +194,23 @@ public class AsyncContext {
                 }
                 command.setProgressListener(progress);
                 T result = command.call();
-                if (tx != null) {
-                    tx.commit();
+                if (command.getProgressListener().isCanceled()) {
+                    this.status = Status.CANCELLED;
+                    if (tx != null) {
+                        tx.abort();
+                    }
+                } else {
+                    if (tx != null) {
+                        tx.commit();
+                    }
+                    this.status = Status.FINISHED;
                 }
-                this.status = Status.FINISHED;
                 return result;
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                this.status = Status.FAILED;
                 if (tx != null) {
                     tx.abort();
                 }
-                this.status = Status.FAILED;
                 throw e;
             } finally {
                 command = null;

@@ -40,6 +40,7 @@ import org.locationtech.geogig.osm.internal.log.WriteOSMFilterFile;
 import org.locationtech.geogig.osm.internal.log.WriteOSMMappingEntries;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
+import org.openstreetmap.osmosis.core.OsmosisRuntimeException;
 import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer;
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
 import org.openstreetmap.osmosis.core.domain.v0_6.Node;
@@ -223,7 +224,7 @@ public class OSMImportOp extends AbstractGeoGigOp<Optional<OSMReport>> {
             Closeables.closeQuietly(osmDataStream);
         }
 
-        if (report != null) {
+        if (!progressListener.isCanceled() && report != null) {
             ObjectId newTreeId = workingTree().getTree().getId();
             if (!noRaw) {
                 if (mapping != null || filter != null) {
@@ -448,7 +449,7 @@ public class OSMImportOp extends AbstractGeoGigOp<Optional<OSMReport>> {
                 progressListener.setDescription(msg);
             } finally {
                 try {
-                    target.finish();
+                    target.noMoreInput();
                 } finally {
                     pointCache.dispose();
                 }
@@ -462,6 +463,10 @@ public class OSMImportOp extends AbstractGeoGigOp<Optional<OSMReport>> {
 
         @Override
         public void process(EntityContainer entityContainer) {
+            if (progressListener.isCanceled()) {
+                target.cancel();
+                throw new OsmosisRuntimeException("Cancelled by user");
+            }
             Entity entity = entityContainer.getEntity();
             if (++count % 10 == 0) {
                 progressListener.setProgress(count);

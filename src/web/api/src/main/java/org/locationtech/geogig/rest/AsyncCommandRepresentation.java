@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import javax.xml.stream.XMLStreamException;
@@ -13,6 +14,7 @@ import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.AsyncContext.Status;
 import org.restlet.data.MediaType;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 
 public abstract class AsyncCommandRepresentation<T> extends JettisonRepresentation {
@@ -31,12 +33,16 @@ public abstract class AsyncCommandRepresentation<T> extends JettisonRepresentati
         final String taskId = cmd.getTaskId();
         final Status status = cmd.getStatus();
         final String description = cmd.getDescription();
+        final Optional<UUID> transactionId = cmd.getTransactionId();
         checkNotNull(taskId);
         checkNotNull(status);
         w.writeStartElement("task");
 
         element(w, "id", taskId);
         element(w, "status", status.toString());
+        if (transactionId.isPresent()) {
+            element(w, "transactionId", transactionId.get().toString());
+        }
         element(w, "description", description);
         String link = "tasks/" + taskId;// relative to baseURL (e.g. /geoserver/geogig)
         encodeAlternateAtomLink(w, link);

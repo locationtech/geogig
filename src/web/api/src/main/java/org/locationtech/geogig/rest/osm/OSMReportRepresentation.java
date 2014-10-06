@@ -4,8 +4,10 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.osm.internal.OSMDownloadOp;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
 import org.locationtech.geogig.osm.internal.OSMReport;
+import org.locationtech.geogig.osm.internal.OSMUpdateOp;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
@@ -13,9 +15,18 @@ import org.restlet.data.MediaType;
 
 import com.google.common.base.Optional;
 
-public class OSMImportRepresentation extends AsyncCommandRepresentation<Optional<OSMReport>> {
+/**
+ * Representation for commands that return {@link OSMReport} (i.e. {@link OSMImportOp},
+ * {@link OSMDownloadOp}, {@link OSMUpdateOp}).
+ * <p>
+ * The SPI factory for this class must be present in
+ * {@code META-INF/services/org.locationtech.geogig.rest.CommandRepresentationFactory} as
+ * {@code org.locationtech.geogig.rest.osm.OSMReportRepresentation$Factory}
+ *
+ */
+public class OSMReportRepresentation extends AsyncCommandRepresentation<Optional<OSMReport>> {
 
-    public OSMImportRepresentation(MediaType mediaType, AsyncCommand<Optional<OSMReport>> cmd,
+    public OSMReportRepresentation(MediaType mediaType, AsyncCommand<Optional<OSMReport>> cmd,
             String baseURL) {
         super(mediaType, cmd, baseURL);
     }
@@ -47,14 +58,16 @@ public class OSMImportRepresentation extends AsyncCommandRepresentation<Optional
 
         @Override
         public boolean supports(Class<? extends AbstractGeoGigOp<?>> cmdClass) {
-            return OSMImportOp.class.isAssignableFrom(cmdClass);
+            return OSMImportOp.class.isAssignableFrom(cmdClass)
+                    || OSMDownloadOp.class.isAssignableFrom(cmdClass)
+                    || OSMUpdateOp.class.isAssignableFrom(cmdClass);
         }
 
         @Override
         public AsyncCommandRepresentation<Optional<OSMReport>> newRepresentation(
                 AsyncCommand<Optional<OSMReport>> cmd, MediaType mediaType, String baseURL) {
 
-            return new OSMImportRepresentation(mediaType, cmd, baseURL);
+            return new OSMReportRepresentation(mediaType, cmd, baseURL);
         }
 
     }

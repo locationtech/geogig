@@ -34,19 +34,27 @@ class QueueIterator<T> extends AbstractIterator<T> {
 
     private volatile boolean finish;
 
+    private boolean cancel;
+
     public QueueIterator(int queueCapacity, int timeout, TimeUnit timeoutUnit) {
         this.timeout = timeout;
         this.timeoutUnit = timeoutUnit;
         queue = new ArrayBlockingQueue<T>(queueCapacity);
     }
 
-    public void finish() {
+    public void cancel() {
+        this.cancel = true;
+        this.finish = true;
+        this.queue.clear();
+    }
+
+    public void noMoreInput() {
         this.finish = true;
     }
 
     public void put(T elem) {
         try {
-            while (!finish && !queue.offer(elem, timeout, timeoutUnit)) {
+            while (!finish && !cancel && !queue.offer(elem, timeout, timeoutUnit)) {
                 LOGGER.debug("queue.offer timed out after {} {}. retrying...", timeout, timeoutUnit);
             }
         } catch (InterruptedException e) {
@@ -58,17 +66,16 @@ class QueueIterator<T> extends AbstractIterator<T> {
     protected T computeNext() {
         try {
             T next = null;
-            while (!finish && (next = queue.poll(timeout, timeoutUnit)) == null) {
+            while (!finish && !cancel && (next = queue.poll(timeout, timeoutUnit)) == null) {
                 LOGGER.debug("queue.poll timed out after {} {}. retrying...", timeout, timeoutUnit);
             }
-            if (next == null) {
-                if (finish && !queue.isEmpty()) {
-                    next = queue.take();
-                } else {
-                    return endOfData();
-                }
+            if (cancel) {
+                return endOfData();
             }
-            return next;
+            if (finish && next == null && !queue.isEmpty()) {
+                next = queue.poll(timeout, timeoutUnit);
+            }
+            return next == null ? endOfData() : next;
         } catch (InterruptedException e) {
             return endOfData();
         }

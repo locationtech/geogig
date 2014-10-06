@@ -15,8 +15,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.api.GeogigTransaction;
+import org.locationtech.geogig.api.plumbing.TransactionBegin;
+import org.locationtech.geogig.api.porcelain.NothingToCommitException;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.osm.internal.OSMDownloadOp;
 import org.locationtech.geogig.osm.internal.OSMReport;
@@ -80,8 +86,9 @@ public class OSMDownload extends AbstractCommand implements CLICommand {
                 "You must specify a filter file or a bounding box");
         checkParameter((filterFile != null || bbox != null) ^ update,
                 "Filters cannot be used when updating");
-        checkState(cli.getGeogig().getRepository().index().isClean()
-                && cli.getGeogig().getRepository().workingTree().isClean(),
+        GeoGIG geogig = cli.getGeogig();
+        checkState(geogig.getRepository().index().isClean()
+                && geogig.getRepository().workingTree().isClean(),
                 "Working tree and index are not clean");
 
         checkParameter(!rebase || update, "--rebase switch can only be used when updating");
@@ -93,15 +100,26 @@ public class OSMDownload extends AbstractCommand implements CLICommand {
         osmAPIUrl = resolveAPIURL();
 
         Optional<OSMReport> report;
-        if (update) {
-            report = cli.getGeogig().command(OSMUpdateOp.class).setAPIUrl(osmAPIUrl)
-                    .setRebase(rebase).setMessage(message)
-                    .setProgressListener(cli.getProgressListener()).call();
-        } else {
-            report = cli.getGeogig().command(OSMDownloadOp.class).setBbox(bbox)
-                    .setFilterFile(filterFile).setKeepFiles(keepFiles).setMessage(message)
-                    .setMappingFile(mappingFile).setOsmAPIUrl(osmAPIUrl).setSaveFile(saveFile)
-                    .setProgressListener(cli.getProgressListener()).call();
+        GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
+        try {
+            AbstractGeoGigOp<Optional<OSMReport>> cmd;
+            if (update) {
+                cmd = tx.command(OSMUpdateOp.class).setAPIUrl(osmAPIUrl).setRebase(rebase)
+                        .setMessage(message).setProgressListener(cli.getProgressListener());
+            } else {
+                cmd = tx.command(OSMDownloadOp.class).setBbox(bbox).setFilterFile(filterFile)
+                        .setKeepFiles(keepFiles).setMessage(message).setMappingFile(mappingFile)
+                        .setOsmAPIUrl(osmAPIUrl).setSaveFile(saveFile)
+                        .setProgressListener(cli.getProgressListener());
+            }
+            report = cmd.call();
+            tx.commit();
+        } catch (RuntimeException e) {
+            tx.abort();
+            if (e instanceof NothingToCommitException) {
+                throw new CommandFailedException(e.getMessage(), e);
+            }
+            throw e;
         }
         if (report.isPresent()) {
             OSMReport rep = report.get();

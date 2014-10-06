@@ -15,5 +15,6 @@ public class OSMRouter extends Router {
 
     public OSMRouter() {
         attach("/import", OsmImportWebOp.class);
+        attach("/download", OsmDownloadWebOp.class);
     }
 }

@@ -63,4 +63,39 @@ public class SubProgressListener extends DefaultProgressListener {
     public void setDescription(String description) {
         parentProgressListener.setDescription(description);
     }
+
+    @Override
+    public String getDescription() {
+        return parentProgressListener.getDescription();
+    }
+
+    @Override
+    public void setMaxProgress(float maxProgress) {
+        super.setMaxProgress(maxProgress);
+    }
+
+    @Override
+    public float getMaxProgress() {
+        return super.getMaxProgress();
+    }
+
+    @Override
+    public boolean isCompleted() {
+        return super.isCompleted();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
+
+    @Override
+    public boolean isCanceled() {
+        return parentProgressListener.isCanceled();
+    }
+
+    @Override
+    public void cancel() {
+        parentProgressListener.cancel();
+    }
 }

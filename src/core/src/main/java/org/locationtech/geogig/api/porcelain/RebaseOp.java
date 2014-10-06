@@ -176,7 +176,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
 
         if (!(continueRebase || skip || abort)) {
             Preconditions.checkState(currHead.get() instanceof SymRef,
-                    "Can't rebase from detached HEAD");
+                    "Can't rebase from detached HEAD %s", currHead.get());
             Preconditions.checkState(upstream != null, "No upstream target has been specified.");
             Preconditions.checkState(!ObjectId.NULL.equals(upstream.get()),
                     "Upstream did not resolve to a commit.");

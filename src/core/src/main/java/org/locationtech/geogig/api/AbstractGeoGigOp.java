@@ -108,7 +108,7 @@ public abstract class AbstractGeoGigOp<T> {
     /**
      * @return the progress listener that is currently set
      */
-    protected ProgressListener getProgressListener() {
+    public ProgressListener getProgressListener() {
         return progressListener;
     }
 

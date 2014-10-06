@@ -132,8 +132,8 @@ public class FileRefDatabase extends AbstractRefDatabase {
         if (!value.startsWith("ref: ")) {
             throw new IllegalArgumentException(name + " is not a symbolic ref: '" + value + "'");
         }
-        return value.substring("ref: ".length());
-
+        value = value.substring("ref: ".length());
+        return value;
     }
 
     private String getInternal(String name) {
@@ -172,6 +172,8 @@ public class FileRefDatabase extends AbstractRefDatabase {
         checkNotNull(name);
         checkNotNull(val);
         checkArgument(!name.equals(val), "Trying to store cyclic symbolic ref: %s", name);
+        checkArgument(!name.startsWith("ref: "),
+                "Wrong value, should not contain 'ref: ': %s -> '%s'", name, val);
         val = "ref: " + val;
         store(name, val);
     }
@@ -281,6 +283,9 @@ public class FileRefDatabase extends AbstractRefDatabase {
     private void addIfPresent(Builder<String, String> builder, String name) {
         String value = getInternal(name);
         if (value != null) {
+            if (value.startsWith("ref: ")) {
+                value = value.substring("ref: ".length());
+            }
             builder.put(name, value);
         }
     }
@@ -329,6 +334,10 @@ public class FileRefDatabase extends AbstractRefDatabase {
             } else if (fileName.length() == 0 || fileName.charAt(0) != '.') {
                 String refName = append(prefix, fileName);
                 String refValue = readRef(f);
+                if (refValue.startsWith("ref: ")) {
+                    refValue = refValue.substring("ref: ".length());
+                }
+
                 target.put(refName, refValue);
             }
         }

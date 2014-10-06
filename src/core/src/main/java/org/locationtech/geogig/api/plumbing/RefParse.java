@@ -150,7 +150,8 @@ public class RefParse extends AbstractGeoGigOp<Optional<Ref>> {
         if (sym) {
             Optional<Ref> target = getRef(storedValue);
             if (!target.isPresent()) {
-                throw new RuntimeException(storedValue + " was not present.");
+                throw new RuntimeException("target '" + storedValue
+                        + "' was not present for symref " + name + " -> '" + storedValue + "'");
             }
             Ref resolved = new SymRef(name, target.get());
             return Optional.of(resolved);

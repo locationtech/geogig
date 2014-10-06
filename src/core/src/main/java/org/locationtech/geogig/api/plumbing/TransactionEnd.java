@@ -23,10 +23,11 @@ import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.locationtech.geogig.api.porcelain.NothingToCommitException;
 import org.locationtech.geogig.api.porcelain.RebaseConflictsException;
 import org.locationtech.geogig.api.porcelain.RebaseOp;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
@@ -44,6 +45,8 @@ import com.google.common.collect.ImmutableSet;
  */
 @Hookable(name = "transaction-end")
 public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionEnd.class);
 
     private boolean cancel = false;
 
@@ -139,6 +142,9 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
         try {
             // Update refs
             for (Ref ref : changedRefs) {
+                if (!ref.getName().startsWith(Ref.REFS_PREFIX)) {
+                    continue;
+                }
                 Ref updatedRef = ref;
 
                 Optional<Ref> repoRef = command(RefParse.class).setName(ref.getName()).call();
@@ -173,6 +179,10 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
                                 .call().get();
                     }
                 }
+
+                LOGGER.debug(String.format("commit %s %s -> %s", ref.getName(), ref.getObjectId(),
+                        updatedRef.getObjectId()));
+
                 command(UpdateRef.class).setName(ref.getName())
                         .setNewValue(updatedRef.getObjectId()).call();
 
@@ -195,15 +205,8 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
     }
 
     private ImmutableSet<Ref> getChangedRefs() {
-        Predicate<Ref> nonTxFilter = new Predicate<Ref>() {
-            @Override
-            public boolean apply(Ref ref) {
-                String name = ref.getName();
-                return name.startsWith(Ref.REFS_PREFIX)// ignore HEAD,WORK_HEAD, etc
-                        && !name.startsWith(Ref.TRANSACTIONS_PREFIX);// ignore transactions
-            }
-        };
-        return transaction.command(ForEachRef.class).setFilter(nonTxFilter).call();
+        ImmutableSet<Ref> changedRefs = transaction.getChangedRefs();
+        return changedRefs;
     }
 
     private boolean repositoryChanged(Ref ref) {

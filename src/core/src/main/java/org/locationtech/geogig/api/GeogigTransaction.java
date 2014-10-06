@@ -9,10 +9,13 @@
  */
 package org.locationtech.geogig.api;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.TransactionEnd;
 import org.locationtech.geogig.api.porcelain.ConflictsException;
 import org.locationtech.geogig.di.PluginDefaults;
@@ -31,6 +34,7 @@ import org.locationtech.geogig.storage.TransactionStagingArea;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Provides a method of performing concurrent operations on a single Geogig repository.
@@ -184,5 +188,19 @@ public class GeogigTransaction implements Context {
     @Override
     public PluginDefaults pluginDefaults() {
         return injector.pluginDefaults();
+    }
+
+    /**
+     * The set of refs that have either changed since, or didn't exist at, the time the transaction
+     * was created.
+     */
+    public ImmutableSet<Ref> getChangedRefs() {
+        Set<String> changedRefNames = transactionRefDatabase.getChangedRefs();
+        Set<Ref> changedRefs = new HashSet<Ref>();
+        for (String name : changedRefNames) {
+            Ref ref = this.command(RefParse.class).setName(name).call().get();
+            changedRefs.add(ref);
+        }
+        return ImmutableSet.copyOf(changedRefs);
     }
 }

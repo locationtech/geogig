@@ -18,9 +18,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.api.GeogigTransaction;
+import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.TransactionBegin;
 import org.locationtech.geogig.api.plumbing.TransactionEnd;
+import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.porcelain.BranchCreateOp;
@@ -28,6 +31,7 @@ import org.locationtech.geogig.api.porcelain.CheckoutOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.api.porcelain.LogOp;
 import org.locationtech.geogig.api.porcelain.MergeOp;
+import org.locationtech.geogig.api.porcelain.RemoteAddOp;
 
 import com.google.common.base.Suppliers;
 
@@ -306,7 +310,8 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         }
         List<Conflict> txConflicts = tx.command(ConflictsReadOp.class).call();
         List<Conflict> baseConflicts = geogig.command(ConflictsReadOp.class).call();
-        assertTrue("There should be no conflicts outside the transaction", baseConflicts.size() == 0);
+        assertTrue("There should be no conflicts outside the transaction",
+                baseConflicts.size() == 0);
         assertTrue("There should be conflicts in the transaction", txConflicts.size() != 0);
     }
 
@@ -473,4 +478,42 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
     }
 
+    @Test
+    public void testCommitUpdatesRemoteRefs() throws Exception {
+        // make a commit
+        insertAndAdd(points1);
+        RevCommit headCommit = geogig.command(CommitOp.class).call();
+
+        geogig.command(RemoteAddOp.class).setName("upstream")
+                .setURL("http://test.com/geogig/upstream").call();
+
+        final String remoteRef = "refs/remotes/upstream/master";
+        final String unchangedRemoteRef = "refs/remotes/upstream/testbranch";
+
+        Ref remoteHead = geogig.command(UpdateRef.class).setName(remoteRef)
+                .setNewValue(headCommit.getId()).call().get();
+        assertEquals(headCommit.getId(), remoteHead.getObjectId());
+
+        geogig.command(UpdateRef.class).setName(unchangedRemoteRef).setNewValue(headCommit.getId())
+                .call().get();
+
+        // start a transaction
+        GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
+
+        // make a commit
+        insertAndAdd(tx, points2);
+        RevCommit newcommit = tx.command(CommitOp.class).call();
+        // upadte remote
+        Ref txRemoteHead = tx.command(UpdateRef.class).setName(remoteRef)
+                .setNewValue(newcommit.getId()).call().get();
+        assertEquals(newcommit.getId(), txRemoteHead.getObjectId());
+
+        // commit transaction
+        tx.commit();
+        txRemoteHead = geogig.command(RefParse.class).setName(remoteRef).call().get();
+        assertEquals(newcommit.getId(), txRemoteHead.getObjectId());
+
+        txRemoteHead = geogig.command(RefParse.class).setName(unchangedRemoteRef).call().get();
+        assertEquals(headCommit.getId(), txRemoteHead.getObjectId());
+    }
 }

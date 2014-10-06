@@ -11,6 +11,7 @@ package org.locationtech.geogig.api;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.annotation.Nullable;
 import javax.crypto.Cipher;
@@ -70,9 +71,17 @@ public class Remote {
     }
 
     private String checkURL(String url) {
-        if (Strings.isNullOrEmpty(url) || url.startsWith("http:")) {
+        if (Strings.isNullOrEmpty(url)) {
             return url;
         }
+
+        try {
+            URL parsed = new URL(url);
+            return url;
+        } catch (MalformedURLException e) {
+            // we were just checking to see whether the url was already valid. if not, we'll try to resolve it as a local file
+        }
+
         File file = new File(url);
         try {
             url = file.toURI().toURL().toString();

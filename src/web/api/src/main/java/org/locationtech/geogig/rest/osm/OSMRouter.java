@@ -14,7 +14,9 @@ import org.restlet.Router;
 public class OSMRouter extends Router {
 
     public OSMRouter() {
+        attach("/import.{extension}", OsmImportWebOp.class);
         attach("/import", OsmImportWebOp.class);
+        attach("/download.{extension}", OsmDownloadWebOp.class);
         attach("/download", OsmDownloadWebOp.class);
     }
 }

@@ -1,3 +1,12 @@
+/* Copyright (c) 2014 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Gabriel Roldan (Boundless) - initial implementation
+ */
 package org.locationtech.geogig.rest;
 
 import java.util.ArrayList;
@@ -14,9 +23,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
 
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -65,16 +74,8 @@ public class AsyncContext {
     }
 
     public <T> AsyncCommand<T> run(AbstractGeoGigOp<T> command, String description) {
-        return run(command, false, description);
-    }
 
-    public <T> AsyncCommand<T> runInTransaction(AbstractGeoGigOp<T> command, String description) {
-        return run(command, true, description);
-    }
-
-    private <T> AsyncCommand<T> run(AbstractGeoGigOp<T> command, boolean transaction,
-            String description) {
-        CommandCall<T> callable = new CommandCall<T>(command, transaction);
+        CommandCall<T> callable = new CommandCall<T>(command);
         Future<T> future = commandExecutor.submit(callable);
         AsyncCommand<T> asyncCommand = new AsyncCommand<T>(callable, future, description);
         commands.put(asyncCommand.getTaskId(), asyncCommand);
@@ -98,9 +99,9 @@ public class AsyncContext {
 
         private static AtomicLong ID_SEQ = new AtomicLong();
 
-        private CommandCall<T> command;
+        private final CommandCall<T> command;
 
-        private Future<T> future;
+        private final Future<T> future;
 
         private final String taskId;
 
@@ -114,10 +115,13 @@ public class AsyncContext {
         }
 
         public Optional<UUID> getTransactionId() {
-            if (command.tx == null) {
-                return Optional.absent();
+            Context context = command.command.context();
+            if (context instanceof GeogigTransaction) {
+                GeogigTransaction tx = (GeogigTransaction) context;
+                UUID txId = tx.getTransactionId();
+                return Optional.of(txId);
             }
-            return Optional.of(command.tx.getTransactionId());
+            return Optional.absent();
         }
 
         public Status getStatus() {
@@ -161,22 +165,18 @@ public class AsyncContext {
     }
 
     private static class CommandCall<T> implements Callable<T> {
-        private AbstractGeoGigOp<T> command;
+
+        private final AbstractGeoGigOp<T> command;
 
         private final Class<?> commandClass;
 
         private Status status;
 
-        private GeogigTransaction tx;
+        private final DefaultProgressListener progress = new DefaultProgressListener();
 
-        private boolean wrapInTransaction;
-
-        private DefaultProgressListener progress = new DefaultProgressListener();
-
-        public CommandCall(AbstractGeoGigOp<T> command, boolean wrapInTransaction) {
+        public CommandCall(AbstractGeoGigOp<T> command) {
             this.command = command;
             this.commandClass = command.getClass();
-            this.wrapInTransaction = wrapInTransaction;
             this.status = Status.WAITING;
         }
 
@@ -188,32 +188,17 @@ public class AsyncContext {
             }
             this.status = Status.RUNNING;
             try {
-                if (wrapInTransaction) {
-                    this.tx = command.context().command(TransactionBegin.class).call();
-                    command.setContext(this.tx);
-                }
                 command.setProgressListener(progress);
                 T result = command.call();
                 if (command.getProgressListener().isCanceled()) {
                     this.status = Status.CANCELLED;
-                    if (tx != null) {
-                        tx.abort();
-                    }
                 } else {
-                    if (tx != null) {
-                        tx.commit();
-                    }
                     this.status = Status.FINISHED;
                 }
                 return result;
             } catch (Throwable e) {
                 this.status = Status.FAILED;
-                if (tx != null) {
-                    tx.abort();
-                }
                 throw e;
-            } finally {
-                command = null;
             }
         }
     }

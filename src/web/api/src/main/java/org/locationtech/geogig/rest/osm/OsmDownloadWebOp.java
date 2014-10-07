@@ -1,8 +1,13 @@
+/* Copyright (c) 2014 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Gabriel Roldan (Boundless) - initial implementation
+ */
 package org.locationtech.geogig.rest.osm;
-
-import static com.google.common.base.Preconditions.checkState;
-import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
-import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 
 import java.io.File;
 import java.net.URL;
@@ -11,20 +16,21 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.DefaultProgressListener;
-import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.osm.internal.OSMDownloadOp;
 import org.locationtech.geogig.osm.internal.OSMReport;
 import org.locationtech.geogig.osm.internal.OSMUpdateOp;
 import org.locationtech.geogig.osm.internal.OSMUtils;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
+import org.locationtech.geogig.rest.TransactionalResource;
+import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
+import org.restlet.data.Response;
 import org.restlet.resource.Representation;
-import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
 
 import com.google.common.base.Optional;
@@ -47,23 +53,19 @@ import com.google.common.base.Strings;
  * </ul>
  *
  */
-public class OsmDownloadWebOp extends Resource {
+public class OsmDownloadWebOp extends TransactionalResource {
 
     @Override
-    public boolean allowGet() {
-        return true;
+    public void init(org.restlet.Context context, Request request, Response response) {
+        super.init(context, request, response);
+        getVariants().add(Variants.XML);
+        getVariants().add(Variants.JSON);
     }
 
     @Override
-    public Variant getPreferredVariant() {
-        return getVariantByExtension(getRequest(), getVariants()).or(super.getPreferredVariant());
-    }
-
-    @Override
-    public void handleGet() {
+    public Representation getRepresentation(final Variant variant) {
         final Request request = getRequest();
-        Optional<GeoGIG> geogig = getGeogig(request);
-        checkState(geogig.isPresent());
+        Context context = getContext(request);
 
         Form options = getRequest().getResourceRef().getQueryAsForm();
 
@@ -79,8 +81,7 @@ public class OsmDownloadWebOp extends Resource {
         checkArgSpec((filterFileArg != null || bboxArg != null) ^ update,
                 "Filters cannot be used when updating");
 
-        checkArgSpec(geogig.get().getRepository().index().isClean()
-                && geogig.get().getRepository().workingTree().isClean(),
+        checkArgSpec(context.index().isClean() && context.workingTree().isClean(),
                 "Working tree and index are not clean");
 
         checkArgSpec(!rebase || update, "rebase switch can only be used when updating");
@@ -97,27 +98,26 @@ public class OsmDownloadWebOp extends Resource {
 
         AbstractGeoGigOp<Optional<OSMReport>> command;
         if (update) {
-            command = geogig.get().command(OSMUpdateOp.class).setRebase(rebase)
-                    .setMessage(messageArg).setAPIUrl(OSMUtils.DEFAULT_API_ENDPOINT);
+            command = context.command(OSMUpdateOp.class).setRebase(rebase).setMessage(messageArg)
+                    .setAPIUrl(OSMUtils.DEFAULT_API_ENDPOINT);
         } else {
-            command = geogig.get().command(OSMDownloadOp.class).setBbox(bbox)
-                    .setFilterFile(filterFile).setMessage(messageArg).setMappingFile(mappingFile)
+            command = context.command(OSMDownloadOp.class).setBbox(bbox).setFilterFile(filterFile)
+                    .setMessage(messageArg).setMappingFile(mappingFile)
                     .setOsmAPIUrl(OSMUtils.DEFAULT_API_ENDPOINT);
         }
-        command.setProgressListener(new DefaultProgressListener());
 
         AsyncCommand<Optional<OSMReport>> asyncCommand;
 
-        URL repo = geogig.get().getRepository().getLocation();
+        URL repo = context.repository().getLocation();
         String description = String
                 .format("osm download filter: %s, bbox: %s, mapping: %s, update: %s, rebase: %s, repository: %s",
                         filterFileArg, bboxArg, mappingFileArg, update, rebase, repo);
-        asyncCommand = AsyncContext.get().runInTransaction(command, description);
+        asyncCommand = AsyncContext.get().run(command, description);
 
         final String rootPath = request.getRootRef().toString();
-        Representation rep = new OSMReportRepresentation(MediaType.APPLICATION_XML, asyncCommand,
-                rootPath);
-        getResponse().setEntity(rep);
+        MediaType mediaType = variant.getMediaType();
+        Representation rep = new OSMReportRepresentation(mediaType, asyncCommand, rootPath);
+        return rep;
     }
 
     private void checkArgSpec(boolean expression, String messageHeader) throws CommandSpecException {

@@ -1,45 +1,47 @@
+/* Copyright (c) 2014 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Gabriel Roldan (Boundless) - initial implementation
+ */
 package org.locationtech.geogig.rest.osm;
-
-import static com.google.common.base.Preconditions.checkState;
-import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
-import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 
 import java.net.URL;
 
-import org.locationtech.geogig.api.DefaultProgressListener;
-import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.osm.internal.Mapping;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
 import org.locationtech.geogig.osm.internal.OSMReport;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
+import org.locationtech.geogig.rest.TransactionalResource;
+import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
+import org.restlet.data.Response;
 import org.restlet.resource.Representation;
-import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
 
 import com.google.common.base.Optional;
 
-public class OsmImportWebOp extends Resource {
+public class OsmImportWebOp extends TransactionalResource {
 
     @Override
-    public boolean allowGet() {
-        return true;
+    public void init(org.restlet.Context context, Request request, Response response) {
+        super.init(context, request, response);
+        getVariants().add(Variants.XML);
+        getVariants().add(Variants.JSON);
     }
 
     @Override
-    public Variant getPreferredVariant() {
-        return getVariantByExtension(getRequest(), getVariants()).or(super.getPreferredVariant());
-    }
-
-    @Override
-    public void handleGet() {
+    public Representation getRepresentation(final Variant variant) {
         final Request request = getRequest();
-        Optional<GeoGIG> geogig = getGeogig(request);
-        checkState(geogig.isPresent());
+        final Context context = super.getContext(request);
 
         Form options = getRequest().getResourceRef().getQueryAsForm();
 
@@ -66,23 +68,22 @@ public class OsmImportWebOp extends Resource {
             throw new CommandSpecException(msg);
         }
 
-        OSMImportOp command = geogig.get().command(OSMImportOp.class);
+        OSMImportOp command = context.command(OSMImportOp.class);
         command.setAdd(add);
         command.setDataSource(urlOrFilepath);
         command.setMapping(mapping);
         command.setMessage(message);
         command.setNoRaw(noRaw);
-        command.setProgressListener(new DefaultProgressListener());
 
         AsyncCommand<Optional<OSMReport>> asyncCommand;
 
-        URL repo = geogig.get().getRepository().getLocation();
+        URL repo = context.repository().getLocation();
         String description = String.format("osm import %s, repository: %s", urlOrFilepath, repo);
         asyncCommand = AsyncContext.get().run(command, description);
 
         final String rootPath = request.getRootRef().toString();
-        Representation rep = new OSMReportRepresentation(MediaType.APPLICATION_XML, asyncCommand,
-                rootPath);
-        getResponse().setEntity(rep);
+        MediaType mediaType = variant.getMediaType();
+        Representation rep = new OSMReportRepresentation(mediaType, asyncCommand, rootPath);
+        return rep;
     }
 }

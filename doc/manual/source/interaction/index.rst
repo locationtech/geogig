@@ -10,5 +10,7 @@ This section will discuss alternate ways of interacting with GeoGig, both local 
 
    console
    networking
-   web-api
    osm
+   web-api
+   osm-web-api
+   

@@ -677,7 +677,7 @@ public class WorkingTree {
      * @param collectionSize if given, used to determine progress and notify the {@code listener}
      * @return the total number of inserted features
      */
-    public long insert(final Function<Feature, String> treePathResolver,
+    public void insert(final Function<Feature, String> treePathResolver,
             Iterator<? extends Feature> features, final ProgressListener listener,
             @Nullable final List<Node> insertedTarget, @Nullable final Integer collectionSize) {
 
@@ -696,6 +696,9 @@ public class WorkingTree {
                 new Predicate<Feature>() {
                     @Override
                     public boolean apply(Feature feature) {
+                        if (listener.isCanceled()) {
+                            return false;
+                        }
                         if (feature instanceof FeatureToDelete) {
                             insertHelper.remove((FeatureToDelete) feature);
                             return false;
@@ -732,9 +735,11 @@ public class WorkingTree {
                 });
         try {
             listener.started();
-            CountingListener countingListener = BulkOpListener.newCountingListener();
-            indexDatabase.putAll(objects, countingListener);
 
+            indexDatabase.putAll(objects);
+            if (listener.isCanceled()) {
+                return;
+            }
             listener.setDescription("Building trees for "
                     + new TreeSet<String>(insertHelper.getTreeNames()));
             Stopwatch sw = Stopwatch.createStarted();
@@ -744,21 +749,20 @@ public class WorkingTree {
             listener.setDescription(String.format("Trees built in %s", sw.stop()));
 
             for (Map.Entry<NodeRef, RevTree> treeEntry : trees.entrySet()) {
-                NodeRef treeRef = treeEntry.getKey();
-                RevTree newFeatureTree = treeEntry.getValue();
+                if (!listener.isCanceled()) {
+                    NodeRef treeRef = treeEntry.getKey();
+                    RevTree newFeatureTree = treeEntry.getValue();
 
-                String treePath = treeRef.path();
+                    String treePath = treeRef.path();
 
-                ObjectId newRootTree = context.command(WriteBack.class)
-                        .setAncestor(getTreeSupplier()).setChildPath(treePath)
-                        .setMetadataId(treeRef.getMetadataId()).setToIndex(true)
-                        .setTree(newFeatureTree).call();
-                updateWorkHead(newRootTree);
+                    ObjectId newRootTree = context.command(WriteBack.class)
+                            .setAncestor(getTreeSupplier()).setChildPath(treePath)
+                            .setMetadataId(treeRef.getMetadataId()).setToIndex(true)
+                            .setTree(newFeatureTree).call();
+                    updateWorkHead(newRootTree);
+                }
             }
             listener.complete();
-            int inserted = countingListener.inserted();
-            int existing = countingListener.found();
-            return inserted + existing;
         } finally {
             treeBuildingService.shutdownNow();
         }

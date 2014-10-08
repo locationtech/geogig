@@ -56,7 +56,7 @@ public class RemoteUtils {
                 } else {
                     remoteRepo = new LocalRemoteRepo(injector, new File(filepath), localRepository);
                 }
-            } else if (protocol.equals("http")) {
+            } else if (protocol.equals("http") || protocol.equals("https")) {
                 final String username = remoteConfig.getUserName();
                 final String password = remoteConfig.getPassword();
                 if (username != null && password != null) {

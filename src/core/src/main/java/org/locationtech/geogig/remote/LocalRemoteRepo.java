@@ -107,8 +107,13 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
      */
     @Override
     public void close() throws IOException {
-        remoteGeoGig.close();
-
+        if (remoteGeoGig != null) {
+            try {
+                remoteGeoGig.close();
+            } finally {
+                remoteGeoGig = null;
+            }
+        }
     }
 
     /**

@@ -65,6 +65,7 @@ public abstract class AbstractPGCommand extends AbstractCommand implements CLICo
         params.put(PostgisNGDataStoreFactory.USER.key, commonArgs.username);
         params.put(PostgisNGDataStoreFactory.PASSWD.key, commonArgs.password);
         params.put(PostgisNGDataStoreFactory.FETCHSIZE.key, 1000);
+        params.put(PostgisNGDataStoreFactory.EXPOSE_PK.key, true);
 
         DataStore dataStore;
         try {

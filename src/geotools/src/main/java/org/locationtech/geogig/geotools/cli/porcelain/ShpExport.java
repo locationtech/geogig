@@ -189,7 +189,11 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
                         builder.set(featureType.getGeometryDescriptor().getName(),
                                 property.getValue());
                     } else {
-                        builder.set(property.getName(), property.getValue());
+                    	String name = property.getName().getLocalPart();
+                    	if (name.length() > 10){
+                    		name = name.substring(0,10);
+                    	}
+                        builder.set(name, property.getValue());
                     }
                 }
                 Feature modifiedFeature = builder.buildFeature(feature.getIdentifier().getID());

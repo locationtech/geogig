@@ -70,6 +70,12 @@ public class PGImport extends AbstractPGCommand implements CLICommand {
      */
     @Parameter(names = { "-d", "--dest" }, description = "Path to import to")
     String destTable;
+    
+    /**
+     * The attribute to use to create the feature Id
+     */
+    @Parameter(names = { "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
+    String fidAttribute;
 
     /**
      * Executes the import command using the provided options.
@@ -84,7 +90,7 @@ public class PGImport extends AbstractPGCommand implements CLICommand {
             ProgressListener progressListener = cli.getProgressListener();
             cli.getGeogig().command(ImportOp.class).setAll(all).setTable(table).setAlter(alter)
                     .setDestinationPath(destTable).setOverwrite(!add).setDataStore(dataStore)
-                    .setAdaptToDefaultFeatureType(!forceFeatureType)
+                    .setAdaptToDefaultFeatureType(!forceFeatureType).setFidAttribute(fidAttribute)
                     .setProgressListener(progressListener).call();
 
             cli.getConsole().println("Import successful.");

@@ -150,6 +150,11 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
         final ObjectDatabase repositoryDatabase = objectDatabase();
         final RevTree newRoot = newLeftTree.build(stagingDatabase(), repositoryDatabase);
+        if (newRoot.trees().isPresent()) {
+            for (Node n : newRoot.trees().get()) {
+                if (n.getMetadataId().isPresent()) deepMove(n.getMetadataId().get());
+            }
+        }
 
         ObjectId newRootId = newRoot.getId();
 

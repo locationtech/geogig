@@ -1,0 +1,12 @@
+// a simple hook that avoids committing with very short messages or with capital letters
+
+exception = Packages.org.locationtech.geogig.api.hooks.CannotRunGeogigOperationException;
+msg = params.get("message");
+if (msg.length() < 30){
+	throw new exception("Commit messages must have at least 30 characters");
+}
+
+// message is long enough. Make sure it is in lower case
+params.put("message", msg.toLowerCase());
+
+                

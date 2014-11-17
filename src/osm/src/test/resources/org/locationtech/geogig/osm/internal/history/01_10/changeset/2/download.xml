@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osmChange version="0.6" generator="OpenStreetMap server" copyright="OpenStreetMap and contributors" attribution="http://www.openstreetmap.org/copyright" license="http://opendatacommons.org/licenses/odbl/1-0/">
+  <create>
+    <node id="3" lat="46.9230649" lon="7.3979458" changeset="2" user="guggis" uid="1" visible="true" timestamp="2009-09-03T10:30:22Z" version="1"/>
+  </create>
+  <create>
+    <node id="4" lat="46.9232849" lon="7.4026153" changeset="2" user="guggis" uid="1" visible="true" timestamp="2009-09-03T10:30:23Z" version="1"/>
+  </create>
+  <create>
+    <way id="2" visible="true" timestamp="2009-09-03T10:30:23Z" user="guggis" uid="1" version="1" changeset="2">
+      <nd ref="1"/>
+      <nd ref="2"/>
+      <nd ref="3"/>
+      <nd ref="4"/>
+    </way>
+  </create>
+</osmChange>

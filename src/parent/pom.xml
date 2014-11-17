@@ -1,0 +1,591 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.locationtech.geogig</groupId>
+  <artifactId>geogig</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>GeoGig</name>
+
+ <scm>
+  <connection>scm:git:git@github.com:boundlessgeo/GeoGig.git</connection>
+  <developerConnection>scm:git:[fetch=]git://github.com/boundlessgeo/GeoGig.git[push=]git@github.com:boundlessgeo/GeoGig.git</developerConnection>
+  <url>https://github.com/boundlessgeo/GeoGig</url>
+ </scm>
+
+  <!--
+  
+  Build Instructions and Profiles
+  
+  Handled as a normal maven java project:
+    
+    mvn clean install
+  
+  Online tests avaialble using:
+    
+    mvn -Ponline
+
+  To build additional support for commercial databases:
+
+  * For SQL Server:
+  
+    mvn clean install -PsqlServer
+
+    Note: the jdbc driver for SQL Server must be in your
+    local Maven repository, you can install it by issuing:
+
+    mvn install:install-file  -Dfile=<path to sqljdbc4.jar>
+         -DartifactId=sqljdbc4 \ 
+         -DgroupId=com.microsoft \ 
+         -Dversion=3.0 \
+         -Dpackaging=jar \ 
+         -DgeneratePom=true
+
+    Online tests can be performed by issuing the following:
+
+    mvn clean install -PsqlServer,sqlServerOnline
+  
+  Corertura is configufred for a test coverage report:
+    
+    mvn cobertura:cobertura
+    open target/site/cobertura/index.html
+
+  * For Oracle:
+    
+    mvn clean install -Poracle
+
+    Note: the ojdbc driver must be in your local Maven repository, 
+    you can install it by issuing:
+
+    mvn install:install-file  -Dfile=<path to ojdbc14.jar>
+         -DartifactId=ojdbc14 \ 
+         -DgroupId=com.oracle \ 
+         -Dversion=10.2.0.3.0 \
+         -Dpackaging=jar \ 
+         -DgeneratePom=true
+  
+  -->
+  <organization>
+    <name>Boundless</name>
+    <url>http://boundlessgeo.com</url>
+  </organization>
+  <inceptionYear>2011</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>Eclipse Distribution License</name>
+      <url>https://www.eclipse.org/org/documents/edl-v10.html</url>
+    </license>
+  </licenses>
+  <repositories>
+    <repository>
+      <id>oracleReleases</id>
+      <name>Oracle Released Java Packages</name>
+      <url>http://download.oracle.com/maven</url>
+      <layout>default</layout>
+    </repository>
+    <repository>
+      <id>boundless</id>
+      <name>Boundless Maven Repository</name>
+      <url>http://repo.boundlessgeo.com/main</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>osgeo</id>
+      <name>Open Source Geospatial Foundation Repository</name>
+      <url>http://download.osgeo.org/webdav/geotools/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>oracle</id>
+      <name>Oracles Maven Repository</name>
+      <url>http://download.oracle.com/maven/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>caucho</id>
+      <name>caucho</name>
+      <url>http://caucho.com/m2</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>mapfish</id>
+      <name>mapfish</name>
+      <url>http://dev.mapfish.org/maven/repository/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <properties>
+    <bdbje.version>5.0.84</bdbje.version>
+    <compress-lzf.version>1.0.1</compress-lzf.version>
+    <cucumber-java.version>1.0.14</cucumber-java.version>
+    <gson.version>2.2.2</gson.version>
+    <gt.version>11.2</gt.version>
+    <guava.version>17.0</guava.version>
+    <guice.version>3.0</guice.version>
+    <jcommander.version>1.35</jcommander.version>
+    <jettison.version>1.0.1</jettison.version> <!-- matches version used in geoserver -->
+    <jline.version>2.11</jline.version>
+    <jsr305.version>2.0.3</jsr305.version>
+    <jts.version>1.13</jts.version>
+    <junit.version>4.10</junit.version>
+    <logback.version>1.1.2</logback.version>
+    <mockito.version>1.9.5</mockito.version>
+    <mockrunner.version>0.3.6</mockrunner.version>
+    <restlet.version>1.0.8</restlet.version> <!-- matches version used in geoserver -->
+    <slf4j.version>1.7.5</slf4j.version>
+    <sqljdbc4.version>3.0</sqljdbc4.version>
+    <osmosis.version>0.43.1</osmosis.version>
+    <xmlunit.version>1.3</xmlunit.version>
+    
+    <test.maxHeapSize>512M</test.maxHeapSize>
+    <test.tmpDir>${project.build.directory}</test.tmpDir> <!-- use the provided tmp dir for tests, defaults to project's target/ directory -->
+    <maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
+    <build.timestamp>${maven.build.timestamp}</build.timestamp>
+    <online.skip.pattern>**/*OnlineTest.java</online.skip.pattern>
+    <sqlServerOnline.skip.pattern>**/*SQLServerFunctionalTest.java</sqlServerOnline.skip.pattern>
+    <allow.test.skip>true</allow.test.skip>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>${guice.version}</version>
+        <classifier>no_aop</classifier>
+        <exclusions>
+          <exclusion>
+           <groupId>aopalliance</groupId>
+           <artifactId>aopalliance</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.google.inject.extensions</groupId>
+        <artifactId>guice-multibindings</artifactId>
+        <version>${guice.version}</version>
+        <exclusions>
+          <exclusion>
+           <groupId>com.google.inject</groupId>
+           <artifactId>guice</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.vividsolutions</groupId>
+        <artifactId>jts</artifactId>
+        <version>${jts.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-opengis</artifactId>
+        <version>${gt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-referencing</artifactId>
+        <version>${gt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-epsg-hsql</artifactId>
+        <version>${gt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-cql</artifactId>
+        <version>${gt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-property</artifactId>
+        <version>${gt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-shapefile</artifactId>
+        <version>${gt.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-main</artifactId>
+        <version>${gt.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <!-- Google Common Libraries. Featuring com.google.collect collection classes -->
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>${jsr305.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.ning</groupId>
+        <artifactId>compress-lzf</artifactId>
+        <version>${compress-lzf.version}</version>
+      </dependency>
+
+      <!-- Berkeley DB JE -->
+      <dependency>
+        <groupId>com.sleepycat</groupId>
+        <artifactId>je</artifactId>
+        <version>${bdbje.version}</version>
+      </dependency>
+
+      <dependency>
+        <!-- http://jcommander.org/ -->
+        <groupId>com.beust</groupId>
+        <artifactId>jcommander</artifactId>
+        <version>${jcommander.version}</version>
+      </dependency>
+
+      <dependency>
+        <!-- https://github.com/jline/jline2 -->
+        <groupId>jline</groupId>
+        <artifactId>jline</artifactId>
+        <version>${jline.version}</version>
+      </dependency>
+
+      <!-- Logging -->
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-core</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency> 
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-to-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.microsoft</groupId>
+        <artifactId>sqljdbc4</artifactId>
+        <version>${sqljdbc4.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.jettison</groupId>
+        <artifactId>jettison</artifactId>
+        <version>${jettison.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.restlet</groupId>
+        <artifactId>org.restlet</artifactId>
+        <version>${restlet.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.noelios.restlet</groupId>
+        <artifactId>com.noelios.restlet.ext.jetty</artifactId>
+        <version>${restlet.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.noelios.restlet</groupId>
+        <artifactId>com.noelios.restlet.ext.servlet</artifactId>
+        <version>${restlet.version}</version>
+      </dependency>
+
+      <!-- Test scope dependencies -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-all</artifactId>
+        <version>${mockito.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <!--
+        Cucumber: http://cukes.info/
+        Cucumber for the JVM: https://github.com/cucumber/cucumber-jvm
+        Other resources:
+         - http://c0deattack.wordpress.com/2012/03/
+         - http://aslakhellesoy.com/post/20006051268/cucumber-jvm-1-0-0
+         - http://maxheapsize.com/2012/04/12/cucumber-jvm-for-java/
+        -->
+        <groupId>info.cukes</groupId>
+        <artifactId>cucumber-java</artifactId>
+        <version>${cucumber-java.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>info.cukes</groupId>
+        <artifactId>cucumber-junit</artifactId>
+        <version>${cucumber-java.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>${gson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>xmlunit</groupId>
+        <artifactId>xmlunit</artifactId>
+        <version>${xmlunit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.mockrunner</groupId>
+        <artifactId>mockrunner</artifactId>
+        <version>${mockrunner.version}</version>
+        <scope>test</scope>
+     </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <distributionManagement>
+    <repository>
+      <id>boundless</id>
+      <name>Boundless Maven Repository</name>
+      <url>http://repo.boundlessgeo.com/main</url>
+      <uniqueVersion>false</uniqueVersion>
+    </repository>
+  </distributionManagement>
+
+  <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <!--
+            generates OS specific scripts for starting java applications 
+            see http://mojo.codehaus.org/appassembler/appassembler-maven-plugin/index.html
+          -->
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>appassembler-maven-plugin</artifactId>
+          <version>1.2.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>jetty-maven-plugin</artifactId>
+          <version>7.1.6.v20100715</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.17</version>
+        <configuration>
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
+          <excludes>
+            <exclude>${online.skip.pattern}</exclude>
+	   <exclude>${sqlServerOnline.skip.pattern}</exclude>
+          </excludes>
+          <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
+          <reuseForks>true</reuseForks>
+          <argLine>-Xms256m -Xmx512m</argLine>
+          <workingDirectory>${project.build.directory}</workingDirectory>
+          <systemPropertyVariables>
+            <java.io.tmpdir>${test.tmpDir}</java.io.tmpdir>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              </manifest>
+            </archive>
+          </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+          <debug>true</debug>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <inherited>true</inherited>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <configuration>
+          <attach>true</attach>
+        </configuration>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>2.1.8</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <prefix>git</prefix>
+          <dateFormat>MMMM dd, yyyy 'at' HH:mm:ss z</dateFormat>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <dotGitDirectory>${project.basedir}/../../.git</dotGitDirectory>
+          <skipPoms>false</skipPoms>
+          <verbose>false</verbose>
+          <generateGitPropertiesFile>true</generateGitPropertiesFile>
+          <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>online</id>
+      <properties>
+        <online.skip.pattern>disabled</online.skip.pattern>
+      </properties>
+    </profile>
+    <profile>
+      <id>travis</id> <!-- profile for travis-specific configuration tweaks -->
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>pl.project13.maven</groupId>
+            <artifactId>git-commit-id-plugin</artifactId>
+            <configuration>
+              <skip>true</skip> <!-- the git commit id plugin sometimes causes spurious failures on travis, so we are disabling it in that environment -->
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>2.16</version>
+        <configuration>
+          <aggregate>true</aggregate>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+          <aggregate>true</aggregate>
+          <instrumentation>
+            <!-- ignores> <ignore>**/*Exception.class</ignore> </ignores -->
+            <excludes>
+              <exclude>**/*Exception.class</exclude>
+            </excludes>
+            <!-- includes> <include>**/*Test.class</include> </includes -->
+          </instrumentation>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <modules>
+   <module>../core</module>
+   <module>../storage</module>
+   <module>../osm</module>
+   <module>../metrics</module>
+   <module>../cli</module>
+   <module>../cli-app</module>
+   <module>../geotools</module>
+   <module>../web</module>
+  </modules>
+</project>

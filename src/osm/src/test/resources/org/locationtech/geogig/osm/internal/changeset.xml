@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osmChange version="0.6" generator="Osmosis 0.42-6-gf39a160-dirty">
+  <delete>
+    <node id="2059114068" version="1" timestamp="2012-12-09T23:55:20Z" uid="92274" user="adjuva" changeset="14220478" lat="50.7399081" lon="7.195868">
+      <tag k="VRS:gemeinde" v="BONN"/>
+      <tag k="VRS:ortsteil" v="Hoholz"/>
+      <tag k="VRS:ref" v="68566"/>
+      <tag k="bus" v="yes"/>
+      <tag k="highway" v="bus_stop"/>
+      <tag k="name" v="Gielgen"/>
+      <tag k="public_transport" v="stop_position"/>
+    </node>
+  </delete>
+  <modify>
+    <node id="1633594723" version="2" timestamp="2012-12-09T23:55:51Z" uid="92274" user="adjuva" changeset="14220478" lat="50.7393948" lon="7.196021">
+      <tag k="VRS:gemeinde" v="BONN"/>
+      <tag k="VRS:ortsteil" v="Hoholz"/>
+      <tag k="VRS:ref" v="68566"/>
+      <tag k="bus" v="no"/>
+      <tag k="name" v="Gielgen"/>
+      <tag k="public_transport" v="stop_position"/>
+    </node>
+  </modify>
+  <create>
+    <node id="507464865" version="4" timestamp="2012-12-09T23:55:51Z" uid="92274" user="adjuva" changeset="14220478" lat="50.7399906" lon="7.1958588">
+      <tag k="VRS:gemeinde" v="BONN"/>
+      <tag k="VRS:ortsteil" v="Hoholz"/>
+      <tag k="VRS:ref" v="68566"/>
+      <tag k="bus" v="yes"/>
+      <tag k="highway" v="bus_stop"/>
+      <tag k="name" v="Gielgen"/>
+      <tag k="public_transport" v="platform"/>
+    </node>
+  </create>
+</osmChange>

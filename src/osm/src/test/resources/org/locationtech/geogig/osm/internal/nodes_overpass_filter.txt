@@ -1,0 +1,4 @@
+node
+  ["name"="Gielgen"]
+  (50.7,7.1,50.8,7.2);
+out meta;

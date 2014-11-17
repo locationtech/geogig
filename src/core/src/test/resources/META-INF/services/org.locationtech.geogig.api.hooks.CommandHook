@@ -1,0 +1,2 @@
+#test hook used by org.locationtech.geogig.test.integration.HooksTest
+org.locationtech.geogig.test.integration.HooksTest$ClasspathHookTest

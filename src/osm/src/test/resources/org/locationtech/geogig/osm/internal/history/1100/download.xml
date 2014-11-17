@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osmChange version="0.6" generator="OpenStreetMap server" copyright="OpenStreetMap and contributors" attribution="http://www.openstreetmap.org/copyright" license="http://opendatacommons.org/licenses/odbl/1-0/">
+  <create>
+    <node id="795325" lat="48.4054827" lon="-4.4620657" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795326" lat="48.4055844" lon="-4.4620984" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795327" lat="48.405576" lon="-4.4621687" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795328" lat="48.4056473" lon="-4.4621888" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795329" lat="48.4052878" lon="-4.4624204" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795330" lat="48.4052272" lon="-4.4625164" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795331" lat="48.405351" lon="-4.4626937" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795332" lat="48.4054119" lon="-4.4625988" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795333" lat="48.4050674" lon="-4.4627597" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795334" lat="48.4050068" lon="-4.462856" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795335" lat="48.4051309" lon="-4.4630337" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795336" lat="48.4051928" lon="-4.462937" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795337" lat="48.4057984" lon="-4.4608384" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:10Z" version="1"/>
+  </create>
+  <create>
+    <node id="795338" lat="48.405435" lon="-4.4599738" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795339" lat="48.4057512" lon="-4.4596687" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795340" lat="48.4057089" lon="-4.4595667" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795341" lat="48.4056483" lon="-4.4596246" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795342" lat="48.4056456" lon="-4.4596183" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795343" lat="48.4056304" lon="-4.4596329" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795344" lat="48.4056331" lon="-4.4596392" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795345" lat="48.4055196" lon="-4.459748" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795346" lat="48.4055169" lon="-4.4597417" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795347" lat="48.4055016" lon="-4.4597563" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795348" lat="48.4055044" lon="-4.4597626" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795349" lat="48.4053955" lon="-4.4598669" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795350" lat="48.4053929" lon="-4.4598606" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795351" lat="48.4053776" lon="-4.4598752" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795352" lat="48.4053803" lon="-4.4598815" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795353" lat="48.4053225" lon="-4.4599369" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795354" lat="48.4054369" lon="-4.4602076" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795355" lat="48.4054327" lon="-4.4602117" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795356" lat="48.4054423" lon="-4.4602345" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795357" lat="48.4054465" lon="-4.4602305" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795358" lat="48.4055199" lon="-4.4604043" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795359" lat="48.4055157" lon="-4.4604083" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795360" lat="48.4055254" lon="-4.4604313" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795361" lat="48.4055296" lon="-4.4604273" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795362" lat="48.4056016" lon="-4.4605976" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795363" lat="48.4055973" lon="-4.4606017" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795364" lat="48.4056071" lon="-4.4606247" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795365" lat="48.4056113" lon="-4.4606206" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795366" lat="48.4056838" lon="-4.4607924" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795367" lat="48.4056796" lon="-4.4607963" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:11Z" version="1"/>
+  </create>
+  <create>
+    <node id="795368" lat="48.4056892" lon="-4.4608193" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:12Z" version="1"/>
+  </create>
+  <create>
+    <node id="795369" lat="48.4056935" lon="-4.4608153" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:12Z" version="1"/>
+  </create>
+  <create>
+    <node id="795370" lat="48.4057313" lon="-4.4609048" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:12Z" version="1"/>
+  </create>
+  <create>
+    <node id="795371" lat="48.4035972" lon="-4.4593387" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:12Z" version="1"/>
+  </create>
+  <create>
+    <node id="795372" lat="48.403562" lon="-4.4593192" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:12Z" version="1"/>
+  </create>
+  <create>
+    <node id="795373" lat="48.4035634" lon="-4.4593129" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:12Z" version="1"/>
+  </create>
+  <create>
+    <node id="795374" lat="48.4034184" lon="-4.4592338" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:12Z" version="1"/>
+  </create>
+  <create>
+    <node id="795375" lat="48.4054827" lon="-4.4620657" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795376" lat="48.4055844" lon="-4.4620984" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795377" lat="48.405576" lon="-4.4621687" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795378" lat="48.4056473" lon="-4.4621888" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795379" lat="48.4052878" lon="-4.4624204" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795380" lat="48.4052272" lon="-4.4625164" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795381" lat="48.405351" lon="-4.4626937" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795382" lat="48.4054119" lon="-4.4625988" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795383" lat="48.4050674" lon="-4.4627597" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795384" lat="48.4050068" lon="-4.462856" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795385" lat="48.4051309" lon="-4.4630337" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795386" lat="48.4051928" lon="-4.462937" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795387" lat="48.4057984" lon="-4.4608384" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795388" lat="48.405435" lon="-4.4599738" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795389" lat="48.4057512" lon="-4.4596687" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795390" lat="48.4057089" lon="-4.4595667" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795391" lat="48.4056483" lon="-4.4596246" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795392" lat="48.4056456" lon="-4.4596183" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795393" lat="48.4056304" lon="-4.4596329" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795394" lat="48.4056331" lon="-4.4596392" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795395" lat="48.4055196" lon="-4.459748" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:15Z" version="1"/>
+  </create>
+  <create>
+    <node id="795396" lat="48.4055169" lon="-4.4597417" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795397" lat="48.4055016" lon="-4.4597563" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795398" lat="48.4055044" lon="-4.4597626" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795399" lat="48.4053955" lon="-4.4598669" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795400" lat="48.4053929" lon="-4.4598606" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795401" lat="48.4053776" lon="-4.4598752" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795402" lat="48.4053803" lon="-4.4598815" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795403" lat="48.4053225" lon="-4.4599369" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795404" lat="48.4054369" lon="-4.4602076" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795405" lat="48.4054327" lon="-4.4602117" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795406" lat="48.4054423" lon="-4.4602345" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795407" lat="48.4054465" lon="-4.4602305" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795408" lat="48.4055199" lon="-4.4604043" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795409" lat="48.4055157" lon="-4.4604083" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795410" lat="48.4055254" lon="-4.4604313" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795411" lat="48.4055296" lon="-4.4604273" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795412" lat="48.4056016" lon="-4.4605976" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795413" lat="48.4055973" lon="-4.4606017" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795414" lat="48.4056071" lon="-4.4606247" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795415" lat="48.4056113" lon="-4.4606206" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795416" lat="48.4056838" lon="-4.4607924" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795417" lat="48.4056796" lon="-4.4607963" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795418" lat="48.4056892" lon="-4.4608193" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795419" lat="48.4056935" lon="-4.4608153" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795420" lat="48.4057313" lon="-4.4609048" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795421" lat="48.4035972" lon="-4.4593387" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795422" lat="48.403562" lon="-4.4593192" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795423" lat="48.4035634" lon="-4.4593129" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+  <create>
+    <node id="795424" lat="48.4034184" lon="-4.4592338" changeset="1100" user="BMO_2009" uid="26" visible="true" timestamp="2009-10-10T20:02:16Z" version="1"/>
+  </create>
+</osmChange>

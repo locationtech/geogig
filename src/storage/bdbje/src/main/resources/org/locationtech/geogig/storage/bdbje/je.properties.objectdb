@@ -1,0 +1,131 @@
+
+# Use a rather large log file size for the object db as it rarely gets deletes but its mostly used to append
+# contents and in read only mode.
+# 67108864 = 64MB
+# 268435456 = 256MB
+je.log.fileMax=268435456
+je.checkpointer.bytesInterval=268435456
+je.checkpointer.highPriority=true
+
+
+#In JE, when the durability specified for a transaction dictates force-writing to disk (for example, a commitSync() call),
+#it calls fsync(). On modern disk drives an fsync() will take on the order of several milliseconds. This is a relatively 
+#long time compared to the time required to do a write() call, which only moves data to the operating system's file cache.
+#
+#JE's group commit mechanism seeks to reduce the number of fsyncs required by issuing one fsync for batches of multiple 
+#transaction commits. For example, if a thread T1 requires an fsync(), and JE determines that no fsync() is in progress, 
+#it will execute that fsync() immediately. If, while T1 is executing the fsync(), some other thread(s) require an fsync(s),
+#JE will block those threads until T1 finishes. When T1's fsync() completes, a new fsync() executes on behalf of the blocked thread(s).
+#
+#The past JE group commit implementation assumed that the underlying platform (OS + file system combination) allow IO operations 
+#like seek(), read() and write() to execute concurrently with an fsync() call (on the same file, but using different file descriptors).
+#
+#On Solaris and Windows this is true. Hence, on these platforms, a thread which is performing an fsync() does not block another 
+#thread performing a concurrent write(). But, on several Linux file systems, ext3 in particular, an exclusive mutex on the inode 
+#is grabbed during any IO operation. So a write() call on a file (inode) will be blocked by an fsync() operation on the same file 
+#(inode). This negates any performance improvement which might be achieved by group commit.
+#
+#The JE group commit code has been improved to batch write() and fsync() calls, rather than just fsync() calls. Just before a write() 
+#call is executed, JE checks if an fsync() is in progress and if so, the write call is queued in a (new) Write Queue. Once the fsync() 
+#completes, all pending writes in the Write Queue are executed.
+#
+#This change in behavior is enabled by default and may be disabled by setting the je.log.useWriteQueue configuration parameter to false.
+#The size of the Write Queue (i.e. the amount of data it can queue until any currently-executing IO operations complete) can be controlled 
+#with the je.log.writeQueueSize parameter. The default for je.log.writeQueueSize is 1MB with a minimum value of 4KB and 
+#a maximum value of 32MB. The Write Queue does not use cache space controlled by the je.maxMemory parameter. [#16440]
+#
+#On a production environment you may want to experiment increasing the je.log.writeQueueSize setting up to 32MB and see
+#if it brings a significant performance gain (and reduces database size) 
+#je.log.writeQueueSize=33554432
+#je.log.bufferSize=10485760
+#je.log.numBuffers=8
+#je.log.groupCommitThreshold=100
+
+je.evictor.forcedYield=true
+je.evictor.coreThreads=1
+je.evictor.maxThreads=1
+
+je.cleaner.backgroundProactiveMigration=true
+je.cleaner.bytesInterval=268435456
+
+############################
+# CACHE AND MEMORY SETTINGS
+############################
+
+#To take full advantage of JE cache memory, it is strongly recommended
+#that -XX:+UseCompressedOops is specified when a 64-bit JVM is used 
+
+# Whether the cache is shared across environments
+je.sharedCache = true
+
+#default: 60, maximum: 90, mutually exclusive with je.maxMemory
+je.maxMemoryPercent = 60
+
+# # of bytes for the db cache, mutually exclusive with je.maxMemoryPercent
+#je.maxMemory = 512000000
+
+
+######################
+# PERFORMANCE TUNNING
+######################
+
+# If true, create the environment with record locking.  This property
+# should be set to false only in special circumstances when it is safe to
+# run without record locking.
+je.env.isLocking = true
+
+# If true, create an environment that is capable of performing
+# transactions.  If true is not passed, transactions may not be used.  For
+# Note that if transactions are not used, specifying true does not create 
+# additional overhead in the environment.
+je.env.isTransactional = true
+
+# can only be false if isTransactional = false
+je.env.runCheckpointer = true
+je.env.runCleaner = true
+je.env.runEvictor = true
+
+# Specifies the maximum unprefixed key length for use in the compact in-memory key representation.
+#   In the Btree, the JE in-memory cache, the default representation for keys uses a byte array object per key.
+# The per-key object overhead of this approach ranges from 20 to 32 bytes, depending on the JVM platform.
+#   To reduce memory overhead, a compact representation can instead be used where keys will be represented inside 
+# a single byte array instead of having one byte array per key. Within the single array, all keys are assigned a 
+# storage size equal to that taken up by the largest key, plus one byte to hold the actual key length.  The use 
+# of the fixed size array reduces Java GC activity as well as memory overhead.
+#   In order for the compact representation to reduce memory usage, all keys in a database, or in a Btree internal node, must be 
+# roughly the same size.  The more fully populated the internal node, the more the savings with this representation since the 
+# single byte array is sized to hold the maximum number of keys in the internal node, regardless of the actual number of keys 
+# that are present.
+#   It's worth noting that the storage savings of the compact representation are realized in addition to the storage benefits of 
+# key prefixing (if it is configured), since the keys stored in the key array are the smaller key values after the prefix has been
+# stripped, reducing the length of the key and making it more likely that it's small enough for this specialized representation.
+#   This configuration parameter is the maximum key length, not including the common prefix, for the keys in a Btree internal node
+# stored using the compact representation. 
+#   The compact representation is used automatically when both of the following conditions hold.
+#  * All keys in a Btree internal node must have an unprefixed length that is less than or equal to the length specified by this parameter
+#  * If key lengths vary by large amounts within an internal node, the wasted space of the fixed length storage may negate the benefits of
+#    the compact representation and cause more memory to be used than with the default representation.  In that case, the default 
+#    representation will be used.
+#   If this configuration parameter is set to zero, the compact representation will not be used.
+#   The default value of this configuration parameter is 16 bytes.  The potential drawbacks of specifying a larger length are:
+#     * Insertion and deletion for larger keys move bytes proportional to the storage length of the keys.
+#     * With the compact representation, all operations create temporary byte arrays for each key involved in the operation.  Larger
+#       byte arrays mean more work for the Java GC, even though these objects are short lived.
+#   Mutation of the key representation between the default and compact approaches is automatic on a per-Btree internal node basis.
+#  To determine how often the compact representation is used in a running application, see EnvironmentStats#getNINCompactKeyIN.
+
+je.tree.compactMaxKeyLength = 20
+
+# If true (the default), use an LRU-only policy to select nodes for eviction.  If false, select by Btree level first, and then 
+# by LRU. When using the shared cache feature, the value of this property is applied the first time the cache is set up. New 
+# environments that join the cache do not alter the cache setting.        
+# check http://www.oracle.com/technetwork/database/berkeleydb/je-faq-096044.html#35
+je.evictor.lruOnly = false
+je.evictor.nodesPerScan = 1000
+
+
+# Needs to be true if the environment is on a NFS mount
+je.log.useODSYNC = false
+
+# Force statistics logging off as it causes problems in GeoGig unit tests.
+je.stats.collect = false

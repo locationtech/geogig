@@ -1,0 +1,36 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *******************************************************************************/
+package org.locationtech.geogig.api.hooks;
+
+import java.util.ServiceLoader;
+
+import javax.annotation.concurrent.ThreadSafe;
+
+import org.locationtech.geogig.api.AbstractGeoGigOp;
+
+/**
+ * An interface that defines hooks for {@link AbstractGeoGigOp command} written in Java as opposed
+ * to a scripting language.
+ * <p>
+ * Implementations of this interface are discovered using the standard Java {@link ServiceLoader}
+ * SPI lookup, by looking for implementing class names at
+ * {@code META-INF/services/org.locationtech.geogig.api.hooks.CommandHook} resources.
+ * <p>
+ * Implementations must have a default constructor (or no explicit constructor at all), and must be
+ * thread safe.
+ */
+@ThreadSafe
+public interface CommandHook {
+
+    public <C extends AbstractGeoGigOp<?>> C pre(C command)
+            throws CannotRunGeogigOperationException;
+
+    public <T> T post(AbstractGeoGigOp<T> command, Object retVal, boolean success) throws Exception;
+
+    public boolean appliesTo(Class<? extends AbstractGeoGigOp<?>> clazz);
+}

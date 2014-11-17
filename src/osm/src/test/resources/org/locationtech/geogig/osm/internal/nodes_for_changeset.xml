@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2013-05-16T17:32:04Z"/>
+
+  <node id="371597317" lat="50.7412721" lon="7.1927120" version="4" timestamp="2010-01-02T10:04:33Z" changeset="3516760" uid="49785" user="mike67">
+    <tag k="is_in" v="Bonn,Regierungsbezirk Köln,Nordrhein-Westfalen,Bundesrepublik Deutschland,Europe"/>
+    <tag k="name" v="Gielgen"/>
+    <tag k="place" v="suburb"/>
+  </node>
+  <node id="507464799" lat="50.7393970" lon="7.1959361" version="4" timestamp="2012-12-09T23:55:51Z" changeset="14220478" uid="92274" user="adjuva">
+    <tag k="VRS:gemeinde" v="BONN"/>
+    <tag k="VRS:ortsteil" v="Hoholz"/>
+    <tag k="VRS:ref" v="68566"/>
+    <tag k="bus" v="yes"/>
+    <tag k="highway" v="bus_stop"/>
+    <tag k="name" v="Gielgen"/>
+    <tag k="public_transport" v="platform"/>
+  </node>
+  <node id="507464865" lat="50.7399906" lon="7.1958588" version="4" timestamp="2012-12-09T23:55:51Z" changeset="14220478" uid="92274" user="adjuva">
+    <tag k="VRS:gemeinde" v="BONN"/>
+    <tag k="VRS:ortsteil" v="Hoholz"/>
+    <tag k="VRS:ref" v="68566"/>
+    <tag k="bus" v="yes"/>
+    <tag k="highway" v="bus_stop"/>
+    <tag k="name" v="Gielgen"/>
+    <tag k="public_transport" v="platform"/>
+  </node>
+  <node id="1633594723" lat="50.7393948" lon="7.1960210" version="2" timestamp="2012-12-09T23:55:51Z" changeset="14220478" uid="92274" user="adjuva">
+    <tag k="VRS:gemeinde" v="BONN"/>
+    <tag k="VRS:ortsteil" v="Hoholz"/>
+    <tag k="VRS:ref" v="68566"/>
+    <tag k="bus" v="no"/>
+    <tag k="name" v="Gielgen"/>
+    <tag k="public_transport" v="stop_position"/>
+  </node>
+
+</osm>

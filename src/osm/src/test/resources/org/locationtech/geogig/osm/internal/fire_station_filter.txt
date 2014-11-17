@@ -1,0 +1,13 @@
+(
+  node
+    ["amenity"="fire_station"]
+    (50.6,7.0,50.8,7.3);
+  way
+    ["amenity"="fire_station"]
+    (50.6,7.0,50.8,7.3);
+  rel
+    ["amenity"="fire_station"]
+    (50.6,7.0,50.8,7.3);
+);
+(._;>;);
+out meta;

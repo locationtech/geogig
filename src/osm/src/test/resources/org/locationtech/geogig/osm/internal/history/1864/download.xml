@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osmChange version="0.6" generator="OpenStreetMap server" copyright="OpenStreetMap and contributors" attribution="http://www.openstreetmap.org/copyright" license="http://opendatacommons.org/licenses/odbl/1-0/">
+  <create>
+    <relation id="4386" visible="true" timestamp="2009-11-21T09:02:09Z" user="jttt" uid="48" version="1" changeset="1864">
+      <tag k="type" v="aoeua"/>
+    </relation>
+  </create>
+  <create>
+    <relation id="4387" visible="true" timestamp="2009-11-21T09:02:54Z" user="jttt" uid="48" version="1" changeset="1864">
+      <tag k="type" v="oeu"/>
+    </relation>
+  </create>
+  <modify>
+    <relation id="4385" visible="true" timestamp="2009-11-21T09:05:32Z" user="jttt" uid="48" version="2" changeset="1864">
+      <member type="relation" ref="4384" role=""/>
+      <tag k="type" v="parent"/>
+    </relation>
+  </modify>
+  <delete>
+    <way id="49391" visible="false" timestamp="2009-11-21T09:05:32Z" user="jttt" uid="48" version="3" changeset="1864"/>
+  </delete>
+  <delete>
+    <node id="1082496" changeset="1864" user="jttt" uid="48" visible="false" timestamp="2009-11-21T09:05:57Z" version="2"/>
+  </delete>
+  <delete>
+    <node id="1082494" changeset="1864" user="jttt" uid="48" visible="false" timestamp="2009-11-21T09:06:12Z" version="2"/>
+  </delete>
+  <delete>
+    <node id="1082495" changeset="1864" user="jttt" uid="48" visible="false" timestamp="2009-11-21T09:07:00Z" version="2"/>
+  </delete>
+  <delete>
+    <node id="1082497" changeset="1864" user="jttt" uid="48" visible="false" timestamp="2009-11-21T09:07:00Z" version="2"/>
+  </delete>
+  <create>
+    <node id="1082500" lat="53.5227645" lon="14.411804" changeset="1864" user="jttt" uid="48" visible="true" timestamp="2009-11-21T09:12:53Z" version="1"/>
+  </create>
+  <create>
+    <node id="1082501" lat="53.5239207" lon="14.4826007" changeset="1864" user="jttt" uid="48" visible="true" timestamp="2009-11-21T09:12:53Z" version="1"/>
+  </create>
+  <create>
+    <node id="1082502" lat="53.5103873" lon="14.478101" changeset="1864" user="jttt" uid="48" visible="true" timestamp="2009-11-21T09:12:53Z" version="1"/>
+  </create>
+  <create>
+    <node id="1082503" lat="53.4982203" lon="14.4574961" changeset="1864" user="jttt" uid="48" visible="true" timestamp="2009-11-21T09:12:53Z" version="1"/>
+  </create>
+  <create>
+    <way id="49393" visible="true" timestamp="2009-11-21T09:12:53Z" user="jttt" uid="48" version="1" changeset="1864">
+      <nd ref="1082500"/>
+      <nd ref="1082501"/>
+      <nd ref="1082502"/>
+      <nd ref="1082503"/>
+    </way>
+  </create>
+  <create>
+    <relation id="4390" visible="true" timestamp="2009-11-21T09:12:53Z" user="jttt" uid="48" version="1" changeset="1864">
+      <tag k="type" v="aeou"/>
+    </relation>
+  </create>
+  <create>
+    <relation id="4391" visible="true" timestamp="2009-11-21T09:12:53Z" user="jttt" uid="48" version="1" changeset="1864">
+      <tag k="type" v="aoeuau"/>
+    </relation>
+  </create>
+  <create>
+    <relation id="4392" visible="true" timestamp="2009-11-21T09:13:55Z" user="jttt" uid="48" version="1" changeset="1864">
+      <tag k="type" v="aeou"/>
+    </relation>
+  </create>
+  <create>
+    <relation id="4393" visible="true" timestamp="2009-11-21T09:18:06Z" user="jttt" uid="48" version="1" changeset="1864">
+      <member type="way" ref="49393" role=""/>
+      <tag k="type" v="aeua"/>
+    </relation>
+  </create>
+  <create>
+    <relation id="4394" visible="true" timestamp="2009-11-21T09:18:49Z" user="jttt" uid="48" version="1" changeset="1864">
+      <member type="relation" ref="4393" role=""/>
+      <tag k="eouaoeu" v="oeueaoeu"/>
+    </relation>
+  </create>
+  <create>
+    <relation id="4395" visible="true" timestamp="2009-11-21T09:19:44Z" user="jttt" uid="48" version="1" changeset="1864">
+      <tag k="type" v="oeuea"/>
+    </relation>
+  </create>
+  <create>
+    <relation id="4396" visible="true" timestamp="2009-11-21T09:20:37Z" user="jttt" uid="48" version="1" changeset="1864">
+      <tag k="type" v="oaeu"/>
+    </relation>
+  </create>
+  <modify>
+    <relation id="4394" visible="true" timestamp="2009-11-21T09:21:31Z" user="jttt" uid="48" version="2" changeset="1864">
+      <member type="relation" ref="4393" role=""/>
+      <member type="relation" ref="4395" role=""/>
+      <member type="relation" ref="4396" role=""/>
+      <tag k="eouaoeu" v="oeueaoeu"/>
+    </relation>
+  </modify>
+  <create>
+    <relation id="4397" visible="true" timestamp="2009-11-21T09:25:01Z" user="jttt" uid="48" version="1" changeset="1864">
+      <member type="relation" ref="4394" role=""/>
+      <tag k="type" v="aou"/>
+    </relation>
+  </create>
+</osmChange>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2013-05-21T08:10:04Z"/>
+
+  <node id="81953612" lat="50.7410694" lon="7.2009669" version="9" timestamp="2011-11-04T23:19:41Z" changeset="9743018" uid="92274" user="adjuva">
+    <tag k="highway" v="traffic_signals"/>
+  </node>
+  <node id="265110170" lat="50.7407049" lon="7.1974150" version="10" timestamp="2012-12-09T23:55:53Z" changeset="14220478" uid="92274" user="adjuva"/>
+  <node id="269237848" lat="50.7410349" lon="7.2007939" version="7" timestamp="2012-12-09T23:55:51Z" changeset="14220478" uid="92274" user="adjuva">
+    <tag k="VRS:gemeinde" v="BONN"/>
+    <tag k="VRS:ortsteil" v="Hoholz"/>
+    <tag k="VRS:ref" v="68567"/>
+    <tag k="bus" v="yes"/>
+    <tag k="name" v="Hoholz Mitte"/>
+    <tag k="public_transport" v="stop_position"/>
+  </node>
+  <node id="269237849" lat="50.7409200" lon="7.2000756" version="5" timestamp="2009-02-15T00:27:21Z" changeset="447108" uid="49785" user="mike67"/>
+  <node id="269237850" lat="50.7408635" lon="7.1997270" version="6" timestamp="2012-12-09T23:55:53Z" changeset="14220478" uid="92274" user="adjuva"/>
+  <node id="269237851" lat="50.7408562" lon="7.1986899" version="4" timestamp="2009-02-15T00:27:22Z" changeset="447108" uid="49785" user="mike67"/>
+  <node id="269237852" lat="50.7408367" lon="7.1982731" version="5" timestamp="2012-12-09T23:55:53Z" changeset="14220478" uid="92274" user="adjuva"/>
+  <node id="269237856" lat="50.7404683" lon="7.1968063" version="8" timestamp="2012-12-09T23:55:53Z" changeset="14220478" uid="92274" user="adjuva"/>
+  <node id="269237859" lat="50.7401981" lon="7.1964034" version="6" timestamp="2012-12-09T23:55:53Z" changeset="14220478" uid="92274" user="adjuva"/>
+  <node id="269237860" lat="50.7399033" lon="7.1960069" version="8" timestamp="2012-12-09T23:55:53Z" changeset="14220478" uid="92274" user="adjuva"/>
+  <node id="269237861" lat="50.7399120" lon="7.1950788" version="6" timestamp="2009-02-15T00:27:24Z" changeset="447108" uid="49785" user="mike67"/>
+  <node id="269237862" lat="50.7398686" lon="7.1942463" version="9" timestamp="2009-02-15T00:27:25Z" changeset="447108" uid="49785" user="mike67"/>
+  <node id="269237863" lat="50.7398262" lon="7.1935778" version="4" timestamp="2009-02-15T00:27:25Z" changeset="447108" uid="49785" user="mike67"/>
+  <node id="269237865" lat="50.7397889" lon="7.1925978" version="7" timestamp="2011-05-25T21:58:17Z" changeset="8249057" uid="49785" user="mike67"/>
+  <node id="269237867" lat="50.7397585" lon="7.1920903" version="11" timestamp="2011-05-25T21:58:19Z" changeset="8249057" uid="49785" user="mike67">
+    <tag k="highway" v="traffic_signals"/>
+  </node>
+  <node id="278904103" lat="50.7398018" lon="7.1931011" version="7" timestamp="2011-05-25T21:58:19Z" changeset="8249057" uid="49785" user="mike67"/>
+  <node id="278905850" lat="50.7399053" lon="7.1949262" version="6" timestamp="2011-05-25T21:58:19Z" changeset="8249057" uid="49785" user="mike67"/>
+  <node id="345117525" lat="50.7395887" lon="7.1923367" version="7" timestamp="2011-05-25T21:58:19Z" changeset="8249057" uid="49785" user="mike67"/>
+  <node id="345117526" lat="50.7396946" lon="7.1923127" version="3" timestamp="2011-05-25T21:58:19Z" changeset="8249057" uid="49785" user="mike67">
+    <tag k="highway" v="crossing"/>
+  </node>
+  <node id="345117527" lat="50.7397781" lon="7.1924199" version="6" timestamp="2011-05-25T21:58:18Z" changeset="8249057" uid="49785" user="mike67"/>
+  <node id="1300224327" lat="50.7397419" lon="7.1923444" version="1" timestamp="2011-05-25T21:58:17Z" changeset="8249057" uid="49785" user="mike67"/>
+  <node id="1300224351" lat="50.7398009" lon="7.1929987" version="2" timestamp="2011-05-25T22:00:09Z" changeset="8249057" uid="49785" user="mike67"/>
+  <node id="2059114068" lat="50.7399081" lon="7.1958680" version="1" timestamp="2012-12-09T23:55:20Z" changeset="14220478" uid="92274" user="adjuva">
+    <tag k="VRS:gemeinde" v="BONN"/>
+    <tag k="VRS:ortsteil" v="Hoholz"/>
+    <tag k="VRS:ref" v="68566"/>
+    <tag k="bus" v="yes"/>
+    <tag k="highway" v="bus_stop"/>
+    <tag k="name" v="Gielgen"/>
+    <tag k="public_transport" v="stop_position"/>
+  </node>
+  <node id="2059114069" lat="50.7407864" lon="7.1978098" version="1" timestamp="2012-12-09T23:55:20Z" changeset="14220478" uid="92274" user="adjuva"/>
+  <node id="2059114070" lat="50.7408220" lon="7.1994020" version="1" timestamp="2012-12-09T23:55:20Z" changeset="14220478" uid="92274" user="adjuva"/>
+  <node id="2059114071" lat="50.7408390" lon="7.1990968" version="1" timestamp="2012-12-09T23:55:20Z" changeset="14220478" uid="92274" user="adjuva"/>
+  <way id="24777894" version="17" timestamp="2012-12-09T23:55:51Z" changeset="14220478" uid="92274" user="adjuva">
+    <nd ref="81953612"/>
+    <nd ref="269237848"/>
+    <nd ref="269237849"/>
+    <nd ref="269237850"/>
+    <nd ref="2059114070"/>
+    <nd ref="2059114071"/>
+    <nd ref="269237851"/>
+    <nd ref="269237852"/>
+    <nd ref="2059114069"/>
+    <nd ref="265110170"/>
+    <nd ref="269237856"/>
+    <nd ref="269237859"/>
+    <nd ref="269237860"/>
+    <tag k="highway" v="residential"/>
+    <tag k="lit" v="yes"/>
+    <tag k="name" v="Gielgenstraße"/>
+  </way>
+  <way id="31045880" version="5" timestamp="2011-10-16T07:42:20Z" changeset="9569574" uid="55687" user="dschuwa">
+    <nd ref="345117525"/>
+    <nd ref="345117526"/>
+    <nd ref="1300224327"/>
+    <nd ref="345117527"/>
+    <nd ref="345117525"/>
+    <tag k="highway" v="residential"/>
+    <tag k="lit" v="yes"/>
+    <tag k="name" v="Gielgenstraße"/>
+    <tag k="oneway" v="yes"/>
+  </way>
+  <way id="51502277" version="2" timestamp="2011-10-16T07:42:20Z" changeset="9569574" uid="55687" user="dschuwa">
+    <nd ref="345117527"/>
+    <nd ref="269237867"/>
+    <tag k="highway" v="residential"/>
+    <tag k="lit" v="yes"/>
+    <tag k="name" v="Gielgenstraße"/>
+  </way>
+
+</osm>

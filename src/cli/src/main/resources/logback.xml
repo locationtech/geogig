@@ -1,0 +1,21 @@
+<configuration>
+  <!-- Note: this config gets picked up only if there's no repository at the current working directory or one of its parents 
+    (as per resolve-geogig-dir) -->
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>
+        %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <!-- level: one of TRACE, DEBUG, INFO, WARN, ERROR -->
+  <logger name="org.locationtech.geogig" level="WARN" />
+  <logger name="org.geotools" level="WARN" />
+
+
+  <root level="WARN">
+    <appender-ref ref="STDOUT" />
+  </root>
+
+</configuration>

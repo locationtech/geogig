@@ -1,0 +1,998 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2013-06-11T13:10:05Z"/>
+
+  <node id="30756278" lat="50.6930270" lon="7.0230103" version="3" timestamp="2010-12-30T13:08:12Z" changeset="6809138" uid="6390" user="grenzdebil_bonn"/>
+  <node id="48837516" lat="50.6931298" lon="7.0230912" version="3" timestamp="2010-12-30T13:08:17Z" changeset="6809138" uid="6390" user="grenzdebil_bonn"/>
+  <node id="257510608" lat="50.7721193" lon="7.2104840" version="8" timestamp="2012-05-21T22:53:25Z" changeset="11667146" uid="92274" user="adjuva">
+    <tag k="addr:city" v="Sankt Augustin"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="4"/>
+    <tag k="addr:postcode" v="53757"/>
+    <tag k="addr:street" v="Schulstraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Löschgruppe Niederpleis"/>
+    <tag k="operator" v="Freiwillige Feuerwehr Sankt Augustin"/>
+    <tag k="website" v="http://www.lgniederpleis.de/"/>
+  </node>
+  <node id="266631342" lat="50.7098284" lon="7.1697305" version="9" timestamp="2013-01-09T07:01:29Z" changeset="14583015" uid="49785" user="mike67">
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="714"/>
+    <tag k="addr:street" v="Königswinterer Straße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Oberkassel)"/>
+  </node>
+  <node id="268365630" lat="50.6794850" lon="7.1960004" version="1" timestamp="2008-06-03T23:13:27Z" changeset="41046" uid="6390" user="grenzdebil_bonn">
+    <tag k="amenity" v="fire_station"/>
+  </node>
+  <node id="273130506" lat="50.7846813" lon="7.2273910" version="5" timestamp="2013-03-14T18:26:39Z" changeset="15365450" uid="392612" user="Bikenabe"/>
+  <node id="281636541" lat="50.7249032" lon="7.0724209" version="3" timestamp="2011-05-22T00:37:03Z" changeset="8211756" uid="49785" user="mike67"/>
+  <node id="283120853" lat="50.6355251" lon="7.0949499" version="1" timestamp="2008-08-03T15:52:46Z" changeset="40323" uid="17848" user="dahlberg">
+    <tag k="amenity" v="fire_station"/>
+  </node>
+  <node id="283233583" lat="50.6447550" lon="7.2040520" version="2" timestamp="2011-05-19T13:08:22Z" changeset="8189740" uid="457092" user="Sebastian_ROW">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Feuerwehr Rolandswerth"/>
+  </node>
+  <node id="286670116" lat="50.6406094" lon="7.2272719" version="2" timestamp="2009-06-30T16:21:05Z" changeset="1692652" uid="6390" user="grenzdebil_bonn">
+    <tag k="amenity" v="fire_station"/>
+  </node>
+  <node id="298386625" lat="50.6202860" lon="7.0256333" version="1" timestamp="2008-09-20T12:56:41Z" changeset="671224" uid="65469" user="pascaloberon">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="created_by" v="Potlatch 0.10b"/>
+    <tag k="name" v="Freiwillige Feuerwehr"/>
+  </node>
+  <node id="298549488" lat="50.7162940" lon="7.0471606" version="4" timestamp="2012-07-03T16:31:24Z" changeset="12101797" uid="133419" user="dachefte"/>
+  <node id="298549490" lat="50.7162826" lon="7.0477098" version="4" timestamp="2012-07-03T16:31:24Z" changeset="12101797" uid="133419" user="dachefte"/>
+  <node id="298549493" lat="50.7161553" lon="7.0472616" version="4" timestamp="2012-07-03T16:31:24Z" changeset="12101797" uid="133419" user="dachefte"/>
+  <node id="298549494" lat="50.7164244" lon="7.0476018" version="4" timestamp="2012-07-03T16:31:24Z" changeset="12101797" uid="133419" user="dachefte"/>
+  <node id="306660036" lat="50.6323707" lon="7.0545094" version="1" timestamp="2008-10-23T20:19:18Z" changeset="536452" uid="44221" user="dcp">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Merler"/>
+  </node>
+  <node id="316421536" lat="50.7429379" lon="7.0738764" version="13" timestamp="2013-03-18T03:07:28Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="316421537" lat="50.7428410" lon="7.0739451" version="9" timestamp="2013-03-18T03:07:28Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="316421538" lat="50.7430901" lon="7.0748220" version="9" timestamp="2013-03-18T03:07:28Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="316421539" lat="50.7440651" lon="7.0741260" version="9" timestamp="2013-03-18T03:07:28Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="316421540" lat="50.7439979" lon="7.0738895" version="9" timestamp="2013-03-18T03:07:28Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="316421541" lat="50.7431174" lon="7.0745144" version="9" timestamp="2013-03-18T03:07:28Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="316421590" lat="50.7429794" lon="7.0744324" version="8" timestamp="2012-03-03T18:10:56Z" changeset="10860539" uid="49785" user="mike67">
+    <tag k="barrier" v="lift_gate"/>
+  </node>
+  <node id="347626789" lat="50.6088080" lon="7.1606848" version="1" timestamp="2009-02-19T18:11:14Z" changeset="556277" uid="100641" user="acsgc">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr"/>
+  </node>
+  <node id="369601781" lat="50.7845778" lon="7.1679373" version="4" timestamp="2010-03-13T19:29:00Z" changeset="4117930" uid="245486" user="Rich87">
+    <tag k="addr:city" v="Sankt Augustin"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="131"/>
+    <tag k="addr:postcode" v="53757"/>
+    <tag k="addr:street" v="Siegstraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="created_by" v="Potlatch 0.10f"/>
+    <tag k="name" v="Löschzug Menden"/>
+    <tag k="operator" v="Freiwillige Feuerwehr Sankt Augustin"/>
+    <tag k="phone" v="02241315388"/>
+    <tag k="website" v="www.lzmenden.de"/>
+  </node>
+  <node id="401572870" lat="50.6026261" lon="7.2533011" version="2" timestamp="2011-03-26T13:53:32Z" changeset="7675648" uid="116044" user="berndw">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Bruchhausen"/>
+  </node>
+  <node id="420023386" lat="50.7791929" lon="7.1946493" version="4" timestamp="2011-12-18T11:58:03Z" changeset="10145739" uid="92274" user="adjuva">
+    <tag k="addr:city" v="Sankt Augustin"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="31"/>
+    <tag k="addr:postcode" v="53757"/>
+    <tag k="addr:street" v="Gartenstraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Löschzug Mülldorf"/>
+    <tag k="operator" v="Freiwillige Feuerwehr Sankt Augustin"/>
+  </node>
+  <node id="430007012" lat="50.7767255" lon="7.1369004" version="2" timestamp="2011-01-19T15:34:39Z" changeset="7021600" uid="396615" user="Trekki1976">
+    <tag k="addr:city" v="Sankt Augustin"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="27 a"/>
+    <tag k="addr:postcode" v="53757"/>
+    <tag k="addr:street" v="Liebfrauenstraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Löschgruppe Meindorf"/>
+    <tag k="operator" v="Freiwillige Feuerwehr Sankt Augustin"/>
+  </node>
+  <node id="441917613" lat="50.7049930" lon="7.1152099" version="6" timestamp="2012-05-10T19:05:36Z" changeset="11561874" uid="55687" user="dschuwa">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr Löschzug 32 (Bonn-Dottendorf)"/>
+    <tag k="ref" v="FF Dottendorf"/>
+  </node>
+  <node id="450578984" lat="50.6648551" lon="7.1708558" version="4" timestamp="2011-01-30T02:59:40Z" changeset="7129839" uid="184969" user="EvanE"/>
+  <node id="450578986" lat="50.6647823" lon="7.1706988" version="4" timestamp="2011-01-30T02:59:46Z" changeset="7129839" uid="184969" user="EvanE"/>
+  <node id="450578994" lat="50.6649948" lon="7.1706945" version="6" timestamp="2011-07-28T22:57:20Z" changeset="8859359" uid="62187" user="cg909"/>
+  <node id="473692861" lat="50.7606149" lon="7.0846609" version="4" timestamp="2011-08-02T17:17:19Z" changeset="8903010" uid="49785" user="mike67"/>
+  <node id="473692862" lat="50.7606673" lon="7.0845505" version="3" timestamp="2011-08-02T17:17:18Z" changeset="8903010" uid="49785" user="mike67"/>
+  <node id="473692863" lat="50.7605179" lon="7.0843737" version="3" timestamp="2011-08-02T17:17:18Z" changeset="8903010" uid="49785" user="mike67"/>
+  <node id="473692864" lat="50.7604656" lon="7.0844841" version="4" timestamp="2011-08-02T17:17:19Z" changeset="8903010" uid="49785" user="mike67"/>
+  <node id="477582032" lat="50.6016863" lon="7.1825920" version="2" timestamp="2011-07-24T16:04:27Z" changeset="8817760" uid="487210" user="HerosRemagen">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr Unkelbach"/>
+  </node>
+  <node id="479746011" lat="50.7618990" lon="7.0496765" version="3" timestamp="2012-08-19T16:17:20Z" changeset="12785578" uid="39966" user="free_as_a_bird">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Buschdorf)"/>
+  </node>
+  <node id="480164851" lat="50.7405913" lon="7.1302779" version="4" timestamp="2012-02-23T18:15:52Z" changeset="10770759" uid="149408" user="sebastian89">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Beuel)"/>
+    <tag k="ref" v="FF Beuel"/>
+  </node>
+  <node id="480194491" lat="50.7494982" lon="7.1751288" version="3" timestamp="2012-02-23T18:15:53Z" changeset="10770761" uid="149408" user="sebastian89">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Holzlar)"/>
+    <tag k="ref" v="FF Holzlar"/>
+  </node>
+  <node id="481131090" lat="50.7137803" lon="7.1043365" version="4" timestamp="2012-02-23T18:15:57Z" changeset="10770766" uid="149408" user="sebastian89">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Kessenich)"/>
+    <tag k="ref" v="FF Kessenich"/>
+  </node>
+  <node id="524572165" lat="50.6953952" lon="7.1775820" version="2" timestamp="2013-04-21T13:17:40Z" changeset="15810689" uid="239076" user="HeinerSchaefer"/>
+  <node id="524572167" lat="50.6954799" lon="7.1778686" version="2" timestamp="2013-04-21T13:17:40Z" changeset="15810689" uid="239076" user="HeinerSchaefer"/>
+  <node id="524572169" lat="50.6956240" lon="7.1777624" version="2" timestamp="2013-04-21T13:17:40Z" changeset="15810689" uid="239076" user="HeinerSchaefer"/>
+  <node id="524572172" lat="50.6955934" lon="7.1776590" version="2" timestamp="2013-04-21T13:17:40Z" changeset="15810689" uid="239076" user="HeinerSchaefer"/>
+  <node id="524572174" lat="50.6955530" lon="7.1776888" version="2" timestamp="2013-04-21T13:17:40Z" changeset="15810689" uid="239076" user="HeinerSchaefer"/>
+  <node id="524572176" lat="50.6954989" lon="7.1775056" version="2" timestamp="2013-04-21T13:17:40Z" changeset="15810689" uid="239076" user="HeinerSchaefer"/>
+  <node id="528850697" lat="50.7186865" lon="7.0243921" version="6" timestamp="2012-11-04T20:20:34Z" changeset="13752855" uid="123520" user="TGN">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="DRK OV Alfter e.V. Rettungsstandort"/>
+    <tag k="operator" v="DRK Alfter"/>
+    <tag k="ref" v="RW 11"/>
+  </node>
+  <node id="550940140" lat="50.6900993" lon="7.1438149" version="4" timestamp="2011-09-02T17:21:21Z" changeset="9194720" uid="49785" user="mike67"/>
+  <node id="550940148" lat="50.6900370" lon="7.1440766" version="4" timestamp="2011-09-02T17:21:20Z" changeset="9194720" uid="49785" user="mike67"/>
+  <node id="550940210" lat="50.6906810" lon="7.1444586" version="4" timestamp="2011-09-02T17:21:21Z" changeset="9194720" uid="49785" user="mike67"/>
+  <node id="550940244" lat="50.6898167" lon="7.1442340" version="5" timestamp="2011-09-02T17:21:21Z" changeset="9194720" uid="49785" user="mike67"/>
+  <node id="550940258" lat="50.6899390" lon="7.1437199" version="4" timestamp="2011-09-02T17:21:21Z" changeset="9194720" uid="49785" user="mike67"/>
+  <node id="555528268" lat="50.6911445" lon="7.1448884" version="3" timestamp="2011-03-25T05:58:00Z" changeset="7662347" uid="184969" user="EvanE"/>
+  <node id="558649066" lat="50.6910792" lon="7.1449680" version="3" timestamp="2011-03-25T05:57:27Z" changeset="7662347" uid="184969" user="EvanE"/>
+  <node id="558649067" lat="50.6909993" lon="7.1448061" version="4" timestamp="2011-03-25T05:57:10Z" changeset="7662347" uid="184969" user="EvanE"/>
+  <node id="560653652" lat="50.6906211" lon="7.1447106" version="4" timestamp="2011-09-02T17:21:21Z" changeset="9194720" uid="49785" user="mike67"/>
+  <node id="600329328" lat="50.7386970" lon="7.1074236" version="5" timestamp="2010-03-11T09:02:08Z" changeset="4096078" uid="49785" user="mike67">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Liegeplatz Feuerlöschboot Bonn"/>
+  </node>
+  <node id="616268845" lat="50.7249218" lon="7.0723860" version="2" timestamp="2011-05-22T00:37:03Z" changeset="8211756" uid="49785" user="mike67"/>
+  <node id="616268855" lat="50.7248673" lon="7.0724876" version="2" timestamp="2011-05-22T00:37:03Z" changeset="8211756" uid="49785" user="mike67"/>
+  <node id="620862340" lat="50.6502006" lon="7.1102854" version="1" timestamp="2010-01-26T20:01:10Z" changeset="3722676" uid="225176" user="klipp">
+    <tag k="amenity" v="fire_station"/>
+  </node>
+  <node id="620864025" lat="50.6266102" lon="7.1329178" version="2" timestamp="2010-09-29T20:43:37Z" changeset="5915437" uid="62187" user="cg909">
+    <tag k="amenity" v="fire_station"/>
+  </node>
+  <node id="631604448" lat="50.7438199" lon="7.0743000" version="4" timestamp="2013-03-18T03:07:32Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="631604451" lat="50.7436458" lon="7.0744278" version="5" timestamp="2013-03-18T03:07:32Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="631604454" lat="50.7437525" lon="7.0748035" version="4" timestamp="2013-03-18T03:07:32Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="631604455" lat="50.7439276" lon="7.0746793" version="4" timestamp="2013-03-18T03:07:32Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="649942239" lat="50.7369275" lon="7.1316885" version="5" timestamp="2011-11-17T00:48:35Z" changeset="9850356" uid="49785" user="mike67"/>
+  <node id="649942242" lat="50.7367668" lon="7.1317737" version="5" timestamp="2011-11-17T00:48:35Z" changeset="9850356" uid="49785" user="mike67"/>
+  <node id="649942248" lat="50.7366616" lon="7.1312778" version="5" timestamp="2011-11-17T00:48:35Z" changeset="9850356" uid="49785" user="mike67"/>
+  <node id="649942260" lat="50.7368223" lon="7.1311927" version="5" timestamp="2011-11-17T00:48:35Z" changeset="9850356" uid="49785" user="mike67"/>
+  <node id="667537121" lat="50.7569817" lon="7.1250711" version="2" timestamp="2011-08-12T17:02:39Z" changeset="8997911" uid="49785" user="mike67"/>
+  <node id="667537124" lat="50.7568523" lon="7.1251241" version="2" timestamp="2011-08-12T17:02:39Z" changeset="8997911" uid="49785" user="mike67"/>
+  <node id="667537129" lat="50.7568294" lon="7.1249821" version="2" timestamp="2011-08-12T17:02:39Z" changeset="8997911" uid="49785" user="mike67"/>
+  <node id="667537130" lat="50.7569589" lon="7.1249291" version="2" timestamp="2011-08-12T17:02:39Z" changeset="8997911" uid="49785" user="mike67"/>
+  <node id="683449417" lat="50.7281676" lon="7.2702886" version="2" timestamp="2012-11-04T10:25:20Z" changeset="13744171" uid="206924" user="Heckflosse">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="description" v="Freiwillige Feuerwehr"/>
+    <tag k="name" v="Löschgruppe Uthweiler"/>
+  </node>
+  <node id="684355012" lat="50.6910657" lon="7.1447254" version="2" timestamp="2011-03-25T05:57:50Z" changeset="7662347" uid="184969" user="EvanE"/>
+  <node id="684355036" lat="50.6900100" lon="7.1443485" version="2" timestamp="2011-09-02T17:21:21Z" changeset="9194720" uid="49785" user="mike67"/>
+  <node id="745820622" lat="50.7374575" lon="7.0798040" version="3" timestamp="2012-05-04T19:36:24Z" changeset="11501249" uid="49785" user="mike67"/>
+  <node id="745820630" lat="50.7373090" lon="7.0798299" version="3" timestamp="2012-05-04T19:36:24Z" changeset="11501249" uid="49785" user="mike67"/>
+  <node id="745820637" lat="50.7373243" lon="7.0800485" version="3" timestamp="2012-05-04T19:36:24Z" changeset="11501249" uid="49785" user="mike67"/>
+  <node id="745820642" lat="50.7374954" lon="7.0800186" version="3" timestamp="2012-05-04T19:36:24Z" changeset="11501249" uid="49785" user="mike67"/>
+  <node id="745820647" lat="50.7374845" lon="7.0798627" version="3" timestamp="2012-05-04T19:36:24Z" changeset="11501249" uid="49785" user="mike67"/>
+  <node id="745820652" lat="50.7374618" lon="7.0798667" version="3" timestamp="2012-05-04T19:36:24Z" changeset="11501249" uid="49785" user="mike67"/>
+  <node id="847355494" lat="50.7929654" lon="7.0436136" version="1" timestamp="2010-08-05T22:34:28Z" changeset="5412646" uid="329348" user="regloH">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr Niederkassel, Löschgruppe Rheidt"/>
+  </node>
+  <node id="944011747" lat="50.6143403" lon="7.0614429" version="2" timestamp="2013-05-31T17:17:39Z" changeset="16368077" uid="1242704" user="Allegro34">
+    <tag k="amenity" v="fire_station"/>
+  </node>
+  <node id="978635842" lat="50.7748448" lon="7.2795223" version="4" timestamp="2011-10-22T19:44:13Z" changeset="9627288" uid="45243" user="odna"/>
+  <node id="978635887" lat="50.7744712" lon="7.2793842" version="6" timestamp="2012-01-10T17:31:47Z" changeset="10353259" uid="45243" user="odna"/>
+  <node id="978635920" lat="50.7748141" lon="7.2790536" version="4" timestamp="2011-10-22T19:44:13Z" changeset="9627288" uid="45243" user="odna"/>
+  <node id="978635953" lat="50.7742194" lon="7.2789022" version="5" timestamp="2011-10-22T19:44:13Z" changeset="9627288" uid="45243" user="odna"/>
+  <node id="996347344" lat="50.6945237" lon="7.2413479" version="1" timestamp="2010-11-20T16:34:30Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347354" lat="50.6943679" lon="7.2411078" version="1" timestamp="2010-11-20T16:34:31Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347362" lat="50.6944004" lon="7.2411069" version="1" timestamp="2010-11-20T16:34:31Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347374" lat="50.6944450" lon="7.2410374" version="1" timestamp="2010-11-20T16:34:32Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347393" lat="50.6944780" lon="7.2414083" version="1" timestamp="2010-11-20T16:34:33Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347427" lat="50.6943988" lon="7.2411475" version="1" timestamp="2010-11-20T16:34:33Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347454" lat="50.6945095" lon="7.2413487" version="1" timestamp="2010-11-20T16:34:34Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347463" lat="50.6944775" lon="7.2414000" version="1" timestamp="2010-11-20T16:34:35Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347467" lat="50.6943370" lon="7.2411467" version="1" timestamp="2010-11-20T16:34:35Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347473" lat="50.6943364" lon="7.2412916" version="1" timestamp="2010-11-20T16:34:35Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347477" lat="50.6944366" lon="7.2414033" version="1" timestamp="2010-11-20T16:34:35Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347484" lat="50.6945357" lon="7.2410424" version="1" timestamp="2010-11-20T16:34:36Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347501" lat="50.6945090" lon="7.2413851" version="1" timestamp="2010-11-20T16:34:37Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347514" lat="50.6945205" lon="7.2413860" version="1" timestamp="2010-11-20T16:34:38Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347517" lat="50.6944508" lon="7.2411525" version="1" timestamp="2010-11-20T16:34:38Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347529" lat="50.6944256" lon="7.2412883" version="1" timestamp="2010-11-20T16:34:38Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347532" lat="50.6945363" lon="7.2410995" version="1" timestamp="2010-11-20T16:34:38Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347537" lat="50.6945268" lon="7.2410987" version="1" timestamp="2010-11-20T16:34:39Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347548" lat="50.6943684" lon="7.2411475" version="1" timestamp="2010-11-20T16:34:39Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347553" lat="50.6945237" lon="7.2414042" version="1" timestamp="2010-11-20T16:34:39Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347555" lat="50.6944497" lon="7.2410821" version="1" timestamp="2010-11-20T16:34:40Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="996347570" lat="50.6944429" lon="7.2410490" version="1" timestamp="2010-11-20T16:34:40Z" changeset="6415666" uid="349250" user="pornostar34"/>
+  <node id="1035426442" lat="50.6188925" lon="7.2270831" version="1" timestamp="2010-12-12T10:52:40Z" changeset="6634366" uid="153091" user="mm4811"/>
+  <node id="1035426448" lat="50.6191835" lon="7.2270235" version="1" timestamp="2010-12-12T10:52:40Z" changeset="6634366" uid="153091" user="mm4811"/>
+  <node id="1035426460" lat="50.6191309" lon="7.2272323" version="1" timestamp="2010-12-12T10:52:40Z" changeset="6634366" uid="153091" user="mm4811"/>
+  <node id="1035426476" lat="50.6189450" lon="7.2268744" version="1" timestamp="2010-12-12T10:52:41Z" changeset="6634366" uid="153091" user="mm4811"/>
+  <node id="1035581827" lat="50.7739006" lon="7.0923511" version="5" timestamp="2012-05-18T08:10:29Z" changeset="11630497" uid="237277" user="Der Troisdorfer">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr Löschgruppe Bergheim"/>
+  </node>
+  <node id="1068434059" lat="50.6413161" lon="7.1770789" version="1" timestamp="2010-12-27T21:54:48Z" changeset="6782442" uid="119785" user="trekki"/>
+  <node id="1068434061" lat="50.6414002" lon="7.1771913" version="1" timestamp="2010-12-27T21:54:48Z" changeset="6782442" uid="119785" user="trekki"/>
+  <node id="1068434065" lat="50.6415388" lon="7.1769334" version="1" timestamp="2010-12-27T21:54:48Z" changeset="6782442" uid="119785" user="trekki"/>
+  <node id="1068434104" lat="50.6414547" lon="7.1768210" version="1" timestamp="2010-12-27T21:54:50Z" changeset="6782442" uid="119785" user="trekki"/>
+  <node id="1068444594" lat="50.6079413" lon="7.0880359" version="1" timestamp="2010-12-27T22:02:12Z" changeset="6782777" uid="119785" user="trekki">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Feuerwehr Wachtberg Löschgruppe Arzdorf"/>
+  </node>
+  <node id="1072785359" lat="50.6931489" lon="7.0228151" version="1" timestamp="2010-12-30T13:07:58Z" changeset="6809138" uid="6390" user="grenzdebil_bonn"/>
+  <node id="1072785399" lat="50.6930418" lon="7.0227965" version="1" timestamp="2010-12-30T13:07:59Z" changeset="6809138" uid="6390" user="grenzdebil_bonn"/>
+  <node id="1072785518" lat="50.6931244" lon="7.0228108" version="1" timestamp="2010-12-30T13:08:03Z" changeset="6809138" uid="6390" user="grenzdebil_bonn"/>
+  <node id="1072785527" lat="50.6930227" lon="7.0230728" version="1" timestamp="2010-12-30T13:08:04Z" changeset="6809138" uid="6390" user="grenzdebil_bonn"/>
+  <node id="1100668021" lat="50.7745611" lon="7.2790255" version="3" timestamp="2011-10-22T19:43:59Z" changeset="9627288" uid="45243" user="odna"/>
+  <node id="1100668042" lat="50.7745698" lon="7.2789654" version="3" timestamp="2011-10-22T19:44:00Z" changeset="9627288" uid="45243" user="odna"/>
+  <node id="1152183097" lat="50.6590808" lon="7.1883188" version="1" timestamp="2011-02-14T02:30:06Z" changeset="7282529" uid="184969" user="EvanE"/>
+  <node id="1152183306" lat="50.6592070" lon="7.1881458" version="1" timestamp="2011-02-14T02:30:11Z" changeset="7282529" uid="184969" user="EvanE"/>
+  <node id="1152183352" lat="50.6591414" lon="7.1880266" version="1" timestamp="2011-02-14T02:30:12Z" changeset="7282529" uid="184969" user="EvanE"/>
+  <node id="1152183595" lat="50.6590151" lon="7.1881997" version="2" timestamp="2011-08-20T15:20:04Z" changeset="9075177" uid="49785" user="mike67"/>
+  <node id="1177540310" lat="50.7804520" lon="7.1083855" version="4" timestamp="2013-03-28T15:44:33Z" changeset="15528417" uid="237277" user="Der Troisdorfer"/>
+  <node id="1177540461" lat="50.7804927" lon="7.1082188" version="4" timestamp="2013-03-28T15:44:33Z" changeset="15528417" uid="237277" user="Der Troisdorfer"/>
+  <node id="1177540884" lat="50.7805122" lon="7.1084221" version="4" timestamp="2013-03-28T15:44:33Z" changeset="15528417" uid="237277" user="Der Troisdorfer"/>
+  <node id="1233846221" lat="50.7365134" lon="7.0483089" version="2" timestamp="2011-04-05T19:27:30Z" changeset="7778288" uid="49785" user="mike67"/>
+  <node id="1233846234" lat="50.7364024" lon="7.0482434" version="2" timestamp="2011-04-05T19:27:30Z" changeset="7778288" uid="49785" user="mike67"/>
+  <node id="1233846244" lat="50.7364764" lon="7.0484654" version="2" timestamp="2011-04-05T19:27:30Z" changeset="7778288" uid="49785" user="mike67"/>
+  <node id="1234016924" lat="50.7363654" lon="7.0483999" version="1" timestamp="2011-04-05T19:27:29Z" changeset="7778288" uid="49785" user="mike67"/>
+  <node id="1245860332" lat="50.7308518" lon="7.1846915" version="2" timestamp="2011-04-15T20:35:05Z" changeset="7873392" uid="49785" user="mike67"/>
+  <node id="1245860335" lat="50.7307564" lon="7.1850516" version="2" timestamp="2011-04-15T20:35:05Z" changeset="7873392" uid="49785" user="mike67"/>
+  <node id="1245860352" lat="50.7309200" lon="7.1849131" version="2" timestamp="2011-04-15T20:35:04Z" changeset="7873392" uid="49785" user="mike67"/>
+  <node id="1245860356" lat="50.7307475" lon="7.1849631" version="2" timestamp="2011-04-15T20:35:03Z" changeset="7873392" uid="49785" user="mike67"/>
+  <node id="1245860363" lat="50.7308874" lon="7.1849739" version="2" timestamp="2011-04-15T20:35:07Z" changeset="7873392" uid="49785" user="mike67"/>
+  <node id="1245860366" lat="50.7308941" lon="7.1849804" version="2" timestamp="2011-04-15T20:35:06Z" changeset="7873392" uid="49785" user="mike67"/>
+  <node id="1245860370" lat="50.7309569" lon="7.1847922" version="2" timestamp="2011-04-15T20:35:03Z" changeset="7873392" uid="49785" user="mike67"/>
+  <node id="1245860371" lat="50.7309130" lon="7.1849064" version="2" timestamp="2011-04-15T20:35:07Z" changeset="7873392" uid="49785" user="mike67"/>
+  <node id="1245860381" lat="50.7308303" lon="7.1851225" version="2" timestamp="2011-04-15T20:35:07Z" changeset="7873392" uid="49785" user="mike67"/>
+  <node id="1246212014" lat="50.7307789" lon="7.1849931" version="1" timestamp="2011-04-15T20:35:02Z" changeset="7873392" uid="49785" user="mike67"/>
+  <node id="1254155972" lat="50.7097685" lon="7.0711287" version="1" timestamp="2011-04-21T16:54:05Z" changeset="7927126" uid="49785" user="mike67"/>
+  <node id="1254155986" lat="50.7099715" lon="7.0710425" version="1" timestamp="2011-04-21T16:54:05Z" changeset="7927126" uid="49785" user="mike67"/>
+  <node id="1254156002" lat="50.7100018" lon="7.0712205" version="1" timestamp="2011-04-21T16:54:05Z" changeset="7927126" uid="49785" user="mike67"/>
+  <node id="1254156005" lat="50.7097988" lon="7.0713067" version="1" timestamp="2011-04-21T16:54:05Z" changeset="7927126" uid="49785" user="mike67"/>
+  <node id="1269880334" lat="50.7228143" lon="7.0391314" version="3" timestamp="2012-09-04T10:11:16Z" changeset="12979626" uid="133419" user="dachefte"/>
+  <node id="1269880339" lat="50.7228412" lon="7.0388619" version="3" timestamp="2012-09-04T10:11:16Z" changeset="12979626" uid="133419" user="dachefte"/>
+  <node id="1269880341" lat="50.7229264" lon="7.0390017" version="3" timestamp="2012-09-04T10:11:16Z" changeset="12979626" uid="133419" user="dachefte"/>
+  <node id="1269880374" lat="50.7227420" lon="7.0390126" version="3" timestamp="2012-09-04T10:11:17Z" changeset="12979626" uid="133419" user="dachefte"/>
+  <node id="1269880436" lat="50.7227954" lon="7.0391003" version="3" timestamp="2012-09-04T10:11:18Z" changeset="12979626" uid="133419" user="dachefte"/>
+  <node id="1271529245" lat="50.6789687" lon="7.0710097" version="3" timestamp="2012-05-24T17:43:56Z" changeset="11691865" uid="184969" user="EvanE"/>
+  <node id="1271529247" lat="50.6790966" lon="7.0709620" version="2" timestamp="2012-05-24T17:43:56Z" changeset="11691865" uid="184969" user="EvanE"/>
+  <node id="1271529251" lat="50.6790583" lon="7.0710813" version="2" timestamp="2012-05-24T17:43:56Z" changeset="11691865" uid="184969" user="EvanE"/>
+  <node id="1271529252" lat="50.6790070" lon="7.0708905" version="3" timestamp="2012-05-24T17:43:56Z" changeset="11691865" uid="184969" user="EvanE"/>
+  <node id="1277424233" lat="50.7794920" lon="7.0674803" version="1" timestamp="2011-05-08T18:09:24Z" changeset="8085626" uid="39966" user="free_as_a_bird"/>
+  <node id="1277424262" lat="50.7795777" lon="7.0673737" version="1" timestamp="2011-05-08T18:09:26Z" changeset="8085626" uid="39966" user="free_as_a_bird"/>
+  <node id="1277424282" lat="50.7796556" lon="7.0675303" version="1" timestamp="2011-05-08T18:09:26Z" changeset="8085626" uid="39966" user="free_as_a_bird"/>
+  <node id="1277424370" lat="50.7795699" lon="7.0676369" version="1" timestamp="2011-05-08T18:09:29Z" changeset="8085626" uid="39966" user="free_as_a_bird"/>
+  <node id="1295534251" lat="50.7248790" lon="7.0723282" version="1" timestamp="2011-05-22T00:37:01Z" changeset="8211756" uid="49785" user="mike67"/>
+  <node id="1295534252" lat="50.7248241" lon="7.0724286" version="1" timestamp="2011-05-22T00:37:01Z" changeset="8211756" uid="49785" user="mike67"/>
+  <node id="1322113379" lat="50.7481527" lon="7.2733944" version="2" timestamp="2013-05-21T15:17:03Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="1322113405" lat="50.7482037" lon="7.2733793" version="2" timestamp="2013-05-21T15:17:03Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="1322113415" lat="50.7481123" lon="7.2736515" version="2" timestamp="2013-05-21T15:17:03Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="1322113418" lat="50.7482237" lon="7.2737797" version="2" timestamp="2013-05-21T15:17:03Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="1327160049" lat="50.7897184" lon="7.1096282" version="2" timestamp="2012-05-03T14:18:33Z" changeset="11489264" uid="237277" user="Der Troisdorfer"/>
+  <node id="1327160050" lat="50.7897607" lon="7.1095687" version="2" timestamp="2012-05-03T14:18:33Z" changeset="11489264" uid="237277" user="Der Troisdorfer"/>
+  <node id="1327160051" lat="50.7898852" lon="7.1099243" version="2" timestamp="2012-05-03T14:18:33Z" changeset="11489264" uid="237277" user="Der Troisdorfer"/>
+  <node id="1327160052" lat="50.7899274" lon="7.1098648" version="2" timestamp="2012-05-03T14:18:33Z" changeset="11489264" uid="237277" user="Der Troisdorfer"/>
+  <node id="1377225294" lat="50.6649212" lon="7.1705351" version="1" timestamp="2011-07-28T22:57:19Z" changeset="8859359" uid="62187" user="cg909"/>
+  <node id="1472057649" lat="50.7280067" lon="7.2363823" version="1" timestamp="2011-10-18T14:01:45Z" changeset="9591459" uid="392612" user="Bikenabe"/>
+  <node id="1472057650" lat="50.7280205" lon="7.2364775" version="1" timestamp="2011-10-18T14:01:45Z" changeset="9591459" uid="392612" user="Bikenabe"/>
+  <node id="1472057651" lat="50.7280381" lon="7.2358128" version="1" timestamp="2011-10-18T14:01:45Z" changeset="9591459" uid="392612" user="Bikenabe"/>
+  <node id="1472057652" lat="50.7280444" lon="7.2362811" version="1" timestamp="2011-10-18T14:01:45Z" changeset="9591459" uid="392612" user="Bikenabe"/>
+  <node id="1472057653" lat="50.7280469" lon="7.2364319" version="1" timestamp="2011-10-18T14:01:45Z" changeset="9591459" uid="392612" user="Bikenabe"/>
+  <node id="1472057654" lat="50.7280808" lon="7.2365470" version="1" timestamp="2011-10-18T14:01:45Z" changeset="9591459" uid="392612" user="Bikenabe"/>
+  <node id="1472057655" lat="50.7281850" lon="7.2358009" version="1" timestamp="2011-10-18T14:01:45Z" changeset="9591459" uid="392612" user="Bikenabe"/>
+  <node id="1472057656" lat="50.7282001" lon="7.2363505" version="1" timestamp="2011-10-18T14:01:45Z" changeset="9591459" uid="392612" user="Bikenabe"/>
+  <node id="1476849704" lat="50.7747786" lon="7.2792985" version="1" timestamp="2011-10-22T19:43:10Z" changeset="9627288" uid="45243" user="odna"/>
+  <node id="1476849712" lat="50.7747994" lon="7.2794577" version="1" timestamp="2011-10-22T19:43:10Z" changeset="9627288" uid="45243" user="odna"/>
+  <node id="1476849714" lat="50.7748203" lon="7.2793135" version="1" timestamp="2011-10-22T19:43:10Z" changeset="9627288" uid="45243" user="odna"/>
+  <node id="1476849723" lat="50.7748229" lon="7.2795144" version="1" timestamp="2011-10-22T19:43:10Z" changeset="9627288" uid="45243" user="odna"/>
+  <node id="1476849728" lat="50.7748514" lon="7.2794765" version="1" timestamp="2011-10-22T19:43:10Z" changeset="9627288" uid="45243" user="odna"/>
+  <node id="1485257816" lat="50.7436948" lon="7.0741046" version="3" timestamp="2013-03-18T03:07:25Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="1485257817" lat="50.7436331" lon="7.0741484" version="3" timestamp="2013-03-18T03:07:25Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="1496985598" lat="50.7528518" lon="7.0050561" version="1" timestamp="2011-11-10T06:47:07Z" changeset="9786651" uid="78730" user="tippeltappel"/>
+  <node id="1496985600" lat="50.7529232" lon="7.0052372" version="1" timestamp="2011-11-10T06:47:07Z" changeset="9786651" uid="78730" user="tippeltappel"/>
+  <node id="1496985602" lat="50.7529502" lon="7.0049592" version="1" timestamp="2011-11-10T06:47:07Z" changeset="9786651" uid="78730" user="tippeltappel"/>
+  <node id="1496985603" lat="50.7530216" lon="7.0051403" version="1" timestamp="2011-11-10T06:47:07Z" changeset="9786651" uid="78730" user="tippeltappel"/>
+  <node id="1584806417" lat="50.7741664" lon="7.2792715" version="1" timestamp="2012-01-10T17:29:07Z" changeset="10353259" uid="45243" user="odna"/>
+  <node id="1644507598" lat="50.7221061" lon="7.0139395" version="1" timestamp="2012-02-23T18:03:18Z" changeset="10770620" uid="149408" user="sebastian89"/>
+  <node id="1644507600" lat="50.7222023" lon="7.0140581" version="1" timestamp="2012-02-23T18:03:18Z" changeset="10770620" uid="149408" user="sebastian89"/>
+  <node id="1644507602" lat="50.7222179" lon="7.0137133" version="1" timestamp="2012-02-23T18:03:19Z" changeset="10770620" uid="149408" user="sebastian89"/>
+  <node id="1644507603" lat="50.7223141" lon="7.0138318" version="1" timestamp="2012-02-23T18:03:19Z" changeset="10770620" uid="149408" user="sebastian89"/>
+  <node id="1644508132" lat="50.7333902" lon="7.0100425" version="1" timestamp="2012-02-23T18:03:35Z" changeset="10770628" uid="149408" user="sebastian89"/>
+  <node id="1644508133" lat="50.7334803" lon="7.0101870" version="1" timestamp="2012-02-23T18:03:35Z" changeset="10770628" uid="149408" user="sebastian89"/>
+  <node id="1644508134" lat="50.7334831" lon="7.0098980" version="1" timestamp="2012-02-23T18:03:35Z" changeset="10770628" uid="149408" user="sebastian89"/>
+  <node id="1644508135" lat="50.7335732" lon="7.0100425" version="1" timestamp="2012-02-23T18:03:35Z" changeset="10770628" uid="149408" user="sebastian89"/>
+  <node id="1657811587" lat="50.7430763" lon="7.0743697" version="2" timestamp="2013-03-18T03:07:26Z" changeset="15403618" uid="184969" user="EvanE"/>
+  <node id="1715292123" lat="50.7991991" lon="7.2139097" version="2" timestamp="2012-07-01T21:04:52Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1715292141" lat="50.7993003" lon="7.2147870" version="2" timestamp="2012-07-01T21:04:53Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1715292176" lat="50.7992095" lon="7.2139070" version="2" timestamp="2012-07-01T21:04:53Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1715292225" lat="50.7991826" lon="7.2137493" version="2" timestamp="2012-07-01T21:04:53Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1715292236" lat="50.7993724" lon="7.2138648" version="2" timestamp="2012-07-01T21:04:53Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1715292240" lat="50.7994632" lon="7.2147450" version="2" timestamp="2012-07-01T21:04:53Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1715292314" lat="50.7994706" lon="7.2136749" version="2" timestamp="2012-07-01T21:04:54Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1715292355" lat="50.7994871" lon="7.2138352" version="2" timestamp="2012-07-01T21:04:54Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1717098649" lat="50.6190325" lon="7.2270134" version="1" timestamp="2012-04-15T00:18:24Z" changeset="11305236" uid="659642" user="rhein-net">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Feuerwehrhaus"/>
+  </node>
+  <node id="1734595196" lat="50.7847604" lon="7.2275094" version="2" timestamp="2013-03-14T18:26:39Z" changeset="15365450" uid="392612" user="Bikenabe"/>
+  <node id="1734595207" lat="50.7847686" lon="7.2272451" version="2" timestamp="2013-03-14T18:26:39Z" changeset="15365450" uid="392612" user="Bikenabe"/>
+  <node id="1734595249" lat="50.7848060" lon="7.2274331" version="2" timestamp="2013-03-14T18:26:39Z" changeset="15365450" uid="392612" user="Bikenabe"/>
+  <node id="1734595334" lat="50.7848477" lon="7.2273635" version="2" timestamp="2013-03-14T18:26:39Z" changeset="15365450" uid="392612" user="Bikenabe"/>
+  <node id="1740643144" lat="50.7373754" lon="7.0800395" version="1" timestamp="2012-05-04T19:36:23Z" changeset="11501249" uid="49785" user="mike67"/>
+  <node id="1751728219" lat="50.7608594" lon="7.1692761" version="1" timestamp="2012-05-13T21:18:11Z" changeset="11590857" uid="8587" user="innuendo"/>
+  <node id="1751728233" lat="50.7609259" lon="7.1694327" version="1" timestamp="2012-05-13T21:18:11Z" changeset="11590857" uid="8587" user="innuendo"/>
+  <node id="1751728242" lat="50.7609775" lon="7.1691507" version="1" timestamp="2012-05-13T21:18:12Z" changeset="11590857" uid="8587" user="innuendo"/>
+  <node id="1751728256" lat="50.7610440" lon="7.1693073" version="1" timestamp="2012-05-13T21:18:13Z" changeset="11590857" uid="8587" user="innuendo"/>
+  <node id="1764395648" lat="50.6789730" lon="7.0709964" version="1" timestamp="2012-05-24T17:43:26Z" changeset="11691865" uid="184969" user="EvanE"/>
+  <node id="1798199028" lat="50.7032174" lon="7.1805450" version="3" timestamp="2013-03-05T08:23:57Z" changeset="15255601" uid="239076" user="HeinerSchaefer"/>
+  <node id="1798199029" lat="50.7031579" lon="7.1803551" version="3" timestamp="2013-03-05T08:23:57Z" changeset="15255601" uid="239076" user="HeinerSchaefer"/>
+  <node id="1798199031" lat="50.7032008" lon="7.1803182" version="3" timestamp="2013-03-05T08:23:57Z" changeset="15255601" uid="239076" user="HeinerSchaefer"/>
+  <node id="1798199033" lat="50.7031573" lon="7.1801820" version="2" timestamp="2013-03-05T08:23:57Z" changeset="15255601" uid="239076" user="HeinerSchaefer"/>
+  <node id="1798199034" lat="50.7029610" lon="7.1803358" version="2" timestamp="2013-03-05T08:23:57Z" changeset="15255601" uid="239076" user="HeinerSchaefer"/>
+  <node id="1798199036" lat="50.7030666" lon="7.1806592" version="3" timestamp="2013-03-05T08:23:57Z" changeset="15255601" uid="239076" user="HeinerSchaefer"/>
+  <node id="1809342208" lat="50.7992979" lon="7.2147639" version="1" timestamp="2012-07-01T21:04:33Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1809342226" lat="50.7994059" lon="7.2141891" version="1" timestamp="2012-07-01T21:04:34Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1809342228" lat="50.7994190" lon="7.2143162" version="1" timestamp="2012-07-01T21:04:34Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1809342235" lat="50.7994476" lon="7.2145934" version="1" timestamp="2012-07-01T21:04:34Z" changeset="12081184" uid="60824" user="Carsten Güse"/>
+  <node id="1897957028" lat="50.7228455" lon="7.0390840" version="1" timestamp="2012-09-04T10:10:17Z" changeset="12979626" uid="133419" user="dachefte"/>
+  <node id="1897957034" lat="50.7228584" lon="7.0391051" version="1" timestamp="2012-09-04T10:10:18Z" changeset="12979626" uid="133419" user="dachefte"/>
+  <node id="1910097313" lat="50.7140343" lon="7.0161876" version="1" timestamp="2012-09-11T15:52:48Z" changeset="13071168" uid="6390" user="grenzdebil_bonn"/>
+  <node id="1910097320" lat="50.7140396" lon="7.0161947" version="1" timestamp="2012-09-11T15:52:48Z" changeset="13071168" uid="6390" user="grenzdebil_bonn"/>
+  <node id="1910097380" lat="50.7140972" lon="7.0160706" version="1" timestamp="2012-09-11T15:52:51Z" changeset="13071168" uid="6390" user="grenzdebil_bonn"/>
+  <node id="1910097478" lat="50.7141251" lon="7.0163088" version="1" timestamp="2012-09-11T15:52:53Z" changeset="13071168" uid="6390" user="grenzdebil_bonn"/>
+  <node id="1910097507" lat="50.7141396" lon="7.0162819" version="1" timestamp="2012-09-11T15:52:53Z" changeset="13071168" uid="6390" user="grenzdebil_bonn"/>
+  <node id="1910097609" lat="50.7141880" lon="7.0161918" version="1" timestamp="2012-09-11T15:52:57Z" changeset="13071168" uid="6390" user="grenzdebil_bonn"/>
+  <node id="1943962978" lat="50.7926774" lon="7.0265942" version="2" timestamp="2012-10-03T09:47:31Z" changeset="13344960" uid="149451" user="redrace"/>
+  <node id="1943962979" lat="50.7926780" lon="7.0267824" version="2" timestamp="2012-10-03T09:15:36Z" changeset="13344594" uid="149451" user="redrace"/>
+  <node id="1943962984" lat="50.7927205" lon="7.0267507" version="3" timestamp="2012-10-03T09:47:31Z" changeset="13344960" uid="149451" user="redrace"/>
+  <node id="1943976235" lat="50.7926339" lon="7.0266282" version="1" timestamp="2012-10-03T09:15:28Z" changeset="13344594" uid="149451" user="redrace"/>
+  <node id="1952521056" lat="50.7711792" lon="7.0469800" version="1" timestamp="2012-10-08T13:04:22Z" changeset="13412366" uid="149451" user="redrace"/>
+  <node id="1952521069" lat="50.7712360" lon="7.0470945" version="1" timestamp="2012-10-08T13:04:22Z" changeset="13412366" uid="149451" user="redrace"/>
+  <node id="1952521120" lat="50.7713256" lon="7.0469820" version="1" timestamp="2012-10-08T13:04:23Z" changeset="13412366" uid="149451" user="redrace"/>
+  <node id="2232061839" lat="50.7805528" lon="7.1082555" version="1" timestamp="2013-03-28T15:44:24Z" changeset="15528417" uid="237277" user="Der Troisdorfer"/>
+  <node id="2240629721" lat="50.7710985" lon="7.0466992" version="1" timestamp="2013-04-01T03:31:41Z" changeset="15562063" uid="1317818" user="Majen"/>
+  <node id="2240629727" lat="50.7711685" lon="7.0469593" version="1" timestamp="2013-04-01T03:31:41Z" changeset="15562063" uid="1317818" user="Majen"/>
+  <node id="2240629730" lat="50.7712020" lon="7.0469137" version="1" timestamp="2013-04-01T03:31:41Z" changeset="15562063" uid="1317818" user="Majen"/>
+  <node id="2240629733" lat="50.7712579" lon="7.0468494" version="1" timestamp="2013-04-01T03:31:41Z" changeset="15562063" uid="1317818" user="Majen"/>
+  <node id="2240629736" lat="50.7712461" lon="7.0468628" version="1" timestamp="2013-04-01T03:31:41Z" changeset="15562063" uid="1317818" user="Majen"/>
+  <node id="2240629738" lat="50.7711410" lon="7.0466482" version="1" timestamp="2013-04-01T03:31:41Z" changeset="15562063" uid="1317818" user="Majen"/>
+  <node id="2283635353" lat="50.7432194" lon="7.0742752" version="1" timestamp="2013-04-28T00:00:38Z" changeset="15889819" uid="1396908" user="TFly">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Feuer- und Rettungswache 1"/>
+  </node>
+  <node id="2314648489" lat="50.7481925" lon="7.2738476" version="1" timestamp="2013-05-21T15:17:00Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="2314648510" lat="50.7483269" lon="7.2735210" version="1" timestamp="2013-05-21T15:17:00Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="2314648512" lat="50.7482815" lon="7.2737091" version="1" timestamp="2013-05-21T15:17:00Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="2314648517" lat="50.7482601" lon="7.2739254" version="1" timestamp="2013-05-21T15:17:00Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="2314648533" lat="50.7483020" lon="7.2735751" version="1" timestamp="2013-05-21T15:17:00Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="2314648544" lat="50.7480904" lon="7.2735297" version="1" timestamp="2013-05-21T15:17:00Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="2314648563" lat="50.7483290" lon="7.2736062" version="1" timestamp="2013-05-21T15:17:01Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="2314648566" lat="50.7483326" lon="7.2737678" version="1" timestamp="2013-05-21T15:17:01Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="2314648606" lat="50.7481414" lon="7.2735883" version="1" timestamp="2013-05-21T15:17:01Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="2314648608" lat="50.7481815" lon="7.2734275" version="1" timestamp="2013-05-21T15:17:01Z" changeset="16225642" uid="161939" user="Hacki"/>
+  <node id="2324520755" lat="50.6476484" lon="7.0070167" version="1" timestamp="2013-05-29T16:57:29Z" changeset="16340483" uid="1242704" user="Allegro34"/>
+  <node id="2324520767" lat="50.6477168" lon="7.0068902" version="1" timestamp="2013-05-29T16:57:30Z" changeset="16340483" uid="1242704" user="Allegro34"/>
+  <node id="2324520770" lat="50.6477366" lon="7.0071353" version="1" timestamp="2013-05-29T16:57:30Z" changeset="16340483" uid="1242704" user="Allegro34"/>
+  <node id="2324520780" lat="50.6478050" lon="7.0070088" version="1" timestamp="2013-05-29T16:57:30Z" changeset="16340483" uid="1242704" user="Allegro34"/>
+  <way id="27206810" version="9" timestamp="2012-03-14T09:00:39Z" changeset="10975571" uid="133419" user="dachefte">
+    <nd ref="298549488"/>
+    <nd ref="298549493"/>
+    <nd ref="298549490"/>
+    <nd ref="298549494"/>
+    <nd ref="298549488"/>
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="47-49"/>
+    <tag k="addr:postcode" v="53123"/>
+    <tag k="addr:street" v="Am Burgweiher"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Feuerwache- und Rettungswache 4"/>
+    <tag k="note" v="Bonn-Duisdorf; Freiwillige Feuerwehr (Bonn-Duisdorf)"/>
+    <tag k="ref" v="FF Duisdorf"/>
+  </way>
+  <way id="28776833" version="15" timestamp="2013-03-18T03:07:10Z" changeset="15403618" uid="184969" user="EvanE">
+    <nd ref="631604448"/>
+    <nd ref="316421539"/>
+    <nd ref="316421540"/>
+    <nd ref="1485257816"/>
+    <nd ref="1485257817"/>
+    <nd ref="316421541"/>
+    <nd ref="1657811587"/>
+    <nd ref="316421536"/>
+    <nd ref="316421537"/>
+    <nd ref="316421590"/>
+    <nd ref="316421538"/>
+    <nd ref="631604451"/>
+    <nd ref="631604454"/>
+    <nd ref="631604455"/>
+    <nd ref="631604448"/>
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="112"/>
+    <tag k="addr:postcode" v="53119"/>
+    <tag k="addr:street" v="Lievelingsweg"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Feuer- und Rettungswache 1 (Bonn)"/>
+    <tag k="ref" v="1 - BF Bonn"/>
+  </way>
+  <way id="38231384" version="6" timestamp="2011-08-16T17:35:35Z" changeset="9039060" uid="49785" user="mike67">
+    <nd ref="450578984"/>
+    <nd ref="450578986"/>
+    <nd ref="1377225294"/>
+    <nd ref="450578994"/>
+    <nd ref="450578984"/>
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="206"/>
+    <tag k="addr:postcode" v="53179"/>
+    <tag k="addr:street" v="Deutschherrenstraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr Bonn-Lannesdorf"/>
+    <tag k="note" v="Löscheinheit 34: Lannesdorf"/>
+  </way>
+  <way id="39536652" version="2" timestamp="2009-09-02T17:29:52Z" changeset="2350594" uid="49785" user="mike67">
+    <nd ref="473692861"/>
+    <nd ref="473692862"/>
+    <nd ref="473692863"/>
+    <nd ref="473692864"/>
+    <nd ref="473692861"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Rheindorf)"/>
+  </way>
+  <way id="42154341" version="1" timestamp="2009-10-07T19:39:14Z" changeset="2774994" uid="119785" user="trekki">
+    <nd ref="524572165"/>
+    <nd ref="524572167"/>
+    <nd ref="524572169"/>
+    <nd ref="524572172"/>
+    <nd ref="524572174"/>
+    <nd ref="524572176"/>
+    <nd ref="524572165"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr Niederdollendorf"/>
+  </way>
+  <way id="43607906" version="7" timestamp="2012-02-23T18:15:54Z" changeset="10770762" uid="149408" user="sebastian89">
+    <nd ref="550940140"/>
+    <nd ref="550940148"/>
+    <nd ref="550940210"/>
+    <nd ref="560653652"/>
+    <nd ref="684355036"/>
+    <nd ref="550940244"/>
+    <nd ref="550940258"/>
+    <nd ref="550940140"/>
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="160"/>
+    <tag k="addr:postcode" v="53175"/>
+    <tag k="addr:street" v="Friesdorfer Straße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Feuerwache- und Rettungswache 3 (Bonn-Bad Godesberg)"/>
+    <tag k="ref" v="3 - BF Godesberg"/>
+    <tag k="source" v="Bing"/>
+  </way>
+  <way id="50970154" version="5" timestamp="2012-02-23T18:15:50Z" changeset="10770758" uid="149408" user="sebastian89">
+    <nd ref="649942239"/>
+    <nd ref="649942242"/>
+    <nd ref="649942248"/>
+    <nd ref="649942260"/>
+    <nd ref="649942239"/>
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="8-10"/>
+    <tag k="addr:postcode" v="53227"/>
+    <tag k="addr:street" v="Maarstraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Feuerwache- und Rettungswache 2 (Bonn-Beuel)"/>
+    <tag k="ref" v="2 - BF Beuel"/>
+    <tag k="source" v="Yahoo!Sat;knowledge;Bing"/>
+  </way>
+  <way id="52532528" version="2" timestamp="2011-08-12T17:02:42Z" changeset="8997911" uid="49785" user="mike67">
+    <nd ref="667537121"/>
+    <nd ref="667537124"/>
+    <nd ref="667537129"/>
+    <nd ref="667537130"/>
+    <nd ref="667537121"/>
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="31"/>
+    <tag k="addr:postcode" v="53225"/>
+    <tag k="addr:street" v="Liestraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Geislar)"/>
+  </way>
+  <way id="54266488" version="2" timestamp="2012-02-23T18:15:55Z" changeset="10770762" uid="149408" user="sebastian89">
+    <nd ref="555528268"/>
+    <nd ref="558649066"/>
+    <nd ref="558649067"/>
+    <nd ref="684355012"/>
+    <nd ref="555528268"/>
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="55"/>
+    <tag k="addr:postcode" v="53175"/>
+    <tag k="addr:street" v="Sankt-Augustinus-Straße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Bad Godesberg)"/>
+    <tag k="ref" v="FF Godesberg"/>
+    <tag k="source" v="Yahoo!Sat"/>
+  </way>
+  <way id="59993988" version="5" timestamp="2012-05-04T19:36:23Z" changeset="11501249" uid="49785" user="mike67">
+    <nd ref="745820622"/>
+    <nd ref="745820630"/>
+    <nd ref="745820637"/>
+    <nd ref="1740643144"/>
+    <nd ref="745820642"/>
+    <nd ref="745820647"/>
+    <nd ref="745820652"/>
+    <nd ref="745820622"/>
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="11"/>
+    <tag k="addr:postcode" v="53119"/>
+    <tag k="addr:street" v="Spessartstraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="building:levels" v="1"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Mitte)"/>
+  </way>
+  <way id="84115588" version="5" timestamp="2012-01-10T17:30:57Z" changeset="10353259" uid="45243" user="odna">
+    <nd ref="978635887"/>
+    <nd ref="1476849723"/>
+    <nd ref="978635842"/>
+    <nd ref="1476849728"/>
+    <nd ref="1476849712"/>
+    <nd ref="1476849714"/>
+    <nd ref="1476849704"/>
+    <nd ref="978635920"/>
+    <nd ref="1100668042"/>
+    <nd ref="1100668021"/>
+    <nd ref="978635953"/>
+    <nd ref="1584806417"/>
+    <nd ref="978635887"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Feuerwache Hennef"/>
+  </way>
+  <way id="85835156" version="2" timestamp="2012-05-18T13:59:42Z" changeset="11633420" uid="5359" user="user_5359">
+    <nd ref="996347473"/>
+    <nd ref="996347529"/>
+    <nd ref="996347477"/>
+    <nd ref="996347463"/>
+    <nd ref="996347393"/>
+    <nd ref="996347553"/>
+    <nd ref="996347514"/>
+    <nd ref="996347501"/>
+    <nd ref="996347454"/>
+    <nd ref="996347344"/>
+    <nd ref="996347537"/>
+    <nd ref="996347532"/>
+    <nd ref="996347484"/>
+    <nd ref="996347374"/>
+    <nd ref="996347570"/>
+    <nd ref="996347555"/>
+    <nd ref="996347517"/>
+    <nd ref="996347427"/>
+    <nd ref="996347362"/>
+    <nd ref="996347354"/>
+    <nd ref="996347548"/>
+    <nd ref="996347467"/>
+    <nd ref="996347473"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr Thomasberg"/>
+  </way>
+  <way id="89211580" version="1" timestamp="2010-12-12T10:52:41Z" changeset="6634366" uid="153091" user="mm4811">
+    <nd ref="1035426460"/>
+    <nd ref="1035426442"/>
+    <nd ref="1035426476"/>
+    <nd ref="1035426448"/>
+    <nd ref="1035426460"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Gerätehaus Rheinbreitbach"/>
+  </way>
+  <way id="91962538" version="1" timestamp="2010-12-27T21:54:50Z" changeset="6782442" uid="119785" user="trekki">
+    <nd ref="1068434065"/>
+    <nd ref="1068434061"/>
+    <nd ref="1068434059"/>
+    <nd ref="1068434104"/>
+    <nd ref="1068434065"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Freiwillige Feuerwehr Niederbachem"/>
+  </way>
+  <way id="92415352" version="5" timestamp="2012-02-25T19:29:51Z" changeset="10791238" uid="149408" user="sebastian89">
+    <nd ref="1072785399"/>
+    <nd ref="1072785518"/>
+    <nd ref="1072785359"/>
+    <nd ref="48837516"/>
+    <nd ref="1072785527"/>
+    <nd ref="30756278"/>
+    <nd ref="1072785399"/>
+    <tag k="addr:city" v="Alfter"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="7"/>
+    <tag k="addr:postcode" v="53347"/>
+    <tag k="addr:street" v="Ramelshovener Straße"/>
+    <tag k="addr:suburb" v="Witterschlick"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="building:levels" v="2"/>
+    <tag k="name" v="Freiwillige Feuerwehr Alfter Löschgruppe Witterschlick"/>
+    <tag k="ref" v="11.5 - FF Witterschlick"/>
+  </way>
+  <way id="99655487" version="1" timestamp="2011-02-14T02:30:33Z" changeset="7282529" uid="184969" user="EvanE">
+    <nd ref="1152183306"/>
+    <nd ref="1152183097"/>
+    <nd ref="1152183595"/>
+    <nd ref="1152183352"/>
+    <nd ref="1152183306"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Mehlem)"/>
+    <tag k="source" v="Bing"/>
+  </way>
+  <way id="102005963" version="5" timestamp="2013-03-28T15:44:33Z" changeset="15528417" uid="237277" user="Der Troisdorfer">
+    <nd ref="1177540461"/>
+    <nd ref="1177540310"/>
+    <nd ref="1177540884"/>
+    <nd ref="2232061839"/>
+    <nd ref="1177540461"/>
+    <tag k="addr:city" v="Troisdorf"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="65"/>
+    <tag k="addr:postcode" v="53844"/>
+    <tag k="addr:street" v="Lambertusstraße"/>
+    <tag k="addr:suburb" v="Müllekoven"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Löschgruppe Müllekoven"/>
+    <tag k="website" v="http://www.muellekoven.feuerwehr-troisdorf.de/"/>
+  </way>
+  <way id="107356344" version="1" timestamp="2011-04-05T19:27:29Z" changeset="7778288" uid="49785" user="mike67">
+    <nd ref="1233846244"/>
+    <nd ref="1233846221"/>
+    <nd ref="1233846234"/>
+    <nd ref="1234016924"/>
+    <nd ref="1233846244"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Dransdorf)"/>
+  </way>
+  <way id="108633163" version="3" timestamp="2011-04-15T20:35:08Z" changeset="7873392" uid="49785" user="mike67">
+    <nd ref="1245860370"/>
+    <nd ref="1245860332"/>
+    <nd ref="1245860356"/>
+    <nd ref="1246212014"/>
+    <nd ref="1245860335"/>
+    <nd ref="1245860381"/>
+    <nd ref="1245860363"/>
+    <nd ref="1245860366"/>
+    <nd ref="1245860352"/>
+    <nd ref="1245860371"/>
+    <nd ref="1245860370"/>
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="54"/>
+    <tag k="addr:postcode" v="53229"/>
+    <tag k="addr:street" v="Guardinistraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Holtorf)"/>
+  </way>
+  <way id="109588769" version="4" timestamp="2012-02-23T18:15:58Z" changeset="10770767" uid="149408" user="sebastian89">
+    <nd ref="1254155986"/>
+    <nd ref="1254155972"/>
+    <nd ref="1254156005"/>
+    <nd ref="1254156002"/>
+    <nd ref="1254155986"/>
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="54"/>
+    <tag k="addr:postcode" v="53127"/>
+    <tag k="addr:street" v="Im Mühlenbach"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Lengsdorf)"/>
+    <tag k="ref" v="FF Lengsdorf"/>
+  </way>
+  <way id="111459595" version="5" timestamp="2012-09-04T10:10:54Z" changeset="12979626" uid="133419" user="dachefte">
+    <nd ref="1269880374"/>
+    <nd ref="1269880339"/>
+    <nd ref="1269880341"/>
+    <nd ref="1897957034"/>
+    <nd ref="1897957028"/>
+    <nd ref="1269880334"/>
+    <nd ref="1269880436"/>
+    <nd ref="1269880374"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr Lessenich"/>
+    <tag k="ref" v="FF Lessenich"/>
+  </way>
+  <way id="111653840" version="3" timestamp="2012-05-24T17:43:47Z" changeset="11691865" uid="184969" user="EvanE">
+    <nd ref="1271529247"/>
+    <nd ref="1271529252"/>
+    <nd ref="1764395648"/>
+    <nd ref="1271529245"/>
+    <nd ref="1271529251"/>
+    <nd ref="1271529247"/>
+    <tag k="addr:city" v="Bonn"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="301"/>
+    <tag k="addr:postcode" v="53125"/>
+    <tag k="addr:street" v="Witterschlicker Allee"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Röttgen)"/>
+  </way>
+  <way id="112382274" version="2" timestamp="2013-04-14T11:43:03Z" changeset="15723659" uid="39966" user="free_as_a_bird">
+    <nd ref="1277424282"/>
+    <nd ref="1277424262"/>
+    <nd ref="1277424233"/>
+    <nd ref="1277424370"/>
+    <nd ref="1277424282"/>
+    <tag k="addr:city" v="Niederkassel"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="71"/>
+    <tag k="addr:postcode" v="53859"/>
+    <tag k="addr:street" v="Rheidter Straße"/>
+    <tag k="addr:suburb" v="Mondorf"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr Niederkassel, Löschgruppe Mondorf"/>
+    <tag k="website" v="http://www.feuerwehr-mondorf.de/"/>
+  </way>
+  <way id="114355827" version="2" timestamp="2012-02-23T18:15:59Z" changeset="10770768" uid="149408" user="sebastian89">
+    <nd ref="616268845"/>
+    <nd ref="281636541"/>
+    <nd ref="616268855"/>
+    <nd ref="1295534252"/>
+    <nd ref="1295534251"/>
+    <nd ref="616268845"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr (Bonn-Endenich)"/>
+    <tag k="ref" v="FF Endenich"/>
+  </way>
+  <way id="117375937" version="3" timestamp="2013-05-21T15:17:03Z" changeset="16225642" uid="161939" user="Hacki">
+    <nd ref="1322113405"/>
+    <nd ref="2314648510"/>
+    <nd ref="2314648533"/>
+    <nd ref="2314648563"/>
+    <nd ref="2314648512"/>
+    <nd ref="2314648566"/>
+    <nd ref="2314648517"/>
+    <nd ref="2314648489"/>
+    <nd ref="1322113418"/>
+    <nd ref="1322113415"/>
+    <nd ref="2314648606"/>
+    <nd ref="2314648544"/>
+    <nd ref="1322113379"/>
+    <nd ref="2314648608"/>
+    <nd ref="1322113405"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Feuerwache Söven"/>
+    <tag k="source" v="Bing"/>
+  </way>
+  <way id="117907239" version="3" timestamp="2012-08-24T12:21:43Z" changeset="12844366" uid="237277" user="Der Troisdorfer">
+    <nd ref="1327160050"/>
+    <nd ref="1327160052"/>
+    <nd ref="1327160051"/>
+    <nd ref="1327160049"/>
+    <nd ref="1327160050"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Feuerwehrgerätehaus"/>
+    <tag k="source" v="HiRes aerial imagery"/>
+  </way>
+  <way id="133744663" version="3" timestamp="2012-12-14T00:34:12Z" changeset="14266315" uid="24920" user="Schusch">
+    <nd ref="1472057655"/>
+    <nd ref="1472057656"/>
+    <nd ref="1472057654"/>
+    <nd ref="1472057650"/>
+    <nd ref="1472057653"/>
+    <nd ref="1472057649"/>
+    <nd ref="1472057652"/>
+    <nd ref="1472057651"/>
+    <nd ref="1472057655"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="LG Bockeroth"/>
+    <tag k="website" v="http://www.feuerwehr-bockeroth.de/"/>
+  </way>
+  <way id="136473412" version="6" timestamp="2013-04-02T10:48:30Z" changeset="15579804" uid="1109397" user="Wall·E">
+    <nd ref="1496985603"/>
+    <nd ref="1496985600"/>
+    <nd ref="1496985598"/>
+    <nd ref="1496985602"/>
+    <nd ref="1496985603"/>
+    <tag k="addr:housenumber" v="2"/>
+    <tag k="addr:street" v="Siegesstraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr Bornheim - Roisdorf"/>
+    <tag k="ref" v="BNH 1"/>
+    <tag k="website" v="http://www.feuerwehr-roisdorf.de/"/>
+  </way>
+  <way id="151621035" version="1" timestamp="2012-02-23T18:03:19Z" changeset="10770620" uid="149408" user="sebastian89">
+    <nd ref="1644507598"/>
+    <nd ref="1644507600"/>
+    <nd ref="1644507603"/>
+    <nd ref="1644507602"/>
+    <nd ref="1644507598"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr Alfter - Gielsdorf"/>
+    <tag k="ref" v="11.2 - FF Gielsdorf"/>
+  </way>
+  <way id="151621045" version="1" timestamp="2012-02-23T18:03:35Z" changeset="10770628" uid="149408" user="sebastian89">
+    <nd ref="1644508132"/>
+    <nd ref="1644508133"/>
+    <nd ref="1644508135"/>
+    <nd ref="1644508134"/>
+    <nd ref="1644508132"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr Alfter"/>
+    <tag k="ref" v="11.1 - FF Alfter"/>
+  </way>
+  <way id="159410222" version="2" timestamp="2012-07-01T21:04:43Z" changeset="12081184" uid="60824" user="Carsten Güse">
+    <nd ref="1715292225"/>
+    <nd ref="1715292314"/>
+    <nd ref="1715292355"/>
+    <nd ref="1715292236"/>
+    <nd ref="1809342226"/>
+    <nd ref="1809342228"/>
+    <nd ref="1809342235"/>
+    <nd ref="1715292240"/>
+    <nd ref="1715292141"/>
+    <nd ref="1809342208"/>
+    <nd ref="1715292176"/>
+    <nd ref="1715292123"/>
+    <nd ref="1715292225"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Feuerwache Siegburg"/>
+  </way>
+  <way id="161490067" version="2" timestamp="2012-04-29T10:15:32Z" changeset="11448016" uid="45243" user="odna">
+    <nd ref="1734595334"/>
+    <nd ref="1734595249"/>
+    <nd ref="1734595196"/>
+    <nd ref="273130506"/>
+    <nd ref="1734595207"/>
+    <nd ref="1734595334"/>
+    <tag k="addr:city" v="Sankt Augustin"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="27"/>
+    <tag k="addr:postcode" v="53757"/>
+    <tag k="addr:street" v="Michaelsbergstraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="email" v="http://www.lg-buisdorf.de/cms/index.php"/>
+    <tag k="name" v="Löschgruppe Buisdorf"/>
+    <tag k="operator" v="Freiwillige Feuerwehr Sankt Augustin"/>
+    <tag k="source" v="HiRes aerial imagery"/>
+  </way>
+  <way id="163501093" version="1" timestamp="2012-05-13T21:18:23Z" changeset="11590857" uid="8587" user="innuendo">
+    <nd ref="1751728219"/>
+    <nd ref="1751728242"/>
+    <nd ref="1751728256"/>
+    <nd ref="1751728233"/>
+    <nd ref="1751728219"/>
+    <tag k="addr:city" v="Sankt Augustin"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="5"/>
+    <tag k="addr:postcode" v="53757"/>
+    <tag k="addr:street" v="Graf-Zeppelin-Straße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Löschgruppe Hangelar"/>
+    <tag k="operator" v="Freiwillige Feuerwehr Sankt Augustin"/>
+  </way>
+  <way id="168576442" version="3" timestamp="2012-06-22T13:06:01Z" changeset="11978862" uid="424073" user="gregg33">
+    <nd ref="1798199028"/>
+    <nd ref="1798199029"/>
+    <nd ref="1798199031"/>
+    <nd ref="1798199033"/>
+    <nd ref="1798199034"/>
+    <nd ref="1798199036"/>
+    <nd ref="1798199028"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr Oberdollendorf"/>
+  </way>
+  <way id="180590838" version="2" timestamp="2012-09-16T22:03:04Z" changeset="13136986" uid="6390" user="grenzdebil_bonn">
+    <nd ref="1910097313"/>
+    <nd ref="1910097380"/>
+    <nd ref="1910097609"/>
+    <nd ref="1910097507"/>
+    <nd ref="1910097478"/>
+    <nd ref="1910097320"/>
+    <nd ref="1910097313"/>
+    <tag k="addr:city" v="Alfter"/>
+    <tag k="addr:country" v="DE"/>
+    <tag k="addr:housenumber" v="3"/>
+    <tag k="addr:postcode" v="53347"/>
+    <tag k="addr:street" v="Unterdorf"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Feuerwehr Alfter, Löschgruppe Impekoven"/>
+  </way>
+  <way id="183964110" version="4" timestamp="2013-04-02T10:49:37Z" changeset="15579804" uid="1109397" user="Wall·E">
+    <nd ref="1943976235"/>
+    <nd ref="1943962978"/>
+    <nd ref="1943962984"/>
+    <nd ref="1943962979"/>
+    <nd ref="1943976235"/>
+    <tag k="addr:housenumber" v="67"/>
+    <tag k="addr:street" v="Römerstraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr Bornheim - Widdig"/>
+    <tag k="ref" v="BNH 12"/>
+    <tag k="source" v="aerowest"/>
+  </way>
+  <way id="214536140" version="2" timestamp="2013-04-02T10:51:37Z" changeset="15579804" uid="1109397" user="Wall·E">
+    <nd ref="2240629721"/>
+    <nd ref="2240629730"/>
+    <nd ref="2240629727"/>
+    <nd ref="1952521056"/>
+    <nd ref="1952521069"/>
+    <nd ref="1952521120"/>
+    <nd ref="2240629733"/>
+    <nd ref="2240629736"/>
+    <nd ref="2240629738"/>
+    <nd ref="2240629721"/>
+    <tag k="addr:housenumber" v="117"/>
+    <tag k="addr:street" v="Rheinstraße"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Freiwillige Feuerwehr Bornheim - Hersel"/>
+    <tag k="ref" v="BNH 5"/>
+  </way>
+  <way id="223570216" version="1" timestamp="2013-05-29T16:57:39Z" changeset="16340483" uid="1242704" user="Allegro34">
+    <nd ref="2324520780"/>
+    <nd ref="2324520770"/>
+    <nd ref="2324520755"/>
+    <nd ref="2324520767"/>
+    <nd ref="2324520780"/>
+    <tag k="amenity" v="fire_station"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Löschgruppe Lüftelberg"/>
+  </way>
+
+</osm>

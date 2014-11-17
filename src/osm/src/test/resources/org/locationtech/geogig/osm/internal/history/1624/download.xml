@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osmChange version="0.6" generator="OpenStreetMap server" copyright="OpenStreetMap and contributors" attribution="http://www.openstreetmap.org/copyright" license="http://opendatacommons.org/licenses/odbl/1-0/">
+  <create>
+    <node id="968842" lat="48.2127428" lon="16.3521806" changeset="1624" user="zsebastian" uid="46" visible="true" timestamp="2009-10-31T21:41:32Z" version="1">
+      <tag k="name" v="Bar Kino"/>
+      <tag k="amenity" v="cinema"/>
+    </node>
+  </create>
+  <modify>
+    <node id="969082" lat="48.2127428" lon="16.351245" changeset="1624" user="zsebastian" uid="46" visible="true" timestamp="2009-10-31T21:57:04Z" version="2">
+      <tag k="amenity" v="restaurant"/>
+    </node>
+  </modify>
+  <modify>
+    <node id="969085" lat="48.213269" lon="16.3512021" changeset="1624" user="zsebastian" uid="46" visible="true" timestamp="2009-10-31T22:22:40Z" version="2">
+      <tag k="name" v="Blah Pizza"/>
+      <tag k="amenity" v="restaurant"/>
+    </node>
+  </modify>
+  <delete>
+    <node id="969084" changeset="1624" user="zsebastian" uid="46" visible="false" timestamp="2009-10-31T22:22:40Z" version="2">
+      <tag k="name" v="Foo Inn"/>
+      <tag k="amenity" v="restaurant"/>
+    </node>
+  </delete>
+</osmChange>

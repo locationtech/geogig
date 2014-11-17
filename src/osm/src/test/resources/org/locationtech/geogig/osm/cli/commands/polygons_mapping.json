@@ -1,0 +1,1 @@
+{"rules":[{"name":"areas","filter":{"area":["yes"]},"fields":{"geom":{"name":"geom", "type":"POLYGON"}}}]}

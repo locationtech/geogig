@@ -1,0 +1,7 @@
+{"rules":[
+	{"name":"namedhighways",
+	"filter":{"highway":[]},
+	"exclude":{"name":null},
+	"fields":{"name":{"name":"name","type":"STRING"},"geom":{"name":"geom","type":"POINT"}}
+	}
+	]}

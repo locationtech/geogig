@@ -1,0 +1,88 @@
+
+# Use a rather small log file size for the staging db as it gets a lot of deletes
+# 67108864 = 64MB
+# 268435456 = 256MB
+je.log.fileMax=67108864
+#je.checkpointer.bytesInterval=268435456
+
+############################
+# CACHE AND MEMORY SETTINGS
+############################
+
+#To take full advantage of JE cache memory, it is strongly recommended
+#that -XX:+UseCompressedOops is specified when a 64-bit JVM is used 
+
+# Whether the cache is shared across environments
+je.sharedCache = true
+
+#default: 60, maximum: 90, mutually exclusive with je.maxMemory
+je.maxMemoryPercent = 60
+
+# # of bytes for the db cache, mutually exclusive with je.maxMemoryPercent
+#je.maxMemory = 512000000
+
+
+######################
+# PERFORMANCE TUNNING
+######################
+
+# If true, create the environment with record locking.  This property
+# should be set to false only in special circumstances when it is safe to
+# run without record locking.
+je.env.isLocking = false
+
+# If true, create an environment that is capable of performing
+# transactions.  If true is not passed, transactions may not be used.  For
+# Note that if transactions are not used, specifying true does not create 
+# additional overhead in the environment.
+je.env.isTransactional = false
+
+# can only be false if isTransactional = false
+je.env.runCheckpointer = false
+je.env.runCleaner = false
+je.env.runEvictor = false
+
+# Specifies the maximum unprefixed key length for use in the compact in-memory key representation.
+#   In the Btree, the JE in-memory cache, the default representation for keys uses a byte array object per key.
+# The per-key object overhead of this approach ranges from 20 to 32 bytes, depending on the JVM platform.
+#   To reduce memory overhead, a compact representation can instead be used where keys will be represented inside 
+# a single byte array instead of having one byte array per key. Within the single array, all keys are assigned a 
+# storage size equal to that taken up by the largest key, plus one byte to hold the actual key length.  The use 
+# of the fixed size array reduces Java GC activity as well as memory overhead.
+#   In order for the compact representation to reduce memory usage, all keys in a database, or in a Btree internal node, must be 
+# roughly the same size.  The more fully populated the internal node, the more the savings with this representation since the 
+# single byte array is sized to hold the maximum number of keys in the internal node, regardless of the actual number of keys 
+# that are present.
+#   It's worth noting that the storage savings of the compact representation are realized in addition to the storage benefits of 
+# key prefixing (if it is configured), since the keys stored in the key array are the smaller key values after the prefix has been
+# stripped, reducing the length of the key and making it more likely that it's small enough for this specialized representation.
+#   This configuration parameter is the maximum key length, not including the common prefix, for the keys in a Btree internal node
+# stored using the compact representation. 
+#   The compact representation is used automatically when both of the following conditions hold.
+#  * All keys in a Btree internal node must have an unprefixed length that is less than or equal to the length specified by this parameter
+#  * If key lengths vary by large amounts within an internal node, the wasted space of the fixed length storage may negate the benefits of
+#    the compact representation and cause more memory to be used than with the default representation.  In that case, the default 
+#    representation will be used.
+#   If this configuration parameter is set to zero, the compact representation will not be used.
+#   The default value of this configuration parameter is 16 bytes.  The potential drawbacks of specifying a larger length are:
+#     * Insertion and deletion for larger keys move bytes proportional to the storage length of the keys.
+#     * With the compact representation, all operations create temporary byte arrays for each key involved in the operation.  Larger
+#       byte arrays mean more work for the Java GC, even though these objects are short lived.
+#   Mutation of the key representation between the default and compact approaches is automatic on a per-Btree internal node basis.
+#  To determine how often the compact representation is used in a running application, see EnvironmentStats#getNINCompactKeyIN.
+
+je.tree.compactMaxKeyLength = 20
+
+# If true (the default), use an LRU-only policy to select nodes for eviction.  If false, select by Btree level first, and then 
+# by LRU. When using the shared cache feature, the value of this property is applied the first time the cache is set up. New 
+# environments that join the cache do not alter the cache setting.        
+# check http://www.oracle.com/technetwork/database/berkeleydb/je-faq-096044.html#35
+je.evictor.lruOnly = false
+je.evictor.nodesPerScan = 1000
+
+
+# Needs to be true if the environment is on a NFS mount
+je.log.useODSYNC = false
+
+# Force statistics logging off as it causes problems in GeoGig unit tests.
+je.stats.collect = false

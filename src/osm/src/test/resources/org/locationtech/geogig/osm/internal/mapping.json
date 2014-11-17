@@ -1,0 +1,1 @@
+{"rules":[{"name":"onewaystreets","filter":{"oneway":["yes"]},"fields":{"lit":{"name":"lit","type":"STRING"},"geom":{"name":"geom","type":"LINESTRING"}}}]}

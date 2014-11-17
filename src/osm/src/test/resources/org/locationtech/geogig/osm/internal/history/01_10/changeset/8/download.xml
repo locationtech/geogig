@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osmChange version="0.6" generator="OpenStreetMap server" copyright="OpenStreetMap and contributors" attribution="http://www.openstreetmap.org/copyright" license="http://opendatacommons.org/licenses/odbl/1-0/">
+  <create>
+    <node id="20" lat="54.1854269" lon="12.1030442" changeset="8" user="Al_Friede" uid="2" visible="true" timestamp="2009-09-03T13:21:56Z" version="1">
+      <tag k="seamark:topmark:shape" v="sphere"/>
+      <tag k="seamark:buoy_safe_water:shape" v="pillar"/>
+      <tag k="seamark:category" v="buoy_safe_water"/>
+    </node>
+  </create>
+</osmChange>

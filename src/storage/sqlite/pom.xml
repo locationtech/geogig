@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.locationtech.geogig</groupId>
+    <artifactId>storage</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>org.locationtech.geogig</groupId>
+  <artifactId>geogig-sqlite</artifactId>
+  <packaging>pom</packaging>
+  <name>SQLite Storage</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <!-- Google Common Libraries. Featuring com.google.collect collection classes -->
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <classifier>no_aop</classifier>
+    </dependency>
+    
+    <!-- Test scope dependencies -->
+    <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-core</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+      <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <modules>
+   <module>core</module>
+   <module>xerial</module>
+  </modules>
+
+</project>

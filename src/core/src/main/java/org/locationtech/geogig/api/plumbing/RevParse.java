@@ -165,7 +165,7 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
             Optional<RevTree> revTree = command(RevObjectParse.class).setObjectId(treeId.get())
                     .call(RevTree.class);
             Optional<NodeRef> ref = command(FindTreeChild.class).setParent(revTree.get())
-                    .setChildPath(path).setIndex(true).call();
+                    .setChildPath(path).call();
 
             if (!ref.isPresent()) {
                 return Optional.absent();
@@ -326,13 +326,13 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
                     if (parsed.equals(RevTree.EMPTY_TREE_ID)) {
                         return Optional.of(RevTree.EMPTY_TREE_ID);
                     }
-                    if (stagingDatabase().exists(parsed)) {
+                    if (objectDatabase().exists(parsed)) {
                         return Optional.of(parsed);
                     }
                 } catch (IllegalArgumentException ignore) {
                     // its a partial id
                 }
-                List<ObjectId> hashMatches = stagingDatabase().lookUp(refSpec);
+                List<ObjectId> hashMatches = objectDatabase().lookUp(refSpec);
                 if (hashMatches.size() > 1) {
                     throw new IllegalArgumentException(String.format(
                             "Ref spec (%s) matches more than one object id: %s", refSpec,

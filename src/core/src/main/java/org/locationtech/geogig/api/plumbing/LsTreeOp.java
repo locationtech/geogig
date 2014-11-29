@@ -118,7 +118,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>> implements
     /**
      * @see java.util.concurrent.Callable#call()
      */
-    protected  Iterator<NodeRef> _call() {
+    protected Iterator<NodeRef> _call() {
         String ref = this.ref;
 
         if (ref == null) {
@@ -139,7 +139,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>> implements
                             .call(RevTree.class).get();
 
                     Optional<NodeRef> treeRef = command(FindTreeChild.class).setChildPath(path)
-                            .setIndex(true).setParent(rootTree).call();
+                            .setParent(rootTree).call();
                     metadataId = treeRef.isPresent() ? treeRef.get().getMetadataId()
                             : ObjectId.NULL;
                 }
@@ -167,7 +167,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>> implements
             NodeRef.checkValidPath(ref);
 
             treeRef = command(FindTreeChild.class).setParent(workingTree().getTree())
-                    .setChildPath(ref).setIndex(true).call();
+                    .setChildPath(ref).call();
 
             Preconditions.checkArgument(treeRef.isPresent(), "Invalid reference: %s", ref);
             ObjectId treeId = treeRef.get().objectId();
@@ -188,7 +188,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>> implements
                 if (nodeRef != null) {
                     while (!nodeRef.getParentPath().isEmpty()) {
                         treeRef = command(FindTreeChild.class).setParent(workingTree().getTree())
-                                .setChildPath(nodeRef.getParentPath()).setIndex(true).call();
+                                .setChildPath(nodeRef.getParentPath()).call();
                         nodeRef = treeRef.get();
                         nodeRefs.add(nodeRef);
                     }
@@ -227,7 +227,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>> implements
             }
 
             RevTree tree = (RevTree) revObject.get();
-            ObjectDatabase database = stagingDatabase();
+            ObjectDatabase database = objectDatabase();
             DepthTreeIterator iter = new DepthTreeIterator(path, metadataId, tree, database,
                     iterStrategy);
             iter.setBoundsFilter(refBoundsFilter);

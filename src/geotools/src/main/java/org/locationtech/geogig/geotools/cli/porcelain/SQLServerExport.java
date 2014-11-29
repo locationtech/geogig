@@ -189,7 +189,7 @@ public class SQLServerExport extends AbstractSQLServerCommand implements CLIComm
 
         RevTree rootTree = geogig.getRepository().getTree(rootTreeId.get());
         Optional<NodeRef> featureTypeTree = geogig.command(FindTreeChild.class)
-                .setChildPath(refspec.split(":")[1]).setParent(rootTree).setIndex(true).call();
+                .setChildPath(refspec.split(":")[1]).setParent(rootTree).call();
 
         checkParameter(featureTypeTree.isPresent(), "pathspec '" + refspec.split(":")[1]
                 + "' did not match any valid path");

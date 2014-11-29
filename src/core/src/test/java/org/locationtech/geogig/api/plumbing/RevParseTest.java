@@ -28,7 +28,8 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.porcelain.BranchCreateOp;
 import org.locationtech.geogig.api.porcelain.CheckoutOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.storage.StagingDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;
@@ -211,7 +212,8 @@ public class RevParseTest extends RepositoryTestCase {
 
     @Test
     public void testResolveToMultipleIds() {
-        StagingDatabase mockIndexDb = mock(StagingDatabase.class);
+        ConflictsDatabase mockConflictsDb = mock(ConflictsDatabase.class);
+        ObjectDatabase mockdb = mock(ObjectDatabase.class);
         Context mockCommands = mock(Context.class);
         RefParse mockRefParse = mock(RefParse.class);
 
@@ -222,8 +224,9 @@ public class RevParseTest extends RepositoryTestCase {
 
         List<ObjectId> oIds = Arrays.asList(ObjectId.forString("Object 1"),
                 ObjectId.forString("Object 2"));
-        when(mockIndexDb.lookUp(anyString())).thenReturn(oIds);
-        when(mockCommands.stagingDatabase()).thenReturn(mockIndexDb);
+        when(mockCommands.objectDatabase()).thenReturn(mockdb);
+        when(mockdb.lookUp(anyString())).thenReturn(oIds);
+        when(mockCommands.conflictsDatabase()).thenReturn(mockConflictsDb);
         RevParse command = new RevParse();
         command.setContext(mockCommands);
 

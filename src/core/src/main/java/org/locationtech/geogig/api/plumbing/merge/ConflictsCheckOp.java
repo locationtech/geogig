@@ -23,7 +23,7 @@ public class ConflictsCheckOp extends AbstractGeoGigOp<Boolean> {
         Boolean hasConflicts = Boolean.FALSE;
 
         if (repoUrl.isPresent()) {
-            boolean conflicts = stagingDatabase().hasConflicts(null);
+            boolean conflicts = conflictsDatabase().hasConflicts(null);
             hasConflicts = Boolean.valueOf(conflicts);
         }
         return hasConflicts;

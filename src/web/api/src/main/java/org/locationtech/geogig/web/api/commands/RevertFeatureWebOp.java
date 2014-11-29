@@ -159,11 +159,11 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
 
         // get feature from old tree
         Optional<NodeRef> node = geogig.command(FindTreeChild.class).setParent(oldTree.get())
-                .setIndex(true).setChildPath(featurePath).call();
+                .setChildPath(featurePath).call();
         boolean delete = false;
         if (!node.isPresent()) {
             delete = true;
-            node = geogig.command(FindTreeChild.class).setParent(newTree.get()).setIndex(true)
+            node = geogig.command(FindTreeChild.class).setParent(newTree.get())
                     .setChildPath(featurePath).call();
             Preconditions.checkState(node.isPresent(),
                     "The feature was not found in either commit tree.");
@@ -172,7 +172,7 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
         // get the new parent tree
         ObjectId metadataId = ObjectId.NULL;
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class).setParent(newTree.get())
-                .setChildPath(node.get().getParentPath()).setIndex(true).call();
+                .setChildPath(node.get().getParentPath()).call();
 
         RevTreeBuilder treeBuilder = null;
         if (parentNode.isPresent()) {
@@ -180,10 +180,10 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
             Optional<RevTree> parsed = geogig.command(RevObjectParse.class)
                     .setObjectId(parentNode.get().getNode().getObjectId()).call(RevTree.class);
             checkState(parsed.isPresent(), "Parent tree couldn't be found in the repository.");
-            treeBuilder = new RevTreeBuilder(geogig.stagingDatabase(), parsed.get());
+            treeBuilder = new RevTreeBuilder(geogig.objectDatabase(), parsed.get());
             treeBuilder.remove(node.get().getNode().getName());
         } else {
-            treeBuilder = new RevTreeBuilder(geogig.stagingDatabase());
+            treeBuilder = new RevTreeBuilder(geogig.objectDatabase());
         }
 
         // put the old feature into the new tree
@@ -191,9 +191,9 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
             treeBuilder.put(node.get().getNode());
         }
         ObjectId newTreeId = geogig.command(WriteBack.class)
-                .setAncestor(newTree.get().builder(geogig.stagingDatabase()))
-                .setChildPath(node.get().getParentPath()).setToIndex(true)
-                .setTree(treeBuilder.build()).setMetadataId(metadataId).call();
+                .setAncestor(newTree.get().builder(geogig.objectDatabase()))
+                .setChildPath(node.get().getParentPath()).setTree(treeBuilder.build())
+                .setMetadataId(metadataId).call();
 
         // build new commit with parent of new commit and the newly built tree
         CommitBuilder builder = new CommitBuilder();

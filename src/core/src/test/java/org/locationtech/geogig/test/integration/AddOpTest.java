@@ -211,7 +211,7 @@ public class AddOpTest extends RepositoryTestCase {
         }
         insert(points1);
         geogig.command(AddOp.class).call();
-        List<Conflict> conflicts = geogig.getRepository().stagingDatabase()
+        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
                 .getConflicts(null, null);
         assertTrue(conflicts.isEmpty());
         geogig.command(CommitOp.class).call();
@@ -245,7 +245,7 @@ public class AddOpTest extends RepositoryTestCase {
             assertTrue(true);
         }
         geogig.command(AddOp.class).call();
-        List<Conflict> conflicts = geogig.getRepository().stagingDatabase()
+        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
                 .getConflicts(null, null);
         assertTrue(conflicts.isEmpty());
         geogig.command(CommitOp.class).call();
@@ -263,11 +263,11 @@ public class AddOpTest extends RepositoryTestCase {
         assertFalse(list.isEmpty());
         String path = NodeRef.appendChild(pointsName, idP1);
         Optional<NodeRef> ref = geogig.command(FindTreeChild.class).setChildPath(path)
-                .setIndex(true).setParent(geogig.getRepository().index().getTree()).call();
+                .setParent(geogig.getRepository().index().getTree()).call();
         assertTrue(ref.isPresent());
         assertFalse(ref.get().getNode().getMetadataId().isPresent());
         path = NodeRef.appendChild(pointsName, idP2);
-        ref = geogig.command(FindTreeChild.class).setChildPath(path).setIndex(true)
+        ref = geogig.command(FindTreeChild.class).setChildPath(path)
                 .setParent(geogig.getRepository().index().getTree()).call();
         assertTrue(ref.isPresent());
         assertTrue(ref.get().getNode().getMetadataId().isPresent());

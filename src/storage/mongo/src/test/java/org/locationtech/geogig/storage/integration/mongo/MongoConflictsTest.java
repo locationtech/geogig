@@ -21,7 +21,7 @@ import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.di.GeogigModule;
-import org.locationtech.geogig.storage.StagingDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;
@@ -54,15 +54,14 @@ public class MongoConflictsTest extends RepositoryTestCase {
 
     @Test
     public void testConflicts() {
-        StagingDatabase db = geogig.getRepository().stagingDatabase();
+        ConflictsDatabase db = geogig.getRepository().conflictsDatabase();
 
         List<Conflict> conflicts = db.getConflicts(null, null);
         assertTrue(conflicts.isEmpty());
         Conflict conflict = new Conflict(idP1, ObjectId.forString("ancestor"),
                 ObjectId.forString("ours"), ObjectId.forString("theirs"));
-        Conflict conflict2 = new Conflict(idP2,
-                ObjectId.forString("ancestor2"), ObjectId.forString("ours2"),
-                ObjectId.forString("theirs2"));
+        Conflict conflict2 = new Conflict(idP2, ObjectId.forString("ancestor2"),
+                ObjectId.forString("ours2"), ObjectId.forString("theirs2"));
         db.addConflict(null, conflict);
         Optional<Conflict> returnedConflict = db.getConflict(null, idP1);
         assertTrue(returnedConflict.isPresent());

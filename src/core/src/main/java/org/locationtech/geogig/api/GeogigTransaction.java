@@ -24,11 +24,11 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.DeduplicationService;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 import org.locationtech.geogig.storage.TransactionRefDatabase;
 import org.locationtech.geogig.storage.TransactionStagingArea;
 
@@ -160,9 +160,9 @@ public class GeogigTransaction implements Context {
     }
 
     @Override
-    public StagingDatabase stagingDatabase() {
-        return transactionIndex != null ? transactionIndex.getDatabase() : injector
-                .stagingDatabase();
+    public ConflictsDatabase conflictsDatabase() {
+        return transactionIndex != null ? transactionIndex.conflictsDatabase() : injector
+                .conflictsDatabase();
     }
 
     @Override

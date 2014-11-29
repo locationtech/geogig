@@ -47,7 +47,6 @@ import com.google.common.collect.Lists;
  * 
  * @see CheckoutOp
  */
-@ObjectDatabaseReadOnly
 @Parameters(commandNames = "checkout", commandDescription = "Checkout a branch or paths to the working tree")
 public class Checkout extends AbstractCommand implements CLICommand {
 

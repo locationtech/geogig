@@ -13,7 +13,6 @@ import org.locationtech.geogig.di.Decorator;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
@@ -39,15 +38,10 @@ public class CachingModule extends AbstractModule {
         // bind separate caches for the object and staging databases
 
         bind(ObjectDatabaseCacheFactory.class).in(Scopes.SINGLETON);
-        bind(StagingDatabaseCacheFactory.class).in(Scopes.SINGLETON);
 
         Decorator objectCachingDecorator = ObjectDatabaseCacheInterceptor
                 .objects(getProvider(ObjectDatabaseCacheFactory.class));
 
-        Decorator indexCachingDecorator = ObjectDatabaseCacheInterceptor
-                .staging(getProvider(StagingDatabaseCacheFactory.class));
-
         GeogigModule.bindDecorator(binder(), objectCachingDecorator);
-        GeogigModule.bindDecorator(binder(), indexCachingDecorator);
     }
 }

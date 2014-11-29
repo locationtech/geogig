@@ -21,21 +21,16 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 import org.locationtech.geogig.storage.bdbje.JEGraphDatabase_v0_1;
 import org.locationtech.geogig.storage.bdbje.JEGraphDatabase_v0_2;
 import org.locationtech.geogig.storage.bdbje.JEObjectDatabase_v0_1;
 import org.locationtech.geogig.storage.bdbje.JEObjectDatabase_v0_2;
-import org.locationtech.geogig.storage.bdbje.JEStagingDatabase_v0_1;
-import org.locationtech.geogig.storage.bdbje.JEStagingDatabase_v0_2;
 import org.locationtech.geogig.storage.fs.FileRefDatabase;
 import org.locationtech.geogig.storage.mongo.MongoGraphDatabase;
 import org.locationtech.geogig.storage.mongo.MongoObjectDatabase;
-import org.locationtech.geogig.storage.mongo.MongoStagingDatabase;
 import org.locationtech.geogig.storage.sqlite.SQLiteStorage;
 import org.locationtech.geogig.storage.sqlite.XerialGraphDatabase;
 import org.locationtech.geogig.storage.sqlite.XerialObjectDatabase;
-import org.locationtech.geogig.storage.sqlite.XerialStagingDatabase;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -49,12 +44,9 @@ public class CLIContextBuilder extends ContextBuilder {
 
     private static final VersionedFormat DEFAULT_OBJECTS = new VersionedFormat("bdbje", "0.2");
 
-    private static final VersionedFormat DEFAULT_STAGING = new VersionedFormat("bdbje", "0.2");
-
     private static final VersionedFormat DEFAULT_GRAPH = new VersionedFormat("bdbje", "0.2");
 
     private static final PluginDefaults defaults = new PluginDefaults(DEFAULT_OBJECTS,//
-            DEFAULT_STAGING,//
             DEFAULT_REFS,//
             DEFAULT_GRAPH);
 
@@ -94,25 +86,6 @@ public class CLIContextBuilder extends ContextBuilder {
                     .addBinding(
                             new VersionedFormat(SQLiteStorage.FORMAT_NAME, SQLiteStorage.VERSION))//
                     .to(XerialObjectDatabase.class)//
-                    .in(Scopes.SINGLETON);
-            MapBinder<VersionedFormat, StagingDatabase> stagingPlugins = MapBinder.newMapBinder(
-                    binder(), VersionedFormat.class, StagingDatabase.class);
-            stagingPlugins //
-                    .addBinding(new VersionedFormat("mongodb", "0.1"))//
-                    .to(MongoStagingDatabase.class)//
-                    .in(Scopes.SINGLETON);
-            stagingPlugins //
-                    .addBinding(new VersionedFormat("bdbje", "0.2"))//
-                    .to(JEStagingDatabase_v0_2.class)//
-                    .in(Scopes.SINGLETON);
-            stagingPlugins //
-                    .addBinding(new VersionedFormat("bdbje", "0.1"))//
-                    .to(JEStagingDatabase_v0_1.class)//
-                    .in(Scopes.SINGLETON);
-            stagingPlugins //
-                    .addBinding(
-                            new VersionedFormat(SQLiteStorage.FORMAT_NAME, SQLiteStorage.VERSION))//
-                    .to(XerialStagingDatabase.class)//
                     .in(Scopes.SINGLETON);
             MapBinder<VersionedFormat, GraphDatabase> graphPlugins = MapBinder.newMapBinder(
                     binder(), VersionedFormat.class, GraphDatabase.class);

@@ -19,8 +19,6 @@ import java.util.SortedSet;
 import javax.annotation.Nullable;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.Bounded;
-import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
@@ -36,11 +34,9 @@ import org.locationtech.geogig.api.plumbing.diff.TreeDifference;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
@@ -70,7 +66,6 @@ import com.vividsolutions.jts.geom.Envelope;
  * 
  * @see TreeDifference
  * @see MutableTree
- * @see DeepMove
  */
 public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
@@ -123,6 +118,11 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
     protected ObjectId _call() {
         final ProgressListener progress = getProgressListener();
 
+        if (pathFilters.isEmpty()) {
+            final ObjectId stageRootId = index().getTree().getId();
+            return stageRootId;
+        }
+
         TreeDifference treeDifference = computeTreeDifference();
 
         if (treeDifference.areEqual()) {
@@ -149,12 +149,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         MutableTree newLeftTree = treeDifference.getLeftTree();
 
         final ObjectDatabase repositoryDatabase = objectDatabase();
-        final RevTree newRoot = newLeftTree.build(stagingDatabase(), repositoryDatabase);
-        if (newRoot.trees().isPresent()) {
-            for (Node n : newRoot.trees().get()) {
-                if (n.getMetadataId().isPresent()) deepMove(n.getMetadataId().get());
-            }
-        }
+        final RevTree newRoot = newLeftTree.build(objectDatabase(), repositoryDatabase);
 
         ObjectId newRootId = newRoot.getId();
 
@@ -173,7 +168,6 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
             if (!filterMatchesOrIsParent(treePath)) {
                 continue;// filter doesn't apply to the changed tree
             }
-            deepMove(newValue.getMetadataId());
             MutableTree leftTree = treeDifference.getLeftTree();
             leftTree.setChild(newValue.getParentPath(), newValue.getNode());
         }
@@ -222,7 +216,6 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
                 }
             } else {
                 LOGGER.trace("Creating new tree {}", path);
-                deepMove(ref.getNode());
                 MutableTree leftTree = treeDifference.getLeftTree();
                 String parentPath = ref.getParentPath();
                 Node node = ref.getNode();
@@ -310,46 +303,15 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         final ObjectId rightTreeId = rightTreeRef == null ? RevTree.EMPTY_TREE_ID : rightTreeRef
                 .objectId();
 
-        final Predicate<Bounded> existsFilter = new Predicate<Bounded>() {
-
-            private final ObjectDatabase targetDb = repositoryDatabase;
-
-            @Override
-            public boolean apply(Bounded input) {
-                ObjectId id = null;
-                if (input instanceof Node && TYPE.TREE.equals(((Node) input).getType())) {
-                    id = ((Node) input).getObjectId();
-                } else if (input instanceof Bucket) {
-                    Bucket b = (Bucket) input;
-                    id = b.id();
-                }
-                if (id != null) {
-                    if (targetDb.exists(id)) {
-                        LOGGER.trace("Ignoring {}. Already exists in target database.", input);
-                        return false;
-                    }
-                }
-                return true;
-            }
-        };
-        DiffTree diffs = command(DiffTree.class).setRecursive(false).setReportTrees(false)
-                .setOldTree(leftTreeId).setNewTree(rightTreeId).setPathFilter(strippedPathFilters)
-                .setCustomFilter(existsFilter);
-
-        // move new blobs from the index to the repository (note: this could be parallelized)
-        Supplier<Iterator<Node>> nodesToMove = asNodeSupplierOfNewContents(diffs,
-                strippedPathFilters);
-        command(DeepMove.class).setObjects(nodesToMove).call();
-
-        final StagingDatabase stagingDatabase = stagingDatabase();
-
-        final RevTree currentLeftTree = stagingDatabase.getTree(leftTreeId);
+        final RevTree currentLeftTree = repositoryDatabase.getTree(leftTreeId);
 
         final RevTreeBuilder builder = currentLeftTree.builder(repositoryDatabase);
 
-        // remove the exists filter, we need to create the new trees taking into account all the
-        // nodes
-        diffs.setCustomFilter(null);
+        // create the new trees taking into account all the nodes
+        DiffTree diffs = command(DiffTree.class).setRecursive(false).setReportTrees(false)
+                .setOldTree(leftTreeId).setNewTree(rightTreeId).setPathFilter(strippedPathFilters)
+                .setCustomFilter(null);
+
         Iterator<DiffEntry> iterator = diffs.get();
         if (!strippedPathFilters.isEmpty()) {
             final Set<String> expected = Sets.newHashSet(strippedPathFilters);
@@ -476,48 +438,6 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         return parentsStripped;
     }
 
-    /**
-     * Transforms a {@code Supplier<DiffEntry>} to a {@code Supplier<Node>} with the
-     * {@link DiffEntry#getNewObject() new nodes} of entries that represent changes or additions.
-     * 
-     * @param strippedPathFilters
-     */
-    private Supplier<Iterator<Node>> asNodeSupplierOfNewContents(
-            final Supplier<Iterator<DiffEntry>> supplier, final List<String> strippedPathFilters) {
-
-        final Function<DiffEntry, Node> newNodes = new Function<DiffEntry, Node>() {
-            @Override
-            public Node apply(DiffEntry diffEntry) {
-                return diffEntry.getNewObject().getNode();
-            }
-        };
-
-        // filters DiffEntries that are not to be moved from index to objects (i.e. DELETE entries)
-        final Predicate<DiffEntry> movableFilter = new Predicate<DiffEntry>() {
-            final Set<String> expected = Sets.newHashSet(strippedPathFilters);
-
-            @Override
-            public boolean apply(DiffEntry e) {
-                if (DiffEntry.ChangeType.REMOVED.equals(e.changeType())) {
-                    return false;
-                }
-                if (!expected.isEmpty() && !expected.contains(e.newPath())) {
-                    return false;
-                }
-                return true;
-            }
-        };
-
-        return Suppliers.compose(new Function<Iterator<DiffEntry>, Iterator<Node>>() {
-            @Override
-            public Iterator<Node> apply(Iterator<DiffEntry> input) {
-                Iterator<DiffEntry> onlyChanges = Iterators.filter(input, movableFilter);
-                Iterator<Node> movableNodes = Iterators.transform(onlyChanges, newNodes);
-                return movableNodes;
-            }
-        }, supplier);
-    }
-
     private TreeDifference computeTreeDifference() {
         final String rightTreeish = Ref.STAGE_HEAD;
 
@@ -551,16 +471,6 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
             }
         }
         return null;
-    }
-
-    private void deepMove(ObjectId object) {
-        Supplier<ObjectId> objectRef = Suppliers.ofInstance(object);
-        command(DeepMove.class).setObject(objectRef).setToIndex(false).call();
-    }
-
-    private void deepMove(Node ref) {
-        Supplier<Node> objectRef = Suppliers.ofInstance(ref);
-        command(DeepMove.class).setObjectRef(objectRef).setToIndex(false).call();
     }
 
     /**

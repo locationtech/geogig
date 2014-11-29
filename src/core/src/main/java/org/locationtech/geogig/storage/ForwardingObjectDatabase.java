@@ -57,6 +57,11 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     }
 
     @Override
+    public ConflictsDatabase getConflictsDatabase() {
+        return subject.get().getConflictsDatabase();
+    }
+
+    @Override
     public boolean exists(ObjectId id) {
         return subject.get().exists(id);
     }

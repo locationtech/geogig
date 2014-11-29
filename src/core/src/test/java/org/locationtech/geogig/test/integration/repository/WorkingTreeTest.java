@@ -612,7 +612,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
         assertTrue(treeRef.getNode().getMetadataId().isPresent());
         assertSame(treeRef.getMetadataId(), treeRef.getNode().getMetadataId().get());
 
-        RevFeatureType featureType = repo.stagingDatabase().getFeatureType(treeRef.getMetadataId());
+        RevFeatureType featureType = repo.objectDatabase().getFeatureType(treeRef.getMetadataId());
         assertEquals(pointsType, featureType.type());
     }
 
@@ -625,7 +625,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
         assertTrue(treeRef.getNode().getMetadataId().isPresent());
         assertSame(treeRef.getMetadataId(), treeRef.getNode().getMetadataId().get());
 
-        RevFeatureType featureType = repo.stagingDatabase().getFeatureType(treeRef.getMetadataId());
+        RevFeatureType featureType = repo.objectDatabase().getFeatureType(treeRef.getMetadataId());
         assertEquals(pointsType, featureType.type());
     }
 
@@ -635,12 +635,12 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
         insert(points1, points2);
         Optional<NodeRef> treeRef = repo.command(FindTreeChild.class).setChildPath(pointsName)
-                .setIndex(true).setParent(workTree.getTree()).call();
+                .setParent(workTree.getTree()).call();
         assertTrue(treeRef.isPresent());
         assertTrue(treeRef.get().getNode().getMetadataId().isPresent());
         assertFalse(treeRef.get().getNode().getMetadataId().get().isNull());
 
-        RevFeatureType featureType = repo.stagingDatabase().getFeatureType(
+        RevFeatureType featureType = repo.objectDatabase().getFeatureType(
                 treeRef.get().getMetadataId());
         assertEquals(pointsType, featureType.type());
 
@@ -659,7 +659,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
         assertNotNull(typeTree);
         String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
         Optional<NodeRef> featureBlobId = geogig.command(FindTreeChild.class).setParent(root)
-                .setChildPath(path).setIndex(true).call();
+                .setChildPath(path).call();
         assertTrue(featureBlobId.isPresent());
         assertEquals(RevFeatureTypeImpl.build(modifiedPointsType).getId(), featureBlobId.get()
                 .getMetadataId());
@@ -706,7 +706,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
     private Optional<Node> findTreeChild(RevTree root, String pathRemove) {
         Optional<NodeRef> nodeRef = geogig.command(FindTreeChild.class).setParent(root)
-                .setChildPath(pathRemove).setIndex(true).call();
+                .setChildPath(pathRemove).call();
         Optional<Node> node = Optional.absent();
         if (nodeRef.isPresent()) {
             node = Optional.of(nodeRef.get().getNode());

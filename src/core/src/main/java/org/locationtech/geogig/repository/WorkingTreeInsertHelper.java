@@ -102,7 +102,7 @@ class WorkingTreeInsertHelper {
     private NodeRef findOrCreateTree(final String treePath, final FeatureType type) {
 
         RevTree tree = context.command(FindOrCreateSubtree.class).setChildPath(treePath)
-                .setIndex(true).setParent(workHead).setParentPath(NodeRef.ROOT).call();
+                .setParent(workHead).setParentPath(NodeRef.ROOT).call();
 
         ObjectId metadataId = ObjectId.NULL;
         if (type != null) {
@@ -189,8 +189,8 @@ class WorkingTreeInsertHelper {
                 parentMetadataId = ObjectId.NULL;
             } else {
                 Optional<NodeRef> parentRef = context.command(FindTreeChild.class)
-                        .setChildPath(parentPath).setIndex(true).setParent(workHead)
-                        .setParentPath(NodeRef.ROOT).call();
+                        .setChildPath(parentPath).setParent(workHead).setParentPath(NodeRef.ROOT)
+                        .call();
 
                 parentMetadataId = parentRef.isPresent() ? parentRef.get().getMetadataId()
                         : ObjectId.NULL;

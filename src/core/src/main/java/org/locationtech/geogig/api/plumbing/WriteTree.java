@@ -10,7 +10,6 @@
 package org.locationtech.geogig.api.plumbing;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +32,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -52,7 +50,7 @@ import com.google.common.collect.Sets;
  * you need to have done a {@link UpdateIndex} phase before you did the write-tree.
  * 
  * @see FindOrCreateSubtree
- * @see DeepMove
+ * @see DeepCopy
  * @see ResolveTreeish
  * @see CreateTree
  * @see RevObjectParse
@@ -61,15 +59,13 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
 
     private Supplier<RevTree> oldRoot;
 
-    private final List<String> pathFilters = Lists.newLinkedList();
-
     private Supplier<Iterator<DiffEntry>> diffSupplier = null;
 
     /**
-     * Flag indicating whether or not to move objects from the staging to the objects database.
-     * Defaults to true. See {@link #dontMoveObjects()}
+     * Where to copy objects from, if at all.
      */
-    private boolean moveObjects = true;
+    @Nullable
+    private ObjectDatabase fromDb;
 
     /**
      * @param oldRoot a supplier for the old root tree
@@ -80,28 +76,18 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         return this;
     }
 
-    /**
-     * 
-     * @param pathFilter the pathfilter to pass on to the index
-     * @return {@code this}
-     */
-    public WriteTree addPathFilter(String pathFilter) {
-        if (pathFilter != null) {
-            this.pathFilters.add(pathFilter);
-        }
-        return this;
-    }
-
-    public WriteTree setPathFilter(@Nullable List<String> pathFilters) {
-        this.pathFilters.clear();
-        if (pathFilters != null) {
-            this.pathFilters.addAll(pathFilters);
-        }
-        return this;
-    }
-
     public WriteTree setDiffSupplier(@Nullable Supplier<Iterator<DiffEntry>> diffSupplier) {
         this.diffSupplier = diffSupplier;
+        return this;
+    }
+
+    /**
+     * If provided, objects pointed at by the {@link #setDiffSupplier(Supplier) diff supplier} will
+     * be copied from {@code fromDb} to the local repository; otherwise only the new tree will be
+     * created without copying any object.
+     */
+    public WriteTree setCopyFrom(ObjectDatabase fromDb) {
+        this.fromDb = fromDb;
         return this;
     }
 
@@ -114,19 +100,13 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
      */
     @Override
     protected ObjectId _call() {
+        Preconditions.checkState(diffSupplier != null, "No diff supplier was provided");
         final ProgressListener progress = getProgressListener();
 
         final RevTree oldRootTree = resolveRootTree();
         final ObjectDatabase repositoryDatabase = objectDatabase();
 
-        Iterator<DiffEntry> diffs = null;
-        long numChanges = 0;
-        if (diffSupplier == null) {
-            diffs = index().getStaged(pathFilters);
-            numChanges = index().countStaged(pathFilters).count();
-        } else {
-            diffs = diffSupplier.get();
-        }
+        final Iterator<DiffEntry> diffs = diffSupplier.get();
 
         if (!diffs.hasNext()) {
             return oldRootTree.getId();
@@ -139,14 +119,10 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         Map<String, NodeRef> indexChangedTrees = Maps.newHashMap();
         Map<String, ObjectId> changedTreesMetadataId = Maps.newHashMap();
         Set<String> deletedTrees = Sets.newHashSet();
-        final boolean moveObjects = this.moveObjects;
+        final boolean copyObjects = this.fromDb != null;
         NodeRef ref;
-        int i = 0;
         RevTree stageHead = index().getTree();
         while (diffs.hasNext()) {
-            if (numChanges != 0) {
-                progress.setProgress((float) (++i * 100) / numChanges);
-            }
             if (progress.isCanceled()) {
                 return null;
             }
@@ -190,19 +166,18 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
                     deletedTrees.add(ref.path());
                 }
             } else {
-                if (moveObjects && ref.getType().equals(TYPE.TREE)) {
-                    RevTree tree = stagingDatabase().getTree(ref.objectId());
+                if (copyObjects && ref.getType().equals(TYPE.TREE)) {
+                    RevTree tree = fromDb.getTree(ref.objectId());
                     if (!ref.getMetadataId().isNull()) {
-                        repositoryDatabase.put(stagingDatabase()
-                                .getFeatureType(ref.getMetadataId()));
+                        repositoryDatabase.put(fromDb.getFeatureType(ref.getMetadataId()));
                     }
                     if (tree.isEmpty()) {
                         repositoryDatabase.put(tree);
                     } else {
                         continue;
                     }
-                } else if (moveObjects) {
-                    deepMove(ref.getNode());
+                } else if (copyObjects) {
+                    deepCopy(ref.getNode());
                 }
                 parentTree.put(ref.getNode());
             }
@@ -247,7 +222,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
             Optional<NodeRef> treeRef = Optional.absent();
             if (!stageHead.isEmpty()) {// slight optimization, may save a lot of processing on
                                        // large first commits
-                treeRef = command(FindTreeChild.class).setIndex(true).setParent(stageHead)
+                treeRef = command(FindTreeChild.class).setParent(stageHead)
                         .setChildPath(parentPath).call();
             }
             if (treeRef.isPresent()) {// may not be in case of a delete
@@ -269,8 +244,8 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
             if (NodeRef.ROOT.equals(treePath)) {
                 treeBuilder = root.builder(repositoryDatabase);
             } else {
-                Optional<NodeRef> treeRef = command(FindTreeChild.class).setIndex(false)
-                        .setParent(root).setChildPath(treePath).call();
+                Optional<NodeRef> treeRef = command(FindTreeChild.class).setParent(root)
+                        .setChildPath(treePath).call();
                 if (treeRef.isPresent()) {
                     metadataCache.put(treePath, treeRef.get().getMetadataId());
                     treeBuilder = command(RevObjectParse.class)
@@ -287,12 +262,12 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
     }
 
     private RevTree getTree(ObjectId treeId) {
-        return stagingDatabase().getTree(treeId);
+        return objectDatabase().getTree(treeId);
     }
 
-    private void deepMove(Node ref) {
+    private void deepCopy(Node ref) {
         Supplier<Node> objectRef = Suppliers.ofInstance(ref);
-        command(DeepMove.class).setObjectRef(objectRef).setToIndex(false).call();
+        command(DeepCopy.class).setObjectRef(objectRef).setFrom(fromDb).call();
     }
 
     /**
@@ -315,25 +290,13 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
             return oldRoot.get();
         }
         final ObjectId targetTreeId = resolveRootTreeId();
-        return stagingDatabase().getTree(targetTreeId);
+        return objectDatabase().getTree(targetTreeId);
     }
 
     private ObjectId writeBack(RevTreeBuilder root, final RevTree tree, final String pathToTree,
             final ObjectId metadataId) {
 
         return command(WriteBack.class).setAncestor(root).setAncestorPath("").setTree(tree)
-                .setChildPath(pathToTree).setToIndex(false).setMetadataId(metadataId).call();
+                .setChildPath(pathToTree).setMetadataId(metadataId).call();
     }
-
-    /**
-     * Indicates that the WriteTree operation shall not attempt to move the objects from the staging
-     * to the objects database, since they're known to already be present in the objects database.
-     * Used usually when {@link #setDiffSupplier(Supplier)} is also set and the calling code takes
-     * care of storing the features, types, and trees in the objectdatabase.
-     */
-    public WriteTree dontMoveObjects() {
-        this.moveObjects = false;
-        return this;
-    }
-
 }

@@ -24,7 +24,6 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -47,8 +46,6 @@ import com.vividsolutions.jts.geom.Envelope;
  */
 public class WriteBack extends AbstractGeoGigOp<ObjectId> {
 
-    private boolean indexDb;
-
     private Supplier<RevTreeBuilder> ancestor;
 
     private String childPath;
@@ -61,17 +58,6 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
 
     public WriteBack() {
         this.metadataId = Optional.absent();
-    }
-
-    /**
-     * @param indexDb if {@code true} the trees will be stored to the {@link StagingDatabase},
-     *        otherwise to the repository's {@link ObjectDatabase permanent store}. Defaults to
-     *        {@code false}
-     * @return {@code this}
-     */
-    public WriteBack setToIndex(boolean indexDb) {
-        this.indexDb = indexDb;
-        return this;
     }
 
     /**
@@ -148,7 +134,7 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
         RevTree tree = this.tree.get();
         checkState(null != tree, "child tree supplier returned null");
 
-        ObjectDatabase targetDb = indexDb ? stagingDatabase() : objectDatabase();
+        ObjectDatabase targetDb = objectDatabase();
         RevTreeBuilder root = resolveAncestor();
 
         return writeBack(root, ancestorPath, tree, childPath, targetDb,
@@ -224,8 +210,8 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
 
     private Optional<NodeRef> getTreeChild(RevTreeBuilder parent, String childPath) {
         RevTree realParent = parent.build();
-        FindTreeChild cmd = command(FindTreeChild.class).setIndex(true).setParent(realParent)
-                .setChildPath(childPath);
+        FindTreeChild cmd = command(FindTreeChild.class).setParent(realParent).setChildPath(
+                childPath);
 
         Optional<NodeRef> nodeRef = cmd.call();
         return nodeRef;

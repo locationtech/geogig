@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.storage;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,6 +59,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     @Override
     public List<ObjectId> lookUp(final String partialId) {
         Preconditions.checkNotNull(partialId);
+        checkState(isOpen(), "db is closed");
 
         byte[] raw = ObjectId.toRaw(partialId);
 
@@ -88,6 +91,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     @Override
     public RevObject get(ObjectId id) {
         Preconditions.checkNotNull(id, "id");
+        checkState(isOpen(), "db is closed");
 
         final ObjectReader<RevObject> reader = serializationFactory.createObjectReader();
         return get(id, reader, true);
@@ -96,6 +100,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     @Override
     public @Nullable RevObject getIfPresent(ObjectId id) {
         Preconditions.checkNotNull(id, "id");
+        checkState(isOpen(), "db is closed");
 
         final ObjectReader<RevObject> reader = serializationFactory.createObjectReader();
         return get(id, reader, false);
@@ -114,6 +119,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     public <T extends RevObject> T get(final ObjectId id, final Class<T> clazz) {
         Preconditions.checkNotNull(id, "id");
         Preconditions.checkNotNull(clazz, "class");
+        checkState(isOpen(), "db is closed");
 
         final ObjectReader<T> reader = serializationFactory.createObjectReader(getType(clazz));
 
@@ -125,6 +131,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
             throws IllegalArgumentException {
         Preconditions.checkNotNull(id, "id");
         Preconditions.checkNotNull(clazz, "class");
+        checkState(isOpen(), "db is closed");
 
         final ObjectReader<T> reader = serializationFactory.createObjectReader(getType(clazz));
 
@@ -199,6 +206,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     public boolean put(final RevObject object) {
         Preconditions.checkNotNull(object);
         Preconditions.checkArgument(!object.getId().isNull(), "ObjectId is NULL %s", object);
+        checkState(isOpen(), "db is closed");
 
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
         writeObject(object, rawOut);
@@ -214,6 +222,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
      */
     @Override
     public void putAll(Iterator<? extends RevObject> objects, final BulkOpListener listener) {
+        checkState(isOpen(), "db is closed");
 
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
         while (objects.hasNext()) {
@@ -270,16 +279,19 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
 
     @Override
     public Iterator<RevObject> getAll(final Iterable<ObjectId> ids) {
+        checkState(isOpen(), "db is closed");
         return getAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
     @Override
     public void putAll(Iterator<? extends RevObject> objects) {
+        checkState(isOpen(), "db is closed");
         putAll(objects, BulkOpListener.NOOP_LISTENER);
     }
 
     @Override
     public long deleteAll(Iterator<ObjectId> ids) {
+        checkState(isOpen(), "db is closed");
         return deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 }

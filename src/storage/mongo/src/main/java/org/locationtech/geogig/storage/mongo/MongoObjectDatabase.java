@@ -30,6 +30,7 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
@@ -79,6 +80,8 @@ public class MongoObjectDatabase implements ObjectDatabase {
     private String collectionName;
 
     private ExecutorService executor;
+
+    private MongoConflictsDatabase conflicts;
 
     @Inject
     public MongoObjectDatabase(ConfigDatabase config, MongoConnectionManager manager,
@@ -137,6 +140,7 @@ public class MongoObjectDatabase implements ObjectDatabase {
         db = client.getDB(database);
         collection = db.getCollection(getCollectionName());
         collection.ensureIndex("oid");
+        conflicts = new MongoConflictsDatabase(db);
     }
 
     @Override
@@ -168,6 +172,12 @@ public class MongoObjectDatabase implements ObjectDatabase {
         client = null;
         db = null;
         collection = null;
+        conflicts = null;
+    }
+
+    @Override
+    public ConflictsDatabase getConflictsDatabase() {
+        return conflicts;
     }
 
     @Override

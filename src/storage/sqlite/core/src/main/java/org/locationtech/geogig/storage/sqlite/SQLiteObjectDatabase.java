@@ -58,7 +58,7 @@ public abstract class SQLiteObjectDatabase<C> implements ObjectDatabase {
 
     final ObjectSerializingFactory serializer = DataStreamSerializationFactoryV1.INSTANCE;
 
-    C cx;
+    protected C cx;
 
     public SQLiteObjectDatabase(ConfigDatabase configdb, Platform platform) {
         this.configdb = configdb;

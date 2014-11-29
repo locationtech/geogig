@@ -63,7 +63,7 @@ import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.di.Singleton;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
-import org.locationtech.geogig.storage.StagingDatabase;
+import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
@@ -113,13 +113,13 @@ import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
 @Singleton
 public class WorkingTree {
 
-    private StagingDatabase indexDatabase;
+    private ObjectDatabase indexDatabase;
 
     private Context context;
 
     @Inject
     public WorkingTree(final Context injector) {
-        this.indexDatabase = injector.stagingDatabase();
+        this.indexDatabase = injector.objectDatabase();
         this.context = injector;
     }
 
@@ -145,7 +145,7 @@ public class WorkingTree {
 
         if (workTreeId.isPresent()) {
             if (!workTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
-                workTree = context.stagingDatabase().getTree(workTreeId.get());
+                workTree = indexDatabase.getTree(workTreeId.get());
             }
         } else {
             // Work tree was not resolved, update it to the head.
@@ -182,15 +182,15 @@ public class WorkingTree {
      * @return true if the object was found and deleted, false otherwise
      */
     public boolean delete(final String path, final String featureId) {
-        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setIndex(true)
-                .setParent(getTree()).setChildPath(path).call();
+        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(getTree())
+                .setChildPath(path).call();
 
         ObjectId metadataId = null;
         if (typeTreeRef.isPresent()) {
             metadataId = typeTreeRef.get().getMetadataId();
         }
 
-        RevTreeBuilder parentTree = context.command(FindOrCreateSubtree.class).setIndex(true)
+        RevTreeBuilder parentTree = context.command(FindOrCreateSubtree.class)
                 .setParent(Suppliers.ofInstance(Optional.of(getTree()))).setChildPath(path).call()
                 .builder(indexDatabase);
 
@@ -201,8 +201,7 @@ public class WorkingTree {
         }
 
         ObjectId newTree = context.command(WriteBack.class).setAncestor(getTreeSupplier())
-                .setChildPath(path).setToIndex(true).setMetadataId(metadataId)
-                .setTree(parentTree.build()).call();
+                .setChildPath(path).setMetadataId(metadataId).setTree(parentTree.build()).call();
 
         updateWorkHead(newTree);
 
@@ -231,7 +230,7 @@ public class WorkingTree {
             parentBuilder = workHead.builder(indexDatabase);
         } else {
             Optional<NodeRef> parentRef = context.command(FindTreeChild.class).setParent(workHead)
-                    .setChildPath(parentPath).setIndex(true).call();
+                    .setChildPath(parentPath).call();
             if (!parentRef.isPresent()) {
                 return;
             }
@@ -251,7 +250,7 @@ public class WorkingTree {
         if (parentPath.isEmpty()) {
             newWorkHead = newParent.getId();
         } else {
-            newWorkHead = context.command(WriteBack.class).setToIndex(true)
+            newWorkHead = context.command(WriteBack.class)
                     .setAncestor(workHead.builder(indexDatabase)).setChildPath(parentPath)
                     .setTree(newParent).setMetadataId(parentMetadataId).call();
         }
@@ -270,8 +269,8 @@ public class WorkingTree {
     public void delete(final Name typeName, final Filter filter,
             final Iterator<Feature> affectedFeatures) throws Exception {
 
-        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setIndex(true)
-                .setParent(getTree()).setChildPath(typeName.getLocalPart()).call();
+        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(getTree())
+                .setChildPath(typeName.getLocalPart()).call();
 
         ObjectId parentMetadataId = null;
         if (typeTreeRef.isPresent()) {
@@ -279,7 +278,7 @@ public class WorkingTree {
         }
 
         RevTreeBuilder parentTree = context.command(FindOrCreateSubtree.class)
-                .setParent(Suppliers.ofInstance(Optional.of(getTree()))).setIndex(true)
+                .setParent(Suppliers.ofInstance(Optional.of(getTree())))
                 .setChildPath(typeName.getLocalPart()).call().builder(indexDatabase);
 
         String fid;
@@ -296,8 +295,7 @@ public class WorkingTree {
 
         ObjectId newTree = context.command(WriteBack.class)
                 .setAncestor(getTree().builder(indexDatabase)).setMetadataId(parentMetadataId)
-                .setChildPath(typeName.getLocalPart()).setToIndex(true).setTree(parentTree.build())
-                .call();
+                .setChildPath(typeName.getLocalPart()).setTree(parentTree.build()).call();
 
         updateWorkHead(newTree);
     }
@@ -338,7 +336,7 @@ public class WorkingTree {
             if (parents.containsKey(parentPath)) {
                 parentTree = parents.get(parentPath);
             } else {
-                parentTree = context.command(FindOrCreateSubtree.class).setIndex(true)
+                parentTree = context.command(FindOrCreateSubtree.class)
                         .setParent(Suppliers.ofInstance(Optional.of(currentWorkHead)))
                         .setChildPath(parentPath).call().builder(indexDatabase);
                 parents.put(parentPath, parentTree);
@@ -354,14 +352,13 @@ public class WorkingTree {
             RevTree newTypeTree = parentTree.build();
 
             ObjectId metadataId = null;
-            Optional<NodeRef> currentTreeRef = context.command(FindTreeChild.class).setIndex(true)
+            Optional<NodeRef> currentTreeRef = context.command(FindTreeChild.class)
                     .setParent(currentWorkHead).setChildPath(path).call();
             if (currentTreeRef.isPresent()) {
                 metadataId = currentTreeRef.get().getMetadataId();
             }
             newTree = context.command(WriteBack.class).setAncestor(getTreeSupplier())
-                    .setChildPath(path).setToIndex(true).setTree(newTypeTree)
-                    .setMetadataId(metadataId).call();
+                    .setChildPath(path).setTree(newTypeTree).setMetadataId(metadataId).call();
             updateWorkHead(newTree);
         }
     }
@@ -369,8 +366,8 @@ public class WorkingTree {
     public synchronized NodeRef createTypeTree(final String treePath, final FeatureType featureType) {
 
         final RevTree workHead = getTree();
-        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setIndex(true)
-                .setParent(workHead).setChildPath(treePath).call();
+        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(workHead)
+                .setChildPath(treePath).call();
 
         final RevFeatureType revType = RevFeatureTypeImpl.build(featureType);
         if (typeTreeRef.isPresent()) {
@@ -381,13 +378,13 @@ public class WorkingTree {
         final ObjectId metadataId = revType.getId();
         final RevTree newTree = new RevTreeBuilder(indexDatabase).build();
 
-        ObjectId newWorkHeadId = context.command(WriteBack.class).setToIndex(true)
+        ObjectId newWorkHeadId = context.command(WriteBack.class)
                 .setAncestor(workHead.builder(indexDatabase)).setChildPath(treePath)
                 .setTree(newTree).setMetadataId(metadataId).call();
         updateWorkHead(newWorkHeadId);
 
-        return context.command(FindTreeChild.class).setIndex(true).setParent(getTree())
-                .setChildPath(treePath).call().get();
+        return context.command(FindTreeChild.class).setParent(getTree()).setChildPath(treePath)
+                .call().get();
     }
 
     /**
@@ -402,8 +399,8 @@ public class WorkingTree {
 
         NodeRef treeRef;
 
-        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setIndex(true)
-                .setParent(getTree()).setChildPath(parentTreePath).call();
+        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(getTree())
+                .setChildPath(parentTreePath).call();
         ObjectId metadataId;
         if (typeTreeRef.isPresent()) {
             treeRef = typeTreeRef.get();
@@ -421,7 +418,7 @@ public class WorkingTree {
         // ObjectId metadataId = treeRef.getMetadataId();
         final Node node = putInDatabase(feature, metadataId);
 
-        RevTreeBuilder parentTree = context.command(FindOrCreateSubtree.class).setIndex(true)
+        RevTreeBuilder parentTree = context.command(FindOrCreateSubtree.class)
                 .setParent(Suppliers.ofInstance(Optional.of(getTree())))
                 .setChildPath(parentTreePath).call().builder(indexDatabase);
 
@@ -429,14 +426,14 @@ public class WorkingTree {
         final ObjectId treeMetadataId = treeRef.getMetadataId();
 
         ObjectId newTree = context.command(WriteBack.class).setAncestor(getTreeSupplier())
-                .setChildPath(parentTreePath).setToIndex(true).setTree(parentTree.build())
+                .setChildPath(parentTreePath).setTree(parentTree.build())
                 .setMetadataId(treeMetadataId).call();
 
         updateWorkHead(newTree);
 
         final String featurePath = NodeRef.appendChild(parentTreePath, node.getName());
-        Optional<NodeRef> featureRef = context.command(FindTreeChild.class).setIndex(true)
-                .setParent(getTree()).setChildPath(featurePath).call();
+        Optional<NodeRef> featureRef = context.command(FindTreeChild.class).setParent(getTree())
+                .setChildPath(featurePath).call();
         return featureRef.get().getNode();
     }
 
@@ -510,7 +507,7 @@ public class WorkingTree {
             executorService.shutdown();
         }
         ObjectId newTree = context.command(WriteBack.class).setAncestor(getTreeSupplier())
-                .setChildPath(treePath).setMetadataId(treeRef.getMetadataId()).setToIndex(true)
+                .setChildPath(treePath).setMetadataId(treeRef.getMetadataId())
                 .setTree(newFeatureTree).call();
 
         updateWorkHead(newTree);
@@ -522,7 +519,7 @@ public class WorkingTree {
 
         final NodeRef treeRef;
         {
-            Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setIndex(true)
+            Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class)
                     .setParent(getTree()).setChildPath(treePath).call();
 
             if (typeTreeRef.isPresent()) {
@@ -757,8 +754,7 @@ public class WorkingTree {
 
                     ObjectId newRootTree = context.command(WriteBack.class)
                             .setAncestor(getTreeSupplier()).setChildPath(treePath)
-                            .setMetadataId(treeRef.getMetadataId()).setToIndex(true)
-                            .setTree(newFeatureTree).call();
+                            .setMetadataId(treeRef.getMetadataId()).setTree(newFeatureTree).call();
                     updateWorkHead(newRootTree);
                 }
             }
@@ -798,7 +794,7 @@ public class WorkingTree {
     public boolean hasRoot(final Name typeName) {
         String localPart = typeName.getLocalPart();
 
-        Optional<NodeRef> typeNameTreeRef = context.command(FindTreeChild.class).setIndex(true)
+        Optional<NodeRef> typeNameTreeRef = context.command(FindTreeChild.class)
                 .setChildPath(localPart).call();
 
         return typeNameTreeRef.isPresent();
@@ -840,8 +836,8 @@ public class WorkingTree {
      *         otherwise Optional.absent()
      */
     public Optional<Node> findUnstaged(final String path) {
-        Optional<NodeRef> nodeRef = context.command(FindTreeChild.class).setIndex(true)
-                .setParent(getTree()).setChildPath(path).call();
+        Optional<NodeRef> nodeRef = context.command(FindTreeChild.class).setParent(getTree())
+                .setChildPath(path).call();
         if (nodeRef.isPresent()) {
             return Optional.of(nodeRef.get().getNode());
         } else {
@@ -896,8 +892,8 @@ public class WorkingTree {
         // TODO: This is not the optimal way of doing this. A better solution should be found.
 
         final RevTree workHead = getTree();
-        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setIndex(true)
-                .setParent(workHead).setChildPath(treePath).call();
+        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(workHead)
+                .setChildPath(treePath).call();
         Preconditions.checkArgument(typeTreeRef.isPresent(), "Tree does not exist: %s", treePath);
 
         Iterator<NodeRef> iter = context.command(LsTreeOp.class).setReference(treePath)
@@ -910,7 +906,7 @@ public class WorkingTree {
         RevTreeBuilder treeBuilder = new RevTreeBuilder(indexDatabase);
 
         final RevTree newTree = treeBuilder.build();
-        ObjectId newWorkHeadId = context.command(WriteBack.class).setToIndex(true)
+        ObjectId newWorkHeadId = context.command(WriteBack.class)
                 .setAncestor(workHead.builder(indexDatabase)).setChildPath(treePath)
                 .setTree(newTree).setMetadataId(metadataId).call();
         updateWorkHead(newWorkHeadId);
@@ -930,8 +926,8 @@ public class WorkingTree {
             insert(parentPath, fb.build(noderef.getNode().getName(), feature));
         }
 
-        return context.command(FindTreeChild.class).setIndex(true).setParent(getTree())
-                .setChildPath(treePath).call().get();
+        return context.command(FindTreeChild.class).setParent(getTree()).setChildPath(treePath)
+                .call().get();
 
     }
 }

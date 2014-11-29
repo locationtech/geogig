@@ -33,10 +33,10 @@ import org.locationtech.geogig.api.plumbing.diff.BoundsFilteringDiffConsumer;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.plumbing.diff.DiffPathTracker;
+import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.ForwardingConsumer;
-import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,8 +180,8 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
             return Iterators.emptyIterator();
         }
 
-        ObjectDatabase leftSource = resolveSource(oldTree.getId());
-        ObjectDatabase rightSource = resolveSource(newTree.getId());
+        ObjectDatabase leftSource = objectDatabase();
+        ObjectDatabase rightSource = objectDatabase();
         final PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource,
                 rightSource);
 
@@ -204,7 +204,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
                 }
                 if (boundsFilter != null) {
                     consumer = new BoundsFilteringDiffConsumer(boundsFilter, consumer,
-                            stagingDatabase());
+                            objectDatabase());
                 }
                 if (!pathFilters.isEmpty()) {// evaluated the former
                     consumer = new PathFilteringDiffConsumer(pathFilters, consumer);
@@ -266,10 +266,6 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
                     .or(RevTree.EMPTY);
         }
         return tree;
-    }
-
-    private ObjectDatabase resolveSource(ObjectId treeId) {
-        return objectDatabase().exists(treeId) ? objectDatabase() : stagingDatabase();
     }
 
     private static class ChangeTypeFilteringDiffConsumer extends ForwardingConsumer {

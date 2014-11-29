@@ -139,7 +139,7 @@ public class RemoveOpTest extends RepositoryTestCase {
         }
         String path = NodeRef.appendChild(pointsName, idP1);
         geogig.command(RemoveOp.class).addPathToRemove(path).call();
-        List<Conflict> conflicts = geogig.getRepository().stagingDatabase()
+        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
                 .getConflicts(null, null);
         assertTrue(conflicts.isEmpty());
         geogig.command(CommitOp.class).call();

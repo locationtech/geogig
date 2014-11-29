@@ -12,7 +12,6 @@ package org.locationtech.geogig.metrics;
 import org.locationtech.geogig.di.Decorator;
 import org.locationtech.geogig.storage.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 import com.google.inject.Provider;
 import com.google.inject.util.Providers;
@@ -21,7 +20,7 @@ class ObjectDatabaseDecorator implements Decorator {
 
     @Override
     public boolean canDecorate(Object instance) {
-        return instance instanceof ObjectDatabase && !(instance instanceof StagingDatabase);
+        return instance instanceof ObjectDatabase;
     }
 
     @SuppressWarnings("unchecked")

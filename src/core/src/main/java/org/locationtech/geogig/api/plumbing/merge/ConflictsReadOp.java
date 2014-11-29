@@ -26,7 +26,7 @@ public class ConflictsReadOp extends AbstractGeoGigOp<List<Conflict>> implements
     protected  List<Conflict> _call() {
         final Optional<URL> repoUrl = command(ResolveGeogigDir.class).call();
         if (repoUrl.isPresent()) {
-            return stagingDatabase().getConflicts(null, null);
+            return conflictsDatabase().getConflicts(null, null);
         } else {
             return ImmutableList.of();
         }

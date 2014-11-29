@@ -30,6 +30,7 @@ import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,8 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
     final int partitionSize = 10 * 1000; // TODO make configurable
 
     final String dbName;
+
+    private XerialConflictsDatabase conflicts;
 
     @Inject
     public XerialObjectDatabase(ConfigDatabase configdb, Platform platform) {
@@ -86,6 +89,14 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
                 return null;
             }
         }.run(ds);
+
+        conflicts = new XerialConflictsDatabase(ds);
+        conflicts.open();
+    }
+
+    @Override
+    public XerialConflictsDatabase getConflictsDatabase() {
+        return conflicts;
     }
 
     @Override
@@ -271,4 +282,5 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
         }
         return count;
     }
+
 }

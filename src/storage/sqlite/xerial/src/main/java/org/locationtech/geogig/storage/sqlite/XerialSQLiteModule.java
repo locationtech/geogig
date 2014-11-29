@@ -12,7 +12,6 @@ package org.locationtech.geogig.storage.sqlite;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,6 @@ public class XerialSQLiteModule extends AbstractModule {
         bind(ConfigDatabase.class).to(XerialConfigDatabase.class).in(Scopes.SINGLETON);
         bind(ObjectDatabase.class).to(XerialObjectDatabase.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).to(XerialGraphDatabase.class).in(Scopes.SINGLETON);
-        bind(StagingDatabase.class).to(XerialStagingDatabase.class).in(Scopes.SINGLETON);
     }
 
 }

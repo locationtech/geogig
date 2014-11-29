@@ -36,7 +36,8 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.di.Singleton;
-import org.locationtech.geogig.storage.StagingDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -75,12 +76,9 @@ public class Index implements StagingArea {
         this.context = context;
     }
 
-    /**
-     * @return the staging database.
-     */
     @Override
-    public StagingDatabase getDatabase() {
-        return context.stagingDatabase();
+    public ConflictsDatabase conflictsDatabase() {
+        return context.conflictsDatabase();
     }
 
     /**
@@ -91,7 +89,7 @@ public class Index implements StagingArea {
     @Override
     public void updateStageHead(ObjectId newTree) {
         context.command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(newTree).call();
-        getDatabase().removeConflicts(null);
+        conflictsDatabase().removeConflicts(null);
     }
 
     /**
@@ -107,7 +105,7 @@ public class Index implements StagingArea {
 
         if (stageTreeId.isPresent()) {
             if (!stageTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
-                stageTree = context.stagingDatabase().getTree(stageTreeId.get());
+                stageTree = context.objectDatabase().getTree(stageTreeId.get());
             }
         } else {
             // Stage tree was not resolved, update it to the head.
@@ -129,7 +127,7 @@ public class Index implements StagingArea {
         Supplier<RevTreeBuilder> supplier = new Supplier<RevTreeBuilder>() {
             @Override
             public RevTreeBuilder get() {
-                return getTree().builder(getDatabase());
+                return getTree().builder(context.objectDatabase());
             }
         };
         return Suppliers.memoize(supplier);
@@ -142,8 +140,8 @@ public class Index implements StagingArea {
      */
     @Override
     public Optional<Node> findStaged(final String path) {
-        Optional<NodeRef> entry = context.command(FindTreeChild.class).setIndex(true)
-                .setParent(getTree()).setChildPath(path).call();
+        Optional<NodeRef> entry = context.command(FindTreeChild.class).setParent(getTree())
+                .setChildPath(path).call();
         if (entry.isPresent()) {
             return Optional.of(entry.get().getNode());
         } else {
@@ -179,7 +177,7 @@ public class Index implements StagingArea {
         Map<String, RevTreeBuilder> parentTress = Maps.newHashMap();
         Map<String, ObjectId> parentMetadataIds = Maps.newHashMap();
         Set<String> removedTrees = Sets.newHashSet();
-        StagingDatabase database = getDatabase();
+        ConflictsDatabase conflictsDb = conflictsDatabase();
         while (unstaged.hasNext()) {
             final DiffEntry diff = unstaged.next();
             final String fullPath = diff.oldPath() == null ? diff.newPath() : diff.oldPath();
@@ -224,11 +222,12 @@ public class Index implements StagingArea {
                 parentTree.put(node);
             }
 
-            database.removeConflict(null, fullPath);
+            conflictsDb.removeConflict(null, fullPath);
         }
 
         ObjectId newRootTree = currentIndexHead.getId();
 
+        ObjectDatabase objectDatabase = context.objectDatabase();
         for (Map.Entry<String, RevTreeBuilder> entry : parentTress.entrySet()) {
             String changedTreePath = entry.getKey();
             RevTreeBuilder changedTreeBuilder = entry.getValue();
@@ -236,14 +235,14 @@ public class Index implements StagingArea {
             ObjectId parentMetadataId = parentMetadataIds.get(changedTreePath);
             if (NodeRef.ROOT.equals(changedTreePath)) {
                 // root
-                database.put(changedTree);
+                objectDatabase.put(changedTree);
                 newRootTree = changedTree.getId();
             } else {
                 // parentMetadataId = parentMetadataId == null ?
                 Supplier<RevTreeBuilder> rootTreeSupplier = getTreeSupplier();
                 newRootTree = context.command(WriteBack.class).setAncestor(rootTreeSupplier)
                         .setChildPath(changedTreePath).setMetadataId(parentMetadataId)
-                        .setToIndex(true).setTree(changedTree).call();
+                        .setTree(changedTree).call();
             }
             updateStageHead(newRootTree);
         }
@@ -265,9 +264,9 @@ public class Index implements StagingArea {
         if (parentBuilder == null) {
             ObjectId parentMetadataId = null;
             if (NodeRef.ROOT.equals(parentPath)) {
-                parentBuilder = currentIndexHead.builder(getDatabase());
+                parentBuilder = currentIndexHead.builder(context.objectDatabase());
             } else {
-                Optional<NodeRef> parentRef = context.command(FindTreeChild.class).setIndex(true)
+                Optional<NodeRef> parentRef = context.command(FindTreeChild.class)
                         .setParent(currentIndexHead).setChildPath(parentPath).call();
 
                 if (parentRef.isPresent()) {
@@ -275,8 +274,8 @@ public class Index implements StagingArea {
                 }
 
                 parentBuilder = context.command(FindOrCreateSubtree.class)
-                        .setParent(Suppliers.ofInstance(Optional.of(getTree()))).setIndex(true)
-                        .setChildPath(parentPath).call().builder(getDatabase());
+                        .setParent(Suppliers.ofInstance(Optional.of(getTree())))
+                        .setChildPath(parentPath).call().builder(context.objectDatabase());
             }
             parentTress.put(parentPath, parentBuilder);
             if (parentMetadataId != null) {
@@ -312,11 +311,12 @@ public class Index implements StagingArea {
 
     @Override
     public int countConflicted(String pathFilter) {
-        return getDatabase().getConflicts(null, pathFilter).size();
+        return conflictsDatabase().getConflicts(null, pathFilter).size();
     }
 
     @Override
     public List<Conflict> getConflicted(@Nullable String pathFilter) {
-        return getDatabase().getConflicts(null, pathFilter);
+        return conflictsDatabase().getConflicts(null, pathFilter);
     }
+
 }

@@ -20,28 +20,25 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.ObjectDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
 /**
- * Staging database based on Xerial SQLite jdbc driver.
+ * Conflicts database based on Xerial SQLite jdbc driver.
  * 
  * @author Justin Deoliveira, Boundless
  */
-public class XerialStagingDatabase extends SQLiteStagingDatabase<DataSource> {
+class XerialConflictsDatabase extends SQLiteConflictsDatabase<DataSource> {
 
-    final static Logger LOG = LoggerFactory.getLogger(XerialStagingDatabase.class);
+    final static Logger LOG = LoggerFactory.getLogger(XerialConflictsDatabase.class);
 
     final static String CONFLICTS = "conflicts";
 
     @Inject
-    public XerialStagingDatabase(ObjectDatabase repoDb, ConfigDatabase configdb, Platform platform) {
-        super(repoDb, new XerialObjectDatabase(configdb, platform, "stage"), configdb, platform);
+    public XerialConflictsDatabase(DataSource ds) {
+        super(ds);
     }
 
     @Override

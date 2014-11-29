@@ -23,12 +23,10 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.plumbing.WriteTree;
 import org.locationtech.geogig.api.plumbing.WriteTree2;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.repository.StagingArea;
@@ -79,71 +77,6 @@ public class IndexTest extends RepositoryTestCase {
         assertNotNull(oId1);
         assertNotNull(oId2);
         assertFalse(oId1.equals(oId2));
-    }
-
-    @Test
-    public void testWriteTree() throws Exception {
-
-        insertAndAdd(points1);
-        insertAndAdd(lines1);
-
-        // this new root tree must exist on the repo db, but is not set as the current head. In
-        // fact, it is headless, as there's no commit pointing to it. CommitOp does that.
-        ObjectId newRootTreeId = geogig.command(WriteTree.class)
-                .setOldRoot(tree(repo.getHead().get().getObjectId())).call();
-
-        assertNotNull(newRootTreeId);
-        assertFalse(repo.getRootTreeId().equals(newRootTreeId));
-        // but the index staged root shall be pointing to it
-        // assertEquals(newRootTreeId, index.getStaged().getId());
-
-        RevTree tree = repo.getTree(newRootTreeId);
-        // assertEquals(2, tree.size().intValue());
-
-        String path = appendChild(pointsName, points1.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(tree).setChildPath(path).call()
-                .isPresent());
-
-        path = appendChild(linesName, lines1.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(tree).setChildPath(path).call()
-                .isPresent());
-
-        // simulate a commit so the repo head points to this new tree
-        ObjectInserter objectInserter = repo.newObjectInserter();
-        List<ObjectId> parents = ImmutableList.of();
-
-        RevCommit commit = new CommitBuilder(geogig.getPlatform()).setTreeId(newRootTreeId)
-                .setParentIds(parents).build();
-        ObjectId commitId = commit.getId();
-
-        objectInserter.insert(commit);
-        Optional<Ref> newHead = geogig.command(UpdateRef.class).setName("refs/heads/master")
-                .setNewValue(commitId).call();
-        assertTrue(newHead.isPresent());
-
-        WorkingTree workTree = repo.workingTree();
-        workTree.delete(linesName, lines1.getIdentifier().getID());
-        geogig.command(AddOp.class).call();
-
-        newRootTreeId = geogig.command(WriteTree2.class).setOldRoot(tree(newRootTreeId)).call(); // newRootTreeId
-                                                                                                 // =
-                                                                                                 // index.writeTree(newRootTreeId,
-                                                                                                 // new
-                                                                                                 // NullProgressListener());
-
-        assertNotNull(newRootTreeId);
-        assertFalse(repo.getRootTreeId().equals(newRootTreeId));
-
-        tree = repo.getTree(newRootTreeId);
-
-        path = appendChild(pointsName, points1.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(tree).setChildPath(path).call()
-                .isPresent());
-
-        path = appendChild(linesName, lines1.getIdentifier().getID());
-        assertFalse(repo.command(FindTreeChild.class).setParent(tree).setChildPath(path).call()
-                .isPresent());
-
     }
 
     private static class TreeNameFilter implements Predicate<NodeRef> {

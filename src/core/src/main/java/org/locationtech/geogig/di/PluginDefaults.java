@@ -12,17 +12,15 @@ package org.locationtech.geogig.di;
 import com.google.common.base.Optional;
 
 public final class PluginDefaults {
-    private final Optional<VersionedFormat> refs, objects, staging, graph;
+    private final Optional<VersionedFormat> refs, objects, graph;
 
     public PluginDefaults() {
-        refs = objects = staging = graph = Optional.absent();
+        refs = objects = graph = Optional.absent();
     }
 
-    public PluginDefaults(VersionedFormat objects, VersionedFormat staging, VersionedFormat refs,
-            VersionedFormat graph) {
+    public PluginDefaults(VersionedFormat objects, VersionedFormat refs, VersionedFormat graph) {
         this.refs = Optional.of(refs);
         this.objects = Optional.of(objects);
-        this.staging = Optional.of(staging);
         this.graph = Optional.of(graph);
     }
 
@@ -32,10 +30,6 @@ public final class PluginDefaults {
 
     public Optional<VersionedFormat> getObjects() {
         return objects;
-    }
-
-    public Optional<VersionedFormat> getStaging() {
-        return staging;
     }
 
     public Optional<VersionedFormat> getGraph() {

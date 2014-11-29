@@ -280,7 +280,6 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
     private void addDefaults(PluginDefaults defaults, Map<String, String> configProps) {
         Optional<VersionedFormat> refs = defaults.getRefs();
         Optional<VersionedFormat> objects = defaults.getObjects();
-        Optional<VersionedFormat> staging = defaults.getStaging();
         Optional<VersionedFormat> graph = defaults.getGraph();
         if (refs.isPresent()) {
             configProps.put("storage.refs", refs.get().getFormat());
@@ -289,10 +288,6 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         if (objects.isPresent()) {
             configProps.put("storage.objects", objects.get().getFormat());
             configProps.put(objects.get().getFormat() + ".version", objects.get().getVersion());
-        }
-        if (staging.isPresent()) {
-            configProps.put("storage.staging", staging.get().getFormat());
-            configProps.put(staging.get().getFormat() + ".version", staging.get().getVersion());
         }
         if (graph.isPresent()) {
             configProps.put("storage.graph", graph.get().getFormat());

@@ -238,7 +238,7 @@ public class MergeFeatureResource extends Resource {
                 SimpleFeature feature = featureBuilder
                         .buildFeature(NodeRef.nodeFromPath(featureId));
                 RevFeature revFeature = RevFeatureBuilder.build(feature);
-                ggit.getRepository().stagingDatabase().put(revFeature);
+                ggit.getRepository().objectDatabase().put(revFeature);
 
                 getResponse().setEntity(
                         new StringRepresentation(revFeature.getId().toString(),

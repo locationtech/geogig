@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.IniRepositoryFilter;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
@@ -245,11 +244,6 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
                 WriteTree writeTree = localRepository.command(WriteTree.class)
                         .setOldRoot(Suppliers.ofInstance(rootTree))
                         .setDiffSupplier(Suppliers.ofInstance((Iterator<DiffEntry>) it));
-
-                if (changes.isAutoIngesting()) {
-                    // the iterator already ingests objects into the ObjectDatabase
-                    writeTree.dontMoveObjects();
-                }
 
                 ObjectId newTreeId = writeTree.call();
 

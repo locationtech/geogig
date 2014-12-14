@@ -48,7 +48,7 @@ public class ObjectFunnels {
         @Override
         public void funnel(RevObject object) throws IOException {
             out.write(object.getId().getRawValue());
-            serializer.createObjectWriter(object.getType()).write(object, out);
+            serializer.write(object, out);
         }
 
         @Override
@@ -82,7 +82,7 @@ public class ObjectFunnels {
         public void funnel(RevObject object) throws IOException {
             OutputStream out = getCurrentTarget();
             out.write(object.getId().getRawValue());
-            serializer.createObjectWriter(object.getType()).write(object, out);
+            serializer.write(object, out);
             out.flush();
         }
 

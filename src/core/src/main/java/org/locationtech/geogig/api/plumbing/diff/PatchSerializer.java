@@ -27,10 +27,6 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.storage.ObjectReader;
-import org.locationtech.geogig.storage.ObjectWriter;
 import org.locationtech.geogig.storage.text.TextSerializationFactory;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -50,7 +46,7 @@ import com.google.common.collect.Maps;
  */
 public class PatchSerializer {
 
-    private static TextSerializationFactory factory = new TextSerializationFactory();
+    private static TextSerializationFactory serializer = new TextSerializationFactory();
 
     /**
      * Creates a patch object to apply on a GeoGig working tree
@@ -91,7 +87,7 @@ public class PatchSerializer {
     }
 
     private static void addElement(List<String> lines, Patch patch,
-            Map<String, RevFeatureType> featureTypes) {
+            Map<String, RevFeatureType> featureTypes) throws IOException {
         String[] headerTokens = lines.get(0).split("\t");
         if (headerTokens.length == 4 || headerTokens.length == 3) {// feature or feature type
                                                                    // modified // modification
@@ -124,8 +120,7 @@ public class PatchSerializer {
                     RevFeatureType revFeatureType;
                     revFeatureType = featureTypes.get(featureTypeId);
                     FeatureBuilder featureBuilder = new FeatureBuilder(revFeatureType);
-                    ObjectReader<RevFeature> reader = factory.createFeatureReader();
-                    RevFeature revFeature = reader.read(null, stream);
+                    RevFeature revFeature = (RevFeature) serializer.read(null, stream);
                     Feature feature = featureBuilder.build(NodeRef.nodeFromPath(fullPath),
                             revFeature);
                     if (operation.equals("R")) {
@@ -142,8 +137,7 @@ public class PatchSerializer {
             String element = Joiner.on("\n").join(lines);
             ByteArrayInputStream stream = new ByteArrayInputStream(element.getBytes(Charsets.UTF_8));
             String[] tokens = lines.get(1).split("\t");
-            ObjectReader<RevFeatureType> reader = factory.createFeatureTypeReader();
-            RevFeatureType featureType = reader.read(null, stream);
+            RevFeatureType featureType = (RevFeatureType) serializer.read(null, stream);
             featureTypes.put(featureType.getId().toString(), featureType);
         } else {
             throw new IllegalArgumentException("Wrong patch content: " + lines.get(0));
@@ -167,22 +161,19 @@ public class PatchSerializer {
         StringBuilder sb = new StringBuilder();
         List<RevFeatureType> featureTypes = patch.getFeatureTypes();
         for (RevFeatureType featureType : featureTypes) {
-            ObjectWriter<RevObject> writer = factory.createObjectWriter(TYPE.FEATURETYPE);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            writer.write(featureType, output);
+            serializer.write(featureType, output);
             sb.append(output.toString());
             sb.append('\n');
         }
 
-        TextSerializationFactory factory = new TextSerializationFactory();
         for (FeatureInfo feature : patch.getAddedFeatures()) {
             String path = feature.getPath();
             sb.append("A\t" + path + "\t" + feature.getFeatureType().getId() + "\n");
-            ObjectWriter<RevObject> writer = factory.createObjectWriter(TYPE.FEATURE);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
             try {
-                writer.write(revFeature, output);
+                serializer.write(revFeature, output);
             } catch (IOException e) {
             }
             sb.append(output.toString());
@@ -191,11 +182,10 @@ public class PatchSerializer {
         for (FeatureInfo feature : patch.getRemovedFeatures()) {
             String path = feature.getPath();
             sb.append("R\t" + path + "\t" + feature.getFeatureType().getId() + "\n");
-            ObjectWriter<RevObject> writer = factory.createObjectWriter(TYPE.FEATURE);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
             try {
-                writer.write(revFeature, output);
+                serializer.write(revFeature, output);
             } catch (IOException e) {
             }
             sb.append(output.toString());

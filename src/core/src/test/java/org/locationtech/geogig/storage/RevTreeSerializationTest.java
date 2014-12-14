@@ -32,7 +32,7 @@ import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 
 public abstract class RevTreeSerializationTest extends Assert {
-    protected ObjectSerializingFactory factory = getObjectSerializingFactory();
+    protected ObjectSerializingFactory serializer = getObjectSerializingFactory();
 
     protected abstract ObjectSerializingFactory getObjectSerializingFactory();
 
@@ -83,25 +83,25 @@ public abstract class RevTreeSerializationTest extends Assert {
     }
 
     @Test
-    public void testRoundTripLeafTree() {
+    public void testRoundTripLeafTree() throws IOException {
         RevTree roundTripped = read(tree1_leaves.getId(), write(tree1_leaves));
         assertTreesAreEqual(tree1_leaves, roundTripped);
     }
 
     @Test
-    public void testRoundTripInternalTree() {
+    public void testRoundTripInternalTree() throws IOException {
         RevTree roundTripped = read(tree2_internal.getId(), write(tree2_internal));
         assertTreesAreEqual(tree2_internal, roundTripped);
     }
 
     @Test
-    public void testRoundTripBuckets() {
+    public void testRoundTripBuckets() throws IOException {
         RevTree roundTripped = read(tree3_buckets.getId(), write(tree3_buckets));
         assertTreesAreEqual(tree3_buckets, roundTripped);
     }
 
     @Test
-    public void testRoundTripBucketsFull() {
+    public void testRoundTripBucketsFull() throws IOException {
 
         ObjectId id = ObjectId.forString("fake");
         long size = 100000000;
@@ -126,19 +126,19 @@ public abstract class RevTreeSerializationTest extends Assert {
     }
 
     @Test
-    public void testRoundTripSpatialLeafTree() {
+    public void testRoundTripSpatialLeafTree() throws IOException {
         RevTree roundTripped = read(tree4_spatial_leaves.getId(), write(tree4_spatial_leaves));
         assertTreesAreEqual(tree4_spatial_leaves, roundTripped);
     }
 
     @Test
-    public void testRoundTripSpatialInternalTree() {
+    public void testRoundTripSpatialInternalTree() throws IOException {
         RevTree roundTripped = read(tree5_spatial_internal.getId(), write(tree5_spatial_internal));
         assertTreesAreEqual(tree5_spatial_internal, roundTripped);
     }
 
     @Test
-    public void testRoundTripSpatialBuckets() {
+    public void testRoundTripSpatialBuckets() throws IOException {
         RevTree roundTripped = read(tree6_spatial_buckets.getId(), write(tree6_spatial_buckets));
         assertTreesAreEqual(tree6_spatial_buckets, roundTripped);
     }
@@ -146,20 +146,16 @@ public abstract class RevTreeSerializationTest extends Assert {
     private byte[] write(RevTree tree) {
         try {
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            ObjectWriter<RevTree> treeWriter = factory
-                    .<RevTree> createObjectWriter(RevObject.TYPE.TREE);
-            treeWriter.write(tree, bout);
+            serializer.write(tree, bout);
             return bout.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private RevTree read(ObjectId id, byte[] bytes) {
+    private RevTree read(ObjectId id, byte[] bytes) throws IOException {
         ByteArrayInputStream bin = new ByteArrayInputStream(bytes);
-        ObjectReader<RevTree> treeReader = factory
-                .<RevTree> createObjectReader(RevObject.TYPE.TREE);
-        return treeReader.read(id, bin);
+        return (RevTree) serializer.read(id, bin);
     }
 
     private void assertTreesAreEqual(RevTree a, RevTree b) {

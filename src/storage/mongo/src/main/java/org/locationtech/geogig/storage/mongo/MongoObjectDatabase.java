@@ -34,7 +34,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.ObjectWriter;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 
 import com.google.common.base.Functions;
@@ -101,7 +100,7 @@ public class MongoObjectDatabase implements ObjectDatabase {
         ByteArrayInputStream byteStream = new ByteArrayInputStream(buffer);
         RevObject result;
         try {
-            result = serializers.createObjectReader().read(id, new LZFInputStream(byteStream));
+            result = serializers.read(id, new LZFInputStream(byteStream));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -109,11 +108,10 @@ public class MongoObjectDatabase implements ObjectDatabase {
     }
 
     private byte[] toBytes(RevObject object) {
-        ObjectWriter<RevObject> writer = serializers.createObjectWriter(object.getType());
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         LZFOutputStream cOut = new LZFOutputStream(byteStream);
         try {
-            writer.write(object, cOut);
+            serializers.write(object, cOut);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

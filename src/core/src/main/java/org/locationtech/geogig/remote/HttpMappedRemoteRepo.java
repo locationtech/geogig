@@ -37,7 +37,6 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.ObjectWriter;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 
 import com.google.common.base.Optional;
@@ -370,10 +369,8 @@ class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
                 connection.setDoInput(true);
                 out = connection.getOutputStream();
                 // pack the commit object
-                final ObjectSerializingFactory factory = DataStreamSerializationFactoryV1.INSTANCE;
-                final ObjectWriter<RevCommit> commitWriter = factory
-                        .createObjectWriter(TYPE.COMMIT);
-                commitWriter.write(commit, out);
+                final ObjectSerializingFactory writer = DataStreamSerializationFactoryV1.INSTANCE;
+                writer.write(commit, out);
 
                 // write the new parents
                 out.write(newParents.size());

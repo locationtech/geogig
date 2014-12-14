@@ -16,13 +16,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -139,76 +138,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class TextSerializationFactory implements ObjectSerializingFactory {
 
-    // protected static final String NULL = "null";
-
-    @Override
-    public ObjectReader<RevCommit> createCommitReader() {
-        return COMMIT_READER;
-    }
-
-    @Override
-    public ObjectReader<RevTree> createRevTreeReader() {
-        return TREE_READER;
-    }
-
-    @Override
-    public ObjectReader<RevFeature> createFeatureReader() {
-        return FEATURE_READER;
-    }
-
-    @Override
-    public ObjectReader<RevFeature> createFeatureReader(Map<String, Serializable> hints) {
-        // TODO
-        return FEATURE_READER;
-    }
-
-    @Override
-    public ObjectReader<RevFeatureType> createFeatureTypeReader() {
-        return FEATURETYPE_READER;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends RevObject> ObjectWriter<T> createObjectWriter(TYPE type) {
-        switch (type) {
-        case COMMIT:
-            return (ObjectWriter<T>) COMMIT_WRITER;
-        case FEATURE:
-            return (ObjectWriter<T>) FEATURE_WRITER;
-        case FEATURETYPE:
-            return (ObjectWriter<T>) FEATURETYPE_WRITER;
-        case TREE:
-            return (ObjectWriter<T>) TREE_WRITER;
-        case TAG:
-            return (ObjectWriter<T>) TAG_WRITER;
-        default:
-            throw new IllegalArgumentException("Unknown or unsupported object type: " + type);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends RevObject> ObjectReader<T> createObjectReader(TYPE type) {
-        switch (type) {
-        case COMMIT:
-            return (ObjectReader<T>) COMMIT_READER;
-        case FEATURE:
-            return (ObjectReader<T>) FEATURE_READER;
-        case FEATURETYPE:
-            return (ObjectReader<T>) FEATURETYPE_READER;
-        case TREE:
-            return (ObjectReader<T>) TREE_READER;
-        case TAG:
-            return (ObjectReader<T>) TAG_READER;
-        default:
-            throw new IllegalArgumentException("Unknown or unsupported object type: " + type);
-        }
-    }
-
-    @Override
-    public ObjectReader<RevObject> createObjectReader() {
-        return OBJECT_READER;
-    }
+    public static final TextSerializationFactory INSTANCE = new TextSerializationFactory();
 
     /**
      * Abstract text writer that provides print methods on a {@link Writer} to consistently write
@@ -572,7 +502,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             ObjectId metadataId = ObjectId.valueOf(tokens.get(4));
             Envelope bbox = parseBBox(tokens.get(5));
 
-            org.locationtech.geogig.api.Node ref = org.locationtech.geogig.api.Node.create(name, id, metadataId, type, bbox);
+            org.locationtech.geogig.api.Node ref = org.locationtech.geogig.api.Node.create(name,
+                    id, metadataId, type, bbox);
 
             return ref;
 
@@ -950,4 +881,32 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         return line;
     }
 
+    private static final EnumMap<RevObject.TYPE, TextWriter<? extends RevObject>> serializers = new EnumMap<>(
+            RevObject.TYPE.class);
+    static {
+        serializers.put(TYPE.COMMIT, COMMIT_WRITER);
+        serializers.put(TYPE.FEATURE, FEATURE_WRITER);
+        serializers.put(TYPE.FEATURETYPE, FEATURETYPE_WRITER);
+        serializers.put(TYPE.TAG, TAG_WRITER);
+        serializers.put(TYPE.TREE, TREE_WRITER);
+    }
+
+    @Override
+    public RevObject read(ObjectId id, InputStream in) throws IOException {
+        return OBJECT_READER.read(id, in);
+    }
+
+    @Override
+    public void write(RevObject o, OutputStream out) throws IOException {
+        writer(o.getType()).write(o, out);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends RevObject> TextWriter<T> writer(TYPE type) {
+        TextWriter<? extends RevObject> serializer = serializers.get(type);
+        if (serializer == null) {
+            throw new UnsupportedOperationException("No serializer for " + type);
+        }
+        return (TextWriter<T>) serializer;
+    }
 }

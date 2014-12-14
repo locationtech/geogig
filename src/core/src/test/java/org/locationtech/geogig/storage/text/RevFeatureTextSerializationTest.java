@@ -18,10 +18,8 @@ import java.util.UUID;
 
 import org.junit.Test;
 import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.storage.FieldType;
-import org.locationtech.geogig.storage.ObjectReader;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.RevFeatureSerializationTest;
 import org.opengis.feature.Feature;
@@ -54,9 +52,8 @@ public class RevFeatureTextSerializationTest extends RevFeatureSerializationTest
         writer.write(FieldType.FLOAT.name() + "\tNUMBER" + "\n");
         writer.flush();
 
-        ObjectReader<RevFeature> reader = factory.createFeatureReader();
         try {
-            reader.read(ObjectId.forString("ID_STRING"),
+            serializer.read(ObjectId.forString("ID_STRING"),
                     new ByteArrayInputStream(out.toByteArray()));
             fail();
         } catch (Exception e) {
@@ -71,25 +68,11 @@ public class RevFeatureTextSerializationTest extends RevFeatureSerializationTest
         writer.flush();
 
         try {
-            reader.read(ObjectId.forString("ID_STRING"),
+            serializer.read(ObjectId.forString("ID_STRING"),
                     new ByteArrayInputStream(out.toByteArray()));
             fail();
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("Wrong type name"));
-        }
-
-        // a wrong category
-        out = new ByteArrayOutputStream();
-        writer = new OutputStreamWriter(out, "UTF-8");
-        writer.write(TYPE.COMMIT.name() + "\n");
-        writer.flush();
-        reader = factory.createFeatureReader();
-        try {
-            reader.read(ObjectId.forString("ID_STRING"),
-                    new ByteArrayInputStream(out.toByteArray()));
-            fail();
-        } catch (Exception e) {
-            assertTrue(e.getMessage().equals("Wrong type: COMMIT"));
         }
 
     }

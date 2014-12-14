@@ -193,8 +193,8 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
                     raw = objects.get(id);
                     if (raw != null) {
                         try {
-                            found = serializationFactory.createObjectReader().read(id,
-                                    new LZFInputStream(new ByteArrayInputStream(raw)));
+                            found = serializer.read(id, new LZFInputStream(
+                                    new ByteArrayInputStream(raw)));
                         } catch (IOException e) {
                             throw Throwables.propagate(e);
                         }

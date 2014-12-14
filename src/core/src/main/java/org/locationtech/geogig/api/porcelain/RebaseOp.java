@@ -547,8 +547,12 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
         String commitString = Joiner.on("\n").join(lines.subList(1, lines.size()));
         ByteArrayInputStream stream = new ByteArrayInputStream(
                 commitString.getBytes(Charsets.UTF_8));
-        ObjectReader<RevCommit> reader = new TextSerializationFactory().createCommitReader();
-        RevCommit revCommit = reader.read(id, stream);
+        RevCommit revCommit;
+        try {
+            revCommit = (RevCommit) TextSerializationFactory.INSTANCE.read(id, stream);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to parse commit " + commitString, e);
+        }
         return revCommit;
 
     }

@@ -737,7 +737,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     private class CursorRevObjectIterator extends AbstractIterator<RevObject> implements Closeable {
 
-        private final ObjectReader<RevObject> reader = serializationFactory.createObjectReader();
+        private final ObjectSerializingFactory reader = JEObjectDatabase.this.serializer;
 
         @Nullable
         private Transaction transaction;

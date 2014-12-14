@@ -142,7 +142,7 @@ public final class BinaryPackedChanges {
                     out.write(CHUNK_TYPE.METADATA_OBJECT_AND_DIFF_ENTRY.value());
                     RevObject metadata = objectDatabase.get(metadataId);
                     writeObjectId(metadataId, out, oidbuffer);
-                    serializer.createObjectWriter(metadata.getType()).write(metadata, out);
+                    serializer.write(metadata, out);
                     writtenMetadataIds.add(metadataId);
                     objectCount++;
                 }
@@ -150,7 +150,7 @@ public final class BinaryPackedChanges {
                 ObjectId objectId = newObject.objectId();
                 writeObjectId(objectId, out, oidbuffer);
                 RevObject object = objectDatabase.get(objectId);
-                serializer.createObjectWriter(object.getType()).write(object, out);
+                serializer.write(object, out);
                 objectCount++;
             }
             DataOutput dataOut = new DataOutputStream(out);
@@ -289,14 +289,14 @@ public final class BinaryPackedChanges {
                 break;
             case OBJECT_AND_DIFF_ENTRY: {
                 ObjectId id = readObjectId(data);
-                revObj = serializer.createObjectReader().read(id, in);
+                revObj = serializer.read(id, in);
             }
                 break;
             case METADATA_OBJECT_AND_DIFF_ENTRY: {
                 ObjectId mdid = readObjectId(data);
-                metadata = serializer.createObjectReader().read(mdid, in);
+                metadata = serializer.read(mdid, in);
                 ObjectId id = readObjectId(data);
-                revObj = serializer.createObjectReader().read(id, in);
+                revObj = serializer.read(id, in);
             }
                 break;
             case FILTER_FLAG: {

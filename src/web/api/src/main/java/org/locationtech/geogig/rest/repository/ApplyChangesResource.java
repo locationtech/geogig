@@ -80,9 +80,8 @@ public class ApplyChangesResource extends Finder {
                 final Repository repository = ggit.getRepository();
 
                 // read in commit object
-                final ObjectSerializingFactory factory = DataStreamSerializationFactoryV1.INSTANCE;
-                ObjectReader<RevCommit> reader = factory.createCommitReader();
-                RevCommit commit = reader.read(ObjectId.NULL, input); // I don't need to know the
+                final ObjectSerializingFactory serializer = DataStreamSerializationFactoryV1.INSTANCE;
+                RevCommit commit = (RevCommit) serializer.read(ObjectId.NULL, input); // I don't need to know the
                                                                       // original ObjectId
 
                 // read in parents

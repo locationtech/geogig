@@ -51,16 +51,14 @@ public final class BinaryPackedObjects {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryPackedObjects.class);
 
-    private final ObjectSerializingFactory factory;
+    private final ObjectSerializingFactory marshaller;
 
-    private final ObjectReader<RevObject> objectReader;
 
     private final ObjectDatabase database;
 
     public BinaryPackedObjects(ObjectDatabase database) {
         this.database = database;
-        this.factory = DataStreamSerializationFactoryV1.INSTANCE;
-        this.objectReader = factory.createObjectReader();
+        this.marshaller = DataStreamSerializationFactoryV1.INSTANCE;
     }
 
     /**
@@ -241,7 +239,7 @@ public final class BinaryPackedObjects {
             protected RevObject computeNext() {
                 try {
                     ObjectId id = readObjectId(in);
-                    RevObject revObj = objectReader.read(id, in);
+                    RevObject revObj = marshaller.read(id, in);
                     return revObj;
                 } catch (EOFException eof) {
                     return endOfData();

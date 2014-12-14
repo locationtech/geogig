@@ -21,14 +21,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevObject.TYPE;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
 
 import com.vividsolutions.jts.geom.Polygon;
 
 public abstract class RevFeatureTypeSerializationTest extends Assert {
-    private ObjectSerializingFactory factory = getObjectSerializingFactory();
+    private ObjectSerializingFactory serializer = getObjectSerializingFactory();
 
     private String namespace = "http://geoserver.org/test";
 
@@ -51,17 +50,15 @@ public abstract class RevFeatureTypeSerializationTest extends Assert {
     @Test
     public void testSerialization() throws Exception {
         RevFeatureType revFeatureType = RevFeatureTypeImpl.build(featureType);
-        ObjectWriter<RevFeatureType> writer = factory.createObjectWriter(TYPE.FEATURETYPE);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        writer.write(revFeatureType, output);
+        serializer.write(revFeatureType, output);
 
         byte[] data = output.toByteArray();
         assertTrue(data.length > 0);
 
-        ObjectReader<RevFeatureType> reader = factory.createObjectReader(TYPE.FEATURETYPE);
         ByteArrayInputStream input = new ByteArrayInputStream(data);
-        RevFeatureType rft = reader.read(revFeatureType.getId(), input);
+        RevFeatureType rft = (RevFeatureType) serializer.read(revFeatureType.getId(), input);
 
         assertNotNull(rft);
         SimpleFeatureType serializedFeatureType = (SimpleFeatureType) rft.type();
@@ -85,17 +82,15 @@ public abstract class RevFeatureTypeSerializationTest extends Assert {
         ftb.setName("type");
         SimpleFeatureType ftype = ftb.buildFeatureType();
         RevFeatureType revFeatureType = RevFeatureTypeImpl.build(ftype);
-        ObjectWriter<RevFeatureType> writer = factory.createObjectWriter(TYPE.FEATURETYPE);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        writer.write(revFeatureType, output);
+        serializer.write(revFeatureType, output);
 
         byte[] data = output.toByteArray();
         assertTrue(data.length > 0);
 
-        ObjectReader<RevFeatureType> reader = factory.createObjectReader(TYPE.FEATURETYPE);
         ByteArrayInputStream input = new ByteArrayInputStream(data);
-        RevFeatureType rft = reader.read(revFeatureType.getId(), input);
+        RevFeatureType rft = (RevFeatureType) serializer.read(revFeatureType.getId(), input);
 
         assertNotNull(rft);
         FeatureType serializedFeatureType = rft.type();

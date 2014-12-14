@@ -42,11 +42,11 @@ import com.ning.compress.lzf.LZFOutputStream;
  */
 public abstract class AbstractObjectDatabase implements ObjectDatabase {
 
-    protected ObjectSerializingFactory serializationFactory;
+    protected ObjectSerializingFactory serializer;
 
-    public AbstractObjectDatabase(final ObjectSerializingFactory serializationFactory) {
-        Preconditions.checkNotNull(serializationFactory);
-        this.serializationFactory = serializationFactory;
+    public AbstractObjectDatabase(final ObjectSerializingFactory serializer) {
+        Preconditions.checkNotNull(serializer);
+        this.serializer = serializer;
     }
 
     /**
@@ -93,8 +93,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
         Preconditions.checkNotNull(id, "id");
         checkState(isOpen(), "db is closed");
 
-        final ObjectReader<RevObject> reader = serializationFactory.createObjectReader();
-        return get(id, reader, true);
+        return get(id, true);
     }
 
     @Override
@@ -102,8 +101,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
         Preconditions.checkNotNull(id, "id");
         checkState(isOpen(), "db is closed");
 
-        final ObjectReader<RevObject> reader = serializationFactory.createObjectReader();
-        return get(id, reader, false);
+        return get(id, false);
     }
 
     /**
@@ -121,9 +119,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
         Preconditions.checkNotNull(clazz, "class");
         checkState(isOpen(), "db is closed");
 
-        final ObjectReader<T> reader = serializationFactory.createObjectReader(getType(clazz));
-
-        return get(id, reader, true);
+        return clazz.cast(get(id, true));
     }
 
     @Override
@@ -133,20 +129,19 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
         Preconditions.checkNotNull(clazz, "class");
         checkState(isOpen(), "db is closed");
 
-        final ObjectReader<T> reader = serializationFactory.createObjectReader(getType(clazz));
-
-        return get(id, reader, false);
+        return clazz.cast(get(id, false));
     }
 
-    private <T extends RevObject> T get(final ObjectId id, final ObjectReader<T> reader,
-            boolean failIfNotFound) {
+    private RevObject get(final ObjectId id, boolean failIfNotFound) {
         InputStream raw = getRaw(id, failIfNotFound);
         if (null == raw) {
             return null;
         }
-        T object;
+        RevObject object;
         try {
-            object = reader.read(id, raw);
+            object = serializer.read(id, raw);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         } finally {
             Closeables.closeQuietly(raw);
         }
@@ -244,10 +239,9 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
 
     protected void writeObject(RevObject object, OutputStream target) {
 
-        ObjectWriter<RevObject> writer = serializationFactory.createObjectWriter(object.getType());
         LZFOutputStream cOut = new LZFOutputStream(target);
         try {
-            writer.write(object, cOut);
+            serializer.write(object, cOut);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         } finally {

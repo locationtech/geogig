@@ -30,9 +30,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.EnumMap;
-import java.util.Map;
 
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
@@ -56,8 +54,6 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
 
     public static final DataStreamSerializationFactoryV2 INSTANCE = new DataStreamSerializationFactoryV2();
 
-    private final static ObjectReader<RevObject> OBJECT_READER = new ObjectReaderV2();
-
     private static final EnumMap<TYPE, Serializer<? extends RevObject>> serializers = Maps
             .newEnumMap(TYPE.class);
     static {
@@ -68,6 +64,20 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
         serializers.put(TYPE.TREE, new TreeSerializer());
     }
 
+    @Override
+    public RevObject read(ObjectId id, InputStream rawData) throws IOException {
+        DataInput in = new DataInputStream(rawData);
+        final TYPE type = readHeader(in);
+        Serializer<RevObject> serializer = DataStreamSerializationFactoryV2.serializer(type);
+        RevObject object = serializer.readBody(id, in);
+        return object;
+    }
+
+    @Override
+    public void write(RevObject o, OutputStream out) throws IOException {
+        serializer(o.getType()).write(o, out);
+    }
+
     @SuppressWarnings("unchecked")
     private static <T extends RevObject> Serializer<T> serializer(TYPE type) {
         Serializer<? extends RevObject> serializer = serializers.get(type);
@@ -75,46 +85,6 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
             throw new UnsupportedOperationException("No serializer for " + type);
         }
         return (Serializer<T>) serializer;
-    }
-
-    @Override
-    public ObjectReader<RevCommit> createCommitReader() {
-        return serializer(TYPE.COMMIT);
-    }
-
-    @Override
-    public ObjectReader<RevTree> createRevTreeReader() {
-        return serializer(TYPE.TREE);
-    }
-
-    @Override
-    public ObjectReader<RevFeature> createFeatureReader() {
-        return serializer(TYPE.FEATURE);
-    }
-
-    @Override
-    public ObjectReader<RevFeature> createFeatureReader(Map<String, Serializable> hints) {
-        return serializer(TYPE.FEATURE);
-    }
-
-    @Override
-    public ObjectReader<RevFeatureType> createFeatureTypeReader() {
-        return serializer(TYPE.FEATURETYPE);
-    }
-
-    @Override
-    public <T extends RevObject> ObjectWriter<T> createObjectWriter(TYPE type) {
-        return serializer(type);
-    }
-
-    @Override
-    public <T extends RevObject> ObjectReader<T> createObjectReader(TYPE type) {
-        return serializer(type);
-    }
-
-    @Override
-    public ObjectReader<RevObject> createObjectReader() {
-        return OBJECT_READER;
     }
 
     /**
@@ -144,8 +114,8 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
 
         /**
          * Writers must call
-         * {@link FormatCommonV2#writeHeader(java.io.DataOutput, org.locationtech.geogig.api.RevObject.TYPE)},
-         * readers must not, in order for {@link ObjectReaderV2} to be able of parsing the header
+         * {@link FormatCommonV2#writeHeader(java.io.DataOutput, org.locationtech.geogig.api.RevObject.TYPE)}
+         * , readers must not, in order for {@link ObjectReaderV2} to be able of parsing the header
          * and call the appropriate read method.
          */
         @Override
@@ -243,22 +213,4 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
         }
     }
 
-    private static final class ObjectReaderV2 implements ObjectReader<RevObject> {
-        @Override
-        public RevObject read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
-            DataInput in = new DataInputStream(rawData);
-            try {
-                return readData(id, in);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        private RevObject readData(ObjectId id, DataInput in) throws IOException {
-            final TYPE type = readHeader(in);
-            Serializer<RevObject> serializer = DataStreamSerializationFactoryV2.serializer(type);
-            RevObject object = serializer.readBody(id, in);
-            return object;
-        }
-    }
 }

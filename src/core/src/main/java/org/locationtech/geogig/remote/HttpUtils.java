@@ -32,7 +32,7 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.ObjectReader;
+import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,8 +163,7 @@ class HttpUtils {
             // Get Response
             InputStream is = HttpUtils.getResponseStream(connection);
             try {
-                ObjectReader<RevObject> reader = DataStreamSerializationFactoryV1.INSTANCE
-                        .createObjectReader();
+                ObjectSerializingFactory reader = DataStreamSerializationFactoryV1.INSTANCE;
                 RevObject revObject = reader.read(objectId, is);
                 if (localRepository != null) {
                     localRepository.objectDatabase().put(revObject);

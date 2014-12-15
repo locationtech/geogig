@@ -47,20 +47,33 @@
     </dependency>
     
     <dependency>
-		<groupId>org.openstreetmap.osmosis</groupId>
-		<artifactId>osmosis-core</artifactId>
-		<version>${osmosis.version}</version>
-	</dependency>
-	<dependency>
-	  <groupId>org.openstreetmap.osmosis</groupId>
-	  <artifactId>osmosis-xml</artifactId>
-	  <version>${osmosis.version}</version>
-	</dependency>
-	<dependency>
-	  <groupId>org.openstreetmap.osmosis</groupId>
-	  <artifactId>osmosis-pbf</artifactId>
-	  <version>${osmosis.version}</version>
-	</dependency>
+      <groupId>org.openstreetmap.osmosis</groupId>
+      <artifactId>osmosis-core</artifactId>
+      <version>${osmosis.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.woodstox</groupId>
+          <artifactId>woodstox-core-lgpl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- override woodstox-core-lgpl to woodstox-core-asl -->
+    <dependency>
+      <groupId>org.codehaus.woodstox</groupId>
+      <artifactId>woodstox-core-asl</artifactId>
+      <version>4.1.4</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.openstreetmap.osmosis</groupId>
+      <artifactId>osmosis-xml</artifactId>
+      <version>${osmosis.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openstreetmap.osmosis</groupId>
+      <artifactId>osmosis-pbf</artifactId>
+      <version>${osmosis.version}</version>
+    </dependency>
 	
     <dependency>
       <groupId>com.google.inject</groupId>

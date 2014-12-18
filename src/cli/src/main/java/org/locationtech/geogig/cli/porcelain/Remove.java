@@ -23,7 +23,6 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.repository.Repository;
 
 import com.beust.jcommander.Parameter;
@@ -33,7 +32,6 @@ import com.google.common.base.Optional;
 /**
  *
  */
-@ObjectDatabaseReadOnly
 @Parameters(commandNames = "rm", commandDescription = "Remove features or trees")
 public class Remove extends AbstractCommand implements CLICommand {
 
@@ -69,8 +67,8 @@ public class Remove extends AbstractCommand implements CLICommand {
             NodeRef.checkValidPath(pathToRemove);
 
             Optional<NodeRef> node = repository.command(FindTreeChild.class)
-                    .setParent(repository.workingTree().getTree()).setIndex(true)
-                    .setChildPath(pathToRemove).call();
+                    .setParent(repository.workingTree().getTree()).setChildPath(pathToRemove)
+                    .call();
             checkParameter(node.isPresent(), "pathspec '%s' did not match any feature or tree",
                     pathToRemove);
             NodeRef nodeRef = node.get();

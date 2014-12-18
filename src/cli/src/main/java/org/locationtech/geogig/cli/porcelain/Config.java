@@ -28,7 +28,6 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
-import org.locationtech.geogig.cli.annotation.StagingDatabaseReadOnly;
 import org.locationtech.geogig.repository.Hints;
 
 import com.beust.jcommander.Parameter;
@@ -57,7 +56,6 @@ import com.google.common.base.Optional;
  * 
  * @see ConfigOp
  */
-@StagingDatabaseReadOnly
 @ObjectDatabaseReadOnly
 @RequiresRepository(false)
 @Parameters(commandNames = "config", commandDescription = "Get and set repository or global options")

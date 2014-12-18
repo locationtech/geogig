@@ -26,14 +26,11 @@ import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevTag;
 import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.di.Decorator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.collect.AbstractIterator;
@@ -56,29 +53,12 @@ class ObjectDatabaseCacheInterceptor {
         // force use of factory methods
     }
 
-    public static Decorator staging(final Provider<? extends CacheFactory> cacheProvider) {
-
-        return new Decorator() {
-            @Override
-            public boolean canDecorate(Object subject) {
-                return subject instanceof StagingDatabase;
-            }
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public StagingDatabase decorate(Object subject) {
-                Provider<StagingDatabase> indexDb = Providers.of((StagingDatabase) subject);
-                return new CachingStagingDatabase(indexDb, cacheProvider);
-            }
-        };
-    }
-
     public static Decorator objects(final Provider<? extends CacheFactory> cacheProvider) {
 
         return new Decorator() {
             @Override
             public boolean canDecorate(Object subject) {
-                return subject instanceof ObjectDatabase && (!(subject instanceof StagingDatabase));
+                return subject instanceof ObjectDatabase;
             }
 
             @SuppressWarnings("unchecked")
@@ -90,44 +70,6 @@ class ObjectDatabaseCacheInterceptor {
                 return cachingObjectDatabase;
             }
         };
-    }
-
-    private static class CachingStagingDatabase extends CachingObjectDatabase implements
-            StagingDatabase {
-        public CachingStagingDatabase(Provider<StagingDatabase> subject,
-                Provider<? extends CacheFactory> cacheProvider) {
-            super(subject, cacheProvider);
-        }
-
-        @Override
-        public boolean hasConflicts(String namespace) {
-            return ((StagingDatabase) subject.get()).hasConflicts(namespace);
-        }
-
-        @Override
-        public Optional<Conflict> getConflict(String namespace, String path) {
-            return ((StagingDatabase) subject.get()).getConflict(namespace, path);
-        }
-
-        @Override
-        public List<Conflict> getConflicts(String namespace, String pathFilter) {
-            return ((StagingDatabase) subject.get()).getConflicts(namespace, pathFilter);
-        }
-
-        @Override
-        public void addConflict(String namespace, Conflict conflict) {
-            ((StagingDatabase) subject.get()).addConflict(namespace, conflict);
-        }
-
-        @Override
-        public void removeConflict(String namespace, String path) {
-            ((StagingDatabase) subject.get()).removeConflict(namespace, path);
-        }
-
-        @Override
-        public void removeConflicts(String namespace) {
-            ((StagingDatabase) subject.get()).removeConflicts(namespace);
-        }
     }
 
     private static class CachingObjectDatabase extends ForwardingObjectDatabase {

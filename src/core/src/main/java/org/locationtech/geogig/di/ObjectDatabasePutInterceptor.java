@@ -18,7 +18,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -40,8 +39,7 @@ class ObjectDatabasePutInterceptor implements Decorator {
 
     @Override
     public boolean canDecorate(Object subject) {
-        boolean canDecorate = subject instanceof ObjectDatabase
-                && !(subject instanceof StagingDatabase);
+        boolean canDecorate = subject instanceof ObjectDatabase;
         return canDecorate;
     }
 
@@ -80,7 +78,7 @@ class ObjectDatabasePutInterceptor implements Decorator {
         @Override
         public void putAll(Iterator<? extends RevObject> objects, BulkOpListener listener) {
 
-            //final List<RevCommit> addedCommits = Lists.newLinkedList();
+            // final List<RevCommit> addedCommits = Lists.newLinkedList();
 
             final Iterator<? extends RevObject> collectingIterator = Iterators.transform(objects,
                     new Function<RevObject, RevObject>() {
@@ -103,14 +101,14 @@ class ObjectDatabasePutInterceptor implements Decorator {
 
             super.putAll(collectingIterator, listener);
 
-//            if (!addedCommits.isEmpty()) {
-//                GraphDatabase graphDatabase = graphDb.get();
-//                for (RevCommit commit : addedCommits) {
-//                    ObjectId commitId = commit.getId();
-//                    ImmutableList<ObjectId> parentIds = commit.getParentIds();
-//                    graphDatabase.put(commitId, parentIds);
-//                }
-//            }
+            // if (!addedCommits.isEmpty()) {
+            // GraphDatabase graphDatabase = graphDb.get();
+            // for (RevCommit commit : addedCommits) {
+            // ObjectId commitId = commit.getId();
+            // ImmutableList<ObjectId> parentIds = commit.getParentIds();
+            // graphDatabase.put(commitId, parentIds);
+            // }
+            // }
         }
 
     }

@@ -18,7 +18,6 @@ import org.locationtech.geogig.api.plumbing.RebuildGraphOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.annotation.StagingDatabaseReadOnly;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -29,7 +28,6 @@ import com.google.common.collect.ImmutableList;
  * 
  * @see RebuildGraphOp
  */
-@StagingDatabaseReadOnly
 @Parameters(commandNames = "rebuild-graph", commandDescription = "Rebuilds the graph database.")
 public class RebuildGraph extends AbstractCommand implements CLICommand {
 

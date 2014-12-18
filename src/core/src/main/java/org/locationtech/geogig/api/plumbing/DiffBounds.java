@@ -30,8 +30,8 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.DiffSummary;
-import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.geometry.BoundingBox;
@@ -113,11 +113,11 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         RevTree left = resolveTree(leftRefSpec);
         RevTree right = resolveTree(rightRefSpec);
 
-        ObjectDatabase leftSource = resolveSafeDb(leftRefSpec);
-        ObjectDatabase rightSource = resolveSafeDb(rightRefSpec);
+        ObjectDatabase leftSource = objectDatabase();
+        ObjectDatabase rightSource = objectDatabase();
         PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
         CoordinateReferenceSystem crs = resolveCrs();
-        BoundsWalk walk = new BoundsWalk(crs, stagingDatabase());
+        BoundsWalk walk = new BoundsWalk(crs, objectDatabase());
         PreOrderDiffWalk.Consumer consumer = walk;
         if (!pathFilters.isEmpty()) {
             consumer = new PathFilteringDiffConsumer(pathFilters, walk);
@@ -140,25 +140,12 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         return defaultCrs;
     }
 
-    /**
-     * If {@code refSpec} can easily be determined to be on the object database (e.g. its a ref),
-     * then returns the repository object database, otherwise the staging database, just to be safe
-     */
-    private ObjectDatabase resolveSafeDb(String refSpec) {
-        Optional<Ref> ref = command(RefParse.class).setName(refSpec).call();
-        if (ref.isPresent()) {
-            ObjectId id = ref.get().getObjectId();
-            return objectDatabase().exists(id) ? objectDatabase() : stagingDatabase();
-        }
-        return stagingDatabase();
-    }
-
     private RevTree resolveTree(String refSpec) {
 
         Optional<ObjectId> id = command(ResolveTreeish.class).setTreeish(refSpec).call();
         Preconditions.checkState(id.isPresent(), "%s did not resolve to a tree", refSpec);
 
-        return stagingDatabase().getTree(id.get());
+        return objectDatabase().getTree(id.get());
     }
 
     private static class BoundsWalk implements PreOrderDiffWalk.Consumer {

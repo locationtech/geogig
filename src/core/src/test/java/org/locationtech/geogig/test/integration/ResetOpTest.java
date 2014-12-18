@@ -76,9 +76,8 @@ public class ResetOpTest extends RepositoryTestCase {
         assertFalse(repo.index().findStaged(appendChild(pointsName, idP2)).isPresent());
         assertFalse(repo.index().findStaged(appendChild(pointsName, idP3)).isPresent());
 
-        assertEquals(oId1_modified,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get()
-                        .getObjectId());
+        assertEquals(oId1_modified, repo.workingTree().findUnstaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
         assertEquals(oId2, repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get()
                 .getObjectId());
         assertEquals(oId3, repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get()
@@ -116,9 +115,8 @@ public class ResetOpTest extends RepositoryTestCase {
         assertFalse(repo.index().findStaged(appendChild(pointsName, idP3)).isPresent());
         assertTrue(repo.index().findStaged(appendChild(linesName, idL1)).isPresent());
 
-        assertEquals(oId1_modified,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get()
-                        .getObjectId());
+        assertEquals(oId1_modified, repo.workingTree().findUnstaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
         assertEquals(oId2, repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get()
                 .getObjectId());
         assertEquals(oId3, repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get()
@@ -154,9 +152,8 @@ public class ResetOpTest extends RepositoryTestCase {
         assertFalse(repo.index().findStaged(appendChild(pointsName, idP2)).isPresent());
         assertTrue(repo.index().findStaged(appendChild(pointsName, idP3)).isPresent());
 
-        assertEquals(oId1_modified,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get()
-                        .getObjectId());
+        assertEquals(oId1_modified, repo.workingTree().findUnstaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
         assertEquals(oId2, repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get()
                 .getObjectId());
         assertEquals(oId3, repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get()
@@ -227,9 +224,8 @@ public class ResetOpTest extends RepositoryTestCase {
         assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
                 .getObjectId());
 
-        assertEquals(oId1_modified,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get()
-                        .getObjectId());
+        assertEquals(oId1_modified, repo.workingTree().findUnstaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
         assertEquals(oId2, repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get()
                 .getObjectId());
         assertEquals(oId3, repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get()
@@ -350,7 +346,7 @@ public class ResetOpTest extends RepositoryTestCase {
 
         geogig.command(ResetOp.class).setMode(ResetMode.HARD)
                 .setCommit(Suppliers.ofInstance(resetCommit.getId())).call();
-        List<Conflict> conflicts = geogig.getRepository().stagingDatabase()
+        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
                 .getConflicts(null, null);
         assertTrue(conflicts.isEmpty());
         Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
@@ -385,7 +381,7 @@ public class ResetOpTest extends RepositoryTestCase {
 
         geogig.command(ResetOp.class).addPattern(pointsName + "/" + idP1)
                 .setCommit(Suppliers.ofInstance(resetCommit.getId())).call();
-        List<Conflict> conflicts = geogig.getRepository().stagingDatabase()
+        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
                 .getConflicts(null, null);
         assertTrue(conflicts.isEmpty());
     }
@@ -417,7 +413,7 @@ public class ResetOpTest extends RepositoryTestCase {
         }
 
         geogig.command(ResetOp.class).addPattern(pointsName + "/" + idP1).call();
-        List<Conflict> conflicts = geogig.getRepository().stagingDatabase()
+        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
                 .getConflicts(null, null);
         assertTrue(conflicts.isEmpty());
     }

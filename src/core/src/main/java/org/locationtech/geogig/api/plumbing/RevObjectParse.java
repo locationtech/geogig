@@ -79,7 +79,7 @@ public class RevObjectParse extends AbstractGeoGigOp<Optional<RevObject>> {
         if (resolvedObjectId.isNull()) {
             return Optional.absent();
         }
-        RevObject revObject = stagingDatabase().get(resolvedObjectId);
+        RevObject revObject = objectDatabase().get(resolvedObjectId);
         Preconditions.checkArgument(clazz.isAssignableFrom(revObject.getClass()),
                 "Wrong return class for RevObjectParse operation. Expected %s, got %s",
                 clazz.getName(), revObject.getClass().getName());

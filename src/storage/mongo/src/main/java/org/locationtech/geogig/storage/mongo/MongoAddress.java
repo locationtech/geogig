@@ -17,7 +17,7 @@ import com.google.common.base.Objects;
  * 
  * @see MongoObjectDatabase
  * @see MongoGraphDatabase
- * @see MongoStagingDatabase
+ * @see MongoConflictsDatabase
  */
 final class MongoAddress {
     private final String uri;

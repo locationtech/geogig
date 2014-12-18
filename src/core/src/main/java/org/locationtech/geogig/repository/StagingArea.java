@@ -21,7 +21,7 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.storage.StagingDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Optional;
 
@@ -33,9 +33,9 @@ import com.google.common.base.Optional;
 public interface StagingArea {
 
     /**
-     * @return the staging database.
+     * @return the conflicts database.
      */
-    public StagingDatabase getDatabase();
+    public ConflictsDatabase conflictsDatabase();
 
     /**
      * Updates the STAGE_HEAD ref to the specified tree.

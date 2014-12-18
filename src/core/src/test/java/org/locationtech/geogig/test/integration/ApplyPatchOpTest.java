@@ -47,7 +47,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
 
     private Optional<Node> findTreeChild(RevTree root, String pathRemove) {
         Optional<NodeRef> nodeRef = geogig.command(FindTreeChild.class).setParent(root)
-                .setChildPath(pathRemove).setIndex(true).call();
+                .setChildPath(pathRemove).call();
         Optional<Node> node = Optional.absent();
         if (nodeRef.isPresent()) {
             node = Optional.of(nodeRef.get().getNode());
@@ -198,7 +198,8 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(null, newValue);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
-                RevFeatureTypeImpl.build(modifiedPointsType), RevFeatureTypeImpl.build(modifiedPointsType));
+                RevFeatureTypeImpl.build(modifiedPointsType),
+                RevFeatureTypeImpl.build(modifiedPointsType));
         patch.addModifiedFeature(featureDiff);
         try {
             geogig.command(ApplyPatchOp.class).setPatch(patch).call();

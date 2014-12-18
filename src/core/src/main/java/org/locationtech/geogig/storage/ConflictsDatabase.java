@@ -14,7 +14,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.di.Singleton;
 
 import com.google.common.base.Optional;
 
@@ -22,8 +21,7 @@ import com.google.common.base.Optional;
  * Provides an interface for GeoGig staging databases.
  * 
  */
-@Singleton
-public interface StagingDatabase extends ObjectDatabase {
+public interface ConflictsDatabase {
 
     /**
      * Checks whether there are conflicts for the given transaction namesapce.

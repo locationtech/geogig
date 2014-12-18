@@ -53,9 +53,11 @@ public interface ObjectDatabase extends Closeable {
     public boolean isOpen();
 
     /**
-     * Closes the database.
+     * Closes the database. This method is idempotent.
      */
     public void close();
+
+    public ConflictsDatabase getConflictsDatabase();
 
     /**
      * Determines if the given {@link ObjectId} exists in the object database.
@@ -93,8 +95,7 @@ public interface ObjectDatabase extends Closeable {
      * 
      * @return the object found, or {@code null} if no object is found
      */
-    public @Nullable
-    RevObject getIfPresent(ObjectId id);
+    public @Nullable RevObject getIfPresent(ObjectId id);
 
     /**
      * Reads an object with the given {@link ObjectId id} out of the database.
@@ -103,8 +104,7 @@ public interface ObjectDatabase extends Closeable {
      * @throws IllegalArgumentException if the object is found but is not of the required
      *         {@code type}
      */
-    public @Nullable
-    <T extends RevObject> T getIfPresent(ObjectId id, Class<T> type)
+    public @Nullable <T extends RevObject> T getIfPresent(ObjectId id, Class<T> type)
             throws IllegalArgumentException;
 
     /**

@@ -55,12 +55,12 @@ public class RemoveOp extends AbstractGeoGigOp<WorkingTree> {
         for (String pathToRemove : pathsToRemove) {
             NodeRef.checkValidPath(pathToRemove);
             Optional<NodeRef> node;
-            node = command(FindTreeChild.class).setParent(workingTree().getTree()).setIndex(true)
+            node = command(FindTreeChild.class).setParent(workingTree().getTree())
                     .setChildPath(pathToRemove).call();
             List<Conflict> conflicts = index().getConflicted(pathToRemove);
             if (conflicts.size() > 0) {
                 for (Conflict conflict : conflicts) {
-                    stagingDatabase().removeConflict(null, conflict.getPath());
+                    conflictsDatabase().removeConflict(null, conflict.getPath());
                 }
             } else {
                 Preconditions.checkArgument(node.isPresent(),
@@ -71,8 +71,7 @@ public class RemoveOp extends AbstractGeoGigOp<WorkingTree> {
         // separate trees from features an delete accordingly
         for (String pathToRemove : pathsToRemove) {
             Optional<NodeRef> node = command(FindTreeChild.class)
-                    .setParent(workingTree().getTree()).setIndex(true).setChildPath(pathToRemove)
-                    .call();
+                    .setParent(workingTree().getTree()).setChildPath(pathToRemove).call();
             if (!node.isPresent()) {
                 continue;
             }

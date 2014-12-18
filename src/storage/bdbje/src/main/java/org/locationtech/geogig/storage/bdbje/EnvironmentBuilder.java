@@ -173,4 +173,8 @@ public class EnvironmentBuilder implements Provider<Environment> {
         return this;
     }
 
+    public Platform getPlatform() {
+        return platform;
+    }
+
 }

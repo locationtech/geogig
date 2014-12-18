@@ -21,10 +21,10 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 /**
  * Provides a base implementation for internal GeoGig operations.
@@ -188,8 +188,8 @@ public abstract class AbstractGeoGigOp<T> {
         return context.objectDatabase();
     }
 
-    protected StagingDatabase stagingDatabase() {
-        return context.stagingDatabase();
+    protected ConflictsDatabase conflictsDatabase() {
+        return context.conflictsDatabase();
     }
 
     protected ConfigDatabase configDatabase() {

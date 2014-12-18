@@ -25,7 +25,6 @@ import org.locationtech.geogig.api.porcelain.TagRemoveOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.annotation.StagingDatabaseReadOnly;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -42,7 +41,6 @@ import com.google.common.collect.Lists;
  * 
  * @see TagOp
  */
-@StagingDatabaseReadOnly
 @Parameters(commandNames = "tag", commandDescription = "creates/deletes tags")
 public class Tag extends AbstractCommand implements CLICommand {
 

@@ -56,8 +56,8 @@ public class CatWebOp extends AbstractWebAPICommand {
         Preconditions.checkArgument(object != null && !object.equals(ObjectId.NULL));
         final Context geogig = this.getCommandLocator(context);
 
-        Preconditions.checkState(geogig.stagingDatabase().exists(object));
-        final RevObject revObject = geogig.stagingDatabase().get(object);
+        Preconditions.checkState(geogig.objectDatabase().exists(object));
+        final RevObject revObject = geogig.objectDatabase().get(object);
         switch (revObject.getType()) {
         case COMMIT:
             context.setResponseContent(new CommandResponse() {

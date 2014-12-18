@@ -15,11 +15,11 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.DeduplicationService;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 /**
  * A context object for a single repository, provides access to the different repository objects,
@@ -51,7 +51,7 @@ public interface Context {
 
     public ObjectDatabase objectDatabase();
 
-    public StagingDatabase stagingDatabase();
+    public ConflictsDatabase conflictsDatabase();
 
     public ConfigDatabase configDatabase();
 

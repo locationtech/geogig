@@ -34,7 +34,7 @@ import org.locationtech.geogig.api.plumbing.diff.VerifyPatchOp;
 import org.locationtech.geogig.api.plumbing.diff.VerifyPatchResults;
 import org.locationtech.geogig.repository.DepthSearch;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.storage.StagingDatabase;
+import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -116,7 +116,7 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
      * @return the modified {@link WorkingTree working tree}.
      */
     @Override
-    protected  Patch _call() throws RuntimeException {
+    protected Patch _call() throws RuntimeException {
         Preconditions.checkArgument(patch != null, "No patch file provided");
 
         VerifyPatchResults verify = command(VerifyPatchOp.class).setPatch(patch)
@@ -140,7 +140,7 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
 
     private void applyPatch(Patch patch) {
         final WorkingTree workTree = workingTree();
-        final StagingDatabase indexDb = stagingDatabase();
+        final ObjectDatabase indexDb = objectDatabase();
         if (reverse) {
             patch = patch.reversed();
         }

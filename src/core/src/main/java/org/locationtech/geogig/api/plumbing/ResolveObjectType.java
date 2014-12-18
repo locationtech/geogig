@@ -38,7 +38,7 @@ public class ResolveObjectType extends AbstractGeoGigOp<RevObject.TYPE> {
      */
     @Override
     protected TYPE _call() throws IllegalArgumentException {
-        RevObject o = stagingDatabase().get(oid);
+        RevObject o = objectDatabase().get(oid);
         return o.getType();
     }
 }

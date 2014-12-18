@@ -110,7 +110,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
      * @return the id of the new work tree
      */
     @Override
-    protected  CheckoutResult _call() {
+    protected CheckoutResult _call() {
         checkState(branchOrCommit != null || !paths.isEmpty(),
                 "No branch, tree, or path were specified");
         checkArgument(!(ours && theirs), "Cannot use both --ours and --theirs.");
@@ -119,7 +119,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
 
         CheckoutResult result = new CheckoutResult();
 
-        List<Conflict> conflicts = stagingDatabase().getConflicts(null, null);
+        List<Conflict> conflicts = conflictsDatabase().getConflicts(null, null);
         if (!paths.isEmpty()) {
             result.setResult(CheckoutResult.Results.UPDATE_OBJECTS);
             Optional<RevTree> tree = Optional.absent();
@@ -164,7 +164,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                 }
 
                 Optional<NodeRef> node = command(FindTreeChild.class).setParent(tree.get())
-                        .setIndex(true).setChildPath(st).call();
+                        .setChildPath(st).call();
 
                 if ((ours || theirs) && !node.isPresent()) {
                     // remove the node.
@@ -174,19 +174,19 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                             + "' didn't match a feature in the tree");
 
                     if (node.get().getType() == TYPE.TREE) {
-                        RevTreeBuilder treeBuilder = new RevTreeBuilder(stagingDatabase(),
+                        RevTreeBuilder treeBuilder = new RevTreeBuilder(objectDatabase(),
                                 workingTree().getTree());
                         treeBuilder.remove(st);
                         treeBuilder.put(node.get().getNode());
                         RevTree newRoot = treeBuilder.build();
-                        stagingDatabase().put(newRoot);
+                        objectDatabase().put(newRoot);
                         workingTree().updateWorkHead(newRoot.getId());
                     } else {
 
                         ObjectId metadataId = ObjectId.NULL;
                         Optional<NodeRef> parentNode = command(FindTreeChild.class)
                                 .setParent(workingTree().getTree())
-                                .setChildPath(node.get().getParentPath()).setIndex(true).call();
+                                .setChildPath(node.get().getParentPath()).call();
                         RevTreeBuilder treeBuilder = null;
                         if (parentNode.isPresent()) {
                             metadataId = parentNode.get().getMetadataId();
@@ -194,16 +194,15 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                                     parentNode.get().getNode().getObjectId()).call(RevTree.class);
                             checkState(parsed.isPresent(),
                                     "Parent tree couldn't be found in the repository.");
-                            treeBuilder = new RevTreeBuilder(stagingDatabase(), parsed.get());
+                            treeBuilder = new RevTreeBuilder(objectDatabase(), parsed.get());
                             treeBuilder.remove(node.get().getNode().getName());
                         } else {
-                            treeBuilder = new RevTreeBuilder(stagingDatabase());
+                            treeBuilder = new RevTreeBuilder(objectDatabase());
                         }
                         treeBuilder.put(node.get().getNode());
                         ObjectId newTreeId = command(WriteBack.class)
-                                .setAncestor(
-                                        workingTree().getTree().builder(stagingDatabase()))
-                                .setChildPath(node.get().getParentPath()).setToIndex(true)
+                                .setAncestor(workingTree().getTree().builder(objectDatabase()))
+                                .setChildPath(node.get().getParentPath())
                                 .setTree(treeBuilder.build()).setMetadataId(metadataId).call();
                         workingTree().updateWorkHead(newTreeId);
                     }

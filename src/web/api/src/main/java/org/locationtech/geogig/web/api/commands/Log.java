@@ -276,7 +276,7 @@ public class Log extends AbstractWebAPICommand {
                     int removed = 0;
 
                     // If it's a shallow clone, the commit may not exist
-                    if (parent.equals(ObjectId.NULL) || geogig.stagingDatabase().exists(parent)) {
+                    if (parent.equals(ObjectId.NULL) || geogig.objectDatabase().exists(parent)) {
                         final Iterator<DiffEntry> diff = geogig.command(DiffOp.class)
                                 .setOldVersion(parent).setNewVersion(input.getId())
                                 .setFilter(pathFilter).call();

@@ -127,7 +127,7 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
                     // We are reseting to the current version, so there is nothing to do. However,
                     // if we are in a conflict state, the conflict should be removed and calling
                     // stage() will not do it, so we do it here
-                    repository.stagingDatabase().removeConflict(null, pattern);
+                    conflictsDatabase().removeConflict(null, pattern);
                 } else {
                     repository.index().stage(subProgress((1.f / patterns.size()) * 100.f), diff,
                             numChanges);

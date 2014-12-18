@@ -27,8 +27,8 @@ import com.sleepycat.je.Environment;
  * {@link #createDatabase()} call.
  * <p>
  * The created temporary databases share the heap cache with the other JE databases, namely the
- * {@link JEObjectDatabase object} and {@link JEStagingDatabase staging} databases, and will page to
- * disk as appropriate when the BDB JE cache is full.
+ * {@link JEObjectDatabase object} database, and will page to disk as appropriate when the BDB JE
+ * cache is full.
  * </p>
  * 
  * @see BDBJEDeduplicator

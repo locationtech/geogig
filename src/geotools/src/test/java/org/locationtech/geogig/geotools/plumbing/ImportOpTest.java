@@ -151,11 +151,11 @@ public class ImportOpTest extends RepositoryTestCase {
 
         RevTree newWorkingTree = importOp.call();
         Optional<NodeRef> ref = geogig.command(FindTreeChild.class).setParent(newWorkingTree)
-                .setChildPath("table1/feature1").setIndex(true).call();
+                .setChildPath("table1/feature1").call();
         assertTrue(ref.isPresent());
 
         ref = geogig.command(FindTreeChild.class).setParent(newWorkingTree)
-                .setChildPath("table1/feature2").setIndex(true).call();
+                .setChildPath("table1/feature2").call();
         assertTrue(ref.isPresent());
     }
 
@@ -182,15 +182,15 @@ public class ImportOpTest extends RepositoryTestCase {
 
         RevTree newWorkingTree = importOp.call();
         Optional<NodeRef> ref = geogig.command(FindTreeChild.class).setParent(newWorkingTree)
-                .setChildPath("table1/feature1").setIndex(true).call();
+                .setChildPath("table1/feature1").call();
         assertTrue(ref.isPresent());
 
         ref = geogig.command(FindTreeChild.class).setParent(newWorkingTree)
-                .setChildPath("table1/feature2").setIndex(true).call();
+                .setChildPath("table1/feature2").call();
         assertTrue(ref.isPresent());
 
         ref = geogig.command(FindTreeChild.class).setParent(newWorkingTree)
-                .setChildPath("table2/feature3").setIndex(true).call();
+                .setChildPath("table2/feature3").call();
         assertTrue(ref.isPresent());
     }
 

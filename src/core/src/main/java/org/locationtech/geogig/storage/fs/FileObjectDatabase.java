@@ -32,6 +32,7 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.AbstractObjectDatabase;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 
@@ -59,6 +60,8 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
 
     private String dataRootPath;
 
+    private FileConflictsDatabase conflicts;
+
     /**
      * Constructs a new {@code FileObjectDatabase} using the given platform.
      * 
@@ -77,6 +80,7 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
         this.platform = platform;
         this.databaseName = databaseName;
         this.configDB = configDB;
+        this.conflicts = new FileConflictsDatabase(platform);
     }
 
     protected File getDataRoot() {
@@ -125,6 +129,7 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
                     + dataRoot.getAbsolutePath());
         }
         dataRootPath = dataRoot.getAbsolutePath();
+        conflicts.open();
     }
 
     /**
@@ -134,6 +139,7 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
     public void close() {
         dataRoot = null;
         dataRootPath = null;
+        conflicts.close();
     }
 
     /**
@@ -162,7 +168,8 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     /**
-     * @see org.locationtech.geogig.storage.AbstractObjectDatabase#putInternal(org.locationtech.geogig.api.ObjectId, byte[])
+     * @see org.locationtech.geogig.storage.AbstractObjectDatabase#putInternal(org.locationtech.geogig.api.ObjectId,
+     *      byte[])
      */
     @Override
     protected boolean putInternal(final ObjectId id, final byte[] rawData) {
@@ -281,5 +288,10 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
     public String toString() {
         return String.format("%s[dir: %s, name: %s]", getClass().getSimpleName(),
                 dataRoot == null ? "<unset>" : dataRoot.getAbsolutePath(), databaseName);
+    }
+
+    @Override
+    public ConflictsDatabase getConflictsDatabase() {
+        return conflicts;
     }
 }

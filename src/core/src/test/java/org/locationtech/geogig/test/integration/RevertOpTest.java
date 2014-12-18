@@ -146,18 +146,18 @@ public class RevertOpTest extends RepositoryTestCase {
 
         RevTree headTree = repo.getTree(headTreeId.get());
 
-        Optional<NodeRef> points1Node = geogig.command(FindTreeChild.class).setIndex(true)
+        Optional<NodeRef> points1Node = geogig.command(FindTreeChild.class)
                 .setChildPath(NodeRef.appendChild(pointsName, idP1)).setParent(headTree).call();
 
         assertTrue(points1Node.isPresent());
         assertEquals(oId1, points1Node.get().getNode().getObjectId());
 
-        Optional<NodeRef> points2Node = geogig.command(FindTreeChild.class).setIndex(true)
+        Optional<NodeRef> points2Node = geogig.command(FindTreeChild.class)
                 .setChildPath(NodeRef.appendChild(pointsName, idP2)).setParent(headTree).call();
 
         assertFalse(points2Node.isPresent());
 
-        Optional<NodeRef> points3Node = geogig.command(FindTreeChild.class).setIndex(true)
+        Optional<NodeRef> points3Node = geogig.command(FindTreeChild.class)
                 .setChildPath(NodeRef.appendChild(pointsName, idP3)).setParent(headTree).call();
 
         assertTrue(points3Node.isPresent());

@@ -45,7 +45,6 @@ import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -109,7 +108,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
      */
     @Override
     protected SimpleFeatureStore _call() {
-        final StagingDatabase database = stagingDatabase();
+        final ObjectDatabase database = objectDatabase();
         if (filterFeatureTypeId != null) {
             RevObject filterType = database.getIfPresent(filterFeatureTypeId);
             checkArgument(filterType instanceof RevFeatureType,
@@ -312,7 +311,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
     private Iterator<SimpleFeature> alter(Iterator<SimpleFeature> plainFeatures,
             final ObjectId targetFeatureTypeId) {
 
-        final RevFeatureType targetType = stagingDatabase().getFeatureType(targetFeatureTypeId);
+        final RevFeatureType targetType = objectDatabase().getFeatureType(targetFeatureTypeId);
 
         Function<SimpleFeature, SimpleFeature> alterFunction = new Function<SimpleFeature, SimpleFeature>() {
             @Override
@@ -355,8 +354,8 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
     private NodeRef resolTypeTreeRef(final String refspec, final String treePath,
             final RevTree rootTree) {
-        Optional<NodeRef> typeTreeRef = command(FindTreeChild.class).setIndex(true)
-                .setParent(rootTree).setChildPath(treePath).call();
+        Optional<NodeRef> typeTreeRef = command(FindTreeChild.class).setParent(rootTree)
+                .setChildPath(treePath).call();
         checkArgument(typeTreeRef.isPresent(), "Type tree %s does not exist", refspec);
         checkArgument(TYPE.TREE.equals(typeTreeRef.get().getType()),
                 "%s did not resolve to a tree", refspec);
@@ -370,7 +369,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         checkArgument(rootTreeId.isPresent(), "Invalid tree spec: %s",
                 refspec.substring(0, refspec.indexOf(':')));
 
-        RevTree rootTree = stagingDatabase().getTree(rootTreeId.get());
+        RevTree rootTree = objectDatabase().getTree(rootTreeId.get());
         return rootTree;
     }
 

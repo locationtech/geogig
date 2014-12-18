@@ -9,20 +9,12 @@
  */
 package org.locationtech.geogig.storage.sqlite;
 
-import static org.locationtech.geogig.storage.sqlite.SQLiteStorage.FORMAT_NAME;
-import static org.locationtech.geogig.storage.sqlite.SQLiteStorage.VERSION;
-
 import java.util.List;
 
-import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.storage.AbstractStagingDatabase;
-import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -33,29 +25,17 @@ import com.google.common.collect.Lists;
  * 
  * @param <T>
  */
-public abstract class SQLiteStagingDatabase<T> extends AbstractStagingDatabase {
+public abstract class SQLiteConflictsDatabase<T> implements ConflictsDatabase {
 
-    final ConfigDatabase configdb;
+    private SQLiteConflictsDatabase<T> repoDb;
 
-    final Platform platform;
+    private final T cx;
 
-    private T cx;
-
-    public SQLiteStagingDatabase(ObjectDatabase repoDb, SQLiteObjectDatabase<T> stageDb,
-            ConfigDatabase configdb, Platform platform) {
-
-        super(Suppliers.ofInstance(repoDb), Suppliers.ofInstance(stageDb));
-
-        this.configdb = configdb;
-        this.platform = platform;
+    public SQLiteConflictsDatabase(T cx) {
+        this.cx = cx;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
     public void open() {
-        super.open();
-
-        cx = ((SQLiteObjectDatabase<T>) stagingDb).cx;
         init(cx);
     }
 
@@ -97,16 +77,6 @@ public abstract class SQLiteStagingDatabase<T> extends AbstractStagingDatabase {
         }
     }
 
-    @Override
-    public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.STAGING.configure(configdb, FORMAT_NAME, VERSION);
-    }
-
-    @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.STAGING.verify(configdb, FORMAT_NAME, VERSION);
-    }
-
     /**
      * Creates the object table with the following schema:
      * 
@@ -128,7 +98,7 @@ public abstract class SQLiteStagingDatabase<T> extends AbstractStagingDatabase {
      * 
      */
     protected abstract int count(final String namespace, T cx);
-    
+
     /**
      * Returns all conflicts matching the specified namespace and pathFilter.
      * 

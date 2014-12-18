@@ -95,7 +95,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
                 break;
             }
             RevFeature feature = (RevFeature) obj.get();
-            DepthSearch depthSearch = new DepthSearch(stagingDatabase());
+            DepthSearch depthSearch = new DepthSearch(objectDatabase());
             Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(), path);
             RevFeatureType featureType = command(RevObjectParse.class)
                     .setObjectId(noderef.get().getMetadataId()).call(RevFeatureType.class).get();
@@ -158,7 +158,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
                         feature.getFeatureType());
             } else {
                 RevFeature revFeature = (RevFeature) obj.get();
-                DepthSearch depthSearch = new DepthSearch(stagingDatabase());
+                DepthSearch depthSearch = new DepthSearch(objectDatabase());
                 Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(),
                         feature.getPath());
                 RevFeatureType revFeatureType = command(RevObjectParse.class)
@@ -177,7 +177,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
         }
         ImmutableList<FeatureTypeDiff> alteredTrees = patch.getAlteredTrees();
         for (FeatureTypeDiff diff : alteredTrees) {
-            DepthSearch depthSearch = new DepthSearch(stagingDatabase());
+            DepthSearch depthSearch = new DepthSearch(objectDatabase());
             Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(), diff.getPath());
             ObjectId metadataId = noderef.isPresent() ? noderef.get().getMetadataId()
                     : ObjectId.NULL;

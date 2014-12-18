@@ -14,7 +14,7 @@ import java.util.List;
 import org.junit.Test;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.storage.StagingDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;
@@ -28,7 +28,7 @@ public class JEConflictsTest extends RepositoryTestCase {
 
     @Test
     public void testConflicts() {
-        StagingDatabase db = geogig.getRepository().stagingDatabase();
+        ConflictsDatabase db = geogig.getRepository().conflictsDatabase();
 
         List<Conflict> conflicts = db.getConflicts(null, null);
         assertTrue(conflicts.isEmpty());

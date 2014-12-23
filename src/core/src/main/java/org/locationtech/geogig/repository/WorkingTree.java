@@ -325,41 +325,46 @@ public class WorkingTree {
      * @param features the features to delete
      */
     public void delete(Iterator<String> features) {
-        Map<String, RevTreeBuilder> parents = Maps.newHashMap();
 
-        final RevTree currentWorkHead = getTree();
-        while (features.hasNext()) {
-            String featurePath = features.next();
-            // System.err.println("removing " + feature);
-            String parentPath = NodeRef.parentPath(featurePath);
-            RevTreeBuilder parentTree;
-            if (parents.containsKey(parentPath)) {
-                parentTree = parents.get(parentPath);
-            } else {
-                parentTree = context.command(FindOrCreateSubtree.class)
-                        .setParent(Suppliers.ofInstance(Optional.of(currentWorkHead)))
-                        .setChildPath(parentPath).call().builder(indexDatabase);
-                parents.put(parentPath, parentTree);
+        final ExecutorService treeBuildingService = Executors
+                .newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(
+                        "WorkingTree-tree-builder-%d").build());
+
+        try {
+            final WorkingTreeInsertHelper insertHelper;
+            final RevTree currewntWorkHead = getTree();
+
+            insertHelper = new WorkingTreeInsertHelper(context, currewntWorkHead,
+                    treeBuildingService);
+
+            while (features.hasNext()) {
+                String featurePath = features.next();
+                insertHelper.remove(featurePath);
             }
-            String featureName = NodeRef.nodeFromPath(featurePath);
-            parentTree.remove(featureName);
-        }
-        ObjectId newTree = null;
-        for (Map.Entry<String, RevTreeBuilder> entry : parents.entrySet()) {
-            String path = entry.getKey();
 
-            RevTreeBuilder parentTree = entry.getValue();
-            RevTree newTypeTree = parentTree.build();
+            Map<NodeRef, RevTree> trees = insertHelper.buildTrees();
 
-            ObjectId metadataId = null;
-            Optional<NodeRef> currentTreeRef = context.command(FindTreeChild.class)
-                    .setParent(currentWorkHead).setChildPath(path).call();
-            if (currentTreeRef.isPresent()) {
-                metadataId = currentTreeRef.get().getMetadataId();
+            ObjectId newWorkHead = currewntWorkHead.getId();
+
+            for (Map.Entry<NodeRef, RevTree> treeEntry : trees.entrySet()) {
+                NodeRef treeRef = treeEntry.getKey();
+                Preconditions.checkState(indexDatabase.exists(treeRef.objectId()));
+                RevTree newFeatureTree = treeEntry.getValue();
+
+                String treePath = treeRef.path();
+
+                Supplier<RevTreeBuilder> ancestor = Suppliers.ofInstance(indexDatabase.getTree(
+                        newWorkHead).builder(indexDatabase));
+                newWorkHead = context.command(WriteBack.class).setAncestor(ancestor)
+                        .setChildPath(treePath).setMetadataId(treeRef.getMetadataId())
+                        .setTree(newFeatureTree).call();
             }
-            newTree = context.command(WriteBack.class).setAncestor(getTreeSupplier())
-                    .setChildPath(path).setTree(newTypeTree).setMetadataId(metadataId).call();
-            updateWorkHead(newTree);
+
+            if (!newWorkHead.equals(currewntWorkHead.getId())) {
+                updateWorkHead(newWorkHead);
+            }
+        } finally {
+            treeBuildingService.shutdownNow();
         }
     }
 
@@ -686,8 +691,8 @@ public class WorkingTree {
 
         final WorkingTreeInsertHelper insertHelper;
 
-        insertHelper = new WorkingTreeInsertHelper(indexDatabase, context, getTree(),
-                treePathResolver, treeBuildingService);
+        insertHelper = new WorkingTreeInsertHelper(context, getTree(), treePathResolver,
+                treeBuildingService);
 
         UnmodifiableIterator<? extends Feature> filtered = Iterators.filter(features,
                 new Predicate<Feature>() {

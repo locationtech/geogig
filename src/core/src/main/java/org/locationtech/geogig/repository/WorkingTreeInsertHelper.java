@@ -42,7 +42,14 @@ import com.vividsolutions.jts.geom.Envelope;
 
 class WorkingTreeInsertHelper {
 
-    private final ObjectDatabase indexDatabase;
+    private static final Function<Feature, String> SIMPLE_PATH_RESOLVER = new Function<Feature, String>() {
+        @Override
+        public String apply(Feature f) {
+            return f.getType().getName().getLocalPart();
+        }
+    };
+
+    private final ObjectDatabase db;
 
     private final Context context;
 
@@ -54,14 +61,20 @@ class WorkingTreeInsertHelper {
 
     private final ExecutorService executorService;
 
-    public WorkingTreeInsertHelper(ObjectDatabase db, Context context, RevTree workHead,
-            final Function<Feature, String> treePathResolver, final ExecutorService executorService) {
+    public WorkingTreeInsertHelper(Context context, RevTree tree,
+            ExecutorService treeBuildingService) {
+        this(context, tree, SIMPLE_PATH_RESOLVER, treeBuildingService);
+    }
 
-        this.indexDatabase = db;
+    public WorkingTreeInsertHelper(Context context, RevTree workHead,
+            final Function<Feature, String> treePathResolver,
+            final ExecutorService treeBuildingService) {
+
+        this.db = context.objectDatabase();
         this.context = context;
         this.workHead = workHead;
         this.treePathResolver = treePathResolver;
-        this.executorService = executorService;
+        this.executorService = treeBuildingService;
     }
 
     public List<String> getTreeNames() {
@@ -87,10 +100,35 @@ class WorkingTreeInsertHelper {
         treeBuilder.removeFeature(fid);
     }
 
+    public void remove(String featurePath) {
+        final String treePath = NodeRef.parentPath(featurePath);
+        final String featureId = NodeRef.nodeFromPath(featurePath);
+        Optional<RevTreeBuilder2> treeBuilder = getTreeBuilder(treePath);
+        if (treeBuilder.isPresent()) {
+            RevTreeBuilder2 builder = treeBuilder.get();
+            builder.removeFeature(featureId);
+        }
+    }
+
+    private Optional<RevTreeBuilder2> getTreeBuilder(final String treePath) {
+        RevTreeBuilder2 builder = treeBuilders.get(treePath);
+        if (builder == null) {
+            Optional<NodeRef> treeNode = context.command(FindTreeChild.class).setParent(workHead)
+                    .setChildPath(treePath).call();
+            if (treeNode.isPresent()) {
+                RevTree parentTree = db.getTree(treeNode.get().objectId());
+                ObjectId metadataId = treeNode.get().getMetadataId();
+                builder = createBuilder(parentTree, metadataId);
+                treeBuilders.put(treePath, builder);
+            }
+        }
+        return Optional.fromNullable(builder);
+    }
+
     private RevTreeBuilder2 getTreeBuilder(final Feature feature) {
 
         final String treePath = treePathResolver.apply(feature);
-        RevTreeBuilder2 builder = treeBuilders.get(treePath);
+        RevTreeBuilder2 builder = getTreeBuilder(treePath).orNull();
         if (builder == null) {
             FeatureType type = feature.getType();
             builder = createBuilder(treePath, type);
@@ -108,7 +146,7 @@ class WorkingTreeInsertHelper {
         if (type != null) {
             RevFeatureType revFeatureType = RevFeatureTypeImpl.build(type);
             if (tree.isEmpty()) {
-                indexDatabase.put(revFeatureType);
+                db.put(revFeatureType);
             }
             metadataId = revFeatureType.getId();
         }
@@ -124,14 +162,18 @@ class WorkingTreeInsertHelper {
 
         final NodeRef treeRef = findOrCreateTree(treePath, type);
         final ObjectId treeId = treeRef.objectId();
-        final RevTree origTree = indexDatabase.getTree(treeId);
+        final RevTree origTree = db.getTree(treeId);
 
         ObjectId defaultMetadataId = treeRef.getMetadataId();
 
+        RevTreeBuilder2 builder = createBuilder(origTree, defaultMetadataId);
+        return builder;
+    }
+
+    private RevTreeBuilder2 createBuilder(final RevTree origTree, ObjectId defaultMetadataId) {
         RevTreeBuilder2 builder;
         Platform platform = context.platform();
-        builder = new RevTreeBuilder2(indexDatabase, origTree, defaultMetadataId, platform,
-                executorService);
+        builder = new RevTreeBuilder2(db, origTree, defaultMetadataId, platform, executorService);
         return builder;
     }
 
@@ -151,6 +193,7 @@ class WorkingTreeInsertHelper {
         } catch (InterruptedException e) {
             throw Throwables.propagate(e);
         }
+        db.putAll(result.values().iterator());
         return result;
     }
 

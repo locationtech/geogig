@@ -49,6 +49,7 @@ import org.opengis.feature.type.Name;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
 
 /**
  *
@@ -455,6 +456,36 @@ public class WorkingTreeTest extends RepositoryTestCase {
         assertFalse(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
         assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
         assertFalse(workTree.findUnstaged(appendChild(pointsName, idP3)).isPresent());
+    }
+
+    @Test
+    public void testDeleteCollectionAffectingMultipleTrees() throws Exception {
+        insert(points1, points2, points3, lines1, lines2, lines3);
+
+        String path1 = appendChild(pointsName, idP1);
+        String path2 = appendChild(pointsName, idP2);
+        String path3 = appendChild(pointsName, idP3);
+        String path4 = appendChild(linesName, idL1);
+        String path5 = appendChild(linesName, idL2);
+        String path6 = appendChild(linesName, idL3);
+
+        assertTrue(workTree.findUnstaged(path1).isPresent());
+        assertTrue(workTree.findUnstaged(path2).isPresent());
+        assertTrue(workTree.findUnstaged(path3).isPresent());
+        assertTrue(workTree.findUnstaged(path4).isPresent());
+        assertTrue(workTree.findUnstaged(path5).isPresent());
+        assertTrue(workTree.findUnstaged(path6).isPresent());
+
+        Iterator<String> featurePaths = Iterators.forArray(path1, path3, path4, path6);
+
+        workTree.delete(featurePaths);
+
+        assertFalse(workTree.findUnstaged(path1).isPresent());
+        assertTrue(workTree.findUnstaged(path2).isPresent());
+        assertFalse(workTree.findUnstaged(path3).isPresent());
+        assertFalse(workTree.findUnstaged(path4).isPresent());
+        assertTrue(workTree.findUnstaged(path5).isPresent());
+        assertFalse(workTree.findUnstaged(path6).isPresent());
     }
 
     @Test

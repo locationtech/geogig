@@ -9,18 +9,14 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static com.google.common.base.Suppliers.ofInstance;
-
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.storage.AbstractObjectDatabase;
-import org.locationtech.geogig.storage.AbstractStagingDatabase;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -28,34 +24,23 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
-import com.google.inject.Inject;
 
 /**
- * Provides an implementation of a GeoGig staging database that utilizes the heap for the storage of
- * objects.
- * 
- * @see AbstractObjectDatabase
+ * Volatile implementation of a GeoGig {@link ConflictsDatabase} that utilizes the heap for storage.
  */
-public class HeapStagingDatabase extends AbstractStagingDatabase {
-    private Map<String, Map<String, Conflict>> conflicts = Maps.newHashMap();
+public class HeapConflictsDatabase implements ConflictsDatabase {
 
-    /**
-     * @param repositoryDb the repository reference database, used to get delegate read operations
-     *        to for objects not found here
-     */
-    @Inject
-    public HeapStagingDatabase(final ObjectDatabase repositoryDb) {
-        super(ofInstance(repositoryDb), ofInstance(new HeapObjectDatabse()));
+    private Map<String, Map<String, Conflict>> conflicts;
+
+    public HeapConflictsDatabase() {
+        conflicts = new ConcurrentHashMap<>();
     }
 
-    @Override
-    public void configure() throws RepositoryConnectionException {
-        // No-op
-    }
-
-    @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        // No-op
+    public synchronized void close() {
+        if (conflicts != null) {
+            conflicts.clear();
+            conflicts = null;
+        }
     }
 
     /**
@@ -165,4 +150,5 @@ public class HeapStagingDatabase extends AbstractStagingDatabase {
         Map<String, Conflict> conflicts = this.conflicts.get(namespace);
         return conflicts != null && !conflicts.isEmpty();
     }
+
 }

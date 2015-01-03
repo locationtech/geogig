@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.storage;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,11 +42,11 @@ import com.ning.compress.lzf.LZFOutputStream;
  */
 public abstract class AbstractObjectDatabase implements ObjectDatabase {
 
-    protected ObjectSerializingFactory serializationFactory;
+    protected ObjectSerializingFactory serializer;
 
-    public AbstractObjectDatabase(final ObjectSerializingFactory serializationFactory) {
-        Preconditions.checkNotNull(serializationFactory);
-        this.serializationFactory = serializationFactory;
+    public AbstractObjectDatabase(final ObjectSerializingFactory serializer) {
+        Preconditions.checkNotNull(serializer);
+        this.serializer = serializer;
     }
 
     /**
@@ -57,6 +59,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     @Override
     public List<ObjectId> lookUp(final String partialId) {
         Preconditions.checkNotNull(partialId);
+        checkState(isOpen(), "db is closed");
 
         byte[] raw = ObjectId.toRaw(partialId);
 
@@ -88,17 +91,17 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     @Override
     public RevObject get(ObjectId id) {
         Preconditions.checkNotNull(id, "id");
+        checkState(isOpen(), "db is closed");
 
-        final ObjectReader<RevObject> reader = serializationFactory.createObjectReader();
-        return get(id, reader, true);
+        return get(id, true);
     }
 
     @Override
     public @Nullable RevObject getIfPresent(ObjectId id) {
         Preconditions.checkNotNull(id, "id");
+        checkState(isOpen(), "db is closed");
 
-        final ObjectReader<RevObject> reader = serializationFactory.createObjectReader();
-        return get(id, reader, false);
+        return get(id, false);
     }
 
     /**
@@ -114,10 +117,9 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     public <T extends RevObject> T get(final ObjectId id, final Class<T> clazz) {
         Preconditions.checkNotNull(id, "id");
         Preconditions.checkNotNull(clazz, "class");
+        checkState(isOpen(), "db is closed");
 
-        final ObjectReader<T> reader = serializationFactory.createObjectReader(getType(clazz));
-
-        return get(id, reader, true);
+        return clazz.cast(get(id, true));
     }
 
     @Override
@@ -125,21 +127,21 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
             throws IllegalArgumentException {
         Preconditions.checkNotNull(id, "id");
         Preconditions.checkNotNull(clazz, "class");
+        checkState(isOpen(), "db is closed");
 
-        final ObjectReader<T> reader = serializationFactory.createObjectReader(getType(clazz));
-
-        return get(id, reader, false);
+        return clazz.cast(get(id, false));
     }
 
-    private <T extends RevObject> T get(final ObjectId id, final ObjectReader<T> reader,
-            boolean failIfNotFound) {
+    private RevObject get(final ObjectId id, boolean failIfNotFound) {
         InputStream raw = getRaw(id, failIfNotFound);
         if (null == raw) {
             return null;
         }
-        T object;
+        RevObject object;
         try {
-            object = reader.read(id, raw);
+            object = serializer.read(id, raw);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         } finally {
             Closeables.closeQuietly(raw);
         }
@@ -199,6 +201,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     public boolean put(final RevObject object) {
         Preconditions.checkNotNull(object);
         Preconditions.checkArgument(!object.getId().isNull(), "ObjectId is NULL %s", object);
+        checkState(isOpen(), "db is closed");
 
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
         writeObject(object, rawOut);
@@ -214,6 +217,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
      */
     @Override
     public void putAll(Iterator<? extends RevObject> objects, final BulkOpListener listener) {
+        checkState(isOpen(), "db is closed");
 
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
         while (objects.hasNext()) {
@@ -235,10 +239,9 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
 
     protected void writeObject(RevObject object, OutputStream target) {
 
-        ObjectWriter<RevObject> writer = serializationFactory.createObjectWriter(object.getType());
         LZFOutputStream cOut = new LZFOutputStream(target);
         try {
-            writer.write(object, cOut);
+            serializer.write(object, cOut);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         } finally {
@@ -270,16 +273,19 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
 
     @Override
     public Iterator<RevObject> getAll(final Iterable<ObjectId> ids) {
+        checkState(isOpen(), "db is closed");
         return getAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
     @Override
     public void putAll(Iterator<? extends RevObject> objects) {
+        checkState(isOpen(), "db is closed");
         putAll(objects, BulkOpListener.NOOP_LISTENER);
     }
 
     @Override
     public long deleteAll(Iterator<ObjectId> ids) {
+        checkState(isOpen(), "db is closed");
         return deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 }

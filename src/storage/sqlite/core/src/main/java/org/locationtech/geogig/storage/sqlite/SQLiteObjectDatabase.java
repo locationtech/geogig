@@ -41,6 +41,7 @@ import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactory
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
 /**
@@ -58,7 +59,7 @@ public abstract class SQLiteObjectDatabase<C> implements ObjectDatabase {
 
     final ObjectSerializingFactory serializer = DataStreamSerializationFactoryV1.INSTANCE;
 
-    C cx;
+    protected C cx;
 
     public SQLiteObjectDatabase(ConfigDatabase configdb, Platform platform) {
         this.configdb = configdb;
@@ -130,7 +131,11 @@ public abstract class SQLiteObjectDatabase<C> implements ObjectDatabase {
     @Override
     public RevObject getIfPresent(ObjectId id) {
         InputStream bytes = get(id.toString(), cx);
-        return readObject(bytes, id);
+        try {
+            return readObject(bytes, id);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override
@@ -242,13 +247,15 @@ public abstract class SQLiteObjectDatabase<C> implements ObjectDatabase {
 
     /**
      * Reads object from its binary representation as stored in the database.
+     * 
+     * @throws IOException
      */
-    protected RevObject readObject(InputStream bytes, ObjectId id) {
+    protected RevObject readObject(InputStream bytes, ObjectId id) throws IOException {
         if (bytes == null) {
             return null;
         }
 
-        return serializer.createObjectReader().read(id, bytes);
+        return serializer.read(id, bytes);
     }
 
     /**
@@ -257,7 +264,7 @@ public abstract class SQLiteObjectDatabase<C> implements ObjectDatabase {
     protected InputStream writeObject(RevObject object) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
 
-        serializer.createObjectWriter(object.getType()).write(object, bout);
+        serializer.write(object, bout);
         return new ByteArrayInputStream(bout.toByteArray());
     }
 

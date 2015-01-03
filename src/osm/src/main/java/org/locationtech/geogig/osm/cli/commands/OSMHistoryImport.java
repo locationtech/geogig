@@ -73,6 +73,7 @@ import org.locationtech.geogig.osm.internal.history.Way;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -479,7 +480,6 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         FeatureBuilder featureBuilder = new FeatureBuilder(NODE_REV_TYPE);
         List<Coordinate> coordinates = Lists.newArrayList(nodes.size());
         FindTreeChild findTreeChild = geogig.command(FindTreeChild.class);
-        findTreeChild.setIndex(true);
         ObjectId rootTreeId = geogig.command(ResolveTreeish.class).setTreeish(Ref.HEAD).call()
                 .get();
         if (!rootTreeId.isNull()) {
@@ -487,6 +487,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
                     .call(RevTree.class).get();
             findTreeChild.setParent(headTree);
         }
+        ObjectDatabase objectDatabase = geogig.getContext().objectDatabase();
         for (Long nodeId : nodes) {
             Coordinate coord = thisChangePointCache.get(nodeId);
             if (coord == null) {
@@ -504,7 +505,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
                 if (ref.isPresent()) {
                     org.locationtech.geogig.api.Node nodeRef = ref.get();
 
-                    RevFeature revFeature = index.getDatabase().getFeature(nodeRef.getObjectId());
+                    RevFeature revFeature = objectDatabase.getFeature(nodeRef.getObjectId());
                     String id = NodeRef.nodeFromPath(nodeRef.getName());
                     Feature feature = featureBuilder.build(id, revFeature);
 

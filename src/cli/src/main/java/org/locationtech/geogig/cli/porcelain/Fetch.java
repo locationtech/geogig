@@ -15,14 +15,13 @@ import java.util.List;
 import jline.console.ConsoleReader;
 
 import org.locationtech.geogig.api.porcelain.FetchOp;
-import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
+import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
-import org.locationtech.geogig.cli.annotation.StagingDatabaseReadOnly;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -43,7 +42,6 @@ import com.beust.jcommander.Parameters;
  * 
  * @see FetchOp
  */
-@StagingDatabaseReadOnly
 @RemotesReadOnly
 @Parameters(commandNames = "fetch", commandDescription = "Download objects and refs from another repository")
 public class Fetch extends AbstractCommand implements CLICommand {

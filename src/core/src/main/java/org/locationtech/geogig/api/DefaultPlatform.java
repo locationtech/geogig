@@ -88,7 +88,7 @@ public class DefaultPlatform implements Platform {
     }
 
     @Override
-    public File getTempDir() {
+    public synchronized File getTempDir() {
         Optional<URL> url = new ResolveGeogigDir(this).call();
         final File tmpDir;
         if (url.isPresent()) {

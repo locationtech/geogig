@@ -20,7 +20,7 @@ public class ConflictsWriteOp extends AbstractGeoGigOp<Void> {
     @Override
     protected  Void _call() {
         for (Conflict conflict : conflicts) {
-            stagingDatabase().addConflict(null, conflict);
+            conflictsDatabase().addConflict(null, conflict);
         }
         return null;
 

@@ -20,8 +20,11 @@ import cucumber.junit.Cucumber;
  */
 @RunWith(Cucumber.class)
 @Cucumber.Options(//
-monochrome = true, format = { "pretty", "html:target/cucumber-report" }, strict = true,//
-// the glue option tells cucumber where else to look for step definitions
-glue = { "org.locationtech.geogig.cli.test.functional.general" })
+monochrome = true//
+, format = { "pretty", "html:target/cucumber-report" }//
+, strict = true//
+, glue = { "org.locationtech.geogig.cli.test.functional.general" }// where step definitions are
+//, features = { "src/test/resources/org/locationtech/geogig/cli/test/functional/porcelain/Clean.feature" }//
+)
 public class RunPorcelainFunctionalTest {
 }

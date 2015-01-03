@@ -43,7 +43,6 @@ import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
-import org.locationtech.geogig.cli.annotation.StagingDatabaseReadOnly;
 import org.locationtech.geogig.repository.Hints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -549,10 +548,8 @@ public class GeogigCLI {
         Hints hints = new Hints();
 
         checkAnnotationHint(cmdClass, ReadOnly.class, Hints.OBJECTS_READ_ONLY, hints);
-        checkAnnotationHint(cmdClass, ReadOnly.class, Hints.STAGING_READ_ONLY, hints);
 
         checkAnnotationHint(cmdClass, ObjectDatabaseReadOnly.class, Hints.OBJECTS_READ_ONLY, hints);
-        checkAnnotationHint(cmdClass, StagingDatabaseReadOnly.class, Hints.STAGING_READ_ONLY, hints);
         checkAnnotationHint(cmdClass, RemotesReadOnly.class, Hints.REMOTES_READ_ONLY, hints);
 
         return hints;

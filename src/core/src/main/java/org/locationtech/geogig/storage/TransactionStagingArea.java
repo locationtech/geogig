@@ -44,7 +44,7 @@ public class TransactionStagingArea implements StagingArea {
 
     private StagingArea index;
 
-    private StagingDatabase database;
+    private ConflictsDatabase conflictsDb;
 
     /**
      * Constructs a new {@code TransactionStagingArea}.
@@ -54,15 +54,15 @@ public class TransactionStagingArea implements StagingArea {
      */
     public TransactionStagingArea(final StagingArea index, final UUID transactionId) {
         this.index = index;
-        database = new TransactionStagingDatabase(index.getDatabase(), transactionId);
+        conflictsDb = new TransactionConflictsDatabase(index.conflictsDatabase(), transactionId);
     }
 
     /**
-     * @return the transaction staging database
+     * @return the transaction conflicts database
      */
     @Override
-    public StagingDatabase getDatabase() {
-        return database;
+    public ConflictsDatabase conflictsDatabase() {
+        return conflictsDb;
     }
 
     /**
@@ -120,7 +120,7 @@ public class TransactionStagingArea implements StagingArea {
      */
     @Override
     public int countConflicted(@Nullable String pathFilter) {
-        return database.getConflicts(null, pathFilter).size();
+        return conflictsDb.getConflicts(null, pathFilter).size();
     }
 
     /**
@@ -130,7 +130,7 @@ public class TransactionStagingArea implements StagingArea {
      */
     @Override
     public List<Conflict> getConflicted(@Nullable String pathFilter) {
-        return database.getConflicts(null, pathFilter);
+        return conflictsDb.getConflicts(null, pathFilter);
     }
 
     @Override

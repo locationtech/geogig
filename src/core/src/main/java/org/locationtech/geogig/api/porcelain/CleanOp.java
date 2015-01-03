@@ -41,14 +41,14 @@ public class CleanOp extends AbstractGeoGigOp<WorkingTree> {
     /**
      * @see java.util.concurrent.Callable#call()
      */
-    protected  WorkingTree _call() {
+    protected WorkingTree _call() {
 
         if (path != null) {
             // check that is a valid path
             NodeRef.checkValidPath(path);
 
             Optional<NodeRef> ref = command(FindTreeChild.class).setParent(workingTree().getTree())
-                    .setChildPath(path).setIndex(true).call();
+                    .setChildPath(path).call();
 
             Preconditions.checkArgument(ref.isPresent(), "pathspec '%s' did not match any tree",
                     path);

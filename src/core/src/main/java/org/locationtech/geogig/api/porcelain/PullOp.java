@@ -20,7 +20,6 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.Remote;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
 
 import com.google.common.base.Optional;
@@ -194,8 +193,9 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
         Preconditions.checkArgument(remoteRepo.isPresent(), "Remote could not be resolved.");
         getProgressListener().started();
 
-        TransferSummary fetchResult = command(FetchOp.class).addRemote(remote).setDepth(depth.or(0))
-                .setFullDepth(fullDepth).setAll(all).setProgressListener(subProgress(80.f)).call();
+        TransferSummary fetchResult = command(FetchOp.class).addRemote(remote)
+                .setDepth(depth.or(0)).setFullDepth(fullDepth).setAll(all)
+                .setProgressListener(subProgress(80.f)).call();
 
         result.setFetchResult(fetchResult);
 
@@ -218,8 +218,8 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
 
             boolean force = refspec.length() > 0 && refspec.charAt(0) == '+';
             String remoteref = refs[0].substring(force ? 1 : 0);
-            Optional<Ref> sourceRef = findRemoteRef(remoteref);
-            if (!sourceRef.isPresent()) {
+            final Optional<Ref> sourceRefOpt = findRemoteRef(remoteref);
+            if (!sourceRefOpt.isPresent()) {
                 continue;
             }
 
@@ -237,44 +237,39 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
                 destinationref = headRef.getTarget();
             }
 
-            Optional<Ref> destRef = command(RefParse.class).setName(destinationref).call();
-            if (destRef.isPresent()) {
-                if (destRef.get().getObjectId().equals(sourceRef.get().getObjectId())
-                        || sourceRef.get().getObjectId().equals(ObjectId.NULL)) {
+            final Ref sourceRef = sourceRefOpt.get();
+            final ObjectId sourceOid = sourceRef.getObjectId();
+            final Optional<Ref> destRefOpt = command(RefParse.class).setName(destinationref).call();
+            if (destRefOpt.isPresent()) {
+                final Ref destRef = destRefOpt.get();
+                if (destRef.getObjectId().equals(sourceOid) || sourceOid.isNull()) {
                     // Already up to date.
-                    result.setOldRef(destRef.get());
-                    result.setNewRef(destRef.get());
+                    result.setOldRef(destRef);
+                    result.setNewRef(destRef);
                     continue;
                 }
-                result.setOldRef(destRef.get());
-                if (destRef.get().getObjectId().equals(ObjectId.NULL)) {
-                    command(UpdateRef.class).setName(destRef.get().getName())
-                            .setNewValue(sourceRef.get().getObjectId()).call();
+                result.setOldRef(destRef);
+
+                final boolean forceCheckout = destRef.getObjectId().isNull();
+                command(CheckoutOp.class).setSource(destinationref).setForce(forceCheckout).call();
+                if (rebase) {
+                    command(RebaseOp.class).setUpstream(Suppliers.ofInstance(sourceOid)).call();
                 } else {
-                    command(CheckoutOp.class).setSource(destinationref).call();
-                    if (rebase) {
-                        command(RebaseOp.class).setUpstream(
-                                Suppliers.ofInstance(sourceRef.get().getObjectId())).call();
-                    } else {
-                        try {
-                            MergeReport report = command(MergeOp.class)
-                                    .setAuthor(authorName.orNull(), authorEmail.orNull())
-                                    .addCommit(Suppliers.ofInstance(sourceRef.get().getObjectId()))
-                                    .call();
-                            result.setMergeReport(Optional.of(report));
-                        } catch (NothingToCommitException e) {
-                            // the branch that we are trying to pull has less history than the
-                            // branch we are pulling into
-                        }
+                    try {
+                        MergeReport report = command(MergeOp.class)
+                                .setAuthor(authorName.orNull(), authorEmail.orNull())
+                                .addCommit(Suppliers.ofInstance(sourceOid)).call();
+                        result.setMergeReport(Optional.of(report));
+                    } catch (NothingToCommitException e) {
+                        // the branch that we are trying to pull has less history than the
+                        // branch we are pulling into
                     }
                 }
-                destRef = command(RefParse.class).setName(destinationref).call();
-                result.setNewRef(destRef.get());
+                result.setNewRef(command(RefParse.class).setName(destinationref).call().get());
             } else {
                 // make a new branch
                 Ref newRef = command(BranchCreateOp.class).setAutoCheckout(true)
-                        .setName(destinationref)
-                        .setSource(sourceRef.get().getObjectId().toString()).call();
+                        .setName(destinationref).setSource(sourceOid.toString()).call();
                 result.setNewRef(newRef);
             }
 

@@ -32,7 +32,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -75,8 +74,6 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
      */
     public static final DataStreamSerializationFactoryV1 INSTANCE = new DataStreamSerializationFactoryV1();
 
-    private final static ObjectReader<RevObject> OBJECT_READER = new ObjectReaderV1();
-
     private static final EnumMap<TYPE, Serializer<? extends RevObject>> serializers = Maps
             .newEnumMap(TYPE.class);
     static {
@@ -87,6 +84,29 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
         serializers.put(TYPE.TREE, new TreeSerializer());
     }
 
+    @Override
+    public void write(RevObject o, OutputStream out) throws IOException {
+        serializer(o.getType()).write(o, out);
+    }
+
+    @Override
+    public RevObject read(ObjectId id, InputStream rawData) throws IOException {
+        DataInput in = new DataInputStream(rawData);
+        String header = readToMarker(in, NUL);
+        if ("commit".equals(header))
+            return readCommit(id, in);
+        else if ("tree".equals(header))
+            return readTree(id, in);
+        else if ("feature".equals(header))
+            return readFeature(id, in);
+        else if ("featuretype".equals(header))
+            return readFeatureType(id, in);
+        else if ("tag".equals(header))
+            return readTag(id, in);
+        else
+            throw new IllegalArgumentException("Unrecognized object header: " + header);
+    }
+
     @SuppressWarnings("unchecked")
     private static <T extends RevObject> Serializer<T> serializer(TYPE type) {
         Serializer<? extends RevObject> serializer = serializers.get(type);
@@ -94,46 +114,6 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
             throw new UnsupportedOperationException("No serializer for " + type);
         }
         return (Serializer<T>) serializer;
-    }
-
-    @Override
-    public ObjectReader<RevCommit> createCommitReader() {
-        return serializer(TYPE.COMMIT);
-    }
-
-    @Override
-    public ObjectReader<RevTree> createRevTreeReader() {
-        return serializer(TYPE.TREE);
-    }
-
-    @Override
-    public ObjectReader<RevFeature> createFeatureReader() {
-        return serializer(TYPE.FEATURE);
-    }
-
-    @Override
-    public ObjectReader<RevFeature> createFeatureReader(Map<String, Serializable> hints) {
-        return serializer(TYPE.FEATURE);
-    }
-
-    @Override
-    public ObjectReader<RevFeatureType> createFeatureTypeReader() {
-        return serializer(TYPE.FEATURETYPE);
-    }
-
-    @Override
-    public <T extends RevObject> ObjectWriter<T> createObjectWriter(TYPE type) {
-        return serializer(type);
-    }
-
-    @Override
-    public <T extends RevObject> ObjectReader<T> createObjectReader(TYPE type) {
-        return serializer(type);
-    }
-
-    @Override
-    public ObjectReader<RevObject> createObjectReader() {
-        return OBJECT_READER;
     }
 
     private static interface Serializer<T extends RevObject> extends ObjectReader<T>,
@@ -367,31 +347,4 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
         }
     }
 
-    private static class ObjectReaderV1 implements org.locationtech.geogig.storage.ObjectReader<RevObject> {
-        @Override
-        public RevObject read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
-            DataInput in = new DataInputStream(rawData);
-            try {
-                return readData(id, in);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        private RevObject readData(ObjectId id, DataInput in) throws IOException {
-            String header = readToMarker(in, NUL);
-            if ("commit".equals(header))
-                return readCommit(id, in);
-            else if ("tree".equals(header))
-                return readTree(id, in);
-            else if ("feature".equals(header))
-                return readFeature(id, in);
-            else if ("featuretype".equals(header))
-                return readFeatureType(id, in);
-            else if ("tag".equals(header))
-                return readTag(id, in);
-            else
-                throw new IllegalArgumentException("Unrecognized object header: " + header);
-        }
-    }
 }

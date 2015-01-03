@@ -30,8 +30,6 @@ public class Hints implements Serializable {
 
     public static final String OBJECTS_READ_ONLY = "OBJECTS_READ_ONLY";
 
-    public static final String STAGING_READ_ONLY = "STAGING_READ_ONLY";
-
     public static final String REMOTES_READ_ONLY = "REMOTES_READ_ONLY";
 
     private Map<String, Serializable> hintsMap = Maps.newHashMap();
@@ -67,7 +65,6 @@ public class Hints implements Serializable {
     public static Hints readOnly() {
         Hints hints = new Hints();
         hints.set(Hints.OBJECTS_READ_ONLY, Boolean.TRUE);
-        hints.set(Hints.STAGING_READ_ONLY, Boolean.TRUE);
         hints.set(Hints.REMOTES_READ_ONLY, Boolean.TRUE);
         return hints;
     }
@@ -75,7 +72,6 @@ public class Hints implements Serializable {
     public static Hints readWrite() {
         Hints hints = new Hints();
         hints.set(Hints.OBJECTS_READ_ONLY, Boolean.FALSE);
-        hints.set(Hints.STAGING_READ_ONLY, Boolean.FALSE);
         hints.set(Hints.REMOTES_READ_ONLY, Boolean.FALSE);
         return hints;
     }

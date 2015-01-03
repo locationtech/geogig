@@ -19,9 +19,6 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.storage.ObjectWriter;
 import org.locationtech.geogig.storage.text.TextSerializationFactory;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -208,16 +205,15 @@ public class Patch {
      */
     @Override
     public String toString() {
-        TextSerializationFactory factory = new TextSerializationFactory();
+        TextSerializationFactory serializer = TextSerializationFactory.INSTANCE;
         StringBuilder sb = new StringBuilder();
         for (FeatureInfo feature : addedFeatures) {
             String path = feature.getPath();
             sb.append("A\t" + path + "\t" + feature.getFeatureType().getId() + "\n");
-            ObjectWriter<RevObject> writer = factory.createObjectWriter(TYPE.FEATURE);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
             try {
-                writer.write(revFeature, output);
+                serializer.write(revFeature, output);
             } catch (IOException e) {
             }
             sb.append(output.toString());
@@ -226,11 +222,10 @@ public class Patch {
         for (FeatureInfo feature : removedFeatures) {
             String path = feature.getPath();
             sb.append("R\t" + path + "\t" + feature.getFeatureType().getId() + "\n");
-            ObjectWriter<RevObject> writer = factory.createObjectWriter(TYPE.FEATURE);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
             try {
-                writer.write(revFeature, output);
+                serializer.write(revFeature, output);
             } catch (IOException e) {
             }
             sb.append(output.toString());

@@ -22,8 +22,8 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.repository.DepthSearch;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 import com.google.common.base.Optional;
 import com.google.inject.Guice;
@@ -38,17 +38,17 @@ public class WriteBackTest extends Assert {
 
     ObjectDatabase odb;
 
-    StagingDatabase indexDb;
+    ConflictsDatabase conflicts;
 
     @Before
     public void setUp() {
-        Context injector = Guice.createInjector(Modules.override(new GeogigModule()).with(
-                new MemoryModule(null))).getInstance(Context.class);
+        Context injector = Guice.createInjector(
+                Modules.override(new GeogigModule()).with(new MemoryModule(null))).getInstance(
+                Context.class);
 
         odb = injector.objectDatabase();
-        indexDb = injector.stagingDatabase();
         odb.open();
-        indexDb.open();
+        conflicts = injector.conflictsDatabase();
 
         writeBack = injector.command(WriteBack.class);
     }

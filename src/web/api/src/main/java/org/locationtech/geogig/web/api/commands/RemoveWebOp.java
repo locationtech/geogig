@@ -75,8 +75,7 @@ public class RemoveWebOp extends AbstractWebAPICommand {
         NodeRef.checkValidPath(path);
 
         Optional<NodeRef> node = geogig.command(FindTreeChild.class)
-                .setParent(geogig.workingTree().getTree()).setIndex(true).setChildPath(path)
-                .call();
+                .setParent(geogig.workingTree().getTree()).setChildPath(path).call();
         if (node.isPresent()) {
             NodeRef nodeRef = node.get();
             if (nodeRef.getType() == TYPE.TREE) {

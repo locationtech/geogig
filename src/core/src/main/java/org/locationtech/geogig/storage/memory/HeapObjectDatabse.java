@@ -10,6 +10,7 @@
 package org.locationtech.geogig.storage.memory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -42,6 +43,8 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
 
     private ConcurrentMap<ObjectId, byte[]> objects;
 
+    private HeapConflictsDatabase conflicts;
+
     public HeapObjectDatabse() {
         super(DataStreamSerializationFactoryV1.INSTANCE);
     }
@@ -56,6 +59,8 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
         if (objects != null) {
             objects.clear();
             objects = null;
+            conflicts.close();
+            conflicts = null;
         }
     }
 
@@ -76,6 +81,12 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
             return;
         }
         objects = Maps.newConcurrentMap();
+        conflicts = new HeapConflictsDatabase();
+    }
+
+    @Override
+    public HeapConflictsDatabase getConflictsDatabase() {
+        return conflicts;
     }
 
     /**
@@ -87,6 +98,7 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
     @Override
     public boolean exists(ObjectId id) {
         checkNotNull(id);
+        checkState(isOpen(), "db is closed");
         return objects.containsKey(id);
     }
 
@@ -99,6 +111,7 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
     @Override
     public boolean delete(ObjectId objectId) {
         checkNotNull(objectId);
+        checkState(isOpen(), "db is closed");
         return objects.remove(objectId) != null;
     }
 
@@ -115,6 +128,7 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
      */
     @Override
     public List<ObjectId> lookUp(final String partialId) {
+        checkState(isOpen(), "db is closed");
         Preconditions.checkNotNull(partialId);
         List<ObjectId> matches = Lists.newLinkedList();
         for (ObjectId id : objects.keySet()) {
@@ -128,6 +142,7 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
     @Override
     protected InputStream getRawInternal(ObjectId id, boolean failIfNotFound)
             throws IllegalArgumentException {
+
         byte[] data = objects.get(id);
         if (data == null) {
             if (failIfNotFound) {
@@ -146,6 +161,7 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
 
     @Override
     public long deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
+        checkState(isOpen(), "db is closed");
         long count = 0;
         while (ids.hasNext()) {
             ObjectId id = ids.next();
@@ -162,9 +178,10 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
 
     @Override
     public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final BulkOpListener listener) {
+        checkState(isOpen(), "db is closed");
 
+        final Iterator<ObjectId> iterator = Lists.newArrayList(ids).iterator();
         return new AbstractIterator<RevObject>() {
-            final Iterator<ObjectId> iterator = ids.iterator();
 
             @Override
             protected RevObject computeNext() {
@@ -176,8 +193,8 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
                     raw = objects.get(id);
                     if (raw != null) {
                         try {
-                            found = serializationFactory.createObjectReader().read(id,
-                                    new LZFInputStream(new ByteArrayInputStream(raw)));
+                            found = serializer.read(id, new LZFInputStream(
+                                    new ByteArrayInputStream(raw)));
                         } catch (IOException e) {
                             throw Throwables.propagate(e);
                         }
@@ -205,4 +222,5 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
     public String toString() {
         return getClass().getSimpleName();
     }
+
 }

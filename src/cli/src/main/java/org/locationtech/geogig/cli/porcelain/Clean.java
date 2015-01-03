@@ -26,14 +26,12 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.porcelain.CleanOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.repository.Repository;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Optional;
 
-@ObjectDatabaseReadOnly
 @Parameters(commandNames = "clean", commandDescription = "Deletes untracked features from working tree")
 public class Clean extends AbstractCommand {
 
@@ -59,7 +57,7 @@ public class Clean extends AbstractCommand {
                 Repository repository = cli.getGeogig().getRepository();
                 NodeRef.checkValidPath(pathFilter);
 
-                Optional<NodeRef> ref = repository.command(FindTreeChild.class).setIndex(true)
+                Optional<NodeRef> ref = repository.command(FindTreeChild.class)
                         .setParent(repository.workingTree().getTree()).setChildPath(pathFilter)
                         .call();
 

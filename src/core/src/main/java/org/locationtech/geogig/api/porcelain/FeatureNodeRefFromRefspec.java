@@ -60,7 +60,7 @@ public class FeatureNodeRefFromRefspec extends AbstractGeoGigOp<Optional<NodeRef
                 .get();
 
         Optional<NodeRef> nodeRef = command(FindTreeChild.class).setParent(revTree)
-                .setChildPath(path).setIndex(true).call();
+                .setChildPath(path).call();
         Preconditions.checkArgument(nodeRef.isPresent(), "Invalid reference: %s", ref);
 
         RevFeatureType revFeatureType = command(RevObjectParse.class)
@@ -77,7 +77,7 @@ public class FeatureNodeRefFromRefspec extends AbstractGeoGigOp<Optional<NodeRef
         if (!revObject.isPresent()) { // let's try to see if it is a feature in the working tree
             NodeRef.checkValidPath(ref);
             Optional<NodeRef> elementRef = command(FindTreeChild.class)
-                    .setParent(workingTree().getTree()).setChildPath(ref).setIndex(true).call();
+                    .setParent(workingTree().getTree()).setChildPath(ref).call();
             Preconditions.checkArgument(elementRef.isPresent(), "Invalid reference: %s", ref);
             ObjectId id = elementRef.get().objectId();
             revObject = command(RevObjectParse.class).setObjectId(id).call(RevObject.class);
@@ -93,7 +93,7 @@ public class FeatureNodeRefFromRefspec extends AbstractGeoGigOp<Optional<NodeRef
     }
 
     @Override
-    protected  Optional<NodeRef> _call() {
+    protected Optional<NodeRef> _call() {
 
         Optional<RevFeature> feature = getFeatureFromRefSpec();
 

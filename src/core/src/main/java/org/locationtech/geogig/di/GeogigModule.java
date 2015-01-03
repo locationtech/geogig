@@ -26,14 +26,12 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.fs.FileObjectDatabase;
 import org.locationtech.geogig.storage.fs.FileRefDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import org.locationtech.geogig.storage.memory.HeapDeduplicationService;
 import org.locationtech.geogig.storage.memory.HeapGraphDatabase;
-import org.locationtech.geogig.storage.memory.HeapStagingDatabase;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
@@ -87,7 +85,6 @@ public class GeogigModule extends AbstractModule {
         bind(Repository.class).in(Scopes.SINGLETON);
         bind(ConfigDatabase.class).to(IniFileConfigDatabase.class).in(Scopes.SINGLETON);
         bind(StagingArea.class).to(Index.class).in(Scopes.SINGLETON);
-        bind(StagingDatabase.class).to(HeapStagingDatabase.class).in(Scopes.SINGLETON);
         bind(WorkingTree.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).to(HeapGraphDatabase.class).in(Scopes.SINGLETON);
 

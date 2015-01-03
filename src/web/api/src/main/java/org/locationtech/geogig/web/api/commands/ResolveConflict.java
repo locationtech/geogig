@@ -81,7 +81,7 @@ public class ResolveConflict extends AbstractWebAPICommand {
         RevTree revTree = geogig.workingTree().getTree();
 
         Optional<NodeRef> nodeRef = geogig.command(FindTreeChild.class).setParent(revTree)
-                .setChildPath(NodeRef.parentPath(path)).setIndex(true).call();
+                .setChildPath(NodeRef.parentPath(path)).call();
         Preconditions.checkArgument(nodeRef.isPresent(), "Invalid reference: %s",
                 NodeRef.parentPath(path));
 
@@ -112,7 +112,7 @@ public class ResolveConflict extends AbstractWebAPICommand {
 
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class)
                 .setParent(geogig.workingTree().getTree()).setChildPath(node.getParentPath())
-                .setIndex(true).call();
+                .call();
         RevTreeBuilder treeBuilder = null;
         ObjectId metadataId = ObjectId.NULL;
         if (parentNode.isPresent()) {
@@ -123,14 +123,12 @@ public class ResolveConflict extends AbstractWebAPICommand {
             treeBuilder = new RevTreeBuilder(geogig.objectDatabase(), parsed.get());
             treeBuilder.remove(node.getNode().getName());
         } else {
-            treeBuilder = new RevTreeBuilder(geogig.stagingDatabase());
+            treeBuilder = new RevTreeBuilder(geogig.objectDatabase());
         }
         treeBuilder.put(node.getNode());
-        ObjectId newTreeId = geogig
-                .command(WriteBack.class)
-                .setAncestor(
-                        geogig.workingTree().getTree().builder(geogig.stagingDatabase()))
-                .setChildPath(node.getParentPath()).setToIndex(true).setTree(treeBuilder.build())
+        ObjectId newTreeId = geogig.command(WriteBack.class)
+                .setAncestor(geogig.workingTree().getTree().builder(geogig.objectDatabase()))
+                .setChildPath(node.getParentPath()).setTree(treeBuilder.build())
                 .setMetadataId(metadataId).call();
         geogig.workingTree().updateWorkHead(newTreeId);
 

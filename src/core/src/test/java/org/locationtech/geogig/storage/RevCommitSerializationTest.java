@@ -22,20 +22,20 @@ import org.junit.Test;
 import org.locationtech.geogig.api.CommitBuilder;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject.TYPE;
+import org.locationtech.geogig.api.RevObject;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 public abstract class RevCommitSerializationTest extends Assert {
 
-    protected ObjectSerializingFactory factory;
+    protected ObjectSerializingFactory serializer;
 
     private CommitBuilder testCommit;
 
     @Before
     public void before() {
-        this.factory = getObjectSerializingFactory();
+        this.serializer = getObjectSerializingFactory();
         ObjectId treeId = ObjectId.forString("treeid");
         testCommit = testCommit(treeId, "groldan", "groldan@boundlessgeo.com", 5000L, "jd",
                 "jd@lmnsolutions.com", 10000L, "test message", ObjectId.forString("first parent"));
@@ -98,13 +98,11 @@ public abstract class RevCommitSerializationTest extends Assert {
     private void testCommit(RevCommit commit) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        ObjectWriter<RevCommit> writer = factory.createObjectWriter(TYPE.COMMIT);
-        writer.write(commit, out);
+        serializer.write(commit, out);
 
         // System.err.println(out);
 
-        ObjectReader<RevCommit> reader = factory.createCommitReader();
-        RevCommit read = reader.read(commit.getId(), new ByteArrayInputStream(out.toByteArray()));
+        RevObject read = serializer.read(commit.getId(), new ByteArrayInputStream(out.toByteArray()));
         assertEquals(commit, read);
     }
 
@@ -156,17 +154,15 @@ public abstract class RevCommitSerializationTest extends Assert {
         assertNotNull(cmtIn);
 
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        ObjectWriter<RevCommit> write = factory.createObjectWriter(TYPE.COMMIT);
-        write.write(cmtIn, bout);
+        serializer.write(cmtIn, bout);
 
         // System.err.println(bout);
         byte[] bytes = bout.toByteArray();
         assertTrue(bytes.length > 0);
 
         ByteArrayInputStream bin = new ByteArrayInputStream(bytes);
-        ObjectReader<RevCommit> read = factory.createCommitReader();
 
-        RevCommit cmtOut = read.read(cmtIn.getId(), bin);
+        RevCommit cmtOut = (RevCommit) serializer.read(cmtIn.getId(), bin);
 
         assertEquals(treeId, cmtOut.getTreeId());
         assertEquals(parents, cmtOut.getParentIds());

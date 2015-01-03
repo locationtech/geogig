@@ -93,7 +93,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
      * @return a FeatureCollection with the specified features
      */
     @Override
-    protected  SimpleFeatureStore _call() {
+    protected SimpleFeatureStore _call() {
 
         final SimpleFeatureStore targetStore = getTargetStore();
 
@@ -115,8 +115,8 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                 Iterator<DiffEntry> diffs = command(DiffOp.class).setOldVersion(oldRef)
                         .setNewVersion(newRef).setFilter(path).call();
 
-                final Iterator<SimpleFeature> plainFeatures = getFeatures(diffs, old, stagingDatabase(),
-                        defaultMetadataId, progressListener);
+                final Iterator<SimpleFeature> plainFeatures = getFeatures(diffs, old,
+                        objectDatabase(), defaultMetadataId, progressListener);
 
                 Iterator<Optional<Feature>> transformed = Iterators.transform(plainFeatures,
                         ExportDiffOp.this.function);
@@ -225,8 +225,8 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
     private NodeRef resolTypeTreeRef(final String refspec, final String treePath,
             final RevTree rootTree) {
-        Optional<NodeRef> typeTreeRef = command(FindTreeChild.class).setIndex(true)
-                .setParent(rootTree).setChildPath(treePath).call();
+        Optional<NodeRef> typeTreeRef = command(FindTreeChild.class).setParent(rootTree)
+                .setChildPath(treePath).call();
         checkArgument(typeTreeRef.isPresent(), "Type tree %s does not exist", refspec);
         checkArgument(TYPE.TREE.equals(typeTreeRef.get().getType()),
                 "%s did not resolve to a tree", refspec);
@@ -238,7 +238,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
         checkArgument(rootTreeId.isPresent(), "Invalid tree spec: %s", refspec);
 
-        RevTree rootTree = stagingDatabase().getTree(rootTreeId.get());
+        RevTree rootTree = objectDatabase().getTree(rootTreeId.get());
         return rootTree;
     }
 

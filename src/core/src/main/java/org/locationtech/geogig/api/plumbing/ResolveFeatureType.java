@@ -64,7 +64,7 @@ public class ResolveFeatureType extends AbstractGeoGigOp<Optional<RevFeatureType
             return Optional.absent();
         }
         Optional<NodeRef> node = command(FindTreeChild.class).setParent(parent.get())
-                .setChildPath(path).setIndex(true).call();
+                .setChildPath(path).call();
         if (!node.isPresent()) {
             return Optional.absent();
         }

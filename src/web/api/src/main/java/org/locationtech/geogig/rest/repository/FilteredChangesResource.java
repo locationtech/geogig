@@ -163,11 +163,6 @@ public class FilteredChangesResource extends Finder {
                     protected boolean trackingObject(ObjectId objectId) {
                         return tracked.contains(objectId);
                     }
-
-                    @Override
-                    public boolean isAutoIngesting() {
-                        return false;
-                    }
                 };
 
                 getResponse().setEntity(

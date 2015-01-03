@@ -16,12 +16,10 @@ import java.lang.annotation.Target;
 
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 /**
  * Annotation for {@link CLICommand}s giving geogig a hint that the operation is read only for
- * {@link ObjectDatabase}, but may need write access to {@link StagingDatabase}, and any remote
- * repository it may connect to.
+ * {@link ObjectDatabase}, but may need write access to any remote repository it may connect to.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

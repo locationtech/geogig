@@ -17,7 +17,6 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -38,8 +37,6 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
     private Supplier<Optional<RevTree>> parentSupplier;
 
     private String childPath;
-
-    private boolean indexDb;
 
     private String parentPath;
 
@@ -77,16 +74,6 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
     }
 
     /**
-     * @param indexDb whether to look up in the {@link StagingDatabase index db} ({@code true}) or
-     *        on the repository's {@link ObjectDatabase object database} (default)
-     * @return {@code this}
-     */
-    public FindOrCreateSubtree setIndex(boolean indexDb) {
-        this.indexDb = indexDb;
-        return this;
-    }
-
-    /**
      * Executes the command.
      * 
      * @return the subtree if it was found, or a new one if it wasn't
@@ -101,9 +88,8 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
         if (parentSupplier.get().isPresent()) {
             RevTree parent = parentSupplier.get().get();
 
-            Optional<NodeRef> treeChildRef = command(FindTreeChild.class).setIndex(indexDb)
-                    .setParentPath(parentPath).setChildPath(childPath)
-                    .setParent(Suppliers.ofInstance(parent)).call();
+            Optional<NodeRef> treeChildRef = command(FindTreeChild.class).setParentPath(parentPath)
+                    .setChildPath(childPath).setParent(Suppliers.ofInstance(parent)).call();
 
             if (treeChildRef.isPresent()) {
                 NodeRef treeRef = treeChildRef.get();
@@ -121,7 +107,7 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
         if (RevTree.EMPTY_TREE_ID.equals(subtreeId)) {
             return RevTree.EMPTY;
         }
-        ObjectDatabase target = indexDb ? stagingDatabase() : objectDatabase();
+        ObjectDatabase target = objectDatabase();
         RevTree tree = target.getTree(subtreeId);
         return tree;
     }

@@ -37,7 +37,6 @@ import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.plumbing.diff.MutableTree;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 
@@ -63,8 +62,6 @@ public class WriteTree2Test extends RepositoryTestCase {
 
     private GeoGIG geogig;
 
-    private StagingDatabase indexDb;
-
     private ObjectDatabase objectDb;
 
     private RevTree leftTree;
@@ -75,7 +72,6 @@ public class WriteTree2Test extends RepositoryTestCase {
     protected void setUpInternal() throws Exception {
         geogig = getGeogig();
         command = geogig.command(WriteTree2.class);
-        indexDb = geogig.getRepository().stagingDatabase();
         objectDb = geogig.getRepository().objectDatabase();
     }
 
@@ -83,9 +79,6 @@ public class WriteTree2Test extends RepositoryTestCase {
     public void tearDownInternal() {
         if (objectDb != null) {
             objectDb.close();
-        }
-        if (indexDb != null) {
-            indexDb.close();
         }
     }
 
@@ -657,19 +650,19 @@ public class WriteTree2Test extends RepositoryTestCase {
     }
 
     private RevTree createStageHeadTree(NodeRef... treeRefs) {
-        RevTree root = createFromRefs(indexDb, treeRefs);
+        RevTree root = createFromRefs(objectDb, treeRefs);
         geogig.command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(root.getId()).call();
         return root;
     }
 
     private RevTree createFromRefs(ObjectDatabase targetDb, NodeRef... treeRefs) {
         MutableTree mutableTree = MutableTree.createFromRefs(RevTree.EMPTY_TREE_ID, treeRefs);
-        RevTree tree = mutableTree.build(indexDb, targetDb);
+        RevTree tree = mutableTree.build(objectDb, targetDb);
         return tree;
     }
 
     private NodeRef indexTree(String path, String id, String mdId, int numFeatures) {
-        return tree(indexDb, path, id, mdId, numFeatures);
+        return tree(objectDb, path, id, mdId, numFeatures);
     }
 
     private NodeRef repoTree(String path, String id, String mdId, int numFeatures) {

@@ -67,8 +67,7 @@ public class Cat extends AbstractCommand {
         checkParameter(obj.isPresent(), "refspec did not resolve to any object.");
         if (binary) {
             ObjectSerializingFactory factory = DataStreamSerializationFactoryV1.INSTANCE;
-            ObjectWriter<RevObject> writer = factory.createObjectWriter(obj.get().getType());
-            writer.write(obj.get(), System.out);
+            factory.write(obj.get(), System.out);
         } else {
             CharSequence s = geogig.command(CatObject.class)
                     .setObject(Suppliers.ofInstance(obj.get())).call();

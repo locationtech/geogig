@@ -64,8 +64,4 @@ public class HttpFilteredDiffIterator extends FilteredDiffIterator {
     protected void processObject(RevObject object) {
     }
 
-    @Override
-    public boolean isAutoIngesting() {
-        return true;
-    }
 }

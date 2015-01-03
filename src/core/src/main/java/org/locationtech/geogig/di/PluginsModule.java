@@ -15,7 +15,6 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -23,13 +22,14 @@ import com.google.inject.Provider;
 import com.google.inject.Scopes;
 
 public class PluginsModule extends AbstractModule {
-    
+
     @Override
     protected void configure() {
-        bind(ObjectDatabase.class).toProvider(PluginObjectDatabaseProvider.class).in(Scopes.SINGLETON);
-        bind(StagingDatabase.class).toProvider(PluginStagingDatabaseProvider.class).in(Scopes.SINGLETON);
+        bind(ObjectDatabase.class).toProvider(PluginObjectDatabaseProvider.class).in(
+                Scopes.SINGLETON);
         bind(RefDatabase.class).toProvider(PluginRefDatabaseProvider.class).in(Scopes.SINGLETON);
-        bind(GraphDatabase.class).toProvider(PluginGraphDatabaseProvider.class).in(Scopes.SINGLETON);
+        bind(GraphDatabase.class).toProvider(PluginGraphDatabaseProvider.class)
+                .in(Scopes.SINGLETON);
     }
 
     private static class PluginObjectDatabaseProvider extends FormatSelector<ObjectDatabase> {
@@ -56,36 +56,6 @@ public class PluginsModule extends AbstractModule {
         @Inject
         public PluginObjectDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
                 Map<VersionedFormat, Provider<ObjectDatabase>> plugins) {
-            super(config, plugins);
-            this.defaults = defaults;
-        }
-    }
-
-    private static class PluginStagingDatabaseProvider extends FormatSelector<StagingDatabase> {
-        private final PluginDefaults defaults;
-
-        @Override
-        protected final VersionedFormat readConfig(ConfigDatabase config) {
-            String format = null, version = null;
-            try {
-                format = config.get("storage.staging").orNull();
-                version = config.get(format + ".version").orNull();
-            } catch (RuntimeException e) {
-                // ignore, the config may not be available when we need this
-            }
-
-            if (format == null || version == null) {
-                // .get, not .orNull. we should only be using the plugin providers when there are
-                // plugins set up
-                return defaults.getStaging().get();
-            } else {
-                return new VersionedFormat(format, version);
-            }
-        }
-
-        @Inject
-        public PluginStagingDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
-                Map<VersionedFormat, Provider<StagingDatabase>> plugins) {
             super(config, plugins);
             this.defaults = defaults;
         }

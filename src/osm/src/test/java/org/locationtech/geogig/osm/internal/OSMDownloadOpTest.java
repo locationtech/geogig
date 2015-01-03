@@ -139,7 +139,7 @@ public class OSMDownloadOpTest extends RepositoryTestCase {
         assertTrue(tree.isPresent());
     }
 
-    // @Ignore
+    @Ignore
     @Test
     public void testDownloadWithBBoxAndMapping() throws Exception {
         String mappingFilename = OSMMapOp.class.getResource("mapping.json").getFile();

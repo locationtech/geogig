@@ -19,7 +19,6 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.repository.DepthSearch;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -40,18 +39,6 @@ public class FindTreeChild extends AbstractGeoGigOp<Optional<NodeRef>> {
     private String childPath;
 
     private String parentPath;
-
-    private boolean indexDb;
-
-    /**
-     * @param indexDb whether to look up in the {@link StagingDatabase index db} ({@code true}) or
-     *        on the repository's {@link ObjectDatabase object database} (default)
-     * @return {@code this}
-     */
-    public FindTreeChild setIndex(final boolean indexDb) {
-        this.indexDb = indexDb;
-        return this;
-    }
 
     /**
      * @param tree a supplier that resolves to the tree where to start the search for the nested
@@ -97,7 +84,7 @@ public class FindTreeChild extends AbstractGeoGigOp<Optional<NodeRef>> {
      *         {@link Optional#absent()} if it wasn't
      */
     @Override
-    protected  Optional<NodeRef> _call() {
+    protected Optional<NodeRef> _call() {
         checkNotNull(childPath, "childPath");
         final RevTree tree;
         if (parent == null) {
@@ -111,7 +98,7 @@ public class FindTreeChild extends AbstractGeoGigOp<Optional<NodeRef>> {
         }
         final String path = childPath;
         final String parentPath = this.parentPath == null ? "" : this.parentPath;
-        final ObjectDatabase target = indexDb ? stagingDatabase() : objectDatabase();
+        final ObjectDatabase target = objectDatabase();
 
         DepthSearch depthSearch = new DepthSearch(target);
         Optional<NodeRef> childRef = depthSearch.find(tree, parentPath, path);

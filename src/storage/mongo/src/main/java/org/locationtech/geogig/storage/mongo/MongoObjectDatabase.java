@@ -30,10 +30,10 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.ObjectWriter;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 
 import com.google.common.base.Functions;
@@ -80,6 +80,8 @@ public class MongoObjectDatabase implements ObjectDatabase {
 
     private ExecutorService executor;
 
+    private MongoConflictsDatabase conflicts;
+
     @Inject
     public MongoObjectDatabase(ConfigDatabase config, MongoConnectionManager manager,
             ExecutorService executor) {
@@ -98,7 +100,7 @@ public class MongoObjectDatabase implements ObjectDatabase {
         ByteArrayInputStream byteStream = new ByteArrayInputStream(buffer);
         RevObject result;
         try {
-            result = serializers.createObjectReader().read(id, new LZFInputStream(byteStream));
+            result = serializers.read(id, new LZFInputStream(byteStream));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -106,11 +108,10 @@ public class MongoObjectDatabase implements ObjectDatabase {
     }
 
     private byte[] toBytes(RevObject object) {
-        ObjectWriter<RevObject> writer = serializers.createObjectWriter(object.getType());
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         LZFOutputStream cOut = new LZFOutputStream(byteStream);
         try {
-            writer.write(object, cOut);
+            serializers.write(object, cOut);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -137,6 +138,7 @@ public class MongoObjectDatabase implements ObjectDatabase {
         db = client.getDB(database);
         collection = db.getCollection(getCollectionName());
         collection.ensureIndex("oid");
+        conflicts = new MongoConflictsDatabase(db);
     }
 
     @Override
@@ -168,6 +170,12 @@ public class MongoObjectDatabase implements ObjectDatabase {
         client = null;
         db = null;
         collection = null;
+        conflicts = null;
+    }
+
+    @Override
+    public ConflictsDatabase getConflictsDatabase() {
+        return conflicts;
     }
 
     @Override

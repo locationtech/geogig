@@ -23,7 +23,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.RevObject.TYPE;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -55,7 +54,7 @@ public abstract class RevFeatureSerializationTest extends Assert {
 
     private Feature feature1_1;
 
-    protected ObjectSerializingFactory factory = getObjectSerializingFactory();
+    protected ObjectSerializingFactory serializer = getObjectSerializingFactory();
 
     protected abstract ObjectSerializingFactory getObjectSerializingFactory();
 
@@ -94,17 +93,15 @@ public abstract class RevFeatureSerializationTest extends Assert {
     protected void testFeatureReadWrite(Feature feature) throws Exception {
 
         RevFeature newFeature = RevFeatureBuilder.build(feature);
-        ObjectWriter<RevFeature> writer = factory.<RevFeature> createObjectWriter(TYPE.FEATURE);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        writer.write(newFeature, output);
+        serializer.write(newFeature, output);
 
         byte[] data = output.toByteArray();
         assertTrue(data.length > 0);
 
-        ObjectReader<RevFeature> reader = factory.<RevFeature> createObjectReader(TYPE.FEATURE);
         ByteArrayInputStream input = new ByteArrayInputStream(data);
-        RevFeature feat = reader.read(newFeature.getId(), input);
+        RevFeature feat = (RevFeature) serializer.read(newFeature.getId(), input);
 
         assertNotNull(feat);
         assertEquals(newFeature.getValues().size(), feat.getValues().size());

@@ -11,22 +11,16 @@ package org.locationtech.geogig.storage.mongo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 import javax.annotation.Nullable;
 
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.storage.AbstractStagingDatabase;
-import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
-import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -34,31 +28,13 @@ import com.mongodb.DBObject;
 /**
  * A staging database that uses a MongoDB server for persistence.
  */
-public class MongoStagingDatabase extends AbstractStagingDatabase implements StagingDatabase {
+class MongoConflictsDatabase implements ConflictsDatabase {
 
-    protected DBCollection conflicts;
+    private DBCollection conflicts;
 
-    private ConfigDatabase config;
-
-    @Inject
-    public MongoStagingDatabase(final ConfigDatabase config, final MongoConnectionManager manager,
-            final ObjectDatabase repositoryDb, ExecutorService executor) {
-        super(Suppliers.ofInstance(repositoryDb), Suppliers.ofInstance(new MongoObjectDatabase(
-                config, manager, "staging", executor)));
-        this.config = config;
-    }
-
-    @Override
-    synchronized public void open() {
-        super.open();
-        conflicts = ((MongoObjectDatabase) super.stagingDb).getCollection("conflicts");
+    public MongoConflictsDatabase(DB db) {
+        conflicts = db.getCollection("conflicts");
         conflicts.ensureIndex("path");
-    }
-
-    @Override
-    synchronized public void close() {
-        super.close();
-        conflicts = null;
     }
 
     @Override
@@ -160,15 +136,5 @@ public class MongoStagingDatabase extends AbstractStagingDatabase implements Sta
             query.put("namespace", namespace);
         }
         conflicts.remove(query);
-    }
-
-    @Override
-    public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.STAGING.configure(config, "mongodb", "0.1");
-    }
-
-    @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.STAGING.verify(config, "mongodb", "0.1");
     }
 }

@@ -18,7 +18,6 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
-import org.locationtech.geogig.cli.annotation.StagingDatabaseReadOnly;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -38,7 +37,6 @@ import com.beust.jcommander.Parameters;
  * @see RemoteRemoveOp
  */
 @ObjectDatabaseReadOnly
-@StagingDatabaseReadOnly
 @Parameters(commandNames = "rm", commandDescription = "Remove a remote from the repository")
 public class RemoteRemove extends AbstractCommand implements CLICommand {
 

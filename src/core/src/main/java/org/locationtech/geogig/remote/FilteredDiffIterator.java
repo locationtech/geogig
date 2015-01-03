@@ -42,12 +42,6 @@ public abstract class FilteredDiffIterator extends AbstractIterator<DiffEntry> {
     }
 
     /**
-     * @return {@code true} if a side effect of consuming this iterator is that the objects it
-     *         refers to are automatically added to the local objects database
-     */
-    public abstract boolean isAutoIngesting();
-
-    /**
      * Constructs a new {@code FilteredDiffIterator}.
      * 
      * @param source the unfiltered iterator

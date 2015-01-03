@@ -16,11 +16,11 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.DeduplicationService;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -102,8 +102,8 @@ public class GuiceInjector implements Context {
     }
 
     @Override
-    public StagingDatabase stagingDatabase() {
-        return getDecoratedInstance(StagingDatabase.class);
+    public ConflictsDatabase conflictsDatabase() {
+        return getDecoratedInstance(objectDatabase().getConflictsDatabase());
     }
 
     @Override

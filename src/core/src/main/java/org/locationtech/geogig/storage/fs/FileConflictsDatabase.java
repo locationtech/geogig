@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.bdbje;
+package org.locationtech.geogig.storage.fs;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -21,17 +21,12 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.storage.AbstractStagingDatabase;
-import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -39,53 +34,22 @@ import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
 
 /**
- * The Index (or Staging Area) object database.
- * <p>
- * This is a composite object database holding a reference to the actual repository object database
- * and a separate object database for the staging area itself.
- * <p>
- * Object look ups are first performed against the staging area database. If the object is not
- * found, then the look up is deferred to the actual repository database.
- * <p>
- * Object writes are always performed against the staging area object database.
- * <p>
- * The staging area database holds references to two root {@link RevTree trees}, one for the staged
- * objects and another one for the unstaged objects. When objects are added/changed/deleted to/from
- * the index, those modifications are written to the unstaged root tree. When objects are staged to
- * be committed, the unstaged objects are moved to the staged root tree.
- * <p>
- * A diff operation between the repository root tree and the index unstaged root tree results in the
- * list of unstaged objects.
- * <p>
- * A diff operation between the repository root tree and the index staged root tree results in the
- * list of staged objects.
  * 
  */
-abstract class JEStagingDatabase extends AbstractStagingDatabase {
-
-    /**
-     * Name of the BDB JE environment inside the .geogig folder used for the staging database
-     */
-    static final String ENVIRONMENT_NAME = "index";
+public class FileConflictsDatabase implements ConflictsDatabase {
 
     private Platform platform;
 
-    protected final ConfigDatabase configDB;
-
     private File repositoryDirectory;
 
-    public JEStagingDatabase(final ObjectDatabase repositoryDb,
-            final Supplier<JEObjectDatabase> stagingDbSupplier, final Platform platform,
-            final ConfigDatabase configDB) {
-        super(Suppliers.ofInstance(repositoryDb), stagingDbSupplier);
-
+    public FileConflictsDatabase(final Platform platform) {
         this.platform = platform;
-        this.configDB = configDB;
     }
 
-    @Override
-    public void open() {
-        super.open();
+    public synchronized void open() {
+        if (isOpen()) {
+            return;
+        }
         Optional<URL> repoPath = new ResolveGeogigDir(platform).call();
         try {
             File repoLocation = new File(repoPath.get().toURI());
@@ -94,6 +58,14 @@ abstract class JEStagingDatabase extends AbstractStagingDatabase {
             Throwables.propagate(e1);
         }
 
+    }
+
+    public void close() {
+        repositoryDirectory = null;
+    }
+
+    public boolean isOpen() {
+        return repositoryDirectory != null;
     }
 
     // TODO:

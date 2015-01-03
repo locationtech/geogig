@@ -312,7 +312,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
             if (diff.isAdd()) {
                 // Feature was deleted
                 Optional<NodeRef> node = command(FindTreeChild.class).setChildPath(diff.newPath())
-                        .setIndex(true).setParent(headTree).call();
+                        .setParent(headTree).call();
                 // make sure it is still deleted
                 if (node.isPresent()) {
                     conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(), node.get()
@@ -323,7 +323,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
             } else {
                 // Feature was added or modified
                 Optional<NodeRef> node = command(FindTreeChild.class).setChildPath(diff.oldPath())
-                        .setIndex(true).setParent(headTree).call();
+                        .setParent(headTree).call();
                 ObjectId nodeId = node.get().getNode().getObjectId();
                 // Make sure it wasn't changed
                 if (node.isPresent() && nodeId.equals(diff.oldObjectId())) {

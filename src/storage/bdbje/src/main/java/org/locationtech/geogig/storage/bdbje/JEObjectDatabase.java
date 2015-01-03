@@ -44,6 +44,7 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectReader;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.fs.FileConflictsDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +118,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     private final String envName;
 
+    private final FileConflictsDatabase conflicts;
+
     public JEObjectDatabase(final ObjectSerializingFactory serialization,
             final ConfigDatabase configDB, final EnvironmentBuilder envProvider,
             final boolean readOnly, final String envName) {
@@ -125,6 +128,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
         this.envProvider = envProvider;
         this.readOnly = readOnly;
         this.envName = envName;
+        this.conflicts = new FileConflictsDatabase(envProvider.getPlatform());
     }
 
     /**
@@ -166,6 +170,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
                 env.cleanLog();
             }
         } finally {
+            conflicts.close();
             env.close();
             env = null;
         }
@@ -202,10 +207,15 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
             dbSyncService = Executors.newFixedThreadPool(nWriterThreads, new ThreadFactoryBuilder()
                     .setNameFormat("BDBJE-" + env.getHome().getName() + "-SYNC-THREAD-%d").build());
         }
-
+        this.conflicts.open();
         LOGGER.debug("Object database opened at {}. Transactional: {}", env.getHome(), objectDb
                 .getConfig().getTransactional());
 
+    }
+
+    @Override
+    public FileConflictsDatabase getConflictsDatabase() {
+        return conflicts;
     }
 
     protected Database createDatabase() {
@@ -727,7 +737,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     private class CursorRevObjectIterator extends AbstractIterator<RevObject> implements Closeable {
 
-        private final ObjectReader<RevObject> reader = serializationFactory.createObjectReader();
+        private final ObjectSerializingFactory reader = JEObjectDatabase.this.serializer;
 
         @Nullable
         private Transaction transaction;

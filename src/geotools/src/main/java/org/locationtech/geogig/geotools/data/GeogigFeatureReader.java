@@ -136,7 +136,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         checkArgument(rootTreeId.isPresent(), "HEAD ref does not resolve to a tree: %s",
                 effectiveHead);
 
-        final RevTree rootTree = context.stagingDatabase().getTree(rootTreeId.get());
+        final RevTree rootTree = context.objectDatabase().getTree(rootTreeId.get());
 
         final Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class)
                 .setParent(rootTree).setChildPath(typeTreePath).call();
@@ -180,7 +180,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         // NodeRefToFeature refToFeature = new NodeRefToFeature(context, schema);
 
         final Function<List<NodeRef>, Iterator<SimpleFeature>> function;
-        function = new FetchFunction(context.stagingDatabase(), schema);
+        function = new FetchFunction(context.objectDatabase(), schema);
         final int fetchSize = 1000;
         Iterator<List<NodeRef>> partition = Iterators.partition(featureRefs, fetchSize);
         Iterator<Iterator<SimpleFeature>> transformed = Iterators.transform(partition, function);

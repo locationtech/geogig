@@ -24,7 +24,6 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
-import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.repository.WorkingTree;
 
 import com.beust.jcommander.Parameter;
@@ -54,7 +53,6 @@ import com.beust.jcommander.Parameters;
  * 
  * @see AddOp
  */
-@ObjectDatabaseReadOnly
 @Parameters(commandNames = "add", commandDescription = "Add features to the staging area")
 public class Add extends AbstractCommand implements CLICommand {
 

@@ -37,12 +37,12 @@ import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.di.PluginDefaults;
 import org.locationtech.geogig.di.Singleton;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.DeduplicationService;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.StagingDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,18 +98,15 @@ public class Repository implements Context {
         injector.refDatabase().configure();
         injector.objectDatabase().configure();
         injector.graphDatabase().configure();
-        injector.stagingDatabase().configure();
     }
 
     public void open() throws RepositoryConnectionException {
         injector.refDatabase().checkConfig();
         injector.objectDatabase().checkConfig();
         injector.graphDatabase().checkConfig();
-        injector.stagingDatabase().checkConfig();
         injector.refDatabase().create();
         injector.objectDatabase().open();
         injector.graphDatabase().open();
-        injector.stagingDatabase().open();
         Optional<URL> repoUrl = command(ResolveGeogigDir.class).call();
         Preconditions.checkState(repoUrl.isPresent(), "Repository URL can't be located");
         this.repositoryLocation = repoUrl.get();
@@ -125,7 +122,6 @@ public class Repository implements Context {
         close(injector.refDatabase());
         close(injector.objectDatabase());
         close(injector.graphDatabase());
-        close(injector.stagingDatabase());
         for (RepositoryListener l : listeners) {
             l.closed();
         }
@@ -153,7 +149,7 @@ public class Repository implements Context {
     public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
         return injector.command(commandClass);
     }
-    
+
     /**
      * Test if a blob exists in the object database
      * 
@@ -366,8 +362,8 @@ public class Repository implements Context {
     }
 
     @Override
-    public StagingDatabase stagingDatabase() {
-        return injector.stagingDatabase();
+    public ConflictsDatabase conflictsDatabase() {
+        return injector.conflictsDatabase();
     }
 
     @Override

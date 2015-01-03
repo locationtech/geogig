@@ -15,7 +15,6 @@ import java.io.OutputStreamWriter;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.storage.ObjectWriter;
 import org.locationtech.geogig.storage.text.TextSerializationFactory;
 
 import com.google.common.base.Charsets;
@@ -39,15 +38,14 @@ public class CatObject extends AbstractGeoGigOp<CharSequence> {
         Preconditions.checkState(object != null);
         RevObject revObject = object.get();
 
-        TextSerializationFactory factory = new TextSerializationFactory();
-        ObjectWriter<RevObject> writer = factory.createObjectWriter(revObject.getType());
+        TextSerializationFactory serializer = TextSerializationFactory.INSTANCE;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         String s = "id\t" + revObject.getId().toString() + "\n";
         OutputStreamWriter streamWriter = new OutputStreamWriter(output, Charsets.UTF_8);
         try {
             streamWriter.write(s);
             streamWriter.flush();
-            writer.write(revObject, output);
+            serializer.write(revObject, output);
         } catch (IOException e) {
             throw new IllegalStateException("Cannot print object: " + revObject.getId().toString(),
                     e);

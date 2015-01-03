@@ -29,6 +29,7 @@ import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -121,12 +122,13 @@ public class AddOp extends AbstractGeoGigOp<WorkingTree> {
         index().stage(progress, unstaged, numChanges);
 
         List<Conflict> conflicts = index().getConflicted(pathFilter);
+        ConflictsDatabase conflictsDatabase = conflictsDatabase();
         for (Conflict conflict : conflicts) {
             // if we are staging unmerged files, the conflict should get solved. However, if the
             // working index object is the same as the staging area one (for instance, after running
             // checkout --ours), it will not be reported by the getUnstaged method. We solve that
             // here.
-            stagingDatabase().removeConflict(null, conflict.getPath());
+            conflictsDatabase.removeConflict(null, conflict.getPath());
         }
     }
 

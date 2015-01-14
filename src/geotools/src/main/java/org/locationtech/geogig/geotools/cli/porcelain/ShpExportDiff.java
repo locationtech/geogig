@@ -108,7 +108,7 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
         }
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-        builder.add("geogig_fid", String.class);
+        builder.add(ExportDiffOp.CHANGE_TYPE_NAME, String.class);
         for (AttributeDescriptor descriptor : outputFeatureType.getAttributeDescriptors()) {
             builder.add(descriptor);
         }

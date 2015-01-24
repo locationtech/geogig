@@ -54,7 +54,7 @@ public class GeogigPy4JEntryPointTest {
         setupGeogig();
         setupFeatures();
         String repoFolder = platform.pwd().getAbsolutePath();
-        GeogigPy4JEntryPoint py4j = new GeogigPy4JEntryPoint();
+        GeogigPy4JEntryPoint py4j = new GeogigPy4JEntryPoint(true);
         GatewayServer gatewayServer = new GatewayServer(py4j);
         gatewayServer.start();
         py4j.runCommand(repoFolder, new String[] { "init" });

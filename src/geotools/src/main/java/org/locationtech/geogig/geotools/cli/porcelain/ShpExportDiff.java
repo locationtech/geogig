@@ -82,6 +82,7 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
         String commitNew = args.get(1);
         String path = args.get(2);
         String shapefile = args.get(3);
+        
 
         ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
 
@@ -101,14 +102,15 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
 
         SimpleFeatureType outputFeatureType;
         try {
-            outputFeatureType = getFeatureType(path, cli);
+        	String ref = old ? commitOld : commitNew;
+            outputFeatureType = getFeatureType(ref, path, cli);
         } catch (GeoToolsOpException e) {
             cli.getConsole().println("No features to export.");
             return;
         }
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-        builder.add("geogig_fid", String.class);
+        builder.add(ExportDiffOp.CHANGE_TYPE_NAME, String.class);
         for (AttributeDescriptor descriptor : outputFeatureType.getAttributeDescriptors()) {
             builder.add(descriptor);
         }
@@ -175,32 +177,24 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
         return function;
     }
 
-    private SimpleFeatureType getFeatureType(String path, GeogigCLI cli) {
+    private SimpleFeatureType getFeatureType(String ref, String path, GeogigCLI cli) {
 
         checkParameter(path != null, "No path specified.");
 
-        String refspec;
-        if (path.contains(":")) {
-            refspec = path;
-        } else {
-            refspec = "WORK_HEAD:" + path;
-        }
-
-        checkParameter(!refspec.endsWith(":"), "No path specified.");
 
         final GeoGIG geogig = cli.getGeogig();
 
         Optional<ObjectId> rootTreeId = geogig.command(ResolveTreeish.class)
-                .setTreeish(refspec.split(":")[0]).call();
+                .setTreeish(ref).call();
 
-        checkParameter(rootTreeId.isPresent(), "Couldn't resolve '" + refspec
+        checkParameter(rootTreeId.isPresent(), "Couldn't resolve '" + ref
                 + "' to a treeish object");
 
         RevTree rootTree = geogig.getRepository().getTree(rootTreeId.get());
         Optional<NodeRef> featureTypeTree = geogig.command(FindTreeChild.class)
-                .setChildPath(refspec.split(":")[1]).setParent(rootTree).call();
+                .setChildPath(path).setParent(rootTree).call();
 
-        checkParameter(featureTypeTree.isPresent(), "pathspec '" + refspec.split(":")[1]
+        checkParameter(featureTypeTree.isPresent(), "pathspec '" + path
                 + "' did not match any valid path");
 
         Optional<RevObject> revObject = cli.getGeogig().command(RevObjectParse.class)

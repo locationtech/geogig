@@ -63,8 +63,10 @@ import com.google.common.collect.UnmodifiableIterator;
 
 public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
+	public static final String CHANGE_TYPE_NAME = "changetype";
+	
     private static final Function<Feature, Optional<Feature>> IDENTITY = new Function<Feature, Optional<Feature>>() {
-
+    	
         @Override
         @Nullable
         public Optional<Feature> apply(@Nullable Feature feature) {
@@ -168,7 +170,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             final boolean old, final ObjectDatabase database, final ObjectId metadataId,
             final ProgressListener progressListener) {
 
-        final SimpleFeatureType featureType = addFidAttribute(database.getFeatureType(metadataId));
+        final SimpleFeatureType featureType = addChangeTypeAttribute(database.getFeatureType(metadataId));
         final RevFeatureType revFeatureType = RevFeatureTypeImpl.build(featureType);
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(featureType);
 
@@ -188,7 +190,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                     Object value = values.get(i).orNull();
                     featureBuilder.set(name, value);
                 }
-                featureBuilder.set("geogig_fid", nodeRef.name());
+                featureBuilder.set(CHANGE_TYPE_NAME, input.changeType().name().charAt(0));
                 Feature feature = featureBuilder.buildFeature(nodeRef.name());
                 feature.getUserData().put(Hints.USE_PROVIDED_FID, true);
                 feature.getUserData().put(RevFeature.class, revFeature);
@@ -210,10 +212,10 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         return filterNulls;
     }
 
-    private static SimpleFeatureType addFidAttribute(RevFeatureType revFType) {
+    private static SimpleFeatureType addChangeTypeAttribute(RevFeatureType revFType) {
         SimpleFeatureType featureType = (SimpleFeatureType) revFType.type();
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-        builder.add("geogig_fid", String.class);
+        builder.add(CHANGE_TYPE_NAME, String.class);
         for (AttributeDescriptor descriptor : featureType.getAttributeDescriptors()) {
             builder.add(descriptor);
         }

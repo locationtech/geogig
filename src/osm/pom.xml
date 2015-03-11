@@ -47,9 +47,19 @@
     </dependency>
     
     <dependency>
-		<groupId>org.openstreetmap.osmosis</groupId>
-		<artifactId>osmosis-core</artifactId>
-		<version>${osmosis.version}</version>
+      <groupId>org.openstreetmap.osmosis</groupId>
+      <artifactId>osmosis-core</artifactId>
+      <version>${osmosis.version}</version>
+      <exclusions>
+        <exclusion>
+          <!--
+           Exclude JPF (Java Plugin Framework) due to license restrictions 
+           (it's LGPL which is blacklisted by Locationtech)
+          -->
+          <groupId>net.sf.jpf</groupId>
+          <artifactId>jpf</artifactId>
+        </exclusion>
+      </exclusions>  
 	</dependency>
 	<dependency>
 	  <groupId>org.openstreetmap.osmosis</groupId>

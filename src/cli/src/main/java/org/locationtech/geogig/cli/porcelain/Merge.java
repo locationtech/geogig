@@ -69,8 +69,16 @@ public class Merge extends AbstractCommand implements CLICommand {
     @Parameter(names = "--no-commit", description = "Do not perform a commit after merging")
     private boolean noCommit;
 
+    @Parameter(names = "--no-ff", description = "Create a merge commit even when the merge resolves as fast forward")
+    private boolean noFastForward;
+
+    @Parameter(names = "--ff-only", description = "Refuse to merge unless the current HEAD is already up-to-date or the merge can be resolved as a fast forward")
+    private boolean fastForwardOnly;
+
     @Parameter(names = "--abort", description = "Aborts the current merge")
     private boolean abort;
+
+
 
     @Parameter(description = "<commitish>...")
     private List<String> commits = Lists.newArrayList();
@@ -105,6 +113,7 @@ public class Merge extends AbstractCommand implements CLICommand {
             MergeOp merge = geogig.command(MergeOp.class);
             merge.setOurs(ours).setTheirs(theirs).setNoCommit(noCommit);
             merge.setMessage(message).setProgressListener(cli.getProgressListener());
+            merge.setFastForwardOnly(fastForwardOnly).setNoFastForward(noFastForward);
             for (String commitish : commits) {
                 Optional<ObjectId> commitId;
                 commitId = geogig.command(RevParse.class).setRefSpec(commitish).call();

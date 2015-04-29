@@ -83,11 +83,8 @@ public class Scripting {
             setParamMap((Map<String, Object>) map, operation);
         } catch (ScriptException e) {
             Throwable cause = Throwables.getRootCause(e);
-            // TODO: improve this hack to check exception type
             if (cause != e) {
                 String msg = cause.getMessage();
-                msg = msg.substring(CannotRunGeogigOperationException.class.getName().length() + 2,
-                        msg.lastIndexOf("(")).trim();
                 msg += " (command aborted by .geogig/hooks/" + scriptFile.getName() + ")";
                 throw new CannotRunGeogigOperationException(msg);
             } else {

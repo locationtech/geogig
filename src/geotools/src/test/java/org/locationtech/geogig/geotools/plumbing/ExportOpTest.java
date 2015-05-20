@@ -135,7 +135,7 @@ public class ExportOpTest extends RepositoryTestCase {
         // check for exceptions when using a function that returns features with a wrong featuretype
         try {
             String wrongFeaturesName = "wrongFeatures";
-            String wrongFeaturesTypeSpec = "sp:String";
+            String wrongFeaturesTypeSpec = "noCommonAtt:String";
             SimpleFeatureType wrongFeaturesType = DataUtilities.createType(pointsNs,
                     wrongFeaturesName, wrongFeaturesTypeSpec);
             final SimpleFeatureBuilder wrongFeatureBuilder = new SimpleFeatureBuilder(
@@ -153,6 +153,7 @@ public class ExportOpTest extends RepositoryTestCase {
                     .setFeatureTypeConversionFunction(wrongFunction).call();
             fail();
         } catch (GeoToolsOpException e) {
+            e.printStackTrace();
             assertEquals(e.statusCode, StatusCode.UNABLE_TO_ADD);
         }
 

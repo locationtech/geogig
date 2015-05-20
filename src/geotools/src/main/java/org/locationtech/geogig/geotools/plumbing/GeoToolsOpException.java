@@ -36,6 +36,11 @@ public class GeoToolsOpException extends RuntimeException {
         this(null, statusCode);
     }
 
+    public GeoToolsOpException(StatusCode statusCode, String message) {
+        super(message);
+        this.statusCode = statusCode;
+    }
+
     /**
      * Construct a new exception with the given cause and status code.
      * 

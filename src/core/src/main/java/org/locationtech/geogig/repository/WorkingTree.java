@@ -606,7 +606,9 @@ public class WorkingTree {
             final Query query = new Query();
             CoordinateSequenceFactory coordSeq = new PackedCoordinateSequenceFactory();
             query.getHints().add(new Hints(Hints.JTS_COORDINATE_SEQUENCE_FACTORY, coordSeq));
-            query.setStartIndex(offset);
+            if (offset != null) {
+                query.setStartIndex(offset);
+            }
             if (limit != null && limit.intValue() > 0) {
                 query.setMaxFeatures(limit);
             }

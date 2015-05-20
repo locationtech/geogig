@@ -15,8 +15,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.geotools.data.AbstractDataStoreFactory;
 import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.spatialite.SpatiaLiteDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -47,7 +47,7 @@ public abstract class AbstractSLCommand extends AbstractCommand implements CLICo
      * 
      * @see SpatiaLiteDataStoreFactory
      */
-    public AbstractDataStoreFactory dataStoreFactory = new SpatiaLiteDataStoreFactory();
+    public DataStoreFactorySpi dataStoreFactory = new SpatiaLiteDataStoreFactory();
 
     /**
      * Constructs a new SpatiaLite data store using connection parameters from {@link SLCommonArgs}.

@@ -11,18 +11,19 @@ package org.locationtech.geogig.geotools.cli.porcelain;
 
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.geotools.data.AbstractDataStoreFactory;
+import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.memory.MemoryDataStore;
+import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
+import org.mockito.Mockito;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -32,7 +33,7 @@ import com.vividsolutions.jts.geom.Point;
 
 public class TestHelper {
 
-    public static AbstractDataStoreFactory createTestFactory() throws Exception {
+    public static DataStoreFactorySpi createTestFactory() throws Exception {
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setCRS(CRS.decode("EPSG:4326"));
@@ -133,7 +134,7 @@ public class TestHelper {
         testDataStore.addFeature(f8);
         testDataStore.createSchema(builder4.buildFeatureType());
 
-        final AbstractDataStoreFactory factory = mock(AbstractDataStoreFactory.class);
+        final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
         when(factory.createDataStore(anyMapOf(String.class, Serializable.class))).thenReturn(
                 testDataStore);
         when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
@@ -141,11 +142,11 @@ public class TestHelper {
         return factory;
     }
 
-    public static AbstractDataStoreFactory createEmptyTestFactory() throws Exception {
+    public static DataStoreFactorySpi createEmptyTestFactory() throws Exception {
 
         MemoryDataStore testDataStore = new MemoryDataStore();
 
-        final AbstractDataStoreFactory factory = mock(AbstractDataStoreFactory.class);
+        final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
         when(factory.createDataStore(anyMapOf(String.class, Serializable.class))).thenReturn(
                 testDataStore);
         when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
@@ -153,23 +154,23 @@ public class TestHelper {
         return factory;
     }
 
-    public static AbstractDataStoreFactory createNullTestFactory() throws Exception {
+    public static DataStoreFactorySpi createNullTestFactory() throws Exception {
 
-        final AbstractDataStoreFactory factory = mock(AbstractDataStoreFactory.class);
+        final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
         when(factory.createDataStore(anyMapOf(String.class, Serializable.class))).thenReturn(null);
         when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
 
         return factory;
     }
 
-    public static AbstractDataStoreFactory createFactoryWithGetNamesException() throws Exception {
+    public static DataStoreFactorySpi createFactoryWithGetNamesException() throws Exception {
 
-        MemoryDataStore testDataStore = mock(MemoryDataStore.class);
+        DataStore testDataStore = mock(DataStore.class);
         when(testDataStore.getNames()).thenThrow(new IOException());
         when(testDataStore.getTypeNames()).thenThrow(new RuntimeException());
         when(testDataStore.getSchema(anyString())).thenThrow(new IOException());
 
-        final AbstractDataStoreFactory factory = mock(AbstractDataStoreFactory.class);
+        final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
         when(factory.createDataStore(anyMapOf(String.class, Serializable.class))).thenReturn(
                 testDataStore);
         when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
@@ -177,8 +178,7 @@ public class TestHelper {
         return factory;
     }
 
-    public static AbstractDataStoreFactory createFactoryWithGetFeatureSourceException()
-            throws Exception {
+    public static DataStoreFactorySpi createFactoryWithGetFeatureSourceException() throws Exception {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setCRS(CRS.decode("EPSG:4326"));
         builder.add("geom", Point.class);
@@ -208,9 +208,12 @@ public class TestHelper {
 
         MemoryDataStore spyDataStore = spy(testDataStore);
 
-        when(spyDataStore.getFeatureSource("table1")).thenThrow(new IOException("Exception"));
+        Mockito.doThrow(new IOException("Exception")).when(spyDataStore)
+                .getFeatureSource(eq("table1"));
+        Mockito.doThrow(new IOException("Exception")).when(spyDataStore)
+                .getFeatureSource(eq(new NameImpl("table1")));
 
-        final AbstractDataStoreFactory factory = mock(AbstractDataStoreFactory.class);
+        final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
         when(factory.createDataStore(anyMapOf(String.class, Serializable.class))).thenReturn(
                 spyDataStore);
         when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);

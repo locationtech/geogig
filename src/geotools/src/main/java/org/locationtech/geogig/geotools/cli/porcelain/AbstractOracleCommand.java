@@ -14,8 +14,8 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.util.Map;
 
-import org.geotools.data.AbstractDataStoreFactory;
 import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.oracle.OracleNGDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -45,7 +45,7 @@ public abstract class AbstractOracleCommand extends AbstractCommand implements C
      * 
      * @see OracleNGDataStoreFactory
      */
-    public AbstractDataStoreFactory dataStoreFactory = new OracleNGDataStoreFactory();
+    public DataStoreFactorySpi dataStoreFactory = new OracleNGDataStoreFactory();
 
     /**
      * Constructs a new Oracle data store using connection parameters from {@link OracleCommonArgs}.
@@ -73,7 +73,7 @@ public abstract class AbstractOracleCommand extends AbstractCommand implements C
         DataStore dataStore;
         try {
             dataStore = dataStoreFactory.createDataStore(params);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             throw new CommandFailedException(
                     "Unable to connect using the specified database parameters.", e);
         }

@@ -49,7 +49,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         dataStore.createSchema(super.pointsType);
         dataStore.createSchema(super.linesType);
 
-        points = (GeogigFeatureStore) dataStore.getFeatureSource(pointsTypeName);
+        points = (GeogigFeatureStore) dataStore.getFeatureSource(pointsName);
     }
 
     @Override
@@ -89,11 +89,11 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             // assert transaction isolation
 
             assertEquals(3, points.getFeatures().size());
-            assertEquals(0, dataStore.getFeatureSource(pointsTypeName).getFeatures().size());
+            assertEquals(0, dataStore.getFeatureSource(pointsName).getFeatures().size());
 
             tx.commit();
 
-            assertEquals(3, dataStore.getFeatureSource(pointsTypeName).getFeatures().size());
+            assertEquals(3, dataStore.getFeatureSource(pointsName).getFeatures().size());
         } catch (Exception e) {
             tx.rollback();
             throw e;
@@ -121,11 +121,11 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             assertEquals(3, addedFeatures.size());
             // assert transaction isolation
             assertEquals(3, points.getFeatures().size());
-            assertEquals(0, dataStore.getFeatureSource(pointsTypeName).getFeatures().size());
+            assertEquals(0, dataStore.getFeatureSource(pointsName).getFeatures().size());
 
             tx.commit();
 
-            assertEquals(3, dataStore.getFeatureSource(pointsTypeName).getFeatures().size());
+            assertEquals(3, dataStore.getFeatureSource(pointsName).getFeatures().size());
         } catch (Exception e) {
             tx.rollback();
             throw e;
@@ -153,11 +153,11 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             assertEquals(3, addedFeatures.size());
             // assert transaction isolation
             assertEquals(3, points.getFeatures().size());
-            assertEquals(0, dataStore.getFeatureSource(pointsTypeName).getFeatures().size());
+            assertEquals(0, dataStore.getFeatureSource(pointsName).getFeatures().size());
 
             tx.commit();
 
-            assertEquals(3, dataStore.getFeatureSource(pointsTypeName).getFeatures().size());
+            assertEquals(3, dataStore.getFeatureSource(pointsName).getFeatures().size());
         } catch (IllegalStateException e) {
             tx.rollback();
             gotIllegalStateException = true;
@@ -257,14 +257,13 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             assertEquals("modified", modified.getAttribute("sp"));
 
             // unmodified value before commit on another store instance (tx isolation)
-            assertEquals("StringProp1_1",
-                    dataStore.getFeatureSource(pointsTypeName).getFeatures(filter).features()
-                            .next().getAttribute("sp"));
+            assertEquals("StringProp1_1", dataStore.getFeatureSource(pointsName)
+                    .getFeatures(filter).features().next().getAttribute("sp"));
 
             tx.commit();
 
             // modified value after commit on another store instance
-            assertEquals("modified", dataStore.getFeatureSource(pointsTypeName).getFeatures(filter)
+            assertEquals("modified", dataStore.getFeatureSource(pointsName).getFeatures(filter)
                     .features().next().getAttribute("sp"));
         } catch (Exception e) {
             tx.rollback();
@@ -299,12 +298,12 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             assertEquals(2, points.getFeatures().size());
 
             // #of features before commit on a different store instance
-            assertEquals(3, dataStore.getFeatureSource(pointsTypeName).getFeatures().size());
+            assertEquals(3, dataStore.getFeatureSource(pointsName).getFeatures().size());
 
             tx.commit();
 
             // #of features after commit on a different store instance
-            assertEquals(2, dataStore.getFeatureSource(pointsTypeName).getFeatures().size());
+            assertEquals(2, dataStore.getFeatureSource(pointsName).getFeatures().size());
         } catch (Exception e) {
             tx.rollback();
             throw e;
@@ -332,7 +331,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             tx.putProperty(GeogigTransactionState.VERSIONING_COMMIT_AUTHOR, "John Doe");
             tx.putProperty(GeogigTransactionState.VERSIONING_COMMIT_MESSAGE, "test message");
             tx.commit();
-            assertEquals(3, dataStore.getFeatureSource(pointsTypeName).getFeatures().size());
+            assertEquals(3, dataStore.getFeatureSource(pointsName).getFeatures().size());
         } catch (Exception e) {
             tx.rollback();
             throw e;
@@ -365,7 +364,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             tx.putProperty("fullname", "John Doe");
             tx.putProperty("email", "jd@example.com");
             tx.commit();
-            assertEquals(3, dataStore.getFeatureSource(pointsTypeName).getFeatures().size());
+            assertEquals(3, dataStore.getFeatureSource(pointsName).getFeatures().size());
         } catch (Exception e) {
             tx.rollback();
             throw e;

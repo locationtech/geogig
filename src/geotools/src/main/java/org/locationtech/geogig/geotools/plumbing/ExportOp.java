@@ -12,9 +12,11 @@ package org.locationtech.geogig.geotools.plumbing;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
@@ -48,6 +50,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Function;
@@ -61,6 +64,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.PeekingIterator;
+import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 
 /**
@@ -132,27 +137,52 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         progressListener.setDescription("Exporting from " + path + " to "
                 + targetStore.getName().getLocalPart() + "... ");
 
+        final Iterator<SimpleFeature> filtered;
+        {
+            final Iterator<SimpleFeature> plainFeatures = getFeatures(typeTree, database,
+
+            defaultMetadataId, progressListener);
+
+            Iterator<SimpleFeature> adaptedFeatures = adaptToArguments(plainFeatures,
+                    defaultMetadataId);
+
+            Iterator<Optional<Feature>> transformed = Iterators.transform(adaptedFeatures,
+                    ExportOp.this.function);
+
+            Iterator<SimpleFeature> result = Iterators.filter(Iterators.transform(transformed,
+                    new Function<Optional<Feature>, SimpleFeature>() {
+                        @Override
+                        public SimpleFeature apply(Optional<Feature> input) {
+                            return (SimpleFeature) input.orNull();
+                        }
+                    }), Predicates.notNull());
+
+            // check the resulting schema has something to contribute
+            PeekingIterator<SimpleFeature> peekingIt = Iterators.peekingIterator(result);
+            if (peekingIt.hasNext()) {
+                Function<AttributeDescriptor, String> toString = new Function<AttributeDescriptor, String>() {
+                    @Override
+                    public String apply(AttributeDescriptor input) {
+                        return input.getLocalName();
+                    }
+                };
+                SimpleFeature peek = peekingIt.peek();
+                Set<String> sourceAtts = new HashSet<String>(Lists.transform(peek.getFeatureType()
+                        .getAttributeDescriptors(), toString));
+                Set<String> targetAtts = new HashSet<String>(Lists.transform(targetStore
+                        .getSchema().getAttributeDescriptors(), toString));
+                if (Sets.intersection(sourceAtts, targetAtts).isEmpty()) {
+                    throw new GeoToolsOpException(StatusCode.UNABLE_TO_ADD,
+                            "No common attributes between source and target feature types");
+                }
+            }
+
+            filtered = peekingIt;
+        }
         FeatureCollection<SimpleFeatureType, SimpleFeature> asFeatureCollection = new BaseFeatureCollection<SimpleFeatureType, SimpleFeature>() {
 
             @Override
             public FeatureIterator<SimpleFeature> features() {
-
-                final Iterator<SimpleFeature> plainFeatures = getFeatures(typeTree, database,
-                        defaultMetadataId, progressListener);
-
-                Iterator<SimpleFeature> adaptedFeatures = adaptToArguments(plainFeatures,
-                        defaultMetadataId);
-
-                Iterator<Optional<Feature>> transformed = Iterators.transform(adaptedFeatures,
-                        ExportOp.this.function);
-
-                Iterator<SimpleFeature> filtered = Iterators.filter(Iterators.transform(
-                        transformed, new Function<Optional<Feature>, SimpleFeature>() {
-                            @Override
-                            public SimpleFeature apply(Optional<Feature> input) {
-                                return (SimpleFeature) (input.isPresent() ? input.get() : null);
-                            }
-                        }), Predicates.notNull());
 
                 return new DelegateFeatureIterator<SimpleFeature>(filtered);
             }

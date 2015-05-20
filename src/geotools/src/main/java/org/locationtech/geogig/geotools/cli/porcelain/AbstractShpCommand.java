@@ -14,8 +14,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.geotools.data.AbstractDataStoreFactory;
 import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -36,7 +36,7 @@ public abstract class AbstractShpCommand extends AbstractCommand implements CLIC
      * 
      * @see ShapefileDataStoreFactory
      */
-    public AbstractDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
+    public DataStoreFactorySpi dataStoreFactory = new ShapefileDataStoreFactory();
 
     /**
      * Constructs a new shapefile data store using the specified shapefile.

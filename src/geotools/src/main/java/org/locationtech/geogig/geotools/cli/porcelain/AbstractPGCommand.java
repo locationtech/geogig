@@ -15,8 +15,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.geotools.data.AbstractDataStoreFactory;
 import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -46,7 +46,7 @@ public abstract class AbstractPGCommand extends AbstractCommand implements CLICo
      * 
      * @see PostgisNGDataStoreFactory
      */
-    public AbstractDataStoreFactory dataStoreFactory = new PostgisNGDataStoreFactory();
+    public DataStoreFactorySpi dataStoreFactory = new PostgisNGDataStoreFactory();
 
     /**
      * Constructs a new PostGIS data store using connection parameters from {@link PGCommonArgs}.

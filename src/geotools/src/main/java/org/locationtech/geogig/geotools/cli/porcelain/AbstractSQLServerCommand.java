@@ -14,8 +14,8 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.util.Map;
 
-import org.geotools.data.AbstractDataStoreFactory;
 import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.sqlserver.SQLServerDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -46,7 +46,7 @@ public abstract class AbstractSQLServerCommand extends AbstractCommand implement
      * 
      * @see SQLServerDataStoreFactory
      */
-    public AbstractDataStoreFactory dataStoreFactory = new SQLServerDataStoreFactory();
+    public DataStoreFactorySpi dataStoreFactory = new SQLServerDataStoreFactory();
 
     /**
      * Constructs a new SQL Server data store using connection parameters from

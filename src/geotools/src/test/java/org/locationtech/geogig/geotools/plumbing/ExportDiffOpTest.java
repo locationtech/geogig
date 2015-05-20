@@ -87,7 +87,7 @@ public class ExportDiffOpTest extends RepositoryTestCase {
         final RevCommit changeCommit = geogig.command(CommitOp.class).setAll(true).call();
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-        builder.add("geogig_fid", String.class);
+        builder.add(ExportDiffOp.CHANGE_TYPE_NAME, String.class);
         for (AttributeDescriptor descriptor : pointsType.getAttributeDescriptors()) {
             builder.add(descriptor);
         }

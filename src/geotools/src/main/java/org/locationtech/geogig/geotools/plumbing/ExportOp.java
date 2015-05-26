@@ -9,59 +9,46 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.*;
+import com.google.common.collect.*;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.Hints;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.collection.BaseFeatureCollection;
 import org.geotools.feature.collection.DelegateFeatureIterator;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.FeatureBuilder;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.api.*;
 import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.hooks.Hookable;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator.Strategy;
+import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
+import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.UnmodifiableIterator;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Internal operation for creating a FeatureCollection from a tree content.
@@ -94,6 +81,10 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
     private boolean transactional;
 
+    private String oldRef;
+
+    private String newRef;
+
     /**
      * Constructs a new export operation.
      */
@@ -114,7 +105,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             checkArgument(filterType instanceof RevFeatureType,
                     "Provided filter feature type is does not exist");
         }
-
+        checkArgument((oldRef == null) == (newRef == null), "--since and --until must both be set or none of them");
         final SimpleFeatureStore targetStore = getTargetStore();
 
         final String refspec = resolveRefSpec();
@@ -168,7 +159,11 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         try {
             targetStore.setTransaction(transaction);
             try {
-                targetStore.addFeatures(asFeatureCollection);
+                if(oldRef != null || newRef != null) {
+                    exportChanges(targetStore);
+                } else {
+                    targetStore.addFeatures(asFeatureCollection);
+                }
                 transaction.commit();
             } catch (final Exception e) {
                 if (transactional) {
@@ -182,11 +177,74 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         } catch (IOException e) {
             throw new GeoToolsOpException(e, StatusCode.UNABLE_TO_ADD);
         }
-
         progressListener.complete();
 
         return targetStore;
 
+    }
+
+    private static Filter createFeatureFilter(String id) {
+        FilterFactory ff = CommonFactoryFinder.getFilterFactory2();
+        return ff.id(Collections.singleton(ff.featureId(id)));
+    }
+
+    private SimpleFeatureStore exportChanges(SimpleFeatureStore targetStore) throws IOException{
+        Function<NodeRef, SimpleFeature> node2feat = convertFunction(objectDatabase());
+        Function<SimpleFeature, SimpleFeatureCollection> wrap = new Function<SimpleFeature, SimpleFeatureCollection>() {
+
+            @Override
+            public SimpleFeatureCollection apply(@Nullable SimpleFeature input) {
+                DefaultFeatureCollection c = new DefaultFeatureCollection();
+                c.add(input);
+                return c;
+            }
+        };
+        Iterator<DiffEntry> it = command(DiffOp.class).setOldVersion(oldRef).setNewVersion(newRef).setFilter(path).call();
+        while(it.hasNext()) {
+            final DiffEntry entry = it.next();
+            if(entry.isDelete() || entry.isChange()) {
+                targetStore.removeFeatures(createFeatureFilter(entry.getOldObject().name()));
+            }
+            if(entry.isAdd() || entry.isChange()) {
+                targetStore.addFeatures(wrap.apply(node2feat.apply(entry.getNewObject())));
+            }
+        }
+        return targetStore;
+    }
+
+    private static Function<NodeRef, SimpleFeature> convertFunction(final ObjectDatabase database) {
+        return new Function<NodeRef, SimpleFeature>() {
+
+            private Map<ObjectId, FeatureBuilder> ftCache = Maps.newHashMap();
+
+            @Override
+            @Nullable
+            public SimpleFeature apply(final NodeRef input) {
+                final ObjectId metadataId = input.getMetadataId();
+                final RevFeature revFeature = database.getFeature(input.objectId());
+
+                FeatureBuilder featureBuilder = getBuilderFor(metadataId);
+                Feature feature = featureBuilder.build(input.name(), revFeature);
+                feature.getUserData().put(Hints.USE_PROVIDED_FID, true);
+                feature.getUserData().put(RevFeature.class, revFeature);
+                feature.getUserData().put(RevFeatureType.class, featureBuilder.getType());
+
+                if (feature instanceof SimpleFeature) {
+                    return (SimpleFeature) feature;
+                }
+                return null;
+            }
+
+            private FeatureBuilder getBuilderFor(final ObjectId metadataId) {
+                FeatureBuilder featureBuilder = ftCache.get(metadataId);
+                if (featureBuilder == null) {
+                    RevFeatureType revFtype = database.getFeatureType(metadataId);
+                    featureBuilder = new FeatureBuilder(revFtype);
+                    ftCache.put(metadataId, featureBuilder);
+                }
+                return featureBuilder;
+            }
+        };
     }
 
     private static Iterator<SimpleFeature> getFeatures(final RevTree typeTree,
@@ -494,6 +552,16 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
      */
     public ExportOp setTransactional(boolean transactional) {
         this.transactional = transactional;
+        return this;
+    }
+
+    public ExportOp setOldRef(String oldRef) {
+        this.oldRef = oldRef;
+        return this;
+    }
+
+    public ExportOp setNewRef(String newRef) {
+        this.newRef = newRef;
         return this;
     }
 }

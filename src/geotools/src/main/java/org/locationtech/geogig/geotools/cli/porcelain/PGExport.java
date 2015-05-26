@@ -11,13 +11,17 @@ package org.locationtech.geogig.geotools.cli.porcelain;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.geotools.data.DataStore;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeImpl;
 import org.locationtech.geogig.api.GeoGIG;
@@ -32,6 +36,8 @@ import org.locationtech.geogig.api.plumbing.ResolveObjectType;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.RevParse;
+import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -39,6 +45,7 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 
@@ -70,6 +77,12 @@ public class PGExport extends AbstractPGCommand implements CLICommand {
     @Parameter(names = { "--featuretype" }, description = "Export only features with the specified feature type if several types are found")
     @Nullable
     public String sFeatureTypeId;
+
+    @Parameter(names = { "--since" }, description = "Only export changes that happend after the given commit")
+    public String since;
+
+    @Parameter(names = { "--until" }, description = "Only export changes until the given commit")
+    public String until;
 
     /**
      * Executes the export command using the provided options.
@@ -143,7 +156,7 @@ public class PGExport extends AbstractPGCommand implements CLICommand {
                     throw new CommandFailedException("Error trying to remove features", e);
                 }
             }
-            ExportOp op = cli.getGeogig().command(ExportOp.class).setFeatureStore(featureStore)
+            ExportOp op = cli.getGeogig().command(ExportOp.class).setOldRef(since).setNewRef(until).setFeatureStore(featureStore)
                     .setPath(path).setFilterFeatureTypeId(featureTypeId).setAlter(alter);
             if (defaultType) {
                 op.exportDefaultFeatureType();

@@ -17,6 +17,7 @@ import jline.console.ConsoleReader;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -29,6 +30,8 @@ public class PGExportTest extends RepositoryTestCase {
     public ExpectedException exception = ExpectedException.none();
 
     private GeogigCLI cli;
+
+    private RevCommit head;
 
     @Override
     public void setUpInternal() throws Exception {
@@ -50,7 +53,7 @@ public class PGExportTest extends RepositoryTestCase {
         insertAndAdd(lines2);
         insertAndAdd(lines3);
 
-        geogig.command(CommitOp.class).call();
+        head = geogig.command(CommitOp.class).call();
     }
 
     @Override
@@ -158,5 +161,17 @@ public class PGExportTest extends RepositoryTestCase {
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
+    }
+
+    @Test
+    public void testChangeExport() throws Exception {
+        PGExport exportCommand = new PGExport();
+        insertAndAdd(points1_modified);
+        RevCommit until = geogig.command(CommitOp.class).call();
+        exportCommand.until = until.getTreeId().toString();
+        exportCommand.since = head.getTreeId().toString();
+        exportCommand.args = Arrays.asList("Points", "Points");
+        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exportCommand.runInternal(cli);
     }
 }

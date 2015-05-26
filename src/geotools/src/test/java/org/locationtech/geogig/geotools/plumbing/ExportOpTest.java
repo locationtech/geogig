@@ -9,22 +9,33 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.Sets;
 import org.geotools.data.DataUtilities;
+import org.geotools.data.FeatureWriter;
+import org.geotools.data.Query;
+import org.geotools.data.Transaction;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.factory.FactoryFinder;
+import org.geotools.factory.GeoTools;
+import org.geotools.factory.Hints;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.junit.Test;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
+import org.locationtech.geogig.api.*;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.cli.porcelain.Commit;
+import org.locationtech.geogig.geotools.cli.porcelain.PGExport;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
@@ -33,6 +44,10 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.identity.Identifier;
+import sun.java2d.pipe.SpanShapeRenderer;
 
 public class ExportOpTest extends RepositoryTestCase {
 
@@ -328,4 +343,126 @@ public class ExportOpTest extends RepositoryTestCase {
         }
     }
 
+    private static MemoryDataStore getChangeStore(SimpleFeatureType type) {
+        return new MemoryDataStore(type) {
+            @Override
+            protected Set getSupportedHints() {
+                return Sets.newHashSet(Hints.USE_PROVIDED_FID);
+            }
+        };
+    }
+
+    @Test
+    public void exportChangeAdd() throws Exception {
+        insertAndAdd(points1);
+        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        MemoryDataStore store = getChangeStore(pointsType);
+        final String typeName = store.getTypeNames()[0];
+        SimpleFeatureSource featureSource = store.getFeatureSource(typeName);
+        SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
+        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName).setTransactional(false).call();
+        SimpleFeatureCollection collection1 = featureStore.getFeatures();
+        assertEquals(1, collection1.size());
+        assertTrue(collectionsAreEqual(collection1.features(), new Feature[]{points1}));
+        insertAndAdd(points2);
+        RevCommit commit2 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        insertAndAdd(points3);
+        RevCommit commit3 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        geogig.command(ExportOp.class).setFeatureStore(featureStore).setOldRef(commit1.getTreeId().toString())
+                .setNewRef(commit3.getTreeId().toString()).setPath(pointsName).setTransactional(false).call();
+        SimpleFeatureCollection collection2 = featureStore.getFeatures();
+        assertEquals(3, collection2.size());
+        assertTrue(collectionsAreEqual(collection2.features(), new Feature[]{points1, points2, points3}));
+    }
+
+    @Test
+    public void exportChangeModify() throws Exception {
+        insertAndAdd(points1);
+        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        MemoryDataStore store = getChangeStore(pointsType);
+        final String typeName = store.getTypeNames()[0];
+        SimpleFeatureSource featureSource = store.getFeatureSource(typeName);
+        SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
+        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName).setTransactional(false).call();
+        SimpleFeatureCollection collection1 = featureStore.getFeatures();
+        assertEquals(1, collection1.size());
+        assertTrue(collectionsAreEqual(collection1.features(), new Feature[]{points1}));
+        insertAndAdd(points1_modified);
+        RevCommit commit2 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        geogig.command(ExportOp.class).setFeatureStore(featureStore).setOldRef(commit1.getTreeId().toString())
+                .setNewRef(commit2.getTreeId().toString()).setPath(pointsName).setTransactional(false).call();
+        SimpleFeatureCollection collection2 = featureStore.getFeatures();
+        assertEquals(1, collection2.size());
+        assertTrue(collectionsAreEqual(collection2.features(), new Feature[]{points1_modified}));
+    }
+
+    @Test
+    public void exportChangeDelete() throws Exception {
+        insertAndAdd(points1);
+        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        MemoryDataStore store = getChangeStore(pointsType);
+        final String typeName = store.getTypeNames()[0];
+        SimpleFeatureSource featureSource = store.getFeatureSource(typeName);
+        SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
+        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName).setTransactional(false).call();
+        SimpleFeatureCollection collection1 = featureStore.getFeatures();
+        assertEquals(1, collection1.size());
+        assertTrue(collectionsAreEqual(collection1.features(), new Feature[]{points1}));
+        deleteAndAdd(points1);
+        RevCommit commit2 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        geogig.command(ExportOp.class).setFeatureStore(featureStore).setOldRef(commit1.getTreeId().toString())
+                .setNewRef(commit2.getTreeId().toString()).setPath(pointsName).setTransactional(false).call();
+        SimpleFeatureCollection collection2 = featureStore.getFeatures();
+        assertEquals(0, collection2.size());
+    }
+
+    private void testChangeExport(Feature[] expected, RevCommit since, RevCommit until, SimpleFeatureStore featureStore) throws Exception {
+        geogig.command(ExportOp.class).setFeatureStore(featureStore).setOldRef(since.getTreeId().toString())
+                .setNewRef(until.getTreeId().toString()).setPath(pointsName).setTransactional(false).call();
+        SimpleFeatureCollection collection = featureStore.getFeatures();
+        assertEquals(expected.length, collection.size());
+        assertTrue(collectionsAreEqual(collection.features(), expected));
+    }
+
+    @Test
+    public void exportChangeMultipleDelete() throws Exception {
+        insertAndAdd(points1);
+        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        MemoryDataStore store = getChangeStore(pointsType);
+        final String typeName = store.getTypeNames()[0];
+        SimpleFeatureSource featureSource = store.getFeatureSource(typeName);
+        SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
+        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName).setTransactional(false).call();
+        SimpleFeatureCollection collection1 = featureStore.getFeatures();
+        assertEquals(1, collection1.size());
+        assertTrue(collectionsAreEqual(collection1.features(), new Feature[]{points1}));
+        deleteAndAdd(points1);
+        RevCommit commit2 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        insertAndAdd(points1);
+        RevCommit commit3 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        deleteAndAdd(points1);
+        RevCommit commit4 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        testChangeExport(new Feature[] {}, commit1, commit2, featureStore);
+        testChangeExport(new Feature[] {points1}, commit2, commit3, featureStore);
+        testChangeExport(new Feature[] {}, commit3, commit4, featureStore);
+    }
+
+    @Test
+    public void testChangeMultiple() throws Exception {
+        insertAndAdd(points1);
+        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        MemoryDataStore store = getChangeStore(pointsType);
+        final String typeName = store.getTypeNames()[0];
+        SimpleFeatureSource featureSource = store.getFeatureSource(typeName);
+        SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
+        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName).setTransactional(false).call();
+        SimpleFeatureCollection collection1 = featureStore.getFeatures();
+        assertEquals(1, collection1.size());
+        assertTrue(collectionsAreEqual(collection1.features(), new Feature[]{points1}));
+        insertAndAdd(points2);
+        RevCommit commit2 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        insertAndAdd(points1_modified);
+        RevCommit commit3 = geogig.command(CommitOp.class).setMessage("Some message").call();
+        testChangeExport(new Feature[] {points1_modified, points2}, commit1, commit3, featureStore);
+    }
 }

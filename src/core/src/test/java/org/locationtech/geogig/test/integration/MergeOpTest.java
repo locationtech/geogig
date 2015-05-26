@@ -597,12 +597,8 @@ public class MergeOpTest extends RepositoryTestCase {
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         MergeOp mergeOp = geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()));
         mergeOp.setFastForwardOnly(true);
-        try {
-            mergeOp.call();
-            fail();
-        }catch(IllegalStateException e) {
-            //This is what should happen, since the branch can not be fast forward merged
-        }
+        exception.expect(IllegalStateException.class);
+        mergeOp.call();
     }
 
     @Test

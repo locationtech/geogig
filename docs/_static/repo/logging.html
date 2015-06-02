@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>The GeoGig logging system &mdash; GeoGig 0.11 User Manual</title>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" /> 
+  <!--[if IE]>
+  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="top" title="GeoGig 0.11 User Manual" href="../index.html" />
+      <link rel="up" title="Working with repositories" href="index.html" />
+      <link rel="next" title="Data and commits" href="../data/index.html" />
+      <link rel="prev" title="Command aliases" href="commandaliases.html" />
+</head>
+<body class="repo/logging">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/boundlessgeo/GeoGit">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8"> 
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 0.11 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
+  <li>The GeoGig logging system</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="../data/index.html" title="Data and commits"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="commandaliases.html" title="Command aliases"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="the-geogig-logging-system">
+<h1>The GeoGig logging system<a class="headerlink" href="#the-geogig-logging-system" title="Permalink to this headline">¶</a></h1>
+<p>GeoGig has a logging system that you might need to check, especially in case of having issues.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is not to be confused with the reflog that Git implements, and that GeoGig will eventually have as well. This is just a log of errors, warnings and messages of several types, useful to be able to trace the activity of GeoGig and analyze and debug it.</p>
+</div>
+<p>If a GeoGig command cannot be run and GeoGig know the reason for that (for instance, you have entered a wrong parameter or the repository is corrupted), it will show you an explanation in the console. It might happen, however, that an error appears during execution and GeoGig cannot handle that and turn it into a meaningful explanation. In that case, the most detailed description of the error that is possible to produce will be stored in the logging file, and GeoGig will tell you to go to that file in case you want more information.</p>
+<p>The logging file records information about the activity of GeoGig on a given repository, including, but not limited to, error traces. In case you are a programmer, this might help you understand what is happening. If not, you can use the content of the log file to provide more detailed information to GeoGig developers, or when asking for a solution in the GeoGig mailing list, so it is important to know how to find the logging file.</p>
+<p>By default, the logging file is located in your repository folder, under <tt class="docutils literal"><span class="pre">.geogig/log/geogig.log</span></tt></p>
+<p>GeoGig uses the <a class="reference external" href="http://logback.qos.ch/">Logback</a> framework for logging. Check its documentation to know more about how to configure logback.</p>
+<p>Apart from the logging file you will find other files in the <tt class="docutils literal"><span class="pre">log</span></tt> folder. Metrics are collected in the <tt class="docutils literal"><span class="pre">metrics.csv</span></tt> file, but you have to explicitly enable it, since that is not enabled by default. On the console, type the following.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig config metrics.enabled true
+</pre></div>
+</div>
+<p>Now, whenever you call a GeoGig command, the running time of all internal operations that are called will be saved to the metrics file.</p>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="commandaliases.html" title="previous chapter">Command aliases</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="../data/index.html" title="next chapter">Data and commits</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc"> 
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="commandaliases.html" title="previous chapter">Command aliases</a></li>
+            <li>Next: <a href="../data/index.html" title="next chapter">Data and commits</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/repo/logging.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/boundlessgeo/GeoGit/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/boundlessgeo/GeoGit">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

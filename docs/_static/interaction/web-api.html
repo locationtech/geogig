@@ -1,0 +1,1361 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>Web-Api Documentation &mdash; GeoGig 0.11 User Manual</title>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" /> 
+  <!--[if IE]>
+  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="top" title="GeoGig 0.11 User Manual" href="../index.html" />
+      <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
+      <link rel="next" title="Using GeoGig with OpenStreetMap data" href="osm.html" />
+      <link rel="prev" title="GeoGig Networking" href="networking.html" />
+</head>
+<body class="interaction/web-api">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/boundlessgeo/GeoGit">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8"> 
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 0.11 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
+  <li>Web-Api Documentation</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="osm.html" title="Using GeoGig with OpenStreetMap data"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="networking.html" title="GeoGig Networking"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="web-api-documentation">
+<h1>Web-Api Documentation<a class="headerlink" href="#web-api-documentation" title="Permalink to this headline">¶</a></h1>
+<p>This will walk you through GeoGig&#8217;s web-api and all of its currently supported functionality. This doc also assumes that you already know what any given command does, this is strictly how to use these commands. First I will explain an easy way to get the web-api up and running.</p>
+<p>If you don&#8217;t already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web-api up and running after you have built the latest GeoGig go into your repository and run <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></tt>. This will set up a jetty server with your repository and give you access to the web-api. Now you just need to open up a web browser and go to localhost:8182/log to make sure it comes up. After you have gotten it up and running now you can test any of the commands listed here.</p>
+<p>All web-api commands have transaction support, which means you can run the web-api commands beginTransaction to start a transaction and then use the id that is returned to do other commands on that transaction instead of the actual repository. After you are done with everything on the transaction you just have call endTransaction through the web-api and pass it the transaction id. Some commands require a transaction to preserve the stability of the repository, those that require it will have <tt class="docutils literal"><span class="pre">(-T)</span></tt> next to the name of the command in this doc. To pass the transaction id you just need to use the transactionId option and set it equal to the id that beginTransaction returns. Some commands also have other options that are required for that command to work they will have a <tt class="docutils literal"><span class="pre">(-R)</span></tt> next to them. Any options that have notes associated with them have and asterisk next to them.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All web-api command response are formatted for xml by default, however you can get a JSON response by adding this option to the url <tt class="docutils literal"><span class="pre">output_format=JSON</span></tt>.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All web-api commands have a variable at the top of the response indicating success or failure, so you can still have a 200 status on the request and have a failure. This can happen when the command runs into an internal error.</p>
+</div>
+<div class="section" id="porcelain-commands-supported">
+<h2>Porcelain Commands Supported<a class="headerlink" href="#porcelain-commands-supported" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first"><strong>Add</strong> (-T)</p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first"><strong>path</strong> - the path to the feature you want to add</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/add?path=tree/fid&amp;transactionId=id
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns whether or not the add succeeded or not.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Blame</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>commit</strong> - the branch or commit to blame from</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>path</strong> (-R) - the path of the feature</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/blame?path=pathToFeature&amp;commit=commitId
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns all of the attribute values of a feature and the commit that they were last changed.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Branch</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>list</strong> (-R) - true to list any branches</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>remotes</strong> - true to list remote branches</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/branch?list=true&amp;remote=true
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns a list of all the branches on the repo, if remote is specified it lists remote branches and the name of the remote they belong to.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Checkout</strong> (-T)</p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>branch*</strong> - the name of the branch to checkout</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>ours*</strong> - true to use our version of the feature specified</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>theirs*</strong> - true to use their version of the feature specified</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>path*</strong> - the path to the feature that will be updated</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Examples:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/checkout?branch=master&amp;transactionId=id
+       localhost:8182/checkout?path=tree/fid&amp;ours=true&amp;transactionId=id
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the branch you were one and the branch you checked out, if path was specified it returns the path and the strategy chosen.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You must specify either branch OR path not both. If path is specified then you MUST specify either ours or theirs.</p>
+</div>
+</div></blockquote>
+<ul>
+<li><p class="first"><strong>Commit</strong> (-T)</p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>message</strong> - the message for this commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>all</strong> - true to commit everything in the working tree</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>authorName</strong> - the author of the commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>authorEmail</strong> - the email of the the author of the commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/commit?authorName=John&amp;authorEmail=john@example.com&amp;message=something&amp;all=true&amp;transactionId=id
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the commit id and a count of the things that were added, changed and deleted.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Diff</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>oldRefSpec</strong> (-R) - the old ref spec to diff against</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>newRefSpec</strong> - the new ref spec to diff against</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>pathFilter</strong> - a path to filter by</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>showGeometryChanges</strong> - true to show geometry changes</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>page</strong> - the page number to build the response</p>
+<blockquote>
+<div><p><strong>Type:</strong> Integer</p>
+<p><strong>Default:</strong> 0</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>show</strong> - the number of elements to display in the response per page</p>
+<blockquote>
+<div><p><strong>Type:</strong> Integer</p>
+<p><strong>Default:</strong> 30</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/diff?oldRefSpec=commitId1&amp;newRefSpec=commitId2&amp;showGeometryChanges=true&amp;show=100
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the path of the feature before and after as well as the object id before and after, if showGeometryChanges is specified it will also return the geometry of the feature.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Fetch</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>prune</strong> - true to prune remote tracking branches locally that no longer exist</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>all</strong> - true to fetch from all remotes</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>remote*</strong> - the remote to fetch from</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> origin</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/fetch?prune=true&amp;remote=origin
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the name of the remote, the branch name before and after and the value before and after.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If remote is not specified it will try to fetch from a remote named origin.</p>
+</div>
+</div></blockquote>
+<ul>
+<li><p class="first"><strong>Log</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>limit</strong> - the number of commits to print</p>
+<blockquote>
+<div><p><strong>Type:</strong> Integer</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>offset</strong> - the offset to start listing at</p>
+<blockquote>
+<div><p><strong>Type:</strong> Integer</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>path</strong> - a list of paths to filter commits by</p>
+<blockquote>
+<div><p><strong>Type:</strong> List&lt;String&gt;</p>
+<p><strong>Default:</strong> Empty List</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>since</strong> - the start commit id to list commits</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>until</strong> - the end commit id to list commits</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>sinceTime</strong> - the start time to list commits from</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>untilTime</strong> - the end time to list commits from</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>page</strong> - the page number to build the response</p>
+<blockquote>
+<div><p><strong>Type:</strong> Integer</p>
+<p><strong>Default:</strong> 0</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>show</strong> - the number of elements to display in the response per page</p>
+<blockquote>
+<div><p><strong>Type:</strong> Integer</p>
+<p><strong>Default:</strong> 30</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>firstParentOnly</strong> - true to only show the first parent of a commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>countChanges</strong> - if true, each commit will include a count of each change type compared to its first parent</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>returnRange</strong> - true to only show the first and last commit of the log, as well as a count of the commits in the range</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>summary*</strong> - if true, return all changes from each commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Examples:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/log?path=treeName&amp;firstParentOnly=true
+localhost:8182/log?summary=true&amp;path=treeName&amp;output_format=csv
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns a list of the commits with a given range, if countChanges is specified it also returns the number of adds, modifies and deletes for each commit, if summary with csv output_format specified it downloads a file in csv format of a summary of changes for each commit.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can get the summary downloaded as a .csv file by specifying <tt class="docutils literal"><span class="pre">output_format=csv</span></tt>, this is the only option in the web-api that supports this format.</p>
+</div>
+</div></blockquote>
+<ul>
+<li><p class="first"><strong>Merge</strong> (-T)</p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>noCommit</strong> - true to merge without creating a commit afterwards</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>commit*</strong> (-R) - the branch or commit to merge into the currently checked out ref</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>authorName</strong> - the author of the merge commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>authorEmail</strong> - the email of the author of the merge commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/merge?commit=branch1&amp;noCommit=true&amp;transactionId=id
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the object id of both branches being merged and the common ancestor&#39;s id as well as the merge commit id if one was made, the number of conflicts there were if there were any, the list of changes that resulted from the merge.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can also pass a ref name for the commit option, instead of a commit hash.</p>
+</div>
+</div></blockquote>
+<ul>
+<li><p class="first"><strong>Pull</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>remoteName*</strong> - the name of the remote to pull from</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> origin</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>all</strong> - true to fetch all</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>ref*</strong> - the ref to pull</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> Currently Checked Out Branch</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>authorName</strong> - the author of the merge commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>authorEmail</strong> - the email of the author of the merge commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/pull?remoteName=origin&amp;all=true&amp;ref=master:master
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the result of Fetch, the remote name, the ref name, the number of adds, modifies and removes and the merge result if one was made.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you don&#8217;t specify the remoteName it will try to pull from a remote named   origin. Also, if ref is not specified it will try to pull the currently checked out branch. The ref option should be in this format remoteref:localref, with the localref portion being optional. If you should opt out of specifying the localref it will just use the same name as the remoteref.</p>
+</div>
+</div></blockquote>
+<ul>
+<li><p class="first"><strong>Push</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>all</strong> - true to push all refs</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>ref*</strong> - the ref to push</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> Currently Checked Out Branch</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>remoteName*</strong> - the name of the remote to push to</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> origin</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/push?ref=master:master&amp;remoteName=origin
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns whether or not it succeeded in pushing data.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you don&#8217;t specify the remoteName it will try to push to a remote named origin. Also, if ref is not specified it will try to push the currently checked out branch. The ref option should be in this format localref:remoteref, with the remoteref portion being optional. If you should opt out of specifying the remoteref it will just use the same name as the localref.</p>
+</div>
+</div></blockquote>
+<ul>
+<li><p class="first"><strong>Remote</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>list*</strong> - true to list the names of your remotes</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>remove</strong> - true to remove the given remote</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>ping</strong> - true to ping the given remote</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>update</strong> - true to update the given remote</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>verbose</strong> - true to show more info for each repo</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>remoteName*</strong> - the name of the remote to add or remove</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>newName</strong> - the new name of the remote to update</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>remoteURL</strong> - the URL to the repo to make a remote</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>username</strong> - the username to access the remote</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>password</strong> - the password to access the remote</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Examples:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/remote?list=true&amp;verbose=true
+localhost:8182/remote?remove=true&amp;remoteName=origin
+localhost:8182/remote?remoteName=origin&amp;remoteURL=urlToRepo.com
+localhost:8182/remote?ping=true&amp;remoteName=origin
+localhost:8182/remote?update=true&amp;newName=origin&amp;remoteName=remote1&amp;remoteURL=urlToRepo.com
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns a list of remotes, if verbose was specified it returns the remote url and username, if ping was specified it returns whether or not the ping was a success, if remove was specified it returns the name of the remote that was removed, if update was specified it returns the name of the remote that was updated, if a remote was created it returns the name of the new remote.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Remove</strong> (-T)</p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>path</strong> (-R) - the path to the feature to be removed</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>recursive</strong> - true to remove a tree and all features under it</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Examples:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/remove?path=treeName/fid&amp;transactionId=id
+localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the path that was deleted.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Status</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>limit</strong> - the number of staged and unstaged changes to make</p>
+<blockquote>
+<div><p><strong>Type:</strong> Integer</p>
+<p><strong>Default:</strong> 50</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>offset</strong> - the offset to start listing staged and unstaged changes</p>
+<blockquote>
+<div><p><strong>Type:</strong> Integer</p>
+<p><strong>Default:</strong> 0</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/status?limit=100
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the branch name of the currently checked out branch as well as a list of the staged, unstaged and unmerged features.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Tag</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>list</strong> (-R) - true to list the names of your tags</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/tag?list=true
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns a list of the tags.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><p>none</p>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/version
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns all of the version information for your version of GeoGig.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="plumbing-commands-supported">
+<h2>Plumbing Commands Supported<a class="headerlink" href="#plumbing-commands-supported" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first"><strong>BeginTransaction</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><p>none</p>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/beginTransaction
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the id of the transaction that was started.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>EndTransaction</strong> (-T)</p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>cancel</strong> - true to abort all changes made in this transaction</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/endTransaction?cancel=true&amp;transactionId=id
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns nothing if it succeeded or the transaction id if it failed.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>FeatureDiff</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>path</strong> (-R) - the path to feature</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>newTreeish*</strong> - the id or branch of the newer commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> ObjectId.NULL</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>oldTreeish*</strong> - the id or branch of the older commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> ObjectId.NULL</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>all</strong> - true to show all attributes not just changed ones</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/featurediff?path=treeName/fid&amp;newTreeish=commitId1&amp;oldTreeish=commitId2
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the list of attributes for that feature with the before and after values, the changetype and if it is the geometry it returns the CRS with it.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If no newTreeish is specified then it will use the commit that HEAD is pointing to. If no oldTreeish is specified then it will assume you want the diff to include the initial commit.</p>
+</div>
+</div></blockquote>
+<ul>
+<li><p class="first"><strong>LsTree</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>showTree</strong> - true to display trees in the response</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>onlyTree</strong> - true to display only trees in the response</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>recursive</strong> - true to recurse through the trees</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>verbose</strong> - true to print out the type, metadataId and Id of the object</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>path*</strong> - reference to start at</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/ls-tree?showTree=true&amp;recursive=true&amp;verbose=true
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the path to each node and if verbose is specified it returns the metadataId, type and objectId.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If path is not specified it will use the WORK_HEAD.</p>
+</div>
+</div></blockquote>
+<ul>
+<li><p class="first"><strong>RebuildGraph</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>quiet</strong> - If true, limit the output of the command</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/rebuildgraph?quiet=true
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the number of updated graph elements, if quiet is not specified it returns the objectId of each updated node.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>RefParse</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>name</strong> (-R) - the name of the ref to parse</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/refparse?name=master
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the ref name and objectId, if it is a symbolic ref it returns the target as well.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>UpdateRef</strong></p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>name</strong> (-R) - the name of the ref to update</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>delete*</strong> - true to delete this ref</p>
+<blockquote>
+<div><p><strong>Type:</strong> Boolean</p>
+<p><strong>Default:</strong> false</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>newValue*</strong> - the new value to change the ref to</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> ObjectId.NULL</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/updateref?name=master&amp;newValue=branch1
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the same things as Ref parse
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You must specify either delete OR newValue for the command to work.</p>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="web-api-specific">
+<h2>Web-Api Specific<a class="headerlink" href="#web-api-specific" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first"><strong>GetCommitGraph</strong></p>
+<blockquote>
+<div><p>The purpose of the GetCommitGraph function is to traverse the entire commit graph. It starts at the specified commitId and works its way down the graph to either the initial commit or the specified depth. Since it traverses the actual commit graph, unlike log, it will display multiple parents and will list every single commit that runs down each parents history.</p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>depth</strong> - the depth to search to</p>
+<blockquote>
+<div><p><strong>Type:</strong> Integer</p>
+<p><strong>Default:</strong> 0</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>commitId</strong> (-R) - the id of the commit to start at</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> ObjectId.NULL</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>page</strong> - the page number to build the response</p>
+<blockquote>
+<div><p><strong>Type:</strong> Integer</p>
+<p><strong>Default:</strong> 0</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>show</strong> - the number of elements to list per page</p>
+<blockquote>
+<div><p><strong>Type:</strong> Integer</p>
+<p><strong>Default:</strong> 30</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/getCommitGraph?show=100
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the same format as log.
+</pre></div>
+</div>
+</div></blockquote>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>ResolveConflict</strong> (-T)</p>
+<blockquote>
+<div><p>This command is used to resolve a conflict at the provided path with the provided feature objectId.  This can be used in conjunction with the output response of a MergeFeature request.</p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>path</strong> (-R) - the path to the feature you want to add</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>objectid</strong> (-R) - the object id of the feature</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/resolveconflict?path=pathToFeature&amp;objectid=featureObjectId
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns whether or not it resolved successfully.
+</pre></div>
+</div>
+</div></blockquote>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>RevertFeature</strong> (-T)</p>
+<blockquote>
+<div><p>This command can be used to revert the changes to a single feature in a commit.</p>
+<blockquote>
+<div><p><strong>Currently Supported Options:</strong></p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p class="first"><strong>authorName</strong> - the author of the merge commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>authorEmail</strong> - the email of the author of the merge commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>commitMessage</strong> - the commit message for the revert</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>mergeMessage</strong> - the message for the merge of the revert commit</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>newCommitId</strong> (-R) - the commit that contains the version of the feature that we want to undo</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>oldCommitId</strong> (-R) - the commit that contains the version of the feature to revert to</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>path</strong> (-R) - the path to the feature you want to revert</p>
+<blockquote>
+<div><p><strong>Type:</strong> String</p>
+<p><strong>Default:</strong> null</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/revertfeature?authorName=John&amp;authorEmail=John@example.com&amp;commitMessage=&quot;Reverted Feature&quot;&amp;mergeMessage=&quot;Merge of reverted feature&quot;&amp;newCommitId=commitId1&amp;oldCommitId=commitId2&amp;path=pathToFeature
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the same format as Merge.
+</pre></div>
+</div>
+</div></blockquote>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="repo-commands">
+<h2>Repo Commands<a class="headerlink" href="#repo-commands" title="Permalink to this headline">¶</a></h2>
+<p>These commands can be used by using the <tt class="docutils literal"><span class="pre">repo/</span></tt> endpoint, instead of the standard <tt class="docutils literal"><span class="pre">/</span></tt> endpoint.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The output format for all repo commands is plain text.</p>
+</div>
+</div></blockquote>
+<ul>
+<li><p class="first"><strong>MergeFeature</strong></p>
+<blockquote>
+<div><p>This endpoint can be used to merge two features into a new one.  It will return the ObjectId of the new feature when the operation completes.  This endpoint must be accessed by using a POST request that contains a json object to tell GeoGig how to merge the feature.  The following is an example of the json POST data to merge a feature with 3 attributes.</p>
+<div class="highlight-none"><div class="highlight"><pre>{
+  path: &#39;featureType/feature&#39;,
+  ours: &#39;objectId for left feature&#39;,
+  theirs: &#39;objectId for right feature&#39;,
+  merges: {
+     attr1: {
+         ours: true // use the value from the left feature
+     },
+     attr2: {
+         theirs: true // use the value from the right feature
+     },
+     attr3: {
+         value: &#39;custom value&#39; // use our own value
+     }
+  }
+}
+</pre></div>
+</div>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repo/mergefeature
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the id of the merged feature.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Manifest</strong></p>
+<blockquote>
+<div><p>This endpoint can be used to get a list of all refs in the repository and what they point to.  Similar to the Branch command with the list option from above.</p>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repo/manifest
+</pre></div>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>Returns the list of refs and the ids they point to.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="issues">
+<h1>Issues<a class="headerlink" href="#issues" title="Permalink to this headline">¶</a></h1>
+<p>The main concern with the web-api currently is that it doesn&#8217;t have any kind of authentication on it, which means that anyone with the url can potentially destroy your repo or steal you data with commands like updateref and pull.</p>
+<p>There is also a lot of room for improvement and optimization. There are also several commands that still need to be exposed through the web-api.</p>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="networking.html" title="previous chapter">GeoGig Networking</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="osm.html" title="next chapter">Using GeoGig with OpenStreetMap data</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc"> 
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">Web-Api Documentation</a><ul>
+<li><a class="reference internal" href="#porcelain-commands-supported">Porcelain Commands Supported</a></li>
+<li><a class="reference internal" href="#plumbing-commands-supported">Plumbing Commands Supported</a></li>
+<li><a class="reference internal" href="#web-api-specific">Web-Api Specific</a></li>
+<li><a class="reference internal" href="#repo-commands">Repo Commands</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#issues">Issues</a></li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="networking.html" title="previous chapter">GeoGig Networking</a></li>
+            <li>Next: <a href="osm.html" title="next chapter">Using GeoGig with OpenStreetMap data</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/interaction/web-api.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/boundlessgeo/GeoGit/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/boundlessgeo/GeoGit">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

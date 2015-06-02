@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>Cherry-picking commits &mdash; GeoGig 0.11 User Manual</title>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" /> 
+  <!--[if IE]>
+  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="top" title="GeoGig 0.11 User Manual" href="../index.html" />
+      <link rel="up" title="Data and commits" href="index.html" />
+      <link rel="next" title="Rebasing" href="rebasing.html" />
+      <link rel="prev" title="Creating and applying patches" href="patches.html" />
+</head>
+<body class="data/picking">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/boundlessgeo/GeoGit">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8"> 
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 0.11 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
+  <li>Cherry-picking commits</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="rebasing.html" title="Rebasing"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="patches.html" title="Creating and applying patches"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="cherry-picking-commits">
+<h1>Cherry-picking commits<a class="headerlink" href="#cherry-picking-commits" title="Permalink to this headline">¶</a></h1>
+<p>The merge and rebase operations combine to different histories into a given one. sometimes, however, you might not want to combine all the differences from a branch or a set of branches, but just one single commit, or a selected number of them. GeoGig has another operation called <em>cherry-picking</em>, that can be used for that.</p>
+<p>To run a cherry picking operation, the <tt class="docutils literal"><span class="pre">cherry-pick</span></tt> command has to be used, with the following syntax</p>
+<div class="highlight-python"><div class="highlight"><pre>$geogig cherry-pick &lt;commit&gt;
+</pre></div>
+</div>
+<p>The commit reference can be specified using any of the syntaxes supported by GeoGig, as long as it resolves to a commit. References such as <tt class="docutils literal"><span class="pre">5852e6949ba71039fded67e7f4980af4f8773869</span></tt> (a full commit ID), <tt class="docutils literal"><span class="pre">5852e69</span></tt> (a shortened commit ID), or <tt class="docutils literal"><span class="pre">branch1</span></tt> (the last commit in a branch named <em>branch1</em>), are all valid, to name a few examples.</p>
+<p>Once the cherry-pick operation has been run, you will have a new commit in you history, with the same message and changes as the commit that you passed. You have literally applied that commit to you current branch.</p>
+<p>Your working tree and index will be updated to reflect the changes introduced by the commit. To avoid losing uncommited changes, the <tt class="docutils literal"><span class="pre">cherry-pick</span></tt> command cannot be run if your working tree is not clean (that is, if it&#8217;s different from the current HEAD and you have unstaged changes.)</p>
+<div class="section" id="conflicts-in-cherry-picking">
+<h2>Conflicts in cherry-picking<a class="headerlink" href="#conflicts-in-cherry-picking" title="Permalink to this headline">¶</a></h2>
+<p>As in the case of both the <tt class="docutils literal"><span class="pre">merge</span></tt> and <tt class="docutils literal"><span class="pre">rebase</span></tt> commands, <tt class="docutils literal"><span class="pre">cherry-pick</span></tt> cannot always apply the changes of a given commit, since your current history might have introduced other changes that are not compatible or, at least, that do not allow for an automated merging. In this case, the <tt class="docutils literal"><span class="pre">cherry-pick</span></tt> command will apply changes that do not cause any conflict, and alert you about conflicting ones.</p>
+<div class="highlight-python"><div class="highlight"><pre>$geogig cherry-pick 5852e694
+CONFLICT: conflict in Parks/1
+</pre></div>
+</div>
+<p>Conflict arise whenever the changed for a given element might overwrite and additional changed introduced in the current branch. For instance, let&#8217;s say the commit you are picking has changed the value of a given attribute in a given feature from &#8220;1&#8221; to &#8220;2&#8221;. If in the current branch the value for that attribute and feature is &#8220;3&#8221;, the cherry-picking operation will report that as a conflict. It could just change the value to &#8220;2&#8221;, but that would discard the previous changes, since the original value is not the same. To avoid it, it will let you manually do the edit.</p>
+<p>Conflicts in the case of cherry-picking are very similar to those found when trying to apply a patch. Reading the corresponding section is recommended to understand this mechanism.</p>
+<p>Cherry-picking conflicts are resolved manually much in the same way that was explained in the case of a conflicted merge operation. You must select the version to use and eventually leave you index without elements marked as conflicted, by staging those changes.</p>
+<p>To finally commit you changes, call the <tt class="docutils literal"><span class="pre">commit</span></tt> command, reusing the information from the commit that you have cherry-picked. Use the <tt class="docutils literal"><span class="pre">-c</span></tt> option followed by the reference of the commit</p>
+<div class="highlight-python"><div class="highlight"><pre>$geogig commit -c 5852e694
+</pre></div>
+</div>
+<p>That will perform a normal commit, but instead of asking you for a commit message, it will use the original one from the passed commit, along with its author and author timestamp.</p>
+</div>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="patches.html" title="previous chapter">Creating and applying patches</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="rebasing.html" title="next chapter">Rebasing</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc"> 
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">Cherry-picking commits</a><ul>
+<li><a class="reference internal" href="#conflicts-in-cherry-picking">Conflicts in cherry-picking</a></li>
+</ul>
+</li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="patches.html" title="previous chapter">Creating and applying patches</a></li>
+            <li>Next: <a href="rebasing.html" title="next chapter">Rebasing</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/data/picking.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/boundlessgeo/GeoGit/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/boundlessgeo/GeoGit">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

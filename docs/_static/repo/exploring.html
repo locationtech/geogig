@@ -1,0 +1,360 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>Exploring a repository &mdash; GeoGig 0.11 User Manual</title>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" /> 
+  <!--[if IE]>
+  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="top" title="GeoGig 0.11 User Manual" href="../index.html" />
+      <link rel="up" title="Working with repositories" href="index.html" />
+      <link rel="next" title="Branches" href="branches.html" />
+      <link rel="prev" title="Configuring a GeoGig repository" href="config.html" />
+</head>
+<body class="repo/exploring">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/boundlessgeo/GeoGit">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8"> 
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 0.11 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
+  <li>Exploring a repository</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="branches.html" title="Branches"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="config.html" title="Configuring a GeoGig repository"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="exploring-a-repository">
+<span id="repo-exploring"></span><h1>Exploring a repository<a class="headerlink" href="#exploring-a-repository" title="Permalink to this headline">¶</a></h1>
+<p>The entire contents of a GeoGig repository are stored in the <tt class="docutils literal"><span class="pre">.geogig</span></tt> directory.</p>
+<p>Unlike a version control system like Git, the content of the current working tree cannot be explored directly as a normal folder containing files, so they are stored instead in a database which holds the complete structure of the repository. This means that any files stored in the same directory that contains the <tt class="docutils literal"><span class="pre">.geogig</span></tt> directory will be ignored by GeoGig.</p>
+<p>Therefore, exploring a GeoGig repository must be done using GeoGig commands. The main commands used for this task are:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">ls</span></tt>: lists the content of a tree</li>
+<li><tt class="docutils literal"><span class="pre">show</span></tt>: prints a formatted version of an element of the repository</li>
+</ul>
+<div class="section" id="listing-trees">
+<h2>Listing trees<a class="headerlink" href="#listing-trees" title="Permalink to this headline">¶</a></h2>
+<p>The basic <tt class="docutils literal"><span class="pre">ls</span></tt> command takes the following form:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls [ref]:[path]</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">[ref]:[path]</span></tt> parameter defines the path to be listed. If it contains no <tt class="docutils literal"><span class="pre">ref</span></tt> part, it will list the given path in the current working tree. To list the same path in a different reference, a full reference can be provided. For instance, to list the content of <tt class="docutils literal"><span class="pre">parks</span></tt> in the current HEAD, the following line should be used:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls HEAD:parks</span>
+</pre></div>
+</div>
+<p>The provided reference and path should resolve to a tree. Since features do not contains other elements, their content cannot be listed with the <tt class="docutils literal"><span class="pre">ls</span></tt> command, but instead must be used with the <tt class="docutils literal"><span class="pre">show</span></tt> command.</p>
+<p>An object ID can be used directly instead of a <tt class="docutils literal"><span class="pre">[ref]:[path]</span></tt>. So one can use the ID of a commit and list the contents of the tree corresponding to that commit.</p>
+<p>The options available for the <tt class="docutils literal"><span class="pre">ls</span></tt> command control how the list of elements under the given path is printed.</p>
+<ul class="simple">
+<li>The <tt class="docutils literal"><span class="pre">-v</span></tt> option (for &#8220;<strong>verbose</strong>&#8221;) will list not just the name of the objects, but also the object&#8217;s ID and the ID of the corresponding feature type.</li>
+<li>The <tt class="docutils literal"><span class="pre">-r</span></tt> option will list the contents of subtrees <strong>recursively</strong>. The names of these subtrees are not shown in the listing, but you can specify GeoGig to add them by using the <tt class="docutils literal"><span class="pre">-t</span></tt> option along with <tt class="docutils literal"><span class="pre">-d</span></tt>.</li>
+<li>The <tt class="docutils literal"><span class="pre">-a</span></tt> option (for &#8220;<strong>abbreviate</strong>&#8221;) will show IDs in their abbreviated form. Use a number to determine how many digits of the ID to display (<tt class="docutils literal"><span class="pre">-a</span> <span class="pre">7</span></tt> for seven digit IDs).</li>
+</ul>
+<p>Here are some examples of the <tt class="docutils literal"><span class="pre">ls</span></tt> command:</p>
+<p>Recursive list:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls -r -t</span>
+</pre></div>
+</div>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Root tree/</span>
+<span class="go">    parks/</span>
+<span class="go">        2</span>
+<span class="go">        3</span>
+<span class="go">        4</span>
+<span class="go">        1</span>
+</pre></div>
+</div>
+<p>Verbose list:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls -v parks</span>
+</pre></div>
+</div>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">parks/</span>
+<span class="go">    2 49852c03b8dd3c93fcbda7137abda9ad53a9311a bfd1d4bb75e0a4419243ef0ba9d6e9793d31cdab</span>
+<span class="go">    3 49852c03b8dd3c93fcbda7137abda9ad53a9311a 84150cc07326358ac70777d4141a8cfdd8038323</span>
+<span class="go">    4 49852c03b8dd3c93fcbda7137abda9ad53a9311a 5347d1b1b5d828f83e4065e227dcb848b4371637</span>
+<span class="go">    1 49852c03b8dd3c93fcbda7137abda9ad53a9311a ce3e836bcb64f1b647e3dc9dd97700c584063533</span>
+</pre></div>
+</div>
+<p>Verbose and recursive list:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls -v -r -t</span>
+</pre></div>
+</div>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Root tree/</span>
+<span class="go">   parks/ 49852c03b8dd3c93fcbda7137abda9ad53a9311a 224f0086bc4e9b116e7b60dbc414e1cc8d829839</span>
+<span class="go">       2 49852c03b8dd3c93fcbda7137abda9ad53a9311a bfd1d4bb75e0a4419243ef0ba9d6e9793d31cdab</span>
+<span class="go">       3 49852c03b8dd3c93fcbda7137abda9ad53a9311a 84150cc07326358ac70777d4141a8cfdd8038323</span>
+<span class="go">       4 49852c03b8dd3c93fcbda7137abda9ad53a9311a 5347d1b1b5d828f83e4065e227dcb848b4371637</span>
+<span class="go">       1 49852c03b8dd3c93fcbda7137abda9ad53a9311a ce3e836bcb64f1b647e3dc9dd97700c584063533</span>
+</pre></div>
+</div>
+<p>Verbose and recursive list with seven digit IDs:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig ls -v -r -t -a 7</span>
+</pre></div>
+</div>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Root tree/</span>
+<span class="go">   parks/ 49852c0 224f008</span>
+<span class="go">       2 49852c0 bfd1d4b</span>
+<span class="go">       3 49852c0 84150cc</span>
+<span class="go">       4 49852c0 5347d1b</span>
+<span class="go">       1 49852c0 ce3e836</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="showing-features">
+<h2>Showing features<a class="headerlink" href="#showing-features" title="Permalink to this headline">¶</a></h2>
+<p>Describing an element in a GeoGig repository is done using the <tt class="docutils literal"><span class="pre">show</span></tt> command. It can be used to describe any type of object, unlike <tt class="docutils literal"><span class="pre">ls</span></tt> which needs to resolve to a tree.</p>
+<p>The <tt class="docutils literal"><span class="pre">show</span></tt> command prints a formatted description of a given element. This description is a human-readable version of the element.</p>
+<p>The command takes as input a string that defines the object to describe. All supported notations are allowed for both commands, as they are described in <a class="reference internal" href="../data/referencing.html#referencing"><em>Referencing a GeoGig element</em></a>.</p>
+<p>Below you can find the output of the  <tt class="docutils literal"><span class="pre">show</span></tt> command for certain types of objects.</p>
+<p>The example below shows the use of the <tt class="docutils literal"><span class="pre">show</span></tt> command with a tree:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig show parks</span>
+</pre></div>
+</div>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">TREE ID:  0bbed3603377adfbd3b32afce4d36c2c2e59d9d4</span>
+<span class="go">SIZE:  50</span>
+<span class="go">NUMBER OF SUBTREES:  0</span>
+<span class="go">DEFAULT FEATURE TYPE ID:  6350a6955b124119850f5a6906f70dc02ebb31c9</span>
+
+<span class="go">DEFAULT FEATURE TYPE ATTRIBUTES</span>
+<span class="go">--------------------------------</span>
+<span class="go">agency: &lt;STRING&gt;</span>
+<span class="go">area: &lt;DOUBLE&gt;</span>
+<span class="go">len: &lt;DOUBLE&gt;</span>
+<span class="go">name: &lt;STRING&gt;</span>
+<span class="go">number_fac: &lt;Long&gt;</span>
+<span class="go">owner: &lt;STRING&gt;</span>
+<span class="go">parktype: &lt;STRING&gt;</span>
+<span class="go">the_geom: &lt;MULTIPOLYGON&gt;</span>
+<span class="go">usage: &lt;STRING&gt;</span>
+</pre></div>
+</div>
+<p>When specifying a single feature, the <tt class="docutils literal"><span class="pre">show</span></tt> command prints the values of all attributes, and their corresponding names taken from the associated feature type.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig show HEAD:parks/1</span>
+</pre></div>
+</div>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">ID:  ff51bfc2a36d02a3a51d72eef3e7f44de9c4e231</span>
+
+<span class="go">ATTRIBUTES</span>
+<span class="go">----------</span>
+<span class="go">agency: Medford School District</span>
+<span class="go">area: 636382.400857</span>
+<span class="go">len: 3818.6667552</span>
+<span class="go">name: Abraham Lincoln Elementary</span>
+<span class="go">number_fac: 4</span>
+<span class="go">owner: Medford School District</span>
+<span class="go">parktype: School Field</span>
+<span class="go">the_geom: MULTIPOLYGON (((-122.83646412838807 42.36016644633764, ...</span>
+<span class="go">usage: Public</span>
+</pre></div>
+</div>
+<p>The following example shows the output of the <tt class="docutils literal"><span class="pre">show</span></tt> command when used on a commit reference:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig show 509a481257c5791f50f5a35087e432247f9dc8b7</span>
+</pre></div>
+</div>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Commit:        509a481257c5791f50f5a35087e432247f9dc8b7</span>
+<span class="go">Author:        Author &lt;author@example.com&gt;</span>
+<span class="go">Committer:     Author &lt;author@example.com&gt;</span>
+<span class="go">Author date:   (3 hours ago) Mon Jan 21 13:58:55 CET 2013</span>
+<span class="go">Committer date:(3 hours ago) Mon Jan 21 13:58:55 CET 2013</span>
+<span class="go">Subject:       Updated geometry</span>
+</pre></div>
+</div>
+<p>You can also use a reference like <tt class="docutils literal"><span class="pre">HEAD</span></tt> to show the current state of the repository:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig show HEAD</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="globbing">
+<h2>Globbing<a class="headerlink" href="#globbing" title="Permalink to this headline">¶</a></h2>
+<p>Some commands in GeoGig, such as <tt class="docutils literal"><span class="pre">ls</span></tt> and <tt class="docutils literal"><span class="pre">show</span></tt>, support using wildcards. This way, you can more easily select a set of objects without having to type the name of each of them.</p>
+<p>GeoGig uses globbing notation similar to the program <a class="reference external" href="http://ant.apache.org">ant</a>, supporting the most common wildcards, namely <tt class="docutils literal"><span class="pre">*</span></tt>, <tt class="docutils literal"><span class="pre">?</span></tt> and <tt class="docutils literal"><span class="pre">**</span></tt>.</p>
+<ul class="simple">
+<li>The <tt class="docutils literal"><span class="pre">*</span></tt> character can be any string of any length (including zero)</li>
+<li>The <tt class="docutils literal"><span class="pre">?</span></tt> represents a single character.</li>
+<li>The <tt class="docutils literal"><span class="pre">**</span></tt> string is used to indicate any path, so it will cause the command to recursively search into a given path.</li>
+</ul>
+<p>For instance, the string <tt class="docutils literal"><span class="pre">roads/**/???</span></tt> will return all features with a name containing only three characters in any path under <tt class="docutils literal"><span class="pre">roads</span></tt>. That includes <tt class="docutils literal"><span class="pre">roads/N501</span></tt>, and also <tt class="docutils literal"><span class="pre">roads/spain/madrid/N501</span></tt></p>
+<p>Since objects are not stored in the filesystem, but in the repository database, the expansion of wildcards is not (and should not be) performed by the command-line interpreter, but by the GeoGig interpreter itself.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For more information, please see the section about <a class="reference external" href="http://ant.apache.org/manual/dirtasks.html">directory-based tasks</a> in the ant manual.</p>
+</div>
+</div>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="config.html" title="previous chapter">Configuring a GeoGig repository</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="branches.html" title="next chapter">Branches</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc"> 
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">Exploring a repository</a><ul>
+<li><a class="reference internal" href="#listing-trees">Listing trees</a></li>
+<li><a class="reference internal" href="#showing-features">Showing features</a></li>
+<li><a class="reference internal" href="#globbing">Globbing</a></li>
+</ul>
+</li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="config.html" title="previous chapter">Configuring a GeoGig repository</a></li>
+            <li>Next: <a href="branches.html" title="next chapter">Branches</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/repo/exploring.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/boundlessgeo/GeoGit/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/boundlessgeo/GeoGit">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

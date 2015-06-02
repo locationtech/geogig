@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>Referencing a GeoGig element &mdash; GeoGig 0.11 User Manual</title>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" /> 
+  <!--[if IE]>
+  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="top" title="GeoGig 0.11 User Manual" href="../index.html" />
+      <link rel="up" title="Data and commits" href="index.html" />
+      <link rel="next" title="Reverting changes" href="reverting.html" />
+      <link rel="prev" title="Rebasing" href="rebasing.html" />
+</head>
+<body class="data/referencing">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/boundlessgeo/GeoGit">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8"> 
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 0.11 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
+  <li>Referencing a GeoGig element</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="reverting.html" title="Reverting changes"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="rebasing.html" title="Rebasing"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="referencing-a-geogig-element">
+<span id="referencing"></span><h1>Referencing a GeoGig element<a class="headerlink" href="#referencing-a-geogig-element" title="Permalink to this headline">¶</a></h1>
+<p>Many commands in GeoGig need a reference to a repository element. For instance, if you want to list the contents of a tree, you need a reference to that tree (we will see how to do this soon). You can use the name of the tree (i.e. <em>roads</em>) in this case, but there are other ways of naming an element.</p>
+<p>Imagine that you want to list the content of a tree, but not in the current version, but in a previous one. Let&#8217;s say you want the version represented by the command before the last one. How would you tell the corresponding command that you want that particular version?</p>
+<p>Since a GeoGig repository keeps all the history of your data, it requires a naming scheme that supports referencing an element and a given version. This is done with a notation in the form <tt class="docutils literal"><span class="pre">[ref]:[path]</span></tt>, where <tt class="docutils literal"><span class="pre">ref</span></tt> denotes the snapshot of the repository we want to refer to (that is, a given version), and <tt class="docutils literal"><span class="pre">path</span></tt> the path to the element. Think about it as adding an extra dimension to the common way of referring to an element in a filesystem using its path.</p>
+<p>The <tt class="docutils literal"><span class="pre">ref</span></tt> part of the full reference can be specified in several different ways, including the following.</p>
+<ul class="simple">
+<li>An object Id refering to an object that eventually resolves to a tree</li>
+<li>The name of a ref object (i.e. <tt class="docutils literal"><span class="pre">WORK_HEAD,</span> <span class="pre">HEAD</span></tt>)</li>
+<li>The n-th parent of a commit denoted with its Id. This is denoted as <tt class="docutils literal"><span class="pre">ID^n</span></tt>. For instance, <tt class="docutils literal"><span class="pre">509a481257c5791f50f5a35087e432247f9dc8b7^2</span></tt></li>
+<li>The n-th historical ancestor of an element denoted with its Id, by first parent. For instance, to refer to the ancestor of the current HEAD (the element the current HEAD pointed before the last change), <tt class="docutils literal"><span class="pre">HEAD~1</span></tt> should be used.</li>
+</ul>
+<p>The ID of an element can be abbreviated and denoted with just the first 7 digits instead of all 40. In the (unlikely) case of collision (more than one Id starting with those 7 digits), GeoGig will show you a warning message and prompt you to use the full, unambiguous, ID.</p>
+<p>If the full syntax is used, the first part of the reference has to resolve to a tree, and the second one must be a valid path under that tree. In some cases, you might in the end want to refer to a tree, so just the first part (the <tt class="docutils literal"><span class="pre">ref</span></tt> part) is needed, and any of the above alternatives can be used. In some other cases, the command might assume that you are referring to an element in the current working tree, so it will expect just the path, or, in case it is missing, assume that you are referring to the working tree (that is, it will automatically prepend <tt class="docutils literal"><span class="pre">WORK_HEAD</span></tt> to the parameter you specified). Check the documentation of each command to see what it actually expects.</p>
+<p>Going back to the proposed example of referencing a given path in a previous commit, there are several ways we can do it. One of them, in case we know the ID of the commit, would be to use <tt class="docutils literal"><span class="pre">ID:path</span></tt>. When you make a commit using the <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">commit</span></tt> command, GeoGig will show you the Id of the commit, as it is shown next:</p>
+<div class="highlight-python"><div class="highlight"><pre>$commit -m &quot;modified parks&quot;
+[c3bf45d6539a0d946a9f61e5ec17474d39529bb5] modified parks
+Committed, counting objects...0 features added, 3 changed, 0 deleted.
+</pre></div>
+</div>
+<p>If, as it happens in this case, you want to refer not to the last commit, but to a commit whose Id you do not know, remember that the <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">log</span></tt> command allows you to explore the history of the latest commits in your repository. Let&#8217;s say it gives you an output like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig log
+Commit:  c3bf45d6539a0d946a9f61e5ec17474d39529bb5
+Author:  volaya &lt;volaya@opengeo.org&gt;
+Date:    (43 seconds ago) 2013-02-25 15:31:41 +0100
+Subject: modified parks
+
+Commit:  955e67d93d230029b748dac2939c76ced6c28bc2
+Author:  volaya &lt;volaya@opengeo.org&gt;
+Date:    (1 day ago) 2013-02-25 15:31:24 +0100
+Subject: first commit
+</pre></div>
+</div>
+<p>The latest commit (<tt class="docutils literal"><span class="pre">c3bf45d6539a0d946a9f61e5ec17474d39529bb5</span></tt>) is the current one, and the <tt class="docutils literal"><span class="pre">HEAD</span></tt> of the repository is pointing at it, so the following 3 alternatives reference the same element:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">c3bf45d6539a0d946a9f61e5ec17474d39529bb5:parks</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">c3bf45d:parks</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">HEAD:parks</span></tt></li>
+</ul>
+<p>The previous commit (<tt class="docutils literal"><span class="pre">955e67d93d230029b748dac2939c76ced6c28bc2</span></tt>) is the one we are interested in, so we can make a reference to the <tt class="docutils literal"><span class="pre">parks</span></tt> tree corresponding to that commit by using any of the next alternatives:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">955e67d93d230029b748dac2939c76ced6c28bc2:parks</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">955e67d:parks</span></tt></li>
+</ul>
+<p>Since this commit is the ancestor of the one that the current HEAD is pointing to, we can also use <tt class="docutils literal"><span class="pre">HEAD~1:parks</span></tt>.</p>
+<p>One special ID in a GeoGig repository is the null Id, which represent the empty repository before any commits are made. It&#8217;s an objectId with all digits equal to zero: <tt class="docutils literal"><span class="pre">0000000000000000000000000000000000000000</span></tt>.</p>
+<p>You can use it whenever you need a reference to the empty repository. For instance, to know all the changes introduced from the very beginning of you history and up to 3 commits ago, the following command could be used.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff HEAD~3 00000000
+</pre></div>
+</div>
+<p>You can aso abbreviate the null Id if needed.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">the null Id used by Git <tt class="docutils literal"><span class="pre">4b825dc642cb6eb9a060e54bf8d69288fbee4904</span></tt> is not used by GeoGig to reference an empty repository.</p>
+</div>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="rebasing.html" title="previous chapter">Rebasing</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="reverting.html" title="next chapter">Reverting changes</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc"> 
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="rebasing.html" title="previous chapter">Rebasing</a></li>
+            <li>Next: <a href="reverting.html" title="next chapter">Reverting changes</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/data/referencing.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/boundlessgeo/GeoGit/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/boundlessgeo/GeoGit">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

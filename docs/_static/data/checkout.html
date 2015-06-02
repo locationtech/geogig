@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>Checking out a previous version &mdash; GeoGig 0.11 User Manual</title>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" /> 
+  <!--[if IE]>
+  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="top" title="GeoGig 0.11 User Manual" href="../index.html" />
+      <link rel="up" title="Data and commits" href="index.html" />
+      <link rel="next" title="Commiting changes" href="commiting.html" />
+      <link rel="prev" title="Staging data" href="adding.html" />
+</head>
+<body class="data/checkout">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/boundlessgeo/GeoGit">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8"> 
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 0.11 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
+  <li>Checking out a previous version</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="commiting.html" title="Commiting changes"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="adding.html" title="Staging data"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="checking-out-a-previous-version">
+<span id="checking-out"></span><h1>Checking out a previous version<a class="headerlink" href="#checking-out-a-previous-version" title="Permalink to this headline">¶</a></h1>
+<p>All the versions stored in a GeoGig repository are available and can be used. We already know how to refer to an object from a previous version, by using the reference syntax explained in <a class="reference internal" href="referencing.html#referencing"><em>Referencing a GeoGig element</em></a>. That allows us to describe that element or to use it for a certain operation.</p>
+<p>A different way of recovering a given version of the data kept in the repository is to bring all the changes to the working tree, so we can actually work on that data. Notice that this could be used, for instance, to export it and make that version of the repository available for an external application. However, you can export from a given commit without having to checkout and then export from the working tree, as it was explained in the <a class="reference internal" href="exporting.html#exporting"><em>Exporting from a GeoGig repository</em></a> section.</p>
+<p>The <tt class="docutils literal"><span class="pre">add</span></tt> and <tt class="docutils literal"><span class="pre">commit</span></tt> commands <em>move</em> the data from the working tree into the staging area, and from there into the repository database. That same data can go the opposite way, from the repository database to the working tree. In that direction, the index is skipped and the working tree is updated directly from the repository database.</p>
+<p>To checkout a past version of the repository data, the <tt class="docutils literal"><span class="pre">checkout</span></tt> command is used, just in the same way as we use it to move from one branch to another. Instead of a branch name, you must supply the name of a commit (its ID), and data corresponding to that commit will be put in the working tree. Since the data in the working tree will be overwritten, this command cannot be run when the working tree has unstaged changes.</p>
+<p>The following is a valid command that will update the version in the working tree from the current one to the snapshot corresponding to 5 commits ago.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig checkout HEAD~5
+</pre></div>
+</div>
+<p>Apart from updating the working tree, the <tt class="docutils literal"><span class="pre">checkout</span></tt> command updates the HEAD <tt class="docutils literal"><span class="pre">reference</span></tt>, which will now point to the commit from where the data to update the working tree was taken.</p>
+<p>You can now export the current working tree to a shapefile, and external applications will be able to use the old version of the data, which you have exported and is now in that shapefile.</p>
+<p>To go back to the most recent state, where you were before checking out the previous version,  you have to checkout the latest commit on the current branch. Notice that <tt class="docutils literal"><span class="pre">HEAD</span></tt> is not pointing now to that commit, so you will have to use the name of the current branch. Assuming you are in the <tt class="docutils literal"><span class="pre">master</span></tt> branch, the following will update the working tree to the latest version, and change the <tt class="docutils literal"><span class="pre">HEAD</span></tt> reference to the corresponding commit.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig checkout master
+</pre></div>
+</div>
+<div class="section" id="reseting-to-a-previous-commit">
+<h2>Reseting to a previous commit<a class="headerlink" href="#reseting-to-a-previous-commit" title="Permalink to this headline">¶</a></h2>
+<p>When you perform a checkout using a commit, the <tt class="docutils literal"><span class="pre">HEAD</span></tt> reference points directly to the commit. Usually, <tt class="docutils literal"><span class="pre">HEAD</span></tt> is itself a symbolic reference, and it point to the tip of a given branch. If we are in <tt class="docutils literal"><span class="pre">master</span></tt>, then <tt class="docutils literal"><span class="pre">HEAD</span></tt> points to wherever <tt class="docutils literal"><span class="pre">master</span></tt> is pointing. If there is a commit, the tip of the branch changes, and <tt class="docutils literal"><span class="pre">HEAD</span></tt> changes automatically.</p>
+<p>When <tt class="docutils literal"><span class="pre">HEAD</span></tt> is pointing to a commit directly, it is said to be in a <em>detached</em> state. You should not make commits in that state, because they will not be added to the tip of you current branch.</p>
+<p>If what you want to do is to revert to a previous snapshot of the current branch and start working from there, then you should use the command <tt class="docutils literal"><span class="pre">reset</span></tt> instead of checkout. The <tt class="docutils literal"><span class="pre">reset</span></tt> command will move the tip of the current branch (the <tt class="docutils literal"><span class="pre">master</span></tt> reference in this case) back to an specified commit, and <tt class="docutils literal"><span class="pre">HEAD</span></tt> will move along. Now you can start your work, which will be added on top of the commit to which you have reset the branch.</p>
+<p>To reset to the commit 5 commits ago, use the following:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig reset HEAD~5 --hard
+</pre></div>
+</div>
+<p>That will update all 3 areas in GeoGig (working tree, staging area and database) to the specified commit. This is known as a hard reset. You can also perform a mixed reset (only updates the staging area and database, but not the working tree, with the <tt class="docutils literal"><span class="pre">--mixed</span></tt> option), or a soft reset (only updates the database, with the <tt class="docutils literal"><span class="pre">--soft</span></tt> option).</p>
+</div>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="adding.html" title="previous chapter">Staging data</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="commiting.html" title="next chapter">Commiting changes</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc"> 
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">Checking out a previous version</a><ul>
+<li><a class="reference internal" href="#reseting-to-a-previous-commit">Reseting to a previous commit</a></li>
+</ul>
+</li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="adding.html" title="previous chapter">Staging data</a></li>
+            <li>Next: <a href="commiting.html" title="next chapter">Commiting changes</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/data/checkout.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/boundlessgeo/GeoGit/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/boundlessgeo/GeoGit">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

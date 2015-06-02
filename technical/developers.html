@@ -1,0 +1,324 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>GeoGig for developers &mdash; GeoGig 1.0-beta1 Technical Manual</title>
+  <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="_static/print.css" type="text/css" media="print" /> 
+  <!--[if IE]>
+  <link rel="stylesheet" href="_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/offcanvas.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0-beta1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+  <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <link rel="top" title="GeoGig 1.0-beta1 Technical Manual" href="index.html" />
+      <link rel="next" title="GeoGig merge conflicts strategy" href="geogig-merge-conflicts.html" />
+      <link rel="prev" title="Plumbing commands" href="plumbing_commands.html" />
+</head>
+<body class="developers">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/locationtech/geogig">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8"> 
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="index.html">GeoGig 1.0-beta1 Technical Manual</a> &raquo;</li>
+  <li>GeoGig for developers</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="geogig-merge-conflicts.html" title="GeoGig merge conflicts strategy"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="plumbing_commands.html" title="Plumbing commands"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="geogig-for-developers">
+<h1>GeoGig for developers<a class="headerlink" href="#geogig-for-developers" title="Permalink to this headline">¶</a></h1>
+<p>This page includes information for developers wanting to work with GeoGig.</p>
+<div class="section" id="building">
+<h2>Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h2>
+<p>To build GeoGig from source, follow these steps:</p>
+<ul class="simple">
+<li>Clone the GeoGig source code repository. To do so, create a new folder where you want the GeoGig source code to be kept, open a console and move to that folder. Now type the following.</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre>$git clone http://github.com/opengeo/GeoGig.git
+</pre></div>
+</div>
+<ul>
+<li><p class="first">Install the software needed to build GeoGig (you can skip one or both of the steps below in case you have Java and/or Maven already installed in your system)</p>
+<blockquote>
+<div><ul class="simple">
+<li>Download and install a Java Development Kit (JDK) from the <a class="reference external" href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Oracle Java website</a>.</li>
+<li>Download and configure <a class="reference external" href="http://maven.apache.org/download.cgi">Maven</a>.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">Move to the <tt class="docutils literal"><span class="pre">src/parent</span></tt> folder under the folder where you have cloned the GeoGig source code, and type the following.</p>
+</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre>$mvn clean install
+</pre></div>
+</div>
+<ul class="simple">
+<li>GeoGig should now be built, and scripts ready to be run should be available in the <tt class="docutils literal"><span class="pre">src/cli-app/target/geogig/bin</span></tt> folder. Add that folders to your <tt class="docutils literal"><span class="pre">PATH</span></tt> environment variable, so your system can find it and you can call GeoGig from the console.</li>
+<li>To test that GeoGig is ready to be used, open a console and type <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">help</span></tt>. You should see a list of available commands like the one shown below.</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre>usage: geogig &lt;command&gt; [&lt;args&gt;]
+
+The most commonly used geogig commands are:
+--help          Print this help message, or provide a command name to get help for
+add             Add features to the staging area
+apply           Apply a patch to the current working tree
+branch          List, create, or delete branches
+cat             Provide content of an element in the repository
+checkout        Checkout a branch or paths to the working tree
+cherry-pick     Apply the changes introduced by existing commits
+clean           Deletes untracked features from working tree
+clone           Clone a repository into a new directory
+commit          Record staged changes to the repository
+config          Get and set repository or global options
+conflicts       Shows existing conflicts
+diff            Show changes between commits, commit and working tree, etc
+[...]
+</pre></div>
+</div>
+</div>
+<div class="section" id="working-with-eclipse">
+<h2>Working with eclipse<a class="headerlink" href="#working-with-eclipse" title="Permalink to this headline">¶</a></h2>
+<p>To work with the Eclipse IDE, follow these steps.</p>
+<ul class="simple">
+<li>Move to the <tt class="docutils literal"><span class="pre">src/parent</span></tt> folder and type the following to build the corresponding eclipse projects:</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre>$mvn eclipse:eclipse
+</pre></div>
+</div>
+<ul>
+<li><p class="first">Open Eclipse and create a new workspace</p>
+</li>
+<li><p class="first">Select the <em>File-&gt;Import...</em> menu and then select &#8220;Existing projects from workspace&#8221;. You will see the dialog shown below</p>
+<blockquote>
+<div><div class="figure">
+<img alt="_images/import_eclipse.png" src="_images/import_eclipse.png" />
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">In the <em>Select root directory</em> field, select the <tt class="docutils literal"><span class="pre">src</span></tt> folder where the GeoGig source code can be found (which now will also contain the Eclipse projects). The list of projects in the <em>Projects</em> field will be populated.</p>
+</li>
+<li><p class="first">Click on <em>Finish</em> and all of GeoGig projects will be added to your workspace.</p>
+</li>
+</ul>
+<p>To handle maven projects directly from Eclipse, you can use the <a class="reference external" href="http://www.sonatype.org/m2eclipse">m2eclipse</a> plugin.</p>
+<p>Once your workspace contains the GeoGig source code, configure it following these steps.</p>
+<ul>
+<li><p class="first">Open the preferences dialog (<em>Window-&gt;Preferences</em>) and in the left part, select the <em>Java-&gt;Editor-&gt;Formatter</em> entry.</p>
+<blockquote>
+<div><div class="figure">
+<img alt="_images/formatter.png" src="_images/formatter.png" />
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Press the <em>Import</em> button and import the GeoGig formatting rules that are found at <tt class="docutils literal"><span class="pre">build/eclipse/formatter.xml</span></tt>. Set <tt class="docutils literal"><span class="pre">GeoGig</span></tt> as the current active profile.</p>
+</li>
+<li><p class="first">If you use the auto-formatting on save option, make sure that only edited lines are formatted.</p>
+<blockquote>
+<div><div class="figure">
+<img alt="_images/autoformat_save.png" src="_images/autoformat_save.png" />
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="programming-guide">
+<h2>Programming guide<a class="headerlink" href="#programming-guide" title="Permalink to this headline">¶</a></h2>
+<p>Here are some notes to help you get introduced in programming GeoGig</p>
+<ul>
+<li><p class="first">GeoGig makes extensive use of the <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/GuavaExplained">Google Guava library</a>. Check its documentation and use it when possible, as it contains many valuable tools that will increase code readability. Of particular relevance are the usage of <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/PreconditionsExplained">preconditions</a>, of utilities to deal with <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/CollectionUtilitiesExplained">collections</a> and of the <tt class="docutils literal"><span class="pre">Optional</span></tt> class to <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/UsingAndAvoidingNullExplained">avoid null references</a>. Make sure you check the above links to get familiar with those elements.</p>
+</li>
+<li><p class="first">Tests are written using the Junit framework. Online tests that require a GeoGig endpoint, are available using <tt class="docutils literal"><span class="pre">mvn</span> <span class="pre">-Ponline</span></tt>.</p>
+</li>
+<li><p class="first">Cobertura is configured for a test coverage report:</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre>mvn cobertura:cobertura
+open target/site/cobertura/index.html
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Functional tests are available for the command-line interface. GeoGig uses the <a class="reference external" href="https://github.com/cucumber/cucumber-jvm">cucumber-jvm</a> framework for functional testing. The <tt class="docutils literal"><span class="pre">RunFunctionalTest</span></tt> class is a JUnit Runner that will run all cucumber functional tests. To run a single test from Eclipse, you can install the <a class="reference external" href="https://github.com/mrpotes/cukes-jvm-eclipse-plugin/">cukes-jvm-eclipse plugin</a>. Once installed, you can right click on functional test files (which have the <tt class="docutils literal"><span class="pre">.feature</span></tt> extension) and run them individually. More information about running cucumber tests from eclipse can be found <a class="reference external" href="https://github.com/cucumber/cucumber-jvm/wiki/IDE-support">here</a>.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="technical-documentation">
+<h2>Technical documentation<a class="headerlink" href="#technical-documentation" title="Permalink to this headline">¶</a></h2>
+<p>Technical documentation is available in the <tt class="docutils literal"><span class="pre">docs/technical</span></tt> folder. It contains mostly descriptions of the mechanisms used by some GeoGig core operations.</p>
+</div>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="plumbing_commands.html" title="previous chapter">Plumbing commands</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="geogig-merge-conflicts.html" title="next chapter">GeoGig merge conflicts strategy</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc"> 
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">GeoGig for developers</a><ul>
+<li><a class="reference internal" href="#building">Building</a></li>
+<li><a class="reference internal" href="#working-with-eclipse">Working with eclipse</a></li>
+<li><a class="reference internal" href="#programming-guide">Programming guide</a></li>
+<li><a class="reference internal" href="#technical-documentation">Technical documentation</a></li>
+</ul>
+</li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="plumbing_commands.html" title="previous chapter">Plumbing commands</a></li>
+            <li>Next: <a href="geogig-merge-conflicts.html" title="next chapter">GeoGig merge conflicts strategy</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="_sources/developers.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="_static/jquery.js"></script>
+  <script type="text/javascript" src="_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="_static/underscore.js"></script>
+  <script type="text/javascript" src="_static/doctools.js"></script>
+  <script type="text/javascript" src="_static/searchtools.js"></script>
+  <script type="text/javascript" src="searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

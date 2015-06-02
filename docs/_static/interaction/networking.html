@@ -1,0 +1,375 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>GeoGig Networking &mdash; GeoGig 0.11 User Manual</title>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" /> 
+  <!--[if IE]>
+  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="top" title="GeoGig 0.11 User Manual" href="../index.html" />
+      <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
+      <link rel="next" title="Web-Api Documentation" href="web-api.html" />
+      <link rel="prev" title="The GeoGig Console" href="console.html" />
+</head>
+<body class="interaction/networking">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/boundlessgeo/GeoGit">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8"> 
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 0.11 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
+  <li>GeoGig Networking</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="web-api.html" title="Web-Api Documentation"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="console.html" title="The GeoGig Console"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="geogig-networking">
+<span id="networking"></span><h1>GeoGig Networking<a class="headerlink" href="#geogig-networking" title="Permalink to this headline">¶</a></h1>
+<p>In order for geogig clients to be able interact with a repository remotely, it must be exposed over a network as a service. This can  be accomplished in 2 different ways both of which are still under active development. With a local clone of the geogig source tree, mvn can be used to start a development server, and GeoServer can be built with GeoGig support. Both methods are described below.</p>
+<p>More background information on GeoGig remotes can be found elsewhere in the manual and the technical docs.</p>
+</div>
+<div class="section" id="standalone-testing-server">
+<h1>Standalone Testing Server<a class="headerlink" href="#standalone-testing-server" title="Permalink to this headline">¶</a></h1>
+<p>To start the geogig network develoment server from a local clone of the GeoGig source tree in the src/parent directory:</p>
+<div class="highlight-python"><div class="highlight"><pre>mvn jetty:run -pl ../web/app -f pom.xml -Dorg.geogig.web.repository=/Users/jj0hns0n/data/gisdata-repo/
+</pre></div>
+</div>
+<p>Output similar to the following indicates everything is working correctly.</p>
+<div class="highlight-python"><div class="highlight"><pre>[INFO] --- jetty-maven-plugin:7.1.6.v20100715:run (default-cli) @ geogig-web-app ---
+[INFO] Configuring Jetty for project: GeoGig WebApp
+[INFO] webAppSourceDirectory /Users/jj0hns0n/projects/geohub-dev/geogig/src/web/app/src/main/webapp does not exist. Defaulting to /Users/jj0hns0n/projects/geohub-dev/geogig/src/web/app/src/main/webapp
+[INFO] Reload Mechanic: automatic
+[INFO] Classes = /Users/jj0hns0n/projects/geohub-dev/geogig/src/web/app/target/classes
+[INFO] Context path = /
+[INFO] Tmp directory = /Users/jj0hns0n/projects/geohub-dev/geogig/src/web/app/target/tmp
+[INFO] Web defaults = org/eclipse/jetty/webapp/webdefault.xml
+[INFO] Web overrides =  none
+[INFO] web.xml file = file:/Users/jj0hns0n/projects/geohub-dev/geogig/src/web/app/src/main/webapp/WEB-INF/web.xml
+[INFO] Webapp directory = /Users/jj0hns0n/projects/geohub-dev/geogig/src/web/app/src/main/webapp
+[INFO] Starting jetty 7.1.6.v20100715 ...
+2013-05-27 13:36:45.081:INFO::jetty-7.1.6.v20100715
+2013-05-27 13:36:46.553:INFO::No Transaction manager found - if your webapp requires one, please configure one.
+2013-05-27 13:36:46.663:INFO::Started SelectChannelConnector@0.0.0.0:8080
+[INFO] Started Jetty Server
+[INFO] Starting scanner at interval of 5 seconds.
+</pre></div>
+</div>
+<p>Test that the network service is working correctly by attempting to clone it.:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig clone http://localhost:8080/geogig/ gisdata-repo-clone
+</pre></div>
+</div>
+<p>Sample Log of the clone operation</p>
+<div class="highlight-python"><div class="highlight"><pre>2013-05-27 13:33:06.616:INFO:/:GeoGIG: [Restlet] Attaching application: org.geogig.web.Main@5fff83a9 to URI: /geogig null null
+May 27, 2013 1:33:06 PM org.restlet.engine.log.LogFilter afterHandle
+INFO: 2013-05-27    13:34:51    127.0.0.1   -   127.0.0.1   8080    GET /geogig/repo/getdepth   -   200 -http://localhost:8080  Java/1.6.0_45   -
+May 27, 2013 1:34:51 PM org.restlet.engine.log.LogFilter afterHandle
+INFO: 2013-05-27    13:34:51    127.0.0.1   -   127.0.0.1   8080    GET /geogig/repo/manifest   -   200 -http://localhost:8080  Java/1.6.0_45   -
+May 27, 2013 1:34:51 PM org.restlet.engine.log.LogFilter afterHandle
+INFO: 2013-05-27    13:34:51    127.0.0.1   -   127.0.0.1   8080    GET /geogig/repo/getdepth   -   200 -http://localhost:8080  Java/1.6.0_45   -
+May 27, 2013 1:34:51 PM org.restlet.engine.log.LogFilter afterHandle
+INFO: 2013-05-27    13:34:51    127.0.0.1   -   127.0.0.1   8080    GET /geogig/repo/getparents commitId=2cdf52bcf5cf5aed78eab15ec56c81b3554136c7   200 -   0   3   http://localhost:8080   Java/1.6.0_45   -
+May 27, 2013 1:34:52 PM org.restlet.engine.log.LogFilter afterHandle
+INFO: 2013-05-27    13:34:52    127.0.0.1   -   127.0.0.1   8080    GET /geogig/repo/getparents commitId=2d74a9a48b2382a0fc77cbd72b4bde16e1e73b9b   200 -   0   1   http://localhost:8080   Java/1.6.0_45   -
+May 27, 2013 1:34:52 PM org.restlet.engine.log.LogFilter afterHandle
+INFO: 2013-05-27    13:34:52    127.0.0.1   -   127.0.0.1   8080    GET /geogig/repo/getparents commitId=3dbaa0649dfd166fb24ccd96739b8db5eb77da93   200 -   0   1   http://localhost:8080   Java/1.6.0_45   -
+May 27, 2013 1:34:52 PM org.restlet.engine.log.LogFilter afterHandle
+INFO: 2013-05-27    13:34:52    127.0.0.1   -   127.0.0.1   8080    GET /geogig/repo/getparents commitId=3840823f112a1667aee39f29fe2acba57042f9bc   200 -   0   1   http://localhost:8080   Java/1.6.0_45   -
+May 27, 2013 1:34:52 PM org.restlet.engine.log.LogFilter afterHandle
+INFO: 2013-05-27    13:34:52    127.0.0.1   -   127.0.0.1   8080    POST    /geogig/repo/batchobjects   -   200 -   192 34  http://localhost:8080   Java/1.6.0_45   -
+May 27, 2013 1:34:58 PM org.restlet.engine.log.LogFilter afterHandle
+INFO: 2013-05-27    13:34:58    127.0.0.1   -   127.0.0.1   8080    GET /geogig/repo/manifest   -   200 -http://localhost:8080  Java/1.6.0_45   -
+</pre></div>
+</div>
+<p>The getdepth, manifest, getparents and batchobjects operations performed are described in more detail in the technical documentation.</p>
+</div>
+<div class="section" id="geoserver">
+<h1>GeoServer<a class="headerlink" href="#geoserver" title="Permalink to this headline">¶</a></h1>
+<p>A GeoServer extension is available to allow GeoServer to interact with a GeoGig repository and use it as data store. It enables a GeoGig repository to be exposed as a remote for cloning, pushing and pulling as well as via OGC services (WMS/WFS/WMTS etc). Each top level tree in a GeoGig repository corresponds to a GeoServer layer. GeoServer treats a GeoGig repository as a store in much the same way as it does a database.</p>
+<div class="section" id="building-installing-the-geoserver-geogig-extension">
+<h2>Building/installing the GeoServer GeoGig extension<a class="headerlink" href="#building-installing-the-geoserver-geogig-extension" title="Permalink to this headline">¶</a></h2>
+<p>The GeoGig module is not currently included in GeoServer&#8217;s community extensions. You can add it by including the following dependencies into your own pom.xml:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;dependencies&gt;
+   &lt;dependency&gt;
+     &lt;groupId&gt;org.geogig&lt;/groupId&gt;
+     &lt;artifactId&gt;geogig-web-api&lt;/artifactId&gt;
+     &lt;version&gt;0.9&lt;/version&gt;
+   &lt;/dependency&gt;
+   &lt;dependency&gt;
+     &lt;groupId&gt;org.geogig&lt;/groupId&gt;
+     &lt;artifactId&gt;geogig-geotools&lt;/artifactId&gt;
+     &lt;version&gt;0.9&lt;/version&gt;
+   &lt;/dependency&gt;
+   &lt;dependency&gt;
+     &lt;groupId&gt;org.geogig&lt;/groupId&gt;
+     &lt;artifactId&gt;geogig-geoserver&lt;/artifactId&gt;
+     &lt;version&gt;0.9&lt;/version&gt;
+   &lt;/dependency&gt;
+ &lt;/dependencies&gt;
+</pre></div>
+</div>
+<p>Include the plugin in your mvn build command:</p>
+<div class="highlight-python"><div class="highlight"><pre>mvn clean install -Pgeogig
+</pre></div>
+</div>
+<p>Deploy the resulting war in a servlet container.</p>
+<p>Another way of installing the GeoGig extension is to build it yourself and then deploy it in the servlet container where you have deployed GeoServer.</p>
+<p>The GeoServer GeoGig extension is found along with other GeoServer extensions in the geoserver-ext repository.</p>
+<ul class="simple">
+<li>Clone the repository by running:</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre>git clone git@github.com:opengeo/geoserver-exts.git
+cd geoserver-exts
+mvn install
+</pre></div>
+</div>
+<ul class="simple">
+<li>In the <tt class="docutils literal"><span class="pre">geogig/target</span></tt> folder you will find a jar file named  <tt class="docutils literal"><span class="pre">gs-geogig-2.X-SNAPSHOT-shaded-plugin.jar</span></tt>. Put that jar file in the GeoServer <tt class="docutils literal"><span class="pre">WEB-INF/lib</span></tt> folder.</li>
+<li>Restart GeoServer.</li>
+</ul>
+<p>The GeoGig data store should now be available.</p>
+</div>
+<div class="section" id="configuring-a-geogig-store-in-geoserver">
+<h2>Configuring a GeoGig Store in GeoServer<a class="headerlink" href="#configuring-a-geogig-store-in-geoserver" title="Permalink to this headline">¶</a></h2>
+<p>When GeoServer is built with GeoGig support, it will be available as a Store type in the GeoServer admin UI.</p>
+<div class="figure">
+<img alt="../_images/geogig-store.png" src="../_images/geogig-store.png" />
+</div>
+<p>You can then configure a store by providing the path to the repository on the filesystem of the GeoServer installation.</p>
+<div class="figure">
+<img alt="../_images/configure-geogig-repo-store.png" src="../_images/configure-geogig-repo-store.png" />
+</div>
+<p>You will need to publish each top level tree as a layer individually.</p>
+<div class="figure">
+<img alt="../_images/geogig-publish-layer.png" src="../_images/geogig-publish-layer.png" />
+</div>
+<p>It may be necessary to specify the SRS for your data it if is not recognized by GeoServer.</p>
+<div class="figure">
+<img alt="../_images/configure-layer-declared-srs.png" src="../_images/configure-layer-declared-srs.png" />
+</div>
+</div>
+<div class="section" id="cloning-pushing-and-pulling">
+<h2>Cloning Pushing and Pulling<a class="headerlink" href="#cloning-pushing-and-pulling" title="Permalink to this headline">¶</a></h2>
+<p>Once GeoServer is configured with this repository, you can address it over the network at a URL path of the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>http://&lt;host&gt;:&lt;port&gt;/geoserver/geogig/&lt;workspace&gt;:&lt;store&gt;
+</pre></div>
+</div>
+<p>A sample url as configured in the screenshots above:</p>
+<div class="highlight-python"><div class="highlight"><pre>http://localhost:8080/geoserver/geogig/topp:gisdata-repo
+</pre></div>
+</div>
+<p>It is then possible to clone this repository:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig clone http://localhost:8080/geoserver/geogig/topp:gisdata-repo gisdata-repo-clone
+</pre></div>
+</div>
+<p>Your clone will be configured with the geoserver repository as a remote. This configuration is stored in .geogig/config in your clone:</p>
+<div class="highlight-python"><div class="highlight"><pre>[remote\origin]
+url = http://localhost:8080/geoserver/geogig/topp:gisdata-repo
+fetch = +refs/heads/*:refs/remotes/origin/*
+
+[branches\master]
+remote = origin
+merge = refs/heads/master
+</pre></div>
+</div>
+<p>It is now possible to push and pull from this remote repository. You can verify this works by testing with the freshly cloned repo:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig push origin
+Nothing to push.
+
+$ geogig pull origin
+100%
+Already up to date.
+</pre></div>
+</div>
+</div>
+<div class="section" id="automated-repository-synchronization">
+<h2>Automated Repository Synchronization<a class="headerlink" href="#automated-repository-synchronization" title="Permalink to this headline">¶</a></h2>
+<p>Repositories configured by GeoServer can be configured with remotes and Automated Repository Syncrhonization. TODO</p>
+</div>
+</div>
+<div class="section" id="current-limitations">
+<h1>Current Limitations<a class="headerlink" href="#current-limitations" title="Permalink to this headline">¶</a></h1>
+<p>The default underlying object database (berkeley db) is single user. While the repository is being exposed over the network by either the stand-alone server or by GeoServer, you will not be able to access the repo from the command line interface. The error is pretty clear about whats going on.</p>
+<p>com.sleepycat.je.EnvironmentLockedException: (JE 5.0.58) /Users/jj0hns0n/data/gisdata-repo/.geogig/objects The environment cannot be locked for single writer access. ENV_LOCKED: The je.lck file could not be locked. Environment is invalid and must be closed.</p>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="console.html" title="previous chapter">The GeoGig Console</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="web-api.html" title="next chapter">Web-Api Documentation</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc"> 
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">GeoGig Networking</a></li>
+<li><a class="reference internal" href="#standalone-testing-server">Standalone Testing Server</a></li>
+<li><a class="reference internal" href="#geoserver">GeoServer</a><ul>
+<li><a class="reference internal" href="#building-installing-the-geoserver-geogig-extension">Building/installing the GeoServer GeoGig extension</a></li>
+<li><a class="reference internal" href="#configuring-a-geogig-store-in-geoserver">Configuring a GeoGig Store in GeoServer</a></li>
+<li><a class="reference internal" href="#cloning-pushing-and-pulling">Cloning Pushing and Pulling</a></li>
+<li><a class="reference internal" href="#automated-repository-synchronization">Automated Repository Synchronization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#current-limitations">Current Limitations</a></li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="console.html" title="previous chapter">The GeoGig Console</a></li>
+            <li>Next: <a href="web-api.html" title="next chapter">Web-Api Documentation</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/interaction/networking.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/boundlessgeo/GeoGit/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/boundlessgeo/GeoGit">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

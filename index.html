@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, maximum-scale=1">
+    <link rel="shortcut icon" href="images/favicon.ico" />
+
+    
+    <link rel="stylesheet" type="text/css" href="stylesheets/custom.css" media="screen" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>GeoGig by Boundless</title>
+  </head>
+
+  <body data-spy="scroll" data-target="#blacktop" data-offset="20">
+    <div id="blacktop" class="activated">
+      <ul class="nav">
+        <li><a href="#main"></a></li>
+        <li><a href="#blacktop"></a></li>
+      </ul>
+    </div>
+    <div id="top"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#"><span class="logo"></span> <h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="#install">Get Started</a></li>
+              <li><a href="/docs/index.html">Documentation</a></li>
+              <li><a href="http://github.com/boundlessgeo/GeoGig">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <section id="main">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-7">
+              <p class="first">GeoGig is an open source tool that draws inspiration from <a href="http://git-scm.com/">Git</a>, but adapts its core concepts to handle distributed versioning of geospatial data.</p>
+              <h1 class="light copy">Track GeoSpatial Data Edits</h1>
+              <p>Users are able to import raw geospatial data (currently from Shapefiles, PostGIS or SpatiaLite) in to a repository where every change to the data is tracked. These changes can be viewed in a history, reverted to older versions, branched in to sandboxed areas, merged back in, and pushed to remote repositories.</p>
+
+              <p>GeoGig is written in Java, and available under the <a href="http://github.com/boundlessgeo/GeoGig/blob/master/LICENSE.txt">BSD License</a>.</p>
+
+            </div>
+            <div class="col-md-offset-1 col-md-4">
+              <a href="http://sourceforge.net/projects/geogig/files/latest/download" class="btn download"> <span class="zipfile"></span> <div class="download-ziptxt">DOWNLOAD <br/>1.0-beta1 Release .zip</div></a>
+              <ul class="list-unstyled">
+                <li><a href="#install" class="page-link"><span class="pagelink link-install"> </span> Quick Start</a></li>
+                <li><a href="#docs" class="page-link"><span class="pagelink link-docs"> </span> Docs</a></li>
+                <li><a href="#participate" class="page-link"><span class="pagelink link-participate"> </span> Participate</a></li>
+              </ul>
+              <p class="alpha">We are firmly in 'beta' mode, working to release early and often, so please join us. Testing, documentation, ideas and patches are all greatly appreciated. Don&apos;t hesitate to <a href="https://locationtech.org/mailman/listinfo/geogig-dev" target="_blank">get in touch</a> with any issues, feedback or encouragement.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <a name="install"></a>
+      <section id="install" class="overlay">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-10">
+
+              <h2>Quick Start</h2>
+
+              <p>1. Download <a href="http://sourceforge.net/projects/geogig/files/latest/download">Version 1.0-beta1</a> from SourceForge. <br/></p>
+
+              <p>2. Unzip the <em>geogig-cli-app-1.0-beta1.zip</em> to an applications directory, and then add the unzipped <code>geogig/bin/</code> folder to your <strong>PATH</strong>.</p>
+
+              <p>3. Import your spatial data to get started:
+
+                <p class="quickstart_title">QuickStart</p>
+                <div class="quickstart_shell">
+                  <p class="line">
+                    <span class="path">~$</span>
+                    <span class="command">geogig help</span>
+                  </p>
+                  <p class="line">
+                    <span class="output"> List geogig commands</span>
+                  </p>
+                  <p class="line">
+                    <span class="path">~/new-folder $</span>
+                    <span class="command">geogig init</span>
+                  </p>
+                  <p class="line">
+                    <span class="output"> Initialise a geogig repository in new-folder</span>
+                  </p>
+                  <p class="line">
+                    <span class="path">~/new-folder $</span>
+                    <span class="command">geogig shp import</span>
+                    <span class="input">your_shapefile</span>
+                  </p>
+                  <p class="line">
+                    <span class="output"> Import a .shp file (or try OSM, SpatialLite or PostGIS)</span>
+                  </p>
+                  <p class="line">
+                    <span class="path">~/new-folder $</span>
+                    <span class="command">geogig ls</span>
+                  </p>
+                  <p class="line">
+                    <span class="output"> What's in your geogig repository</span>
+                  </p>
+                  <p class="line">
+                    <span class="path">~/new-folder $</span>
+                    <span class="command">geogig status</span>
+                  </p>
+                  <p class="line">
+                    <span class="output"> What you can commit to a snapshot</span>
+                  </p>
+                </div>
+
+              <p>See more GeoGig instructions in our <a href="/docs/start/tutorial.html">GeoGig Tutorial</a> or try the <a href="/workshop/index.html">GeoGig Workshop</a>.</p></p>
+
+              <p>4. Additional 
+              information on how GeoGig works is available at the full <a href="http://geogig.org/docs/index.html">User Manual</a>.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <a name="docs"></a>
+      <section id="docs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-7">
+
+              <h2>Docs</h2>
+
+              <p>GeoGig documentation is available online:
+                <ul class="list-unstyled" style="line-height: 200%; margin-left: 20px;">
+                  <li> <a href="http://geogig.org/docs/index.html">User Manual</a> </li>
+                  <li> <a href='http://geogig.org/technical/'>Technical Manual</a> </li>
+                  <li> <a href='http://geogig.org/manpages/'>man pages</a> </li>
+                  <li> <a href='http://geogig.org/workshop/'>Workshop</a> </li>
+                </ul>
+              </p>
+
+              <p>The User Manual can also be downloaded with the geogig install <a href="http://sourceforge.net/projects/geogig/files/geogig-1.0-beta1/">here</a>.</p>
+
+              <p>For background reading see these papers on the spatial distributed versioning <a href="http://boundlessgeo.com/whitepaper/new-approach-working-geospatial-data-part-1/">Concept</a>, <a href="http://boundlessgeo.com/whitepaper/distributed-versioning-geospatial-data-part-2/">Implementation</a> and <a href='http://boundlessgeo.com/whitepaper/distributed-versioning-geospatial-data-part-3/'>Potential Development</a>.</p>
+          </div>
+          <div class="col-md-5">
+            <a href="images/geogig_workflow.png" target="_blank"><img class="workflow_diagram" src="images/geogig_workflow.png" alt="geogig workflow overview" /></a>
+          </div>
+        </div>
+      </section>
+
+    <a name="participate"></a>
+    <section id="participate">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-7">
+
+              <h2>Participate</h2>
+
+              <p>The project is hosted on github: <a href="http://github.com/boundlessgeo/GeoGig">http://github.com/boundlessgeo/GeoGig</a></p>
+              <p>Discussion takes place on our <a href="https://locationtech.org/mailman/listinfo/geogig-dev">GeoGig Mailing List</a>. 
+              Please join and introduce yourself, we'd love to help, and to figure out ways for you to get involved.</p>
+
+              <p>There is also a GeoGig IRC channel on <a href="http://freenode.net/">freenode</a> (#geogig). GeoGig developers can usually be found there.</p>
+
+              <p>Participation is encouraged using the github <em>fork</em> and <em>pull request</em> workflow:</p>
+
+              <ul>
+                <li>Include test case demonstrating functionality</li>
+                <li>Contributions are expected to pass all tests and not break the build</li>
+                <li>Include proper license headers on your contributed files</li>
+              </ul>
+
+              <p>Issues to help out on are at our <a href="http://github.com/boundlessgeo/GeoGig/issues">issue tracker</a>.</p>
+
+              <p>For those who can't code help on documentation is always appreciated, all docs can be found at 
+              <a href="http://github.com/boundlessgeo/GeoGig/tree/master/doc/">http://github.com/boundlessgeo/GeoGig/tree/master/doc/</a> and contributed to by editing in ReStructuredText and using standard GitHub workflows.</p>
+
+              <p>Our build is <a href="http://ares.boundlessgeo.com/jenkins/view/geogig/">actively monitored using Hudson</a>.</p>
+
+          </div>
+          <div class="col-md-5 hidden-sm hidden-xs">
+            <div id="tree_img"></div>
+          </div>
+ 
+        </div>
+      </div>
+    </section>
+
+    <a name="contributors"></a>
+    <section id="contributors">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+
+              <h2>Team</h2>
+
+              <p>
+                <ul style="list-unstyled" class="devlist">
+                  <li><a href="https://github.com/groldan"><img src="images/groldan.png" /><p>groldan</p></a></li>
+                  <li><a href="https://github.com/jdgarrett"><img src="images/johnathang.png" /><p>johnathang</p></a></li>
+                  <li><a href="https://github.com/volaya"><img src="images/volaya.png" /><p>volaya</p></a></li>
+                  <li><a href="https://github.com/dwins"><img src="images/dwins.png" /><p>dwins</p></a></li>
+                  <li><a href="https://github.com/kelseyishmael"><img src="images/kishmael.png" /><p>kishmael</p></a></li>
+                  <li><a href="https://github.com/markles"><img src="images/markles.png" /><p>markles</p></a></li>
+                </ul>
+              </p>
+
+              <p class="devmore">View <a href="https://github.com/boundlessgeo/GeoGig/graphs/contributors">more GeoGig contributors</a> on Github.</p>
+
+              <p class="col-sm-offset-10 col-sm-1"><a href="#top"><img src="images/arrow_up.png" alt="back to top"/></a></p>
+
+          </div>
+ 
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="http://github.com/boundlessgeo/GeoGig">GeoGig</a> is maintained by <a href="http://github.com/boundlessgeo"><img src="images/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+     <!-- Bootstrap core JavaScript -->
+    <script src="javascripts/jquery.js"></script>
+    <script src="javascripts/bootstrap.js"></script>
+    <script>
+      $('#blacktop').on('activate.bs.scrollspy', function () {
+        $('#blacktop').toggleClass("activated");
+      })
+
+    </script>
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </body>
+</html>
+

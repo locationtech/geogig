@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>Exporting from a GeoGig repository &mdash; GeoGig 0.11 User Manual</title>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" /> 
+  <!--[if IE]>
+  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="top" title="GeoGig 0.11 User Manual" href="../index.html" />
+      <link rel="up" title="Data and commits" href="index.html" />
+      <link rel="next" title="Exploring your history" href="history.html" />
+      <link rel="prev" title="Showing differences" href="diffs.html" />
+</head>
+<body class="data/exporting">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/boundlessgeo/GeoGit">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8"> 
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 0.11 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
+  <li>Exporting from a GeoGig repository</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="history.html" title="Exploring your history"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="diffs.html" title="Showing differences"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="exporting-from-a-geogig-repository">
+<span id="exporting"></span><h1>Exporting from a GeoGig repository<a class="headerlink" href="#exporting-from-a-geogig-repository" title="Permalink to this headline">¶</a></h1>
+<p>Data can also be exported from the GeoGig repository, allowing full synchronization with external applications that cannot use the native format of the GeoGig working tree.
+This also allows to export changes that have been incorporated into the working tree from an external repository, making those changes available to applications, and making them aware of edits done remotely.</p>
+<p>GeoGig supports the same formats for exporting that it does for importing. That is, GeoJSON, shapefiles, PostGIS/SQL Server/Oracle databases and Spatialite. To export from a GeoGig repository, the following syntax is used</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig &lt;shp|geojson|pg|sqlserver|oracle|sl&gt; export &lt;path_to_export&gt; &lt;destination&gt; [-overwrite] [--defaulttype] [--featuretype]
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">destination</span></tt> option is the filepath in the case of exporting to a shapefile, or the table name in case of exporting to a database. In both cases, the element designated by the <tt class="docutils literal"><span class="pre">destination</span></tt> parameter should not exist. If it exists, GeoGig will not perform the export operation. If you want GeoGig to overwrite, you must explicitly tell it to do so, by using the <tt class="docutils literal"><span class="pre">--overwrite</span></tt> option.</p>
+<p>The <tt class="docutils literal"><span class="pre">path_to_export</span></tt> refers by default to the working tree. Thus, the path <tt class="docutils literal"><span class="pre">roads</span></tt> refers to the full reference <tt class="docutils literal"><span class="pre">WORK_HEAD:roads</span></tt>. Data can be exported from a given commit or a different reference, by using a full reference instead of just a path. For instance, the following line will export the <tt class="docutils literal"><span class="pre">roads</span></tt> path from the current HEAD of the repository, to a shapefile.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig shp export HEAD:roads exported.shp
+</pre></div>
+</div>
+<p>When exporting to a database, the same options used to configure the database connection that are available for the import operation are also available for exporting.</p>
+<p>Notice that, as it was mentioned before, features with different feature types can coexist under the same path. When exporting, this will cause GeoGig to show an error message and to not complete the export operation, since this is not allowed to happen in a shapefile or a PostGIS table. Only paths with all features sharing the same feature type of the parent tree can be safely imported using the corresponding export commands.</p>
+<p>If you want to export a path that contains features with different feature types, you have two options to select which features should be exported</p>
+<ul class="simple">
+<li>Use the <tt class="docutils literal"><span class="pre">--defaulttype</span></tt> switch to tell GeoGig that you want only those features with the feature type of the selected path.</li>
+<li>Use the  <tt class="docutils literal"><span class="pre">--featuretype</span></tt> option followed by the Id of the feature type to export. GeoGig will only export those features that have the feature type defined by the specified Id</li>
+</ul>
+<p>Remember that you can find the ID of the feature type of a given tree by using the <tt class="docutils literal"><span class="pre">command</span></tt> to describe that tree. To find the Id of the feature type of a given feature, also use the <tt class="docutils literal"><span class="pre">cat</span></tt> command, passing the path to the feature instead.</p>
+<p>Another alternative for exporting when there are mixed feature types under a path is to use the <tt class="docutils literal"><span class="pre">--alter</span></tt> switch. This is similar to the <tt class="docutils literal"><span class="pre">--alter</span></tt> switch of the import operation, and it changes the feature attributes to make them match the output feature type.</p>
+<p>The output feature type is selected with the <tt class="docutils literal"><span class="pre">--featuretype</span></tt> option. If no feature type is specified using this option, the default feature type from the path to export is used. Using the <tt class="docutils literal"><span class="pre">--defaulttype</span></tt> option has the same effect.</p>
+<p>Here is a quick summary with examples of all the option that can be used when a path to export contain mixed feature types</p>
+<ul>
+<li><p class="first">Exporting only features that have the default feature type</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre>$ geogig shp export Points Points.shp --defaulttype
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Exporting only feature that have a given feature type</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre>$ geogig shp export Points Points.shp --featuretype 0a3ebd6a
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Exporting all features in the selected path, using the default feature type and modifying features when they have a different feature type</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre>$ geogig shp export Points Points.shp --alter
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Exporting all features in the selected path, using a given feature type and modifying features when they have a different feature type</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre>$ geogig shp export Points Points.shp --alter --featuretype 0a3ebd6a
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="diffs.html" title="previous chapter">Showing differences</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="history.html" title="next chapter">Exploring your history</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc"> 
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="diffs.html" title="previous chapter">Showing differences</a></li>
+            <li>Next: <a href="history.html" title="next chapter">Exploring your history</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/data/exporting.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/boundlessgeo/GeoGit/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/boundlessgeo/GeoGit">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

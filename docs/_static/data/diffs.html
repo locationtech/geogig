@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>Showing differences &mdash; GeoGig 0.11 User Manual</title>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" /> 
+  <!--[if IE]>
+  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="top" title="GeoGig 0.11 User Manual" href="../index.html" />
+      <link rel="up" title="Data and commits" href="index.html" />
+      <link rel="next" title="Exporting from a GeoGig repository" href="exporting.html" />
+      <link rel="prev" title="Commiting changes" href="commiting.html" />
+</head>
+<body class="data/diffs">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/boundlessgeo/GeoGit">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8"> 
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 0.11 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
+  <li>Showing differences</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="exporting.html" title="Exporting from a GeoGig repository"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="commiting.html" title="Commiting changes"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="showing-differences">
+<span id="differences"></span><h1>Showing differences<a class="headerlink" href="#showing-differences" title="Permalink to this headline">¶</a></h1>
+<p>The differences between two entries in a GeoGig repository can be displayed using the <tt class="docutils literal"><span class="pre">diff</span></tt> command. In the most common case, this is used to show the differences between the working tree and the HEAD of the repository, so as to know which changes will be introduced if the current modifications in the current working tree are staged and committed. The HEAD will represent in this case the <em>old</em> version, while the working tree will represent the <em>new</em> version.</p>
+<p>For this task, the most basic usage of the <tt class="docutils literal"><span class="pre">diff</span></tt> command requires no options at all</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff
+</pre></div>
+</div>
+<p>This will produce something like the output shown in the example below.</p>
+<div class="highlight-python"><div class="highlight"><pre>6350a6... 6350a6... 37d757... e0c9ec...   M  parks/22
+parktype: &quot;Garden&quot; -&gt; &quot;Park&quot;
+the_geom: -122.8456209953915,42.30337924298179 [-122.84288079012158,42.30337829301001] (-122.84288079012158,42.30406953954324) -122.84062871947361,42.303377484342896 -122.84402124697434,42.29758391876194 [-122.8425462600999,42.29842718304132] (-122.84348886900885,42.29846488739768) -122.84403459217438,42.299849758882665 (-122.84467141796014,42.29932750407095) -122.84553477839586,42.29898797978287 [-122.8455264791633,42.29813114136922] (-122.84516200371851,42.2974273267172) -122.84562615512898,42.29822488745995 -122.84562739414677,42.29869863907225 -122.84562865934777,42.29887914225196 -122.84562746190791,42.29938631374956 -122.84562038858874,42.29949283132804 -122.84562093251843,42.30009514260314 -122.84561954067343,42.300597171392674 -122.84562020542222,42.3019375538702 -122.84562986430872,42.302242481706564 -122.84562420177575,42.3031702527034 -122.84562286340557,42.30323277320125 -122.8456209953915,42.30337924298179 @-122.84070544530037,42.29863971301672 -122.84066916748334,42.298658265906056 -122.84114150211431,42.29917259286536 -122.84175134391927,42.2988708450611 -122.84154879818728,42.298647383830684 -122.84162235642542,42.29829337633362 -122.8412561201354,42.297896172348146 -122.8417060301776,42.29766808625502 -122.8412177383454,42.29741710209413 -122.84103109529498,42.29732116850443 -122.84088785596595,42.29783772129766 -122.8398848619697,42.29795997303185 -122.83999152040946,42.29828853706577 -122.84070544530037,42.2986397130167
+
+6350a6... 6350a6... 887b4a... fad2fa...   M  parks/12
+the_geom: [-122.83646412838807,42.36016644633764 -122.83706843181271,42.36018038487805 -122.83740062537728,42.360187694790284 -122.83773129525122,42.36019528458837 -122.83795404148778,42.36020136945975 -122.83819236923999,42.36020660256662 -122.83846546872873,42.360518040102995 -122.83876233613934,42.36084768643743 -122.83979986790222,42.361999744796655 -122.83876583032126,42.36206395843249 -122.8387666181915,42.36241475445113 -122.8350544594257,42.362400655348836 -122.83505311158638,42.36190072779918 -122.8352814492704,42.36189781560542 -122.83546514962634,42.36183970799634 -122.8355995051357,42.361675638841625 -122.83649163970789,42.36166473464665 -122.83646412838807,42.36016644633764] (-122.83765019705244,42.36225229123015 -122.83825450047708,42.36226622977056 -122.83858669404165,42.362273539682796 -122.83891736391558,42.362281129480884 -122.83914011015214,42.362287214352264 -122.83937843790436,42.36229244745913 -122.8396515373931,42.36260388499551 -122.8399484048037,42.36293353132994 -122.84098593656658,42.36408558968917 -122.83995189898563,42.364149803325006 -122.83995268685587,42.36450059934364 -122.83624052809007,42.36448650024135 -122.83623918025074,42.363986572691694 -122.83646751793476,42.36398366049793 -122.83665121829071,42.36392555288885 -122.83678557380007,42.36376148373414 -122.83767770837225,42.363750579539165 -122.83765019705244,42.36225229123015) /
+</pre></div>
+</div>
+<div class="section" id="modified-features">
+<h2>Modified features<a class="headerlink" href="#modified-features" title="Permalink to this headline">¶</a></h2>
+<p>The above text indicates that 2 features under the <tt class="docutils literal"><span class="pre">parks</span></tt> tree (<tt class="docutils literal"><span class="pre">12</span></tt> and <tt class="docutils literal"><span class="pre">22</span></tt>) have been modified. The first line corresponding to each modification, they both have a similar syntax. Below is the explanation of each value in the case of the first difference.</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">6350a6...</span></tt>: Id of the feature type of the &#8216;old&#8217; version</li>
+<li><tt class="docutils literal"><span class="pre">6350a6...</span></tt>: Id of the feature type of the &#8216;new&#8217; version. Since the feature type hasn&#8217;t changed, this is the same as the previous value.</li>
+<li><tt class="docutils literal"><span class="pre">887b4a...</span></tt>: Id of the of the &#8216;old&#8217; version of the feature</li>
+<li><tt class="docutils literal"><span class="pre">fad2fa...</span></tt>: Id of the of the &#8216;new&#8217; version of the feature</li>
+<li><tt class="docutils literal"><span class="pre">M</span></tt>. Type of difference. <tt class="docutils literal"><span class="pre">M</span></tt> indicates that the feature has been modified, that is, some of its attributes have changed or its feature type has changed. It can also be <tt class="docutils literal"><span class="pre">A</span></tt>, which denotes an addition (a new feature that did not exist before on that path), or <tt class="docutils literal"><span class="pre">R</span></tt>, which denotes a removal (a feature that existed on that path in the old version, but is not present in the new one)</li>
+<li><tt class="docutils literal"><span class="pre">parks/parks.12</span></tt>: full path of the feature.</li>
+</ul>
+<p>All Id&#8217;s are shortened to the first 6 characters.</p>
+<p>After the header line, the following lines describe the changes in those attributes that have been modified. For each line, the name of the modified parameter is followed by the description of the modification. In the case of attributes that do not contain geometries, the modification is expressed showing the old and new values. From the two features modified in the above example, only <tt class="docutils literal"><span class="pre">parks.22</span></tt> contains a non-geometry field (named <tt class="docutils literal"><span class="pre">parktype</span></tt>) which has been modified.</p>
+<div class="highlight-python"><div class="highlight"><pre>parktype: &quot;Garden&quot; -&gt; &quot;Park&quot;
+</pre></div>
+</div>
+<p>If the modification involves removing an attribute from the feature type, the word <tt class="docutils literal"><span class="pre">[MISSING]</span></tt> is shown as the new value.</p>
+<div class="highlight-python"><div class="highlight"><pre>parktype: &quot;Garden&quot; -&gt; [MISSING]
+</pre></div>
+</div>
+<p>If the terminal suports ANSI escape codes, that line will be shown in red.</p>
+<p>If the modification involves adding an attribute from the feature type, the word <tt class="docutils literal"><span class="pre">[MISSING]</span></tt> is shown as the old value.</p>
+<div class="highlight-python"><div class="highlight"><pre>parktype: [MISSING] -&gt; &quot;Park&quot;
+</pre></div>
+</div>
+<p>If the terminal suports ANSI escape codes, that line will be shown in green.</p>
+<p>In the case of fields containing geometries, a structured list of all coordinates defining the geometry are shown. Coordinates added are shown between brackets, while removed coordinates are shown between square brackets. In ANSI-supporting terminals, removals are shown in red and additions are shown in green.</p>
+<p>The structure of the text representing the geometry is as follows:</p>
+<ul class="simple">
+<li>It starts with the type name of the geometry, followed by the list of coordinates</li>
+<li>Coordinates are x,y pairs, separated by a whitespace</li>
+<li>In the case of multi-geometries, sub-geometries are separated by the slash (<cite>/</cite>) sign. For instance, <cite>MultiLineString 0,10 0,20 0,30 / 10,10 50,65`</cite> represents a multi-line with two lines</li>
+<li>In the case of polygons, the first string of coordinates represents the outer ring, and inner rings are added next, delimited by the <tt class="docutils literal"><span class="pre">&#64;</span></tt> sign. For instance, <tt class="docutils literal"><span class="pre">MultiPolygon</span> <span class="pre">40.0,40.0</span> <span class="pre">20.0,45.0</span> <span class="pre">45.0,30.0</span> <span class="pre">40.0,40.0</span> <span class="pre">/</span> <span class="pre">20.0,35.0</span> <span class="pre">45.0,20.0</span> <span class="pre">30.0,5.0</span> <span class="pre">10.0,10.0</span> <span class="pre">10.0,30.0</span> <span class="pre">20.0,35.0</span> <span class="pre">&#64;</span> <span class="pre">30.0,20.0</span> <span class="pre">20.0,25.0</span> <span class="pre">20.0,15.0</span> <span class="pre">30.0,20.0</span></tt> represents a geometry with two polygons, the last one of them with an inner ring.</li>
+</ul>
+<p>To avoid large geometries cluttering the result, the <tt class="docutils literal"><span class="pre">--nogeom</span></tt> option can be used. Instead of showing the full list of coordinates, it will show a summary of changes made for the corresponding attributes.</p>
+<p>The above example will look as shown next.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff --nogeom
+6350a6... 6350a6... 37d757... e0c9ec...   M  parks/22
+the_geom: 0 point(s) deleted, 1 new point(s) added, 3 point(s) moved
+parktype: &quot;Garden&quot; -&gt; &quot;Park&quot;
+
+6350a6... 6350a6... 887b4a... fad2fa...   M  parks/12
+the_geom: 0 point(s) deleted, 0 new point(s) added, 18 point(s) moved
+</pre></div>
+</div>
+</div>
+<div class="section" id="added-and-removed-features">
+<h2>Added and removed features<a class="headerlink" href="#added-and-removed-features" title="Permalink to this headline">¶</a></h2>
+<p>In case the difference includes new features added or old ones removed, the syntax will look like the example shown next.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff
+000000... 6350a6... 000000... 95677d...   A  parks/49
+agency    &quot;City Of Medford&quot;
+area    362583.12247
+len    2589.77110627
+name    &quot;Bear Creek Greenway&quot;
+number_fac    0
+owner    &quot;City Of Medford&quot;
+parktype    &quot;Park&quot;
+the_geom    MULTIPOLYGON (((-122.87967788576663 42.35313303427821, -122.87875631536167 42.353132085257435, -122.8781124540551 42.3507669501685, -122.87840825291133 42.35076003147308, -122.87997783607581 42.35072334448266, -122.87996842132236 42.35313334287105, -122.87967788576663 42.35313303427821)))
+usage    &quot;Public&quot;
+
+6350a6... 000000... 6997bd... 000000...   R  parks/23
+</pre></div>
+</div>
+<p>Removals are just indicated with the header line and no additional information. Notice the null Id of the new object.</p>
+<p>Additions are described with the full printing of the object added, represented as a list of <tt class="docutils literal"><span class="pre">(attribute_name,</span> <span class="pre">attribute_value)</span></tt> pairs, similar to the one produced by the <tt class="docutils literal"><span class="pre">show</span></tt> command. A raw description of the feature and its feature type can be obtained using the <tt class="docutils literal"><span class="pre">cat</span></tt> command and the feature and feature type Id&#8217;s provided by the <tt class="docutils literal"><span class="pre">diff</span></tt> command. Notice that, in this case, the old object has null Id&#8217;s for both the feature and feature type. The one corresponding to the feature type, however, doesn&#8217;t have to be necessarily null, as it might already exist another feature with that feature type in the repository, prior to adding the one described by this <tt class="docutils literal"><span class="pre">diff</span></tt> output.</p>
+<p>A summary mode is available, by using the <tt class="docutils literal"><span class="pre">--summary</span></tt> option. When used, only the header line of each modification will be shown.</p>
+</div>
+<div class="section" id="showing-differences-between-specific-commits">
+<h2>Showing differences between specific commits<a class="headerlink" href="#showing-differences-between-specific-commits" title="Permalink to this headline">¶</a></h2>
+<p>The default behaviour of the diff command is to take the working tree as the new version and the HEAD of the repository as the old version. This can be changed by specifying different references, as in the next example</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff b2a780d7c0 HEAD
+6350a6... 000000... 6997bd... 000000...   R  parks/23
+</pre></div>
+</div>
+<p>This will compare a previous commit (with the Id specified as the first reference) with the current head of the repository. Id&#8217;s used with this syntax must resolve to a commit.</p>
+<p>The first entered Id is used as the Id of the old version. Reversing the order of the references will describe the inverse difference.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff HEAD b2a780d7c0
+000000... 6350a6... 000000... 6997bd...   A  parks/23
+agency    &quot;City Of Medford&quot;
+area    44498.3268449
+len    835.779693849
+name    &quot;Heitkamp Property&quot;
+number_fac    0
+owner    &quot;City Of Medford&quot;
+parktype    &quot;Park&quot;
+the_geom    MULTIPOLYGON (((-122.84070544530037 42.29863971301672, -122.84121706601762 42.298380924920195, -122.84145235102078 42.298541042984006, -122.84154879818728 42.298647383830684, -122.84175134391927 42.2988708450611, -122.84114150211431 42.29917259286536, -122.84066916748334 42.298658265906056, -122.84070544530037 42.29863971301672)))
+usage    &quot;Public&quot;
+</pre></div>
+</div>
+<p>If one of the references is omitted, the supplied reference will be taken as the old version and compared with the working tree.</p>
+<p>Comparing against the index instead of the working tree can be done by using the <tt class="docutils literal"><span class="pre">--cached</span></tt> option. In this case, only one commit reference can be used.</p>
+</div>
+<div class="section" id="showing-differences-for-a-given-path-or-feature">
+<h2>Showing differences for a given path or feature<a class="headerlink" href="#showing-differences-for-a-given-path-or-feature" title="Permalink to this headline">¶</a></h2>
+<p>By default, all the differences between the specified commits (or the working tree and the index if not specified) are shown. Partial differences corresponding to a given path can be obtained by using the <tt class="docutils literal"><span class="pre">--</span></tt> option followed by the path to compare, as in the following example.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff -- parks
+</pre></div>
+</div>
+<p>This will just list the differences in the <tt class="docutils literal"><span class="pre">parks</span></tt> path.</p>
+<p>The path can point to a single feature, as in the command line below</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff -- parks/1
+</pre></div>
+</div>
+<p>Notice that, in this case, GeoGig will not complain if the path does not resolve to anything. It will tell you that there are no differences between the selected versions to compare, since the specified feature is missing in both of them.</p>
+</div>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="commiting.html" title="previous chapter">Commiting changes</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="exporting.html" title="next chapter">Exporting from a GeoGig repository</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc"> 
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">Showing differences</a><ul>
+<li><a class="reference internal" href="#modified-features">Modified features</a></li>
+<li><a class="reference internal" href="#added-and-removed-features">Added and removed features</a></li>
+<li><a class="reference internal" href="#showing-differences-between-specific-commits">Showing differences between specific commits</a></li>
+<li><a class="reference internal" href="#showing-differences-for-a-given-path-or-feature">Showing differences for a given path or feature</a></li>
+</ul>
+</li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="commiting.html" title="previous chapter">Commiting changes</a></li>
+            <li>Next: <a href="exporting.html" title="next chapter">Exporting from a GeoGig repository</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/data/diffs.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/boundlessgeo/GeoGit/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/boundlessgeo/GeoGit">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

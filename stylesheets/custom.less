@@ -1,0 +1,477 @@
+@black: #191818;
+@ltblue: #7EB5D3;
+@mdblue: #28728D;
+@whitegray: #fafafa;
+@ltgray: #a5a5a5;
+@slate: #266D87;
+
+@import url('bootstrap/bootstrap.less');
+
+.font-face (@family, @file-base, @weight: normal, @style: normal) {
+  @font-face {
+    font-family: @family;
+    src: url("@{file-base}.eot");
+    src: url("@{file-base}.eot?#iefix") format("embedded-opentype"),
+         url("@{file-base}.woff") format("woff"),
+         url("@{file-base}.ttf") format("truetype"),
+         url("@{file-base}.svg#@{family}") format("svg");
+    font-weight: @weight;
+    font-style: @style;
+  }
+}
+
+.font-face("Cantarell", "/fonts/cantarell-regular", normal);
+.font-face("Proxima Nova", "/fonts/proximanova-light", 300);
+.font-face("Proxima Nova", "/fonts/proximanova-semibold", bold);
+
+body {
+	font-family: 'Cantarell', sans-serif;
+	font-weight: 500;
+	font-size: 2em;
+    background: #272727 url(../images/roadmap.png) no-repeat;
+}
+
+a {
+	color: @ltblue;
+
+	&:hover {
+		color: @mdblue;
+	}
+}
+
+header {
+
+	.navbar .nav > li > a {	
+		font-size: .8em;
+		color: @ltblue;
+		text-shadow: none;
+		text-decoration: none;
+		box-shadow: none;
+		padding: 5px 15px;
+		line-height: normal;
+		text-transform: uppercase;
+	
+		&:hover, &:focus {
+			color: white;
+			background-color: @ltblue;
+		}
+	}
+}
+
+h1, h2, h3, h4, h5 {
+	font-family: 'Proxima Nova', Helvetica, Arial, sans-serif;
+	font-weight: bold;
+}
+
+.navbar {
+	margin-bottom: 0px;
+
+	h1 {
+		text-shadow:  2px 2px 0px #333;
+	}
+}
+
+// Sprites
+.logo, .logo:hover, .link-docs, .link-docs:hover, .link-participate, .link-participate:hover, .install_hover, .link-install , .link-install:hover, .zipfile, .zipfile:hover {
+	background: url(../images/sprites.png) no-repeat;
+	display: inline-block;
+}
+
+.logo{
+	background-position: 0 0;
+	width: 113px;
+	height: 101px;
+}
+
+.navbar-brand {
+	padding: 5px 15px;
+	h1 { 
+	     line-height: 0;
+		 display: inline-block;
+		 vertical-align: top;
+		 padding-top: 30px;
+	}
+	&:hover {
+		.logo {
+			background-position: 0 -101px;
+			width: 113px;	
+			height: 101px;
+		}
+	}
+}
+
+#blacktop {
+	position: fixed;
+	width: 100%;
+	z-index: 1;
+
+	@media (max-width: 767px) {
+		display: none;
+	}
+}
+
+// black bar at top on scrollspy
+.activated  {
+	border-top: @black 45px solid;
+}
+
+.navbar-collapse {
+	position: fixed;
+	right: 5%;
+	z-index: 2;
+	padding-top: 5px;
+
+	.navbar-nav > li > a {
+		-webkit-border-radius: 4px;
+		-moz-border-radius: 4px;
+		border-radius: 4px;
+	}
+
+	@media (max-width: 767px) {
+		position: relative;
+
+		.navbar-nav > li > a {
+			padding: 20px 20px 20px 60px !important;
+		}
+	}
+}
+
+.navbar-toggle .icon-bar {
+	background-color: @ltblue;
+}
+
+.subheading {	
+	margin-top: -35px;
+
+	.byline {
+		font-family: 'Proxima Nova', Helvetica, Arial, sans-serif;
+		font-weight: 300;
+		font-size: .8em;
+		color: #777;
+		text-transform: uppercase;
+		padding: 10px 10px 10px 87px;
+		margin: 0 10px 10px 25px;
+		float: left;
+
+		@media (max-width: 480px) {
+			font-size: .7em;
+			text-transform: none;
+		}
+	}
+}
+
+#main, #install, #docs, #participate {
+	p {
+		margin-bottom: 40px;
+		line-height: 1.8em;
+	}
+}
+
+#main {
+	padding-top: 30px;
+	padding-bottom: 20px;
+	color: #ddd;
+
+	.first {
+		font-size: 1.3em;
+		padding-bottom: 10px;
+	}
+
+	.light {
+		font-weight: 300;
+	}
+
+	.copy {
+		font-size: 1.6em;
+		padding-top: 30px;
+		padding-bottom: 10px;
+		line-height: 1.2em;
+		text-transform: uppercase;
+	}
+
+	.download {
+		
+		border: @ltblue 4px solid;
+		width: 250px;
+		padding: 5px 15px 5px 10px;
+		margin-bottom: 20px;
+		font-size: .75em;
+		-webkit-border-radius: 5px;
+		-moz-border-radius: 5px;
+		border-radius: 5px;
+		text-align: left;
+		vertical-align: top;
+
+		@media (max-width: 480px) {
+			margin-left: 10%;
+		}
+
+		&:hover {
+			background-color: @ltblue;
+			color: white;
+
+			.zipfile {
+				background-position: -49px -203px;
+				width: 45px;
+				height: 60px;
+			}
+		}
+
+		.zipfile {
+			background-position: 0 -201px ;
+			width: 45px;
+			height: 60px;
+			&:hover {
+				background-position: -49px -203px;
+				width: 45px;
+				height: 60px;
+			}
+		}
+
+		.download-ziptxt {
+			display:inline-block;
+			vertical-align: top;
+			padding: 10px 0 0 10px;
+		}
+
+	}
+
+	.page-link {
+		display: inline-block;
+		color: #ccc;
+		height: 35px;
+		width: 150px;
+		margin: 15px;
+		text-align: left;
+		vertical-align: top;
+		&:hover{
+			text-decoration: none;
+			color: @ltblue;
+
+			.link-docs {
+				background-position: -150px -41px;
+				width: 34px;
+				height: 34px;
+			}	
+			.link-participate {
+				background-position: -155px -9px;
+				width: 34px;
+				height: 34px;
+			}
+			.link-install {
+				background-position: -149px -78px;
+				width: 34px;
+				height: 34px;
+			}
+		}
+	}
+
+	.link-docs {
+		background-position: -116px -42px;
+		width: 34px;
+		height: 34px;
+
+		&:hover{
+			background-position: -150px -41px;
+			width: 34px;
+			height: 34px;
+		}
+	}
+	.link-participate {
+		background-position: -118px -7px;
+		width: 34px;
+		height: 34px;
+		&:hover{
+			background-position: -155px -9px;
+			width: 34px;
+			height: 34px;
+		}
+	}
+	.link-install {
+		background-position: -116px -78px;
+		width: 34px;
+		height: 34px;
+
+		&:hover{
+			background-position:  -149px -78px;
+			width: 34px;
+			height: 34px;
+		}
+	}
+
+	.page-link {
+		text-decoration: none;
+	}
+
+	.alpha {
+		text-align: left;
+		font-size: .8em;
+		padding-left: 25px;
+		padding-top: 40px;
+	}
+}
+
+#install, #docs, #participate, #contributors {
+	padding-top: 60px;
+	padding-bottom: 60px;
+
+	h2 {
+		padding-bottom: 20px;
+		font-size: 2.5em;
+	}
+}
+
+#install {
+	background: url(../images/ticks.png) repeat;
+	a {
+		color: @mdblue;
+	}
+
+	.quickstart_title {
+		display: block;
+		text-align: center;
+		margin: 0 20px;
+		padding: 5px 0;
+		border-radius: 5px 5px 0 0;
+		box-shadow: 0 3px 10px rgba(0,0,0,.5);
+		font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-size: 16px;
+		font-weight: normal;
+		color: #444;
+		text-shadow: 0 1px 0 rgba(255,255,255,.5);
+		background: #f7f7f7;
+		background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJod…IgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
+		background: -moz-linear-gradient(top, #f7f7f7 0%, #cfcfcf 7%, #aaaaaa 100%);
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f7f7f7), color-stop(7%,#cfcfcf), color-stop(100%,#aaaaaa));
+		background: -webkit-linear-gradient(top, #f7f7f7 0%,#cfcfcf 7%,#aaaaaa 100%);
+		background: -o-linear-gradient(top, #f7f7f7 0%,#cfcfcf 7%,#aaaaaa 100%);
+		background: -ms-linear-gradient(top, #f7f7f7 0%,#cfcfcf 7%,#aaaaaa 100%);
+		background: linear-gradient(top, #f7f7f7 0%,#cfcfcf 7%,#aaaaaa 100%);
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7f7f7', endColorstr='#aaaaaa',GradientType=0 );
+		border-bottom: 1px solid #111;
+	}
+
+	.quickstart_shell {
+		padding: 20px;
+		text-shadow: none;
+		margin: 0 20px 30px;
+		background: #3d3d3d;
+		border-radius: 0 0 5px 5px;
+		box-shadow: 0 5px 30px rgba(0,0,0,.4);
+		line-height: 1.5em;
+	}
+
+	.line {
+		display: block;
+		margin-bottom: 0;
+	}
+
+	.path {
+		color: #87ceeb;
+	}
+	.input {
+		color: #cd5c5c;
+		padding-left: 5px;
+	}
+	.command {
+		color: #f0e68c;
+	}
+	.output {
+		color: #888;
+	}
+}
+
+#docs {
+	background-color: @ltblue;
+	a {
+		color: #445599;
+	}
+
+	p {
+		margin-bottom: 20px;
+	}
+
+	.workflow_diagram {
+		height: 408px;
+		width: 350px;
+		float: right;
+
+		@media (max-width: @screen-md) {
+			margin: 20px auto;
+			float: none;
+			text-align: center;
+		}
+
+		@media (max-width: @screen-sm) {
+			width: 90%;
+			height: 90%;
+		}
+	}
+}
+
+.overlay {
+	background: url(../images/gis.png) no-repeat bottom right;
+}
+
+#participate {
+	background-color: #ccc;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	a {
+		color: @mdblue;
+	}
+	h2 {
+		padding-top: 60px;
+	}
+
+	p {
+		margin-top: 30px;
+		margin-bottom: 30px;
+	}
+}
+
+#tree_img {
+		height: 1174px;
+		width: 537px;
+		background: url(../images/git_tree.png) no-repeat;
+
+	}
+
+#contributors {
+
+	color: #ccc;
+
+	h2 {
+		padding-top: 0px;
+		font-weight: normal;
+	}
+
+	.devlist li {
+		display: inline-block;
+		margin-right: 5%;
+	}
+
+	.devlist li img {
+		width: 70px;
+		height: 70px;
+	}
+
+	.devlist li a p {
+		padding-top: 10px;
+		font-size: 0.8em;
+		text-align: center;
+	}
+
+	p.devmore {
+		margin-top: 60px;
+	}
+
+}
+
+footer {
+	background-color: @black;
+	color: @ltgray;
+	height: 100px;
+	text-align: center;
+	padding-top: 40px;
+}

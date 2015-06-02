@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>Rebasing &mdash; GeoGig 0.11 User Manual</title>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" /> 
+  <!--[if IE]>
+  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="top" title="GeoGig 0.11 User Manual" href="../index.html" />
+      <link rel="up" title="Data and commits" href="index.html" />
+      <link rel="next" title="Referencing a GeoGig element" href="referencing.html" />
+      <link rel="prev" title="Cherry-picking commits" href="picking.html" />
+</head>
+<body class="data/rebasing">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/boundlessgeo/GeoGit">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8"> 
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 0.11 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
+  <li>Rebasing</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="referencing.html" title="Referencing a GeoGig element"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="picking.html" title="Cherry-picking commits"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="rebasing">
+<h1>Rebasing<a class="headerlink" href="#rebasing" title="Permalink to this headline">¶</a></h1>
+<p>Apart from the merge operation, GeoGig provides a different way of combining to histories: rebasing. The difference between rebasing and  merging can be seen in the following figure.</p>
+<p>As you see, the commits from the branch that is combined with the current branch are not put on top of that, but on top of the common ancestor of both branches instead. The commits that were made to the current branch before the other branch was created are then added on top of that already merged branch.</p>
+<p>GeoGig rewinds the current HEAD to the ancestor point, then adds the commits in the branch that is to be combined with the current one, and then does the same with the commits that were &#8216;rewinded&#8217;. The first set of comments will not cause any conflict, but when adding the second set of them, conflicts might arise. As in the case of a merge operation, this conflicts appear when the same element has been merged in a way that it is not compatible with a change introduced by one of the commits already merged, causing a situation that GeoGig cannot automatically solve.</p>
+<p>When a rebase cannot be finished cleanly due to conflicts, GeoGig will stop and tell you to fix the conflict before continuing.</p>
+<div class="highlight-python"><div class="highlight"><pre>$geogig rebase branch1
+Error: could not apply 0b0e33b Changed units in area field
+CONFLICT: conflict in parks/5
+
+When you have fixed this conflicts, run &#39;geogig rebase --continue&#39; to continue rebasing.
+If you would prefer to skip this commit, instead run &#39;geogig rebase --skip.
+To check out the original branch and stop rebasing, run &#39;geogig rebase --abort&#39;
+</pre></div>
+</div>
+<p>As you can see in the example above, the particular commit that caused the conflict is shown by GeoGig in the message it displays to inform about the conflicted situation. The ID of the commit, its commit message and the elements that are in conflict are shown.</p>
+<p>Conflict are solved in the same way as in the case of a merge conflict. Conflicted elements are marked as such in the index, and you have to use the GeoGig tools and command to set all of them as not-conflicted and select the versions to use in each case.</p>
+<p>Once the conflict is solved, however, the rebase operation is not finished in the same way as in the case of merging. When a merge is performed, all changes from the merged branch are applied at once on the current branch, and all possible conflicts are marked. After you solve them, the merge operation is over and you just have to commit your changes. In the case of a rebase, commits that were rewinded are applied one by one, and each of them analyzed for conflicts. When a conflict is found, the rebase process is stopped, and you have to fix the conflicts before moving to the next commit (which might itself also cause conflicts)</p>
+<p>With the conflict solved, you can now continue the rebase process by using <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--continue</span></tt>. This will commit your new changes using the message of the last commit (the one that caused the conflict), and continue with the next commit, if it exists. If there are no more commits, the rebase process will be finished. If any of the remaining commits causes a conflict, GeoGig will stop the process and you will have to follow the above steps to solve the new conflicts and restart the rebasing again.</p>
+<p>If for a given commit you do not want to solve conflicts and prefer to ignore the changes it introduces, you can run <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--skip</span></tt>. That will reset your head to the last applied commit (that is, ignoring all changes for the currently conflicting commit, including those that did not cause any conflict), and move to the next commit.</p>
+<p>Anytime during the rebase process, if you want to go back to the state that your repo had before you started rebasing, you can use <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--abort</span></tt>. That will abort the rebasing and leave your repository unchanged.</p>
+<div class="section" id="squashing-commits">
+<h2>Squashing commits<a class="headerlink" href="#squashing-commits" title="Permalink to this headline">¶</a></h2>
+<p>You can use the rebase operation to put several commits into just one, in what is known as &#8220;squashing&#8221; commits. When you perform a rebase and squash your commits, all the commits that are rewinded are not applied afterwards. Instead, one single commit is created, which includes all the changes from those commits. Instead of using the commit message of any of the squashed commits, you have to provide a new message.</p>
+<p>To squash the commits applied in the rebase operation, you must use <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--squash</span> <span class="pre">&lt;commit_message&gt;</span></tt>. For instance, if you have a New York dataset in your repo and a branch where you have been adding streets corresponding to the Manhattan area, you can rebase and bring in all the changes from the master branch and at the same time put all the commits you have made to add those streets into a single one, using the following command line:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig rebase master --squash &quot;Added Manhattan streets&quot;
+</pre></div>
+</div>
+<p>Apart from that, the process is identical, and conflicts might arise as well. They should be solved in the same way as a normal rebase.</p>
+</div>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="picking.html" title="previous chapter">Cherry-picking commits</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="referencing.html" title="next chapter">Referencing a GeoGig element</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc"> 
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">Rebasing</a><ul>
+<li><a class="reference internal" href="#squashing-commits">Squashing commits</a></li>
+</ul>
+</li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="picking.html" title="previous chapter">Cherry-picking commits</a></li>
+            <li>Next: <a href="referencing.html" title="next chapter">Referencing a GeoGig element</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/data/rebasing.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/boundlessgeo/GeoGit/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/boundlessgeo/GeoGit">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

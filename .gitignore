@@ -4,3 +4,7 @@ target
 .settings
 bin/
 git.properties
+about_files/
+build/
+doc/
+src/

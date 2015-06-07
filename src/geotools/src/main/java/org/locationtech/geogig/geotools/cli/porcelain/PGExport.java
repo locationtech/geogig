@@ -99,6 +99,7 @@ public class PGExport extends AbstractPGCommand implements CLICommand {
         String tableName = args.get(1);
 
         checkParameter(tableName != null && !tableName.isEmpty(), "No table name specified");
+        checkParameter(!overwrite || ((since == null && until == null)), "--overwrite can not be specified together with --since/--until");
 
         DataStore dataStore = getDataStore();
 
@@ -135,7 +136,7 @@ public class PGExport extends AbstractPGCommand implements CLICommand {
                 throw new CommandFailedException("Cannot create new table in database", e);
             }
         } else {
-            if (!overwrite) {
+            if (!overwrite && since == null) {
                 throw new InvalidParameterException(
                         "The selected table already exists. Use -o to overwrite");
             }

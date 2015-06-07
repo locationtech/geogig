@@ -39,13 +39,11 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
+import org.opengis.filter.identity.Identifier;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -106,6 +104,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                     "Provided filter feature type is does not exist");
         }
         checkArgument((oldRef == null) == (newRef == null), "--since and --until must both be set or none of them");
+        boolean isChangeExport = (oldRef != null || newRef != null);
         final SimpleFeatureStore targetStore = getTargetStore();
 
         final String refspec = resolveRefSpec();
@@ -122,33 +121,11 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         progressListener.started();
         progressListener.setDescription("Exporting from " + path + " to "
                 + targetStore.getName().getLocalPart() + "... ");
-
-        FeatureCollection<SimpleFeatureType, SimpleFeature> asFeatureCollection = new BaseFeatureCollection<SimpleFeatureType, SimpleFeature>() {
-
-            @Override
-            public FeatureIterator<SimpleFeature> features() {
-
-                final Iterator<SimpleFeature> plainFeatures = getFeatures(typeTree, database,
-                        defaultMetadataId, progressListener);
-
-                Iterator<SimpleFeature> adaptedFeatures = adaptToArguments(plainFeatures,
-                        defaultMetadataId);
-
-                Iterator<Optional<Feature>> transformed = Iterators.transform(adaptedFeatures,
-                        ExportOp.this.function);
-
-                Iterator<SimpleFeature> filtered = Iterators.filter(Iterators.transform(
-                        transformed, new Function<Optional<Feature>, SimpleFeature>() {
-                            @Override
-                            public SimpleFeature apply(Optional<Feature> input) {
-                                return (SimpleFeature) (input.isPresent() ? input.get() : null);
-                            }
-                        }), Predicates.notNull());
-
-                return new DelegateFeatureIterator<SimpleFeature>(filtered);
-            }
-        };
-
+        FeatureCollection<SimpleFeatureType, SimpleFeature> asFeatureCollection = null;
+        if(!isChangeExport) {
+            final Iterator<SimpleFeature> plainFeatures = getFeatures(typeTree, database, defaultMetadataId, progressListener);
+            asFeatureCollection = getFeatureCollection(defaultMetadataId, plainFeatures);
+        }
         // add the feature collection to the feature store
         final Transaction transaction;
         if (transactional) {
@@ -159,8 +136,8 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         try {
             targetStore.setTransaction(transaction);
             try {
-                if(oldRef != null || newRef != null) {
-                    exportChanges(targetStore);
+                if(isChangeExport) {
+                    exportChanges(database, defaultMetadataId, targetStore);
                 } else {
                     targetStore.addFeatures(asFeatureCollection);
                 }
@@ -183,32 +160,58 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
     }
 
-    private static Filter createFeatureFilter(String id) {
-        FilterFactory ff = CommonFactoryFinder.getFilterFactory2();
-        return ff.id(Collections.singleton(ff.featureId(id)));
-    }
-
-    private SimpleFeatureStore exportChanges(SimpleFeatureStore targetStore) throws IOException{
-        Function<NodeRef, SimpleFeature> node2feat = convertFunction(objectDatabase());
-        Function<SimpleFeature, SimpleFeatureCollection> wrap = new Function<SimpleFeature, SimpleFeatureCollection>() {
+    private FeatureCollection<SimpleFeatureType, SimpleFeature>
+                getFeatureCollection(final ObjectId defaultMetadataId, final Iterator<SimpleFeature> plainFeatures) {
+        return new BaseFeatureCollection<SimpleFeatureType, SimpleFeature>() {
 
             @Override
-            public SimpleFeatureCollection apply(@Nullable SimpleFeature input) {
-                DefaultFeatureCollection c = new DefaultFeatureCollection();
-                c.add(input);
-                return c;
+            public FeatureIterator<SimpleFeature> features() {
+
+                Iterator<SimpleFeature> adaptedFeatures = adaptToArguments(plainFeatures,
+                        defaultMetadataId);
+
+                Iterator<Optional<Feature>> transformed = Iterators.transform(adaptedFeatures,
+                        ExportOp.this.function);
+
+                Iterator<SimpleFeature> filtered = Iterators.filter(Iterators.transform(
+                        transformed, new Function<Optional<Feature>, SimpleFeature>() {
+                            @Override
+                            public SimpleFeature apply(Optional<Feature> input) {
+                                return (SimpleFeature) (input.isPresent() ? input.get() : null);
+                            }
+                        }), Predicates.notNull());
+
+                return new DelegateFeatureIterator<SimpleFeature>(filtered);
             }
         };
+    }
+
+    private static Filter createFeatureFilter(List<String> ids) {
+        FilterFactory ff = CommonFactoryFinder.getFilterFactory2();
+        Set<Identifier> fids = new HashSet<>();
+        for(String id : ids) {
+            fids.add(ff.featureId(id));
+        }
+        return ff.id(fids);
+    }
+
+    private SimpleFeatureStore exportChanges(ObjectDatabase database, final ObjectId defaultMetadataId, SimpleFeatureStore targetStore) throws IOException{
+        Function<NodeRef, SimpleFeature> node2feat = convertFunction(database);
         Iterator<DiffEntry> it = command(DiffOp.class).setOldVersion(oldRef).setNewVersion(newRef).setFilter(path).call();
+        List<SimpleFeature> toAdd = new ArrayList<SimpleFeature>();
+        List<String> toRemove = new ArrayList<String>();
         while(it.hasNext()) {
             final DiffEntry entry = it.next();
             if(entry.isDelete() || entry.isChange()) {
-                targetStore.removeFeatures(createFeatureFilter(entry.getOldObject().name()));
+                toRemove.add(entry.getOldObject().name());
             }
             if(entry.isAdd() || entry.isChange()) {
-                targetStore.addFeatures(wrap.apply(node2feat.apply(entry.getNewObject())));
+                toAdd.add(node2feat.apply(entry.getNewObject()));
             }
         }
+        targetStore.removeFeatures(createFeatureFilter(toRemove));
+        targetStore.addFeatures(getFeatureCollection(defaultMetadataId, Iterators.filter(toAdd.iterator(),
+                Predicates.notNull())));
         return targetStore;
     }
 
@@ -266,38 +269,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             }
         });
 
-        Function<NodeRef, SimpleFeature> asFeature = new Function<NodeRef, SimpleFeature>() {
-
-            private Map<ObjectId, FeatureBuilder> ftCache = Maps.newHashMap();
-
-            @Override
-            @Nullable
-            public SimpleFeature apply(final NodeRef input) {
-                final ObjectId metadataId = input.getMetadataId();
-                final RevFeature revFeature = database.getFeature(input.objectId());
-
-                FeatureBuilder featureBuilder = getBuilderFor(metadataId);
-                Feature feature = featureBuilder.build(input.name(), revFeature);
-                feature.getUserData().put(Hints.USE_PROVIDED_FID, true);
-                feature.getUserData().put(RevFeature.class, revFeature);
-                feature.getUserData().put(RevFeatureType.class, featureBuilder.getType());
-
-                if (feature instanceof SimpleFeature) {
-                    return (SimpleFeature) feature;
-                }
-                return null;
-            }
-
-            private FeatureBuilder getBuilderFor(final ObjectId metadataId) {
-                FeatureBuilder featureBuilder = ftCache.get(metadataId);
-                if (featureBuilder == null) {
-                    RevFeatureType revFtype = database.getFeatureType(metadataId);
-                    featureBuilder = new FeatureBuilder(revFtype);
-                    ftCache.put(metadataId, featureBuilder);
-                }
-                return featureBuilder;
-            }
-        };
+        Function<NodeRef, SimpleFeature> asFeature = convertFunction(database);
 
         Iterator<SimpleFeature> asFeatures = Iterators.transform(nodes, asFeature);
 

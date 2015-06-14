@@ -10,6 +10,7 @@
 package org.locationtech.geogig.geotools.plumbing;
 
 import com.google.common.base.*;
+import com.google.common.base.Optional;
 import com.google.common.collect.*;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
@@ -137,7 +138,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             targetStore.setTransaction(transaction);
             try {
                 if(isChangeExport) {
-                    exportChanges(database, defaultMetadataId, targetStore);
+                    exportChanges(database, defaultMetadataId, targetStore, progressListener);
                 } else {
                     targetStore.addFeatures(asFeatureCollection);
                 }
@@ -195,10 +196,11 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         return ff.id(fids);
     }
 
-    private SimpleFeatureStore exportChanges(ObjectDatabase database, final ObjectId defaultMetadataId, SimpleFeatureStore targetStore) throws IOException{
+    private SimpleFeatureStore exportChanges(ObjectDatabase database, final ObjectId defaultMetadataId, SimpleFeatureStore targetStore, final ProgressListener progressListener) throws IOException{
         Function<NodeRef, SimpleFeature> node2feat = convertFunction(database);
         Iterator<DiffEntry> it = command(DiffOp.class).setOldVersion(oldRef).setNewVersion(newRef).setFilter(path).call();
-        List<SimpleFeature> toAdd = new ArrayList<SimpleFeature>();
+        progressListener.setProgress(20);
+        final List<SimpleFeature> toAdd = new ArrayList<SimpleFeature>();
         List<String> toRemove = new ArrayList<String>();
         while(it.hasNext()) {
             final DiffEntry entry = it.next();
@@ -210,8 +212,18 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             }
         }
         targetStore.removeFeatures(createFeatureFilter(toRemove));
-        targetStore.addFeatures(getFeatureCollection(defaultMetadataId, Iterators.filter(toAdd.iterator(),
-                Predicates.notNull())));
+        progressListener.setProgress(60);
+        Function<SimpleFeature, SimpleFeature> progressFunction = new Function<SimpleFeature, SimpleFeature>() {
+            AtomicInteger count = new AtomicInteger();
+            @Nullable
+            @Override
+            public SimpleFeature apply(@Nullable SimpleFeature input) {
+                progressListener.setProgress(60.0f + (count.incrementAndGet() * 40.0f) / toAdd.size());
+                return input;
+            }
+        };
+        targetStore.addFeatures(getFeatureCollection(defaultMetadataId,
+                Iterators.filter(Iterators.transform(toAdd.iterator(), progressFunction), Predicates.notNull())));
         return targetStore;
     }
 

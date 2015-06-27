@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.api;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.vividsolutions.jts.geom.Envelope;
 

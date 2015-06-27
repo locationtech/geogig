@@ -11,8 +11,7 @@ package org.locationtech.geogig.api;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.RevObject.TYPE;
 
 import com.google.common.base.Optional;

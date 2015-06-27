@@ -15,8 +15,7 @@ import static org.locationtech.geogig.metrics.MetricsModule.METRICS_LOGGER;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.hooks.CannotRunGeogigOperationException;

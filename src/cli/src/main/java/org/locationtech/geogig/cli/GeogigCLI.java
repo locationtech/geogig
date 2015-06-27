@@ -23,11 +23,10 @@ import java.util.ServiceLoader;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
-
 import jline.console.ConsoleReader;
 import jline.console.CursorBuffer;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.DefaultPlatform;
 import org.locationtech.geogig.api.DefaultProgressListener;

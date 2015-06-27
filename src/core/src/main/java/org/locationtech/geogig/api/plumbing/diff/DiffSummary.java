@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.api.plumbing.diff;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Optional;
 

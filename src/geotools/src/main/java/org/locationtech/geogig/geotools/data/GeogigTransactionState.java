@@ -12,8 +12,7 @@ package org.locationtech.geogig.geotools.data;
 import java.io.IOException;
 import java.util.Iterator;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.Transaction;
 import org.geotools.data.Transaction.State;
 import org.geotools.data.store.ContentEntry;

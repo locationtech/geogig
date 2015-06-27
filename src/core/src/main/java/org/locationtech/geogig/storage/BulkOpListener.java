@@ -11,8 +11,7 @@ package org.locationtech.geogig.storage;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.ObjectId;
 
 public abstract class BulkOpListener {

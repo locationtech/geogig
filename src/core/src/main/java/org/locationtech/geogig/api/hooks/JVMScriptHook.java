@@ -11,8 +11,7 @@ package org.locationtech.geogig.api.hooks;
 
 import java.io.File;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 
 class JVMScriptHook implements CommandHook {

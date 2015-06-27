@@ -13,8 +13,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.osm.internal.OSMDownloadOp;

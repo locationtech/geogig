@@ -36,9 +36,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
-import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.ProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -14,8 +14,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.io.File;
 import java.net.URL;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.porcelain.InitOp;

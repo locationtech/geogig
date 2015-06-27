@@ -9,8 +9,7 @@
  */
 package org.locationtech.geogig.rest;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.resource.Representation;

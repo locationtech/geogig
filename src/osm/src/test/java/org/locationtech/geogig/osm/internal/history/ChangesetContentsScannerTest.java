@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.annotation.Nullable;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.locationtech.geogig.osm.internal.history.Relation.Member;

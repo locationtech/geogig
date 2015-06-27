@@ -24,9 +24,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
@@ -56,7 +55,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * had collected enough information for its purpose and don't need to go further down a given pair
  * of trees (either named or bucket).
  */
-@ParametersAreNonnullByDefault
+@NonNullByDefault
 public class PreOrderDiffWalk {
 
     private static final NodeStorageOrder ORDER = new NodeStorageOrder();

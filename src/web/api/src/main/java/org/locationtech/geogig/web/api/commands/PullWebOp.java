@@ -11,8 +11,7 @@ package org.locationtech.geogig.web.api.commands;
 
 import java.util.Iterator;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;

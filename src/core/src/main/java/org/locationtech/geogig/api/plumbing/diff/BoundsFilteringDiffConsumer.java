@@ -12,8 +12,7 @@ package org.locationtech.geogig.api.plumbing.diff;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
 import org.locationtech.geogig.api.Bounded;

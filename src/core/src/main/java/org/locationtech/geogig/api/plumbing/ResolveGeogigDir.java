@@ -13,8 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Platform;
 

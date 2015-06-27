@@ -2,7 +2,7 @@ package org.locationtech.geogig.api.plumbing.diff;
 
 import java.util.Stack;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;

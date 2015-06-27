@@ -15,8 +15,7 @@ import static org.locationtech.geogig.api.Ref.append;
 import java.util.List;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.GeogigTransaction;
 import org.locationtech.geogig.api.plumbing.TransactionBegin;
 import org.locationtech.geogig.api.plumbing.TransactionEnd;

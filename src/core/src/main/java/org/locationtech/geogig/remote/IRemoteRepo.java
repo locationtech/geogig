@@ -11,8 +11,7 @@ package org.locationtech.geogig.remote;
 
 import java.io.IOException;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.plumbing.ReceivePack;

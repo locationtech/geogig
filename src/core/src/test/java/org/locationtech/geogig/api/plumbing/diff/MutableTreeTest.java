@@ -14,8 +14,7 @@ import static org.locationtech.geogig.api.ObjectId.NULL;
 
 import java.util.Iterator;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;

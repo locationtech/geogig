@@ -13,13 +13,13 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.Base64;
 
 import com.google.common.base.Optional;

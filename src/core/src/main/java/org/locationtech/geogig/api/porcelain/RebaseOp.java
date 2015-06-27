@@ -43,7 +43,6 @@ import org.locationtech.geogig.api.plumbing.merge.ReportCommitConflictsOp;
 import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.ObjectReader;
 import org.locationtech.geogig.storage.text.TextSerializationFactory;
 
 import com.google.common.base.Charsets;

@@ -11,8 +11,7 @@ package org.locationtech.geogig.api.plumbing.diff;
 
 import java.util.Stack;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;

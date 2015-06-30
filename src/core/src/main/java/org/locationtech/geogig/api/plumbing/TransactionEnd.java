@@ -11,8 +11,7 @@ package org.locationtech.geogig.api.plumbing;
 
 import java.util.concurrent.TimeoutException;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.GeogigTransaction;
 import org.locationtech.geogig.api.Ref;

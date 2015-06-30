@@ -11,10 +11,9 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
 
-import javax.annotation.Nullable;
-
 import jline.console.ConsoleReader;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.porcelain.VersionInfo;
 import org.locationtech.geogig.api.porcelain.VersionOp;

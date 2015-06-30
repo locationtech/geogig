@@ -11,8 +11,7 @@ package org.locationtech.geogig.web.api.commands;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.CommitBuilder;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.NodeRef;

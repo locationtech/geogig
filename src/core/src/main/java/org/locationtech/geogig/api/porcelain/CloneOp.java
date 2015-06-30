@@ -11,8 +11,7 @@ package org.locationtech.geogig.api.porcelain;
 
 import java.io.IOException;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.ProgressListener;

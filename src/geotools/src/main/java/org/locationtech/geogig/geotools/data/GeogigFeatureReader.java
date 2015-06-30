@@ -20,8 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.FeatureReader;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.spatial.ReprojectingFilterVisitor;

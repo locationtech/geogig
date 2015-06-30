@@ -11,7 +11,7 @@ package org.locationtech.geogig.api;
 
 import static com.google.common.base.Objects.equal;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;

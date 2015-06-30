@@ -13,8 +13,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.CommitBuilder;

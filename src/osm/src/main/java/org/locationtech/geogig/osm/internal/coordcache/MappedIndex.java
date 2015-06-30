@@ -26,8 +26,7 @@ import java.util.List;
 import java.util.RandomAccess;
 import java.util.TreeMap;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.osm.internal.OSMCoordinateSequence;
 import org.locationtech.geogig.osm.internal.OSMCoordinateSequenceFactory;
 

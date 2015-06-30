@@ -139,7 +139,7 @@
     <jcommander.version>1.35</jcommander.version>
     <jettison.version>1.0.1</jettison.version> <!-- matches version used in geoserver -->
     <jline.version>2.11</jline.version>
-    <jsr305.version>2.0.3</jsr305.version>
+    <jdt-annotation.version>1.1.0</jdt-annotation.version>
     <jts.version>1.13</jts.version>
     <junit.version>4.10</junit.version>
     <logback.version>1.1.2</logback.version>
@@ -244,9 +244,9 @@
         <version>${guava.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.google.code.findbugs</groupId>
-        <artifactId>jsr305</artifactId>
-        <version>${jsr305.version}</version>
+        <groupId>org.eclipse.jdt</groupId>
+        <artifactId>org.eclipse.jdt.annotation</artifactId>
+        <version>${jdt-annotation.version}</version>
       </dependency>
 
       <dependency>

@@ -11,8 +11,7 @@ package org.locationtech.geogig.storage;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 
 import com.google.common.base.Optional;

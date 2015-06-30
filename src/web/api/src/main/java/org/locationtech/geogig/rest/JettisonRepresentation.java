@@ -12,13 +12,13 @@ package org.locationtech.geogig.rest;
 import java.io.IOException;
 import java.io.Writer;
 
-import javax.annotation.Nullable;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.codehaus.jettison.mapped.MappedNamespaceConvention;
 import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
+import org.eclipse.jdt.annotation.Nullable;
 import org.restlet.data.MediaType;
 
 import com.google.common.base.Preconditions;

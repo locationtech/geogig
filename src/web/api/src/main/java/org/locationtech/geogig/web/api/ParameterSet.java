@@ -9,7 +9,9 @@
  */
 package org.locationtech.geogig.web.api;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
+
+
 
 /**
  * Provides an interface for a set of parameters keyed by a string value. Supports implementations

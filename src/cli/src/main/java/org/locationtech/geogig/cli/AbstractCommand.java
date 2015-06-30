@@ -14,10 +14,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.util.IllegalFormatException;
 
-import javax.annotation.Nullable;
-
 import jline.Terminal;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.fusesource.jansi.Ansi;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.cli.porcelain.ColorArg;

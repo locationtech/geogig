@@ -12,7 +12,7 @@ package org.locationtech.geogig.cli.plumbing;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.beust.jcommander.Parameter;
 import com.google.common.collect.Lists;

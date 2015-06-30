@@ -12,8 +12,7 @@ package org.locationtech.geogig.osm.internal;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeatureType;

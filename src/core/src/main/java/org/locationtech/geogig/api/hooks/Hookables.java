@@ -15,8 +15,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Context;
 

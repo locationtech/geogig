@@ -15,11 +15,12 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 import java.io.InputStream;
 
-import javax.annotation.Nullable;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.vividsolutions.jts.geom.Envelope;
 

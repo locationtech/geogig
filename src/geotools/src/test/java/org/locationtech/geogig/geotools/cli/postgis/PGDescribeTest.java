@@ -64,7 +64,7 @@ public class PGDescribeTest extends Assert {
     public void testDescribe() throws Exception {
         PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "table1";
-        describeCommand.dataStoreFactory = TestHelper.createTestFactory();
+        describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         describeCommand.run(cli);
     }
 
@@ -88,7 +88,7 @@ public class PGDescribeTest extends Assert {
     public void testDescribeNonexistentTable() throws Exception {
         PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "nonexistent";
-        describeCommand.dataStoreFactory = TestHelper.createTestFactory();
+        describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(CommandFailedException.class);
         describeCommand.run(cli);
     }
@@ -97,7 +97,7 @@ public class PGDescribeTest extends Assert {
     public void testNoTable() throws Exception {
         PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "";
-        describeCommand.dataStoreFactory = TestHelper.createTestFactory();
+        describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(CommandFailedException.class);
         describeCommand.run(cli);
     }
@@ -106,7 +106,7 @@ public class PGDescribeTest extends Assert {
     public void testNullDataStore() throws Exception {
         PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "table1";
-        describeCommand.dataStoreFactory = TestHelper.createNullTestFactory();
+        describeCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
         describeCommand.run(cli);
     }
@@ -122,7 +122,7 @@ public class PGDescribeTest extends Assert {
         when(mockCli.getConsole()).thenThrow(new MockitoException("Exception"));
         PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "table1";
-        describeCommand.dataStoreFactory = TestHelper.createTestFactory();
+        describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
         describeCommand.run(mockCli);
     }
@@ -139,7 +139,7 @@ public class PGDescribeTest extends Assert {
 
         PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "table1";
-        describeCommand.dataStoreFactory = TestHelper.createTestFactory();
+        describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(Exception.class);
         describeCommand.run(testCli);
     }

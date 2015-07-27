@@ -16,12 +16,14 @@ import java.util.List;
 import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.geotools.cli.spatialite.AbstractSLCommand;
+import org.locationtech.geogig.geotools.cli.spatialite.SLCommonArgs;
+import org.locationtech.geogig.geotools.cli.spatialite.SpatialiteSupport;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.osm.internal.Mapping;
@@ -33,6 +35,7 @@ import org.opengis.filter.Filter;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -45,13 +48,18 @@ import com.vividsolutions.jts.awt.PointShapeFactory.Point;
  */
 @ReadOnly
 @Parameters(commandNames = "export-sl", commandDescription = "Export OSM data to a Spatialite database, using a data mapping")
-public class OSMExportSL extends AbstractSLCommand implements CLICommand {
+public class OSMExportSL extends AbstractCommand implements CLICommand {
+
+    @ParametersDelegate
+    public SLCommonArgs commonArgs = new SLCommonArgs();
 
     @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output tables")
     public boolean overwrite;
 
     @Parameter(names = { "--mapping" }, description = "The file that contains the data mapping to use")
     public String mappingFile;
+
+    private SpatialiteSupport support = new SpatialiteSupport();
 
     /**
      * Executes the export command using the provided options.
@@ -80,7 +88,7 @@ public class OSMExportSL extends AbstractSLCommand implements CLICommand {
 
         SimpleFeatureType outputFeatureType = rule.getFeatureType();
         String path = getOriginTreesFromOutputFeatureType(outputFeatureType);
-        DataStore dataStore = getDataStore();
+        DataStore dataStore = support.getDataStore(commonArgs);
         try {
             final String tableName = ensureTableExists(outputFeatureType, dataStore);
             final SimpleFeatureSource source = dataStore.getFeatureSource(tableName);

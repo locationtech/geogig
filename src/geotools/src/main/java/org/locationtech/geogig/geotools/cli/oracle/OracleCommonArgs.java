@@ -20,25 +20,25 @@ public class OracleCommonArgs {
     /**
      * Machine name or IP address to connect to. Default: localhost
      */
-    @Parameter(names = "--host", description = "Machine name or IP address to connect to. Default: localhost")
+    @Parameter(names = { "--host", "-H" }, description = "Machine name or IP address to connect to. Default: localhost")
     public String host = "localhost";
 
     /**
      * Port number to connect to. Default: 1521
      */
-    @Parameter(names = "--port", description = "Port number to connect to.  Default: 1521")
+    @Parameter(names = { "--port", "-P" }, description = "Port number to connect to.  Default: 1521")
     public Integer port = 1521;
 
     /**
      * The database schema to access. Default: public
      */
-    @Parameter(names = "--schema", description = "The database schema to access.  Default: public")
+    @Parameter(names = { "--schema", "-S" }, description = "The database schema to access.  Default: public")
     public String schema = "public";
 
     /**
      * The database to connect to. Default: database
      */
-    @Parameter(names = "--database", description = "The database to connect to. Default: database")
+    @Parameter(names = { "--database", "-D" }, description = "The database to connect to. Default: database")
     public String database = "database";
 
     /**
@@ -62,13 +62,13 @@ public class OracleCommonArgs {
     /**
      * User name. Default: oracle
      */
-    @Parameter(names = "--user", description = "User name.  Default: oracle")
+    @Parameter(names = { "--user", "-U" }, description = "User name.  Default: oracle")
     public String username = "oracle";
 
     /**
      * Password. Default: <no password>
      */
-    @Parameter(names = "--password", description = "Password.  Default: <no password>")
+    @Parameter(names = { "--password", "-W" }, description = "Password.  Default: <no password>")
     public String password = "";
 
 }

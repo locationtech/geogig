@@ -19,7 +19,7 @@ public class SLCommonArgs {
     /**
      * The database to connect to. Default: database
      */
-    @Parameter(names = "--database", description = "The database to connect to.  Default: database.sqlite")
+    @Parameter(names = { "--database", "-D" }, description = "The database to connect to.  Default: database.sqlite")
     public String database = "database.sqlite";
 
     /**

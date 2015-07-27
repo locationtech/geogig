@@ -9,21 +9,14 @@
  */
 package org.locationtech.geogig.geotools.cli.postgis;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
-import org.locationtech.geogig.cli.CommandFailedException;
-import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.geotools.cli.DataStoreDescribe;
 import org.locationtech.geogig.geotools.plumbing.DescribeOp;
-import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 
-import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Optional;
+import com.beust.jcommander.ParametersDelegate;
 
 /**
  * Describes a table from a PostGIS database.
@@ -34,51 +27,18 @@ import com.google.common.base.Optional;
  */
 @ReadOnly
 @Parameters(commandNames = "describe", commandDescription = "Describe a PostGIS table")
-public class PGDescribe extends AbstractPGCommand implements CLICommand {
+public class PGDescribe extends DataStoreDescribe implements CLICommand {
 
     /**
-     * Table to describe.
+     * Common arguments for PostGIS commands.
      */
-    @Parameter(names = { "--table", "-t" }, description = "Table to describe.", required = true)
-    public String table = "";
+    @ParametersDelegate
+    public PGCommonArgs commonArgs = new PGCommonArgs();
 
-    /**
-     * Executes the describe command using the provided options.
-     */
+    final PGSupport support = new PGSupport();
+
     @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
-        DataStore dataStore = getDataStore();
-
-        try {
-            cli.getConsole().println("Fetching table...");
-
-            Optional<Map<String, String>> propertyMap = cli.getGeogig().command(DescribeOp.class)
-                    .setTable(table).setDataStore(dataStore).call();
-            if (!propertyMap.isPresent()) {
-                throw new CommandFailedException("Could not find the specified table.");
-            }
-            cli.getConsole().println("Table : " + table);
-            cli.getConsole().println("----------------------------------------");
-            for (Entry<String, String> entry : propertyMap.get().entrySet()) {
-                cli.getConsole().println("\tProperty  : " + entry.getKey());
-                cli.getConsole().println("\tType      : " + entry.getValue());
-                cli.getConsole().println("----------------------------------------");
-            }
-        } catch (GeoToolsOpException e) {
-            switch (e.statusCode) {
-            case TABLE_NOT_DEFINED:
-                throw new CommandFailedException("No table supplied.", e);
-            case UNABLE_TO_GET_FEATURES:
-                throw new CommandFailedException("Unable to read the feature source.", e);
-            case UNABLE_TO_GET_NAMES:
-                throw new CommandFailedException("Unable to read feature types.", e);
-            default:
-                throw new CommandFailedException("Exception: " + e.statusCode.name(), e);
-            }
-
-        } finally {
-            dataStore.dispose();
-            cli.getConsole().flush();
-        }
+    protected DataStore getDataStore() {
+        return support.getDataStore(commonArgs);
     }
 }

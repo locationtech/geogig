@@ -66,7 +66,7 @@ public class OracleExportTest extends RepositoryTestCase {
 
         OracleExport exportCommand = new OracleExport();
         exportCommand.args = Arrays.asList("Points", "Points");
-        exportCommand.dataStoreFactory = createTestFactory();
+        exportCommand.support.dataStoreFactory = createTestFactory();
         exportCommand.run(cli);
     }
 
@@ -74,7 +74,7 @@ public class OracleExportTest extends RepositoryTestCase {
     public void testNullDataStore() throws Exception {
         OracleExport exportCommand = new OracleExport();
         exportCommand.args = Arrays.asList("Points", "Points");
-        exportCommand.dataStoreFactory = TestHelper.createNullTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
         exportCommand.run(cli);
     }
@@ -83,7 +83,7 @@ public class OracleExportTest extends RepositoryTestCase {
     public void testNoArgs() throws Exception {
         OracleExport exportCommand = new OracleExport();
         exportCommand.args = Arrays.asList();
-        exportCommand.dataStoreFactory = TestHelper.createNullTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
         exportCommand.run(cli);
     }
@@ -92,7 +92,7 @@ public class OracleExportTest extends RepositoryTestCase {
     public void testExportToTableThatExists() throws Exception {
         OracleExport exportCommand = new OracleExport();
         exportCommand.args = Arrays.asList("Points", "table1");
-        exportCommand.dataStoreFactory = createTestFactory();
+        exportCommand.support.dataStoreFactory = createTestFactory();
         exception.expect(CommandFailedException.class);
         exportCommand.run(cli);
     }
@@ -101,7 +101,7 @@ public class OracleExportTest extends RepositoryTestCase {
     public void testExportToTableThatExistsWithOverwrite() throws Exception {
         OracleExport exportCommand = new OracleExport();
         exportCommand.args = Arrays.asList("WORK_HEAD:Points", "testTable");
-        exportCommand.dataStoreFactory = createTestFactory();
+        exportCommand.support.dataStoreFactory = createTestFactory();
         exportCommand.run(cli);
 
         exportCommand.args = Arrays.asList("Lines", "testTable");
@@ -113,7 +113,7 @@ public class OracleExportTest extends RepositoryTestCase {
     public void testExportWithNonexistentFeatureTypeTree() throws Exception {
         OracleExport exportCommand = new OracleExport();
         exportCommand.args = Arrays.asList("invalidType", "invalidTable");
-        exportCommand.dataStoreFactory = createTestFactory();
+        exportCommand.support.dataStoreFactory = createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }
@@ -122,7 +122,7 @@ public class OracleExportTest extends RepositoryTestCase {
     public void testExportWithNullTable() throws Exception {
         OracleExport exportCommand = new OracleExport();
         exportCommand.args = Arrays.asList("Points", null);
-        exportCommand.dataStoreFactory = createTestFactory();
+        exportCommand.support.dataStoreFactory = createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }
@@ -131,7 +131,7 @@ public class OracleExportTest extends RepositoryTestCase {
     public void testExportWithNullFeatureType() throws Exception {
         OracleExport exportCommand = new OracleExport();
         exportCommand.args = Arrays.asList("", "invalidTable");
-        exportCommand.dataStoreFactory = createTestFactory();
+        exportCommand.support.dataStoreFactory = createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }
@@ -140,7 +140,7 @@ public class OracleExportTest extends RepositoryTestCase {
     public void testExportWithEmptyStringForFeatureType() throws Exception {
         OracleExport exportCommand = new OracleExport();
         exportCommand.args = Arrays.asList("", "invalidTable");
-        exportCommand.dataStoreFactory = createTestFactory();
+        exportCommand.support.dataStoreFactory = createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }
@@ -149,7 +149,7 @@ public class OracleExportTest extends RepositoryTestCase {
     public void testExportWithEmptyStringForTable() throws Exception {
         OracleExport exportCommand = new OracleExport();
         exportCommand.args = Arrays.asList("Points", "");
-        exportCommand.dataStoreFactory = createTestFactory();
+        exportCommand.support.dataStoreFactory = createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }
@@ -158,7 +158,7 @@ public class OracleExportTest extends RepositoryTestCase {
     public void testExportWithFeatureNameInsteadOfType() throws Exception {
         OracleExport exportCommand = new OracleExport();
         exportCommand.args = Arrays.asList("Points/Points.1", "invalidTable");
-        exportCommand.dataStoreFactory = createTestFactory();
+        exportCommand.support.dataStoreFactory = createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }

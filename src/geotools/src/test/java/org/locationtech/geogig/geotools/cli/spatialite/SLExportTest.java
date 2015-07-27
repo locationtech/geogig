@@ -67,7 +67,7 @@ public class SLExportTest extends RepositoryTestCase {
 
         SLExport exportCommand = new SLExport();
         exportCommand.args = Arrays.asList("Points", "Points");
-        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exportCommand.run(cli);
     }
 
@@ -75,7 +75,7 @@ public class SLExportTest extends RepositoryTestCase {
     public void testNullDataStore() throws Exception {
         SLExport exportCommand = new SLExport();
         exportCommand.args = Arrays.asList("Points", "Points");
-        exportCommand.dataStoreFactory = TestHelper.createNullTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
         exportCommand.run(cli);
     }
@@ -84,7 +84,7 @@ public class SLExportTest extends RepositoryTestCase {
     public void testNoArgs() throws Exception {
         SLExport exportCommand = new SLExport();
         exportCommand.args = Arrays.asList();
-        exportCommand.dataStoreFactory = TestHelper.createNullTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
         exportCommand.run(cli);
     }
@@ -93,7 +93,7 @@ public class SLExportTest extends RepositoryTestCase {
     public void testExportToTableThatExists() throws Exception {
         SLExport exportCommand = new SLExport();
         exportCommand.args = Arrays.asList("Points", "table1");
-        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(CommandFailedException.class);
         exportCommand.run(cli);
     }
@@ -102,7 +102,7 @@ public class SLExportTest extends RepositoryTestCase {
     public void testExportToTableThatExistsWithOverwrite() throws Exception {
         SLExport exportCommand = new SLExport();
         exportCommand.args = Arrays.asList("WORK_HEAD:Points", "testTable");
-        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exportCommand.run(cli);
 
         exportCommand.args = Arrays.asList("Lines", "testTable");
@@ -114,7 +114,7 @@ public class SLExportTest extends RepositoryTestCase {
     public void testExportWithNonexistentFeatureTypeTree() throws Exception {
         SLExport exportCommand = new SLExport();
         exportCommand.args = Arrays.asList("invalidType", "invalidTable");
-        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }
@@ -123,7 +123,7 @@ public class SLExportTest extends RepositoryTestCase {
     public void testExportWithNullTable() throws Exception {
         SLExport exportCommand = new SLExport();
         exportCommand.args = Arrays.asList("Points", null);
-        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }
@@ -132,7 +132,7 @@ public class SLExportTest extends RepositoryTestCase {
     public void testExportWithNullFeatureType() throws Exception {
         SLExport exportCommand = new SLExport();
         exportCommand.args = Arrays.asList(null, "invalidTable");
-        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }
@@ -141,7 +141,7 @@ public class SLExportTest extends RepositoryTestCase {
     public void testExportWithEmptyStringForFeatureType() throws Exception {
         SLExport exportCommand = new SLExport();
         exportCommand.args = Arrays.asList("", "invalidTable");
-        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }
@@ -150,7 +150,7 @@ public class SLExportTest extends RepositoryTestCase {
     public void testExportWithEmptyStringForTable() throws Exception {
         SLExport exportCommand = new SLExport();
         exportCommand.args = Arrays.asList("Points", "");
-        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }
@@ -159,7 +159,7 @@ public class SLExportTest extends RepositoryTestCase {
     public void testExportWithFeatureNameInsteadOfType() throws Exception {
         SLExport exportCommand = new SLExport();
         exportCommand.args = Arrays.asList("Points/Points.1", "invalidTable");
-        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(InvalidParameterException.class);
         exportCommand.run(cli);
     }

@@ -17,11 +17,13 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.geotools.cli.postgis.AbstractPGCommand;
+import org.locationtech.geogig.geotools.cli.postgis.PGCommonArgs;
+import org.locationtech.geogig.geotools.cli.postgis.PGSupport;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.osm.internal.Mapping;
@@ -33,6 +35,7 @@ import org.opengis.filter.Filter;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -45,7 +48,15 @@ import com.vividsolutions.jts.geom.Point;
  */
 @ReadOnly
 @Parameters(commandNames = "export-pg", commandDescription = "Export OSM data to a PostGIS database, using a data mapping")
-public class OSMExportPG extends AbstractPGCommand implements CLICommand {
+public class OSMExportPG extends AbstractCommand implements CLICommand {
+
+    /**
+     * Common arguments for PostGIS commands.
+     */
+    @ParametersDelegate
+    public PGCommonArgs commonArgs = new PGCommonArgs();
+
+    final PGSupport support = new PGSupport();
 
     @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output tables")
     public boolean overwrite;
@@ -82,7 +93,7 @@ public class OSMExportPG extends AbstractPGCommand implements CLICommand {
             String path = getOriginTreesFromOutputFeatureType(outputFeatureType);
             DataStore dataStore = null;
             try {
-                dataStore = getDataStore();
+                dataStore = support.getDataStore(commonArgs);
 
                 String tableName = outputFeatureType.getName().getLocalPart();
                 if (Arrays.asList(dataStore.getTypeNames()).contains(tableName)) {
@@ -113,7 +124,8 @@ public class OSMExportPG extends AbstractPGCommand implements CLICommand {
                     op.setProgressListener(cli.getProgressListener()).call();
                     cli.getConsole().println("OSM data exported successfully to " + tableName);
                 } catch (IllegalArgumentException iae) {
-                    throw new org.locationtech.geogig.cli.InvalidParameterException(iae.getMessage(), iae);
+                    throw new org.locationtech.geogig.cli.InvalidParameterException(
+                            iae.getMessage(), iae);
                 } catch (GeoToolsOpException e) {
                     throw new CommandFailedException("Could not export. Error:"
                             + e.statusCode.name(), e);

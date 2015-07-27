@@ -18,27 +18,17 @@ import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.oracle.OracleNGDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
-import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 
-import com.beust.jcommander.ParametersDelegate;
 import com.google.common.collect.Maps;
 
 /**
- * A template for Oracle commands; provides out of the box support for the --help argument so far.
+ * Support class for Oracle commands
  * 
  * @see CLICommand
  */
-public abstract class AbstractOracleCommand extends AbstractCommand implements CLICommand {
-
-    /**
-     * Common arguments for Oracle commands.
-     * 
-     * @see OracleCommonArgs
-     */
-    @ParametersDelegate
-    public OracleCommonArgs commonArgs = new OracleCommonArgs();
+class OracleSupport {
 
     /**
      * Factory for constructing the data store.
@@ -54,7 +44,7 @@ public abstract class AbstractOracleCommand extends AbstractCommand implements C
      * @throws Exception
      * @see DataStore
      */
-    protected DataStore getDataStore() {
+    public DataStore getDataStore(OracleCommonArgs commonArgs) {
         Map<String, Serializable> params = Maps.newHashMap();
         params.put(OracleNGDataStoreFactory.DBTYPE.key, "oracle");
         params.put(OracleNGDataStoreFactory.HOST.key, commonArgs.host);

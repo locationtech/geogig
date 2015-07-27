@@ -20,29 +20,18 @@ import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.spatialite.SpatiaLiteDataStoreFactory;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
-import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.geotools.cli.spatialite.SLCommonArgs;
 
-import com.beust.jcommander.ParametersDelegate;
 import com.beust.jcommander.internal.Maps;
 
 /**
- * A template for Geopackage commands; provides out of the box support for the --help argument so
- * far.
+ * Support class for Geopackage commands;
  * 
  * @see CLICommand
  */
-abstract class AbstractGeopkgCommand extends AbstractCommand implements CLICommand {
-
-    /**
-     * Common arguments for SpatiaLite commands.
-     * 
-     * @see SLCommonArgs
-     */
-    @ParametersDelegate
-    public GeopkgCommonArgs commonArgs = new GeopkgCommonArgs();
+class GeopkgSupport {
 
     /**
      * Factory for constructing the data store.
@@ -58,7 +47,7 @@ abstract class AbstractGeopkgCommand extends AbstractCommand implements CLIComma
      * @throws CommandFailedException
      * @see DataStore
      */
-    protected DataStore getDataStore() {
+    public DataStore getDataStore(GeopkgCommonArgs commonArgs) {
         Map<String, Serializable> params = Maps.newHashMap();
         params.put(GeoPkgDataStoreFactory.DBTYPE.key, "geopkg");
         params.put(GeoPkgDataStoreFactory.DATABASE.key, commonArgs.database);

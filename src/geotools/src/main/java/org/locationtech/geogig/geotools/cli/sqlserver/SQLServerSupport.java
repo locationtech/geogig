@@ -18,29 +18,17 @@ import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.sqlserver.SQLServerDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
-import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
-import org.locationtech.geogig.geotools.cli.postgis.PGCommonArgs;
 
-import com.beust.jcommander.ParametersDelegate;
 import com.beust.jcommander.internal.Maps;
 
 /**
- * A template for Sql Server commands; provides out of the box support for the --help argument so
- * far.
+ * Support class for Sql Server commands
  * 
  * @see CLICommand
  */
-public abstract class AbstractSQLServerCommand extends AbstractCommand implements CLICommand {
-
-    /**
-     * Common arguments for SQL Server commands.
-     * 
-     * @see PGCommonArgs
-     */
-    @ParametersDelegate
-    public SQLServerCommonArgs commonArgs = new SQLServerCommonArgs();
+class SQLServerSupport {
 
     /**
      * Factory for constructing the data store.
@@ -57,7 +45,7 @@ public abstract class AbstractSQLServerCommand extends AbstractCommand implement
      * @throws CommandFailedException
      * @see DataStore
      */
-    protected DataStore getDataStore() {
+    public DataStore getDataStore(SQLServerCommonArgs commonArgs) {
         Map<String, Serializable> params = Maps.newHashMap();
         params.put(SQLServerDataStoreFactory.DBTYPE.key, "sqlserver");
         params.put(SQLServerDataStoreFactory.HOST.key, commonArgs.host);

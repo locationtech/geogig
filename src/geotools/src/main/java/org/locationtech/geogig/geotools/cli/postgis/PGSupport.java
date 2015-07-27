@@ -19,34 +19,24 @@ import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
-import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 
-import com.beust.jcommander.ParametersDelegate;
 import com.beust.jcommander.internal.Maps;
 
 /**
- * A template for PostGIS commands; provides out of the box support for the --help argument so far.
+ * Support class for PostGIS commands
  * 
  * @see CLICommand
  */
-public abstract class AbstractPGCommand extends AbstractCommand implements CLICommand {
-
-    /**
-     * Common arguments for PostGIS commands.
-     * 
-     * @see PGCommonArgs
-     */
-    @ParametersDelegate
-    public PGCommonArgs commonArgs = new PGCommonArgs();
+public class PGSupport {
 
     /**
      * Factory for constructing the data store.
      * 
      * @see PostgisNGDataStoreFactory
      */
-    public DataStoreFactorySpi dataStoreFactory = new PostgisNGDataStoreFactory();
+    DataStoreFactorySpi dataStoreFactory = new PostgisNGDataStoreFactory();
 
     /**
      * Constructs a new PostGIS data store using connection parameters from {@link PGCommonArgs}.
@@ -55,7 +45,7 @@ public abstract class AbstractPGCommand extends AbstractCommand implements CLICo
      * @throws Exception
      * @see DataStore
      */
-    protected DataStore getDataStore() {
+    public DataStore getDataStore(PGCommonArgs commonArgs) {
         Map<String, Serializable> params = Maps.newHashMap();
         params.put(PostgisNGDataStoreFactory.DBTYPE.key, "postgis");
         params.put(PostgisNGDataStoreFactory.HOST.key, commonArgs.host);

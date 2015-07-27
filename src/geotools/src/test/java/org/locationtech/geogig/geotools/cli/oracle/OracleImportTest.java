@@ -57,7 +57,7 @@ public class OracleImportTest {
     public void testImport() throws Exception {
         OracleImport importCommand = new OracleImport();
         importCommand.all = true;
-        importCommand.dataStoreFactory = TestHelper.createTestFactory();
+        importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         importCommand.run(cli);
     }
 
@@ -66,7 +66,7 @@ public class OracleImportTest {
         OracleImport importCommand = new OracleImport();
         importCommand.all = false;
         importCommand.table = "";
-        importCommand.dataStoreFactory = TestHelper.createTestFactory();
+        importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(CommandFailedException.class);
         importCommand.run(cli);
     }
@@ -76,7 +76,7 @@ public class OracleImportTest {
         OracleImport importCommand = new OracleImport();
         importCommand.all = true;
         importCommand.table = "table1";
-        importCommand.dataStoreFactory = TestHelper.createTestFactory();
+        importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(CommandFailedException.class);
         importCommand.run(cli);
     }
@@ -86,7 +86,7 @@ public class OracleImportTest {
         OracleImport importCommand = new OracleImport();
         importCommand.all = false;
         importCommand.table = "table1";
-        importCommand.dataStoreFactory = TestHelper.createTestFactory();
+        importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         importCommand.run(cli);
     }
 
@@ -117,7 +117,7 @@ public class OracleImportTest {
         when(mockCli.getConsole()).thenThrow(new MockitoException("Exception"));
         OracleImport importCommand = new OracleImport();
         importCommand.all = true;
-        importCommand.dataStoreFactory = TestHelper.createTestFactory();
+        importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
         importCommand.run(mockCli);
     }
@@ -127,7 +127,7 @@ public class OracleImportTest {
         OracleImport importCommand = new OracleImport();
         importCommand.all = false;
         importCommand.table = "nonexistent";
-        importCommand.dataStoreFactory = TestHelper.createTestFactory();
+        importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(CommandFailedException.class);
         importCommand.run(cli);
     }
@@ -136,7 +136,8 @@ public class OracleImportTest {
     public void testEmptyTable() throws Exception {
         OracleImport importCommand = new OracleImport();
         importCommand.all = true;
-        importCommand.dataStoreFactory = TestHelper.createEmptyTestFactory();
+        importCommand.support.dataStoreFactory = TestHelper.createEmptyTestFactory();
+        exception.expect(CommandFailedException.class);
         importCommand.run(cli);
     }
 
@@ -144,7 +145,7 @@ public class OracleImportTest {
     public void testNullDataStore() throws Exception {
         OracleImport importCommand = new OracleImport();
         importCommand.all = true;
-        importCommand.dataStoreFactory = TestHelper.createNullTestFactory();
+        importCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
         importCommand.run(cli);
     }
@@ -153,7 +154,7 @@ public class OracleImportTest {
     public void testImportGetNamesException() throws Exception {
         OracleImport importCommand = new OracleImport();
         importCommand.all = true;
-        importCommand.dataStoreFactory = TestHelper.createFactoryWithGetNamesException();
+        importCommand.support.dataStoreFactory = TestHelper.createFactoryWithGetNamesException();
         exception.expect(CommandFailedException.class);
         importCommand.run(cli);
     }
@@ -162,7 +163,9 @@ public class OracleImportTest {
     public void testImportFeatureSourceException() throws Exception {
         OracleImport importCommand = new OracleImport();
         importCommand.all = true;
-        importCommand.dataStoreFactory = TestHelper.createFactoryWithGetFeatureSourceException();
+        importCommand.support.dataStoreFactory = TestHelper
+                .createFactoryWithGetFeatureSourceException();
+        exception.expect(CommandFailedException.class);
         importCommand.run(cli);
     }
 

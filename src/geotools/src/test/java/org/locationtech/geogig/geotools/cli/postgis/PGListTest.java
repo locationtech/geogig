@@ -61,7 +61,7 @@ public class PGListTest extends Assert {
     @Test
     public void testList() throws Exception {
         PGList listCommand = new PGList();
-        listCommand.dataStoreFactory = TestHelper.createTestFactory();
+        listCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         listCommand.run(cli);
     }
 
@@ -83,7 +83,7 @@ public class PGListTest extends Assert {
     @Test
     public void testNullDataStore() throws Exception {
         PGList listCommand = new PGList();
-        listCommand.dataStoreFactory = TestHelper.createNullTestFactory();
+        listCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
         listCommand.run(cli);
     }
@@ -91,14 +91,15 @@ public class PGListTest extends Assert {
     @Test
     public void testEmptyDataStore() throws Exception {
         PGList listCommand = new PGList();
-        listCommand.dataStoreFactory = TestHelper.createEmptyTestFactory();
+        listCommand.support.dataStoreFactory = TestHelper.createEmptyTestFactory();
+        exception.expect(CommandFailedException.class);
         listCommand.run(cli);
     }
 
     @Test
     public void testGetNamesException() throws Exception {
         PGList listCommand = new PGList();
-        listCommand.dataStoreFactory = TestHelper.createFactoryWithGetNamesException();
+        listCommand.support.dataStoreFactory = TestHelper.createFactoryWithGetNamesException();
         exception.expect(CommandFailedException.class);
         listCommand.run(cli);
     }
@@ -113,7 +114,7 @@ public class PGListTest extends Assert {
 
         when(mockCli.getConsole()).thenThrow(new MockitoException("Exception"));
         PGList listCommand = new PGList();
-        listCommand.dataStoreFactory = TestHelper.createTestFactory();
+        listCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
         listCommand.run(mockCli);
     }

@@ -19,35 +19,22 @@ import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.spatialite.SpatiaLiteDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
-import org.locationtech.geogig.cli.AbstractCommand;
-import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 
-import com.beust.jcommander.ParametersDelegate;
 import com.beust.jcommander.internal.Maps;
 
 /**
- * A template for SpatiaLite commands; provides out of the box support for the --help argument so
- * far.
- * 
- * @see CLICommand
+ * Support class for SpatiaLite commands
+ *
  */
-public abstract class AbstractSLCommand extends AbstractCommand implements CLICommand {
-
-    /**
-     * Common arguments for SpatiaLite commands.
-     * 
-     * @see SLCommonArgs
-     */
-    @ParametersDelegate
-    public SLCommonArgs commonArgs = new SLCommonArgs();
+public class SpatialiteSupport {
 
     /**
      * Factory for constructing the data store.
      * 
      * @see SpatiaLiteDataStoreFactory
      */
-    public DataStoreFactorySpi dataStoreFactory = new SpatiaLiteDataStoreFactory();
+    DataStoreFactorySpi dataStoreFactory = new SpatiaLiteDataStoreFactory();
 
     /**
      * Constructs a new SpatiaLite data store using connection parameters from {@link SLCommonArgs}.
@@ -56,7 +43,7 @@ public abstract class AbstractSLCommand extends AbstractCommand implements CLICo
      * @throws CommandFailedException
      * @see DataStore
      */
-    protected DataStore getDataStore() {
+    public DataStore getDataStore(SLCommonArgs commonArgs) {
         Map<String, Serializable> params = Maps.newHashMap();
         params.put(SpatiaLiteDataStoreFactory.DBTYPE.key, "spatialite");
         params.put(SpatiaLiteDataStoreFactory.DATABASE.key, commonArgs.database);

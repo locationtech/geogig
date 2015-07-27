@@ -23,7 +23,7 @@ import org.geotools.jdbc.JDBCDataStore;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
-import org.locationtech.geogig.geotools.cli.porcelain.SLCommonArgs;
+import org.locationtech.geogig.geotools.cli.spatialite.SLCommonArgs;
 
 import com.beust.jcommander.ParametersDelegate;
 import com.beust.jcommander.internal.Maps;

@@ -21,7 +21,7 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.geotools.cli.porcelain.AbstractSLCommand;
+import org.locationtech.geogig.geotools.cli.spatialite.AbstractSLCommand;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.osm.internal.Mapping;

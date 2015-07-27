@@ -37,7 +37,7 @@ import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.geotools.cli.porcelain.TestHelper;
+import org.locationtech.geogig.geotools.cli.TestHelper;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;

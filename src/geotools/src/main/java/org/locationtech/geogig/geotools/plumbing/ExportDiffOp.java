@@ -62,10 +62,10 @@ import com.google.common.collect.UnmodifiableIterator;
 
 public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
-	public static final String CHANGE_TYPE_NAME = "changetype";
-	
+    public static final String CHANGE_TYPE_NAME = "changetype";
+
     private static final Function<Feature, Optional<Feature>> IDENTITY = new Function<Feature, Optional<Feature>>() {
-    	
+
         @Override
         @Nullable
         public Optional<Feature> apply(@Nullable Feature feature) {
@@ -169,7 +169,8 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             final boolean old, final ObjectDatabase database, final ObjectId metadataId,
             final ProgressListener progressListener) {
 
-        final SimpleFeatureType featureType = addChangeTypeAttribute(database.getFeatureType(metadataId));
+        final SimpleFeatureType featureType = addChangeTypeAttribute(database
+                .getFeatureType(metadataId));
         final RevFeatureType revFeatureType = RevFeatureTypeImpl.build(featureType);
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(featureType);
 

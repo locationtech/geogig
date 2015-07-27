@@ -25,7 +25,7 @@ public class GeopkgCommonArgs {
     /**
      * User name. Default: user
      */
-    @Parameter(names = {"--user", "-u"}, description = "User name.  Default: user")
+    @Parameter(names = { "--user", "-u" }, description = "User name.  Default: user")
     public String username = "user";
 
 }

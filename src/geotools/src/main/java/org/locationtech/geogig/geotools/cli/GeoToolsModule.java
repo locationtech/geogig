@@ -10,7 +10,13 @@
 package org.locationtech.geogig.geotools.cli;
 
 import org.locationtech.geogig.cli.CLIModule;
+import org.locationtech.geogig.geotools.cli.geojson.GeoJsonCommandProxy;
 import org.locationtech.geogig.geotools.cli.geopkg.GeopkgCommandProxy;
+import org.locationtech.geogig.geotools.cli.oracle.OracleCommandProxy;
+import org.locationtech.geogig.geotools.cli.postgis.PGCommandProxy;
+import org.locationtech.geogig.geotools.cli.shp.ShpCommandProxy;
+import org.locationtech.geogig.geotools.cli.spatialite.SLCommandProxy;
+import org.locationtech.geogig.geotools.cli.sqlserver.SQLServerCommandProxy;
 
 import com.google.inject.Binder;
 

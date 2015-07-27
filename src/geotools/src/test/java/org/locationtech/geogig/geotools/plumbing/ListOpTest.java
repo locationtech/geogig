@@ -17,7 +17,7 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.geotools.cli.porcelain.TestHelper;
+import org.locationtech.geogig.geotools.cli.TestHelper;
 
 import com.google.common.base.Optional;
 

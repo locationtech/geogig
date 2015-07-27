@@ -255,7 +255,8 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
                 .setAlter(true)
-                .setFilterFeatureTypeId(RevFeatureTypeImpl.build(modifiedPointsType).getId()).call();
+                .setFilterFeatureTypeId(RevFeatureTypeImpl.build(modifiedPointsType).getId())
+                .call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();
@@ -280,7 +281,8 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
-                .setFilterFeatureTypeId(RevFeatureTypeImpl.build(modifiedPointsType).getId()).call();
+                .setFilterFeatureTypeId(RevFeatureTypeImpl.build(modifiedPointsType).getId())
+                .call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();

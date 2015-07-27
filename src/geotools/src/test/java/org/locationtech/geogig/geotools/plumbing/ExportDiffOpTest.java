@@ -53,13 +53,13 @@ public class ExportDiffOpTest extends RepositoryTestCase {
         builder.setName(pointsType.getName());
         builder.setCRS(pointsType.getCoordinateReferenceSystem());
         SimpleFeatureType outputFeatureType = builder.buildFeatureType();
-        
-        final Feature outputFeature1 = feature(outputFeatureType, featureId, "M", 
-                "changedProp", new Integer(1500), "POINT(1 1)");
-        final Feature outputFeature2 = feature(outputFeatureType, points2.getIdentifier().getID(), "A", 
-        		"StringProp1_2", new Integer(2000), "POINT(2 2)");
+
+        final Feature outputFeature1 = feature(outputFeatureType, featureId, "M", "changedProp",
+                new Integer(1500), "POINT(1 1)");
+        final Feature outputFeature2 = feature(outputFeatureType, points2.getIdentifier().getID(),
+                "A", "StringProp1_2", new Integer(2000), "POINT(2 2)");
         Feature[] points = new Feature[] { outputFeature1, outputFeature2 };
-        
+
         MemoryDataStore dataStore = new MemoryDataStore(outputFeatureType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
@@ -94,11 +94,11 @@ public class ExportDiffOpTest extends RepositoryTestCase {
         builder.setName(pointsType.getName());
         builder.setCRS(pointsType.getCoordinateReferenceSystem());
         SimpleFeatureType outputFeatureType = builder.buildFeatureType();
-                
-        final Feature outputFeature1 = feature(outputFeatureType, featureId, "M", 
-        		"StringProp1_1", new Integer(1000), "POINT(1 1)");
-        Feature[] points = new Feature[] { outputFeature1};
-        
+
+        final Feature outputFeature1 = feature(outputFeatureType, featureId, "M", "StringProp1_1",
+                new Integer(1000), "POINT(1 1)");
+        Feature[] points = new Feature[] { outputFeature1 };
+
         MemoryDataStore dataStore = new MemoryDataStore(outputFeatureType);
         final String typeName = dataStore.getTypeNames()[0];
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);

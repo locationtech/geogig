@@ -10,6 +10,7 @@
 package org.locationtech.geogig.geotools.cli;
 
 import org.locationtech.geogig.cli.CLIModule;
+import org.locationtech.geogig.geotools.cli.geopkg.GeopkgCommandProxy;
 
 import com.google.inject.Binder;
 
@@ -22,6 +23,7 @@ import com.google.inject.Binder;
  * @see OracleCommandProxy
  * @see SQLServerCommandProxy
  * @see GeoJsonCommandProxy
+ * @see GeopkgCommandProxy
  */
 
 public class GeoToolsModule implements CLIModule {
@@ -37,6 +39,7 @@ public class GeoToolsModule implements CLIModule {
         binder.bind(OracleCommandProxy.class);
         binder.bind(SQLServerCommandProxy.class);
         binder.bind(GeoJsonCommandProxy.class);
+        binder.bind(GeopkgCommandProxy.class);
     }
 
 }

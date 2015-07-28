@@ -49,7 +49,7 @@ public class IndexTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        index = repo.index();
+        index = repo.context().index();
     }
 
     // two features with the same content and different fid should point to the same object

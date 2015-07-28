@@ -219,4 +219,6 @@ public interface ObjectDatabase extends Closeable {
      * @return the number of objects actually deleted
      */
     public long deleteAll(Iterator<ObjectId> ids, BulkOpListener listener);
+
+    public BlobStore getBlobStore();
 }

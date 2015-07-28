@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
+import static org.locationtech.geogig.storage.Blobs.*;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -30,7 +30,7 @@ import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.WriteTree2;
@@ -49,7 +49,6 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 
 /**
  * Given one or more existing commits, revert the changes that the related patches introduce, and
@@ -59,6 +58,10 @@ import com.google.common.io.Files;
  */
 @CanRunDuringConflict
 public class RevertOp extends AbstractGeoGigOp<Boolean> {
+
+    private static final String REVERT_PREFIX = "revert/";
+
+    private static final String NEXT = REVERT_PREFIX + "next";
 
     private List<ObjectId> commits;
 
@@ -209,79 +212,66 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
 
     }
 
-    private File getRevertFolder() {
-        URL dir = command(ResolveGeogigDir.class).call().get();
-        File revertFolder = new File(dir.getFile(), "revert");
-        if (!revertFolder.exists()) {
-            Preconditions.checkState(revertFolder.mkdirs(), "Cannot create 'revert' folder");
-        }
-        return revertFolder;
-    }
-
     private void createRevertCommitsInfoFiles(List<RevCommit> commitsToRebase) {
-        File rebaseFolder = getRevertFolder();
-        for (int i = 0; i < commitsToRebase.size(); i++) {
 
-            File file = new File(rebaseFolder, Integer.toString(i + 1));
+        for (int i = 0; i < commitsToRebase.size(); i++) {
             try {
-                Files.write(commitsToRebase.get(i).getId().toString(), file, Charsets.UTF_8);
-            } catch (IOException e) {
-                throw new IllegalStateException("Cannot create revert commits info files");
+                String blobName = REVERT_PREFIX + Integer.toString(i + 1);
+                CharSequence contents = commitsToRebase.get(i).getId().toString();
+                putBlob(context().blobStore(), blobName, contents);
+            } catch (Exception e) {
+                throw new IllegalStateException("Cannot create revert commits info", e);
             }
         }
-        File nextFile = new File(rebaseFolder, "next");
         try {
-            Files.write("1", nextFile, Charsets.UTF_8);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot create next revert commit info file");
+            putBlob(context().blobStore(), NEXT, "1");
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot create next revert commit info", e);
         }
 
     }
 
     private boolean applyNextCommit(boolean useCommitChanges) {
-        File rebaseFolder = getRevertFolder();
-        File nextFile = new File(rebaseFolder, "next");
         Repository repository = repository();
-        try {
-            String idx = Files.readFirstLine(nextFile, Charsets.UTF_8);
-            File commitFile = new File(rebaseFolder, idx);
-            if (commitFile.exists()) {
-                String commitId = Files.readFirstLine(commitFile, Charsets.UTF_8);
-                RevCommit commit = repository.getCommit(ObjectId.valueOf(commitId));
-                List<Conflict> conflicts = Lists.newArrayList();
-                if (useCommitChanges) {
-                    conflicts = applyRevertedChanges(commit);
-                }
-                if (createCommit && conflicts.isEmpty()) {
-                    createCommit(commit);
-                } else {
-                    workingTree().updateWorkHead(repository.index().getTree().getId());
-                    if (!conflicts.isEmpty()) {
-                        // mark conflicted elements
-                        command(ConflictsWriteOp.class).setConflicts(conflicts).call();
+        List<String> nextFile = readLines(context().blobStore(), NEXT);
 
-                        // created exception message
-                        StringBuilder msg = new StringBuilder();
-                        msg.append("error: could not apply ");
-                        msg.append(commit.getId().toString().substring(0, 7));
-                        msg.append(" " + commit.getMessage() + "\n");
-
-                        for (Conflict conflict : conflicts) {
-                            msg.append("CONFLICT: conflict in " + conflict.getPath() + "\n");
-                        }
-
-                        throw new RevertConflictsException(msg.toString());
-                    }
-                }
-                commitFile.delete();
-                int newIdx = Integer.parseInt(idx) + 1;
-                Files.write(Integer.toString(newIdx), nextFile, Charsets.UTF_8);
-                return true;
-            } else {
-                return false;
+        String idx = nextFile.get(0);
+        String commitBlobName = REVERT_PREFIX + idx;
+        List<String> commitFile = readLines(context().blobStore(), commitBlobName);
+        if (!commitFile.isEmpty()) {
+            String commitId = commitFile.get(0);
+            RevCommit commit = repository.getCommit(ObjectId.valueOf(commitId));
+            List<Conflict> conflicts = Lists.newArrayList();
+            if (useCommitChanges) {
+                conflicts = applyRevertedChanges(commit);
             }
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot read/write revert commits index file");
+            if (createCommit && conflicts.isEmpty()) {
+                createCommit(commit);
+            } else {
+                workingTree().updateWorkHead(repository.index().getTree().getId());
+                if (!conflicts.isEmpty()) {
+                    // mark conflicted elements
+                    command(ConflictsWriteOp.class).setConflicts(conflicts).call();
+
+                    // created exception message
+                    StringBuilder msg = new StringBuilder();
+                    msg.append("error: could not apply ");
+                    msg.append(commit.getId().toString().substring(0, 7));
+                    msg.append(" " + commit.getMessage() + "\n");
+
+                    for (Conflict conflict : conflicts) {
+                        msg.append("CONFLICT: conflict in " + conflict.getPath() + "\n");
+                    }
+
+                    throw new RevertConflictsException(msg.toString());
+                }
+            }
+            context().blobStore().removeBlob(commitBlobName);
+            int newIdx = Integer.parseInt(idx) + 1;
+            putBlob(context().blobStore(), NEXT, Integer.toString(newIdx));
+            return true;
+        } else {
+            return false;
         }
 
     }

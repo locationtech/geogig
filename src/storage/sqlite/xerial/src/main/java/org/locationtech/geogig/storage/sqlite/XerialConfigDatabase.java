@@ -225,4 +225,9 @@ public class XerialConfigDatabase extends SQLiteConfigDatabase {
 
         return dataSource;
     }
+
+    @Override
+    public void close() throws IOException {
+        // nothing to do apparently
+    }
 }

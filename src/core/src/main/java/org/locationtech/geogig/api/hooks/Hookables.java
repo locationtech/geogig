@@ -10,8 +10,7 @@
 package org.locationtech.geogig.api.hooks;
 
 import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.ServiceLoader;
 
@@ -20,7 +19,6 @@ import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Context;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -71,7 +69,8 @@ public class Hookables {
     public static List<CommandHook> findHooksFor(AbstractGeoGigOp<?> operation) {
 
         @SuppressWarnings("unchecked")
-        final Class<? extends AbstractGeoGigOp<?>> clazz = (Class<? extends AbstractGeoGigOp<?>>) operation.getClass();
+        final Class<? extends AbstractGeoGigOp<?>> clazz = (Class<? extends AbstractGeoGigOp<?>>) operation
+                .getClass();
 
         List<CommandHook> hooks = Lists.newLinkedList();
         /*
@@ -131,17 +130,12 @@ public class Hookables {
                 || operation.context().repository().getLocation() == null) {
             return null;
         }
-        URL url = operation.context().repository().getLocation();
-        if (!"file".equals(url.getProtocol())) {
+        URI url = operation.context().repository().getLocation();
+        if (!"file".equals(url.getScheme())) {
             // Hooks not in a filesystem are not supported
             return null;
         }
-        File repoDir;
-        try {
-            repoDir = new File(url.toURI());
-        } catch (URISyntaxException e) {
-            throw Throwables.propagate(e);
-        }
+        File repoDir = new File(url);
         File hooksDir = new File(repoDir, "hooks");
         if (!hooksDir.exists()) {
             return null;

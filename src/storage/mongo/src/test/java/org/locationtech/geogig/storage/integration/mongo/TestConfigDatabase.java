@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage.integration.mongo;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,8 @@ public class TestConfigDatabase implements ConfigDatabase {
 
     {
         final IniMongoProperties properties = new IniMongoProperties();
-        final String uri = properties.get("mongodb.uri", String.class).or("mongodb://localhost:27017/");
+        final String uri = properties.get("mongodb.uri", String.class).or(
+                "mongodb://localhost:27017/");
         final String database = properties.get("mongodb.database", String.class).or("geogig");
         overrides.put("mongodb.uri", uri);
         overrides.put("mongodb.database", database);
@@ -124,5 +126,13 @@ public class TestConfigDatabase implements ConfigDatabase {
 
     public void removeSectionGlobal(String key) {
         delegate.removeSectionGlobal(key);
+    }
+
+    @Override
+    public synchronized void close() throws IOException {
+        if (delegate != null) {
+            delegate.close();
+            delegate = null;
+        }
     }
 }

@@ -20,9 +20,9 @@ import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.hooks.CannotRunGeogigOperationException;
 import org.locationtech.geogig.api.hooks.CommandHook;
-import org.locationtech.geogig.api.porcelain.ConfigException;
-import org.locationtech.geogig.api.porcelain.ConfigException.StatusCode;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConfigException;
+import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 public class MeteredCommandHook implements CommandHook {
 

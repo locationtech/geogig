@@ -11,13 +11,13 @@ package org.locationtech.geogig.cli;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+import java.net.URI;
 import java.net.URL;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.DefaultPlatform;
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -52,20 +52,15 @@ class Logging {
     static void tryConfigureLogging(Platform platform) {
         // instantiate and call ResolveGeogigDir directly to avoid calling getGeogig() and hence get
         // some logging events before having configured logging
-        final Optional<URL> geogigDirUrl = new ResolveGeogigDir(platform).call();
-        if (!geogigDirUrl.isPresent() || !"file".equalsIgnoreCase(geogigDirUrl.get().getProtocol())) {
+        final Optional<URI> geogigDirUrl = new ResolveGeogigURI(platform, null).call();
+        if (!geogigDirUrl.isPresent() || !"file".equalsIgnoreCase(geogigDirUrl.get().getScheme())) {
             // redirect java.util.logging to SLF4J anyways
             SLF4JBridgeHandler.removeHandlersForRootLogger();
             SLF4JBridgeHandler.install();
             return;
         }
 
-        final File geogigDir;
-        try {
-            geogigDir = new File(geogigDirUrl.get().toURI());
-        } catch (URISyntaxException e) {
-            throw Throwables.propagate(e);
-        }
+        final File geogigDir = new File(geogigDirUrl.get());
 
         if (geogigDir.equals(geogigDirLoggingConfiguration)) {
             return;

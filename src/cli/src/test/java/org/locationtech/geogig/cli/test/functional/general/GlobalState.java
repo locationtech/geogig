@@ -83,6 +83,12 @@ public class GlobalState {
 
     public static ConsoleReader consoleReader;
 
+    /**
+     * If non null, {@link #setupGeogig()} will use it as the repository URI, otherwise it'll use
+     * the platform's current directory
+     */
+    public static String repositoryURI;
+
     public static void setUpDirectories() throws IOException {
         File homeDirectory = tempFolder.newFolder("fakeHomeDir").getCanonicalFile();
         File currentDirectory = tempFolder.newFolder("testrepo").getCanonicalFile();
@@ -103,22 +109,28 @@ public class GlobalState {
         if (GlobalState.consoleReader != null) {
             GlobalState.consoleReader.shutdown();
         }
-        // GlobalState.consoleReader = new ConsoleReader(stdIn,
-        // new TeeOutputStream(stdOut, System.err), new UnsupportedTerminal());
-        GlobalState.consoleReader = new ConsoleReader(stdIn, stdOut, new UnsupportedTerminal());
 
-        ContextBuilder injectorBuilder = new CLITestContextBuilder(platform);
-        Context injector = injectorBuilder.build();
+        GlobalState.consoleReader = new ConsoleReader(stdIn, stdOut, new UnsupportedTerminal());
 
         if (geogigCLI != null) {
             geogigCLI.close();
         }
 
         geogigCLI = new GeogigCLI(GlobalState.consoleReader);
+
+        ContextBuilder injectorBuilder = new CLITestContextBuilder(platform);
         GlobalContextBuilder.builder = injectorBuilder;
-        Platform platform = injector.platform();
+
+        Context context = injectorBuilder.build();
+        Platform platform = context.platform();
+
         geogigCLI.setPlatform(platform);
         geogigCLI.tryConfigureLogging();
+
+        String uri = GlobalState.repositoryURI;
+        if (uri != null) {
+            geogigCLI.setRepositoryURI(uri);
+        }
     }
 
     /**

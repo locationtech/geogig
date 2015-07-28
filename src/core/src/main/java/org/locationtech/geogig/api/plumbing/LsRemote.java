@@ -9,17 +9,14 @@
  */
 package org.locationtech.geogig.api.plumbing;
 
-import java.io.IOException;
-
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.Remote;
 import org.locationtech.geogig.remote.IRemoteRepo;
 import org.locationtech.geogig.remote.RemoteUtils;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.DeduplicationService;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -104,7 +101,7 @@ public class LsRemote extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      * @return an immutable set of the refs for the given remote
      */
     @Override
-    protected  ImmutableSet<Ref> _call() {
+    protected ImmutableSet<Ref> _call() {
         Preconditions.checkState(remote.get().isPresent(), "Remote was not provided");
         final Remote remoteConfig = remote.get().get();
 
@@ -117,7 +114,7 @@ public class LsRemote extends AbstractGeoGigOp<ImmutableSet<Ref>> {
         getProgressListener().setDescription("Connecting to remote " + remoteConfig.getName());
         try {
             remoteRepo.get().open();
-        } catch (IOException e) {
+        } catch (RepositoryConnectionException e) {
             throw Throwables.propagate(e);
         }
         getProgressListener().setDescription(
@@ -126,11 +123,7 @@ public class LsRemote extends AbstractGeoGigOp<ImmutableSet<Ref>> {
         try {
             remoteRefs = remoteRepo.get().listRefs(getHeads, getTags);
         } finally {
-            try {
-                remoteRepo.get().close();
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
+            remoteRepo.get().close();
         }
         return remoteRefs;
     }
@@ -141,9 +134,7 @@ public class LsRemote extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      */
     public Optional<IRemoteRepo> getRemoteRepo(Remote remote) {
         Repository localRepository = repository();
-        DeduplicationService deduplicationService = context.deduplicationService();
-        return RemoteUtils.newRemote(GlobalContextBuilder.builder.build(Hints.readOnly()), remote,
-                localRepository, deduplicationService);
+        return RemoteUtils.newRemote(localRepository, remote, Hints.readOnly());
     }
 
     /**

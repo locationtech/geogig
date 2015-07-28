@@ -9,17 +9,11 @@
  */
 package org.locationtech.geogig.osm.internal.log;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
 import jline.internal.Preconditions;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.common.io.Files;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.Blobs;
 
 /**
  * Writes the file filter associated to an OSM import operation.
@@ -44,14 +38,11 @@ public class WriteOSMFilterFile extends AbstractGeoGigOp<Void> {
     protected Void _call() {
         Preconditions.checkNotNull(entry);
         Preconditions.checkNotNull(filter);
-        URL url = command(ResolveOSMLogfile.class).call();
-        File logfile = new File(url.getFile());
-        File file = new File(logfile.getParentFile(), "filter" + entry.getId().toString());
-        try {
-            Files.write(filter, file, Charsets.UTF_8);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+
+        BlobStore blobStore = context().blobStore();
+        final String logPath = "osm/log/";
+        final String filterPath = logPath + "filter" + entry.getId();
+        Blobs.putBlob(blobStore, filterPath, filter);
         return null;
     }
 

@@ -9,14 +9,13 @@
  */
 package org.locationtech.geogig.remote;
 
-import java.io.IOException;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.plumbing.ReceivePack;
 import org.locationtech.geogig.api.plumbing.SendPack;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
@@ -28,17 +27,19 @@ public interface IRemoteRepo {
 
     /**
      * Opens the remote repository.
+     * <p>
+     * This method is idempotent.
      * 
-     * @throws IOException
+     * @throws RepositoryConnectionException
      */
-    public void open() throws IOException;
+    public void open() throws RepositoryConnectionException;
 
     /**
      * Closes the remote repository.
-     * 
-     * @throws IOException
+     * <p>
+     * This method is idempotent.
      */
-    public void close() throws IOException;
+    public void close();
 
     /**
      * List the remote's {@link Ref refs}.

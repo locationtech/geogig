@@ -10,7 +10,7 @@
     </encoder>
   </appender>
 
-  <!-- geogigdir is a variable set on the logging context by the cli application by calling the resolve-geogig-dir plumbing 
+  <!-- geogigdir is a variable set on the logging context by the cli application by calling the resolve-geogig-uri plumbing 
     command -->
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 

@@ -11,8 +11,7 @@ package org.locationtech.geogig.remote;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.File;
-import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,8 +22,6 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
@@ -43,10 +40,13 @@ import org.locationtech.geogig.api.plumbing.diff.PostOrderDiffWalk;
 import org.locationtech.geogig.api.plumbing.diff.PostOrderDiffWalk.Consumer;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.RepositoryInitializer;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -60,57 +60,48 @@ import com.google.common.collect.ImmutableSet;
  */
 class LocalRemoteRepo extends AbstractRemoteRepo {
 
-    private GeoGIG remoteGeoGig;
+    private Repository remoteRepository;
 
-    private Context injector;
-
-    private File workingDirectory;
+    private URI remoteRepoURI;
 
     /**
      * Constructs a new {@code LocalRemoteRepo} with the given parameters.
      * 
      * @param injector the Guice injector for the new repository
-     * @param workingDirectory the directory of the remote repository
+     * @param remoteRepoURI the location of the remote repository
      */
-    public LocalRemoteRepo(Context injector, File workingDirectory, Repository localRepository) {
+    public LocalRemoteRepo(URI remoteRepoURI, Repository localRepository) {
         super(localRepository);
-        this.injector = injector;
-        this.workingDirectory = workingDirectory;
+        this.remoteRepoURI = remoteRepoURI;
+    }
+
+    LocalRemoteRepo(Repository remoteRepo, Repository localRepository) {
+        super(localRepository);
+        this.remoteRepository = remoteRepo;
     }
 
     /**
      * @param geogig manually set a geogig for this remote repository
      */
-    public void setGeoGig(GeoGIG geogig) {
-        this.remoteGeoGig = geogig;
+    @VisibleForTesting
+    void setRepository(Repository remoteRepo) {
+        this.remoteRepository = remoteRepo;
     }
 
-    /**
-     * Opens the remote repository.
-     * 
-     * @throws IOException
-     */
     @Override
-    public void open() throws IOException {
-        if (remoteGeoGig == null) {
-            remoteGeoGig = new GeoGIG(injector, workingDirectory);
-            remoteGeoGig.getRepository();
+    public void open() throws RepositoryConnectionException {
+        if (remoteRepository == null) {
+            remoteRepository = RepositoryInitializer.load(remoteRepoURI);
         }
-
     }
 
-    /**
-     * Closes the remote repository.
-     * 
-     * @throws IOException
-     */
     @Override
-    public void close() throws IOException {
-        if (remoteGeoGig != null) {
+    public void close() {
+        if (remoteRepository != null) {
             try {
-                remoteGeoGig.close();
+                remoteRepository.close();
             } finally {
-                remoteGeoGig = null;
+                remoteRepository = null;
             }
         }
     }
@@ -120,7 +111,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
      */
     @Override
     public Ref headRef() {
-        final Optional<Ref> currHead = remoteGeoGig.command(RefParse.class).setName(Ref.HEAD)
+        final Optional<Ref> currHead = remoteRepository.command(RefParse.class).setName(Ref.HEAD)
                 .call();
         Preconditions.checkState(currHead.isPresent(), "Remote repository has no HEAD.");
         if (currHead.get().getObjectId().equals(ObjectId.NULL)) {
@@ -155,7 +146,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
                 return keep;
             }
         };
-        return remoteGeoGig.command(ForEachRef.class).setFilter(filter).call();
+        return remoteRepository.command(ForEachRef.class).setFilter(filter).call();
     }
 
     /**
@@ -194,8 +185,8 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
     public void pushNewData(final Ref ref, final String refspec, final ProgressListener progress)
             throws SynchronizationException {
 
-        Optional<Ref> remoteRef = remoteGeoGig.command(RefParse.class).setName(refspec).call();
-        remoteRef = remoteRef.or(remoteGeoGig.command(RefParse.class)
+        Optional<Ref> remoteRef = remoteRepository.command(RefParse.class).setName(refspec).call();
+        remoteRef = remoteRef.or(remoteRepository.command(RefParse.class)
                 .setName(Ref.TAGS_PREFIX + refspec).call());
         checkPush(ref, remoteRef);
 
@@ -212,17 +203,17 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         String nameToSet = remoteRef.isPresent() ? remoteRef.get().getName() : Ref.HEADS_PREFIX
                 + refspec;
 
-        Ref updatedRef = remoteGeoGig.command(UpdateRef.class).setName(nameToSet)
+        Ref updatedRef = remoteRepository.command(UpdateRef.class).setName(nameToSet)
                 .setNewValue(ref.getObjectId()).call().get();
 
         Ref remoteHead = headRef();
         if (remoteHead instanceof SymRef) {
             if (((SymRef) remoteHead).getTarget().equals(updatedRef.getName())) {
-                remoteGeoGig.command(UpdateSymRef.class).setName(Ref.HEAD)
+                remoteRepository.command(UpdateSymRef.class).setName(Ref.HEAD)
                         .setNewValue(ref.getName()).call();
-                RevCommit commit = remoteGeoGig.getRepository().getCommit(ref.getObjectId());
-                remoteGeoGig.getRepository().workingTree().updateWorkHead(commit.getTreeId());
-                remoteGeoGig.getRepository().index().updateStageHead(commit.getTreeId());
+                RevCommit commit = remoteRepository.getCommit(ref.getObjectId());
+                remoteRepository.workingTree().updateWorkHead(commit.getTreeId());
+                remoteRepository.index().updateStageHead(commit.getTreeId());
             }
         }
     }
@@ -234,7 +225,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
      */
     @Override
     public Optional<Ref> deleteRef(String refspec) {
-        Optional<Ref> deletedRef = remoteGeoGig.command(UpdateRef.class).setName(refspec)
+        Optional<Ref> deletedRef = remoteRepository.command(UpdateRef.class).setName(refspec)
                 .setDelete(true).call();
         return deletedRef;
     }
@@ -243,7 +234,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             final ProgressListener progress) {
 
         Repository from = localRepository;
-        Repository to = remoteGeoGig.getRepository();
+        Repository to = remoteRepository;
         if (fetch) {
             Repository tmp = to;
             to = from;
@@ -405,7 +396,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
      */
     @Override
     public RepositoryWrapper getRemoteWrapper() {
-        return new LocalRepositoryWrapper(remoteGeoGig.getRepository());
+        return new LocalRepositoryWrapper(remoteRepository);
     }
 
     /**
@@ -416,6 +407,6 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
      */
     @Override
     public Optional<Integer> getDepth() {
-        return remoteGeoGig.getRepository().getDepth();
+        return remoteRepository.getDepth();
     }
 }

@@ -1,6 +1,6 @@
 <configuration>
   <!-- Note: this config gets picked up only if there's no repository at the current working directory or one of its parents 
-    (as per resolve-geogig-dir) -->
+    (as per resolve-geogig-uri) -->
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>

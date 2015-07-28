@@ -29,7 +29,7 @@ public class JEGraphDatabaseV2StressTest extends GraphDatabaseStressTest {
         File root = platform.pwd();
         Preconditions.checkState(new File(root, ".geogig").exists());
 
-        envProvider = new EnvironmentBuilder(platform);
+        envProvider = new EnvironmentBuilder(platform, null);
 
         ConfigDatabase configDB = new IniFileConfigDatabase(platform);
         return new JEGraphDatabase_v0_1(configDB, envProvider, new Hints());

@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.storage.AbstractObjectDatabase;
+import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
@@ -44,6 +45,8 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
     private ConcurrentMap<ObjectId, byte[]> objects;
 
     private HeapConflictsDatabase conflicts;
+
+    private HeapBlobStore blobs;
 
     public HeapObjectDatabse() {
         super(DataStreamSerializationFactoryV1.INSTANCE);
@@ -82,11 +85,17 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
         }
         objects = Maps.newConcurrentMap();
         conflicts = new HeapConflictsDatabase();
+        blobs = new HeapBlobStore();
     }
 
     @Override
     public HeapConflictsDatabase getConflictsDatabase() {
         return conflicts;
+    }
+
+    @Override
+    public BlobStore getBlobStore() {
+        return blobs;
     }
 
     /**

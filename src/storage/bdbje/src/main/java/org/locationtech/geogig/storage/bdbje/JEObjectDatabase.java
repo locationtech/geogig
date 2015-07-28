@@ -38,10 +38,12 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.storage.AbstractObjectDatabase;
+import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.fs.FileBlobStore;
 import org.locationtech.geogig.storage.fs.FileConflictsDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,6 +120,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     private final FileConflictsDatabase conflicts;
 
+    private final FileBlobStore blobStore;
+
     public JEObjectDatabase(final ObjectSerializingFactory serialization,
             final ConfigDatabase configDB, final EnvironmentBuilder envProvider,
             final boolean readOnly, final String envName) {
@@ -127,6 +131,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
         this.readOnly = readOnly;
         this.envName = envName;
         this.conflicts = new FileConflictsDatabase(envProvider.getPlatform());
+        this.blobStore = new FileBlobStore(envProvider.getPlatform());
     }
 
     /**
@@ -169,6 +174,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
             }
         } finally {
             conflicts.close();
+            blobStore.close();
             env.close();
             env = null;
         }
@@ -206,6 +212,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
                     .setNameFormat("BDBJE-" + env.getHome().getName() + "-SYNC-THREAD-%d").build());
         }
         this.conflicts.open();
+        this.blobStore.open();
         LOGGER.debug("Object database opened at {}. Transactional: {}", env.getHome(), objectDb
                 .getConfig().getTransactional());
 
@@ -214,6 +221,11 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     @Override
     public FileConflictsDatabase getConflictsDatabase() {
         return conflicts;
+    }
+
+    @Override
+    public BlobStore getBlobStore() {
+        return blobStore;
     }
 
     protected Database createDatabase() {

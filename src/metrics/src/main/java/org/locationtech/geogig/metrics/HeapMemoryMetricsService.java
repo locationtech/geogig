@@ -15,8 +15,8 @@ import java.lang.management.MemoryUsage;
 import java.util.concurrent.TimeUnit;
 
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.porcelain.ConfigException;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConfigException;
 
 import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.inject.Provider;

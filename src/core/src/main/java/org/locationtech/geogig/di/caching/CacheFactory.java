@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.porcelain.ConfigException;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

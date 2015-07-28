@@ -11,17 +11,16 @@ package org.locationtech.geogig.storage.fs;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
-import org.locationtech.geogig.api.porcelain.ConfigException;
-import org.locationtech.geogig.api.porcelain.ConfigException.StatusCode;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConfigException;
+import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
@@ -37,22 +36,13 @@ public class IniFileConfigDatabase implements ConfigDatabase {
         this.local = new INIFile() {
             @Override
             public File iniFile() {
-                final Optional<URL> url = new ResolveGeogigDir(platform).call();
+                final Optional<URI> url = new ResolveGeogigURI(platform, null).call();
 
                 if (!url.isPresent()) {
                     throw new ConfigException(StatusCode.INVALID_LOCATION);
                 }
 
-                /*
-                 * See http://weblogs.java.net/blog/kohsuke/archive/2007/04/how_to_convert.html for
-                 * explanation on this idiom.
-                 */
-                File localConfigFile;
-                try {
-                    localConfigFile = new File(new File(url.get().toURI()), "config");
-                } catch (URISyntaxException e) {
-                    localConfigFile = new File(url.get().getPath(), "config");
-                }
+                File localConfigFile = new File(new File(url.get()), "config");
 
                 return localConfigFile;
             }
@@ -308,5 +298,11 @@ public class IniFileConfigDatabase implements ConfigDatabase {
         int splitAt = qualifiedKey.lastIndexOf(".");
         return new String[] { qualifiedKey.substring(0, splitAt),
                 qualifiedKey.substring(splitAt + 1) };
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.local = null;
+        this.global = null;
     }
 }

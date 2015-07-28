@@ -117,6 +117,7 @@ public class DefaultStepDefinitions {
     public void I_am_in_an_empty_directory() throws Throwable {
         setUpDirectories();
         assertEquals(0, platform.pwd().list().length);
+        GlobalState.repositoryURI = null;
         setupGeogig();
     }
 
@@ -181,7 +182,7 @@ public class DefaultStepDefinitions {
 
     @Then("^the repository directory shall exist$")
     public void the_repository_directory_shall_exist() throws Throwable {
-        List<String> output = runAndParseCommand(true, "rev-parse", "--resolve-geogig-dir");
+        List<String> output = runAndParseCommand(true, "rev-parse", "--resolve-geogig-uri");
         assertEquals(output.toString(), 1, output.size());
         String location = output.get(0);
         assertNotNull(location);

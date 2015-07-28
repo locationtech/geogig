@@ -159,9 +159,9 @@ public abstract class RemoteRepositoryTestCase {
         }
 
         private ContextBuilder createInjectorBuilder() {
-            Platform testPlatform = new TestPlatform(envHome){
+            Platform testPlatform = new TestPlatform(envHome) {
                 @Override
-                public long currentTimeMillis(){
+                public long currentTimeMillis() {
                     return 1000;
                 }
             };
@@ -192,12 +192,11 @@ public abstract class RemoteRepositoryTestCase {
         localGeogig = new GeogigContainer("localtestrepository");
         remoteGeogig = new GeogigContainer("remotetestrepository");
 
-        LocalRemoteRepo remoteRepo = spy(new LocalRemoteRepo(remoteGeogig.getInjector(),
-                remoteGeogig.envHome.getCanonicalFile(), localGeogig.repo));
+        LocalRemoteRepo remoteRepo = spy(new LocalRemoteRepo(remoteGeogig.geogig.getRepository(),
+                localGeogig.repo));
 
         doNothing().when(remoteRepo).close();
 
-        remoteRepo.setGeoGig(remoteGeogig.geogig);
         this.remoteRepo = remoteRepo;
 
         pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
@@ -231,8 +230,7 @@ public abstract class RemoteRepositoryTestCase {
     protected FetchOp fetch() {
         FetchOp remoteRepoFetch = spy(localGeogig.geogig.command(FetchOp.class));
 
-        doReturn(Optional.of(remoteRepo)).when(remoteRepoFetch).getRemoteRepo(any(Remote.class),
-                any(DeduplicationService.class));
+        doReturn(Optional.of(remoteRepo)).when(remoteRepoFetch).getRemoteRepo(any(Remote.class));
         LsRemote lsRemote = lsremote();
         doReturn(lsRemote).when(remoteRepoFetch).command(eq(LsRemote.class));
 

@@ -19,7 +19,7 @@ import org.locationtech.geogig.api.DefaultPlatform;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.rest.TaskStatusResource;
 import org.locationtech.geogig.rest.osm.OSMRouter;
@@ -138,7 +138,7 @@ public class Main extends Application {
         Context inj = GlobalContextBuilder.builder.build();
         GeoGIG geogig = new GeoGIG(inj, platform.pwd());
 
-        if (geogig.command(ResolveGeogigDir.class).call().isPresent()) {
+        if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
             geogig.getRepository();
             return geogig;
         }

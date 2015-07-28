@@ -10,13 +10,13 @@
 package org.locationtech.geogig.storage.sqlite;
 
 import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 
 /**
  * Utility class for SQLite storage.
@@ -38,14 +38,9 @@ public class SQLiteStorage {
      * Returns the .geogig directory for the platform object.
      */
     public static File geogigDir(Platform platform) {
-        Optional<URL> url = new ResolveGeogigDir(platform).call();
-        if (!url.isPresent()) {
-            throw new RuntimeException("Unable to resolve .geogig directory");
-        }
-        try {
-            return new File(url.get().toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Error resolving .geogig directory", e);
-        }
+        Optional<URI> url = new ResolveGeogigURI(platform, null).call();
+        Preconditions.checkState(url.isPresent(), "Unable to resolve .geogig directory");
+
+        return new File(url.get());
     }
 }

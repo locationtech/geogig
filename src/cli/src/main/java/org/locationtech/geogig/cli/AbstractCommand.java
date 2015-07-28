@@ -49,6 +49,9 @@ public abstract class AbstractCommand implements CLICommand {
     @Parameter(names = "--help", help = true, hidden = true)
     public boolean help;
 
+    @Parameter(hidden = true, names = "--repo", description = "Repository location. Either a backend specific URL or the path to the folder containing the .geogig directory.")
+    public String repo;
+
     @Parameter(hidden = true, names = "--color", description = "Whether to apply colored output. Possible values are auto|never|always.", converter = ColorArg.Converter.class)
     public ColorArg color = ColorArg.auto;
 
@@ -60,6 +63,9 @@ public abstract class AbstractCommand implements CLICommand {
             return;
         }
 
+        if (repo != null) {
+            cli.setRepositoryURI(repo);
+        }
         try {
             runInternal(cli);
         } catch (IOException e) {

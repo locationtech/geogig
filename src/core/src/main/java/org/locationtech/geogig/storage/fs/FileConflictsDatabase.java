@@ -14,13 +14,12 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
@@ -49,14 +48,10 @@ public class FileConflictsDatabase implements ConflictsDatabase {
         if (isOpen()) {
             return;
         }
-        Optional<URL> repoPath = new ResolveGeogigDir(platform).call();
-        try {
-            File repoLocation = new File(repoPath.get().toURI());
-            this.repositoryDirectory = repoLocation;
-        } catch (URISyntaxException e1) {
-            Throwables.propagate(e1);
-        }
+        Optional<URI> repoPath = new ResolveGeogigURI(platform, null).call();
 
+        File repoLocation = new File(repoPath.get());
+        this.repositoryDirectory = repoLocation;
     }
 
     public void close() {

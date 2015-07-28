@@ -51,7 +51,20 @@ public class BDBJEPointCache implements PointCache {
     private Database database;
 
     public BDBJEPointCache(Platform platform) {
-        String envName = "tmpPointCache_" + Math.abs(random.nextInt());
+        File pointCacheDirectory = null;
+
+        for (int i = 0; i < 1000; i++) {
+            synchronized (random) {
+                String envName = "tmpPointCache_" + Math.abs(random.nextInt());
+                File dir = new File(platform.getTempDir(), envName);
+                if (dir.mkdirs()) {
+                    pointCacheDirectory = dir;
+                    break;
+                }
+            }
+        }
+        Preconditions.checkState(pointCacheDirectory != null,
+                "Unable to create pointcache directory at " + platform.getTempDir());
 
         EnvironmentConfig envCfg;
         envCfg = new EnvironmentConfig();
@@ -68,8 +81,8 @@ public class BDBJEPointCache implements PointCache {
         envCfg.setConfigParam("je.evictor.lruOnly", "false");
         envCfg.setConfigParam("je.evictor.nodesPerScan", "1000");
 
-        EnvironmentBuilder environmentBuilder = new EnvironmentBuilder(platform);
-        environmentBuilder.setRelativePath("tmp", "pointcache", envName);
+        EnvironmentBuilder environmentBuilder = new EnvironmentBuilder(platform, null);
+        environmentBuilder.setAbsolutePath(pointCacheDirectory);
         environmentBuilder.setIsStagingDatabase(true);
         environmentBuilder.setConfig(envCfg);
 

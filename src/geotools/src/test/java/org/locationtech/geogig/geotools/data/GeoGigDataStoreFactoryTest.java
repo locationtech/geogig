@@ -121,7 +121,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
 
         GeoGigDataStore store = factory.createDataStore(params);
         assertNotNull(store);
-
+        store.dispose();
     }
 
     @Test
@@ -134,7 +134,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
 
         GeoGigDataStore store = factory.createNewDataStore(params);
         assertNotNull(store);
-
+        store.dispose();
     }
 
     @Test
@@ -147,6 +147,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         assertTrue(factory.canProcess(params));
         GeoGigDataStore store = factory.createDataStore(params);
         assertNotNull(store);
+        store.dispose();
     }
 
     @Test
@@ -158,5 +159,6 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         assertTrue(factory.canProcess(params));
         GeoGigDataStore store = factory.createDataStore(params);
         assertNotNull(store);
+        store.dispose();
     }
 }

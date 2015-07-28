@@ -17,10 +17,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
 import org.locationtech.geogig.osm.internal.OSMCoordinateSequence;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
@@ -33,10 +31,12 @@ public class MappedPointCache implements PointCache {
     private MappedIndex index;
 
     public MappedPointCache(Platform platform) {
-        final Optional<File> geogigDir = new ResolveGeogigDir(platform).getFile();
-        checkState(geogigDir.isPresent());
-        this.parentDir = new File(new File(geogigDir.get(), "tmp"), "pointcache_"
-                + Math.abs(RANDOM.nextInt()));
+        final File tmpDir = platform.getTempDir();
+        checkState(tmpDir != null && tmpDir.isDirectory());
+        synchronized (RANDOM) {
+            this.parentDir = new File(new File(tmpDir, "tmp"), "pointcache_"
+                    + Math.abs(RANDOM.nextInt()));
+        }
         checkState(parentDir.exists() || parentDir.mkdirs());
         this.parentDir.deleteOnExit();
 

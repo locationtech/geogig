@@ -92,6 +92,9 @@ public class HeapRefDatabase extends AbstractRefDatabase {
     public String remove(String refName) {
         checkNotNull(refName);
         String oldValue = refs.remove(refName);
+        if (oldValue != null && oldValue.startsWith("ref: ")) {
+            oldValue = oldValue.substring("ref: ".length());
+        }
         return oldValue;
     }
 
@@ -154,13 +157,14 @@ public class HeapRefDatabase extends AbstractRefDatabase {
 
     @Override
     public Map<String, String> getAll(final String prefix) {
-        Preconditions.checkNotNull(prefix);
+        Preconditions.checkNotNull(prefix, "namespace can't be null");
         Predicate<String> filter = new RefPrefixPredicate(prefix);
         return Maps.filterKeys(ImmutableMap.copyOf(this.refs), filter);
     }
 
     @Override
     public Map<String, String> removeAll(final String namespace) {
+        Preconditions.checkNotNull(namespace, "provided namespace is null");
 
         Predicate<String> keyPredicate = new Predicate<String>() {
 
@@ -173,7 +177,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
         for (String key : removed.keySet()) {
             refs.remove(key);
         }
-        return null;
+        return removed;
     }
 
     @Override

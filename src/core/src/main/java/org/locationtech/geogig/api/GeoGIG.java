@@ -12,10 +12,10 @@ package org.locationtech.geogig.api;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
-import java.net.URL;
+import java.net.URI;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.repository.Repository;
@@ -43,6 +43,11 @@ public class GeoGIG {
      */
     public GeoGIG() {
         context = GlobalContextBuilder.builder.build();
+    }
+
+    public GeoGIG(Repository repo) {
+        this.repository = repo;
+        this.context = repo.context();
     }
 
     /**
@@ -121,7 +126,7 @@ public class GeoGIG {
      * @see InitOp
      */
     public Repository getOrCreateRepository() {
-        if (getRepository() == null) {
+        if (repository == null) {
             try {
                 repository = command(InitOp.class).call();
                 checkState(repository != null,
@@ -142,7 +147,7 @@ public class GeoGIG {
             return repository;
         }
 
-        final Optional<URL> repoLocation = command(ResolveGeogigDir.class).call();
+        final Optional<URI> repoLocation = command(ResolveGeogigURI.class).call();
         if (repoLocation.isPresent()) {
             try {
                 repository = context.repository();

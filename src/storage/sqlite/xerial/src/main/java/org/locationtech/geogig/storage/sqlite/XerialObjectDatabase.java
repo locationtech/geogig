@@ -28,9 +28,10 @@ import javax.sql.DataSource;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.storage.fs.FileBlobStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,8 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
     final String dbName;
 
     private XerialConflictsDatabase conflicts;
+
+    private FileBlobStore blobStore;
 
     @Inject
     public XerialObjectDatabase(ConfigDatabase configdb, Platform platform) {
@@ -92,11 +95,18 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
 
         conflicts = new XerialConflictsDatabase(ds);
         conflicts.open();
+        blobStore = new FileBlobStore(platform);
+        blobStore.open();
     }
 
     @Override
     public XerialConflictsDatabase getConflictsDatabase() {
         return conflicts;
+    }
+
+    @Override
+    public BlobStore getBlobStore() {
+        return blobStore;
     }
 
     @Override

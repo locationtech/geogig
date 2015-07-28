@@ -7,7 +7,7 @@
  * Contributors:
  * Michael Fawcett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.api.porcelain;
+package org.locationtech.geogig.storage;
 
 /**
  * Exception thrown by ConfigDatabase that contains the error status code.

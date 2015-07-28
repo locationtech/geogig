@@ -11,7 +11,7 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 import jline.console.ConsoleReader;
@@ -25,7 +25,7 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.plumbing.CatObject;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
@@ -102,8 +102,8 @@ public class Conflicts extends AbstractCommand implements CLICommand {
     }
 
     private File getRebaseFolder() {
-        URL dir = geogig.command(ResolveGeogigDir.class).call().get();
-        File rebaseFolder = new File(dir.getFile(), "rebase-apply");
+        URI dir = geogig.command(ResolveGeogigURI.class).call().get();
+        File rebaseFolder = new File(new File(dir), "rebase-apply");
         return rebaseFolder;
     }
 

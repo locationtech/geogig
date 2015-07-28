@@ -15,6 +15,7 @@ import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.storage.ConfigException;
 
 import com.google.common.base.Optional;
 

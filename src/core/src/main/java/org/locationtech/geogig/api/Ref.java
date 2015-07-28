@@ -166,6 +166,29 @@ public class Ref implements Comparable<Ref> {
     }
 
     /**
+     * @return the parent path of {@code ref}, or the empty string if ref is a root ref like HEAD,
+     *         STAGE_HEAD, etc.
+     */
+    public static String parentPath(final String ref) {
+        int idx = ref.lastIndexOf('/');
+        if (idx == -1) {
+            return "";
+        }
+        return ref.substring(0, idx);
+    }
+
+    /**
+     * @return the ref's name without any path information (e.g. "master" from "refs/heads/master").
+     */
+    public static String simpleName(final String ref) {
+        int idx = ref.lastIndexOf('/');
+        if (idx == -1) {
+            return ref;
+        }
+        return ref.substring(idx + 1);
+    }
+
+    /**
      * @return the object id being referenced
      */
     public ObjectId getObjectId() {

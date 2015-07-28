@@ -12,11 +12,11 @@ package org.locationtech.geogig.cli;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.ContextBuilder;
 import org.locationtech.geogig.di.GeogigModule;
+import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.di.PluginDefaults;
 import org.locationtech.geogig.di.PluginsModule;
 import org.locationtech.geogig.di.VersionedFormat;
 import org.locationtech.geogig.di.caching.CachingModule;
-import org.locationtech.geogig.metrics.MetricsModule;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -53,9 +53,9 @@ public class CLIContextBuilder extends ContextBuilder {
     @Override
     public Context build(Hints hints) {
         return Guice.createInjector(
-                Modules.override(new GeogigModule(), new CachingModule()).with(new MetricsModule(),
-                        new PluginsModule(), new DefaultPlugins(), new HintsModule(hints)))
-                .getInstance(org.locationtech.geogig.api.Context.class);
+                Modules.override(new GeogigModule(), new CachingModule(), new HintsModule(hints))
+                        .with(new PluginsModule(), new DefaultPlugins())).getInstance(
+                org.locationtech.geogig.api.Context.class);
     }
 
     public static class DefaultPlugins extends AbstractModule {
@@ -68,6 +68,7 @@ public class CLIContextBuilder extends ContextBuilder {
                     .addBinding(DEFAULT_REFS)//
                     .to(FileRefDatabase.class)//
                     .in(Scopes.SINGLETON);
+
             MapBinder<VersionedFormat, ObjectDatabase> objectPlugins = MapBinder.newMapBinder(
                     binder(), VersionedFormat.class, ObjectDatabase.class);
             objectPlugins //
@@ -87,6 +88,7 @@ public class CLIContextBuilder extends ContextBuilder {
                             new VersionedFormat(SQLiteStorage.FORMAT_NAME, SQLiteStorage.VERSION))//
                     .to(XerialObjectDatabase.class)//
                     .in(Scopes.SINGLETON);
+
             MapBinder<VersionedFormat, GraphDatabase> graphPlugins = MapBinder.newMapBinder(
                     binder(), VersionedFormat.class, GraphDatabase.class);
             graphPlugins //

@@ -12,7 +12,7 @@ package org.locationtech.geogig.di;
 import com.google.common.base.Optional;
 
 public final class PluginDefaults {
-    private final Optional<VersionedFormat> refs, objects, graph;
+    private Optional<VersionedFormat> refs, objects, graph;
 
     public PluginDefaults() {
         refs = objects = graph = Optional.absent();
@@ -34,6 +34,18 @@ public final class PluginDefaults {
 
     public Optional<VersionedFormat> getGraph() {
         return graph;
+    }
+
+    public void setObjects(VersionedFormat objects) {
+        this.objects = Optional.fromNullable(objects);
+    }
+
+    public void setRefs(VersionedFormat refs) {
+        this.refs = Optional.fromNullable(refs);
+    }
+
+    public void setGraph(VersionedFormat graph) {
+        this.graph = Optional.fromNullable(graph);
     }
 
     public static final PluginDefaults NO_PLUGINS = new PluginDefaults();

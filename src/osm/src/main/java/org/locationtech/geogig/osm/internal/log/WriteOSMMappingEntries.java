@@ -9,21 +9,16 @@
  */
 package org.locationtech.geogig.osm.internal.log;
 
-import java.io.File;
-import java.io.IOException;
-
 import jline.internal.Preconditions;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.osm.internal.Mapping;
 import org.locationtech.geogig.osm.internal.MappingRule;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.common.io.Files;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.Blobs;
 
 /**
- * Writes the mapping files that store the information about a mapping operation, storing the id
+ * Writes the mapping blobs that store the information about a mapping operation, storing the id
  * from which the affected trees have been mapped and the mapping code used
  */
 public class WriteOSMMappingEntries extends AbstractGeoGigOp<Void> {
@@ -46,21 +41,16 @@ public class WriteOSMMappingEntries extends AbstractGeoGigOp<Void> {
     protected Void _call() {
         Preconditions.checkNotNull(entry);
         Preconditions.checkNotNull(mapping);
-        final File osmMapFolder = command(ResolveOSMMappingLogFolder.class).call();
+
+        BlobStore blobStore = context().blobStore();
+        final String pathPrefix = "osm/map/";
         for (MappingRule rule : mapping.getRules()) {
-            File file = new File(osmMapFolder, rule.getName());
-            try {
-                Files.write(entry.toString(), file, Charsets.UTF_8);
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
+            String path = pathPrefix + rule.getName();
+            Blobs.putBlob(blobStore, path, entry.toString());
         }
-        File file = new File(osmMapFolder, entry.getPostMappingId().toString());
-        try {
-            Files.write(mapping.toString(), file, Charsets.UTF_8);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        String path = pathPrefix + entry.getPostMappingId();
+        Blobs.putBlob(blobStore, path, mapping.toString());
+
         return null;
     }
 }

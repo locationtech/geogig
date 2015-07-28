@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +33,7 @@ import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 
 import com.beust.jcommander.JCommander;
@@ -192,7 +193,7 @@ public class GeogigConsole {
             geogig = null;
         }
         if (geogig != null) {
-            Optional<URL> dir = geogig.command(ResolveGeogigDir.class).call();
+            Optional<URI> dir = geogig.command(ResolveGeogigURI.class).call();
             if (dir.isPresent()) {
                 try {
                     Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.HEAD).call();

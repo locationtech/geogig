@@ -78,20 +78,16 @@ class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
 
     /**
      * Currently does nothing for HTTP Remote.
-     * 
-     * @throws IOException
      */
     @Override
-    public void open() throws IOException {
+    public void open() {
     }
 
     /**
      * Currently does nothing for HTTP Remote.
-     * 
-     * @throws IOException
      */
     @Override
-    public void close() throws IOException {
+    public void close() {
     }
 
     /**

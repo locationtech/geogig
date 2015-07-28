@@ -15,7 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.net.URL;
+import java.net.URI;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,7 +25,7 @@ import org.locationtech.geogig.api.Platform;
 /**
  *
  */
-public class ResolveGeogigDirTest {
+public class ResolveGeogigURITest {
 
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -40,18 +40,18 @@ public class ResolveGeogigDirTest {
         Platform platform = mock(Platform.class);
         when(platform.pwd()).thenReturn(workingDir);
 
-        URL resolvedRepoDir = new ResolveGeogigDir(platform).call().get();
-        assertEquals(fakeRepo.toURI().toURL(), resolvedRepoDir);
+        URI resolvedRepoDir = new ResolveGeogigURI(platform, null).call().get();
+        assertEquals(fakeRepo.toURI(), resolvedRepoDir);
 
         workingDir = new File(new File(workingDir, "subdir1"), "subdir2");
         workingDir.mkdirs();
         when(platform.pwd()).thenReturn(workingDir);
 
-        resolvedRepoDir = new ResolveGeogigDir(platform).call().get();
-        assertEquals(fakeRepo.toURI().toURL(), resolvedRepoDir);
+        resolvedRepoDir = new ResolveGeogigURI(platform, null).call().get();
+        assertEquals(fakeRepo.toURI(), resolvedRepoDir);
 
         when(platform.pwd()).thenReturn(tmpFolder.getRoot());
-        assertFalse(new ResolveGeogigDir(platform).call().isPresent());
+        assertFalse(new ResolveGeogigURI(platform, null).call().isPresent());
 
     }
 

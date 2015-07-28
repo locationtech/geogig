@@ -9,11 +9,9 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.Remote;
 import org.locationtech.geogig.api.porcelain.RemoteAddOp;
@@ -23,6 +21,8 @@ import org.locationtech.geogig.api.porcelain.RemoteRemoveOp;
 import org.locationtech.geogig.api.porcelain.RemoteResolve;
 import org.locationtech.geogig.remote.IRemoteRepo;
 import org.locationtech.geogig.remote.RemoteUtils;
+import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -256,15 +256,15 @@ public class RemoteWebOp extends AbstractWebAPICommand {
 
         final boolean remotePingResponse;
         if (remote.isPresent()) {
-            Optional<IRemoteRepo> remoteRepo = RemoteUtils.newRemote(
-                    GlobalContextBuilder.builder.build(), remote.get(), null, null);
+            Optional<IRemoteRepo> remoteRepo = RemoteUtils.newRemote(geogig.repository(),
+                    remote.get(), Hints.readOnly());
             Ref ref = null;
             if (remoteRepo.isPresent()) {
                 try {
                     remoteRepo.get().open();
                     ref = remoteRepo.get().headRef();
                     remoteRepo.get().close();
-                } catch (IOException e) {
+                } catch (RepositoryConnectionException e) {
                     // Do nothing, we will write the response later.
                 }
             }

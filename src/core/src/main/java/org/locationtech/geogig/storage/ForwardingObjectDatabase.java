@@ -167,4 +167,9 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     public String toString() {
         return String.format("%s[%s]", getClass().getSimpleName(), subject);
     }
+
+    @Override
+    public BlobStore getBlobStore() {
+        return subject.get().getBlobStore();
+    }
 }

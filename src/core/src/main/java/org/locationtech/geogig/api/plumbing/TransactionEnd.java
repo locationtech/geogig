@@ -113,7 +113,7 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
                 updateRefs();
             }
         } finally {
-            // Erase old refs
+            // Erase old refs and remove transaction specific blobs
             transaction.close();
         }
 

@@ -38,10 +38,11 @@ import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.di.PluginDefaults;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -111,7 +112,7 @@ public class InitOpTest {
         platform = mock(Platform.class);
         when(injector.platform()).thenReturn(platform);
         defaults = PluginDefaults.NO_PLUGINS;
-        init = new InitOp(defaults);
+        init = new InitOp(defaults, new Hints());
         init.setContext(injector);
 
         mockRepo = mock(Repository.class);
@@ -194,10 +195,10 @@ public class InitOpTest {
         when(injector.repository()).thenReturn(mockRepo);
         init.setContext(injector);
 
-        assertTrue(ResolveGeogigDir.lookup(platform.pwd()).isPresent());
+        assertTrue(ResolveGeogigURI.lookup(platform.pwd()).isPresent());
         assertNotNull(init.call());
         verify(platform, atLeastOnce()).pwd();
-        assertTrue(ResolveGeogigDir.lookup(platform.pwd()).isPresent());
+        assertTrue(ResolveGeogigURI.lookup(platform.pwd()).isPresent());
 
         verify(injector, never()).command(eq(UpdateRef.class));
         verify(injector, never()).command(eq(UpdateSymRef.class));
@@ -214,7 +215,7 @@ public class InitOpTest {
 
         when(platform.pwd()).thenReturn(subDir);
 
-        assertTrue(ResolveGeogigDir.lookup(platform.pwd()).isPresent());
+        assertTrue(ResolveGeogigURI.lookup(platform.pwd()).isPresent());
         assertNotNull(init.call());
         verify(platform, atLeastOnce()).pwd();
     }

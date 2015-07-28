@@ -10,7 +10,7 @@
 package org.locationtech.geogig.repository;
 
 import java.io.Closeable;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -28,14 +28,14 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.porcelain.ConfigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.di.PluginDefaults;
 import org.locationtech.geogig.di.Singleton;
+import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.DeduplicationService;
@@ -63,7 +63,7 @@ import com.google.inject.Inject;
  * @see WorkingTree
  */
 @Singleton
-public class Repository implements Context {
+public class Repository {
     private static Logger LOGGER = LoggerFactory.getLogger(Repository.class);
 
     public static interface RepositoryListener {
@@ -74,17 +74,17 @@ public class Repository implements Context {
 
     private List<RepositoryListener> listeners = Lists.newCopyOnWriteArrayList();
 
-    private Context injector;
+    private Context context;
 
-    private URL repositoryLocation;
+    private URI repositoryLocation;
 
     public static final String DEPTH_CONFIG_KEY = "core.depth";
 
     private ExecutorService executor;
 
     @Inject
-    public Repository(Context injector, ExecutorService executor) {
-        this.injector = injector;
+    public Repository(Context context, ExecutorService executor) {
+        this.context = context;
         this.executor = executor;
     }
 
@@ -95,21 +95,23 @@ public class Repository implements Context {
     }
 
     public void configure() throws RepositoryConnectionException {
-        injector.refDatabase().configure();
-        injector.objectDatabase().configure();
-        injector.graphDatabase().configure();
+        context.refDatabase().configure();
+        context.objectDatabase().configure();
+        context.graphDatabase().configure();
     }
 
     public void open() throws RepositoryConnectionException {
-        injector.refDatabase().checkConfig();
-        injector.objectDatabase().checkConfig();
-        injector.graphDatabase().checkConfig();
-        injector.refDatabase().create();
-        injector.objectDatabase().open();
-        injector.graphDatabase().open();
-        Optional<URL> repoUrl = command(ResolveGeogigDir.class).call();
+
+        Optional<URI> repoUrl = command(ResolveGeogigURI.class).call();
         Preconditions.checkState(repoUrl.isPresent(), "Repository URL can't be located");
         this.repositoryLocation = repoUrl.get();
+
+        context.refDatabase().checkConfig();
+        context.objectDatabase().checkConfig();
+        context.graphDatabase().checkConfig();
+        context.refDatabase().create();
+        context.objectDatabase().open();
+        context.graphDatabase().open();
         for (RepositoryListener l : listeners) {
             l.opened(this);
         }
@@ -119,13 +121,14 @@ public class Repository implements Context {
      * Closes the repository.
      */
     public synchronized void close() {
-        close(injector.refDatabase());
-        close(injector.objectDatabase());
-        close(injector.graphDatabase());
+        close(context.refDatabase());
+        close(context.objectDatabase());
+        close(context.graphDatabase());
         for (RepositoryListener l : listeners) {
             l.closed();
         }
         executor.shutdownNow();
+        close(context.configDatabase());
     }
 
     private void close(Closeable db) {
@@ -136,7 +139,7 @@ public class Repository implements Context {
         }
     }
 
-    public URL getLocation() {
+    public URI getLocation() {
         return repositoryLocation;
     }
 
@@ -147,7 +150,7 @@ public class Repository implements Context {
      * @return a new instance of the requested command class, with its dependencies resolved
      */
     public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
-        return injector.command(commandClass);
+        return context.command(commandClass);
     }
 
     /**
@@ -157,7 +160,7 @@ public class Repository implements Context {
      * @return true if the blob exists with the parameter ID, false otherwise
      */
     public boolean blobExists(final ObjectId id) {
-        return objectDatabase().exists(id);
+        return context().objectDatabase().exists(id);
     }
 
     /**
@@ -185,7 +188,7 @@ public class Repository implements Context {
      */
     public boolean commitExists(final ObjectId id) {
         try {
-            RevObject revObject = objectDatabase().get(id);
+            RevObject revObject = context().objectDatabase().get(id);
             return revObject instanceof RevCommit;
         } catch (IllegalArgumentException e) {
             return false;
@@ -199,7 +202,7 @@ public class Repository implements Context {
      * @return the {@code RevCommit}
      */
     public RevCommit getCommit(final ObjectId commitId) {
-        RevCommit commit = objectDatabase().getCommit(commitId);
+        RevCommit commit = context().objectDatabase().getCommit(commitId);
 
         return commit;
     }
@@ -212,7 +215,7 @@ public class Repository implements Context {
      */
     public boolean treeExists(final ObjectId id) {
         try {
-            objectDatabase().getTree(id);
+            context().objectDatabase().getTree(id);
         } catch (IllegalArgumentException e) {
             return false;
         }
@@ -238,8 +241,9 @@ public class Repository implements Context {
     /**
      * @return an {@link ObjectInserter} to insert objects into the object database
      */
+    @Deprecated
     public ObjectInserter newObjectInserter() {
-        return objectDatabase().newObjectInserter();
+        return context().objectDatabase().newObjectInserter();
     }
 
     /**
@@ -248,7 +252,7 @@ public class Repository implements Context {
      */
     public RevFeature getFeature(final ObjectId contentId) {
 
-        RevFeature revFeature = objectDatabase().getFeature(contentId);
+        RevFeature revFeature = context().objectDatabase().getFeature(contentId);
 
         return revFeature;
     }
@@ -336,60 +340,57 @@ public class Repository implements Context {
         return sparseResult.isPresent();
     }
 
-    @Override
+    public Context context() {
+        return context;
+    }
+
+    // @Override
     public WorkingTree workingTree() {
-        return injector.workingTree();
+        return context.workingTree();
     }
 
-    @Override
+    // @Override
     public StagingArea index() {
-        return injector.index();
+        return context.index();
     }
 
-    @Override
+    // @Override
     public RefDatabase refDatabase() {
-        return injector.refDatabase();
+        return context.refDatabase();
     }
 
-    @Override
+    // @Override
     public Platform platform() {
-        return injector.platform();
+        return context.platform();
     }
 
-    @Override
+    // @Override
     public ObjectDatabase objectDatabase() {
-        return injector.objectDatabase();
+        return context.objectDatabase();
     }
 
-    @Override
+    // @Override
     public ConflictsDatabase conflictsDatabase() {
-        return injector.conflictsDatabase();
+        return context.conflictsDatabase();
     }
 
-    @Override
+    // @Override
     public ConfigDatabase configDatabase() {
-        return injector.configDatabase();
+        return context.configDatabase();
     }
 
-    @Override
+    // @Override
     public GraphDatabase graphDatabase() {
-        return injector.graphDatabase();
+        return context.graphDatabase();
     }
 
-    @Deprecated
-    @Override
-    public Repository repository() {
-        return this;
-    }
-
-    @Override
+    // @Override
     public DeduplicationService deduplicationService() {
-        return injector.deduplicationService();
+        return context.deduplicationService();
     }
 
-    @Override
-    public PluginDefaults pluginDefaults() {
-        return injector.pluginDefaults();
+    public BlobStore blobStore() {
+        return context().blobStore();
     }
 
 }

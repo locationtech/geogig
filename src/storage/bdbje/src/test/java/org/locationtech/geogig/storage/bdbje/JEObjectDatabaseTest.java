@@ -48,7 +48,7 @@ public class JEObjectDatabaseTest extends Assert {
         platform.setUserHome(home);
         hints = new Hints();
 
-        envProvider = new EnvironmentBuilder(platform);
+        envProvider = new EnvironmentBuilder(platform, null);
 
     }
 

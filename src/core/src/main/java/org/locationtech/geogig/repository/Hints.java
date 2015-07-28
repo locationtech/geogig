@@ -10,6 +10,7 @@
 package org.locationtech.geogig.repository;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.locationtech.geogig.api.ContextBuilder;
@@ -31,6 +32,8 @@ public class Hints implements Serializable {
     public static final String OBJECTS_READ_ONLY = "OBJECTS_READ_ONLY";
 
     public static final String REMOTES_READ_ONLY = "REMOTES_READ_ONLY";
+
+    public static final String REPOSITORY_URL = "REPOSITORY_URL";
 
     private Map<String, Serializable> hintsMap = Maps.newHashMap();
 
@@ -60,6 +63,10 @@ public class Hints implements Serializable {
             return false;
         }
         return hintsMap.equals(((Hints) o).hintsMap);
+    }
+
+    public Map<String, Serializable> getAll() {
+        return new HashMap<>(this.hintsMap);
     }
 
     public static Hints readOnly() {

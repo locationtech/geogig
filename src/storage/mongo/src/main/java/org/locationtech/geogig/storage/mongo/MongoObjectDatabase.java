@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
@@ -28,6 +29,7 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevTag;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
@@ -35,6 +37,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.fs.FileBlobStore;
 
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
@@ -82,18 +85,18 @@ public class MongoObjectDatabase implements ObjectDatabase {
 
     private MongoConflictsDatabase conflicts;
 
+    private FileBlobStore blobStore;
+
+    private Platform platform;
+
     @Inject
     public MongoObjectDatabase(ConfigDatabase config, MongoConnectionManager manager,
-            ExecutorService executor) {
-        this(config, manager, "objects", executor);
-    }
-
-    MongoObjectDatabase(ConfigDatabase config, MongoConnectionManager manager,
-            String collectionName, ExecutorService executor) {
+            ExecutorService executor, Platform platform) {
         this.config = config;
         this.manager = manager;
         this.executor = executor;
-        this.collectionName = collectionName;
+        this.platform = platform;
+        this.collectionName = "objects";
     }
 
     private RevObject fromBytes(ObjectId id, byte[] buffer) {
@@ -139,6 +142,7 @@ public class MongoObjectDatabase implements ObjectDatabase {
         collection = db.getCollection(getCollectionName());
         collection.ensureIndex("oid");
         conflicts = new MongoConflictsDatabase(db);
+        blobStore = new FileBlobStore(platform);
     }
 
     @Override
@@ -171,11 +175,17 @@ public class MongoObjectDatabase implements ObjectDatabase {
         db = null;
         collection = null;
         conflicts = null;
+        blobStore = null;
     }
 
     @Override
     public ConflictsDatabase getConflictsDatabase() {
         return conflicts;
+    }
+
+    @Override
+    public BlobStore getBlobStore() {
+        return blobStore;
     }
 
     @Override

@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.storage;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
-import org.locationtech.geogig.api.porcelain.ConfigException;
 import org.locationtech.geogig.di.Singleton;
 
 import com.google.common.base.Optional;
@@ -21,7 +21,7 @@ import com.google.common.base.Optional;
  * Provides an interface for implementations of config databases, which manage GeoGig config files.
  */
 @Singleton
-public interface ConfigDatabase {
+public interface ConfigDatabase extends Closeable{
 
     /**
      * Queries the repository config file for a particular name.

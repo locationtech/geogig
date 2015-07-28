@@ -22,12 +22,15 @@ import org.locationtech.geogig.repository.Index;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.DeduplicationService;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.storage.TransactionBlobStore;
+import org.locationtech.geogig.storage.TransactionBlobStoreImpl;
 import org.locationtech.geogig.storage.TransactionRefDatabase;
 import org.locationtech.geogig.storage.TransactionStagingArea;
 
@@ -45,13 +48,15 @@ public class GeogigTransaction implements Context {
 
     private UUID transactionId;
 
-    private Context injector;
+    private Context context;
 
     private final StagingArea transactionIndex;
 
     private final WorkingTree transactionWorkTree;
 
     private final TransactionRefDatabase transactionRefDatabase;
+
+    private TransactionBlobStore transactionBlobStore;
 
     private Optional<String> authorName = Optional.absent();
 
@@ -60,24 +65,27 @@ public class GeogigTransaction implements Context {
     /**
      * Constructs the transaction with the given ID and Injector.
      * 
-     * @param locator the non transactional command locator
+     * @param context the non transactional command locator
      * @param transactionId the id of the transaction
      */
-    public GeogigTransaction(Context locator, UUID transactionId) {
-        Preconditions.checkArgument(!(locator instanceof GeogigTransaction));
-        this.injector = locator;
+    public GeogigTransaction(Context context, UUID transactionId) {
+        Preconditions.checkArgument(!(context instanceof GeogigTransaction));
+        this.context = context;
         this.transactionId = transactionId;
 
         transactionIndex = new TransactionStagingArea(new Index(this), transactionId);
         transactionWorkTree = new WorkingTree(this);
-        transactionRefDatabase = new TransactionRefDatabase(locator.refDatabase(), transactionId);
+        transactionRefDatabase = new TransactionRefDatabase(context.refDatabase(), transactionId);
     }
 
     public void create() {
+        transactionBlobStore = new TransactionBlobStoreImpl(
+                (TransactionBlobStore) context.blobStore(), transactionId);
         transactionRefDatabase.create();
     }
 
     public void close() {
+        transactionBlobStore.removeBlobs(transactionId.toString());
         transactionRefDatabase.close();
     }
 
@@ -123,7 +131,7 @@ public class GeogigTransaction implements Context {
      */
     @Override
     public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
-        T instance = injector.command(commandClass);
+        T instance = context.command(commandClass);
         instance.setContext(this);
         return instance;
     }
@@ -135,58 +143,63 @@ public class GeogigTransaction implements Context {
     }
 
     public void commit() throws ConflictsException {
-        injector.command(TransactionEnd.class).setAuthor(authorName.orNull(), authorEmail.orNull())
+        context.command(TransactionEnd.class).setAuthor(authorName.orNull(), authorEmail.orNull())
                 .setTransaction(this).setCancel(false).setRebase(true).call();
     }
 
     public void commitSyncTransaction() throws ConflictsException {
-        injector.command(TransactionEnd.class).setAuthor(authorName.orNull(), authorEmail.orNull())
+        context.command(TransactionEnd.class).setAuthor(authorName.orNull(), authorEmail.orNull())
                 .setTransaction(this).setCancel(false).call();
     }
 
     public void abort() {
-        injector.command(TransactionEnd.class).setTransaction(this).setCancel(true).call();
+        context.command(TransactionEnd.class).setTransaction(this).setCancel(true).call();
     }
 
     @Override
     public Platform platform() {
-        return injector.platform();
+        return context.platform();
     }
 
     @Override
     public ObjectDatabase objectDatabase() {
-        return injector.objectDatabase();
+        return context.objectDatabase();
     }
 
     @Override
     public ConflictsDatabase conflictsDatabase() {
-        return transactionIndex != null ? transactionIndex.conflictsDatabase() : injector
+        return transactionIndex != null ? transactionIndex.conflictsDatabase() : context
                 .conflictsDatabase();
     }
 
     @Override
+    public BlobStore blobStore() {
+        return transactionBlobStore;
+    }
+
+    @Override
     public ConfigDatabase configDatabase() {
-        return injector.configDatabase();
+        return context.configDatabase();
     }
 
     @Override
     public GraphDatabase graphDatabase() {
-        return injector.graphDatabase();
+        return context.graphDatabase();
     }
 
     @Override
     public Repository repository() {
-        return injector.repository();
+        return context.repository();
     }
 
     @Override
     public DeduplicationService deduplicationService() {
-        return injector.deduplicationService();
+        return context.deduplicationService();
     }
 
     @Override
     public PluginDefaults pluginDefaults() {
-        return injector.pluginDefaults();
+        return context.pluginDefaults();
     }
 
     /**
@@ -202,4 +215,5 @@ public class GeogigTransaction implements Context {
         }
         return ImmutableSet.copyOf(changedRefs);
     }
+
 }

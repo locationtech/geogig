@@ -11,11 +11,15 @@ package org.locationtech.geogig.cli;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,14 +39,14 @@ import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.hooks.CannotRunGeogigOperationException;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
-import org.locationtech.geogig.api.porcelain.ConfigException;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.porcelain.ConfigGet;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.storage.ConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,10 +55,12 @@ import com.beust.jcommander.ParameterException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -100,11 +106,11 @@ public class GeogigCLI {
 
     private boolean exitOnFinish = true;
 
-    private static final Hints READ_WRITE = Hints.readWrite();
-
-    private Hints hints = READ_WRITE;
+    private Hints hints = Hints.readWrite();
 
     private boolean progressListenerDisabled;
+
+    private String repositoryURI;
 
     /**
      * Construct a GeogigCLI with the given console reader.
@@ -143,6 +149,18 @@ public class GeogigCLI {
         this.platform = platform;
     }
 
+    /**
+     * @param repoURI if given, used as the repository URL when dereferencing the repository,
+     *        otherwise the platform's working dir is used.
+     */
+    public void setRepositoryURI(String repoURI) {
+        this.repositoryURI = repoURI;
+    }
+
+    public String getRepositoryURI() {
+        return repositoryURI;
+    }
+
     public void disableProgressListener() {
         this.progressListenerDisabled = true;
     }
@@ -156,7 +174,7 @@ public class GeogigCLI {
      * 
      * @return the GeoGIG facade associated with the current repository, or {@code null} if there's
      *         no repository in the current {@link Platform#pwd() working directory}
-     * @see ResolveGeogigDir
+     * @see ResolveGeogigURI
      */
     @Nullable
     public synchronized GeoGIG getGeogig() {
@@ -226,7 +244,7 @@ public class GeogigCLI {
     private GeoGIG loadRepository(Hints hints) {
         GeoGIG geogig = newGeoGIG(hints);
 
-        if (geogig.command(ResolveGeogigDir.class).call().isPresent()) {
+        if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
             geogig.getRepository();
             return geogig;
         }
@@ -247,6 +265,7 @@ public class GeogigCLI {
 
     public GeoGIG newGeoGIG(Hints hints) {
         Context inj = newGeogigInjector(hints);
+
         GeoGIG geogig = new GeoGIG(inj, platform.pwd());
         try {
             geogig.getRepository();
@@ -273,6 +292,10 @@ public class GeogigCLI {
     }
 
     private Context newGeogigInjector(Hints hints) {
+        if (repositoryURI != null) {
+            LOGGER.info("using REPO_URL '{}'", repositoryURI);
+            hints.set(Hints.REPOSITORY_URL, repositoryURI);
+        }
         Context geogigInjector = GlobalContextBuilder.builder.build(hints);
         return geogigInjector;
     }
@@ -295,7 +318,7 @@ public class GeogigCLI {
             geogig.close();
             geogig = null;
         }
-        this.hints = READ_WRITE;
+        this.hints = Hints.readWrite();
         this.geogigInjector = null;
     }
 
@@ -441,6 +464,18 @@ public class GeogigCLI {
             IOException, CannotRunGeogigOperationException {
 
         JCommander mainCommander = newCommandParser();
+        String repoURI = parseRepoURI(args);
+        if (repoURI != null) {
+            this.repositoryURI = repoURI;
+            URI uri = URI.create(repoURI);
+            File pwd = this.platform.pwd();
+            if (Strings.isNullOrEmpty(uri.getScheme())) {
+                pwd = new File(uri.toString());
+            } else if ("file".equals(uri.getScheme())) {
+                pwd = new File(uri);
+            }
+            this.platform.setWorkingDir(pwd);
+        }
         if (null == args || args.length == 0) {
             printShortCommandList(mainCommander);
             return;
@@ -526,6 +561,24 @@ public class GeogigCLI {
         }
     }
 
+    private String parseRepoURI(String[] args) {
+        for (Iterator<String> it = Iterators.forArray(args); it.hasNext();) {
+            String a = it.next();
+            if ("--repo".equals(a)) {
+                Preconditions.checkArgument(it.hasNext(),
+                        "Argument --repo must be followed by a repository URI");
+                String uri = it.next();
+                try {
+                    new URI(uri);
+                } catch (URISyntaxException e) {
+                    throw new IllegalArgumentException("Invalid repository URI: '" + uri + "'");
+                }
+                return uri;
+            }
+        }
+        return null;
+    }
+
     /**
      * This method should be used instead of {@link JCommander#usage()} so the help string is
      * printed to the cli's {@link #getConsole() console} (and hence to wherever its output is sent)
@@ -582,7 +635,7 @@ public class GeogigCLI {
         }
         try {
             Optional<String> unaliased = Optional.absent();
-            if (geogig.command(ResolveGeogigDir.class).call().isPresent()) {
+            if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
                 unaliased = geogig.command(ConfigGet.class).setName(configParam).call();
             }
             if (!unaliased.isPresent()) {

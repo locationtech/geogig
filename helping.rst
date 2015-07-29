@@ -12,7 +12,7 @@ In all cases, communication with the GeoGig community and team is crucial, so ma
 
 Discussion takes place on our `GeoGig-devel mailing list <https://locationtech.org/mailman/listinfo/geogig-dev>`_. Please join and introduce yourself, we'd love to help, and to figure out ways for you to get involved.
 
-There is also a GeoGig IRC channel on `freenode <http://freenode.net/>`_ (`#geogig <irc://irc.freenode.net/geogig`_). GeoGig developers can usually be found there.
+There is also a GeoGig IRC channel on `freenode <http://freenode.net/>`_ (`#geogig <irc://irc.freenode.net/geogig>`_). GeoGig developers can usually be found there.
 
 You can (and should) use the above for all GeoGig-related subjects, so other people are aware of your work with GeoGig and can help you and eventually handle your contributions to the project efficiently.
 
@@ -31,7 +31,7 @@ You can also help us with the GeoGig documentation, improving it yourself, repor
 Developing
 ----------------
 
-If you are a developer wanting to get involved, please, first read the `developers section <https://github.com/locationtech/geogig/blob/master/doc/technical/developers.rst>`_ for technical details about how to build and develop GeoGig.
+If you are a developer wanting to get involved, please, first read the `developers section <https://github.com/locationtech/geogig/blob/master/doc/technical/source/developers.rst>`_ for technical details about how to build and develop GeoGig.
 
 If you want to contribute code to the project, you can do it using the GitHub *fork* and *pull request* workflow. The following are some things to take into account before sending a pull request.
 
@@ -45,4 +45,4 @@ Issues to help out on are at our `issue tracker <https://github.com/locationtech
 
 In all cases, please let us know about your work in advance. Write to the GeoGig developers list or talk to someone on the IRC channel, so we can better coordinate all efforts.
 
-Our build is `actively monitored using Jenkins <http://ares.opengeo.org:8080/view/geogig/>`_.
+Our build is `actively monitored using Jenkins <http://ares.boundlessgeo.com/jenkins/view/geogig/>`_.

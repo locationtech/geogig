@@ -59,6 +59,10 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
     private boolean noCommit;
 
+    private boolean noFastForward;
+
+    private boolean fastForwardOnly;
+
     private Optional<String> authorName = Optional.absent();
 
     private Optional<String> authorEmail = Optional.absent();
@@ -129,6 +133,26 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
     }
 
     /**
+     *
+     * @param noFastForward true if the merge command should never fast forward merge.
+     * @return {@code this}
+     */
+    public MergeOp setNoFastForward(boolean noFastForward) {
+        this.noFastForward = noFastForward;
+        return this;
+    }
+
+    /**
+     *
+     * @param fastForwardOnly true if the merge command should only fast forward merge. It will abort if it cant do so.
+     * @return
+     */
+    public MergeOp setFastForwardOnly(boolean fastForwardOnly) {
+        this.fastForwardOnly = fastForwardOnly;
+        return this;
+    }
+
+    /**
      * Executes the merge operation.
      * 
      * @return always {@code true}
@@ -138,6 +162,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
         Preconditions.checkArgument(commits.size() > 0, "No commits specified for merge.");
         Preconditions.checkArgument(!(ours && theirs), "Cannot use both --ours and --theirs.");
+        Preconditions.checkArgument(!(noFastForward && fastForwardOnly), "Cannot use both --no-ff and --ff-only");
 
         final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
         Preconditions.checkState(currHead.isPresent(), "Repository has no HEAD, can't rebase.");
@@ -167,7 +192,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         }
         hasConflictsOrAutomerge = command(CheckMergeScenarioOp.class).setCommits(revCommits).call()
                 .booleanValue();
-
+        Preconditions.checkState(!(hasConflictsOrAutomerge && fastForwardOnly), "The flag --ff-only was specified but no "+
+                "fast forward merge could be executed");
         if (hasConflictsOrAutomerge && !theirs) {
             Preconditions.checkState(commits.size() < 2,
                     "Conflicted merge.\nCannot merge more than two commits when conflicts exist"
@@ -329,7 +355,9 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         if (!changed) {
             throw new NothingToCommitException("The branch has already been merged.");
         }
-
+        if (noFastForward) {
+            fastForward = false;
+        }
         RevCommit mergeCommit = commit(fastForward);
 
         MergeReport result = new MergeReport(mergeCommit, mergeScenario, oursId, pairs);

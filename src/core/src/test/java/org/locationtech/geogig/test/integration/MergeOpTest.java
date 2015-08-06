@@ -25,11 +25,7 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.plumbing.UpdateSymRef;
+import org.locationtech.geogig.api.plumbing.*;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.plumbing.merge.ReadMergeCommitMessageOp;
@@ -573,6 +569,65 @@ public class MergeOpTest extends RepositoryTestCase {
         assertEquals(c1.getMessage(), logC1.getMessage());
         assertEquals(c1.getTreeId(), logC1.getTreeId());
 
+    }
+
+    @Test
+    public void testFastForwardOnly() throws Exception {
+        // Create the following revision graph
+        // o
+        // |
+        // o - Point 1 added
+        // |\
+        // | o - TestBranch - Point 1 modified
+        // |
+        // o - master - HEAD - Point 1 modified
+        insertAndAdd(points1);
+        geogig.command(CommitOp.class).call();
+        geogig.command(BranchCreateOp.class).setName("TestBranch").call();
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+                "POINT(1 1)");
+        insertAndAdd(points1Modified);
+        geogig.command(CommitOp.class).call();
+        geogig.command(CheckoutOp.class).setSource("TestBranch").call();
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+                "POINT(1 1)");
+        insertAndAdd(points1ModifiedB);
+        geogig.command(CommitOp.class).call();
+        geogig.command(CheckoutOp.class).setSource("master").call();
+        Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
+        MergeOp mergeOp = geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()));
+        mergeOp.setFastForwardOnly(true);
+        exception.expect(IllegalStateException.class);
+        mergeOp.call();
+    }
+
+    @Test
+    public void testNoFastForward() throws Exception {
+        // Create the following revision graph
+        // o
+        // |
+        // o - Point 1 added
+        // |\
+        // | o - TestBranch - Point 2 added
+        // |
+        // o - master - HEAD - Point 3 added
+        insertAndAdd(points1);
+        geogig.command(CommitOp.class).call();
+        geogig.command(BranchCreateOp.class).setName("TestBranch").call();
+        insertAndAdd(points3);
+        RevCommit masterCommit = geogig.command(CommitOp.class).call();
+        geogig.command(CheckoutOp.class).setSource("TestBranch").call();
+        insertAndAdd(points2);
+        RevCommit branchCommit = geogig.command(CommitOp.class).call();
+        geogig.command(CheckoutOp.class).setSource("master").call();
+        Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
+        MergeOp mergeOp = geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()));
+        mergeOp.setNoFastForward(true).call();
+        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        RevCommit mergeCommit = log.next();
+        assertEquals(2, mergeCommit.getParentIds().size());
+        assertEquals(masterCommit.getId(), mergeCommit.getParentIds().get(0));
+        assertEquals(branchCommit.getId(), mergeCommit.getParentIds().get(1));
     }
 
     @Test

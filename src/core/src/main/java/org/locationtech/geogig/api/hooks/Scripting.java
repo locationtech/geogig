@@ -86,8 +86,16 @@ public class Scripting {
             // TODO: improve this hack to check exception type
             if (cause != e) {
                 String msg = cause.getMessage();
-                msg = msg.substring(CannotRunGeogigOperationException.class.getName().length() + 2,
-                        msg.lastIndexOf("(")).trim();
+                // JS rhino engine (JDK7) throws a
+                // sun.org.mozilla.javascript.internal.JavaScriptException instead of the original
+                // one
+                String rhinoPrefix = CannotRunGeogigOperationException.class.getName() + ": ";
+                if (msg.startsWith(rhinoPrefix)) {
+                    msg = msg.substring(rhinoPrefix.length());
+                    if(-1 != msg.lastIndexOf('(')){
+                        msg = msg.substring(0, msg.lastIndexOf('('));
+                    }
+                }
                 msg += " (command aborted by .geogig/hooks/" + scriptFile.getName() + ")";
                 throw new CannotRunGeogigOperationException(msg);
             } else {

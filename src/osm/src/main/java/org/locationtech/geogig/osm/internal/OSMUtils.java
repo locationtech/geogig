@@ -11,6 +11,7 @@ package org.locationtech.geogig.osm.internal;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 
 public class OSMUtils {
 
@@ -80,17 +82,31 @@ public class OSMUtils {
         return WayType;
     }
 
+    private static final Ordering<Tag> TAG_KEY_ORDER = new Ordering<Tag>() {
+
+        @Override
+        public int compare(Tag left, Tag right) {
+            return Ordering.natural().compare(left.getKey(), right.getKey());
+        }
+    };
+
     /**
-     * @param collection
-     * @return
+     * @return a string representation of the tags list suitable to be stored as a single String
+     *         value
      */
     @Nullable
-    public static String buildTagsString(Collection<Tag> collection) {
+    public static String buildTagsString(final Collection<Tag> collection) {
         if (collection.isEmpty()) {
             return null;
         }
+
+        // Tag is a Comparable, but compares based on both key and value, which is ridiculous for
+        // sorting. We need stable sorting based on key.
+        TreeSet<Tag> tags = new TreeSet<Tag>(TAG_KEY_ORDER);
+        tags.addAll(collection);
+
         StringBuilder sb = new StringBuilder();
-        for (Iterator<Tag> it = collection.iterator(); it.hasNext();) {
+        for (Iterator<Tag> it = tags.iterator(); it.hasNext();) {
             Tag e = it.next();
             String key = e.getKey();
             if (key == null || key.isEmpty()) {

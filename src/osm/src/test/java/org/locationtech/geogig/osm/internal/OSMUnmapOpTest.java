@@ -121,7 +121,7 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
                 "LINESTRING (7.1960069 50.7399033, 7.195868 50.7399081, 7.1950788 50.739912, 7.1949262 50.7399053, "
                         + "7.1942463 50.7398686, 7.1935778 50.7398262, 7.1931011 50.7398018, 7.1929987 50.7398009, 7.1925978 50.7397889, "
                         + "7.1924199 50.7397781, 0 1)", values.get(7).get().toString());
-        assertEquals("lit:no|highway:residential|name:newname|oneway:yes", values.get(3).get()
+        assertEquals("highway:residential|lit:no|name:newname|oneway:yes", values.get(3).get()
                 .toString());
 
         // now we get the 'nodes' field in the unmapped feature and check take the id of its last
@@ -264,7 +264,7 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         values = unmapped.get().getValues();
         assertEquals("POINT (0 1)", values.get(6).get().toString());
         assertEquals(
-                "bus:yes|public_transport:platform|highway:bus_stop|VRS:ortsteil:Hoholz|name:newname|VRS:ref:68566|VRS:gemeinde:BONN",
+                "VRS:gemeinde:BONN|VRS:ortsteil:Hoholz|VRS:ref:68566|bus:yes|highway:bus_stop|name:newname|public_transport:platform",
                 values.get(3).get().toString());
         // check that unchanged nodes keep their attributes
         Optional<RevFeature> unchanged = geogig.command(RevObjectParse.class)
@@ -401,7 +401,7 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         values = unmapped.get().getValues();
         assertEquals("POINT (0 1)", values.get(6).get().toString());
         assertEquals(
-                "bus:yes|public_transport:platform|highway:bus_stop|VRS:ortsteil:Hoholz|name:newname|VRS:ref:68566|VRS:gemeinde:BONN",
+                "VRS:gemeinde:BONN|VRS:ortsteil:Hoholz|VRS:ref:68566|bus:yes|highway:bus_stop|name:newname|public_transport:platform",
                 values.get(3).get().toString());
         // check that unchanged nodes keep their attributes
         Optional<RevFeature> unchanged = geogig.command(RevObjectParse.class)
@@ -489,7 +489,7 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         values = unmapped.get().getValues();
         assertEquals("POINT (0 1)", values.get(6).get().toString());
         assertEquals(
-                "bus:yes|public_transport:platform|highway:bus_stop|VRS:ortsteil:Hoholz|name:newname|VRS:ref:68566|VRS:gemeinde:BONN",
+                "VRS:gemeinde:BONN|VRS:ortsteil:Hoholz|VRS:ref:68566|bus:yes|highway:bus_stop|name:newname|public_transport:platform",
                 values.get(3).get().toString());
         // check that unchanged nodes keep their attributes
         Optional<RevFeature> unchanged = geogig.command(RevObjectParse.class)
@@ -580,7 +580,7 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
                 "LINESTRING (7.1960069 50.7399033, 7.195868 50.7399081, 7.1950788 50.739912, 7.1949262 50.7399053, "
                         + "7.1942463 50.7398686, 7.1935778 50.7398262, 7.1931011 50.7398018, 7.1929987 50.7398009, 7.1925978 50.7397889, "
                         + "7.1924199 50.7397781, 0 1)", values.get(7).get().toString());
-        assertEquals("lit:no|highway:residential|name:newname|oneway:yes", values.get(3).get()
+        assertEquals("highway:residential|lit:no|name:newname|oneway:yes", values.get(3).get()
                 .toString());
 
         // now we get the 'nodes' field in the unmapped feature and check the id of its last

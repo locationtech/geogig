@@ -15,40 +15,23 @@ import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.di.PluginDefaults;
 import org.locationtech.geogig.di.PluginsModule;
+import org.locationtech.geogig.di.StorageProvider;
 import org.locationtech.geogig.di.VersionedFormat;
 import org.locationtech.geogig.di.caching.CachingModule;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.bdbje.JEGraphDatabase_v0_1;
-import org.locationtech.geogig.storage.bdbje.JEGraphDatabase_v0_2;
-import org.locationtech.geogig.storage.bdbje.JEObjectDatabase_v0_1;
-import org.locationtech.geogig.storage.bdbje.JEObjectDatabase_v0_2;
-import org.locationtech.geogig.storage.fs.FileRefDatabase;
-import org.locationtech.geogig.storage.mongo.MongoGraphDatabase;
-import org.locationtech.geogig.storage.mongo.MongoObjectDatabase;
-import org.locationtech.geogig.storage.sqlite.SQLiteStorage;
-import org.locationtech.geogig.storage.sqlite.XerialGraphDatabase;
-import org.locationtech.geogig.storage.sqlite.XerialObjectDatabase;
+import org.locationtech.geogig.storage.bdbje.JEStorageProviderV02;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.Scopes;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.util.Modules;
 
 public class CLIContextBuilder extends ContextBuilder {
 
-    private static final VersionedFormat DEFAULT_REFS = new VersionedFormat("file", "1.0");
-
-    private static final VersionedFormat DEFAULT_OBJECTS = new VersionedFormat("bdbje", "0.2");
-
-    private static final VersionedFormat DEFAULT_GRAPH = new VersionedFormat("bdbje", "0.2");
-
-    private static final PluginDefaults defaults = new PluginDefaults(DEFAULT_OBJECTS,//
-            DEFAULT_REFS,//
-            DEFAULT_GRAPH);
+    private static final PluginDefaults defaults = new PluginDefaults(new JEStorageProviderV02());
 
     @Override
     public Context build(Hints hints) {
@@ -59,55 +42,38 @@ public class CLIContextBuilder extends ContextBuilder {
     }
 
     public static class DefaultPlugins extends AbstractModule {
+
         @Override
         protected void configure() {
+
             bind(PluginDefaults.class).toInstance(defaults);
+
             MapBinder<VersionedFormat, RefDatabase> refPlugins = MapBinder.newMapBinder(binder(),
-                    VersionedFormat.class, RefDatabase.class);
-            refPlugins //
-                    .addBinding(DEFAULT_REFS)//
-                    .to(FileRefDatabase.class)//
-                    .in(Scopes.SINGLETON);
+                    VersionedFormat.class, RefDatabase.class).permitDuplicates();
 
             MapBinder<VersionedFormat, ObjectDatabase> objectPlugins = MapBinder.newMapBinder(
-                    binder(), VersionedFormat.class, ObjectDatabase.class);
-            objectPlugins //
-                    .addBinding(new VersionedFormat("bdbje", "0.2"))//
-                    .to(JEObjectDatabase_v0_2.class)//
-                    .in(Scopes.SINGLETON);//
-            objectPlugins //
-                    .addBinding(new VersionedFormat("bdbje", "0.1"))//
-                    .to(JEObjectDatabase_v0_1.class)//
-                    .in(Scopes.SINGLETON);
-            objectPlugins //
-                    .addBinding(new VersionedFormat("mongodb", "0.1"))//
-                    .to(MongoObjectDatabase.class)//
-                    .in(Scopes.SINGLETON);
-            objectPlugins //
-                    .addBinding(
-                            new VersionedFormat(SQLiteStorage.FORMAT_NAME, SQLiteStorage.VERSION))//
-                    .to(XerialObjectDatabase.class)//
-                    .in(Scopes.SINGLETON);
+                    binder(), VersionedFormat.class, ObjectDatabase.class).permitDuplicates();
 
             MapBinder<VersionedFormat, GraphDatabase> graphPlugins = MapBinder.newMapBinder(
-                    binder(), VersionedFormat.class, GraphDatabase.class);
-            graphPlugins //
-                    .addBinding(new VersionedFormat("bdbje", "0.2")) //
-                    .to(JEGraphDatabase_v0_2.class) //
-                    .in(Scopes.SINGLETON);
-            graphPlugins //
-                    .addBinding(new VersionedFormat("bdbje", "0.1")) //
-                    .to(JEGraphDatabase_v0_1.class) //
-                    .in(Scopes.SINGLETON);
-            graphPlugins //
-                    .addBinding(new VersionedFormat("mongodb", "0.1")) //
-                    .to(MongoGraphDatabase.class) //
-                    .in(Scopes.SINGLETON);
-            graphPlugins //
-                    .addBinding(
-                            new VersionedFormat(SQLiteStorage.FORMAT_NAME, SQLiteStorage.VERSION)) //
-                    .to(XerialGraphDatabase.class) //
-                    .in(Scopes.SINGLETON);
+                    binder(), VersionedFormat.class, GraphDatabase.class).permitDuplicates();
+
+            Iterable<StorageProvider> providers = StorageProvider.findProviders();
+
+            for (StorageProvider sp : providers) {
+                VersionedFormat objectDatabaseFormat = sp.getObjectDatabaseFormat();
+                VersionedFormat graphDatabaseFormat = sp.getGraphDatabaseFormat();
+                VersionedFormat refsDatabaseFormat = sp.getRefsDatabaseFormat();
+
+                if (objectDatabaseFormat != null) {
+                    objectDatabaseFormat.bind(objectPlugins);
+                }
+                if (graphDatabaseFormat != null) {
+                    graphDatabaseFormat.bind(graphPlugins);
+                }
+                if (refsDatabaseFormat != null) {
+                    refsDatabaseFormat.bind(refPlugins);
+                }
+            }
         }
     }
 }

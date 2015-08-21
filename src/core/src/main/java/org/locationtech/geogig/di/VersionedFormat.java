@@ -9,16 +9,33 @@
  */
 package org.locationtech.geogig.di;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import com.google.common.base.Objects;
+import com.google.inject.Scopes;
+import com.google.inject.multibindings.MapBinder;
 
 public final class VersionedFormat {
     private final String version;
 
     private final String format;
 
-    public VersionedFormat(String format, String version) {
+    private Class<?> clazz;
+
+    private VersionedFormat(String format, String version) {
+        checkNotNull(format);
+        checkNotNull(version);
         this.format = format;
         this.version = version;
+    }
+
+    public VersionedFormat(String format, String version, Class<?> clazz) {
+        checkNotNull(format);
+        checkNotNull(version);
+        this.format = format;
+        this.version = version;
+        this.clazz = clazz;
     }
 
     public String getVersion() {
@@ -29,6 +46,9 @@ public final class VersionedFormat {
         return format;
     }
 
+    /**
+     * Equality checks based on {@code format} and {@code version}
+     */
     @Override
     public boolean equals(Object o) {
         if (o instanceof VersionedFormat) {
@@ -39,6 +59,9 @@ public final class VersionedFormat {
         }
     }
 
+    /**
+     * Hash code based on {@code format} and {@code version}
+     */
     @Override
     public int hashCode() {
         return Objects.hashCode(version, format);
@@ -47,5 +70,12 @@ public final class VersionedFormat {
     @Override
     public String toString() {
         return format + ";v=" + version;
+    }
+
+    public <T> void bind(MapBinder<VersionedFormat, T> plugins) {
+        checkState(clazz != null, "If singleton class not provided, this method must be overritten");
+        @SuppressWarnings("unchecked")
+        Class<? extends T> binding = (Class<? extends T>) clazz;
+        plugins.addBinding(this).to(binding).in(Scopes.SINGLETON);
     }
 }

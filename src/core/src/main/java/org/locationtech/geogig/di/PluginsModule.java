@@ -73,14 +73,22 @@ public class PluginsModule extends AbstractModule {
     private static class PluginObjectDatabaseProvider extends FormatSelector<ObjectDatabase> {
         private final PluginDefaults defaults;
 
+        @Inject
+        public PluginObjectDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
+                Map<VersionedFormat, Provider<ObjectDatabase>> plugins) {
+            super(config, plugins);
+            this.defaults = defaults;
+        }
+
         @Override
         protected final VersionedFormat readConfig(ConfigDatabase config) {
+            final String formatKey = "storage.objects";
+            String versionKey = null;
             String format = null, version = null;
             try {
-                String formatKey = "storage.objects";
                 format = config.get(formatKey).or(config.getGlobal(formatKey).orNull());
                 if (format != null) {
-                    String versionKey = format + ".version";
+                    versionKey = format + ".version";
                     version = config.get(versionKey).or(config.getGlobal(versionKey).orNull());
                 }
             } catch (RuntimeException e) {
@@ -90,31 +98,42 @@ public class PluginsModule extends AbstractModule {
                 // .get, not .orNull. we should only be using the plugin providers when there are
                 // plugins set up
                 return defaults.getObjects().get();
-            } else {
-                return new VersionedFormat(format, version);
             }
+
+            for (StorageProvider p : StorageProvider.findProviders()) {
+                VersionedFormat objectFormat = p.getObjectDatabaseFormat();
+                if (objectFormat != null && format.equals(objectFormat.getFormat())
+                        && version.equals(objectFormat.getVersion())) {
+                    return objectFormat;
+                }
+            }
+            throw new IllegalStateException(String.format(
+                    "No storage provider found for %s='%s' and %s='%s'", formatKey, format,
+                    versionKey, version));
         }
 
-        @Inject
-        public PluginObjectDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
-                Map<VersionedFormat, Provider<ObjectDatabase>> plugins) {
-            super(config, plugins);
-            this.defaults = defaults;
-        }
     }
 
     private static class PluginRefDatabaseProvider extends FormatSelector<RefDatabase> {
         private final PluginDefaults defaults;
 
+        @Inject
+        public PluginRefDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
+                Map<VersionedFormat, Provider<RefDatabase>> plugins) {
+            super(config, plugins);
+            this.defaults = defaults;
+        }
+
         @Override
         protected final VersionedFormat readConfig(ConfigDatabase config) {
+            final String formatKey = "storage.refs";
+            String versionKey = null;
             String format = null, version = null;
             try {
-                String formatKey = "storage.refs";
                 format = config.get(formatKey).or(config.getGlobal(formatKey).orNull());
 
                 if (format != null) {
-                    String versionKey = format + ".version";
+                    versionKey = format + ".version";
                     version = config.get(versionKey).or(config.getGlobal(versionKey).orNull());
                 }
             } catch (RuntimeException e) {
@@ -125,30 +144,41 @@ public class PluginsModule extends AbstractModule {
                 // .get, not .orNull. we should only be using the plugin providers when there are
                 // plugins set up
                 return defaults.getRefs().get();
-            } else {
-                return new VersionedFormat(format, version);
             }
-        }
 
-        @Inject
-        public PluginRefDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
-                Map<VersionedFormat, Provider<RefDatabase>> plugins) {
-            super(config, plugins);
-            this.defaults = defaults;
+            for (StorageProvider p : StorageProvider.findProviders()) {
+                VersionedFormat refsFormat = p.getRefsDatabaseFormat();
+                if (refsFormat != null && format.equals(refsFormat.getFormat())
+                        && version.equals(refsFormat.getVersion())) {
+                    return refsFormat;
+                }
+            }
+
+            throw new IllegalStateException(String.format(
+                    "No storage provider found for %s='%s' and %s='%s'", formatKey, format,
+                    versionKey, version));
         }
     }
 
     private static class PluginGraphDatabaseProvider extends FormatSelector<GraphDatabase> {
         private final PluginDefaults defaults;
 
+        @Inject
+        public PluginGraphDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
+                Map<VersionedFormat, Provider<GraphDatabase>> plugins) {
+            super(config, plugins);
+            this.defaults = defaults;
+        }
+
         @Override
         protected final VersionedFormat readConfig(ConfigDatabase config) {
+            final String formatKey = "storage.graph";
+            String versionKey = null;
             String format = null, version = null;
             try {
-                String key = "storage.graph";
-                format = config.get(key).or(config.getGlobal(key).orNull());
+                format = config.get(formatKey).or(config.getGlobal(formatKey).orNull());
                 if (format != null) {
-                    String versionKey = format + ".version";
+                    versionKey = format + ".version";
                     version = config.get(versionKey).or(config.getGlobal(versionKey).orNull());
                 }
             } catch (RuntimeException e) {
@@ -159,16 +189,18 @@ public class PluginsModule extends AbstractModule {
                 // .get, not .orNull. we should only be using the plugin providers when there are
                 // plugins set up
                 return defaults.getGraph().get();
-            } else {
-                return new VersionedFormat(format, version);
             }
-        }
+            for (StorageProvider p : StorageProvider.findProviders()) {
+                VersionedFormat graphFormat = p.getGraphDatabaseFormat();
+                if (graphFormat != null && format.equals(graphFormat.getFormat())
+                        && version.equals(graphFormat.getVersion())) {
+                    return graphFormat;
+                }
+            }
 
-        @Inject
-        public PluginGraphDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
-                Map<VersionedFormat, Provider<GraphDatabase>> plugins) {
-            super(config, plugins);
-            this.defaults = defaults;
+            throw new IllegalStateException(String.format(
+                    "No storage provider found for %s='%s' and %s='%s'", formatKey, format,
+                    versionKey, version));
         }
     }
 }

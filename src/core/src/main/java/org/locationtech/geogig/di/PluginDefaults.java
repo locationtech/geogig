@@ -12,40 +12,51 @@ package org.locationtech.geogig.di;
 import com.google.common.base.Optional;
 
 public final class PluginDefaults {
-    private Optional<VersionedFormat> refs, objects, graph;
 
-    public PluginDefaults() {
-        refs = objects = graph = Optional.absent();
+    private VersionedFormat refs;
+
+    private VersionedFormat objects;
+
+    private VersionedFormat graph;
+
+    PluginDefaults() {
+        //
     }
 
     public PluginDefaults(VersionedFormat objects, VersionedFormat refs, VersionedFormat graph) {
-        this.refs = Optional.of(refs);
-        this.objects = Optional.of(objects);
-        this.graph = Optional.of(graph);
+        this.refs = refs;
+        this.objects = objects;
+        this.graph = graph;
+    }
+
+    public PluginDefaults(StorageProvider provider) {
+        refs = provider.getRefsDatabaseFormat();
+        objects = provider.getObjectDatabaseFormat();
+        graph = provider.getGraphDatabaseFormat();
     }
 
     public Optional<VersionedFormat> getRefs() {
-        return refs;
+        return Optional.fromNullable(refs);
     }
 
     public Optional<VersionedFormat> getObjects() {
-        return objects;
+        return Optional.fromNullable(objects);
     }
 
     public Optional<VersionedFormat> getGraph() {
-        return graph;
+        return Optional.fromNullable(graph);
     }
 
     public void setObjects(VersionedFormat objects) {
-        this.objects = Optional.fromNullable(objects);
+        this.objects = objects;
     }
 
     public void setRefs(VersionedFormat refs) {
-        this.refs = Optional.fromNullable(refs);
+        this.refs = refs;
     }
 
     public void setGraph(VersionedFormat graph) {
-        this.graph = Optional.fromNullable(graph);
+        this.graph = graph;
     }
 
     public static final PluginDefaults NO_PLUGINS = new PluginDefaults();

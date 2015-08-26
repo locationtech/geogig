@@ -86,10 +86,10 @@ public class PluginsModule extends AbstractModule {
             String versionKey = null;
             String format = null, version = null;
             try {
-                format = config.get(formatKey).or(config.getGlobal(formatKey).orNull());
+                format = getConfig(formatKey, config).orNull();
                 if (format != null) {
                     versionKey = format + ".version";
-                    version = config.get(versionKey).or(config.getGlobal(versionKey).orNull());
+                    version = getConfig(versionKey, config).orNull();
                 }
             } catch (RuntimeException e) {
                 // ignore, the config may not be available when we need this.
@@ -130,11 +130,10 @@ public class PluginsModule extends AbstractModule {
             String versionKey = null;
             String format = null, version = null;
             try {
-                format = config.get(formatKey).or(config.getGlobal(formatKey).orNull());
-
+                format = getConfig(formatKey, config).orNull();
                 if (format != null) {
                     versionKey = format + ".version";
-                    version = config.get(versionKey).or(config.getGlobal(versionKey).orNull());
+                    version = getConfig(versionKey, config).orNull();
                 }
             } catch (RuntimeException e) {
                 // ignore, the config may not be available when we need this.
@@ -176,10 +175,10 @@ public class PluginsModule extends AbstractModule {
             String versionKey = null;
             String format = null, version = null;
             try {
-                format = config.get(formatKey).or(config.getGlobal(formatKey).orNull());
+                format = getConfig(formatKey, config).orNull();
                 if (format != null) {
                     versionKey = format + ".version";
-                    version = config.get(versionKey).or(config.getGlobal(versionKey).orNull());
+                    version = getConfig(versionKey, config).orNull();
                 }
             } catch (RuntimeException e) {
                 // ignore, the config may not be available when we need this

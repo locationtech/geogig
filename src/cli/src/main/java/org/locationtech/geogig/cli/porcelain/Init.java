@@ -52,7 +52,7 @@ public class Init extends AbstractCommand implements CLICommand {
     @Parameter(description = "Repository location (directory).", required = false, arity = 1)
     private List<String> location;
 
-    @Parameter(names = { "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=bdbje:bdbje.version=0.1")
+    @Parameter(names = { "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=bdbje,storage.graph=bdbje,bdbje.version=0.1")
     private String config;
 
     /**
@@ -86,12 +86,13 @@ public class Init extends AbstractCommand implements CLICommand {
 
         final Repository repository;
         {
+            final Map<String, String> suppliedConfiguration = splitConfig(config);
+
             GeoGIG geogig = cli.getGeogig();
             if (geogig == null) {
                 Context geogigInjector = cli.getGeogigInjector();
                 geogig = new GeoGIG(geogigInjector);
             }
-            final Map<String, String> suppliedConfiguration = splitConfig(config);
 
             try {
                 repository = geogig.command(InitOp.class).setConfig(suppliedConfiguration)

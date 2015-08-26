@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.locationtech.geogig.storage.ConfigDatabase;
 
+import com.google.common.base.Optional;
 import com.google.inject.Provider;
 
 public abstract class FormatSelector<T> implements Provider<T> {
@@ -42,5 +43,13 @@ public abstract class FormatSelector<T> implements Provider<T> {
             e.printStackTrace();
             throw e;
         }
+    }
+    
+    protected Optional<String> getConfig(String key, ConfigDatabase config){
+         Optional<String> val = config.get(key);
+         if(!val.isPresent()){
+             val = config.getGlobal(key);
+         }
+         return val;
     }
 }

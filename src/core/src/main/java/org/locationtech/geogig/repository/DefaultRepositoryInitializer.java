@@ -35,7 +35,10 @@ public class DefaultRepositoryInitializer extends RepositoryInitializer {
         String scheme = repoURI.getScheme();
         if (null == scheme) {
             File file = toFile(repoURI);
-            return (file.exists() && file.isDirectory()) || file.getParentFile().exists();
+            boolean exists = file.exists();
+            boolean directory = file.isDirectory();
+            boolean parentExists = file.getParentFile().exists();
+            return (exists && directory) || parentExists;
         }
         return "file".equals(scheme);
     }

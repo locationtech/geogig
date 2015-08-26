@@ -68,7 +68,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         Map<String, Serializable> params = ImmutableMap.of();
         assertFalse(factory.canProcess(params));
         params = ImmutableMap.of(REPOSITORY.key,
-                (Serializable) (workingDir.getName() + "/shouldntExist"));
+                (Serializable) (workingDir.getName() + "/testCanProcess"));
         assertFalse(factory.canProcess(params));
 
         params = ImmutableMap.of(REPOSITORY.key, (Serializable) workingDir.getAbsolutePath());
@@ -89,8 +89,8 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         Map<String, Serializable> params;
 
         File root = repositoryTempFolder.getRoot();
-        params = ImmutableMap
-                .of(REPOSITORY.key, (Serializable) (root.getName() + "/shouldntExist"));
+        params = ImmutableMap.of(REPOSITORY.key,
+                (Serializable) (root.getName() + "/testCreateDataStoreNonExistentDirectory"));
         try {
             factory.createDataStore(params);
             fail("Expectd IOE on non existing directory");

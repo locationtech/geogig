@@ -38,6 +38,8 @@ public class XerialConfigDatabase extends SQLiteConfigDatabase {
 
     static final Logger LOG = LoggerFactory.getLogger(XerialConfigDatabase.class);
 
+    private SQLiteDataSource dataSource;
+
     @Inject
     public XerialConfigDatabase(Platform platform) {
         super(platform);
@@ -205,8 +207,11 @@ public class XerialConfigDatabase extends SQLiteConfigDatabase {
         }.run(connect(config));
     }
 
-    SQLiteDataSource connect(Config config) {
-        SQLiteDataSource dataSource = Xerial.newDataSource(config.file);
+    synchronized SQLiteDataSource connect(Config config) {
+        if (dataSource != null) {
+            return dataSource;
+        }
+        dataSource = Xerial.newDataSource(config.file);
         new DbOp<Void>() {
             @Override
             protected Void doRun(Connection cx) throws IOException, SQLException {

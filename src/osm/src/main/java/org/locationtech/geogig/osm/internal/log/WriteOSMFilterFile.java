@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.osm.internal.log;
 
-import jline.internal.Preconditions;
-
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.Blobs;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Writes the file filter associated to an OSM import operation.

@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.osm.internal.log;
 
-import jline.internal.Preconditions;
-
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.osm.internal.Mapping;
 import org.locationtech.geogig.osm.internal.MappingRule;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.Blobs;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Writes the mapping blobs that store the information about a mapping operation, storing the id

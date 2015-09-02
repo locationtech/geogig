@@ -16,8 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import jline.console.ConsoleReader;
-
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
@@ -25,6 +23,7 @@ import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
@@ -57,7 +56,7 @@ public class Insert extends AbstractCommand implements CLICommand {
     @Override
     public void runInternal(GeogigCLI cli) throws IOException {
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         geogig = cli.getGeogig();
 
         Iterable<String> lines = null;

@@ -14,8 +14,6 @@ import static org.locationtech.geogig.osm.internal.history.ParsingUtils.parseWGS
 
 import java.io.InputStream;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.junit.Assert;
 import org.junit.Test;
 

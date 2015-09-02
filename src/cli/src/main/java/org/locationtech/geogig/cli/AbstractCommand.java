@@ -14,8 +14,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.util.IllegalFormatException;
 
-import jline.Terminal;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.fusesource.jansi.Ansi;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
@@ -73,7 +71,7 @@ public abstract class AbstractCommand implements CLICommand {
         }
     }
 
-    protected Ansi newAnsi(Terminal terminal) {
+    protected Ansi newAnsi(Console console) {
         boolean useColor;
         switch (color) {
         case never:
@@ -83,14 +81,14 @@ public abstract class AbstractCommand implements CLICommand {
             useColor = true;
             break;
         default:
-            useColor = terminal.isAnsiSupported();
+            useColor = console.isAnsiSupported();
         }
 
         Ansi ansi = AnsiDecorator.newAnsi(useColor);
         return ansi;
     }
 
-    protected Ansi newAnsi(Terminal terminal, StringBuilder target) {
+    protected Ansi newAnsi(Console console, StringBuilder target) {
         boolean useColor;
         switch (color) {
         case never:
@@ -100,7 +98,7 @@ public abstract class AbstractCommand implements CLICommand {
             useColor = true;
             break;
         default:
-            useColor = terminal.isAnsiSupported();
+            useColor = console.isAnsiSupported();
         }
 
         Ansi ansi = AnsiDecorator.newAnsi(useColor, target);

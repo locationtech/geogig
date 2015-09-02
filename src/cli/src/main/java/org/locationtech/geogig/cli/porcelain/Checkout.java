@@ -12,8 +12,6 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.porcelain.CheckoutException;
 import org.locationtech.geogig.api.porcelain.CheckoutOp;
@@ -21,8 +19,8 @@ import org.locationtech.geogig.api.porcelain.CheckoutResult;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -75,7 +73,7 @@ public class Checkout extends AbstractCommand implements CLICommand {
         checkParameter(branchOrStartPoint.size() < 2, "too many arguments");
 
         try {
-            final ConsoleReader console = cli.getConsole();
+            final Console console = cli.getConsole();
             String branchOrCommit = (branchOrStartPoint.size() > 0 ? branchOrStartPoint.get(0)
                     : null);
 

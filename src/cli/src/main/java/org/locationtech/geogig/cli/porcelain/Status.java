@@ -12,8 +12,6 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.Iterator;
 
-import jline.console.ConsoleReader;
-
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.locationtech.geogig.api.GeoGIG;
@@ -28,6 +26,7 @@ import org.locationtech.geogig.api.porcelain.StatusOp;
 import org.locationtech.geogig.api.porcelain.StatusOp.StatusSummary;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 
@@ -66,7 +65,7 @@ public class Status extends AbstractCommand implements CLICommand {
     public void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(limit >= 0, "Limit must be 0 or greater.");
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
 
         StatusOp op = geogig.command(StatusOp.class);
@@ -86,7 +85,7 @@ public class Status extends AbstractCommand implements CLICommand {
 
     }
 
-    private void print(ConsoleReader console, StatusSummary summary) throws IOException {
+    private void print(Console console, StatusSummary summary) throws IOException {
         long countStaged = summary.getCountStaged();
         long countUnstaged = summary.getCountUnstaged();
         int countConflicted = summary.getCountConflicts();
@@ -130,14 +129,14 @@ public class Status extends AbstractCommand implements CLICommand {
      * @throws IOException
      * @see DiffEntry
      */
-    private void print(final ConsoleReader console, final Iterator<DiffEntry> changes,
+    private void print(final Console console, final Iterator<DiffEntry> changes,
             final Color color, final long total) throws IOException {
 
         final int limit = all || this.limit == null ? Integer.MAX_VALUE : this.limit.intValue();
 
         StringBuilder sb = new StringBuilder();
 
-        Ansi ansi = newAnsi(console.getTerminal(), sb);
+        Ansi ansi = newAnsi(console, sb);
 
         DiffEntry entry;
         ChangeType type;
@@ -163,12 +162,12 @@ public class Status extends AbstractCommand implements CLICommand {
         console.println(ansi.toString());
     }
 
-    private void printUnmerged(final ConsoleReader console, final Iterable<Conflict> conflicts,
+    private void printUnmerged(final Console console, final Iterable<Conflict> conflicts,
             final Color color, final int total) throws IOException {
 
         StringBuilder sb = new StringBuilder();
 
-        Ansi ansi = newAnsi(console.getTerminal(), sb);
+        Ansi ansi = newAnsi(console, sb);
 
         String path;
         for (Conflict c : conflicts) {

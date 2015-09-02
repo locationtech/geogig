@@ -11,14 +11,12 @@ package org.locationtech.geogig.geotools.cli.spatialite;
 
 import java.util.Arrays;
 
-import jline.UnsupportedTerminal;
-import jline.console.ConsoleReader;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.geotools.cli.TestHelper;
@@ -36,8 +34,7 @@ public class SLExportTest extends RepositoryTestCase {
 
     @Override
     public void setUpInternal() throws Exception {
-        ConsoleReader consoleReader = new ConsoleReader(System.in, System.out,
-                new UnsupportedTerminal());
+        Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
         cli.setGeogig(geogig);

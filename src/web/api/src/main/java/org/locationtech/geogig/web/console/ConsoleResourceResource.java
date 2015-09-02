@@ -19,14 +19,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
-import jline.UnsupportedTerminal;
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.porcelain.ConfigGet;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.restlet.data.MediaType;
@@ -117,8 +115,7 @@ public class ConsoleResourceResource extends Resource {
         FileBackedOutputStream out = new FileBackedOutputStream(4096);
         try {
             // pass it a BufferedOutputStream 'cause it doesn't buffer the internal FileOutputStream
-            ConsoleReader console = new ConsoleReader(in, new BufferedOutputStream(out),
-                    new UnsupportedTerminal());
+            Console console = new Console(in, new BufferedOutputStream(out)).disableAnsi();
             Platform platform = geogig.getPlatform();
 
             GeogigCLI geogigCLI = new GeogigCLI(geogig, console);

@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.locationtech.geogig.api.GeoGIG;
@@ -32,6 +30,7 @@ import org.locationtech.geogig.api.porcelain.NothingToCommitException;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 
 import com.beust.jcommander.Parameter;
@@ -88,9 +87,9 @@ public class Commit extends AbstractCommand implements CLICommand {
         checkParameter(!Strings.isNullOrEmpty(message) || commitToReuse != null || amend,
                 "No commit message provided");
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
 
-        Ansi ansi = newAnsi(console.getTerminal());
+        Ansi ansi = newAnsi(console);
 
         RevCommit commit;
         try {

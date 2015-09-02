@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
@@ -22,6 +20,7 @@ import org.locationtech.geogig.api.porcelain.RemoveOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.repository.Repository;
 
@@ -49,7 +48,7 @@ public class Remove extends AbstractCommand implements CLICommand {
     @Override
     public void runInternal(GeogigCLI cli) throws IOException {
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
 
         // check that there is something to remove
         if (pathsToRemove.isEmpty()) {

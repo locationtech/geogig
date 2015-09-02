@@ -16,8 +16,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.porcelain.CloneOp;
@@ -25,6 +23,7 @@ import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
@@ -131,7 +130,7 @@ public class Clone extends AbstractCommand implements CLICommand {
         Repository cloneRepo = cloneContext.command(InitOp.class)
                 .setConfig(Init.splitConfig(config)).setFilterFile(filterFile).call();
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         console.println("Cloning into '" + targetArg + "'...");
         console.flush();
 

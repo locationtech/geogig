@@ -31,7 +31,7 @@ You can also help us with the GeoGit documentation, improving it yourself, repor
 Developing
 ----------------
 
-If you are a developer wanting to get involved, please, first read the `developers section <https://github.com/opengeo/GeoGit/blob/master/doc/technical/developers.rst>`_ for technical details about how to build and develop GeoGit.
+If you are a developer wanting to get involved, please, first read the `developers section <https://github.com/locationtech/geogig/blob/master/doc/technical/developers.rst>`_ for technical details about how to build and develop GeoGit.
 
 If you want to contribute code to the project, you can do it using the GitHub *fork* and *pull request* workflow. The following are some things to take into account before sending a pull request.
 
@@ -41,7 +41,7 @@ If you want to contribute code to the project, you can do it using the GitHub *f
 
 More information on this workflow and how to remotely collaborate in a project like GeoGit can be found at the `GitHub help page <https://help.github.com/categories/63/articles>`_
 
-Issues to help out on are at our `issue tracker <https://github.com/opengeo/GeoGit/issues>`_.
+Issues to help out on are at our `issue tracker <https://www.locationtech.org/bugs/buglist.cgi?bug_status=NEW&bug_status=REOPENED&product=GeoGig>`_.
 
 In all cases, please let us know about your work in advance. Write to the GeoGit google group or talk to someone on the IRC channel, so we can better coordinate all efforts.
 

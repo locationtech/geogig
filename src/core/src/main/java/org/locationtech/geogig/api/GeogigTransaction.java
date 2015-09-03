@@ -76,11 +76,11 @@ public class GeogigTransaction implements Context {
         transactionIndex = new TransactionStagingArea(new Index(this), transactionId);
         transactionWorkTree = new WorkingTree(this);
         transactionRefDatabase = new TransactionRefDatabase(context.refDatabase(), transactionId);
+        transactionBlobStore = new TransactionBlobStoreImpl(
+                (TransactionBlobStore) context.blobStore(), transactionId);
     }
 
     public void create() {
-        transactionBlobStore = new TransactionBlobStoreImpl(
-                (TransactionBlobStore) context.blobStore(), transactionId);
         transactionRefDatabase.create();
     }
 

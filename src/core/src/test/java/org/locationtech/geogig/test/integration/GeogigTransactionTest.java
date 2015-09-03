@@ -516,4 +516,19 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         txRemoteHead = geogig.command(RefParse.class).setName(unchangedRemoteRef).call().get();
         assertEquals(headCommit.getId(), txRemoteHead.getObjectId());
     }
+
+    @Test
+    public void testEndTransactionFromTransactionId() throws Exception {
+        GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
+
+        // Use transaction id from the TransactionBegin to create another transaction that
+        // can be used to perform other actions such as pull, push, and end. The web api
+        // for example needs a way to retrieve/recreate a transaction object using a transactionId
+        // without calling GeogigTransaction.create() since the transaction was previously created.
+        GeogigTransaction txNew = new GeogigTransaction(geogig.getContext(), tx.getTransactionId());
+
+        TransactionEnd endTransaction = geogig.command(TransactionEnd.class);
+        boolean closed = endTransaction.setCancel(false).setTransaction((GeogigTransaction) txNew).call();
+        assertTrue(closed);
+    }
 }

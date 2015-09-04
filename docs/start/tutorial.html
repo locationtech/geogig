@@ -7,6 +7,7 @@
   
   <title>GeoGig tutorial &mdash; GeoGig 1.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
   <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" />
   <!--[if IE]>
@@ -133,7 +134,7 @@
 </div>
 <div class="section" id="sample-data">
 <h2>Sample data<a class="headerlink" href="#sample-data" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference download internal" href="../_downloads/tutorial_data.zip"><tt class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">the</span> <span class="pre">tutorial</span> <span class="pre">sample</span> <span class="pre">data</span></tt></a></p>
+<p><tt class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">the</span> <span class="pre">tutorial</span> <span class="pre">sample</span> <span class="pre">data</span></tt></p>
 <p>This archive contains multiple directories, named <tt class="docutils literal"><span class="pre">snapshot1</span></tt> through <tt class="docutils literal"><span class="pre">snapshot5</span></tt>. Each directory contains a single shapefile, that all contain slight variations. For the purposes of this tutorial, each shapefile will be considered a &#8220;snapshot&#8221; of the data in time. We will use these snapshots to simulate the creation and editing of the data in GeoGig.</p>
 <p>Extract the archive into the repository directory created in the previous step.</p>
 </div>
@@ -170,7 +171,7 @@
 </pre></div>
 </div>
 <div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> On branch master
-<span class="gp">#</span> Changes not staged <span class="k">for </span>commit:
+<span class="gp">#</span> Changes not staged <span class="k">for</span> commit:
 <span class="gp">#</span>   <span class="o">(</span>use <span class="s2">&quot;geogig add &lt;path/to/fid&gt;...&quot;</span> to update what will be committed
 <span class="gp">#</span>   <span class="o">(</span>use <span class="s2">&quot;geogig checkout -- &lt;path/to/fid&gt;...&quot;</span> to discard changes in working directory
 <span class="gp">#</span>
@@ -178,7 +179,7 @@
 <span class="gp">#</span>      added  parks/2
 <span class="gp">#</span>      added  parks/1
 <span class="gp">#</span>      added  parks/2
-<span class="gp">#</span> 4 total.
+<span class="gp">#</span> <span class="m">4</span> total.
 </pre></div>
 </div>
 </div>
@@ -210,7 +211,7 @@
 <span class="gp">#</span>      added  parks/2
 <span class="gp">#</span>      added  parks/1
 <span class="gp">#</span>      added  parks/3
-<span class="gp">#</span> 4 total.
+<span class="gp">#</span> <span class="m">4</span> total.
 </pre></div>
 </div>
 <p>The staging area is the last area before the data gets versioned in the repository database.</p>
@@ -243,12 +244,12 @@
 </div>
 <p>The response will look like this:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> On branch master
-<span class="gp">#</span> Changes not staged <span class="k">for </span>commit:
+<span class="gp">#</span> Changes not staged <span class="k">for</span> commit:
 <span class="gp">#</span>   <span class="o">(</span>use <span class="s2">&quot;geogig add &lt;path/to/fid&gt;...&quot;</span> to update what will be committed
 <span class="gp">#</span>   <span class="o">(</span>use <span class="s2">&quot;geogig checkout -- &lt;path/to/fid&gt;...&quot;</span> to discard changes in working directory
 <span class="gp">#</span>
 <span class="gp">#</span>      added  parks/4
-<span class="gp">#</span> 1 total.
+<span class="gp">#</span> <span class="m">1</span> total.
 </pre></div>
 </div>
 <p>Now add the new feature:</p>
@@ -409,7 +410,7 @@
 <span class="gp">#</span>   <span class="o">(</span>use <span class="s2">&quot;geogig add/rm &lt;path/to/fid&gt;...&quot;</span> as appropriate to mark resolution
 <span class="gp">#</span>
 <span class="gp">#</span>      unmerged  parks/5
-<span class="gp">#</span> 1 total.
+<span class="gp">#</span> <span class="m">1</span> total.
 </pre></div>
 </div>
 <p>An <strong>unmerged path</strong> represents a element with a conflict.</p>

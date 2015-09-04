@@ -1,0 +1,672 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>OpenStreetMap Web-Api Documentation &mdash; GeoGig 1.0 User Manual</title>
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" />
+  <!--[if IE]>
+  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+   <link rel="stylesheet" href="../_static/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+      <link rel="top" title="GeoGig 1.0 User Manual" href="../index.html" />
+      <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
+      <link rel="prev" title="Web-Api Documentation" href="web-api.html" />
+</head>
+<body class="interaction/osm-web-api">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/locationtech/geogig">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8">
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="../index.html">GeoGig 1.0 User Manual</a> &raquo;</li>
+  <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
+  <li>OpenStreetMap Web-Api Documentation</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="../genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="web-api.html" title="Web-Api Documentation"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="openstreetmap-web-api-documentation">
+<h1>OpenStreetMap Web-Api Documentation<a class="headerlink" href="#openstreetmap-web-api-documentation" title="Permalink to this headline">¶</a></h1>
+<p>The OpenStreetMap Web API is an extension to the Web API that allows to import OSM xml and pbf data files,
+as well as to download data directly from the OSM servers and apply it to the repository, just like with
+the CLI&#8217;s <cite>osm import</cite> and <cite>osm download</cite> commands.</p>
+<p>It is highly recommended that any data manipulation command, including these ones, be run inside a transaction.
+This is achieved by first initiating a transaction, then using the transaction identifier to run the command(s),
+and finally commit the transaction.
+Example:</p>
+<p>Initiate transaction:</p>
+<div class="highlight-python"><div class="highlight"><pre>GET /&lt;repo&gt;/beginTransaction
+&lt;response&gt;
+   &lt;success&gt;true&lt;/success&gt;
+   &lt;Transaction&gt;&lt;ID&gt;7accffe5-d506-4273-96f2-7b2581b71b36&lt;/ID&gt;&lt;/Transaction&gt;
+&lt;/response&gt;
+GET /&lt;repo&gt;/&lt;command&gt;?transactionId=7accffe5-d506-4273-96f2-7b2581b71b36&amp;&lt;command args&gt;
+GET /&lt;repo&gt;/endTransaction?transactionId=7accffe5-d506-4273-96f2-7b2581b71b36
+&lt;response&gt;&lt;success&gt;true&lt;/success&gt;&lt;Transaction/&gt;&lt;/response&gt;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All osm-web-api command response are formatted for xml by default, however you can get a JSON response by addressing the resource with the <tt class="docutils literal"><span class="pre">.json</span></tt> extension.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Remember the entry point for a repository served by the <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></tt> command is at the root context (e.g. <tt class="docutils literal"><span class="pre">http://localhost:8182/</span></tt>)
+whilst when using the GeoServer plugin, its under <tt class="docutils literal"><span class="pre">&lt;geoserver</span> <span class="pre">context&gt;/geogig/&lt;repository</span> <span class="pre">id&gt;</span></tt> (e.g. <tt class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/1f563a96-bd5c-4d59-84ec-e02e158eba78/</span></tt>).
+You can check the list of repository ids and names by accessing <tt class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/</span></tt>.</p>
+</div>
+<div class="section" id="asynchronous-tasks">
+<h2>Asynchronous tasks<a class="headerlink" href="#asynchronous-tasks" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">import</span></tt> and <tt class="docutils literal"><span class="pre">download</span></tt> operations can run for a long time depending on how much data they&#8217;re importing, and hence
+are executed asynchronously. Meaning that once invoked, they start the job in a background thread and return immediately.</p>
+<p>The response contains a unique identifier for the asynchronous task and information on the task&#8217;s running status.
+This task identifier can then be used to poll the status of the task by querying the <tt class="docutils literal"><span class="pre">/tasks/&lt;task</span> <span class="pre">id&gt;</span></tt> API end point.</p>
+<p>If no task is is given (e.g. by querying the <tt class="docutils literal"><span class="pre">/tasks</span></tt> endpoint), a list of all available tasks will be returned.</p>
+<p>A running task can be canceled with the <tt class="docutils literal"><span class="pre">cancel=true</span></tt> argument. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>http://localhost:8182/tasks/3?cancel=true
+</pre></div>
+</div>
+<p>This request will ask the operation to cancel and return immediately. Note however that the task may take a while until the running task
+is actually canceled, as it may be blocking on I/O or being temporarily in a non cancelable state. Polling the task repeteadly with the
+<tt class="docutils literal"><span class="pre">cancel=true</span></tt> parameter is not a problem though.</p>
+<p>Finished tasks, whether they finished successfully, an error occurred, or were canceled, will be kept in memory for 10 minutes to be queried.
+Finished tasks can be explicitly pruned with the <tt class="docutils literal"><span class="pre">prune=true</span></tt> parameter. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>http://localhost:8182/tasks/3?prune=true
+</pre></div>
+</div>
+<p>Prune has no effect on non finished tasks.</p>
+<div class="section" id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<p>When the command is invoked, it returns a result like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
+   &lt;id&gt;5&lt;/id&gt;
+   &lt;status&gt;RUNNING&lt;/status&gt;
+   &lt;description&gt;{command description}&lt;/description&gt;
+   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/5.xml&quot; type=&quot;application/xml&quot;/&gt;
+   &lt;progress&gt;
+      &lt;task&gt;Connecting to http://overpass-api.de/api/interpreter...&lt;/task&gt;
+      &lt;amount&gt;0.0&lt;/amount&gt;
+   &lt;/progress&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+<p>Or in JSON format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&quot;task&quot;</span><span class="p">:</span>
+   <span class="p">{</span>
+      <span class="s">&quot;id&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span>
+      <span class="s">&quot;status&quot;</span><span class="p">:</span><span class="s">&quot;RUNNING&quot;</span><span class="p">,</span>
+      <span class="s">&quot;description&quot;</span><span class="p">:</span><span class="s">&quot;osm download filter: null, bbox: -32.9621,-60.6309,-32.9541,-60.6154&quot;</span><span class="p">,</span>
+      <span class="s">&quot;href&quot;</span><span class="p">:</span><span class="s">&quot;http:\/\/localhost:8182\/tasks\/5.json&quot;</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Note the <tt class="docutils literal"><span class="pre">atom:link</span></tt> in the XML response, and the <tt class="docutils literal"><span class="pre">href</span></tt> property in the JSON response, represent the URL where to poll
+the status of the task at.</p>
+<p>The <tt class="docutils literal"><span class="pre">status</span></tt> attribute assumes one of the following values: <tt class="docutils literal"><span class="pre">WAITING</span></tt>, <tt class="docutils literal"><span class="pre">RUNNING</span></tt>, <tt class="docutils literal"><span class="pre">FINISHED</span></tt>, <tt class="docutils literal"><span class="pre">FAILED</span></tt>, <tt class="docutils literal"><span class="pre">CANCELLED</span></tt>.</p>
+<p><tt class="docutils literal"><span class="pre">WAITING</span></tt> means that there are other tasks being run in the thread pool and hence this one has been scheduled to be run as soon
+as the thread pool gets a free spot. The other ones are quite self explanatory.</p>
+<p>The content of the task query response varies slightly depending on the task status.</p>
+<p>Running tasks may contain a progress indicator:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
+   &lt;id&gt;4&lt;/id&gt;
+   &lt;status&gt;RUNNING&lt;/status&gt;
+   &lt;description&gt; osm import /data/osm/geofabrik/argentina-latest.osm.pbf&lt;/description&gt;
+   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/4.xml&quot; type=&quot;application/xml&quot;/&gt;
+   &lt;progress&gt;
+      &lt;task&gt;Importing into GeoGig repo...&lt;/task&gt;
+      &lt;amount&gt;1397120.0&lt;/amount&gt;
+   &lt;/progress&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+<p>Successfully finished tasks may contain a result summary:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
+   &lt;id&gt;5&lt;/id&gt;
+   &lt;status&gt;FINISHED&lt;/status&gt;
+   &lt;description&gt;osm import /data/osm/geofabrik/albania-latest.osm.pbf&lt;/description&gt;
+   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/5.xml&quot; type=&quot;application/xml&quot;/&gt;
+   &lt;result&gt;
+      &lt;OSMReport&gt;
+         &lt;latestChangeset&gt;17218621&lt;/latestChangeset&gt;
+         &lt;latestTimestamp&gt;1412698140574&lt;/latestTimestamp&gt;
+         &lt;processedEntities&gt;901852&lt;/processedEntities&gt;
+         &lt;nodeCount&gt;865542&lt;/nodeCount&gt;
+         &lt;wayCount&gt;35778&lt;/wayCount&gt;
+         &lt;unpprocessedCount&gt;4&lt;/unpprocessedCount&gt;
+      &lt;/OSMReport&gt;
+   &lt;/result&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+<p>And failed tasks an exception report:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
+   &lt;id&gt;7&lt;/id&gt;
+   &lt;status&gt;FAILED&lt;/status&gt;
+   &lt;description&gt;osm download filter: null, bbox: -32.9621,-60.6309,-32.9541,-60.6154&lt;/description&gt;
+   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/7.xml&quot; type=&quot;application/xml&quot;/&gt;
+   &lt;error&gt;
+      &lt;message&gt;Nothing to commit after bea73023a9452a9d64f64264d2911ce1ec2b47f2&lt;/message&gt;
+      &lt;stackTrace&gt;
+      &lt;![CDATA[
+         org.locationtech.geogig.api.porcelain.NothingToCommitException: Nothing to commit after bea73023a9452a9d64f64264d2911ce1ec2b47f2
+         at org.locationtech.geogig.api.porcelain.CommitOp._call(CommitOp.java:320)
+         at org.locationtech.geogig.api.porcelain.CommitOp._call(CommitOp.java:57)
+         at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133)
+         at org.locationtech.geogig.osm.internal.OSMImportOp._call(OSMImportOp.java:234)
+         at org.locationtech.geogig.osm.internal.OSMImportOp._call(OSMImportOp.java:75)
+         at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133)
+         at org.locationtech.geogig.osm.internal.OSMDownloadOp._call(OSMDownloadOp.java:155)
+         at org.locationtech.geogig.osm.internal.OSMDownloadOp._call(OSMDownloadOp.java:28)
+         at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133)
+         at org.locationtech.geogig.rest.AsyncContext$CommandCall.call(AsyncContext.java:192)
+         at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+         ...
+      ]]&gt;
+      &lt;/stackTrace&gt;
+   &lt;/error&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="osm-download">
+<h2>OSM Download<a class="headerlink" href="#osm-download" title="Permalink to this headline">¶</a></h2>
+<p>Downloads data from OSM and commits it to the repository.</p>
+<div class="highlight-python"><div class="highlight"><pre>GET /&lt;repo&gt;/osm/download[.xml|.json]?&lt;filter=&lt;filter file path&gt;|bbox=S,W,N,E&gt;[&amp;message=&lt;commit message&gt;][&amp;update=true|false][&amp;rebase=true|false][&amp;mapping=&lt;mapping file&gt;][&amp;transactionId=&lt;transaction id&gt;]
+</pre></div>
+</div>
+<div class="section" id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
+<p><strong>filter:</strong>
+Mandatory if <tt class="docutils literal"><span class="pre">bbox</span></tt> is not given. The filter file to use. Must  exist in the server file system
+and contain an <a class="reference external" href="http://wiki.openstreetmap.org/wiki/Overpass_API/Overpass_QL">Overpass QL filter</a>.</p>
+<p><strong>bbox:</strong>
+Mandatory if <tt class="docutils literal"><span class="pre">filter</span></tt> is not given. The bounding box to use as filter, in WGS84 coordinates. Format: <tt class="docutils literal"><span class="pre">&lt;S&gt;,&lt;W&gt;,&lt;N&gt;,&lt;E&gt;</span></tt>.</p>
+<p><strong>message:</strong>
+Message for the commit to create.</p>
+<p><strong>update:</strong>
+Boolean. Default: <tt class="docutils literal"><span class="pre">false</span></tt>. Update the OSM data currently in the geogig repository</p>
+<p><strong>rebase:</strong>
+Boolean. Default: <tt class="docutils literal"><span class="pre">false</span></tt>. Use rebase instead of merge when updating. Can only be true if <tt class="docutils literal"><span class="pre">upate</span> <span class="pre">=</span> <span class="pre">true</span></tt>.</p>
+<p><strong>mapping:</strong>
+The file that contains the data mapping to use.</p>
+</div>
+<div class="section" id="id1">
+<h3>Examples<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>A bad argument:</p>
+<div class="highlight-python"><div class="highlight"><pre>$curl -v &quot;localhost:8182/osm/download?bbox=-32.9621,-60.6309,-32.9541,-60.6154&amp;mapping=nonExistentMappingFile&quot;
+&lt; HTTP/1.1 400 Bad Request
+The specified mapping file does not exist
+Usage: GET &lt;repo context&gt;/osm/download?&lt;[filter=&lt;filterfile&gt;]|[bbox=S,W,N,E]&gt;[&amp;message=&lt;commit message&gt;][&amp;mapping=&lt;mapping file&gt;][&amp;update=true|false*][&amp;rebase=true|false*]
+Arguments:
+ * filter: Optional, or mandatory if {@code bbox} is not give. The filter file to use. Must exist in the server filesystem and contain an Overpass QL filter.
+ * bbox: Mandatory if {@code filter} is not given. The bounding box to use as filter, in WGS84 coordinates. Format: {@code &lt;S&gt;,&lt;W&gt;,&lt;N&gt;,&lt;E&gt;}.
+ * message: Message for the commit to create.
+ * update: Boolean. Default: false. Update the OSM data currently in the geogig repository.
+ * rebase: Boolean. Default: false. Use rebase instead of merge when updating. Can only be true of update is true.
+ * mapping: The file that contains the data mapping to use
+</pre></div>
+</div>
+<p>Download OSM data inside a transaction, using a mapping file and a bounding box filter:</p>
+<div class="highlight-python"><div class="highlight"><pre>$curl -v &quot;http://localhost:8182/beginTransaction&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;response&gt;
+   &lt;success&gt;true&lt;/success&gt;
+   &lt;Transaction&gt;
+      &lt;ID&gt;430f4052-8bbe-4fce-8578-c572f069be28&lt;/ID&gt;
+   &lt;/Transaction&gt;
+&lt;/response&gt;
+
+$curl -v &quot;http://localhost:8182/osm/download.xml?transactionID=430f4052-8bbe-4fce-8578-c572f069be28&amp;bbox=-32.9621,-60.6309,-32.9541,-60.6154&amp;mapping=/home/groldan/buildings_and_roads.json&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;task&gt;
+   &lt;id&gt;13&lt;/id&gt;
+   &lt;status&gt;RUNNING&lt;/status&gt;
+   &lt;transactionId&gt;430f4052-8bbe-4fce-8578-c572f069be28&lt;/transactionId&gt;
+   &lt;description&gt;osm download filter: null, bbox: -32.9621,-60.6309,-32.9541,-60.6154, mapping: /home/groldan/buildings_and_roads.json, update: false, rebase: false, repository: file:/home/groldan/data/geoserver/data/repos/osm_history/.geogig/&lt;/description&gt;
+   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8080/geoserver/geogig/tasks/12.xml&quot; type=&quot;application/xml&quot;/&gt;
+&lt;/task&gt;
+
+curl -v &quot;http://localhost:8182/endTransaction?transactionId=430f4052-8bbe-4fce-8578-c572f069be28&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;response&gt;
+   &lt;success&gt;true&lt;/success&gt;
+   &lt;Transaction/&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p>The example above uses a mapping file in <tt class="docutils literal"><span class="pre">/home/groldan/buildings_and_roads.json</span></tt> with the following content to create
+the <tt class="docutils literal"><span class="pre">osm_roads</span></tt> and <tt class="docutils literal"><span class="pre">osm_buildings</span></tt> feature type trees out of the imported OSM &#8220;nodes&#8221; and &#8220;ways&#8221;.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&quot;rules&quot;</span><span class="p">:</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;osm_roads&quot;</span><span class="p">,</span>
+      <span class="s">&quot;filter&quot;</span><span class="p">:{</span>
+         <span class="s">&quot;highway&quot;</span><span class="p">:[</span>
+           <span class="s">&quot;tertiary&quot;</span><span class="p">,</span><span class="s">&quot;residential&quot;</span><span class="p">,</span><span class="s">&quot;service&quot;</span><span class="p">,</span><span class="s">&quot;secondary&quot;</span><span class="p">,</span><span class="s">&quot;track&quot;</span><span class="p">,</span><span class="s">&quot;footway&quot;</span><span class="p">,</span><span class="s">&quot;path&quot;</span><span class="p">,</span><span class="s">&quot;unclassified&quot;</span><span class="p">,</span><span class="s">&quot;primary&quot;</span><span class="p">,</span>
+           <span class="s">&quot;trunk&quot;</span><span class="p">,</span><span class="s">&quot;motorway&quot;</span><span class="p">,</span><span class="s">&quot;construction&quot;</span><span class="p">,</span><span class="s">&quot;proposed&quot;</span><span class="p">,</span><span class="s">&quot;cycleway&quot;</span><span class="p">,</span><span class="s">&quot;living_street&quot;</span><span class="p">,</span><span class="s">&quot;steps&quot;</span><span class="p">,</span> <span class="s">&quot;road&quot;</span><span class="p">,</span> <span class="s">&quot;pedestrian&quot;</span><span class="p">,</span>
+           <span class="s">&quot;construction&quot;</span><span class="p">,</span><span class="s">&quot;bridleway&quot;</span><span class="p">,</span><span class="s">&quot;platform&quot;</span><span class="p">,</span><span class="s">&quot;proposed&quot;</span><span class="p">]</span>
+      <span class="p">},</span>
+      <span class="s">&quot;fields&quot;</span><span class="p">:{</span>
+        <span class="s">&quot;geom&quot;</span><span class="p">:{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;geom&quot;</span><span class="p">,</span> <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;LINESTRING&quot;</span><span class="p">},</span>
+        <span class="s">&quot;name&quot;</span><span class="p">:{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;STRING&quot;</span><span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;osm_buildings&quot;</span><span class="p">,</span>
+      <span class="s">&quot;filter&quot;</span><span class="p">:{</span>
+        <span class="s">&quot;geom&quot;</span><span class="p">:[</span><span class="s">&quot;closed&quot;</span><span class="p">],</span>
+        <span class="s">&quot;building&quot;</span><span class="p">:[</span>
+          <span class="s">&quot;yes&quot;</span><span class="p">,</span><span class="s">&quot;residential&quot;</span><span class="p">,</span><span class="s">&quot;house&quot;</span><span class="p">,</span><span class="s">&quot;garage&quot;</span><span class="p">,</span><span class="s">&quot;detached&quot;</span><span class="p">,</span><span class="s">&quot;terrace&quot;</span><span class="p">,</span><span class="s">&quot;apartments&quot;</span><span class="p">,</span> <span class="s">&quot;hut&quot;</span><span class="p">,</span> <span class="s">&quot;industrial&quot;</span><span class="p">,</span> <span class="s">&quot;roof&quot;</span><span class="p">,</span> <span class="s">&quot;garages&quot;</span><span class="p">,</span>
+          <span class="s">&quot;terrace&quot;</span><span class="p">,</span> <span class="s">&quot;farm_auxiliary&quot;</span><span class="p">,</span> <span class="s">&quot;commercial&quot;</span><span class="p">,</span> <span class="s">&quot;retail&quot;</span><span class="p">,</span> <span class="s">&quot;school&quot;</span><span class="p">,</span> <span class="s">&quot;church&quot;</span><span class="p">,</span> <span class="s">&quot;shed&quot;</span><span class="p">,</span> <span class="s">&quot;manufacture&quot;</span><span class="p">,</span> <span class="s">&quot;greenhouse&quot;</span><span class="p">,</span>
+          <span class="s">&quot;farm&quot;</span><span class="p">,</span><span class="s">&quot;office&quot;</span><span class="p">,</span><span class="s">&quot;cabin&quot;</span><span class="p">,</span><span class="s">&quot;barn&quot;</span><span class="p">],</span>
+        <span class="s">&quot;aeroway&quot;</span><span class="p">:[</span><span class="s">&quot;terminal&quot;</span><span class="p">]</span>
+      <span class="p">},</span>
+      <span class="s">&quot;fields&quot;</span><span class="p">:{</span>
+        <span class="s">&quot;geom&quot;</span><span class="p">:{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;geom&quot;</span><span class="p">,</span><span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;POLYGON&quot;</span><span class="p">},</span>
+        <span class="s">&quot;status&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;status&quot;</span><span class="p">,</span> <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;STRING&quot;</span><span class="p">},</span>
+        <span class="s">&quot;building&quot;</span><span class="p">:{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;building&quot;</span><span class="p">,</span> <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;STRING&quot;</span><span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>We can verify both trees have been created with the <tt class="docutils literal"><span class="pre">ls-tree</span></tt> command like in:</p>
+<div class="highlight-python"><div class="highlight"><pre>$curl -v &quot;http://localhost:8182/ls-tree&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;response&gt;
+   &lt;success&gt;true&lt;/success&gt;
+   &lt;node&gt;&lt;path&gt;osm_roads&lt;/path&gt;&lt;/node&gt;
+   &lt;node&gt;&lt;path&gt;osm_buildings&lt;/path&gt;&lt;/node&gt;
+   &lt;node&gt;&lt;path&gt;node&lt;/path&gt;&lt;/node&gt;
+   &lt;node&gt;&lt;path&gt;way&lt;/path&gt;&lt;/node&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="osm-import">
+<h2>OSM Import<a class="headerlink" href="#osm-import" title="Permalink to this headline">¶</a></h2>
+<p>Imports OSM data from a file into the working tree, and optionally creates a commit if a mapping file is used.</p>
+<div class="highlight-python"><div class="highlight"><pre>GET /&lt;repo&gt;/osm/import[.xml|.json]?&lt;uri=&lt;file path&gt;&gt;[&amp;add=true|false][&amp;noRaw=true|false][&amp;mapping=&lt;mapping file&gt;][&amp;message=&lt;commit message&gt;][&amp;transactionId=&lt;transaction id&gt;]
+</pre></div>
+</div>
+<div class="section" id="id2">
+<h3>Parameters<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p><strong>uri:</strong>
+Mandatory. The path to the <tt class="docutils literal"><span class="pre">.pbf</span></tt> or <tt class="docutils literal"><span class="pre">.xml</span></tt> OSM data file to import.</p>
+<p><strong>add:</strong>
+Boolean. Default: <tt class="docutils literal"><span class="pre">false</span></tt>. If <tt class="docutils literal"><span class="pre">true</span></tt>, append the new data to existing one, otherwise remove existing data before importing.</p>
+<p><strong>mapping:</strong>
+The file that contains the data mapping to use.</p>
+<p><strong>noRaw:</strong>
+Boolean. Default: <tt class="docutils literal"><span class="pre">false</span></tt>. Only has effect if using a mapping file. A value of <tt class="docutils literal"><span class="pre">true</span></tt> indicates not to import the &#8220;raw&#8221; <tt class="docutils literal"><span class="pre">node</span></tt> and <tt class="docutils literal"><span class="pre">way</span></tt> data.</p>
+<p><strong>message:</strong>
+Optional. Message for the commit to create. Only has effect if using a mapping file.</p>
+</div>
+<div class="section" id="id3">
+<h3>Examples<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="a-bad-argument">
+<h4>A bad argument:<a class="headerlink" href="#a-bad-argument" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/osm/import?uri=/data/osm/geofabrik/nonexistent.osm.pbf&quot;
+&lt; HTTP/1.1 200 OK
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;task&gt;&lt;id&gt;4&lt;/id&gt;
+   &lt;status&gt;FAILED&lt;/status&gt;
+   &lt;description&gt;osm import /data/osm/geofabrik/nonexistent.osm.pbf, repository: file:/home/groldan/data/geoserver/geogig_pg/data/repos/osm_history/.geogig/&lt;/description&gt;
+   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8080/geoserver/geogig/tasks/4.xml&quot; type=&quot;application/xml&quot;/&gt;
+   &lt;error&gt;
+      &lt;message&gt;File does not exist: /data/osm/geofabrik/nonexistent.osm.pbf&lt;/message&gt;
+      &lt;stackTrace&gt;
+         &lt;![CDATA[java.lang.IllegalArgumentException: File does not exist: /data/osm/geofabrik/nonexistent.osm.pbf
+         at com.google.common.base.Preconditions.checkArgument(Preconditions.java:125)
+         at org.locationtech.geogig.osm.internal.OSMImportOp._call(OSMImportOp.java:205)
+         ...
+      ]]&gt;
+      &lt;/stackTrace&gt;
+   &lt;/error&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="missing-uri-argument">
+<h4>Missing uri argument:<a class="headerlink" href="#missing-uri-argument" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/osm/import?&quot;
+&lt; HTTP/1.1 400 Bad Request
+Missing parameter: uri
+Usage: GET &lt;repo context&gt;/osm/import?uri=&lt;osm file URI&gt;[&amp;&lt;arg&gt;=&lt;value&gt;]+
+Arguments:
+ * uri: Mandatory. URL or path to OSM data file in the server filesystem
+ * add: Optional. true|false. Default: false. If true, do not remove previous data before importing.
+ * mapping: Optional. Location of mapping file in the server filesystem
+ * noRaw: Optional. true|false. Default: false. If true, do not import raw data when using a mapping
+* Connection #0 to host localhost left intact
+ * message: Optional. Message for the commit to create.groldan@eva01:~/git/geogig/doc/manual[osm_web_api](18:15:57)$
+</pre></div>
+</div>
+</div>
+<div class="section" id="proper-sequence-using-a-transaction">
+<h4>Proper sequence, using a transaction:<a class="headerlink" href="#proper-sequence-using-a-transaction" title="Permalink to this headline">¶</a></h4>
+<p>Begin transaction:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/beginTransaction&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;response&gt;
+   &lt;success&gt;true&lt;/success&gt;
+   &lt;Transaction&gt;
+      &lt;ID&gt;e0007ea2-96f7-4e5b-bee1-74915929c461&lt;/ID&gt;
+   &lt;/Transaction&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p>Call import:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/osm/import?uri=/data/osm/geofabrik/albania-latest.osm.pbf&amp;transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;task&gt;
+   &lt;id&gt;5&lt;/id&gt;
+   &lt;status&gt;RUNNING&lt;/status&gt;
+   &lt;transactionId&gt;e0007ea2-96f7-4e5b-bee1-74915929c461&lt;/transactionId&gt;
+   &lt;description&gt;osm import /data/osm/geofabrik/albania-latest.osm.pbf, repository: file:/home/groldan/data/geoserver/geogig_pg/data/repos/osm_history/.geogig/&lt;/description&gt;
+   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8080/geoserver/geogig/tasks/5.xml&quot; type=&quot;application/xml&quot;/&gt;
+   &lt;progress&gt;
+      &lt;task&gt;Importing into GeoGig repo...&lt;/task&gt;
+      &lt;amount&gt;0.0&lt;/amount&gt;
+   &lt;/progress&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+<p>Poll task status until it&#8217;s FINISHED:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8080/geoserver/geogig/tasks/5.xml&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;task&gt;
+   &lt;id&gt;5&lt;/id&gt;
+   &lt;status&gt;FINISHED&lt;/status&gt;
+   &lt;transactionId&gt;e0007ea2-96f7-4e5b-bee1-74915929c461&lt;/transactionId&gt;
+   &lt;description&gt;osm import /data/osm/geofabrik/albania-latest.osm.pbf, repository: file:/home/groldan/data/geoserver/geogig_pg/data/repos/osm_history/.geogig/&lt;/description&gt;
+   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8080/geoserver/geogig/tasks/5.xml&quot; type=&quot;application/xml&quot;/&gt;
+   &lt;result&gt;
+      &lt;OSMReport&gt;
+         &lt;latestChangeset&gt;17218621&lt;/latestChangeset&gt;
+         &lt;latestTimestamp&gt;1412716764087&lt;/latestTimestamp&gt;
+         &lt;processedEntities&gt;901852&lt;/processedEntities&gt;
+         &lt;nodeCount&gt;865542&lt;/nodeCount&gt;
+         &lt;wayCount&gt;35778&lt;/wayCount&gt;
+         &lt;unpprocessedCount&gt;4&lt;/unpprocessedCount&gt;
+      &lt;/OSMReport&gt;
+   &lt;/result&gt;
+&lt;/task&gt;
+</pre></div>
+</div>
+<p>Add and commit:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/add?transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&quot;
+
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;response&gt;
+   &lt;success&gt;true&lt;/success&gt;
+   &lt;Add&gt;Success&lt;/Add&gt;
+&lt;/response&gt;
+
+$ curl -v &quot;http://localhost:8182/commit?transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&amp;message=Import%20of%20albania%20OSM%20data&amp;authorName=Gabriel%20Roldan&amp;authorEmail=groldan@example.com&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;response&gt;
+   &lt;success&gt;true&lt;/success&gt;
+   &lt;commitId&gt;51135710eb71eef3171df40b1b281c7f67e2eac1&lt;/commitId&gt;
+   &lt;added&gt;901316&lt;/added&gt;
+   &lt;changed&gt;0&lt;/changed&gt;
+   &lt;deleted&gt;46609&lt;/deleted&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p>End transaction:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/endTransaction?transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;response&gt;
+   &lt;success&gt;true&lt;/success&gt;
+   &lt;Transaction/&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+<p>Verify the commit is now on the current HEAD:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/log?limit=1&quot;
+&lt; HTTP/1.1 200 OK
+&lt; Content-Type: application/xml
+&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;response&gt;
+   &lt;success&gt;true&lt;/success&gt;
+   &lt;commit&gt;
+      &lt;id&gt;51135710eb71eef3171df40b1b281c7f67e2eac1&lt;/id&gt;
+      &lt;tree&gt;1c58bdfb208e6d76836564d443c2de0b7ab2f1f9&lt;/tree&gt;
+      &lt;parents&gt;&lt;id&gt;02702a5d296c4d2024b48cf80f957ff575e82aed&lt;/id&gt;&lt;/parents&gt;
+      &lt;author&gt;
+         &lt;name&gt;Gabriel Roldan&lt;/name&gt;
+         &lt;email&gt;groldan@example.com&lt;/email&gt;
+         &lt;timestamp&gt;1412717228309&lt;/timestamp&gt;
+         &lt;timeZoneOffset&gt;-10800000&lt;/timeZoneOffset&gt;
+      &lt;/author&gt;
+      &lt;committer&gt;
+         &lt;name&gt;Gabriel Roldan&lt;/name&gt;
+         &lt;email&gt;groldan@example.com&lt;/email&gt;
+         &lt;timestamp&gt;1412717228309&lt;/timestamp&gt;
+         &lt;timeZoneOffset&gt;-10800000&lt;/timeZoneOffset&gt;
+      &lt;/committer&gt;
+      &lt;message&gt;
+         &lt;![CDATA[ Import of albania OSM data ]]&gt;
+      &lt;/message&gt;
+   &lt;/commit&gt;
+&lt;/response&gt;
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="web-api.html" title="previous chapter">Web-Api Documentation</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc">
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">OpenStreetMap Web-Api Documentation</a><ul>
+<li><a class="reference internal" href="#asynchronous-tasks">Asynchronous tasks</a><ul>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#osm-download">OSM Download</a><ul>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#id1">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#osm-import">OSM Import</a><ul>
+<li><a class="reference internal" href="#id2">Parameters</a></li>
+<li><a class="reference internal" href="#id3">Examples</a><ul>
+<li><a class="reference internal" href="#a-bad-argument">A bad argument:</a></li>
+<li><a class="reference internal" href="#missing-uri-argument">Missing uri argument:</a></li>
+<li><a class="reference internal" href="#proper-sequence-using-a-transaction">Proper sequence, using a transaction:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="web-api.html" title="previous chapter">Web-Api Documentation</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="../_sources/interaction/osm-web-api.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">BSD New License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="../_static/jquery.js"></script>
+  <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/underscore.js"></script>
+  <script type="text/javascript" src="../_static/doctools.js"></script>
+  <script type="text/javascript" src="../_static/searchtools.js"></script>
+  <script type="text/javascript" src="../searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

@@ -46,7 +46,8 @@ class MapdbConflictsDatabase implements ConflictsDatabase {
 		if (conflicts !=null) {
 			return;
 		}
-        BTreeKeySerializer keySerializer = new BTreeKeySerializer.ArrayKeySerializer(
+        @SuppressWarnings("rawtypes")
+		BTreeKeySerializer keySerializer = new BTreeKeySerializer.ArrayKeySerializer(
                 new Comparator[]{Fun.COMPARATOR, Fun.COMPARATOR},
                 new Serializer[]{Serializer.STRING, Serializer.STRING}
         );

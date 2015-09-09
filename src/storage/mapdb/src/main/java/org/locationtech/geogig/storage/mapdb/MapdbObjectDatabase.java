@@ -67,9 +67,9 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 
 	protected DB db = null;
 
-	//TODO change to Map <ObjectId, byte[]> as ObjectId implements serializable
-	//what about prefix finding then?
-	protected ConcurrentNavigableMap<String,byte[]> collection = null;
+	// TODO could be changed to Map <ObjectId, byte[]> as ObjectId implements serializable
+	// what about prefix finding then?
+	protected ConcurrentNavigableMap<String, byte[]> collection = null;
 
 	protected ObjectSerializingFactory serializers = DataStreamSerializationFactoryV1.INSTANCE;
 
@@ -91,11 +91,9 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 		this.platform = platform;
 	}
 
-	
 	/*
-	 * Things to know about MapDB 
-	 * Transactions (write-ahead-log) can be disabled with
-	 * DBMaker.transactionDisable(), this will MapDB much faster. However,
+	 * Things to know about MapDB Transactions (write-ahead-log) can be disabled
+	 * with DBMaker.transactionDisable(), this will MapDB much faster. However,
 	 * without WAL the store gets corrupted when not closed correctly.
 	 * 
 	 * Keys and values must be immutable. MapDB may serialize them on background
@@ -125,23 +123,26 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 			return;
 		}
 		Optional<URI> repoPath = new ResolveGeogigURI(platform, null).call();
-        Preconditions.checkState(repoPath.isPresent(), "Not inside a geogig directory");
-        URI uri = repoPath.get();
-        Preconditions.checkState("file".equals(uri.getScheme()),
-                "Repository URL is not file system based: %s", uri);
-        File repoLocation = new File(uri);
-        File storeDirectory = new File(repoLocation, "objects");
-        
-        if (!storeDirectory.exists() && !storeDirectory.mkdirs()) {
-            throw new IllegalStateException("Unable to create Environment directory: '"
-                    + storeDirectory.getAbsolutePath() + "'");
-        }
-        
-		db = DBMaker.fileDB(new File(storeDirectory,"objectdb.mapdb")).closeOnJvmShutdown()
-				.fileMmapEnableIfSupported().cacheHashTableEnable().make();
+		Preconditions.checkState(repoPath.isPresent(),
+				"Not inside a geogig directory");
+		URI uri = repoPath.get();
+		Preconditions.checkState("file".equals(uri.getScheme()),
+				"Repository URL is not file system based: %s", uri);
+		File repoLocation = new File(uri);
+		File storeDirectory = new File(repoLocation, "objects");
+
+		if (!storeDirectory.exists() && !storeDirectory.mkdirs()) {
+			throw new IllegalStateException(
+					"Unable to create Environment directory: '"
+							+ storeDirectory.getAbsolutePath() + "'");
+		}
+
+		db = DBMaker.fileDB(new File(storeDirectory, "objectdb.mapdb"))
+				.closeOnJvmShutdown().fileMmapEnableIfSupported()
+				.cacheHashTableEnable().make();
 
 		collection = db.treeMap(collectionName);
-		
+
 		conflicts = new MapdbConflictsDatabase(db);
 		blobStore = new FileBlobStore(platform);
 	}
@@ -194,19 +195,19 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 
 	@Override
 	public List<ObjectId> lookUp(final String partialId) {
-		
+
 		if (partialId.matches("[a-fA-F0-9]+") && partialId.length() > 0) {
-			char nextLetter = (char) (partialId.charAt(partialId.length() - 1) + 1);
-			String end = partialId.substring(0, partialId.length() - 1)
-					+ nextLetter;
-			SortedMap<String, byte[]> matchingPairs = collection.subMap(
-					partialId, end);
-			List<ObjectId> ids = new ArrayList<ObjectId>(4);
-			for (String objectId : matchingPairs.keySet()) {
-				ids.add(ObjectId.valueOf(objectId));
-			}
-			return ids;
-			
+			 char nextLetter = (char) (partialId.charAt(partialId.length() -
+			 1) + 1);
+			 String end = partialId.substring(0, partialId.length() - 1)
+			 + nextLetter;
+			 SortedMap<String, byte[]> matchingPairs = collection.subMap(
+			 partialId, end);
+			 List<ObjectId> ids = new ArrayList<ObjectId>(4);
+			 for (String objectId : matchingPairs.keySet()) {
+			 ids.add(ObjectId.valueOf(objectId));
+			 }
+			 return ids;
 		} else {
 			throw new IllegalArgumentException(
 					"Prefix query must be done with hexadecimal values only");
@@ -268,12 +269,12 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 	}
 
 	private long deleteChunk(List<ObjectId> ids) {
-		//TODO this might not be the most efficient way to do this.
+		// TODO this might not be the most efficient way to do this.
 		long deleteCounter = 0;
-		for (ObjectId id:ids) {
-			 boolean deleted = delete(id);
-			 if (deleted) {
-				 deleteCounter++;
+		for (ObjectId id : ids) {
+			boolean deleted = delete(id);
+			if (deleted) {
+				deleteCounter++;
 			}
 		}
 		return deleteCounter;
@@ -311,7 +312,7 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 		collection.put(key, record);
 		db.commit();
 		return true;
-		//TODO In which cases do we return false here?
+		// TODO In which cases do we return false here?
 	}
 
 	@Override
@@ -333,7 +334,7 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 		final AtomicBoolean cancelCondition = new AtomicBoolean();
 
 		List<ObjectId> ids = Lists.newArrayListWithCapacity(bulkSize);
-		List<byte[]> values = Lists.newArrayListWithCapacity(bulkSize); 
+		List<byte[]> values = Lists.newArrayListWithCapacity(bulkSize);
 		List<Future<?>> runningTasks = new ArrayList<Future<?>>(maxRunningTasks);
 
 		try {
@@ -343,8 +344,8 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 				values.add(toBytes(object));
 
 				if (ids.size() == bulkSize || !objects.hasNext()) {
-					InsertTask task = new InsertTask(collection, listener,
-							ids, values, cancelCondition);
+					InsertTask task = new InsertTask(collection, listener, ids,
+							values, cancelCondition);
 					runningTasks.add(executor.submit(task));
 
 					if (objects.hasNext()) {
@@ -383,17 +384,16 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 		private BulkOpListener listener;
 
 		private List<ObjectId> ids;
-		
+
 		private List<byte[]> objects;
 
 		private AtomicBoolean cancelCondition;
 
-		//TODO Interface: could we work on RevObject directly?
+		// TODO Interface: could we work on RevObject directly?
 		// what about toBytes() then being called from a static context?
 		public InsertTask(ConcurrentNavigableMap<String, byte[]> collection,
 				BulkOpListener listener, List<ObjectId> ids,
-				List<byte[]> objects,
-				AtomicBoolean cancelCondition) {
+				List<byte[]> objects, AtomicBoolean cancelCondition) {
 			this.collection = collection;
 			this.listener = listener;
 			this.ids = ids;
@@ -406,8 +406,8 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 			if (cancelCondition.get()) {
 				return;
 			}
-			
-			for(int i = 0; i < ids.size(); i++) {
+
+			for (int i = 0; i < ids.size(); i++) {
 				if (cancelCondition.get()) {
 					return;
 				}
@@ -415,11 +415,10 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 				byte[] value = objects.get(i);
 				boolean found = collection.containsKey(key.toString());
 				collection.put(ids.get(i).toString(), objects.get(i));
-				if (found){
-					listener.found(key,value.length);
-				}
-				else {
-					listener.inserted(key,value.length);
+				if (found) {
+					listener.found(key, value.length);
+				} else {
+					listener.inserted(key, value.length);
 				}
 			}
 			ids.clear();
@@ -492,7 +491,6 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 		return byteStream.toByteArray();
 	}
 
-	
 	@Override
 	public String toString() {
 		return String.format("%s[db: %s, collection: %s]", getClass()

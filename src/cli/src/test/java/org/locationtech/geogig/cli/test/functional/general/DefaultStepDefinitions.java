@@ -102,7 +102,6 @@ public class DefaultStepDefinitions {
             GlobalState.geogigCLI = null;
         }
         if (GlobalState.consoleReader != null) {
-            GlobalState.consoleReader.shutdown();
             GlobalState.consoleReader = null;
         }
         System.gc();

@@ -11,13 +11,12 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
 
-import jline.console.ConsoleReader;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.porcelain.VersionInfo;
 import org.locationtech.geogig.api.porcelain.VersionOp;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
@@ -38,7 +37,7 @@ import com.google.common.base.Throwables;
 @Parameters(commandNames = { "--version", "version" }, commandDescription = "Display GeoGig version information")
 public class Version implements CLICommand {
 
-    private ConsoleReader console;
+    private Console console;
 
     private static int PROPERTY_NAME_WIDTH = 24;
 

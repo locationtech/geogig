@@ -138,7 +138,6 @@
     <guice.version>3.0</guice.version>
     <jcommander.version>1.35</jcommander.version>
     <jettison.version>1.0.1</jettison.version> <!-- matches version used in geoserver -->
-    <jline.version>2.11</jline.version>
     <jdt-annotation.version>1.1.0</jdt-annotation.version>
     <jts.version>1.13</jts.version>
     <junit.version>4.10</junit.version>
@@ -270,10 +269,9 @@
       </dependency>
 
       <dependency>
-        <!-- https://github.com/jline/jline2 -->
-        <groupId>jline</groupId>
-        <artifactId>jline</artifactId>
-        <version>${jline.version}</version>
+        <groupId>org.fusesource.jansi</groupId>
+        <artifactId>jansi</artifactId>
+        <version>1.11</version>
       </dependency>
 
       <!-- Logging -->

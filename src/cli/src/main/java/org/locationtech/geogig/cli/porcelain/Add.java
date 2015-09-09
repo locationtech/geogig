@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
@@ -22,6 +20,7 @@ import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -75,7 +74,7 @@ public class Add extends AbstractCommand implements CLICommand {
     public void runInternal(GeogigCLI cli) throws IOException {
         final GeoGIG geogig = cli.getGeogig();
 
-        final ConsoleReader console = cli.getConsole();
+        final Console console = cli.getConsole();
 
         String pathFilter = null;
         if (patterns.size() == 1) {

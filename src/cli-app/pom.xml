@@ -61,10 +61,10 @@
               <mainClass>org.locationtech.geogig.cli.GeogigCLI</mainClass>
               <name>geogig</name>
             </program>
-            <program>
+            <!--program>
               <mainClass>org.locationtech.geogig.cli.GeogigConsole</mainClass>
               <name>geogig-console</name>
-            </program>
+            </program-->
             <program>
               <mainClass>org.locationtech.geogig.cli.GeogigPy4JEntryPoint</mainClass>
               <name>geogig-gateway</name>

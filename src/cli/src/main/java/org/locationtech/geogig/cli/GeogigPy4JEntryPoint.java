@@ -16,8 +16,6 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.DefaultPlatform;
 import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.ProgressListener;
@@ -34,7 +32,7 @@ import com.google.common.base.Throwables;
  */
 public class GeogigPy4JEntryPoint {
 
-    ConsoleReader consoleReader;
+    Console consoleReader;
 
     /**
      * A class to parse and store console output of GeoGig commands
@@ -75,16 +73,15 @@ public class GeogigPy4JEntryPoint {
 
     private GeoGigPy4JProgressListener listener;
 
-	private boolean verbose = false;
+    private boolean verbose = false;
 
     public GeogigPy4JEntryPoint(boolean verbose) {
-    	this.verbose = verbose;
+        this.verbose = verbose;
         listener = new SilentProgressListener();
         os = new ToStringOutputStream();
         stream = new PrintStream(os);
         try {
-            consoleReader = new ConsoleReader(System.in, stream);
-            consoleReader.getTerminal().setEchoEnabled(true);
+            consoleReader = new Console(System.in, stream);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -127,18 +124,18 @@ public class GeogigPy4JEntryPoint {
         String command = Joiner.on(" ").join(args);
         os.clear();
         pages = null;
-        if (verbose ){
-        	String noPasswordCommand = command.replaceAll("--password \\S*", "[PASSWORD_HIDDEN]");
-        	System.out.print("Running command: " + noPasswordCommand);
+        if (verbose) {
+            String noPasswordCommand = command.replaceAll("--password \\S*", "[PASSWORD_HIDDEN]");
+            System.out.print("Running command: " + noPasswordCommand);
         }
         int ret = cli.execute(args);
         cli.close();
-        if (verbose){
-	        if (ret == 0) {
-	            System.out.println(" [OK]");
-	        } else {
-	            System.out.println(" [Error]");
-	        }
+        if (verbose) {
+            if (ret == 0) {
+                System.out.println(" [OK]");
+            } else {
+                System.out.println(" [Error]");
+            }
         }
         stream.flush();
         os.flush();
@@ -188,47 +185,42 @@ public class GeogigPy4JEntryPoint {
 
     public static void main(String[] args) {
         Logging.tryConfigureLogging();
-        int port = GatewayServer.DEFAULT_PORT; 
+        int port = GatewayServer.DEFAULT_PORT;
         boolean verbose = false;
-        try{
-        	if (args.length == 0) {}
-        	else if (args.length == 1) {
-	        	if (args[0].equals("-v")){
-	        		verbose = true;
-	        	}
-	        	else{
-	        		port = Integer.parseInt(args[0]);
-	        	}
-        	}
-	        else if (args.length == 2) {
-	        	String portArgument = args[0];
-	        	if (args[0].equals("-v")){
-	        		verbose = true;
-	        		portArgument = args[1]; 
-	        	}
-	        	else if (args[1].equals("-v")){
-	        		verbose = true;
-	        	}
-	        	else{
-	        		System.out.println("Wrong arguments\nUsage: geogig-gateway [port][-v]");
-	        		return;
-	        	}
-	        	System.out.println(portArgument);
-	        	port = Integer.parseInt(portArgument);
-	        }
-	        else{
-	            System.out.println("Too many arguments.\n Usage: geogig-gateway [port] [-v]");
-	            return;
-	        }                        
-	
-	        GatewayServer gatewayServer = new GatewayServer(new GeogigPy4JEntryPoint(verbose), port);
-	        gatewayServer.start();
-	        System.out.println("GeoGig server correctly started and waiting for conections at port "
-	                + Integer.toString(port));
-        }
-        catch(NumberFormatException e){
-        	System.out.println("Wrong argument: " + port + "\nUsage: geogig-gateway [port][-v]");
-    		return;
+        try {
+            if (args.length == 0) {
+            } else if (args.length == 1) {
+                if (args[0].equals("-v")) {
+                    verbose = true;
+                } else {
+                    port = Integer.parseInt(args[0]);
+                }
+            } else if (args.length == 2) {
+                String portArgument = args[0];
+                if (args[0].equals("-v")) {
+                    verbose = true;
+                    portArgument = args[1];
+                } else if (args[1].equals("-v")) {
+                    verbose = true;
+                } else {
+                    System.out.println("Wrong arguments\nUsage: geogig-gateway [port][-v]");
+                    return;
+                }
+                System.out.println(portArgument);
+                port = Integer.parseInt(portArgument);
+            } else {
+                System.out.println("Too many arguments.\n Usage: geogig-gateway [port] [-v]");
+                return;
+            }
+
+            GatewayServer gatewayServer = new GatewayServer(new GeogigPy4JEntryPoint(verbose), port);
+            gatewayServer.start();
+            System.out
+                    .println("GeoGig server correctly started and waiting for conections at port "
+                            + Integer.toString(port));
+        } catch (NumberFormatException e) {
+            System.out.println("Wrong argument: " + port + "\nUsage: geogig-gateway [port][-v]");
+            return;
         }
     }
 }

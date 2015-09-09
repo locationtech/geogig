@@ -12,9 +12,6 @@ package org.locationtech.geogig.osm.cli.commands;
 import java.io.File;
 import java.util.List;
 
-import jline.UnsupportedTerminal;
-import jline.console.ConsoleReader;
-
 import org.geotools.referencing.CRS;
 import org.junit.After;
 import org.junit.Assert;
@@ -31,6 +28,7 @@ import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.porcelain.DiffOp;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
 import org.opengis.feature.type.FeatureType;
@@ -53,8 +51,7 @@ public class OSMHistoryImportTest extends Assert {
 
     @Before
     public void setUp() throws Exception {
-        ConsoleReader consoleReader = new ConsoleReader(System.in, System.out,
-                new UnsupportedTerminal());
+        Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
         fakeOsmApiUrl = getClass().getResource("../../internal/history/01_10").toExternalForm();
 

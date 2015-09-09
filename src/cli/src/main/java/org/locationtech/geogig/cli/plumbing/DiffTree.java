@@ -60,7 +60,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
     @Parameter(description = "[<treeish> [<treeish>]] [-- <path>...]", arity = 2)
     private List<String> refSpec = Lists.newArrayList();
 
-    @Parameter(names = "--", hidden = true, variableArity = true)
+    @Parameter(names = {"--path", "-p"}, hidden = true, variableArity = true)
     private List<String> paths = Lists.newArrayList();
 
     @Parameter(names = "--describe", description = "add description of versions for each modified element")

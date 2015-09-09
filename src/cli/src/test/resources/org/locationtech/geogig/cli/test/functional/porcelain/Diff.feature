@@ -32,7 +32,7 @@ Scenario: Show diff between working tree and index, for a single modified tree
     Given I have a repository
       And I stage 6 features   
       And I modify a feature         
-     When I run the command "diff -- Points"
+     When I run the command "diff --path Points"
      Then the response should contain "Points/Points.1"   
       And the response should contain "[1.0,1.0] (1.0,2.0)"  
       And the response should contain "1000"
@@ -41,7 +41,7 @@ Scenario: Show diff between working tree and index, for a single unmodified tree
     Given I have a repository
       And I stage 6 features   
       And I modify a feature         
-     When I run the command "diff -- Lines"
+     When I run the command "diff --path Lines"
 	 Then the response should contain "No differences found"   
       
 Scenario: Show diff using too many commit refspecs
@@ -64,7 +64,7 @@ Scenario: Show diff between working tree and index, for a single modified tree, 
     Given I have a repository
       And I stage 6 features   
       And I modify a feature         
-     When I run the command "diff -- Points --summary"
+     When I run the command "diff --path Points --summary"
      Then the response should contain "Points/Points.1"  
       And the response should not contain "POINT (1 1)"
       And the response should not contain "1000"
@@ -73,7 +73,7 @@ Scenario: Show diff between working tree and index, for a single feature whose f
     Given I have a repository
       And I stage 6 features   
       And I modify a feature type         
-     When I run the command "diff -- Points/Points.1"
+     When I run the command "diff --path Points/Points.1"
      Then the response should contain "extra: [MISSING] -> "
      And the response should contain "ExtraString"  
             

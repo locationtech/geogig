@@ -64,7 +64,7 @@ public class Diff extends AbstractCommand implements CLICommand {
     @Parameter(description = "[<commit> [<commit>]] [-- <path>...]", arity = 2)
     private List<String> refSpec = Lists.newArrayList();
 
-    @Parameter(names = "--", hidden = true, variableArity = true)
+    @Parameter(names = {"--path", "-p"}, hidden = true, variableArity = true)
     private List<String> paths = Lists.newArrayList();
 
     @Parameter(names = "--cached", description = "compares the specified tree (commit, branch, etc) and the staging area")
@@ -97,6 +97,9 @@ public class Diff extends AbstractCommand implements CLICommand {
                 "--cached allows zero or one ref specs to compare the index with.");
 
         GeoGIG geogig = cli.getGeogig();
+        
+        System.err.println("refSpec: " + refSpec);
+        System.err.println("paths:   " + paths);
 
         String oldVersion = resolveOldVersion();
         String newVersion = resolveNewVersion();

@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.api.plumbing.merge;
 
-import java.io.Serializable;
-
 import org.locationtech.geogig.api.ObjectId;
 
 import com.google.common.base.Objects;
@@ -24,10 +22,7 @@ import com.google.common.base.Preconditions;
  * A null ObjectId indicates that, for the corresponding version, the element did not exist
  * 
  */
-//TODO do we need to make this serializable directly?
-public final class Conflict implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public final class Conflict {
 
     private ObjectId ancestor;
 

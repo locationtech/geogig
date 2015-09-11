@@ -156,6 +156,7 @@ class MapdbConflictsDatabase implements ConflictsDatabase {
 			namespace = "root";
 		}
 		conflicts.remove(new Object[]{namespace, path});
+		db.commit();
 	}
 
 	/**
@@ -209,6 +210,7 @@ class MapdbConflictsDatabase implements ConflictsDatabase {
 				conflicts.remove(key);
 			}
 		}
+		db.commit();
 	}
 
 	@Override

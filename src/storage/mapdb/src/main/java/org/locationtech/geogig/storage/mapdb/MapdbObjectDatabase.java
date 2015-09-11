@@ -92,8 +92,10 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 	}
 
 	/*
-	 * Things to know about MapDB Transactions (write-ahead-log) can be disabled
-	 * with DBMaker.transactionDisable(), this will MapDB much faster. However,
+	 * Things to know about MapDB
+	 * 
+	 * Transactions (write-ahead-log) can be disabled with
+	 * DBMaker.transactionDisable(), this will MapDB much faster. However,
 	 * without WAL the store gets corrupted when not closed correctly.
 	 * 
 	 * Keys and values must be immutable. MapDB may serialize them on background
@@ -138,8 +140,7 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 		}
 
 		db = DBMaker.fileDB(new File(storeDirectory, "objectdb.mapdb"))
-				.closeOnJvmShutdown().fileMmapEnableIfSupported()
-				.cacheHashTableEnable().make();
+				.closeOnJvmShutdown().cacheHashTableEnable().make();
 
 		collection = db.treeMap(collectionName);
 
@@ -197,17 +198,16 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 	public List<ObjectId> lookUp(final String partialId) {
 
 		if (partialId.matches("[a-fA-F0-9]+") && partialId.length() > 0) {
-			 char nextLetter = (char) (partialId.charAt(partialId.length() -
-			 1) + 1);
-			 String end = partialId.substring(0, partialId.length() - 1)
-			 + nextLetter;
-			 SortedMap<String, byte[]> matchingPairs = collection.subMap(
-			 partialId, end);
-			 List<ObjectId> ids = new ArrayList<ObjectId>(4);
-			 for (String objectId : matchingPairs.keySet()) {
-			 ids.add(ObjectId.valueOf(objectId));
-			 }
-			 return ids;
+			char nextLetter = (char) (partialId.charAt(partialId.length() - 1) + 1);
+			String end = partialId.substring(0, partialId.length() - 1)
+					+ nextLetter;
+			SortedMap<String, byte[]> matchingPairs = collection.subMap(
+					partialId, end);
+			List<ObjectId> ids = new ArrayList<ObjectId>(4);
+			for (String objectId : matchingPairs.keySet()) {
+				ids.add(ObjectId.valueOf(objectId));
+			}
+			return ids;
 		} else {
 			throw new IllegalArgumentException(
 					"Prefix query must be done with hexadecimal values only");
@@ -285,6 +285,7 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 		String key = id.toString();
 		if (collection.containsKey(key)) {
 			collection.remove(key);
+			db.commit();
 			return true;
 		}
 		return false;
@@ -302,6 +303,7 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 		while (chunks.hasNext()) {
 			count += deleteChunk(chunks.next());
 		}
+		db.commit();
 		return count;
 	}
 

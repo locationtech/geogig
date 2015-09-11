@@ -91,7 +91,7 @@ public class MapdbGraphDatabase implements GraphDatabase {
         }
         
 		db = DBMaker.fileDB(new File(storeDirectory,"graphdb.mapdb")).closeOnJvmShutdown()
-				.fileMmapEnableIfSupported().cacheHashTableEnable().make();
+				.cacheHashTableEnable().make();
 
 		// open existing an collection (or create new)
 		nodes = db.treeMap("nodes");
@@ -188,6 +188,7 @@ public class MapdbGraphDatabase implements GraphDatabase {
     @Override
     public void map(ObjectId mapped, ObjectId original) {
         graph.map(mapped, original);
+        db.commit();
     }
 
     @Override
@@ -218,12 +219,13 @@ public class MapdbGraphDatabase implements GraphDatabase {
     @Override
     public void setProperty(ObjectId commitId, String propertyName, String propertyValue) {
         graph.get(commitId).get().put(propertyName, propertyValue);
-        ;
+        db.commit();
     }
 
     @Override
     public void truncate() {
         graph.clear();
+        db.commit();
     }
 
     static class Ref {

@@ -165,7 +165,7 @@ public class DepthSearch {
         if (subtreeBucket == null) {
             return Optional.absent();
         }
-        RevTree subtree = objectDb.get(subtreeBucket.id(), RevTree.class);
+        RevTree subtree = objectDb.get(subtreeBucket.getObjectId(), RevTree.class);
         return getDirectChild(subtree, directChildName, subtreesDepth + 1);
     }
 }

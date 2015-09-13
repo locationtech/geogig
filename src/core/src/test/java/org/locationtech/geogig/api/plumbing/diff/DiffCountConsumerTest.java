@@ -293,7 +293,7 @@ public class DiffCountConsumerTest extends Assert {
         }
         int depth = currDepth;
         for (Bucket bucket : deepTree.buckets().get().values()) {
-            RevTree bucketTree = odb.get(bucket.id(), RevTree.class);
+            RevTree bucketTree = odb.get(bucket.getObjectId(), RevTree.class);
             int d = depth(bucketTree, currDepth + 1);
             depth = Math.max(depth, d);
         }

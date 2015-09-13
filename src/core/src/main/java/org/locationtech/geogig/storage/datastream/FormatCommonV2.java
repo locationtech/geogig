@@ -408,7 +408,7 @@ public class FormatCommonV2 {
 
         writeUnsignedVarInt(index, data);
 
-        data.write(bucket.id().getRawValue());
+        data.write(bucket.getObjectId().getRawValue());
         envBuff.setToNull();
         bucket.expand(envBuff);
         if (envBuff.isNull()) {

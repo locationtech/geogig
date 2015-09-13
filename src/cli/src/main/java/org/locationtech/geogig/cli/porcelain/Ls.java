@@ -117,7 +117,7 @@ public class Ls extends AbstractCommand implements CLICommand {
                 }
                 if (verbose) {
                     sb.append(' ').append(abbrev(input.getMetadataId())).append(' ')
-                            .append(abbrev(input.objectId()));
+                            .append(abbrev(input.getObjectId()));
                 }
                 return sb.toString();
             }

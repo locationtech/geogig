@@ -98,11 +98,11 @@ public class LsTree extends AbstractCommand implements CLICommand {
                             .append(Double.toString(env.getMaxY()));
                     sb.append(input.getMetadataId().toString()).append(' ')
                             .append(input.getType().toString().toLowerCase()).append(' ')
-                            .append(input.objectId().toString()).append(' ').append(input.path())
+                            .append(input.getObjectId().toString()).append(' ').append(input.path())
                             .append(' ').append(sbenv);
                     if (input.getType().equals(TYPE.TREE)) {
                         RevTree tree = cli.getGeogig().command(RevObjectParse.class)
-                                .setObjectId(input.objectId()).call(RevTree.class).get();
+                                .setObjectId(input.getObjectId()).call(RevTree.class).get();
                         sb.append(' ').append(tree.size()).append(' ').append(tree.numTrees());
                     }
                 }

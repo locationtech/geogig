@@ -170,7 +170,7 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
             if (!ref.isPresent()) {
                 return Optional.absent();
             }
-            resolved = Optional.of(ref.get().objectId());
+            resolved = Optional.of(ref.get().getObjectId());
         }
         return resolved;
     }

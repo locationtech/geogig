@@ -107,7 +107,7 @@ public abstract class FilteredDiffIterator extends AbstractIterator<DiffEntry> {
             return null;
         }
 
-        RevObject object = sourceRepo.objectDatabase().get(node.objectId());
+        RevObject object = sourceRepo.objectDatabase().get(node.getObjectId());
 
         RevObject metadata = null;
         if (!node.getMetadataId().isNull()) {

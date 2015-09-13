@@ -10,23 +10,31 @@
 package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.locationtech.geogig.api.Bounded;
+import org.locationtech.geogig.api.Bucket;
+import org.locationtech.geogig.api.Node;
+import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.plumbing.CreateDeduplicator;
 import org.locationtech.geogig.api.plumbing.WalkGraphOp;
+import org.locationtech.geogig.api.plumbing.WalkGraphOp.Listener;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.storage.Deduplicator;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
+import com.google.common.base.Functions;
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
 /**
@@ -42,51 +50,174 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
     @Parameter(names = { "-v", "--verbose" }, description = "Verbose output, include metadata, object id, and object type among object path.")
     private boolean verbose;
 
+    @Parameter(names = { "-i", "--indent" }, description = "Indent output.")
+    private boolean indent;
+
     @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public void runInternal(final GeogigCLI cli) throws IOException {
         String ref;
         if (refList.isEmpty()) {
             ref = null;
         } else {
             ref = refList.get(0);
         }
-        Deduplicator deduplicator = cli.getGeogig().command(CreateDeduplicator.class).call();
+
+        AtomicInteger indentLevel = new AtomicInteger();
+
+        final Function<Object, CharSequence> printFunctor;
+        {
+            Function<Object, CharSequence> formatFunctor = verbose ? VERBOSE_FORMATTER : FORMATTER;
+            Function<CharSequence, CharSequence> indentFunctor = Functions.identity();
+            if (indent) {
+                indentFunctor = new Indenter(indentLevel);
+            }
+            printFunctor = Functions.compose(indentFunctor, formatFunctor);
+        }
+        Console console = cli.getConsole();
+        Listener listener = new PrintListener(console, printFunctor, indentLevel);
         try {
-            Iterator<RevObject> iter = cli.getGeogig() //
-                    .command(WalkGraphOp.class).setReference(ref) //
-                    .setDeduplicator(deduplicator) //
-                    // .setStrategy(lsStrategy) //
+            cli.getGeogig().command(WalkGraphOp.class).setReference(ref).setListener(listener)
                     .call();
-
-            final Console console = cli.getConsole();
-            if (!iter.hasNext()) {
-                if (ref == null) {
-                    console.println("The working tree is empty");
-                } else {
-                    console.println("The specified path is empty");
-                }
-                return;
-            }
-
-            Function<RevObject, CharSequence> printFunctor = new Function<RevObject, CharSequence>() {
-                @Override
-                public CharSequence apply(RevObject input) {
-                    if (verbose) {
-                        return String.format("%s: %s %s", input.getId(), input.getType(), input);
-                    } else {
-                        return String.format("%s: %s", input.getId(), input.getType());
-                    }
-                }
-            };
-
-            Iterator<CharSequence> lines = Iterators.transform(iter, printFunctor);
-
-            while (lines.hasNext()) {
-                console.println(lines.next());
-            }
-            console.flush();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new CommandFailedException(e.getMessage(), e);
         } finally {
-            deduplicator.release();
+            console.flush();
         }
     }
+
+    private static class PrintListener implements WalkGraphOp.Listener {
+
+        private final Console console;
+
+        private final Function<Object, CharSequence> printFunctor;
+
+        private AtomicInteger indentLevel;
+
+        public PrintListener(Console console, Function<Object, CharSequence> printFunctor,
+                AtomicInteger indentLevel) {
+            this.console = console;
+            this.printFunctor = printFunctor;
+            this.indentLevel = indentLevel;
+        }
+
+        private void print(Object b) {
+            try {
+                console.println(printFunctor.apply(b));
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+
+        @Override
+        public void starTree(Node treeNode) {
+            indentLevel.incrementAndGet();
+            print(treeNode);
+        }
+
+        @Override
+        public void feature(Node featureNode) {
+            print(featureNode);
+        }
+
+        @Override
+        public void endTree(Node treeNode) {
+            indentLevel.decrementAndGet();
+        }
+
+        @Override
+        public void bucket(int bucketIndex, int bucketDepth, Bucket bucket) {
+            print(bucket);
+            indentLevel.incrementAndGet();
+        }
+
+        @Override
+        public void endBucket(int bucketIndex, int bucketDepth, Bucket bucket) {
+            indentLevel.decrementAndGet();
+        }
+
+        @Override
+        public void commit(RevCommit commit) {
+            print(commit);
+        }
+
+        @Override
+        public void featureType(RevFeatureType ftype) {
+            print(ftype);
+        }
+
+    };
+
+    private static final Function<Object, CharSequence> FORMATTER = new Function<Object, CharSequence>() {
+
+        /**
+         * @param o a {@link Node}, {@link Bucket}, or {@link RevObject}
+         */
+        @Override
+        public CharSequence apply(Object o) {
+            ObjectId id;
+            String type;
+            if (o instanceof Bounded) {
+                Bounded b = (Bounded) o;
+                id = b.getObjectId();
+                if (b instanceof Node) {
+                    type = ((Node) b).getType().toString();
+                } else {
+                    type = "BUCKET";
+                }
+            } else if (o instanceof RevObject) {
+                id = ((RevObject) o).getId();
+                type = ((RevObject) o).getType().toString();
+            } else {
+                throw new IllegalArgumentException();
+            }
+            return String.format("%s: %s", id, type);
+        }
+    };
+
+    private static final Function<Object, CharSequence> VERBOSE_FORMATTER = new Function<Object, CharSequence>() {
+
+        /**
+         * @param o a {@link Node}, {@link Bucket}, or {@link RevObject}
+         */
+        @Override
+        public CharSequence apply(Object o) {
+            ObjectId id;
+            String type;
+            String extraData = "";
+            if (o instanceof Bounded) {
+                Bounded b = (Bounded) o;
+                id = b.getObjectId();
+                if (b instanceof Node) {
+                    Node node = (Node) b;
+                    type = node.getType().toString();
+                    extraData = node.getName();
+                    if (node.getMetadataId().isPresent()) {
+                        extraData += " [" + node.getMetadataId().get() + "]";
+                    }
+                } else {
+                    type = "BUCKET";
+                }
+            } else if (o instanceof RevObject) {
+                id = ((RevObject) o).getId();
+                type = ((RevObject) o).getType().toString();
+            } else {
+                throw new IllegalArgumentException();
+            }
+            return String.format("%s: %s %s", id, type, extraData);
+        }
+    };
+
+    private static class Indenter implements Function<CharSequence, CharSequence> {
+
+        private AtomicInteger indentLevel;
+
+        Indenter(AtomicInteger indentLevel) {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public CharSequence apply(CharSequence input) {
+            return new StringBuilder(Strings.repeat(" ", indentLevel.get())).append(input);
+        }
+    };
 }

@@ -51,7 +51,7 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
     public static Iterator<RevObject> all(ObjectId top, ObjectDatabase database, Deduplicator deduplicator) {
         List<ObjectId> start = new ArrayList<ObjectId>();
         start.add(top);
-        return new PostOrderIterator(start, database, unique(ALL_SUCCESSORS));
+        return new PostOrderIterator(start, database, uniqueWithDeduplicator(ALL_SUCCESSORS, deduplicator));
     }
 
     /**

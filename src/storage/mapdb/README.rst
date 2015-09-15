@@ -33,12 +33,12 @@ Todos
 
 * Performance tests: Determine best options for mapdb storage
 
-Testing
--------
-* which integration tests to implement? Currently all that were in mongoDB storage..
 
 Known Bugs
 ----------
-Conflict Storage does not work correctly with submaps as with mapdb-2.0.0-beta6,
+* Conflict Storage does not work correctly with submaps as with mapdb-2.0.0-beta6,
 currently a less efficient workaround is in place
 See also: https://github.com/jankotek/mapdb/issues/569, already fixed, but not released up to now.
+
+* CheckSparsePathTest is not working, probably related to missing persistence for extra key/value (Properties) 
+Storage for nodes.

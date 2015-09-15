@@ -69,7 +69,7 @@ public interface ObjectDatabase extends Closeable {
     /**
      * Searches the database for {@link ObjectId}s that match the given partial id.
      * 
-     * @param partialId the partial id to search for
+     * @param partialId the partial id to search for, must be at least 8 characters long
      * @return a list of matching results
      */
     public List<ObjectId> lookUp(final String partialId);

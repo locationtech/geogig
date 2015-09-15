@@ -137,6 +137,8 @@ public class HeapObjectDatabse extends AbstractObjectDatabase implements ObjectD
      */
     @Override
     public List<ObjectId> lookUp(final String partialId) {
+        Preconditions.checkArgument(partialId.length() > 7,
+                "partial id must be at least 8 characters long: ", partialId);
         checkState(isOpen(), "db is closed");
         Preconditions.checkNotNull(partialId);
         List<ObjectId> matches = Lists.newLinkedList();

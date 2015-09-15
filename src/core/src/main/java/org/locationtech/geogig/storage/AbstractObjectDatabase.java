@@ -58,6 +58,8 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     @Override
     public List<ObjectId> lookUp(final String partialId) {
         Preconditions.checkNotNull(partialId);
+        Preconditions.checkArgument(partialId.length() > 7,
+                "partial id must be at least 8 characters long: ", partialId);
         checkState(isOpen(), "db is closed");
 
         byte[] raw = ObjectId.toRaw(partialId);

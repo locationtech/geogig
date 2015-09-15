@@ -90,7 +90,9 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
                 String sql = format(
                         "CREATE TABLE IF NOT EXISTS %s (id varchar PRIMARY KEY, object blob)",
                         OBJECTS);
-                open(cx.createStatement()).execute(log(sql, LOG));
+                try (Statement st = cx.createStatement()) {
+                    st.execute(log(sql, LOG));
+                }
                 return null;
             }
         }.run(ds);
@@ -118,13 +120,15 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
             protected Boolean doRun(Connection cx) throws SQLException {
                 String sql = format("SELECT count(*) FROM %s WHERE id = ?", OBJECTS);
 
-                PreparedStatement ps = open(cx.prepareStatement(log(sql, LOG, id)));
-                ps.setString(1, id);
+                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
+                    ps.setString(1, id);
 
-                ResultSet rs = open(ps.executeQuery());
-                rs.next();
-
-                return rs.getInt(1) > 0;
+                    try (ResultSet rs = ps.executeQuery()) {
+                        rs.next();
+                        int count = rs.getInt(1);
+                        return Boolean.valueOf(count > 0);
+                    }
+                }
             }
         }.run(ds);
     }
@@ -159,16 +163,18 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
             protected InputStream doRun(Connection cx) throws SQLException {
                 String sql = format("SELECT object FROM %s WHERE id = ?", OBJECTS);
 
-                PreparedStatement ps = open(cx.prepareStatement(log(sql, LOG, id)));
-                ps.setString(1, id);
+                InputStream in = null;
+                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
+                    ps.setString(1, id);
 
-                ResultSet rs = open(ps.executeQuery());
-                if (!rs.next()) {
-                    return null;
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            byte[] bytes = rs.getBytes(1);
+                            in = new ByteArrayInputStream(bytes);
+                        }
+                    }
                 }
-
-                byte[] bytes = rs.getBytes(1);
-                return new ByteArrayInputStream(bytes);
+                return in;
             }
         }.run(ds);
     }
@@ -180,11 +186,11 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
             protected Void doRun(Connection cx) throws SQLException, IOException {
                 String sql = format("INSERT OR IGNORE INTO %s (id,object) VALUES (?,?)", OBJECTS);
 
-                PreparedStatement ps = open(cx.prepareStatement(log(sql, LOG, id, obj)));
-                ps.setString(1, id);
-                ps.setBytes(2, ByteStreams.toByteArray(obj));
-                ps.executeUpdate();
-
+                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id, obj))) {
+                    ps.setString(1, id);
+                    ps.setBytes(2, ByteStreams.toByteArray(obj));
+                    ps.executeUpdate();
+                }
                 return null;
             }
         }.run(ds);
@@ -197,10 +203,12 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
             protected Boolean doRun(Connection cx) throws SQLException {
                 String sql = format("DELETE FROM %s WHERE id = ?", OBJECTS);
 
-                PreparedStatement ps = open(cx.prepareStatement(log(sql, LOG, id)));
-                ps.setString(1, id);
+                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
+                    ps.setString(1, id);
 
-                return ps.executeUpdate() > 0;
+                    int updateCount = ps.executeUpdate();
+                    return updateCount > 0;
+                }
             }
         }.run(ds);
     }
@@ -221,25 +229,30 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
             protected Void doRun(Connection cx) throws SQLException, IOException {
                 // use INSERT OR IGNORE to deal with duplicates cleanly
                 String sql = format("INSERT OR IGNORE INTO %s (object,id) VALUES (?,?)", OBJECTS);
-                PreparedStatement stmt = open(cx.prepareStatement(log(sql, LOG)));
+                try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG))) {
 
-                // partition the objects into chunks for batch processing
-                @SuppressWarnings({ "unchecked", "rawtypes" })
-                Iterator<List<? extends RevObject>> it = (Iterator) Iterators.partition(objects,
-                        partitionSize);
+                    // partition the objects into chunks for batch processing
+                    @SuppressWarnings({ "unchecked", "rawtypes" })
+                    Iterator<List<? extends RevObject>> it = (Iterator) Iterators.partition(
+                            objects, partitionSize);
 
-                while (it.hasNext()) {
-                    List<? extends RevObject> objs = it.next();
-                    for (RevObject obj : objs) {
-                        stmt.setBytes(1, ByteStreams.toByteArray(writeObject(obj)));
-                        stmt.setString(2, obj.getId().toString());
-                        stmt.addBatch();
+                    while (it.hasNext()) {
+                        List<? extends RevObject> objs = it.next();
+                        for (RevObject obj : objs) {
+                            stmt.setBytes(1, ByteStreams.toByteArray(writeObject(obj)));
+                            stmt.setString(2, obj.getId().toString());
+                            stmt.addBatch();
+                        }
+
+                        int[] batchResults = stmt.executeBatch();
+                        notifyInserted(batchResults, objs, listener);
+                        stmt.clearParameters();
                     }
-
-                    notifyInserted(stmt.executeBatch(), objs, listener);
-                    stmt.clearParameters();
+                    cx.commit();
+                } catch (SQLException e) {
+                    cx.rollback();
+                    throw e;
                 }
-                cx.commit();
 
                 return null;
             }
@@ -269,24 +282,26 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
             @Override
             protected Long doRun(Connection cx) throws SQLException, IOException {
                 String sql = format("DELETE FROM %s WHERE id = ?", OBJECTS);
-                PreparedStatement stmt = open(cx.prepareStatement(log(sql, LOG)));
-
                 long count = 0;
+                try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG))) {
+                    // partition the objects into chunks for batch processing
+                    Iterator<List<ObjectId>> it = Iterators.partition(ids, partitionSize);
 
-                // partition the objects into chunks for batch processing
-                Iterator<List<ObjectId>> it = Iterators.partition(ids, partitionSize);
+                    while (it.hasNext()) {
+                        List<ObjectId> l = it.next();
+                        for (ObjectId id : l) {
+                            stmt.setString(1, id.toString());
+                            stmt.addBatch();
+                        }
 
-                while (it.hasNext()) {
-                    List<ObjectId> l = it.next();
-                    for (ObjectId id : l) {
-                        stmt.setString(1, id.toString());
-                        stmt.addBatch();
+                        count += notifyDeleted(stmt.executeBatch(), l, listener);
+                        stmt.clearParameters();
                     }
-
-                    count += notifyDeleted(stmt.executeBatch(), l, listener);
-                    stmt.clearParameters();
+                    cx.commit();
+                } catch (SQLException e) {
+                    cx.rollback();
+                    throw e;
                 }
-                cx.commit();
 
                 return count;
             }

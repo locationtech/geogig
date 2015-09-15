@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.sql.DataSource;
 
@@ -49,8 +50,9 @@ class XerialConflictsDatabase extends SQLiteConflictsDatabase<DataSource> {
                 String sql = format("CREATE TABLE IF NOT EXISTS %s (namespace VARCHAR, "
                         + "path VARCHAR, conflict VARCHAR, PRIMARY KEY(namespace,path))", CONFLICTS);
 
-                LOG.debug(sql);
-                open(cx.createStatement()).execute(sql);
+                try (Statement statement = cx.createStatement()) {
+                    statement.execute(log(sql, LOG));
+                }
 
                 return null;
             }
@@ -64,16 +66,16 @@ class XerialConflictsDatabase extends SQLiteConflictsDatabase<DataSource> {
             protected Integer doRun(Connection cx) throws IOException, SQLException {
                 String sql = format("SELECT count(*) FROM %s WHERE namespace = ?", CONFLICTS);
 
-                PreparedStatement ps = open(cx.prepareStatement(log(sql, LOG, namespace)));
-                ps.setString(1, namespace);
-
-                ResultSet rs = ps.executeQuery();
-                int count = 0;
-                while (rs.next()) {
-                    count = rs.getInt(1);
+                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, namespace))) {
+                    ps.setString(1, namespace);
+                    int count = 0;
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            count = rs.getInt(1);
+                        }
+                    }
+                    return Integer.valueOf(count);
                 }
-                rs.close();
-                return Integer.valueOf(count);
             }
         }.run(ds);
 
@@ -90,10 +92,11 @@ class XerialConflictsDatabase extends SQLiteConflictsDatabase<DataSource> {
                         "SELECT conflict FROM %s WHERE namespace = ? AND path LIKE '%%%s%%'",
                         CONFLICTS, pathFilter);
 
-                PreparedStatement ps = open(cx.prepareStatement(log(sql, LOG, namespace)));
-                ps.setString(1, namespace);
+                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, namespace))) {
+                    ps.setString(1, namespace);
 
-                return ps.executeQuery();
+                    return ps.executeQuery();
+                }
             }
         }.run(cx);
 
@@ -110,12 +113,13 @@ class XerialConflictsDatabase extends SQLiteConflictsDatabase<DataSource> {
 
                 log(sql, LOG, namespace, path, conflict);
 
-                PreparedStatement ps = open(cx.prepareStatement(sql));
-                ps.setString(1, namespace);
-                ps.setString(2, path);
-                ps.setString(3, conflict);
+                try (PreparedStatement ps = cx.prepareStatement(sql)) {
+                    ps.setString(1, namespace);
+                    ps.setString(2, path);
+                    ps.setString(3, conflict);
 
-                ps.executeUpdate();
+                    ps.executeUpdate();
+                }
                 return null;
             }
         }.run(ds);
@@ -130,11 +134,11 @@ class XerialConflictsDatabase extends SQLiteConflictsDatabase<DataSource> {
 
                 log(sql, LOG, namespace, path);
 
-                PreparedStatement ps = open(cx.prepareStatement(sql));
-                ps.setString(1, namespace);
-                ps.setString(2, path);
-
-                ps.executeUpdate();
+                try (PreparedStatement ps = cx.prepareStatement(sql)) {
+                    ps.setString(1, namespace);
+                    ps.setString(2, path);
+                    ps.executeUpdate();
+                }
                 return null;
             }
         }.run(ds);

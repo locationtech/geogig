@@ -15,9 +15,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import jline.UnsupportedTerminal;
-import jline.console.ConsoleReader;
-
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -28,6 +25,7 @@ import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
@@ -44,8 +42,7 @@ public class OSMExportSLTest extends Assert {
 
     @Before
     public void setUp() throws Exception {
-        ConsoleReader consoleReader = new ConsoleReader(System.in, System.out,
-                new UnsupportedTerminal());
+        Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
         File workingDirectory = tempFolder.getRoot();
         TestPlatform platform = new TestPlatform(workingDirectory);

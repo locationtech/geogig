@@ -9,15 +9,9 @@
  */
 package org.locationtech.geogig.storage.sqlite;
 
-import static org.locationtech.geogig.storage.sqlite.XerialSQLiteModule.LOG;
-
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayDeque;
-import java.util.Deque;
 
 import javax.sql.DataSource;
 
@@ -50,8 +44,6 @@ import com.google.common.base.Throwables;
  */
 public abstract class DbOp<T> {
 
-    Deque<Object> open = new ArrayDeque<Object>();
-
     /**
      * Runs the op against a new connection provided by the data source.
      * <p>
@@ -61,8 +53,8 @@ public abstract class DbOp<T> {
      * @param ds The data source to obtain connection from.
      */
     public final T run(DataSource ds) {
-        try {
-            return run(open(ds.getConnection()));
+        try (Connection cx = ds.getConnection()) {
+            return run(cx);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -77,54 +69,19 @@ public abstract class DbOp<T> {
      */
     public final T run(Connection cx) {
         try {
+            boolean auto = isAutoCommit();
+            if (!auto) {
+                cx.setAutoCommit(false);
+            }
             try {
-                boolean auto = isAutoCommit();
+                return doRun(cx);
+            } finally {
                 if (!auto) {
-                    cx.setAutoCommit(false);
+                    cx.setAutoCommit(true);
                 }
-                try {
-                    return doRun(cx);
-                } finally {
-                    if (!auto) {
-                        cx.setAutoCommit(true);
-                    }
-                }
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
             }
-        } finally {
-            close();
-        }
-    }
-
-    /**
-     * Tracks a resource to be closed in LIFO order.
-     * 
-     * @param obj The object to be closed.
-     * 
-     * @return The original object.
-     */
-    protected <X> X open(X obj) {
-        open.push(obj);
-        return obj;
-    }
-
-    void close() {
-        while (!open.isEmpty()) {
-            Object obj = open.pop();
-            try {
-                if (obj instanceof ResultSet) {
-                    ((ResultSet) obj).close();
-                }
-                if (obj instanceof Statement) {
-                    ((Statement) obj).close();
-                }
-                if (obj instanceof Connection) {
-                    ((Connection) obj).close();
-                }
-            } catch (Exception e) {
-                LOG.debug("error closing object: " + obj, e);
-            }
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
     }
 

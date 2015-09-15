@@ -13,13 +13,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.plumbing.ForEachRef;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 
@@ -47,7 +46,7 @@ public class ShowRef extends AbstractCommand implements CLICommand {
     @Override
     public void runInternal(GeogigCLI cli) throws IOException {
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
 
         ForEachRef op = geogig.command(ForEachRef.class);

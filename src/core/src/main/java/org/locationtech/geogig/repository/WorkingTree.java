@@ -235,7 +235,7 @@ public class WorkingTree {
             }
 
             parentMetadataId = parentRef.get().getMetadataId();
-            parent = context.command(RevObjectParse.class).setObjectId(parentRef.get().objectId())
+            parent = context.command(RevObjectParse.class).setObjectId(parentRef.get().getObjectId())
                     .call(RevTree.class).get();
             parentBuilder = parent.builder(indexDatabase);
         }
@@ -347,7 +347,7 @@ public class WorkingTree {
 
             for (Map.Entry<NodeRef, RevTree> treeEntry : trees.entrySet()) {
                 NodeRef treeRef = treeEntry.getKey();
-                Preconditions.checkState(indexDatabase.exists(treeRef.objectId()));
+                Preconditions.checkState(indexDatabase.exists(treeRef.getObjectId()));
                 RevTree newFeatureTree = treeEntry.getValue();
 
                 String treePath = treeRef.path();
@@ -479,7 +479,7 @@ public class WorkingTree {
 
         Stopwatch sw = Stopwatch.createStarted();
 
-        final RevTree origTree = indexDatabase.getTree(treeRef.objectId());
+        final RevTree origTree = indexDatabase.getTree(treeRef.getObjectId());
         Platform platform = context.platform();
         RevTreeBuilder2 builder = new RevTreeBuilder2(indexDatabase, origTree,
                 treeRef.getMetadataId(), platform, executorService);
@@ -921,7 +921,7 @@ public class WorkingTree {
         while (iter.hasNext()) {
             NodeRef noderef = iter.next();
             RevFeature feature = context.command(RevObjectParse.class)
-                    .setObjectId(noderef.objectId()).call(RevFeature.class).get();
+                    .setObjectId(noderef.getObjectId()).call(RevFeature.class).get();
             if (!featureBuilders.containsKey(noderef.getMetadataId())) {
                 RevFeatureType ft = context.command(RevObjectParse.class)
                         .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class).get();

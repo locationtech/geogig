@@ -215,21 +215,21 @@ public class RevParseIntegrationTest extends RepositoryTestCase {
 
     @Test
     public void testParsePartialObjectIdParentIndex() {
-        assertParsed(mergeCommit, revParse(partialId(masterCommit4, 5) + "^"));
-        assertParsed(mergeCommit, revParse(partialId(masterCommit4, 7) + "^1"));
+        assertParsed(mergeCommit, revParse(partialId(masterCommit4, 8) + "^"));
+        assertParsed(mergeCommit, revParse(partialId(masterCommit4, 10) + "^1"));
         assertAbsent(revParse(partialId(masterCommit4, 9) + "^2"));
 
-        assertParsed(masterCommit3, revParse(partialId(mergeCommit, 7) + "^"));
-        assertParsed(masterCommit3, revParse(partialId(mergeCommit, 5) + "^1"));
+        assertParsed(masterCommit3, revParse(partialId(mergeCommit, 10) + "^"));
+        assertParsed(masterCommit3, revParse(partialId(mergeCommit, 8) + "^1"));
 
-        assertParsed(branchCommit2, revParse(partialId(mergeCommit, 5) + "^2"));
-        assertParsed(branchCommit1, revParse(partialId(mergeCommit, 6) + "^2^"));
-        assertParsed(branchCommit1, revParse(partialId(mergeCommit, 7) + "^2^1"));
-        assertParsed(masterCommit2, revParse(partialId(mergeCommit, 8) + "^2^^"));
-        assertParsed(masterCommit2, revParse(partialId(mergeCommit, 9) + "^2^^1"));
-        assertAbsent(revParse(partialId(mergeCommit, 10) + "^3"));
-        assertAbsent(revParse(partialId(mergeCommit, 9) + "^33"));
-        assertAbsent(revParse(partialId(mergeCommit, 8) + "^2^^2"));
+        assertParsed(branchCommit2, revParse(partialId(mergeCommit, 8) + "^2"));
+        assertParsed(branchCommit1, revParse(partialId(mergeCommit, 9) + "^2^"));
+        assertParsed(branchCommit1, revParse(partialId(mergeCommit, 10) + "^2^1"));
+        assertParsed(masterCommit2, revParse(partialId(mergeCommit, 11) + "^2^^"));
+        assertParsed(masterCommit2, revParse(partialId(mergeCommit, 12) + "^2^^1"));
+        assertAbsent(revParse(partialId(mergeCommit, 13) + "^3"));
+        assertAbsent(revParse(partialId(mergeCommit, 12) + "^33"));
+        assertAbsent(revParse(partialId(mergeCommit, 11) + "^2^^2"));
     }
 
     @Test

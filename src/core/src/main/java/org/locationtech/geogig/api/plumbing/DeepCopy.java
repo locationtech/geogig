@@ -236,7 +236,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
                 return bucketTrees.next();
             }
             if (buckets.hasNext()) {
-                bucketTrees = new AllTrees(buckets.next().id(), from);
+                bucketTrees = new AllTrees(buckets.next().getObjectId(), from);
                 return computeNext();
             }
             return endOfData();

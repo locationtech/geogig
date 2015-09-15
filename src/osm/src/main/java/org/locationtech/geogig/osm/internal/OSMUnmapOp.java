@@ -138,7 +138,7 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         FeatureMapFlusher flusher = new FeatureMapFlusher(workingTree());
         while (iter.hasNext()) {
             NodeRef node = iter.next();
-            RevFeature revFeature = command(RevObjectParse.class).setObjectId(node.objectId())
+            RevFeature revFeature = command(RevObjectParse.class).setObjectId(node.getObjectId())
                     .call(RevFeature.class).get();
             RevFeatureType revFeatureType = command(RevObjectParse.class)
                     .setObjectId(node.getMetadataId()).call(RevFeatureType.class).get();

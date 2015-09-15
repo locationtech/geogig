@@ -60,7 +60,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
     @Parameter(description = "[<treeish> [<treeish>]] [-- <path>...]", arity = 2)
     private List<String> refSpec = Lists.newArrayList();
 
-    @Parameter(names = "--", hidden = true, variableArity = true)
+    @Parameter(names = {"--path", "-p"}, hidden = true, variableArity = true)
     private List<String> paths = Lists.newArrayList();
 
     @Parameter(names = "--describe", description = "add description of versions for each modified element")
@@ -127,7 +127,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                     RevFeatureType featureType = geogig.command(RevObjectParse.class)
                             .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class).get();
                     Optional<RevObject> obj = geogig.command(RevObjectParse.class)
-                            .setObjectId(noderef.objectId()).call();
+                            .setObjectId(noderef.getObjectId()).call();
                     RevFeature feature = (RevFeature) obj.get();
                     ImmutableList<Optional<Object>> values = feature.getValues();
                     ImmutableList<PropertyDescriptor> descriptors = featureType.sortedDescriptors();
@@ -177,7 +177,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                     RevFeatureType featureType = geogig.command(RevObjectParse.class)
                             .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class).get();
                     Optional<RevObject> obj = geogig.command(RevObjectParse.class)
-                            .setObjectId(noderef.objectId()).call();
+                            .setObjectId(noderef.getObjectId()).call();
                     RevFeature feature = (RevFeature) obj.get();
                     ImmutableList<Optional<Object>> values = feature.getValues();
                     int i = 0;

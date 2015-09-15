@@ -164,7 +164,7 @@ public class OSMExport extends AbstractCommand implements CLICommand {
             @Nullable
             public EntityContainer apply(@Nullable NodeRef ref) {
                 RevFeature revFeature = geogig.command(RevObjectParse.class)
-                        .setObjectId(ref.objectId()).call(RevFeature.class).get();
+                        .setObjectId(ref.getObjectId()).call(RevFeature.class).get();
                 SimpleFeatureType featureType;
                 if (ref.path().startsWith(OSMUtils.NODE_TYPE_NAME)) {
                     featureType = OSMUtils.nodeType();

@@ -12,8 +12,6 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.locationtech.geogig.api.GeoGIG;
@@ -28,8 +26,8 @@ import org.locationtech.geogig.api.porcelain.BranchListOp;
 import org.locationtech.geogig.api.porcelain.BranchRenameOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -115,7 +113,7 @@ public class Branch extends AbstractCommand implements CLICommand {
     public void runInternal(final GeogigCLI cli) throws IOException {
         final GeoGIG geogig = cli.getGeogig();
 
-        final ConsoleReader console = cli.getConsole();
+        final Console console = cli.getConsole();
 
         if (delete) {
             checkParameter(!branchName.isEmpty(), "no name specified for deletion");
@@ -170,7 +168,7 @@ public class Branch extends AbstractCommand implements CLICommand {
     }
 
     private void listBranches(GeogigCLI cli) throws IOException {
-        final ConsoleReader console = cli.getConsole();
+        final Console console = cli.getConsole();
         final GeoGIG geogig = cli.getGeogig();
 
         boolean local = all || !(remotes);
@@ -186,7 +184,7 @@ public class Branch extends AbstractCommand implements CLICommand {
         for (Ref branchRef : branches) {
             final String branchRefName = branchRef.getName();
 
-            Ansi ansi = newAnsi(console.getTerminal());
+            Ansi ansi = newAnsi(console);
 
             if ((currentHead instanceof SymRef)
                     && ((SymRef) currentHead).getTarget().equals(branchRefName)) {

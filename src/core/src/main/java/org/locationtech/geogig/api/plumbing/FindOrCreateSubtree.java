@@ -97,7 +97,7 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
                     throw new IllegalArgumentException("Object exists as child of tree "
                             + parent.getId() + " but is not a tree: " + treeChildRef);
                 }
-                subtreeId = treeRef.objectId();
+                subtreeId = treeRef.getObjectId();
             } else {
                 subtreeId = RevTree.EMPTY_TREE_ID;
             }

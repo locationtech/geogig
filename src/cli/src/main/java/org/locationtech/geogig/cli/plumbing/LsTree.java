@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
@@ -23,6 +21,7 @@ import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 
@@ -80,7 +79,7 @@ public class LsTree extends AbstractCommand implements CLICommand {
         Iterator<NodeRef> iter = cli.getGeogig().command(LsTreeOp.class).setReference(ref)
                 .setStrategy(lsStrategy).call();
 
-        final ConsoleReader console = cli.getConsole();
+        final Console console = cli.getConsole();
 
         Function<NodeRef, CharSequence> printFunctor = new Function<NodeRef, CharSequence>() {
 
@@ -99,11 +98,11 @@ public class LsTree extends AbstractCommand implements CLICommand {
                             .append(Double.toString(env.getMaxY()));
                     sb.append(input.getMetadataId().toString()).append(' ')
                             .append(input.getType().toString().toLowerCase()).append(' ')
-                            .append(input.objectId().toString()).append(' ').append(input.path())
+                            .append(input.getObjectId().toString()).append(' ').append(input.path())
                             .append(' ').append(sbenv);
                     if (input.getType().equals(TYPE.TREE)) {
                         RevTree tree = cli.getGeogig().command(RevObjectParse.class)
-                                .setObjectId(input.objectId()).call(RevTree.class).get();
+                                .setObjectId(input.getObjectId()).call(RevTree.class).get();
                         sb.append(' ').append(tree.size()).append(' ').append(tree.numTrees());
                     }
                 }

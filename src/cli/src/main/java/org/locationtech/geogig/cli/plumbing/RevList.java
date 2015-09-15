@@ -14,8 +14,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.geotools.util.Range;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
@@ -28,6 +26,7 @@ import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.api.porcelain.LogOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 
@@ -51,7 +50,7 @@ public class RevList extends AbstractCommand implements CLICommand {
 
     private GeoGIG geogig;
 
-    private ConsoleReader console;
+    private Console console;
 
     /**
      * Executes the revlist command using the provided options.

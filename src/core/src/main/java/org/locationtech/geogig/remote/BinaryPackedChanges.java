@@ -146,7 +146,7 @@ public final class BinaryPackedChanges {
                     objectCount++;
                 }
 
-                ObjectId objectId = newObject.objectId();
+                ObjectId objectId = newObject.getObjectId();
                 writeObjectId(objectId, out, oidbuffer);
                 RevObject object = objectDatabase.get(objectId);
                 serializer.write(object, out);

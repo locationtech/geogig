@@ -97,6 +97,7 @@ public class Init extends AbstractCommand implements CLICommand {
             try {
                 repository = geogig.command(InitOp.class).setConfig(suppliedConfiguration)
                         .setTarget(targetDirectory).call();
+                repository.close();
             } catch (IllegalArgumentException e) {
                 throw new CommandFailedException(e.getMessage(), e);
             } finally {

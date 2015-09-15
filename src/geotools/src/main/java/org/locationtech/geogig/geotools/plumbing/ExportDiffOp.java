@@ -183,7 +183,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                 if (nodeRef == null) {
                     return null;
                 }
-                final RevFeature revFeature = database.getFeature(nodeRef.objectId());
+                final RevFeature revFeature = database.getFeature(nodeRef.getObjectId());
                 ImmutableList<Optional<Object>> values = revFeature.getValues();
                 for (int i = 0; i < values.size(); i++) {
                     String name = featureType.getDescriptor(i + 1).getLocalName();

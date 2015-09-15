@@ -20,8 +20,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
-import org.locationtech.geogig.osm.internal.MappingRule.DefaultField;
-import org.locationtech.geogig.osm.internal.MappingRule.GeomRestriction;
 import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.Feature;

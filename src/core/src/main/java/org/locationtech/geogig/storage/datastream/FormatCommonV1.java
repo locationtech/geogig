@@ -403,7 +403,7 @@ public class FormatCommonV1 {
     public static void writeBucket(int index, Bucket bucket, DataOutput data, Envelope envBuff)
             throws IOException {
         data.writeInt(index);
-        data.write(bucket.id().getRawValue());
+        data.write(bucket.getObjectId().getRawValue());
         envBuff.setToNull();
         bucket.expand(envBuff);
         writeBoundingBox(envBuff, data);

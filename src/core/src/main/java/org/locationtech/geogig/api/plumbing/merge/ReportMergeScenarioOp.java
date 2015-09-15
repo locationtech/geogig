@@ -103,10 +103,10 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                 ObjectId ancestorVersionId = ancestorVersion.isPresent() ? ancestorVersion.get()
                         .getNode().getObjectId() : ObjectId.NULL;
                 ObjectId theirs = toMergeDiff.getNewObject() == null ? ObjectId.NULL : toMergeDiff
-                        .getNewObject().objectId();
+                        .getNewObject().getObjectId();
                 DiffEntry mergeIntoDiff = mergeIntoDiffs.get(path);
                 ObjectId ours = mergeIntoDiff.getNewObject() == null ? ObjectId.NULL
-                        : mergeIntoDiff.getNewObject().objectId();
+                        : mergeIntoDiff.getNewObject().getObjectId();
                 if (!mergeIntoDiff.changeType().equals(toMergeDiff.changeType())) {
                     report.addConflict(new Conflict(path, ancestorVersionId, ours, theirs));
                     continue;
@@ -117,7 +117,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                         // already added in current branch, no need to do anything
                     } else {
                         TYPE type = command(ResolveObjectType.class).setObjectId(
-                                toMergeDiff.getNewObject().objectId()).call();
+                                toMergeDiff.getNewObject().getObjectId()).call();
                         if (TYPE.TREE.equals(type)) {
                             boolean conflict = !toMergeDiff.getNewObject().getMetadataId()
                                     .equals(mergeIntoDiff.getNewObject().getMetadataId());
@@ -145,7 +145,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                     break;
                 case MODIFIED:
                     TYPE type = command(ResolveObjectType.class).setObjectId(
-                            toMergeDiff.getNewObject().objectId()).call();
+                            toMergeDiff.getNewObject().getObjectId()).call();
                     if (TYPE.TREE.equals(type)) {
                         boolean conflict = !toMergeDiff.getNewObject().getMetadataId()
                                 .equals(mergeIntoDiff.getNewObject().getMetadataId());
@@ -227,7 +227,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                                             .get().getNode().getObjectId()
                                             : ObjectId.NULL;
                                     ObjectId theirs = toMergeDiff.getNewObject() == null ? ObjectId.NULL
-                                            : toMergeDiff.getNewObject().objectId();
+                                            : toMergeDiff.getNewObject().getObjectId();
                                     String oursRefSpec = mergeInto.getId().toString() + ":"
                                             + parentPath;
                                     Optional<ObjectId> ours = command(RevParse.class).setRefSpec(

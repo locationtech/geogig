@@ -13,16 +13,15 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map.Entry;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef;
 import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef.ChangeTypes;
+import org.locationtech.geogig.cli.Console;
 
 class FetchResultPrinter {
 
-    public static void print(TransferSummary result, ConsoleReader console) throws IOException {
+    public static void print(TransferSummary result, Console console) throws IOException {
         for (Entry<String, Collection<ChangedRef>> entry : result.getChangedRefs().entrySet()) {
             console.println("From " + entry.getKey());
 

@@ -104,7 +104,7 @@ public class DiffEntry {
      *         {@link #changeType()} is {@code ADD}
      */
     public ObjectId oldObjectId() {
-        return oldObject == null ? ObjectId.NULL : oldObject.objectId();
+        return oldObject == null ? ObjectId.NULL : oldObject.getObjectId();
     }
 
     /**
@@ -119,7 +119,7 @@ public class DiffEntry {
      *         {@link #changeType()} is {@code DELETE}
      */
     public ObjectId newObjectId() {
-        return newObject == null ? ObjectId.NULL : newObject.objectId();
+        return newObject == null ? ObjectId.NULL : newObject.getObjectId();
     }
 
     /**
@@ -135,9 +135,9 @@ public class DiffEntry {
      */
     public ChangeType changeType() {
         ChangeType type;
-        if (oldObject == null || oldObject.objectId().isNull()) {
+        if (oldObject == null || oldObject.getObjectId().isNull()) {
             type = ChangeType.ADDED;
-        } else if (newObject == null || newObject.objectId().isNull()) {
+        } else if (newObject == null || newObject.getObjectId().isNull()) {
             type = ChangeType.REMOVED;
         } else {
             type = ChangeType.MODIFIED;

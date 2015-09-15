@@ -30,8 +30,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.relation.Relation;
 
-import jline.console.ConsoleReader;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.api.DefaultProgressListener;
@@ -59,6 +57,7 @@ import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.osm.internal.history.Change;
@@ -112,7 +111,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         checkParameter(args.numThreads > 0 && args.numThreads < 7,
                 "numthreads must be between 1 and 6");
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
 
         final String osmAPIUrl = resolveAPIURL();
 
@@ -241,7 +240,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         return osmAPIUrl;
     }
 
-    private void importOsmHistory(GeogigCLI cli, ConsoleReader console,
+    private void importOsmHistory(GeogigCLI cli, Console console,
             HistoryDownloader downloader, @Nullable Envelope featureFilter) throws IOException {
 
         Iterator<Changeset> changesets = downloader.fetchChangesets();
@@ -296,7 +295,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
      */
     private void commit(GeogigCLI cli, Changeset changeset) throws IOException {
         Preconditions.checkArgument(!changeset.isOpen());
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         console.print("Committing changeset " + changeset.getId() + "...");
         console.flush();
 

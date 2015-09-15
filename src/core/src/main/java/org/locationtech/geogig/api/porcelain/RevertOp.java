@@ -306,7 +306,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                 // make sure it is still deleted
                 if (node.isPresent()) {
                     conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(), node.get()
-                            .objectId(), diff.newObjectId()));
+                            .getObjectId(), diff.newObjectId()));
                 } else {
                     index().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
                 }
@@ -322,7 +322,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                     // do not mark as conflict if reverting to the same feature currently in HEAD
                     if (!nodeId.equals(diff.newObjectId())) {
                         conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(), node.get()
-                                .objectId(), diff.newObjectId()));
+                                .getObjectId(), diff.newObjectId()));
                     }
                 }
 

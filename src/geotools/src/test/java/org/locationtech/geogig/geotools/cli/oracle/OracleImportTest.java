@@ -15,9 +15,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 
-import jline.UnsupportedTerminal;
-import jline.console.ConsoleReader;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,6 +23,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.geotools.cli.TestHelper;
 import org.mockito.exceptions.base.MockitoException;
@@ -41,8 +39,7 @@ public class OracleImportTest {
 
     @Before
     public void setUp() throws Exception {
-        ConsoleReader consoleReader = new ConsoleReader(System.in, System.out,
-                new UnsupportedTerminal());
+        Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
         setUpGeogig(cli);
@@ -108,8 +105,7 @@ public class OracleImportTest {
 
     @Test
     public void testImportException() throws Exception {
-        ConsoleReader consoleReader = new ConsoleReader(System.in, System.out,
-                new UnsupportedTerminal());
+        Console consoleReader = new Console().disableAnsi();
         GeogigCLI mockCli = spy(new GeogigCLI(consoleReader));
 
         setUpGeogig(mockCli);

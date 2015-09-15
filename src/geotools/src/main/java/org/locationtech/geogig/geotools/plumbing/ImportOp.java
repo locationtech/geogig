@@ -489,7 +489,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
      * @return a feature with the passed feature type and data taken from the input feature
      */
     private Feature alter(NodeRef node, RevFeatureType featureType) {
-        RevFeature oldFeature = command(RevObjectParse.class).setObjectId(node.objectId())
+        RevFeature oldFeature = command(RevObjectParse.class).setObjectId(node.getObjectId())
                 .call(RevFeature.class).get();
         RevFeatureType oldFeatureType;
         oldFeatureType = command(RevObjectParse.class).setObjectId(node.getMetadataId())

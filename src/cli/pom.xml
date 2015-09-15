@@ -67,10 +67,9 @@
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
     </dependency>
-
     <dependency>
-      <groupId>jline</groupId>
-      <artifactId>jline</artifactId>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
     </dependency>
 
     <dependency>

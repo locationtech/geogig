@@ -197,7 +197,7 @@ public class RevTreeBuilder {
             return Optional.absent();
         }
 
-        RevTree subtree = loadTree(bucket.id());
+        RevTree subtree = loadTree(bucket.getObjectId());
 
         DepthSearch depthSearch = new DepthSearch(db);
         Optional<Node> node = depthSearch.getDirectChild(subtree, key, depth + 1);
@@ -279,7 +279,7 @@ public class RevTreeBuilder {
         checkState(this.bucketTreesByBucket.isEmpty());
 
         for (Bucket bucket : tree.buckets().get().values()) {
-            ObjectId id = bucket.id();
+            ObjectId id = bucket.getObjectId();
             RevTree bucketTree = this.loadTree(id);
             if (bucketTree.buckets().isPresent()) {
                 moveBucketsToChildren(bucketTree);
@@ -367,7 +367,8 @@ public class RevTreeBuilder {
                     bucketTreesByBucket.remove(bucketIndex);
                 } else {
                     final Bucket currBucket = this.bucketTreesByBucket.get(bucketIndex);
-                    if (currBucket == null || !currBucket.id().equals(modifiedBucketTree.getId())) {
+                    if (currBucket == null
+                            || !currBucket.getObjectId().equals(modifiedBucketTree.getId())) {
                         // if (currBucket != null) {
                         // db.delete(currBucket.id());
                         // }
@@ -418,7 +419,8 @@ public class RevTreeBuilder {
         List<Integer> missing = new ArrayList<>(changedBucketIndexes.size());
         for (Integer bucketIndex : changedBucketIndexes) {
             Bucket bucket = bucketTreesByBucket.get(bucketIndex);
-            RevTree cached = bucket == null ? RevTree.EMPTY : pendingWritesCache.get(bucket.id());
+            RevTree cached = bucket == null ? RevTree.EMPTY : pendingWritesCache.get(bucket
+                    .getObjectId());
             if (cached == null) {
                 missing.add(bucketIndex);
             } else {
@@ -430,7 +432,7 @@ public class RevTreeBuilder {
                     new Function<Integer, ObjectId>() {
                         @Override
                         public ObjectId apply(Integer index) {
-                            return bucketTreesByBucket.get(index).id();
+                            return bucketTreesByBucket.get(index).getObjectId();
                         }
                     });
             Iterator<RevObject> all = db.getAll(ids.keySet());
@@ -451,7 +453,7 @@ public class RevTreeBuilder {
         if (bucket == null) {
             return RevTree.EMPTY;
         } else {
-            return loadTree(bucket.id());
+            return loadTree(bucket.getObjectId());
         }
     }
 

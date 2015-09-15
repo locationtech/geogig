@@ -15,13 +15,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.osm.internal.Mapping;
 import org.locationtech.geogig.osm.internal.OSMMapOp;
@@ -74,7 +73,7 @@ public class OSMMap extends AbstractCommand implements CLICommand {
         ObjectId newTreeId = geogig.command(OSMMapOp.class).setMapping(mapping).setMessage(message)
                 .call().getId();
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         if (newTreeId.equals(oldTreeId)) {
             console.println("No features matched the specified filter, or they provided no updated data.\n"
                     + "No changes have been made to the working tree");

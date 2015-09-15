@@ -321,7 +321,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
                         return true;
                     }
                 } else {
-                    id = ((Bucket) b).id();
+                    id = ((Bucket) b).getObjectId();
                 }
                 boolean exists = ids.contains(id) || toDb.exists(id);
                 return !exists;
@@ -360,10 +360,10 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             @Override
             public void bucket(int bucketIndex, int bucketDepth, @Nullable Bucket left, Bucket right) {
                 if (left != null) {
-                    ids.add(left.id());
+                    ids.add(left.getObjectId());
                 }
                 if (right != null) {
-                    ids.add(right.id());
+                    ids.add(right.getObjectId());
                 }
                 checkLimitAndCopy();
             }

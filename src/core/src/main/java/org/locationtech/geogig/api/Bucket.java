@@ -24,7 +24,16 @@ public abstract class Bucket implements Bounded {
         this.bucketTree = id;
     }
 
+    /**
+     * @deprecated use {@link #getObjectId()} instead
+     */
+    @Deprecated
     public ObjectId id() {
+        return bucketTree;
+    }
+
+    @Override
+    public ObjectId getObjectId() {
         return bucketTree;
     }
 
@@ -32,18 +41,18 @@ public abstract class Bucket implements Bounded {
     public String toString() {
         Envelope bounds = new Envelope();
         expand(bounds);
-        return getClass().getSimpleName() + "[" + id() + "] " + bounds;
+        return getClass().getSimpleName() + "[" + getObjectId() + "] " + bounds;
     }
 
     /**
-     * Equality check based purely on {@link #id() ObjectId}
+     * Equality check based purely on {@link #getObjectId() ObjectId}
      */
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Bucket)) {
             return false;
         }
-        return id().equals(((Bucket) o).id());
+        return getObjectId().equals(((Bucket) o).getObjectId());
     }
 
     private static class PointBucket extends Bucket {

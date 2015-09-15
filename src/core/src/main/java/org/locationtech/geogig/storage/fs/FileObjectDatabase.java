@@ -37,6 +37,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -256,6 +257,8 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
      */
     @Override
     public List<ObjectId> lookUp(final String partialId) {
+        Preconditions.checkArgument(partialId.length() > 7,
+                "partial id must be at least 8 characters long: ", partialId);
         File parent = filePath(partialId).getParentFile();
         String[] list = parent.list();
         if (null == list) {

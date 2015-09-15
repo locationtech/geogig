@@ -559,7 +559,7 @@ public class WriteTree2Test extends RepositoryTestCase {
 
     private void print(NodeRef ref) {
         System.err.printf("\t%s '%s' -> %s (%s)\n", ref.getType().toString().charAt(0), ref.path(),
-                ref.objectId(), ref.getNode().getMetadataId());
+                ref.getObjectId(), ref.getNode().getMetadataId());
     }
 
     private void verifyRepositoryTree(String path, ObjectId repoTreeId) {
@@ -591,7 +591,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         if (tree.buckets().isPresent()) {
             ImmutableCollection<Bucket> buckets = tree.buckets().get().values();
             for (Bucket b : buckets) {
-                ObjectId bucketTreeId = b.id();
+                ObjectId bucketTreeId = b.getObjectId();
                 verifyRepositoryTree(path + "/" + bucketTreeId.toString().substring(0, 8),
                         bucketTreeId);
             }

@@ -258,19 +258,19 @@ public class ResponseWriter {
             NodeRef newObject = entry.getNewObject();
             if (oldObject == null) {
                 writeElement("newPath", newObject.path());
-                writeElement("newObjectId", newObject.objectId().toString());
+                writeElement("newObjectId", newObject.getObjectId().toString());
                 writeElement("path", "");
                 writeElement("oldObjectId", ObjectId.NULL.toString());
             } else if (newObject == null) {
                 writeElement("newPath", "");
                 writeElement("newObjectId", ObjectId.NULL.toString());
                 writeElement("path", oldObject.path());
-                writeElement("oldObjectId", oldObject.objectId().toString());
+                writeElement("oldObjectId", oldObject.getObjectId().toString());
             } else {
                 writeElement("newPath", newObject.path());
-                writeElement("newObjectId", newObject.objectId().toString());
+                writeElement("newObjectId", newObject.getObjectId().toString());
                 writeElement("path", oldObject.path());
-                writeElement("oldObjectId", oldObject.objectId().toString());
+                writeElement("oldObjectId", oldObject.getObjectId().toString());
             }
             out.writeEndElement();
             counter++;
@@ -347,7 +347,7 @@ public class ResponseWriter {
                 Bucket bucket = entry.getValue();
                 out.writeStartElement("bucket");
                 writeElement("bucketindex", bucketIndex.toString());
-                writeElement("bucketid", bucket.id().toString());
+                writeElement("bucketid", bucket.getObjectId().toString());
                 Envelope env = new Envelope();
                 env.setToNull();
                 bucket.expand(env);
@@ -538,7 +538,7 @@ public class ResponseWriter {
             if (verbose) {
                 writeElement("metadataId", node.getMetadataId().toString());
                 writeElement("type", node.getType().toString().toLowerCase());
-                writeElement("objectId", node.objectId().toString());
+                writeElement("objectId", node.getObjectId().toString());
             }
             out.writeEndElement();
         }
@@ -945,7 +945,7 @@ public class ResponseWriter {
                                         "Couldn't resolve newCommit's featureType");
                             }
                             object = geogig.command(RevObjectParse.class)
-                                    .setObjectId(node.get().objectId()).call();
+                                    .setObjectId(node.get().getObjectId()).call();
                             if (object.isPresent() && object.get() instanceof RevFeature) {
                                 feature = (RevFeature) object.get();
                             } else {

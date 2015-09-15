@@ -75,7 +75,7 @@ public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
     public boolean bucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
         if (left == null || right == null) {
             Bucket bucket = left == null ? right : left;
-            addTreeFeatures(bucket.id(), left != null, right != null);
+            addTreeFeatures(bucket.getObjectId(), left != null, right != null);
             return false;
         }
         return true;

@@ -195,7 +195,7 @@ class HashObjectFunnels {
                 ImmutableSortedMap<Integer, Bucket> buckets = from.buckets().get();
                 for (Entry<Integer, Bucket> entry : buckets.entrySet()) {
                     Funnels.integerFunnel().funnel(entry.getKey(), into);
-                    ObjectIdFunnel.funnel(entry.getValue().id(), into);
+                    ObjectIdFunnel.funnel(entry.getValue().getObjectId(), into);
                 }
             }
         }

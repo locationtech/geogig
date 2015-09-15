@@ -346,7 +346,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
             assertNotNull(id + " has no featureVersion set", id.getFeatureVersion());
             NodeRef ref = expected.get(id.getID());
             assertNotNull(ref);
-            assertEquals(ref.objectId().toString(), id.getFeatureVersion());
+            assertEquals(ref.getObjectId().toString(), id.getFeatureVersion());
         }
     }
 

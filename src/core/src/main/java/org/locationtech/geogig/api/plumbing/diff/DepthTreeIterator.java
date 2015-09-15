@@ -303,7 +303,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             while (!bucketEntries.hasNext()) {
                 if (buckets.hasNext()) {
                     Bucket nextBucket = buckets.next();
-                    bucketEntries = resolveBucketEntries(nextBucket.id());
+                    bucketEntries = resolveBucketEntries(nextBucket.getObjectId());
                 } else {
                     return endOfData();
                 }

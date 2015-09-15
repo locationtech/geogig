@@ -20,8 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import jline.console.ConsoleReader;
-
 import org.fusesource.jansi.Ansi;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.RevCommit;
@@ -30,6 +28,7 @@ import org.locationtech.geogig.api.porcelain.BlameOp;
 import org.locationtech.geogig.api.porcelain.BlameReport;
 import org.locationtech.geogig.api.porcelain.ValueAndCommit;
 import org.locationtech.geogig.cli.AbstractCommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
@@ -65,7 +64,7 @@ public class Blame extends AbstractCommand {
         checkParameter(paths.size() < 2, "Only one path allowed");
         checkParameter(!paths.isEmpty(), "A path must be specified");
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
 
         String path = paths.get(0);
@@ -94,7 +93,7 @@ public class Blame extends AbstractCommand {
                     }
                     console.println(sb.toString());
                 } else {
-                    Ansi ansi = newAnsi(console.getTerminal());
+                    Ansi ansi = newAnsi(console);
                     ansi.fg(GREEN).a(attrib + ": ").reset();
                     if (!noValues) {
                         String s = value.isPresent() ? value.get().toString() : "NULL";

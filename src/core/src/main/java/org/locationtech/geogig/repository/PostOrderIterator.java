@@ -299,7 +299,7 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
                 if (tree.buckets().isPresent()) {
                     for (Map.Entry<?, Bucket> entry : tree.buckets().get().entrySet()) {
                         final Bucket bucket = entry.getValue();
-                        successors.add(bucket.id());
+                        successors.add(bucket.getObjectId());
                     }
                 }
             }

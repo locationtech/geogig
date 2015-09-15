@@ -182,7 +182,7 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
         RevTreeBuilder parentBuilder;
         ObjectId parentMetadataId = ObjectId.NULL;
         if (parentRef.isPresent()) {
-            ObjectId parentId = parentRef.get().objectId();
+            ObjectId parentId = parentRef.get().getObjectId();
             parentMetadataId = parentRef.get().getMetadataId();
             parentBuilder = getTree(parentId, targetDatabase).builder(targetDatabase);
         } else {

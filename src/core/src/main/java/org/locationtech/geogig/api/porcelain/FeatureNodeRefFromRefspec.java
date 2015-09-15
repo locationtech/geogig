@@ -79,7 +79,7 @@ public class FeatureNodeRefFromRefspec extends AbstractGeoGigOp<Optional<NodeRef
             Optional<NodeRef> elementRef = command(FindTreeChild.class)
                     .setParent(workingTree().getTree()).setChildPath(ref).call();
             Preconditions.checkArgument(elementRef.isPresent(), "Invalid reference: %s", ref);
-            ObjectId id = elementRef.get().objectId();
+            ObjectId id = elementRef.get().getObjectId();
             revObject = command(RevObjectParse.class).setObjectId(id).call(RevObject.class);
         }
 

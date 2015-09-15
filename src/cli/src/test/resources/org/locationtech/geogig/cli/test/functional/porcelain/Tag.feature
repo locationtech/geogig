@@ -61,6 +61,6 @@ Feature: "tag" command
  Scenario: Try to create a tag with a wrong commit ref
   	Given I have a repository
   	  And I have several commits  	  
-  	 When I run the command "tag mytag aaaaaa -m msg"
-  	 Then the response should contain "Wrong reference: aaaaaa"
+  	 When I run the command "tag mytag aaaaaaaa -m msg"
+  	 Then the response should contain "Wrong reference: aaaaaaaa"
   	  And it should exit with non-zero exit code  

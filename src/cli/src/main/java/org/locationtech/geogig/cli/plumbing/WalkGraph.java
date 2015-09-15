@@ -13,13 +13,12 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.plumbing.CreateDeduplicator;
 import org.locationtech.geogig.api.plumbing.WalkGraphOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.storage.Deduplicator;
@@ -59,7 +58,7 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
                     // .setStrategy(lsStrategy) //
                     .call();
 
-            final ConsoleReader console = cli.getConsole();
+            final Console console = cli.getConsole();
             if (!iter.hasNext()) {
                 if (ref == null) {
                     console.println("The working tree is empty");

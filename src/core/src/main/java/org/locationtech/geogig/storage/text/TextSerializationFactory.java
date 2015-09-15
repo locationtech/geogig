@@ -410,7 +410,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
                 print(w, "\t");
                 print(w, bucketIndex.toString());
                 print(w, "\t");
-                print(w, bucket.id().toString());
+                print(w, bucket.getObjectId().toString());
                 print(w, "\t");
                 Envelope env = new Envelope();
                 env.setToNull();

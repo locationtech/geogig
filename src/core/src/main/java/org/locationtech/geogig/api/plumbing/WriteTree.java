@@ -166,7 +166,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
                 }
             } else {
                 if (copyObjects && ref.getType().equals(TYPE.TREE)) {
-                    RevTree tree = fromDb.getTree(ref.objectId());
+                    RevTree tree = fromDb.getTree(ref.getObjectId());
                     if (!ref.getMetadataId().isNull()) {
                         repositoryDatabase.put(fromDb.getFeatureType(ref.getMetadataId()));
                     }
@@ -248,7 +248,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
                 if (treeRef.isPresent()) {
                     metadataCache.put(treePath, treeRef.get().getMetadataId());
                     treeBuilder = command(RevObjectParse.class)
-                            .setObjectId(treeRef.get().objectId()).call(RevTree.class).get()
+                            .setObjectId(treeRef.get().getObjectId()).call(RevTree.class).get()
                             .builder(repositoryDatabase);
                 } else {
                     metadataCache.put(treePath, fallbackMetadataId);

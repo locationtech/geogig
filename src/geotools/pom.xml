@@ -88,9 +88,8 @@
     </dependency>
 
     <dependency>
-      <!-- https://github.com/jline/jline2 -->
-      <groupId>jline</groupId>
-      <artifactId>jline</artifactId>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
     </dependency>
 
     <!-- Test scope dependencies -->

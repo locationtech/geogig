@@ -351,7 +351,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
             // handle the case where more than one feature has the same hash
             ArrayListMultimap<ObjectId, String> fidIndex = ArrayListMultimap.create();
             for (NodeRef ref : refs) {
-                fidIndex.put(ref.objectId(), ref.name());
+                fidIndex.put(ref.getObjectId(), ref.name());
             }
             Iterable<ObjectId> ids = fidIndex.keySet();
             Iterator<RevObject> all = source.getAll(ids);

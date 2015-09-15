@@ -11,7 +11,11 @@ package org.locationtech.geogig.storage.sqlite;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Iterator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.AbstractIterator;
 
@@ -21,11 +25,13 @@ import com.google.common.collect.AbstractIterator;
  * @author Justin Deoliveira, Boundless
  * 
  */
-public class StringResultSetIterable implements Iterable<String> {
+class StringResultSetIterable implements Iterable<String> {
 
-    ResultSet rs;
+    private static final Logger LOG = LoggerFactory.getLogger(StringResultSetIterable.class);
 
-    Connection cx;
+    private ResultSet rs;
+
+    private Connection cx;
 
     StringResultSetIterable(ResultSet rs, Connection cx) {
         this.rs = rs;
@@ -34,13 +40,13 @@ public class StringResultSetIterable implements Iterable<String> {
 
     @Override
     public Iterator<String> iterator() {
+
         return new AbstractIterator<String>() {
             @Override
             protected String computeNext() {
                 try {
                     if (!rs.next()) {
-                        rs.close();
-                        cx.close();
+                        close();
                         return endOfData();
                     }
 
@@ -49,6 +55,37 @@ public class StringResultSetIterable implements Iterable<String> {
                     throw new RuntimeException(e);
                 }
             }
+
+            private void close() {
+                if (rs == null) {
+                    return;
+                }
+                try {
+                    try {
+                        rs.close();
+                    } catch (SQLException swallow) {
+                        LOG.warn("Ignoring exception closing resultset", swallow);
+                    }
+                    try {
+                        cx.close();
+                    } catch (SQLException swallow) {
+                        LOG.warn("Ignoring exception closing connection", swallow);
+                    }
+                } finally {
+                    rs = null;
+                    cx = null;
+                }
+            }
+
+            @Override
+            protected void finalize() throws Throwable {
+                try {
+                    close();
+                } finally {
+                    super.finalize();
+                }
+            }
         };
+
     }
 }

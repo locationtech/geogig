@@ -16,8 +16,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.porcelain.CloneOp;
@@ -25,6 +23,7 @@ import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
@@ -117,8 +116,6 @@ public class Clone extends AbstractCommand implements CLICommand {
             targetArg = cloneURI.getPath();
         }
 
-        System.err.println("remote URI " + remoteURI);
-        System.err.println("clone URI " + cloneURI);
         RepositoryInitializer cloneInitializer = RepositoryInitializer.lookup(cloneURI);
         checkParameter(!cloneInitializer.repoExists(cloneURI),
                 "Destination path already exists and is not an empty directory.");
@@ -128,21 +125,24 @@ public class Clone extends AbstractCommand implements CLICommand {
         cloneInitializer.initialize(cloneURI, cloneContext);
         cli.setPlatform(cloneContext.platform());
 
+        Console console = cli.getConsole();
+
         Repository cloneRepo = cloneContext.command(InitOp.class)
                 .setConfig(Init.splitConfig(config)).setFilterFile(filterFile).call();
+        try {
+            console.println("Cloning into '" + targetArg + "'...");
+            console.flush();
 
-        ConsoleReader console = cli.getConsole();
-        console.println("Cloning into '" + targetArg + "'...");
-        console.flush();
+            CloneOp clone = cloneRepo.command(CloneOp.class);
+            clone.setProgressListener(cli.getProgressListener());
+            clone.setBranch(branch).setRepositoryURL(remoteURI.toString());
+            clone.setUserName(username).setPassword(password);
+            clone.setDepth(depth);
 
-        CloneOp clone = cloneRepo.command(CloneOp.class);
-        clone.setProgressListener(cli.getProgressListener());
-        clone.setBranch(branch).setRepositoryURL(remoteURI.toString());
-        clone.setUserName(username).setPassword(password);
-        clone.setDepth(depth);
-
-        clone.call();
-
+            clone.call();
+        } finally {
+            cloneRepo.close();
+        }
         console.println("Done.");
     }
 

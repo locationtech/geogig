@@ -9,9 +9,6 @@
  */
 package org.locationtech.geogig.cli.test.functional.postgresql;
 
-import org.junit.runner.RunWith;
-
-import cucumber.junit.Cucumber;
 
 /**
  * Single cucumber test runner. Its sole purpose is to serve as an entry point for junit. Step

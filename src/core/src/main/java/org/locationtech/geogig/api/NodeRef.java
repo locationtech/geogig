@@ -103,9 +103,15 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     }
 
     /**
-     * The id of the object this edge points to
+     * @deprecated use {@link #getObjectId()} instead
      */
+    @Deprecated
     public ObjectId objectId() {
+        return node.getObjectId();
+    }
+
+    @Override
+    public ObjectId getObjectId() {
         return node.getObjectId();
     }
 
@@ -187,8 +193,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @return non null parent path, empty string if {@code fullPath} has no children (i.e. no
      *         {@link #PATH_SEPARATOR}).
      */
-    public static @Nullable
-    String parentPath(@Nullable String fullPath) {
+    public static @Nullable String parentPath(@Nullable String fullPath) {
         if (fullPath == null || fullPath.isEmpty()) {
             return null;
         }
@@ -227,8 +232,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @return non null node, original string if {@code fullPath} has no path (i.e. no
      *         {@link #PATH_SEPARATOR}).
      */
-    public static @Nullable
-    String nodeFromPath(@Nullable String fullPath) {
+    public static @Nullable String nodeFromPath(@Nullable String fullPath) {
         if (fullPath == null || fullPath.isEmpty()) {
             return null;
         }

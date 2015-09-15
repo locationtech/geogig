@@ -27,9 +27,6 @@ import java.util.ServiceLoader;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
-import jline.console.ConsoleReader;
-import jline.console.CursorBuffer;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.DefaultPlatform;
@@ -100,7 +97,7 @@ public class GeogigCLI {
 
     private final GeoGIG providedGeogig;
 
-    private final ConsoleReader consoleReader;
+    private final Console consoleReader;
 
     protected ProgressListener progressListener;
 
@@ -117,14 +114,14 @@ public class GeogigCLI {
      * 
      * @param consoleReader
      */
-    public GeogigCLI(final ConsoleReader consoleReader) {
+    public GeogigCLI(final Console consoleReader) {
         this(null, consoleReader);
     }
 
     /**
      * Constructor to use the provided {@code GeoGIG} instance and never try to close it.
      */
-    public GeogigCLI(final GeoGIG geogig, final ConsoleReader consoleReader) {
+    public GeogigCLI(final GeoGIG geogig, final Console consoleReader) {
         this.consoleReader = consoleReader;
         this.platform = new DefaultPlatform();
         this.providedGeogig = geogig;
@@ -303,7 +300,7 @@ public class GeogigCLI {
     /**
      * @return the console reader being used by the command line interface.
      */
-    public ConsoleReader getConsole() {
+    public Console getConsole() {
         return consoleReader;
     }
 
@@ -336,30 +333,13 @@ public class GeogigCLI {
      */
     public static void main(String[] args) {
         Logging.tryConfigureLogging();
-        ConsoleReader consoleReader;
-        try {
-            consoleReader = new ConsoleReader(System.in, System.out);
-            // needed for CTRL+C not to let the console broken
-            consoleReader.getTerminal().setEchoEnabled(true);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        Console consoleReader = new Console();
 
         final GeogigCLI cli = new GeogigCLI(consoleReader);
         addShutdownHook(cli);
         int exitCode = cli.execute(args);
 
-        try {
-            cli.close();
-        } finally {
-            try {
-                consoleReader.getTerminal().restore();
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
-                exitCode = -1;
-            }
-            consoleReader.shutdown();
-        }
+        cli.close();
 
         if (exitCode != 0 || cli.isExitOnFinish()) {
             System.exit(exitCode);
@@ -587,7 +567,7 @@ public class GeogigCLI {
     public void printUsage(JCommander mainCommander) {
         StringBuilder out = new StringBuilder();
         mainCommander.usage(out);
-        ConsoleReader console = getConsole();
+        Console console = getConsole();
         try {
             console.println(out.toString());
             console.flush();
@@ -718,7 +698,7 @@ public class GeogigCLI {
                 longestCommandLenght = Math.max(longestCommandLenght, name.length());
             }
         }
-        ConsoleReader console = getConsole();
+        Console console = getConsole();
         try {
             console.println("usage: geogig <command> [<args>]");
             console.println();
@@ -748,7 +728,7 @@ public class GeogigCLI {
             commandNames.add(name);
             longestCommandLenght = Math.max(longestCommandLenght, name.length());
         }
-        ConsoleReader console = getConsole();
+        Console console = getConsole();
         try {
             console.println("usage: geogig <command> [<args>]");
             console.println();
@@ -785,7 +765,7 @@ public class GeogigCLI {
 
                 private final Platform platform = getPlatform();
 
-                private final ConsoleReader console = getConsole();
+                private final Console console = getConsole();
 
                 private final NumberFormat percentFormat = NumberFormat.getPercentInstance();
 
@@ -842,18 +822,17 @@ public class GeogigCLI {
                 }
 
                 private void log(float percent) {
-                    CursorBuffer cursorBuffer = console.getCursorBuffer();
-                    cursorBuffer.clear();
+                    console.clearBuffer();
                     String description = getDescription();
-                    if (description != null) {
-                        cursorBuffer.write(description);
-                    }
-                    if (percent > 100) {
-                        cursorBuffer.write(numberFormat.format(percent));
-                    } else {
-                        cursorBuffer.write(percentFormat.format(percent / 100f));
-                    }
                     try {
+                        if (description != null) {
+                            console.print(description);
+                        }
+                        if (percent > 100) {
+                            console.print(numberFormat.format(percent));
+                        } else {
+                            console.print(percentFormat.format(percent / 100f));
+                        }
                         console.redrawLine();
                         console.flush();
                     } catch (IOException e) {
@@ -869,12 +848,15 @@ public class GeogigCLI {
     static void addShutdownHook(final GeogigCLI cli) {
         // try to grafefully shutdown upon CTRL+C
         Runtime.getRuntime().addShutdownHook(new Thread() {
+
+            private GeogigCLI geogig = cli;
+
             @Override
             public void run() {
                 if (cli.isRunning()) {
                     System.err.println("Forced shut down, wait for geogig to be closed...");
                     System.err.flush();
-                    cli.close();
+                    geogig.close();
                     System.err.println("geogig closed.");
                     System.err.flush();
                 }
@@ -886,4 +868,5 @@ public class GeogigCLI {
     public void tryConfigureLogging() {
         Logging.tryConfigureLogging(getPlatform());
     }
+
 }

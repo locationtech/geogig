@@ -170,7 +170,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>> implements
                     .setChildPath(ref).call();
 
             Preconditions.checkArgument(treeRef.isPresent(), "Invalid reference: %s", ref);
-            ObjectId treeId = treeRef.get().objectId();
+            ObjectId treeId = treeRef.get().getObjectId();
             metadataId = treeRef.get().getMetadataId();
             revObject = command(RevObjectParse.class).setObjectId(treeId).call(RevObject.class);
         }

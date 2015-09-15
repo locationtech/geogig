@@ -155,7 +155,7 @@ public class FeatureDiffWeb extends AbstractWebAPICommand {
             } else {
                 throw new CommandSpecException("Couldn't resolve newCommit's featureType");
             }
-            object = geogig.command(RevObjectParse.class).setObjectId(ref.get().objectId()).call();
+            object = geogig.command(RevObjectParse.class).setObjectId(ref.get().getObjectId()).call();
             if (object.isPresent() && object.get() instanceof RevFeature) {
                 newFeature = (RevFeature) object.get();
             } else {
@@ -176,7 +176,7 @@ public class FeatureDiffWeb extends AbstractWebAPICommand {
                 } else {
                     throw new CommandSpecException("Couldn't resolve oldCommit's featureType");
                 }
-                object = geogig.command(RevObjectParse.class).setObjectId(ref.get().objectId())
+                object = geogig.command(RevObjectParse.class).setObjectId(ref.get().getObjectId())
                         .call();
                 if (object.isPresent() && object.get() instanceof RevFeature) {
                     oldFeature = (RevFeature) object.get();

@@ -159,7 +159,7 @@ public class OSMMapOp extends AbstractGeoGigOp<RevTree> {
             @Override
             @Nullable
             public Feature apply(@Nullable NodeRef ref) {
-                RevFeature revFeature = parseCommand.setObjectId(ref.objectId())
+                RevFeature revFeature = parseCommand.setObjectId(ref.getObjectId())
                         .call(RevFeature.class).get();
                 final String parentPath = ref.getParentPath();
                 FeatureBuilder featureBuilder = builders.get(parentPath);

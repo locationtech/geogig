@@ -120,16 +120,16 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
         switch (diff.changeType()) {
         case ADDED:
             TYPE type = command(ResolveObjectType.class)
-                    .setObjectId(diff.getNewObject().objectId()).call();
+                    .setObjectId(diff.getNewObject().getObjectId()).call();
             if (TYPE.TREE.equals(type)) {
                 return !diff.getNewObject().getMetadataId()
                         .equals(diff2.getNewObject().getMetadataId());
             }
-            return !diff.getNewObject().objectId().equals(diff2.getNewObject().objectId());
+            return !diff.getNewObject().getObjectId().equals(diff2.getNewObject().getObjectId());
         case REMOVED:
             break;
         case MODIFIED:
-            type = command(ResolveObjectType.class).setObjectId(diff.getNewObject().objectId())
+            type = command(ResolveObjectType.class).setObjectId(diff.getNewObject().getObjectId())
                     .call();
             if (TYPE.TREE.equals(type)) {
                 return !diff.getNewObject().getMetadataId()

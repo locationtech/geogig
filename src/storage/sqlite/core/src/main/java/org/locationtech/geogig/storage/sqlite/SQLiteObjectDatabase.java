@@ -40,6 +40,7 @@ import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
@@ -105,6 +106,8 @@ public abstract class SQLiteObjectDatabase<C> implements ObjectDatabase {
 
     @Override
     public List<ObjectId> lookUp(String partialId) {
+        Preconditions.checkArgument(partialId.length() > 7,
+                "partial id must be at least 8 characters long: ", partialId);
         return Lists.newArrayList(transform(search(partialId, cx), StringToObjectId.INSTANCE));
     }
 

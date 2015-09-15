@@ -128,7 +128,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
         final ObjectId defaultMetadataId = typeTreeRef.getMetadataId();
 
-        final RevTree typeTree = database.getTree(typeTreeRef.objectId());
+        final RevTree typeTree = database.getTree(typeTreeRef.getObjectId());
 
         final ProgressListener progressListener = getProgressListener();
 
@@ -245,7 +245,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             @Nullable
             public SimpleFeature apply(final NodeRef input) {
                 final ObjectId metadataId = input.getMetadataId();
-                final RevFeature revFeature = database.getFeature(input.objectId());
+                final RevFeature revFeature = database.getFeature(input.getObjectId());
 
                 FeatureBuilder featureBuilder = getBuilderFor(metadataId);
                 Feature feature = featureBuilder.build(input.name(), revFeature);

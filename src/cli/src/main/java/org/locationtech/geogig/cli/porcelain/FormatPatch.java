@@ -46,7 +46,7 @@ public class FormatPatch extends AbstractCommand implements CLICommand {
     @Parameter(description = "[<commit> [<commit>]] [-- <path>...]", arity = 2)
     private List<String> refSpec = Lists.newArrayList();
 
-    @Parameter(names = "--", hidden = true, variableArity = true)
+    @Parameter(names = {"--path", "-p"}, hidden = true, variableArity = true)
     private List<String> paths = Lists.newArrayList();
 
     @Parameter(names = { "-f", "--file" }, description = "The patch file")

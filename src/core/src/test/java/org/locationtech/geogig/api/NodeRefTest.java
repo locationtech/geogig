@@ -167,7 +167,7 @@ public class NodeRefTest {
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
         assertEquals(node.getMetadataId(), Optional.absent());
         assertEquals(node.getName(), nodeRef.name());
-        assertEquals(node.getObjectId(), nodeRef.objectId());
+        assertEquals(node.getObjectId(), nodeRef.getObjectId());
         assertEquals(node, nodeRef.getNode());
         assertEquals(node.getType(), nodeRef.getType());
         assertEquals(nodeRef.getParentPath(), "Points");

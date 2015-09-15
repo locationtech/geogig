@@ -11,9 +11,6 @@ package org.locationtech.geogig.osm.cli.commands;
 
 import java.io.File;
 
-import jline.UnsupportedTerminal;
-import jline.console.ConsoleReader;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,6 +22,7 @@ import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
@@ -41,8 +39,7 @@ public class OSMUnmapTest extends Assert {
 
     @Before
     public void setUp() throws Exception {
-        ConsoleReader consoleReader = new ConsoleReader(System.in, System.out,
-                new UnsupportedTerminal());
+        Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
         File workingDirectory = tempFolder.getRoot();
         TestPlatform platform = new TestPlatform(workingDirectory);

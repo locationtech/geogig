@@ -59,7 +59,6 @@ class XerialConflictsDatabase extends SQLiteConflictsDatabase<DataSource> {
 
     @Override
     protected int count(final String namespace, DataSource ds) {
-        Connection cx = Xerial.newConnection(ds);
         Integer count = new DbOp<Integer>() {
             @Override
             protected Integer doRun(Connection cx) throws IOException, SQLException {
@@ -76,7 +75,7 @@ class XerialConflictsDatabase extends SQLiteConflictsDatabase<DataSource> {
                 rs.close();
                 return Integer.valueOf(count);
             }
-        }.run(cx);
+        }.run(ds);
 
         return count.intValue();
     }

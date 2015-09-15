@@ -20,6 +20,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -129,16 +131,25 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
 
     @Override
     public Iterable<String> search(final String partialId, DataSource ds) {
-        Connection cx = Xerial.newConnection(ds);
-        final ResultSet rs = new DbOp<ResultSet>() {
-            @Override
-            protected ResultSet doRun(Connection cx) throws SQLException {
-                String sql = format("SELECT id FROM %s WHERE id LIKE '%%%s%%'", OBJECTS, partialId);
-                return cx.createStatement().executeQuery(log(sql, LOG));
-            }
-        }.run(cx);
 
-        return new StringResultSetIterable(rs, cx);
+        final Iterable<String> matches = new DbOp<Iterable<String>>() {
+            @Override
+            protected Iterable<String> doRun(Connection cx) throws SQLException {
+                String sql = format("SELECT id FROM %s WHERE id LIKE '%%%s%%'", OBJECTS, partialId);
+                List<String> matches = new ArrayList<>(2);
+                try (Statement st = cx.createStatement()) {
+                    try (ResultSet rs = st.executeQuery(log(sql, LOG))) {
+                        while (rs.next()) {
+                            String id = rs.getString(1);
+                            matches.add(id);
+                        }
+                    }
+                }
+                return matches;
+            }
+        }.run(ds);
+
+        return matches;
     }
 
     @Override

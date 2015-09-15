@@ -19,6 +19,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -229,37 +231,50 @@ public class XerialGraphDatabase extends SQLiteGraphDatabase<DataSource> {
 
     @Override
     public Iterable<String> outgoing(final String node, DataSource ds) {
-        Connection cx = Xerial.newConnection(ds);
-        ResultSet rs = new DbOp<ResultSet>() {
+
+        final Iterable<String> matches = new DbOp<Iterable<String>>() {
             @Override
-            protected ResultSet doRun(Connection cx) throws IOException, SQLException {
+            protected Iterable<String> doRun(Connection cx) throws SQLException {
                 String sql = format("SELECT dst FROM %s WHERE src = ?", EDGES);
-
-                PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node));
-                ps.setString(1, node);
-                return ps.executeQuery();
+                List<String> matches = new ArrayList<>(2);
+                try (PreparedStatement st = cx.prepareStatement(log(sql, LOG))) {
+                    st.setString(1, node);
+                    try (ResultSet rs = st.executeQuery()) {
+                        while (rs.next()) {
+                            String id = rs.getString(1);
+                            matches.add(id);
+                        }
+                    }
+                }
+                return matches;
             }
-        }.run(cx);
+        }.run(ds);
 
-        return new StringResultSetIterable(rs, cx);
+        return matches;
 
     }
 
     @Override
     public Iterable<String> incoming(final String node, DataSource ds) {
-        Connection cx = Xerial.newConnection(ds);
-        ResultSet rs = new DbOp<ResultSet>() {
+        final Iterable<String> matches = new DbOp<Iterable<String>>() {
             @Override
-            protected ResultSet doRun(Connection cx) throws IOException, SQLException {
+            protected Iterable<String> doRun(Connection cx) throws SQLException {
                 String sql = format("SELECT src FROM %s WHERE dst = ?", EDGES);
-
-                PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node));
-                ps.setString(1, node);
-                return ps.executeQuery();
+                List<String> matches = new ArrayList<>(2);
+                try (PreparedStatement st = cx.prepareStatement(log(sql, LOG))) {
+                    st.setString(1, node);
+                    try (ResultSet rs = st.executeQuery()) {
+                        while (rs.next()) {
+                            String id = rs.getString(1);
+                            matches.add(id);
+                        }
+                    }
+                }
+                return matches;
             }
-        }.run(cx);
+        }.run(ds);
 
-        return new StringResultSetIterable(rs, cx);
+        return matches;
     }
 
     @Override

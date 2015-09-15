@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.integration.mapdb;
 
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.mapdb.MapdbGraphDatabase;
@@ -24,6 +23,5 @@ public class MapdbTestStorageModule extends AbstractModule {
         // Mapdb bindings for the different kinds of databases
         bind(ObjectDatabase.class).to(MapdbObjectDatabase.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).to(MapdbGraphDatabase.class).in(Scopes.SINGLETON);
-        bind(ConfigDatabase.class).to(TestConfigDatabase.class);
     }
 }

@@ -17,7 +17,6 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 
 import org.locationtech.geogig.api.ObjectId;
@@ -36,7 +35,6 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 /**
@@ -50,8 +48,6 @@ public class MapdbGraphDatabase implements GraphDatabase {
             return n.id;
         }
     };
-
-    static final Map<URI, Ref> graphs = Maps.newConcurrentMap();
 
     protected final Platform platform;
     
@@ -90,8 +86,7 @@ public class MapdbGraphDatabase implements GraphDatabase {
                     + storeDirectory.getAbsolutePath() + "'");
         }
         
-		db = DBMaker.fileDB(new File(storeDirectory,"graphdb.mapdb")).closeOnJvmShutdown()
-				.cacheHashTableEnable().make();
+		db = DBMaker.fileDB(new File(storeDirectory,"graphdb.mapdb")).closeOnJvmShutdown().make();
 
 		// open existing an collection (or create new)
 		nodes = db.treeMap("nodes");
@@ -125,6 +120,7 @@ public class MapdbGraphDatabase implements GraphDatabase {
         db.commit();
         db.close();
         graph = null;
+        db = null;
     }
 
     @Override
@@ -228,36 +224,11 @@ public class MapdbGraphDatabase implements GraphDatabase {
         db.commit();
     }
 
-    static class Ref {
-
-        int count;
-
-        Graph graph;
-
-        Ref(Graph g) {
-            graph = g;
-            count = 0;
-        }
-
-        Graph acquire() {
-            count++;
-            return graph;
-        }
-
-        int release() {
-            return --count;
-        }
-
-        void destroy() {
-            graph = null;
-        }
-    }
-
-    protected class HeapGraphNode extends GraphNode {
+    protected class MapdbGraphNode extends GraphNode {
 
         Node node;
 
-        public HeapGraphNode(Node node) {
+        public MapdbGraphNode(Node node) {
             this.node = node;
         }
 
@@ -282,7 +253,7 @@ public class MapdbGraphDatabase implements GraphDatabase {
             List<GraphEdge> edges = new LinkedList<GraphEdge>();
             while (nodeEdges.hasNext()) {
                 Edge nodeEdge = nodeEdges.next();
-                edges.add(new GraphEdge(new HeapGraphNode(nodeEdge.src), new HeapGraphNode(
+                edges.add(new GraphEdge(new MapdbGraphNode(nodeEdge.src), new MapdbGraphNode(
                         nodeEdge.dst)));
             }
             return edges.iterator();
@@ -297,6 +268,6 @@ public class MapdbGraphDatabase implements GraphDatabase {
 
     @Override
     public GraphNode getNode(ObjectId id) {
-        return new HeapGraphNode(graph.get(id).get());
+        return new MapdbGraphNode(graph.get(id).get());
     }
 }

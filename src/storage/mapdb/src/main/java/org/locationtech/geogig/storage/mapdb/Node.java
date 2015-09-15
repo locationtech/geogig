@@ -30,6 +30,7 @@ import com.google.common.collect.Maps;
  * 
  * @author Sebastian Schmidt, SWM Services GmbH
  */
+//TODO Check if the properties get persisted inside Mapdb
 class Node implements Serializable{
 
 	private static final long serialVersionUID = 1L;

@@ -140,7 +140,7 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 		}
 
 		db = DBMaker.fileDB(new File(storeDirectory, "objectdb.mapdb"))
-				.closeOnJvmShutdown().cacheHashTableEnable().make();
+				.closeOnJvmShutdown().make();
 
 		collection = db.treeMap(collectionName);
 

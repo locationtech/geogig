@@ -2,9 +2,6 @@
 GeoGig - Geospatial Distributed Version Control System
 ######################################################
 
-.. image:: https://travis-ci.org/boundlessgeo/GeoGig.png?branch=master
-   :target: https://travis-ci.org/boundlessgeo/GeoGig
-
 Welcome to the GeoGig project, exploring the use of distributed management of spatial data. GeoGig draws inspiration from `Git <http://git-scm.com/>`_, but adapts its core concepts to handle versioning of geospatial data. Users are able to import raw geospatial data (currently from Shapefiles, PostGIS or SpatiaLite) in to a repository where every change to the data is tracked. These changes can be viewed in a history, reverted to older versions, branched in to sandboxed areas, merged back in, and pushed to remote repositories. GeoGig is written in Java, available under the BSD License.
 
 For background reading see these two papers on the spatial distributed versioning `Concept <http://boundlessgeo.com/whitepaper/new-approach-working-geospatial-data-part-1/>`_, 
@@ -17,6 +14,8 @@ Project Lead: `Gabriel Roldan <https://github.com/groldan>`_
 
 Status: A 1.0-beta1 version has been released and it is available for download, with a full commandline interface to import data and work with repositories.
 
+The build is actively monitored at `Boundlessgeo Jenkins Build Server <http://ares.boundlessgeo.com/jenkins/view/geogig/>`_.
+
 License
 =======
 
@@ -27,7 +26,7 @@ GeoGig is proudly open source:
 * DiffMatchPath: is from Neil Fraser and is distributed under the `Apache License Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_ .
 * XMLReader: is from osmosis and has been released into the public domain
 
-For details review `About This Content<about.html>`_ and the `Eclipse Foundation Software User Agreement<notice.html>`_.
+For details review `About This Content <about.html>`_ and the `Eclipse Foundation Software User Agreement <notice.html>`_.
 
 Download
 =========

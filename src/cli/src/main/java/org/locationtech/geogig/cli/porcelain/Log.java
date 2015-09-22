@@ -314,7 +314,8 @@ public class Log extends AbstractCommand implements CLICommand {
                 DiffEntry diffEntry;
                 while (diff.hasNext()) {
                     diffEntry = diff.next();
-                    ansi.a("\t" + diffEntry.newPath()).newline();
+                    String path = diffEntry.isDelete()? diffEntry.oldPath() : diffEntry.newPath();
+                    ansi.a("\t" + path).newline();
                 }
             }
             if (detail.equals(LOG_DETAIL.STATS) && commit.getParentIds().size() == 1) {

@@ -81,12 +81,6 @@
   </licenses>
   <repositories>
     <repository>
-      <id>oracleReleases</id>
-      <name>Oracle Released Java Packages</name>
-      <url>http://download.oracle.com/maven</url>
-      <layout>default</layout>
-    </repository>
-    <repository>
       <id>boundless</id>
       <name>Boundless Maven Repository</name>
       <url>http://repo.boundlessgeo.com/main</url>
@@ -103,23 +97,7 @@
       </snapshots>
     </repository>
     <repository>
-      <id>oracle</id>
-      <name>Oracles Maven Repository</name>
-      <url>http://download.oracle.com/maven/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>caucho</id>
-      <name>caucho</name>
-      <url>http://caucho.com/m2</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>mapfish</id>
+      <id>mapfish</id> <!-- for com.noelios.restlet -->
       <name>mapfish</name>
       <url>http://dev.mapfish.org/maven/repository/</url>
       <snapshots>

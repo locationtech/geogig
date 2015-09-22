@@ -10,9 +10,9 @@
   <name>GeoGig</name>
 
  <scm>
-  <connection>scm:git:git@github.com:boundlessgeo/GeoGig.git</connection>
-  <developerConnection>scm:git:[fetch=]git://github.com/boundlessgeo/GeoGig.git[push=]git@github.com:boundlessgeo/GeoGig.git</developerConnection>
-  <url>https://github.com/boundlessgeo/GeoGig</url>
+  <connection>scm:git:git@github.com:locationtech/geogig.git</connection>
+  <developerConnection>scm:git:[fetch=]git://github.com/locationtech/geogig.git[push=]git@github.com:locationtech/geogig.git</developerConnection>
+  <url>https://github.com/locationtech/geogigeogig</url>
  </scm>
 
   <!--

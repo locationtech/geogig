@@ -381,14 +381,17 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
     }
 
     private void copy(Set<ObjectId> ids, ObjectDatabase from, ObjectDatabase to,
-            ProgressListener progress) {
+            final ProgressListener progress) {
         if (ids.isEmpty()) {
             return;
         }
-        CountingListener countingListener = BulkOpListener.newCountingListener();
+        BulkOpListener countingListener = new BulkOpListener() {
+            @Override
+            public void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
+                progress.setProgress(progress.getProgress() + 1);
+            }
+        };
         to.putAll(from.getAll(ids), countingListener);
-        int inserted = countingListener.inserted();
-        progress.setProgress(progress.getProgress() + inserted);
     }
 
     /**

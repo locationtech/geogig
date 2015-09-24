@@ -52,4 +52,4 @@ If you want to get involved in the development of GeoGig, build GeoGig yourself 
 Participation
 =============
 
-Everyone is invited to participate in GeoGig and help in its development. Check the `How to help <https://github.com/locationtech/geogig/master/helping.rst>`_ section to read about how you can help us improve GeoGig.
+Everyone is invited to participate in GeoGig and help in its development. Check the `How to help <https://github.com/locationtech/geogig/blob/master/helping.rst>`_ section to read about how you can help us improve GeoGig.

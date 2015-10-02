@@ -82,44 +82,21 @@ class MapdbConflictsDatabase implements ConflictsDatabase {
 		if (namespace == null) {
 			namespace = "root";
 		}
-		if (pathFilter == null) {
-			
-			/*TODO this implementation throws a null pointer, but is suggested in 
-			mapdb Example Code for submapping with composite keys at 
-			https://github.com/jankotek/mapdb/blob/master/src/test/java/examples/TreeMap_Composite_Key.java
-			See also: https://github.com/jankotek/mapdb/issues/569
-			
-			building 2.0.0-SNAPSHOT from core does not throw this error anymore.
-			
-			Object[] fromKey = new Object[]{namespace};
-			Object[] toKey  = new Object[]{namespace, null};
-			Map<Object[], Conflict> subMap = conflicts.subMap(fromKey, toKey);
-			Collection<Conflict> values = subMap.values();
-			return ImmutableList.copyOf(values);
-			*/
-			
-			List<Conflict> matchingConflicts = new ArrayList<Conflict>();
-			for (Map.Entry<Object[], String> entry: conflicts.entrySet()) {
-				Object[] key = entry.getKey();
-				if (key.length > 0 && key[0] instanceof String && namespace.equals(key[0]))
-				{
-					matchingConflicts.add(Conflict.valueOf(entry.getValue()));
-				}
-			}
-			return ImmutableList.copyOf(matchingConflicts);
-			
+		Object[] fromKey = new Object[] { namespace };
+		Object[] toKey = new Object[] { namespace, null };
+		if (pathFilter != null) {
+			char nextLetter = (char) (pathFilter
+					.charAt(pathFilter.length() - 1) + 1);
+			String end = pathFilter.substring(0, pathFilter.length() - 1)
+					+ nextLetter;
+			fromKey = new Object[] { namespace, pathFilter };
+			toKey = new Object[] { namespace, end };
 		}
-		
-		char nextLetter = (char) (pathFilter.charAt(pathFilter.length() - 1) + 1);
-		String end = pathFilter.substring(0, pathFilter.length() - 1)
-				+ nextLetter;
-		Object[] fromKey = new Object[]{namespace, pathFilter};
-		Object[] toKey  = new Object[]{namespace, end};
-		
-		Collection<String> stringObjects = conflicts.subMap(fromKey, toKey).values();
-		
+
 		List<Conflict> matchingConflicts = new ArrayList<Conflict>();
-		for(String s:stringObjects) {
+		Collection<String> stringObjects = conflicts.subMap(fromKey, toKey)
+				.values();
+		for (String s : stringObjects) {
 			matchingConflicts.add(Conflict.valueOf(s));
 		}
 		return ImmutableList.copyOf(matchingConflicts);
@@ -192,24 +169,10 @@ class MapdbConflictsDatabase implements ConflictsDatabase {
 	public void removeConflicts(@Nullable String namespace) {
 		if (namespace == null) {
 			namespace = "root";
-		}
-		
-		/*TODO 
-		 * same as above:
-		 * this implementation throws a null pointer,
-		 * See also: https://github.com/jankotek/mapdb/issues/569
-		
+		}		
 		Object[] fromKey = new Object[]{namespace};
 		Object[] toKey = new Object[]{namespace, null};
 		conflicts.subMap(fromKey, toKey).clear();
-		*/
-		for (Map.Entry<Object[], String> entry: conflicts.entrySet()) {
-			Object[] key = entry.getKey();
-			if (key.length > 0 && key[0] instanceof String && namespace.equals(key[0]))
-			{
-				conflicts.remove(key);
-			}
-		}
 		db.commit();
 	}
 

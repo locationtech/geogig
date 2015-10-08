@@ -461,10 +461,14 @@ public class GeogigCLI {
             return;
         }
         {
-            args = unalias(args);
-            final String commandName = args[0];
+            String commandName = args[0];
             JCommander commandParser = mainCommander.getCommands().get(commandName);
-
+            if (commandParser == null) {
+                args = unalias(args);
+                commandName = args[0];
+                commandParser = mainCommander.getCommands().get(commandName);
+            }
+            
             if (commandParser == null) {
                 consoleReader.println(args[0] + " is not a geogig command. See geogig --help.");
                 // check for similar commands

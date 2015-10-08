@@ -355,10 +355,16 @@
   <distributionManagement>
     <repository>
       <id>boundless</id>
-      <name>Boundless Maven Repository</name>
-      <url>http://repo.boundlessgeo.com/main</url>
       <uniqueVersion>false</uniqueVersion>
+      <name>Boundless Release Repository</name>
+      <url>http://repo.boundlessgeo.com/release/</url>
     </repository>
+    <snapshotRepository>
+      <id>boundless</id>
+      <uniqueVersion>false</uniqueVersion>
+      <name>Boundless Snapshot Repository</name>
+      <url>http://repo.boundlessgeo.com/snapshot/</url>
+    </snapshotRepository>
   </distributionManagement>
 
   <build>

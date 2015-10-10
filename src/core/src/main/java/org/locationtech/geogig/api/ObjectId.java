@@ -126,13 +126,21 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(2 * NUM_BYTES);
+        return ObjectId.toString(this, NUM_BYTES, new StringBuilder(2 * NUM_BYTES)).toString();
+    }
+
+    public static StringBuilder toString(final ObjectId id, final int byteLength,
+            StringBuilder target) {
+        Preconditions.checkNotNull(id);
+        Preconditions.checkArgument(byteLength > 0 && byteLength <= NUM_BYTES);
+
+        StringBuilder sb = target == null ? new StringBuilder(2 * byteLength) : target;
         byte b;
-        for (int i = 0; i < NUM_BYTES; i++) {
-            b = hashCode[i];
+        for (int i = 0; i < byteLength; i++) {
+            b = (byte) id.byteN(i);
             sb.append(HEX_DIGITS[(b >> 4) & 0xf]).append(HEX_DIGITS[b & 0xf]);
         }
-        return sb.toString();
+        return sb;
     }
 
     /**

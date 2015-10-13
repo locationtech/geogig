@@ -28,7 +28,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -40,6 +42,7 @@ import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.MaxFeatureDiffsLimiter;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
@@ -63,11 +66,12 @@ public class PreOrderDiffWalkTest {
         leftSource.open();
         rightSource.open();
         consumer = mock(Consumer.class);
+        when(consumer.feature(any(Node.class), any(Node.class))).thenReturn(true);
     }
 
     /**
-     * Creates a root node for the given tree as the one {@link PreOrderDiffWalk} should use to start
-     * the traversal
+     * Creates a root node for the given tree as the one {@link PreOrderDiffWalk} should use to
+     * start the traversal
      */
     private Node nodeFor(RevTree root) {
         Envelope bounds = SpatialOps.boundsOf(root);
@@ -517,10 +521,34 @@ public class PreOrderDiffWalkTest {
         testBucketLeafDeeper(left, rightsize, overlapCount);
     }
 
+    @Test
+    public void testMaxFeatureDiffsFilter() {
+        final int leftsize = 2 * RevTree.NORMALIZED_SIZE_LIMIT;
+        final int rightsize = RevTree.NORMALIZED_SIZE_LIMIT;
+
+        final RevTree left = createFeaturesTree(leftSource, "f", leftsize).build();
+        leftSource.put(left);
+        final RevTree right = createFeaturesTree(rightSource, "f", rightsize).build();
+        rightSource.put(right);
+
+        FeatureCountingConsumer counter = new FeatureCountingConsumer();
+        PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, leftSource, rightSource);
+        walk.walk(counter);
+        final int totalDiffCount = leftsize - rightsize;
+        assertEquals(totalDiffCount, counter.count.intValue());
+
+        counter = new FeatureCountingConsumer();
+        MaxFeatureDiffsLimiter limiter = new PreOrderDiffWalk.MaxFeatureDiffsLimiter(counter, 10);
+
+        new PreOrderDiffWalk(left, right, leftSource, rightSource).walk(limiter);
+        assertEquals(10, counter.count.intValue());
+    }
+
     private void testBucketLeafDeeper(final RevTree left, final int rightsize,
             final int overlapCount) {
 
         consumer = mock(Consumer.class);
+        when(consumer.feature(any(Node.class), any(Node.class))).thenReturn(true);
         // left tree has feature nodes "f0" to "f<leftsize-1>"
         final int leftsize = (int) left.size();
         // the right tree feature node names start at "f<leftsize - 100>", so there's a 100 node
@@ -575,6 +603,7 @@ public class PreOrderDiffWalkTest {
             final int overlapCount) {
 
         consumer = mock(Consumer.class);
+        when(consumer.feature(any(Node.class), any(Node.class))).thenReturn(true);
         // right tree has feature nodes "f0" to "f<rightsize-1>"
         final int rightsize = (int) rightRoot.size();
         // the left tree feature node names start at "f<rightsize - 100>", so there's a 100 node
@@ -582,7 +611,8 @@ public class PreOrderDiffWalkTest {
         RevTree leftRoot = createFeaturesTree(leftSource, "f", leftsize, rightsize - overlapCount,
                 true).build();
 
-        PreOrderDiffWalk visitor = new PreOrderDiffWalk(leftRoot, rightRoot, leftSource, rightSource);
+        PreOrderDiffWalk visitor = new PreOrderDiffWalk(leftRoot, rightRoot, leftSource,
+                rightSource);
 
         // consume all
         when(consumer.tree(any(Node.class), any(Node.class))).thenReturn(true);
@@ -622,8 +652,8 @@ public class PreOrderDiffWalkTest {
             }
 
             @Override
-            public void feature(Node left, Node right) {
-                //
+            public boolean feature(Node left, Node right) {
+                return true;
             }
 
             @Override
@@ -677,5 +707,37 @@ public class PreOrderDiffWalkTest {
                 any(Bucket.class));
         verify(consumer, times(1)).endTree(any(Node.class), any(Node.class));
         verifyNoMoreInteractions(consumer);
+    }
+
+    private static final class FeatureCountingConsumer implements Consumer {
+
+        final AtomicLong count = new AtomicLong();
+
+        @Override
+        public boolean feature(@Nullable Node left, @Nullable Node right) {
+            count.incrementAndGet();
+            return true;
+        }
+
+        @Override
+        public boolean tree(@Nullable Node left, @Nullable Node right) {
+            return true;
+        }
+
+        @Override
+        public void endTree(@Nullable Node left, @Nullable Node right) {
+        }
+
+        @Override
+        public boolean bucket(int bucketIndex, int bucketDepth, @Nullable Bucket left,
+                @Nullable Bucket right) {
+            return true;
+        }
+
+        @Override
+        public void endBucket(int bucketIndex, int bucketDepth, @Nullable Bucket left,
+                @Nullable Bucket right) {
+        }
+
     }
 }

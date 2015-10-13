@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -135,10 +136,10 @@ public class PreOrderDiffWalk {
      *        trees, as when called from {@link #handleBucketBucket})
      * @precondition {@code left != null && right != null}
      */
-    private void traverseTree(Consumer consumer, RevTree left, RevTree right, int bucketDepth) {
+    private boolean traverseTree(Consumer consumer, RevTree left, RevTree right, int bucketDepth) {
         checkArgument(left != null && right != null);
         if (Objects.equal(left, right)) {
-            return;
+            return false;
         }
         // Possible cases:
         // 1- left and right are leaf trees
@@ -150,13 +151,13 @@ public class PreOrderDiffWalk {
         Iterator<Node> leftc = leftIsLeaf ? left.children() : null;
         Iterator<Node> rightc = rightIsLeaf ? right.children() : null;
         if (leftIsLeaf && rightIsLeaf) {// 1-
-            traverseLeafLeaf(consumer, leftc, rightc);
+            return traverseLeafLeaf(consumer, leftc, rightc);
         } else if (!(leftIsLeaf || rightIsLeaf)) {// 2-
-            traverseBucketBucket(consumer, left, right, bucketDepth);
+            return traverseBucketBucket(consumer, left, right, bucketDepth);
         } else if (leftIsLeaf) {// 3-
-            traverseLeafBucket(consumer, leftc, right, bucketDepth);
+            return traverseLeafBucket(consumer, leftc, right, bucketDepth);
         } else {// 4-
-            traverseBucketLeaf(consumer, left, rightc, bucketDepth);
+            return traverseBucketLeaf(consumer, left, rightc, bucketDepth);
         }
     }
 
@@ -164,7 +165,7 @@ public class PreOrderDiffWalk {
      * Traverse and compare the {@link RevTree#children() children} nodes of two leaf trees, calling
      * {@link #node(Consumer, Node, Node)} for each diff.
      */
-    private void traverseLeafLeaf(Consumer consumer, Iterator<Node> leftc, Iterator<Node> rightc) {
+    private boolean traverseLeafLeaf(Consumer consumer, Iterator<Node> leftc, Iterator<Node> rightc) {
         PeekingIterator<Node> li = Iterators.peekingIterator(leftc);
         PeekingIterator<Node> ri = Iterators.peekingIterator(rightc);
 
@@ -173,17 +174,32 @@ public class PreOrderDiffWalk {
             Node rpeek = ri.peek();
             int order = ORDER.compare(lpeek, rpeek);
             if (order < 0) {
-                node(consumer, li.next(), null);// removal
+                Node next = li.next();
+                if (!node(consumer, next, null) && TYPE.FEATURE.equals(next.getType())) {// removal
+                    // abort only if Consumer.feature() returns false, otherwise keep evaluating
+                    // the other trees
+                    return false;
+                }
             } else if (order == 0) {// change
                 // same feature at both sides of the traversal, consume them and check if its
                 // changed it or not
                 Node l = li.next();
                 Node r = ri.next();
                 if (!l.equals(r)) {
-                    node(consumer, l, r);
+                    TYPE type = l.getType();
+                    if (!node(consumer, l, r) && TYPE.FEATURE.equals(type)) {
+                        // abort only if Consumer.feature() returns false, otherwise keep evaluating
+                        // the other trees
+                        return false;
+                    }
                 }
             } else {
-                node(consumer, null, ri.next());// addition
+                Node next = ri.next();
+                if (!node(consumer, null, next)) {// addition
+                    // abort only if Consumer.feature() returns false, otherwise keep evaluating
+                    // the other trees
+                    return false;
+                }
             }
         }
 
@@ -192,13 +208,24 @@ public class PreOrderDiffWalk {
 
         // right fully consumed, any remaining node in left is a removal
         while (li.hasNext()) {
-            node(consumer, li.next(), null);
+            Node next = li.next();
+            if (!node(consumer, next, null) && TYPE.FEATURE.equals(next.getType())) {
+                // abort only if Consumer.feature() returns false, otherwise keep evaluating
+                // the other trees
+                return false;
+            }
         }
 
         // left fully consumed, any remaining node in right is an add
         while (ri.hasNext()) {
-            node(consumer, null, ri.next());
+            Node next = ri.next();
+            if (!node(consumer, null, next) && TYPE.FEATURE.equals(next.getType())) {
+                // abort only if Consumer.feature() returns false, otherwise keep evaluating
+                // the other trees
+                return false;
+            }
         }
+        return true;
     }
 
     /**
@@ -210,17 +237,18 @@ public class PreOrderDiffWalk {
      * {@link Consumer#feature}, and continue the traversal down the trees in case it was a tree and
      * {@link Consumer#tree} returned null.
      */
-    private void node(Consumer consumer, @Nullable final Node left, @Nullable final Node right) {
+    private boolean node(Consumer consumer, @Nullable final Node left, @Nullable final Node right) {
         checkState(left != null || right != null, "both nodes can't be null");
         checkArgument(!Objects.equal(left, right));
 
         final TYPE type = left == null ? right.getType() : left.getType();
 
         if (TYPE.FEATURE.equals(type)) {
-            consumer.feature(left, right);
+            return consumer.feature(left, right);
         } else {
             checkState(TYPE.TREE.equals(type));
-            if (consumer.tree(left, right)) {
+            boolean continueTraversal;
+            if ((continueTraversal = consumer.tree(left, right))) {
                 RevTree leftTree;
                 RevTree rightTree;
                 leftTree = left == null ? RevTree.EMPTY : leftSource.getTree(left.getObjectId());
@@ -229,6 +257,7 @@ public class PreOrderDiffWalk {
                 traverseTree(consumer, leftTree, rightTree, 0);
             }
             consumer.endTree(left, right);
+            return continueTraversal;
         }
     }
 
@@ -244,7 +273,7 @@ public class PreOrderDiffWalk {
      * 
      * @precondition {@code left.buckets().isPresent()}
      */
-    private void traverseBucketLeaf(final Consumer consumer, final RevTree left,
+    private boolean traverseBucketLeaf(final Consumer consumer, final RevTree left,
             final Iterator<Node> right, final int bucketDepth) {
 
         checkState(left.buckets().isPresent());
@@ -264,7 +293,10 @@ public class PreOrderDiffWalk {
             Bucket leftBucket = leftBuckets.get(bucketIndex);
             List<Node> rightNodes = nodesByBucket.get(bucketIndex);// never returns null, but empty
             if (null == leftBucket) {
-                traverseLeafLeaf(consumer, Iterators.<Node> emptyIterator(), rightNodes.iterator());
+                if (!traverseLeafLeaf(consumer, Iterators.<Node> emptyIterator(),
+                        rightNodes.iterator())) {
+                    return false;
+                }
             } else if (rightNodes.isEmpty()) {
                 if (consumer.bucket(bucketIndex, bucketDepth, leftBucket, null)) {
                     RevTree leftTree = (RevTree) bucketTrees.get(leftBucket.getObjectId());
@@ -275,12 +307,18 @@ public class PreOrderDiffWalk {
             } else {
                 RevTree leftTree = (RevTree) bucketTrees.get(leftBucket.getObjectId());
                 if (leftTree.buckets().isPresent()) {
-                    traverseBucketLeaf(consumer, leftTree, rightNodes.iterator(), bucketDepth + 1);
+                    if (!traverseBucketLeaf(consumer, leftTree, rightNodes.iterator(),
+                            bucketDepth + 1)) {
+                        return false;
+                    }
                 } else {
-                    traverseLeafLeaf(consumer, leftTree.children(), rightNodes.iterator());
+                    if (!traverseLeafLeaf(consumer, leftTree.children(), rightNodes.iterator())) {
+                        return false;
+                    }
                 }
             }
         }
+        return true;
     }
 
     private static final Function<Bucket, ObjectId> BUCKET_ID = new Function<Bucket, ObjectId>() {
@@ -309,7 +347,7 @@ public class PreOrderDiffWalk {
      * 
      * @precondition {@code right.buckets().isPresent()}
      */
-    private void traverseLeafBucket(final Consumer consumer, final Iterator<Node> left,
+    private boolean traverseLeafBucket(final Consumer consumer, final Iterator<Node> left,
             final RevTree right, final int bucketDepth) {
 
         checkState(right.buckets().isPresent());
@@ -329,7 +367,10 @@ public class PreOrderDiffWalk {
             Bucket rightBucket = rightBuckets.get(bucketIndex);
             List<Node> leftNodes = nodesByBucket.get(bucketIndex);// never returns null, but empty
             if (null == rightBucket) {
-                traverseLeafLeaf(consumer, leftNodes.iterator(), Iterators.<Node> emptyIterator());
+                if (!traverseLeafLeaf(consumer, leftNodes.iterator(),
+                        Iterators.<Node> emptyIterator())) {
+                    return false;
+                }
             } else if (leftNodes.isEmpty()) {
                 if (consumer.bucket(bucketIndex, bucketDepth, null, rightBucket)) {
                     RevTree rightTree = (RevTree) bucketTrees.get(rightBucket.getObjectId());
@@ -340,12 +381,18 @@ public class PreOrderDiffWalk {
             } else {
                 RevTree rightTree = (RevTree) bucketTrees.get(rightBucket.getObjectId());
                 if (rightTree.buckets().isPresent()) {
-                    traverseLeafBucket(consumer, leftNodes.iterator(), rightTree, bucketDepth + 1);
+                    if (!traverseLeafBucket(consumer, leftNodes.iterator(), rightTree,
+                            bucketDepth + 1)) {
+                        return false;
+                    }
                 } else {
-                    traverseLeafLeaf(consumer, leftNodes.iterator(), rightTree.children());
+                    if (!traverseLeafLeaf(consumer, leftNodes.iterator(), rightTree.children())) {
+                        return false;
+                    }
                 }
             }
         }
+        return true;
     }
 
     /**
@@ -386,8 +433,8 @@ public class PreOrderDiffWalk {
      * @precondition {@code left.isEmpty() || left.buckets().isPresent()}
      * @precondition {@code right.isEmpty() || right.buckets().isPresent()}
      */
-    private void traverseBucketBucket(Consumer consumer, final RevTree left, final RevTree right,
-            final int bucketDepth) {
+    private boolean traverseBucketBucket(Consumer consumer, final RevTree left,
+            final RevTree right, final int bucketDepth) {
         checkState(left.isEmpty() || left.buckets().isPresent());
         checkState(right.isEmpty() || right.buckets().isPresent());
 
@@ -419,10 +466,13 @@ public class PreOrderDiffWalk {
                         .get(lbucket.getObjectId());
                 RevTree rtree = rbucket == null ? RevTree.EMPTY : (RevTree) rightBucketTrees
                         .get(rbucket.getObjectId());
-                traverseTree(consumer, ltree, rtree, bucketDepth + 1);
+                if (!traverseTree(consumer, ltree, rtree, bucketDepth + 1)) {
+                    return false;
+                }
             }
             consumer.endBucket(index.intValue(), bucketDepth, lbucket, rbucket);
         }
+        return true;
     }
 
     /**
@@ -453,10 +503,14 @@ public class PreOrderDiffWalk {
          *        which case {@code right} has been added.
          * @param right the feature node at the right side of the traversal; may be {@code null} in
          *        which case {@code left} has been removed.
+         * @return {@code false} if the WHOLE traversal shall be aborted, {@true} to continue
+         *         traversing other features and trees. Note this differs from the return value of
+         *         {@link #tree()} and {@link #bucket()} in that they only avoid the traversal of
+         *         the indicated tree or bucket, not the whole traversal.
          * @precondition {@code left != null || right != null}
          * @precondition {@code if(left != null && right != null) then left.name() == right.name()}
          */
-        public abstract void feature(@Nullable final Node left, @Nullable final Node right);
+        public abstract boolean feature(@Nullable final Node left, @Nullable final Node right);
 
         /**
          * Called when the traversal finds a tree node at both sides of the traversal with the same
@@ -473,9 +527,11 @@ public class PreOrderDiffWalk {
          * 
          * @param left the left tree of the traversal
          * @param right the right tree of the traversal
-         * @return {@code true} if the traversal of the contents of these trees should come right
-         *         after this method returns, {@code false} if this consumer does not want to
-         *         continue traversing the trees pointed out by these nodes
+         * @return {@code true} if the traversal of the contents of this pair of trees should come
+         *         right after this method returns, {@code false} if this consumer does not want to
+         *         continue traversing the trees pointed out by these nodes. Note this differs from
+         *         the return value of {@link #feature()} in that {@code false} only avoids going
+         *         deeper into this tree, instead of aborting the whole traversal
          * @precondition {@code left != null || right != null}
          */
         public abstract boolean tree(@Nullable final Node left, @Nullable final Node right);
@@ -519,7 +575,9 @@ public class PreOrderDiffWalk {
          *        {@code null} if no bucket exists on the left tree for that index
          * @return {@code true} if a call to {@link #tree(Node, Node)} should come right after this
          *         method is called, {@code false} if this consumer does not want to continue the
-         *         traversal deeper for the trees pointed out by these buckets.
+         *         traversal deeper for the trees pointed out by these buckets. Note this differs
+         *         from the return value of {@link #feature()} in that {@code false} only avoids
+         *         going deeper into this tree, instead of aborting the whole traversal
          * @precondition {@code left != null || right != null}
          */
         public abstract boolean bucket(final int bucketIndex, final int bucketDepth,
@@ -538,15 +596,15 @@ public class PreOrderDiffWalk {
      */
     public static abstract class ForwardingConsumer implements Consumer {
 
-        private Consumer delegate;
+        protected final Consumer delegate;
 
         public ForwardingConsumer(final Consumer delegate) {
             this.delegate = delegate;
         }
 
         @Override
-        public void feature(Node left, Node right) {
-            delegate.feature(left, right);
+        public boolean feature(Node left, Node right) {
+            return delegate.feature(left, right);
         }
 
         @Override
@@ -570,6 +628,27 @@ public class PreOrderDiffWalk {
         }
     }
 
+    public static class MaxFeatureDiffsLimiter extends ForwardingConsumer {
+
+        private final AtomicLong count;
+
+        private final long limit;
+
+        public MaxFeatureDiffsLimiter(final Consumer delegate, final long limit) {
+            super(delegate);
+            this.limit = limit;
+            this.count = new AtomicLong();
+        }
+
+        @Override
+        public boolean feature(Node left, Node right) {
+            if (count.incrementAndGet() > limit) {
+                return false;
+            }
+            return super.feature(left, right);
+        }
+    }
+
     public static class FilteringConsumer extends ForwardingConsumer {
 
         private final Predicate<Bounded> predicate;
@@ -580,10 +659,11 @@ public class PreOrderDiffWalk {
         }
 
         @Override
-        public void feature(Node left, Node right) {
+        public boolean feature(Node left, Node right) {
             if (predicate.apply(left) || predicate.apply(right)) {
-                super.feature(left, right);
+                return super.feature(left, right);
             }
+            return false;
         }
 
         @Override

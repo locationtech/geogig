@@ -53,7 +53,7 @@ import com.google.common.base.Optional;
 public class Status extends AbstractCommand implements CLICommand {
 
     @Parameter(names = "--limit", description = "Limit number of displayed changes. Must be >= 0.")
-    private Integer limit = 50;
+    private Long limit = 50L;
 
     @Parameter(names = "--all", description = "Force listing all changes (overrides limit).")
     private boolean all = false;
@@ -68,7 +68,7 @@ public class Status extends AbstractCommand implements CLICommand {
         Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
 
-        StatusOp op = geogig.command(StatusOp.class);
+        StatusOp op = geogig.command(StatusOp.class).setReportLimit(limit);
         StatusSummary summary = op.call();
 
         final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.HEAD).call();
@@ -129,8 +129,8 @@ public class Status extends AbstractCommand implements CLICommand {
      * @throws IOException
      * @see DiffEntry
      */
-    private void print(final Console console, final Iterator<DiffEntry> changes,
-            final Color color, final long total) throws IOException {
+    private void print(final Console console, final Iterator<DiffEntry> changes, final Color color,
+            final long total) throws IOException {
 
         final int limit = all || this.limit == null ? Integer.MAX_VALUE : this.limit.intValue();
 

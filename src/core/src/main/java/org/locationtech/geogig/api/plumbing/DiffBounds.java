@@ -178,13 +178,14 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         }
 
         @Override
-        public void feature(@Nullable Node left, @Nullable Node right) {
+        public boolean feature(@Nullable Node left, @Nullable Node right) {
             setEnv(left, leftHelper, md(left).or(currentDefaultLefMetadataId));
             setEnv(right, rightHelper, md(right).or(currentDefaultRightMetadataId));
             if (!leftHelper.equals(rightHelper)) {
                 leftEnv.expandToInclude(leftHelper);
                 rightEnv.expandToInclude(rightHelper);
             }
+            return true;
         }
 
         @Override

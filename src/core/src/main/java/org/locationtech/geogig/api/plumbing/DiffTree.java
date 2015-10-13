@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
@@ -73,6 +74,8 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
     private boolean recursive;
 
     private Predicate<Bounded> customFilter;
+
+    private Long limit;
 
     /**
      * Constructs a new instance of the {@code DiffTree} operation with the given parameters.
@@ -195,7 +198,10 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
             @Override
             public void run() {
                 Consumer consumer = diffProducer;
-                if (customFilter != null) {// evaluated the latest
+                if (limit != null) {// evaluated the latest
+                    consumer = new PreOrderDiffWalk.MaxFeatureDiffsLimiter(consumer, limit);
+                }
+                if (customFilter != null) {
                     consumer = new PreOrderDiffWalk.FilteringConsumer(consumer, customFilter);
                 }
                 if (changeTypeFilter != null) {
@@ -277,10 +283,11 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         }
 
         @Override
-        public void feature(final Node left, final Node right) {
+        public boolean feature(final Node left, final Node right) {
             if (featureApplies(left, right)) {
                 super.feature(left, right);
             }
+            return true;
         }
 
         @Override
@@ -365,7 +372,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         }
 
         @Override
-        public void feature(Node left, Node right) {
+        public boolean feature(Node left, Node right) {
             if (!finished && reportFeatures) {
                 String treePath = tracker.getCurrentPath();
 
@@ -380,6 +387,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
                     // throw Throwables.propagate(e);
                 }
             }
+            return true;
         }
 
         public void setRecursive(boolean recursive) {
@@ -456,6 +464,13 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
      */
     public DiffTree setRecursive(boolean recursive) {
         this.recursive = recursive;
+        return this;
+    }
+
+    public DiffTree setMaxDiffs(@Nullable Long limit) {
+        Preconditions.checkArgument(limit == null || limit.longValue() >= 0L,
+                "limit must be >= 0: ", limit);
+        this.limit = limit;
         return this;
     }
 }

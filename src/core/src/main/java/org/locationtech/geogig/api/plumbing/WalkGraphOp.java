@@ -114,9 +114,10 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
             }
 
             @Override
-            public void feature(@Nullable Node left, @Nullable Node right) {
+            public boolean feature(@Nullable Node left, @Nullable Node right) {
                 listener.feature(right);
                 checkExists(right.getObjectId(), right);
+                return true;
             }
 
             @Override

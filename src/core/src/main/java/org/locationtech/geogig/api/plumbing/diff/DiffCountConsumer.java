@@ -40,7 +40,7 @@ public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
     }
 
     @Override
-    public void feature(Node left, Node right) {
+    public boolean feature(Node left, Node right) {
         if (left == null) {
             count.addedFeatures(1L);
         } else if (right == null) {
@@ -48,6 +48,7 @@ public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
         } else {
             count.changedFeatures(1L);
         }
+        return true;
     }
 
     @Override

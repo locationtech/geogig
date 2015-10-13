@@ -61,14 +61,15 @@ public class PathFilteringDiffConsumer extends PreOrderDiffWalk.ForwardingConsum
     }
 
     @Override
-    public void feature(Node left, Node right) {
+    public boolean feature(Node left, Node right) {
         String treePath = tracker.getCurrentPath();
         String featureName = tracker.name(left, right);
         String featurePath = NodeRef.appendChild(treePath, featureName);
 
         if (filter.featureApplies(featurePath)) {
-            super.feature(left, right);
+            return super.feature(left, right);
         }
+        return true;
     }
 
 }

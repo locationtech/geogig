@@ -81,10 +81,11 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
     }
 
     @Override
-    public void feature(Node left, Node right) {
+    public boolean feature(Node left, Node right) {
         if (intersects(left, right)) {
-            super.feature(left, right);
+            return super.feature(left, right);
         }
+        return true;
     }
 
     private boolean intersects(Bounded left, Bounded right) {

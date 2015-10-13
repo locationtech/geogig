@@ -36,6 +36,8 @@ public class DiffIndex extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
 
     private boolean reportTrees;
 
+    private Long limit;
+
     /**
      * @param pathFilter the path filter to use during the diff operation
      * @return {@code this}
@@ -89,7 +91,7 @@ public class DiffIndex extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
 
         DiffTree diff = command(DiffTree.class).setPathFilter(this.pathFilters)
                 .setReportTrees(this.reportTrees).setOldTree(rootTree.getId())
-                .setNewTree(newTree.getId());
+                .setNewTree(newTree.getId()).setMaxDiffs(limit);
 
         return diff.call();
     }
@@ -111,5 +113,12 @@ public class DiffIndex extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
     @Override
     public Iterator<DiffEntry> get() {
         return call();
+    }
+
+    public DiffIndex setMaxDiffs(@Nullable Long limit) {
+        Preconditions.checkArgument(limit == null || limit.longValue() >= 0,
+                "limit must be >= 0: ", limit);
+        this.limit = limit;
+        return this;
     }
 }

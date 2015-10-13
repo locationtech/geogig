@@ -99,11 +99,12 @@ public class PostOrderDiffWalk {
         }
 
         @Override
-        public void feature(Node left, Node right) {
+        public boolean feature(Node left, Node right) {
             boolean accept = filter.apply(left) || filter.apply(right);
             if (accept) {
                 consumer.feature(left, right);
             }
+            return true;
         }
 
         @Override

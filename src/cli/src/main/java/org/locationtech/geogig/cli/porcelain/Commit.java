@@ -10,22 +10,22 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevObject.TYPE;
+import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.ParseTimestamp;
 import org.locationtech.geogig.api.plumbing.ResolveObjectType;
 import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.plumbing.merge.ReadMergeCommitMessageOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.api.porcelain.NothingToCommitException;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -92,6 +92,7 @@ public class Commit extends AbstractCommand implements CLICommand {
         Ansi ansi = newAnsi(console);
 
         RevCommit commit;
+        ProgressListener progress = cli.getProgressListener();
         try {
             CommitOp commitOp = geogig.command(CommitOp.class).setMessage(message).setAmend(amend);
             if (commitTimestamp != null && !Strings.isNullOrEmpty(commitTimestamp)) {
@@ -110,8 +111,7 @@ public class Commit extends AbstractCommand implements CLICommand {
                         "Provided reference does not resolve to a commit");
                 commitOp.setCommit(geogig.getRepository().getCommit(commitId.get()));
             }
-            commit = commitOp.setPathFilters(pathFilters)
-                    .setProgressListener(cli.getProgressListener()).call();
+            commit = commitOp.setPathFilters(pathFilters).setProgressListener(progress).call();
         } catch (NothingToCommitException noChanges) {
             throw new CommandFailedException(noChanges.getMessage(), noChanges);
         }
@@ -119,29 +119,22 @@ public class Commit extends AbstractCommand implements CLICommand {
 
         console.println("[" + commit.getId() + "] " + commit.getMessage());
 
-        console.print("Committed, counting objects...");
-        Iterator<DiffEntry> diff = geogig.command(DiffOp.class).setOldVersion(parentId)
-                .setNewVersion(commit.getId()).call();
-
-        int adds = 0, deletes = 0, changes = 0;
-        DiffEntry diffEntry;
-        while (diff.hasNext()) {
-            diffEntry = diff.next();
-            switch (diffEntry.changeType()) {
-            case ADDED:
-                ++adds;
-                break;
-            case REMOVED:
-                ++deletes;
-                break;
-            case MODIFIED:
-                ++changes;
-                break;
-            }
+        if (progress.isCanceled()) {
+            return;
         }
+        console.print("Committed, counting objects...");
+        console.flush();
 
-        ansi.fg(Color.GREEN).a(adds).reset().a(" features added, ").fg(Color.YELLOW).a(changes)
-                .reset().a(" changed, ").fg(Color.RED).a(deletes).reset().a(" deleted.").reset()
+        final DiffObjectCount diffCount = geogig.command(DiffCount.class)
+                .setOldVersion(parentId.toString()).setNewVersion(commit.getId().toString())
+                .setProgressListener(progress).call();
+
+        if (progress.isCanceled()) {
+            return;
+        }
+        ansi.fg(Color.GREEN).a(diffCount.getFeaturesAdded()).reset().a(" features added, ")
+                .fg(Color.YELLOW).a(diffCount.getFeaturesChanged()).reset().a(" changed, ")
+                .fg(Color.RED).a(diffCount.getFeaturesRemoved()).reset().a(" deleted.").reset()
                 .newline();
 
         console.print(ansi.toString());

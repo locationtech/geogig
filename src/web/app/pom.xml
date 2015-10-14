@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>geogig-web-app</artifactId>
-  <packaging>war</packaging>
+  <packaging>jar</packaging>
   <name>GeoGig WebApp</name>
 
   <repositories>

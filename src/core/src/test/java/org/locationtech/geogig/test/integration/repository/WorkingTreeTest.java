@@ -568,6 +568,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
         Iterator<DiffEntry> changes = workTree.getUnstaged(null);
 
         assertNotNull(changes);
+        assertEquals(4, Iterators.size(changes));
     }
 
     @Test

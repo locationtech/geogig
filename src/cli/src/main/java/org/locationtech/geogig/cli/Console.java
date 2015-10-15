@@ -33,7 +33,7 @@ public class Console {
     @SuppressWarnings("unused")
     private InputStream in;
 
-    private OutputStream out;
+    private PrintStream out;
 
     private boolean ansiEnabled;
 
@@ -54,10 +54,15 @@ public class Console {
      */
     public Console(InputStream in, OutputStream out) {
         this.in = in;
-        this.out = out;
         this.cursorBuffer = new StringBuffer();
         this.ansiEnabled = true;
         this.ansiSupported = checkAnsiSupported(out);
+        if (out instanceof PrintStream) {
+            this.out = (PrintStream) out;
+        } else {
+            boolean autoFlush = true;
+            this.out = new PrintStream(out, autoFlush);
+        }
     }
 
     /**
@@ -147,12 +152,6 @@ public class Console {
      */
     public void flush() throws IOException {
         String s = cursorBuffer.toString();
-        PrintStream out;
-        if (this.out instanceof PrintStream) {
-            out = (PrintStream) this.out;
-        } else {
-            out = new PrintStream(this.out);
-        }
         out.print(s);
         clearBuffer();
     }

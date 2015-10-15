@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
+import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
@@ -43,7 +43,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryInitializer;
 import org.locationtech.geogig.storage.BulkOpListener;
-import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -52,6 +51,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 /**
  * An implementation of a remote repository that exists on the local machine.
@@ -295,7 +295,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
 
         // holds object ids that need to be copied to the target db. Pruned when it reaches a
         // threshold.
-        final Set<ObjectId> ids = new HashSet<ObjectId>();
+        final Set<ObjectId> ids = Sets.newConcurrentHashSet();
 
         // This filter further refines the post order diff walk by making it ignore trees/buckets
         // that are already present in the target db
@@ -310,8 +310,8 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
                     return false;// abort traversal
                 }
                 ObjectId id;
-                if (b instanceof Node) {
-                    Node node = (Node) b;
+                if (b instanceof NodeRef) {
+                    NodeRef node = (NodeRef) b;
                     if (RevObject.TYPE.TREE.equals(node.getType())) {
                         // check of existence of trees only. For features the diff filtering is good
                         // enough and checking for existence on each feature would be killer
@@ -334,31 +334,32 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             final int bulkSize = 10_000;
 
             @Override
-            public void feature(@Nullable Node left, Node right) {
+            public void feature(@Nullable NodeRef left, NodeRef right) {
                 add(left);
                 add(right);
             }
 
             @Override
-            public void tree(@Nullable Node left, Node right) {
+            public void tree(@Nullable NodeRef left, NodeRef right) {
                 add(left);
                 add(right);
             }
 
-            private void add(@Nullable Node node) {
+            private void add(@Nullable NodeRef node) {
                 if (node == null) {
                     return;
                 }
                 ids.add(node.getObjectId());
-                Optional<ObjectId> metadataId = node.getMetadataId();
-                if (metadataId.isPresent()) {
-                    ids.add(metadataId.get());
+                ObjectId metadataId = node.getMetadataId();
+                if (!metadataId.isNull()) {
+                    ids.add(metadataId);
                 }
                 checkLimitAndCopy();
             }
 
             @Override
-            public void bucket(int bucketIndex, int bucketDepth, @Nullable Bucket left, Bucket right) {
+            public void bucket(NodeRef lparent, NodeRef rparent, int bucketIndex, int bucketDepth,
+                    @Nullable Bucket left, Bucket right) {
                 if (left != null) {
                     ids.add(left.getObjectId());
                 }
@@ -370,8 +371,9 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
 
             private void checkLimitAndCopy() {
                 if (ids.size() >= bulkSize) {
-                    copy(ids, fromDb, toDb, progress);
+                    Set<ObjectId> copyIds = Sets.newHashSet(ids);
                     ids.clear();
+                    copy(copyIds, fromDb, toDb, progress);
                 }
             }
         };

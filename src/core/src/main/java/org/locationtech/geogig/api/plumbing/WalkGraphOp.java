@@ -15,7 +15,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Node;
+import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeatureType;
@@ -40,11 +40,11 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
 
         public void commit(RevCommit commit);
 
-        public void feature(final Node featureNode);
+        public void feature(final NodeRef featureNode);
 
-        public void starTree(final Node treeNode);
+        public void starTree(final NodeRef treeNode);
 
-        public void endTree(final Node treeNode);
+        public void endTree(final NodeRef treeNode);
 
         public void bucket(final int bucketIndex, final int bucketDepth, final Bucket bucket);
 
@@ -97,9 +97,9 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
             private Set<ObjectId> visitedTypes = new HashSet<ObjectId>();
 
             @Override
-            public boolean tree(@Nullable Node left, @Nullable Node right) {
-                if (right.getMetadataId().isPresent()) {
-                    ObjectId featureTypeId = right.getMetadataId().get();
+            public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+                if (!right.getMetadataId().isNull()) {
+                    ObjectId featureTypeId = right.getMetadataId();
                     if (!visitedTypes.contains(featureTypeId)) {
                         visitedTypes.add(featureTypeId);
                         listener.featureType(odb.getFeatureType(featureTypeId));
@@ -114,28 +114,28 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
             }
 
             @Override
-            public boolean feature(@Nullable Node left, @Nullable Node right) {
+            public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
                 listener.feature(right);
                 checkExists(right.getObjectId(), right);
                 return true;
             }
 
             @Override
-            public void endTree(@Nullable Node left, @Nullable Node right) {
+            public void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
                 listener.endTree(right);
             }
 
             @Override
-            public boolean bucket(int bucketIndex, int bucketDepth, @Nullable Bucket left,
-                    @Nullable Bucket right) {
+            public boolean bucket(NodeRef lp, NodeRef rp, int bucketIndex, int bucketDepth,
+                    @Nullable Bucket left, @Nullable Bucket right) {
                 listener.bucket(bucketIndex, bucketDepth, right);
                 checkExists(right.getObjectId(), right);
                 return true;
             }
 
             @Override
-            public void endBucket(int bucketIndex, int bucketDepth, @Nullable Bucket left,
-                    @Nullable Bucket right) {
+            public void endBucket(NodeRef lp, NodeRef rp, int bucketIndex, int bucketDepth,
+                    @Nullable Bucket left, @Nullable Bucket right) {
                 listener.endBucket(bucketIndex, bucketDepth, right);
             }
 

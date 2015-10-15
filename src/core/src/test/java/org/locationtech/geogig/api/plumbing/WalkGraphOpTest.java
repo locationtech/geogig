@@ -10,20 +10,22 @@
 package org.locationtech.geogig.api.plumbing;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Node;
+import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public class WalkGraphOpTest extends RepositoryTestCase {
 
@@ -34,26 +36,26 @@ public class WalkGraphOpTest extends RepositoryTestCase {
         public List<String> sevents = new ArrayList<>();
 
         @Override
-        public void starTree(Node treeNode) {
+        public void starTree(NodeRef treeNode) {
             events.add(treeNode);
-            sevents.add("TREE");
+            sevents.add("TREE " + treeNode.name());
         }
 
         @Override
         public void featureType(RevFeatureType ftype) {
             events.add(ftype);
-            sevents.add("FEATURETYPE");
+            sevents.add("FEATURETYPE " + ftype.getName().getLocalPart());
         }
 
         @Override
-        public void feature(Node featureNode) {
+        public void feature(NodeRef featureNode) {
             events.add(featureNode);
-            sevents.add("FEATURE");
+            sevents.add("FEATURE " + featureNode.name());
         }
 
         @Override
-        public void endTree(Node treeNode) {
-            sevents.add("END TREE");
+        public void endTree(NodeRef treeNode) {
+            sevents.add("END TREE " + treeNode.name());
         }
 
         @Override
@@ -64,7 +66,7 @@ public class WalkGraphOpTest extends RepositoryTestCase {
         @Override
         public void commit(RevCommit commit) {
             events.add(commit);
-            sevents.add("COMMIT");
+            sevents.add("COMMIT " + commit.getMessage());
         }
 
         @Override
@@ -139,20 +141,20 @@ public class WalkGraphOpTest extends RepositoryTestCase {
 
         List<String> sevents = listener.sevents;
 
-        List<String> expected = ImmutableList.of(//
-                "COMMIT",//
-                "TREE",//
-                "FEATURETYPE",//
-                "TREE",//
-                "FEATURE",//
-                "END TREE", //
-                "FEATURETYPE",//
-                "TREE",//
-                "FEATURE",//
-                "END TREE",//
-                "END TREE");
+        Set<String> expected = ImmutableSet.of(//
+                "COMMIT Lines.1",//
+                "TREE ",//
+                "FEATURETYPE Points",//
+                "TREE Points",//
+                "FEATURETYPE Lines",//
+                "TREE Lines",//
+                "FEATURE Points.1",//
+                "END TREE Points",//
+                "FEATURE Lines.1",//
+                "END TREE Lines",//
+                "END TREE ");
 
-        assertEquals(expected, sevents);
+        assertEquals(expected, new HashSet<>(sevents));
     }
 
     @Test
@@ -167,7 +169,7 @@ public class WalkGraphOpTest extends RepositoryTestCase {
         ObjectId oid = point1Oid.get();
         geogig.getRepository().objectDatabase().delete(oid);
 
-        String expected = "Object BoundedFeatureNode[Points.1 -> " + oid + "] not found.";
+        String expected = "Object NodeRef[Points/Points.1 -> " + oid + "] not found.";
         exception.expect(IllegalStateException.class);
         exception.expectMessage(expected);
 

@@ -37,7 +37,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 
-class RevTreeBuilder2 {
+public class RevTreeBuilder2 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RevTreeBuilder2.class);
 

@@ -91,14 +91,14 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testNoOldVersionSet() {
-        exception.expect(NullPointerException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("old version");
         diffTree.call();
     }
 
     @Test
     public void testNoNewVersionSet() {
-        exception.expect(NullPointerException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("new version");
         diffTree.setOldVersion(Ref.HEAD).call();
     }

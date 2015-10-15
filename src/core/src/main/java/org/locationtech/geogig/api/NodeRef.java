@@ -17,6 +17,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -35,8 +36,11 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     public static final char PATH_SEPARATOR = '/';
 
     /**
-     * Full path from the root tree to the object this ref points to
+     * Full path from the root tree to the object this ref points to.
+     * <p>
+     * Can only be null for a root node (one with {@link NodeRef#ROOT} {@link Node#getName() name})
      */
+    @Nullable
     private String parentPath;
 
     /**
@@ -61,11 +65,34 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      */
     public NodeRef(Node node, String parentPath, ObjectId metadataId) {
         Preconditions.checkNotNull(node, "node is null");
-        Preconditions.checkNotNull(parentPath, "parentPath is null, did you mean an empty string?");
         Preconditions.checkNotNull(metadataId, "metadataId is null, did you mean ObjectId.NULL?");
+
+        Preconditions
+                .checkArgument(
+                        parentPath != null || NodeRef.ROOT.equals(node.getName()),
+                        "parentPath is null, did you mean an empty string? null parent path is only allowed for the root node");
+
         this.node = node;
         this.parentPath = parentPath;
         this.metadataId = metadataId;
+    }
+
+    /**
+     * Creates a {@link NodeRef} pointing to {@code node} with a {@code null} parent path, which is
+     * the only exception
+     */
+    public static NodeRef createRoot(Node node) {
+        Preconditions.checkArgument(NodeRef.ROOT.equals(node.getName()),
+                "A root NodeRef can only be created for a root node");
+        return new NodeRef(node, null, ObjectId.NULL);
+    }
+
+    public static NodeRef create(String parentPath, Node node) {
+        return new NodeRef(node, parentPath, ObjectId.NULL);
+    }
+
+    public static NodeRef create(String parentPath, Node node, ObjectId metadataId) {
+        return new NodeRef(node, parentPath, metadataId);
     }
 
     /**
@@ -149,7 +176,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
             return false;
         }
         NodeRef r = (NodeRef) o;
-        return parentPath.equals(r.parentPath) && node.equals(r.node)
+        return Objects.equal(parentPath, r.parentPath) && node.equals(r.node)
                 && getMetadataId().equals(r.getMetadataId());
     }
 
@@ -327,10 +354,11 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @return a new full path made by appending {@code childName} to {@code parentTreePath}
      */
     public static String appendChild(String parentTreePath, String childName) {
-        checkNotNull(parentTreePath);
+        checkArgument(parentTreePath != null || ROOT.equalsIgnoreCase(childName));
         checkNotNull(childName);
-        return ROOT.equals(parentTreePath) ? childName : new StringBuilder(parentTreePath)
-                .append(PATH_SEPARATOR).append(childName).toString();
+        return parentTreePath == null || ROOT.equals(parentTreePath) ? childName
+                : new StringBuilder(parentTreePath).append(PATH_SEPARATOR).append(childName)
+                        .toString();
     }
 
     @Override

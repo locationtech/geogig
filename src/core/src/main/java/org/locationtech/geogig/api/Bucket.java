@@ -42,7 +42,8 @@ public abstract class Bucket implements Bounded {
     public String toString() {
         Envelope bounds = new Envelope();
         expand(bounds);
-        return getClass().getSimpleName() + "[" + getObjectId() + "] " + bounds;
+        return getClass().getSimpleName() + "[" + getObjectId() + "] "
+                + (bounds.isNull() ? "" : bounds.toString());
     }
 
     /**

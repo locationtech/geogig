@@ -9,12 +9,16 @@
  */
 package org.locationtech.geogig.cli;
 
+import java.io.Console;
+
 import org.fusesource.jansi.Ansi;
 
 /**
  *
  */
 public class AnsiDecorator extends Ansi {
+
+    private static final Console SYSTEM_CONSOLE = System.console();
 
     private AnsiDecorator(StringBuilder sb) {
         super(sb);
@@ -27,7 +31,7 @@ public class AnsiDecorator extends Ansi {
 
     public static Ansi newAnsi(boolean ansiSupported, StringBuilder sb) {
         Ansi ansi = new Ansi(sb);
-        ansiSupported &= null != System.console();
+        ansiSupported &= null != SYSTEM_CONSOLE;
         if (ansiSupported) {
             return ansi;
         }

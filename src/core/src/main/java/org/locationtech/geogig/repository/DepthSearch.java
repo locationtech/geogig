@@ -96,7 +96,7 @@ public class DepthSearch {
         checkNotNull(childPath, "childPath");
         checkArgument(parentPath.isEmpty()
                 || parentPath.charAt(parentPath.length() - 1) != PATH_SEPARATOR);
-        checkArgument(!childPath.isEmpty(), "empty child path");
+        checkArgument(!childPath.isEmpty(), "empty child path: '%s/%s'", parentPath, childPath);
         checkArgument(childPath.charAt(childPath.length() - 1) != PATH_SEPARATOR);
 
         checkArgument(parentPath.isEmpty() || childPath.startsWith(parentPath + PATH_SEPARATOR));

@@ -187,7 +187,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         final PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource,
                 rightSource);
 
-        final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(100);
+        final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(10_000);
         final DiffEntryProducer diffProducer = new DiffEntryProducer(queue);
         diffProducer.setReportTrees(this.reportTrees);
         diffProducer.setRecursive(this.recursive);

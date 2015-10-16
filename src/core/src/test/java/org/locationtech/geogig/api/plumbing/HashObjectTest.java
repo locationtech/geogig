@@ -9,13 +9,17 @@
  */
 package org.locationtech.geogig.api.plumbing;
 
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import org.geotools.data.DataUtilities;
@@ -40,6 +44,8 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
 public class HashObjectTest extends RepositoryTestCase {
@@ -185,6 +191,53 @@ public class HashObjectTest extends RepositoryTestCase {
     }
 
     @Test
+    public void testHashFeatureWithMapProperty() throws Exception {
+        SimpleFeatureType featureType = DataUtilities.createType("http://geoserver.org/test",
+                "TestType", "str:String, map:java.util.Map");
+
+        RevFeatureTypeImpl revFeatureType = RevFeatureTypeImpl.build(featureType);
+
+        Map<String, Object> map1, map2, map3;
+        map1 = new HashMap<>();
+        map2 = new TreeMap<>();
+
+        map1.put("long", Long.valueOf(123));
+        map2.put("long", Long.valueOf(123));
+
+        map1.put("int", Integer.valueOf(456));
+        map2.put("int", Integer.valueOf(456));
+
+        map1.put("string", "hello");
+        map2.put("string", "hello");
+
+        map1.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
+        map2.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
+
+        map3 = ImmutableMap.of("I", (Object) "am", "a", (Object) "different", "map than",
+                (Object) map1, "and", (Object) map2);
+
+        Feature f1 = feature(featureType, "f1", "the name", map1);
+        Feature f2 = feature(featureType, "f2", "the name", map2);
+        Feature f3 = feature(featureType, "f3", "the name", map3);
+
+        RevFeature revFeature1 = RevFeatureBuilder.build(f1);
+        RevFeature revFeature2 = RevFeatureBuilder.build(f2);
+        RevFeature revFeature3 = RevFeatureBuilder.build(f3);
+        
+        ObjectId oid1 = hashCommand.setObject(revFeature1).call();
+        ObjectId oid2 = hashCommand.setObject(revFeature2).call();
+        ObjectId oid3 = hashCommand.setObject(revFeature3).call();
+
+        assertNotNull(oid1);
+        assertNotNull(oid2);
+        assertNotNull(oid3);
+
+        assertEquals(oid1, oid2);
+        assertFalse(oid1.equals(oid3));
+        assertEquals(oid3, hashCommand.setObject(revFeature3).call());
+    }
+
+    @Test
     public void testHashFeatureTypes() throws Exception {
 
         ObjectId featureType1Id = hashCommand.setObject(featureType1).call();
@@ -244,11 +297,16 @@ public class HashObjectTest extends RepositoryTestCase {
             Object value = values[i];
             if (type.getDescriptor(i) instanceof GeometryDescriptor) {
                 if (value instanceof String) {
-                    value = new WKTReader2().read((String) value);
+                    value = geom((String) value);
                 }
             }
             builder.set(i, value);
         }
         return builder.buildFeature(id);
+    }
+
+    private Geometry geom(String wkt) throws ParseException {
+        Geometry value = new WKTReader2().read(wkt);
+        return value;
     }
 }

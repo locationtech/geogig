@@ -169,6 +169,11 @@ public abstract class Node implements Bounded, Comparable<Node> {
         public final TYPE getType() {
             return TYPE.TREE;
         }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            return Optional.absent();
+        }
     }
 
     private static final class BoundedTreeNode extends TreeNode {
@@ -211,6 +216,17 @@ public abstract class Node implements Bounded, Comparable<Node> {
                 env.expandToInclude(bounds[2], bounds[3]);
             }
         }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            Envelope b;
+            if (bounds.length == 2) {
+                b = new Envelope(bounds[0], bounds[0], bounds[1], bounds[1]);
+            } else {
+                b = new Envelope(bounds[0], bounds[1], bounds[2], bounds[3]);
+            }
+            return Optional.of(b);
+        }
     }
 
     private static class FeatureNode extends Node {
@@ -223,6 +239,12 @@ public abstract class Node implements Bounded, Comparable<Node> {
         public final TYPE getType() {
             return TYPE.FEATURE;
         }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            return Optional.absent();
+        }
+
     }
 
     private static final class BoundedFeatureNode extends FeatureNode {
@@ -264,6 +286,17 @@ public abstract class Node implements Bounded, Comparable<Node> {
             if (bounds.length > 2) {
                 env.expandToInclude(bounds[2], bounds[3]);
             }
+        }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            Envelope b;
+            if (bounds.length == 2) {
+                b = new Envelope(bounds[0], bounds[0], bounds[1], bounds[1]);
+            } else {
+                b = new Envelope(bounds[0], bounds[1], bounds[2], bounds[3]);
+            }
+            return Optional.of(b);
         }
     }
 

@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.api;
 
+import com.google.common.base.Optional;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -28,4 +29,6 @@ public interface Bounded {
     public boolean intersects(Envelope env);
 
     public void expand(Envelope env);
+    
+    public Optional<Envelope> bounds();
 }

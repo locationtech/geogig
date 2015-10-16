@@ -16,6 +16,7 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -360,5 +361,10 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
             appendChild(strippedChildPath, child.get(i));
         }
         return strippedChildPath;
+    }
+
+    @Override
+    public Optional<Envelope> bounds() {
+        return node.bounds();
     }
 }

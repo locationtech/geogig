@@ -11,6 +11,7 @@ package org.locationtech.geogig.api;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.google.common.base.Optional;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -76,6 +77,11 @@ public abstract class Bucket implements Bounded {
         public void expand(Envelope env) {
             env.expandToInclude(x, y);
         }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            return Optional.of(new Envelope(x, x, y, y));
+        }
     }
 
     private static class RectangleBucket extends Bucket {
@@ -96,6 +102,11 @@ public abstract class Bucket implements Bounded {
         public void expand(Envelope env) {
             env.expandToInclude(this.bucketBounds);
         }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            return Optional.of(new Envelope(bucketBounds));
+        }
     }
 
     private static class NonSpatialBucket extends Bucket {
@@ -112,6 +123,11 @@ public abstract class Bucket implements Bounded {
         @Override
         public void expand(Envelope env) {
             // nothing to do
+        }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            return Optional.absent();
         }
     }
 

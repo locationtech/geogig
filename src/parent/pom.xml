@@ -16,56 +16,56 @@
  </scm>
 
   <!--
-  
+
   Build Instructions and Profiles
-  
+
   Handled as a normal maven java project:
-    
+
     mvn clean install
-  
+
   Online tests avaialble using:
-    
+
     mvn -Ponline
 
   To build additional support for commercial databases:
 
   * For SQL Server:
-  
+
     mvn clean install -PsqlServer
 
     Note: the jdbc driver for SQL Server must be in your
     local Maven repository, you can install it by issuing:
 
     mvn install:install-file  -Dfile=<path to sqljdbc4.jar>
-         -DartifactId=sqljdbc4 \ 
-         -DgroupId=com.microsoft \ 
+         -DartifactId=sqljdbc4 \
+         -DgroupId=com.microsoft \
          -Dversion=3.0 \
-         -Dpackaging=jar \ 
+         -Dpackaging=jar \
          -DgeneratePom=true
 
     Online tests can be performed by issuing the following:
 
     mvn clean install -PsqlServer,sqlServerOnline
-  
+
   Corertura is configufred for a test coverage report:
-    
+
     mvn cobertura:cobertura
     open target/site/cobertura/index.html
 
   * For Oracle:
-    
+
     mvn clean install -Poracle
 
-    Note: the ojdbc driver must be in your local Maven repository, 
+    Note: the ojdbc driver must be in your local Maven repository,
     you can install it by issuing:
 
     mvn install:install-file  -Dfile=<path to ojdbc14.jar>
-         -DartifactId=ojdbc14 \ 
-         -DgroupId=com.oracle \ 
+         -DartifactId=ojdbc14 \
+         -DgroupId=com.oracle \
          -Dversion=10.2.0.3.0 \
-         -Dpackaging=jar \ 
+         -Dpackaging=jar \
          -DgeneratePom=true
-  
+
   -->
   <organization>
     <name>Boundless</name>
@@ -127,7 +127,7 @@
     <sqljdbc4.version>3.0</sqljdbc4.version>
     <osmosis.version>0.43.1</osmosis.version>
     <xmlunit.version>1.3</xmlunit.version>
-    
+
     <test.maxHeapSize>512M</test.maxHeapSize>
     <test.tmpDir>${project.build.directory}</test.tmpDir> <!-- use the provided tmp dir for tests, defaults to project's target/ directory -->
     <maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
@@ -267,7 +267,7 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
-      </dependency> 
+      </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jul-to-slf4j</artifactId>
@@ -380,7 +380,7 @@
       <plugins>
         <plugin>
           <!--
-            generates OS specific scripts for starting java applications 
+            generates OS specific scripts for starting java applications
             see http://mojo.codehaus.org/appassembler/appassembler-maven-plugin/index.html
           -->
           <groupId>org.codehaus.mojo</groupId>

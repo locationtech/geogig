@@ -32,7 +32,6 @@ import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.FeatureBuilder;
-import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
@@ -65,6 +64,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -257,8 +257,12 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
     @Override
     public void close() throws IOException {
         if (screenMapFilter != null) {
-            LOGGER.debug("GeoGigFeatureReader.close(): ScreenMap filtering: {}",
-                    screenMapFilter.stats());
+            ScreenMapFilter.Stats stats = screenMapFilter.stats();
+            Stopwatch stopwatch = stats.sw.stop();
+            System.err.printf("GeoGigFeatureReader.close(): ScreenMap filtering: %s, time: %s\n",
+                    screenMapFilter.stats(), stopwatch);
+            LOGGER.debug("GeoGigFeatureReader.close(): ScreenMap filtering: {}, time: {}",
+                    screenMapFilter.stats(), stopwatch);
         }
     }
 
@@ -467,8 +471,10 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
 
             private long acceptedTrees, acceptedBuckets, acceptedFeatures;
 
+            private Stopwatch sw = Stopwatch.createStarted();
+
             void add(final Bounded b, final boolean skip) {
-                Node n = b instanceof Node ? (Node) b : null;
+                NodeRef n = b instanceof NodeRef ? (NodeRef) b : null;
                 Bucket bucket = b instanceof Bucket ? (Bucket) b : null;
                 if (skip) {
                     if (bucket == null) {

@@ -33,7 +33,7 @@ public class Console {
     @SuppressWarnings("unused")
     private InputStream in;
 
-    private OutputStream out;
+    private PrintStream out;
 
     private boolean ansiEnabled;
 
@@ -54,10 +54,15 @@ public class Console {
      */
     public Console(InputStream in, OutputStream out) {
         this.in = in;
-        this.out = out;
         this.cursorBuffer = new StringBuffer();
         this.ansiEnabled = true;
         this.ansiSupported = checkAnsiSupported(out);
+        if (out instanceof PrintStream) {
+            this.out = (PrintStream) out;
+        } else {
+            boolean autoFlush = true;
+            this.out = new PrintStream(out, autoFlush);
+        }
     }
 
     /**
@@ -114,7 +119,7 @@ public class Console {
      * @param s the character sequence to write to the console
      * @throws IOException
      */
-    public void print(CharSequence s) throws IOException {
+    public synchronized void print(CharSequence s) throws IOException {
         cursorBuffer.append(s);
     }
 
@@ -134,7 +139,7 @@ public class Console {
      * @param line the text to write
      * @throws IOException
      */
-    public void println(CharSequence line) throws IOException {
+    public synchronized void println(CharSequence line) throws IOException {
         print(line);
         cursorBuffer.append("\n");
         flush();
@@ -145,14 +150,8 @@ public class Console {
      * 
      * @throws IOException
      */
-    public void flush() throws IOException {
+    public synchronized void flush() throws IOException {
         String s = cursorBuffer.toString();
-        PrintStream out;
-        if (this.out instanceof PrintStream) {
-            out = (PrintStream) this.out;
-        } else {
-            out = new PrintStream(this.out);
-        }
         out.print(s);
         clearBuffer();
     }

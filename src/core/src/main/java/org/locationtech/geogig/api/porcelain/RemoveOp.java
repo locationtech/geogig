@@ -10,28 +10,48 @@
 package org.locationtech.geogig.api.porcelain;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.api.DefaultProgressListener;
+import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
+import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.ProgressListener;
+import org.locationtech.geogig.api.RevObject.TYPE;
+import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.DiffCount;
+import org.locationtech.geogig.api.plumbing.LsTreeOp;
+import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
+import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * Removes a feature or a tree from the working tree and index
  * 
  */
 @CanRunDuringConflict
-public class RemoveOp extends AbstractGeoGigOp<WorkingTree> {
+public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
 
     private List<String> pathsToRemove;
+
+    private boolean recursive;
 
     public RemoveOp() {
         this.pathsToRemove = new ArrayList<String>();
@@ -46,55 +66,130 @@ public class RemoveOp extends AbstractGeoGigOp<WorkingTree> {
         return this;
     }
 
+    public RemoveOp setRecursive(boolean recursive) {
+        this.recursive = recursive;
+        return this;
+    }
+
     /**
      * @see java.util.concurrent.Callable#call()
      */
-    protected WorkingTree _call() {
+    protected DiffObjectCount _call() {
 
         // Check that all paths are valid and exist
-        for (String pathToRemove : pathsToRemove) {
-            NodeRef.checkValidPath(pathToRemove);
-            Optional<NodeRef> node;
-            node = command(FindTreeChild.class).setParent(workingTree().getTree())
-                    .setChildPath(pathToRemove).call();
-            List<Conflict> conflicts = index().getConflicted(pathToRemove);
-            if (conflicts.size() > 0) {
-                for (Conflict conflict : conflicts) {
-                    conflictsDatabase().removeConflict(null, conflict.getPath());
-                }
+        final WorkingTree workingTree = workingTree();
+
+        final RevTree initialWorkTree = workingTree.getTree();
+
+        final Map<String, NodeRef> deleteTrees = getDeleteTrees(initialWorkTree);
+        final List<String> deleteFeatures = filterFeatures(deleteTrees.keySet());
+
+        final ProgressListener listener = getProgressListener();
+
+        for (Entry<String, NodeRef> e : deleteTrees.entrySet()) {
+            String treePath = e.getKey();
+
+            if (!recursive) {
+                throw new IllegalArgumentException(String.format(
+                        "Cannot remove tree %s if -r is not specified", treePath));
+            }
+
+            ObjectId newWorkHead = workingTree.delete(treePath);
+            if (initialWorkTree.getId().equals(newWorkHead)) {
+
             } else {
-                Preconditions.checkArgument(node.isPresent(),
-                        "pathspec '%s' did not match any feature or tree", pathToRemove);
+                getProgressListener().setDescription(String.format("Deleted %s tree", treePath));
+            }
+            if (listener.isCanceled()) {
+                return null;
             }
         }
 
-        // separate trees from features an delete accordingly
+        if (!deleteFeatures.isEmpty()) {
+            getProgressListener().setDescription("Deleting features...");
+            workingTree.delete(deleteFeatures.iterator(), listener);
+        }
+
+        getProgressListener().setDescription("Staging changes...");
+        stageDeletes(deleteTrees.values().iterator(), deleteFeatures.iterator());
+
+        final RevTree finalWorkTree = workingTree.getTree();
+
+        getProgressListener().setDescription("Computing result count...");
+        List<String> paths = new ArrayList<String>(deleteTrees.keySet());
+        paths.addAll(deleteFeatures);
+        final DiffObjectCount stageCount = command(DiffCount.class)
+                .setOldVersion(initialWorkTree.getId().toString())//
+                .setNewVersion(finalWorkTree.getId().toString())//
+                .setFilter(paths)//
+                .call();
+
+        return stageCount;
+    }
+
+    private void stageDeletes(Iterator<NodeRef> trees, Iterator<String> features) {
+        final StagingArea index = index();
+
+        Iterator<DiffEntry> treeDeletes = Iterators.transform(trees,
+                new Function<NodeRef, DiffEntry>() {
+                    @Override
+                    public DiffEntry apply(NodeRef treeRef) {
+                        return new DiffEntry(treeRef, null);
+                    }
+                });
+
+        Iterator<DiffEntry> featureDeletes = Iterators.transform(features,
+                new Function<String, DiffEntry>() {
+                    @Override
+                    public DiffEntry apply(String featurePath) {
+                        Node node = Node.create(NodeRef.nodeFromPath(featurePath), ObjectId.NULL,
+                                ObjectId.NULL, TYPE.FEATURE, null);
+                        String parentPath = NodeRef.parentPath(featurePath);
+                        NodeRef oldFeature = new NodeRef(node, parentPath, ObjectId.NULL);
+                        return new DiffEntry(oldFeature, null);
+                    }
+                });
+
+        ProgressListener progress = DefaultProgressListener.NULL;
+        index.stage(progress, Iterators.concat(treeDeletes, featureDeletes), -1);
+    }
+
+    /**
+     * @return an iterable with all elements in {@link #pathsToRemove} whose parent path are not in
+     *         {@code deleteTrees}
+     */
+    private List<String> filterFeatures(Set<String> deleteTrees) {
+        List<String> filtered = new ArrayList<>(this.pathsToRemove.size());
         for (String pathToRemove : pathsToRemove) {
-            Optional<NodeRef> node = command(FindTreeChild.class)
-                    .setParent(workingTree().getTree()).setChildPath(pathToRemove).call();
-            if (!node.isPresent()) {
+            if (deleteTrees.contains(pathToRemove)
+                    || deleteTrees.contains(NodeRef.parentPath(pathToRemove))) {
                 continue;
             }
-
-            switch (node.get().getType()) {
-            case TREE:
-                workingTree().delete(pathToRemove);
-                break;
-            case FEATURE:
-                String parentPath = NodeRef.parentPath(pathToRemove);
-                String name = node.get().name();
-                workingTree().delete(parentPath, name);
-                break;
-            default:
-                break;
-            }
-
-            final long numChanges = workingTree().countUnstaged(pathToRemove).count();
-            Iterator<DiffEntry> unstaged = workingTree().getUnstaged(pathToRemove);
-            index().stage(getProgressListener(), unstaged, numChanges);
+            NodeRef.checkValidPath(pathToRemove);
+            filtered.add(pathToRemove);
         }
+        return filtered;
+    }
 
-        return workingTree();
+    private Map<String, NodeRef> getDeleteTrees(RevTree workTree) {
+
+        Iterator<NodeRef> childTrees = command(LsTreeOp.class)
+                .setStrategy(Strategy.DEPTHFIRST_ONLY_TREES)
+                .setReference(workTree.getId().toString()).call();
+
+        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(childTrees,
+                new Function<NodeRef, String>() {
+                    @Override
+                    public String apply(NodeRef input) {
+                        return input.path();
+                    }
+                });
+
+        Set<String> requestedTrees = Sets.intersection(treesByPath.keySet(), new HashSet<>(
+                pathsToRemove));
+        Predicate<String> keyPredicate = Predicates.in(requestedTrees);
+        Map<String, NodeRef> requestedTreesMap = Maps.filterKeys(treesByPath, keyPredicate);
+        return requestedTreesMap;
     }
 
 }

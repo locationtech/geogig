@@ -167,7 +167,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
 
                 if ((ours || theirs) && !node.isPresent()) {
                     // remove the node.
-                    command(RemoveOp.class).addPathToRemove(st).call();
+                    command(RemoveOp.class).setRecursive(true).addPathToRemove(st).call();
                 } else {
                     checkState(node.isPresent(), "pathspec '" + st
                             + "' didn't match a feature in the tree");

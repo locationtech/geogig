@@ -27,7 +27,8 @@ import org.opengis.feature.type.FeatureType;
 import com.vividsolutions.jts.geom.Polygon;
 
 public abstract class RevFeatureTypeSerializationTest extends Assert {
-    private ObjectSerializingFactory serializer = getObjectSerializingFactory();
+    
+    protected final ObjectSerializingFactory serializer = getObjectSerializingFactory();
 
     private String namespace = "http://geoserver.org/test";
 

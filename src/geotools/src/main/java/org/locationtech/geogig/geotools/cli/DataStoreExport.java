@@ -88,7 +88,15 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
         checkParameter(tableName != null && !tableName.isEmpty(), "No table name specified");
 
         DataStore dataStore = getDataStore();
+        try {
+            exportInternal(cli, path, tableName, dataStore);
+        } finally {
+            dataStore.dispose();
+        }
+    }
 
+    private void exportInternal(GeogigCLI cli, String path, String tableName, DataStore dataStore)
+            throws IOException {
         ObjectId featureTypeId = null;
         if (!Arrays.asList(dataStore.getTypeNames()).contains(tableName)) {
             SimpleFeatureType outputFeatureType;
@@ -162,7 +170,6 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
         }
 
         cli.getConsole().println(path + " exported successfully to " + tableName);
-
     }
 
     private SimpleFeatureType getFeatureType(String path, GeogigCLI cli) {

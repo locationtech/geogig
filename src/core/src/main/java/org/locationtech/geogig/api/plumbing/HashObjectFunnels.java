@@ -17,7 +17,10 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import org.geotools.referencing.CRS;
@@ -320,6 +323,10 @@ class HashObjectFunnels {
                 into.putLong(least);
             } else if (value instanceof Geometry) {
                 GeometryFunnel.funnel((Geometry) value, into);
+            } else if (value instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, ?> map = (Map<String, ?>) value;
+                MapPropertyFunnel.funnel(map, into);
             } else if (value instanceof Serializable) {
                 OutputStream byteOutput = Funnels.asOutputStream(into);
                 try {
@@ -399,6 +406,26 @@ class HashObjectFunnels {
                     srsName = CRS.toSRS(crs);
                 }
                 NullableStringFunnel.funnel(srsName, into);
+            }
+        }
+    };
+
+    private static final Funnel<Map<String, ?>> MapPropertyFunnel = new Funnel<Map<String, ?>>() {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void funnel(Map<String, ?> map, final PrimitiveSink into) {
+            if (!(map instanceof SortedMap)) {
+                map = new TreeMap<>(map);
+            }
+
+            String key;
+            Object value;
+            for (Map.Entry<String, ?> e : map.entrySet()) {
+                key = e.getKey();
+                value = e.getValue();
+                StringFunnel.funnel(key, into);
+                PropertyValueFunnel.funnel(value, into);
             }
         }
     };

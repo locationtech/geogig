@@ -63,7 +63,7 @@ public class DiffTreeTest extends Assert {
 
     private DiffTree diffTree;
 
-    private GeoGIG geogit;
+    private GeoGIG geogig;
 
     private RevFeatureTypeImpl revtype;
 
@@ -78,27 +78,27 @@ public class DiffTreeTest extends Assert {
                 Modules.override(new GeogigModule()).with(new MemoryModule(testPlatform)))
                 .getInstance(Context.class);
 
-        geogit = new GeoGIG(injector);
-        assertNotNull(geogit.getOrCreateRepository());
-        diffTree = geogit.command(DiffTree.class);
+        geogig = new GeoGIG(injector);
+        assertNotNull(geogig.getOrCreateRepository());
+        diffTree = geogig.command(DiffTree.class);
 
         SimpleFeatureType ft = DataUtilities.createType("points",
                 "sp:String,ip:Integer,pp:Point:srid=3857");
         revtype = RevFeatureTypeImpl.build(ft);
         metadataId = revtype.getId();
-        geogit.getContext().objectDatabase().put(revtype);
+        geogig.getContext().objectDatabase().put(revtype);
     }
 
     @Test
     public void testNoOldVersionSet() {
-        exception.expect(NullPointerException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("old version");
         diffTree.call();
     }
 
     @Test
     public void testNoNewVersionSet() {
-        exception.expect(NullPointerException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("new version");
         diffTree.setOldVersion(Ref.HEAD).call();
     }
@@ -129,7 +129,7 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testTreePathFiltering() {
-        ObjectDatabase db = geogit.getContext().objectDatabase();
+        ObjectDatabase db = geogig.getContext().objectDatabase();
         RevTree tree1 = tree(100, db);
         RevTree tree2 = tree(50, db);
         RevTree root = createRoot(db, tree1, tree2);
@@ -153,7 +153,7 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testBoundsFiltering() {
-        ObjectDatabase db = geogit.getContext().objectDatabase();
+        ObjectDatabase db = geogig.getContext().objectDatabase();
         RevTree tree1 = tree(1000, db);
         RevTree tree2 = tree(50, db);
         RevTree root = createRoot(db, tree1, tree2);
@@ -172,7 +172,7 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testBoundsFilteringReprojecting() throws Exception {
-        ObjectDatabase db = geogit.getContext().objectDatabase();
+        ObjectDatabase db = geogig.getContext().objectDatabase();
         RevTree tree1 = tree(1000, db);
         RevTree tree2 = tree(50, db);
         RevTree root = createRoot(db, tree1, tree2);
@@ -193,7 +193,7 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testChangeTypeFilter() {
-        ObjectDatabase db = geogit.getContext().objectDatabase();
+        ObjectDatabase db = geogig.getContext().objectDatabase();
         final RevTree tree1 = tree(1000, db);
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;
@@ -229,7 +229,7 @@ public class DiffTreeTest extends Assert {
      */
     @Test
     public void testMixedFilters() {
-        ObjectDatabase db = geogit.getContext().objectDatabase();
+        ObjectDatabase db = geogig.getContext().objectDatabase();
         final RevTree tree1 = tree(1000, db);
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;

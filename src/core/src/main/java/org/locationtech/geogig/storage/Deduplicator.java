@@ -17,6 +17,31 @@ import org.locationtech.geogig.api.ObjectId;
  * A deduplicator identifies duplicates in a stream of ObjectIds.
  */
 public interface Deduplicator {
+    
+    public static final Deduplicator NULL_DEDUPLICATOR = new Deduplicator() {
+        
+        @Override
+        public boolean visit(ObjectId id) {
+            return false;
+        }
+        
+        @Override
+        public void reset() {
+        }
+        
+        @Override
+        public void removeDuplicates(List<ObjectId> ids) {
+        }
+        
+        @Override
+        public void release() {
+        }
+        
+        @Override
+        public boolean isDuplicate(ObjectId id) {
+            return false;
+        }
+    };
     /**
      * Tests an objectid for being a duplicate.  
      * This method does not alter the state of the deduplicator (an unseen

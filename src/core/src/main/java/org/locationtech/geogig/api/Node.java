@@ -11,6 +11,8 @@ package org.locationtech.geogig.api;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Map;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.RevObject.TYPE;
 
@@ -40,13 +42,17 @@ public abstract class Node implements Bounded, Comparable<Node> {
      */
     private ObjectId objectId;
 
-    private Node(final String name, final ObjectId oid, final ObjectId metadataId) {
+    private Map<String, Object> extraData;
+
+    private Node(final String name, final ObjectId oid, final ObjectId metadataId,
+            Map<String, Object> extraData) {
         checkNotNull(name);
         checkNotNull(oid);
         checkNotNull(metadataId);
         this.name = name;
         this.objectId = oid;
         this.metadataId = metadataId.isNull() ? null : metadataId;
+        this.extraData = extraData;
     }
 
     public Optional<ObjectId> getMetadataId() {
@@ -127,18 +133,25 @@ public abstract class Node implements Bounded, Comparable<Node> {
     public static Node create(final String name, final ObjectId oid, final ObjectId metadataId,
             final TYPE type, @Nullable final Envelope bounds) {
 
+        return create(name, oid, metadataId, type, bounds, null);
+    }
+
+    public static Node create(final String name, final ObjectId oid, final ObjectId metadataId,
+            final TYPE type, @Nullable final Envelope bounds,
+            @Nullable Map<String, Object> extraData) {
+
         switch (type) {
         case FEATURE:
             if (bounds == null || bounds.isNull()) {
-                return new FeatureNode(name, oid, metadataId);
+                return new FeatureNode(name, oid, metadataId, extraData);
             } else {
-                return new BoundedFeatureNode(name, oid, metadataId, bounds);
+                return new BoundedFeatureNode(name, oid, metadataId, bounds, extraData);
             }
         case TREE:
             if (bounds == null || bounds.isNull()) {
-                return new TreeNode(name, oid, metadataId);
+                return new TreeNode(name, oid, metadataId, extraData);
             } else {
-                return new BoundedTreeNode(name, oid, metadataId, bounds);
+                return new BoundedTreeNode(name, oid, metadataId, bounds, extraData);
             }
         default:
             throw new IllegalArgumentException(
@@ -148,13 +161,18 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
     private static class TreeNode extends Node {
 
-        public TreeNode(String name, ObjectId oid, ObjectId mdid) {
-            super(name, oid, mdid);
+        public TreeNode(String name, ObjectId oid, ObjectId mdid, Map<String, Object> extraData) {
+            super(name, oid, mdid, extraData);
         }
 
         @Override
         public final TYPE getType() {
             return TYPE.TREE;
+        }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            return Optional.absent();
         }
     }
 
@@ -163,8 +181,9 @@ public abstract class Node implements Bounded, Comparable<Node> {
         // dim0(0),dim0(1),dim1(0),dim1(1)
         private float[] bounds;
 
-        public BoundedTreeNode(String name, ObjectId oid, ObjectId mdid, Envelope env) {
-            super(name, oid, mdid);
+        public BoundedTreeNode(String name, ObjectId oid, ObjectId mdid, Envelope env,
+                Map<String, Object> extraData) {
+            super(name, oid, mdid, extraData);
             Preconditions.checkArgument(!env.isNull());
 
             if (env.getWidth() == 0 && env.getHeight() == 0) {
@@ -197,18 +216,35 @@ public abstract class Node implements Bounded, Comparable<Node> {
                 env.expandToInclude(bounds[2], bounds[3]);
             }
         }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            Envelope b;
+            if (bounds.length == 2) {
+                b = new Envelope(bounds[0], bounds[0], bounds[1], bounds[1]);
+            } else {
+                b = new Envelope(bounds[0], bounds[1], bounds[2], bounds[3]);
+            }
+            return Optional.of(b);
+        }
     }
 
     private static class FeatureNode extends Node {
 
-        public FeatureNode(String name, ObjectId oid, ObjectId mdid) {
-            super(name, oid, mdid);
+        public FeatureNode(String name, ObjectId oid, ObjectId mdid, Map<String, Object> extraData) {
+            super(name, oid, mdid, extraData);
         }
 
         @Override
         public final TYPE getType() {
             return TYPE.FEATURE;
         }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            return Optional.absent();
+        }
+
     }
 
     private static final class BoundedFeatureNode extends FeatureNode {
@@ -216,8 +252,9 @@ public abstract class Node implements Bounded, Comparable<Node> {
         // dim0(0),dim1(0),dim0(1),dim1(1)
         private float[] bounds;
 
-        public BoundedFeatureNode(String name, ObjectId oid, ObjectId mdid, Envelope env) {
-            super(name, oid, mdid);
+        public BoundedFeatureNode(String name, ObjectId oid, ObjectId mdid, Envelope env,
+                Map<String, Object> extraData) {
+            super(name, oid, mdid, extraData);
             Preconditions.checkArgument(!env.isNull());
 
             if (env.getWidth() == 0 && env.getHeight() == 0) {
@@ -250,5 +287,25 @@ public abstract class Node implements Bounded, Comparable<Node> {
                 env.expandToInclude(bounds[2], bounds[3]);
             }
         }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            Envelope b;
+            if (bounds.length == 2) {
+                b = new Envelope(bounds[0], bounds[0], bounds[1], bounds[1]);
+            } else {
+                b = new Envelope(bounds[0], bounds[1], bounds[2], bounds[3]);
+            }
+            return Optional.of(b);
+        }
+    }
+
+    @Nullable
+    public Map<String, Object> getExtraData() {
+        return extraData;
+    }
+
+    public void setExtraData(@Nullable Map<String, Object> extraData) {
+        this.extraData = extraData;
     }
 }

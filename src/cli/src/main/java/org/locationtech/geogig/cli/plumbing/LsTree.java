@@ -10,9 +10,12 @@
 package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
+import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
@@ -54,6 +57,9 @@ public class LsTree extends AbstractCommand implements CLICommand {
     @Parameter(names = { "-v", "--verbose" }, description = "Verbose output, include metadata, object id, and object type along with object path.")
     private boolean verbose;
 
+    @Parameter(names = { "-s", "--size" }, description = "Print tree size (number of features). If verbose output was requested it takes precedence over size")
+    private boolean printSize;
+
     @Override
     public void runInternal(final GeogigCLI cli) throws IOException {
         String ref;
@@ -83,11 +89,21 @@ public class LsTree extends AbstractCommand implements CLICommand {
 
         Function<NodeRef, CharSequence> printFunctor = new Function<NodeRef, CharSequence>() {
 
+            private NumberFormat numberFormat = NumberFormat.getInstance(Locale.ENGLISH);
+
             @Override
             public CharSequence apply(NodeRef input) {
+                numberFormat.setGroupingUsed(true);
+
                 StringBuilder sb = new StringBuilder();
+                GeoGIG geogig = cli.getGeogig();
                 if (!verbose) {
                     sb.append(input.path());
+                    if (printSize && input.getType().equals(TYPE.TREE)) {
+                        RevTree tree = geogig.command(RevObjectParse.class)
+                                .setObjectId(input.getObjectId()).call(RevTree.class).get();
+                        sb.append(' ').append(numberFormat.format(tree.size()));
+                    }
                 } else {
                     Envelope env = new Envelope();
                     input.getNode().expand(env);
@@ -98,12 +114,13 @@ public class LsTree extends AbstractCommand implements CLICommand {
                             .append(Double.toString(env.getMaxY()));
                     sb.append(input.getMetadataId().toString()).append(' ')
                             .append(input.getType().toString().toLowerCase()).append(' ')
-                            .append(input.getObjectId().toString()).append(' ').append(input.path())
-                            .append(' ').append(sbenv);
+                            .append(input.getObjectId().toString()).append(' ')
+                            .append(input.path()).append(' ').append(sbenv);
                     if (input.getType().equals(TYPE.TREE)) {
-                        RevTree tree = cli.getGeogig().command(RevObjectParse.class)
+                        RevTree tree = geogig.command(RevObjectParse.class)
                                 .setObjectId(input.getObjectId()).call(RevTree.class).get();
-                        sb.append(' ').append(tree.size()).append(' ').append(tree.numTrees());
+                        sb.append(' ').append(numberFormat.format(tree.size())).append(' ')
+                                .append(tree.numTrees());
                     }
                 }
                 return sb;

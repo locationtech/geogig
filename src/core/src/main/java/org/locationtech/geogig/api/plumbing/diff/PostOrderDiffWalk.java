@@ -3,10 +3,10 @@ package org.locationtech.geogig.api.plumbing.diff;
 import java.util.Stack;
 
 import org.eclipse.jdt.annotation.Nullable;
-
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
+import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
@@ -53,7 +53,11 @@ public class PostOrderDiffWalk {
 
             private boolean accepted;
 
-            static Entry tree(Node left, Node right, boolean accepted) {
+            private NodeRef leftParent;
+
+            private NodeRef rightParent;
+
+            static Entry tree(NodeRef left, NodeRef right, boolean accepted) {
                 Entry e = new Entry();
                 e.left = left;
                 e.right = right;
@@ -61,11 +65,13 @@ public class PostOrderDiffWalk {
                 return e;
             }
 
-            static Entry bucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right,
-                    boolean accepted) {
+            static Entry bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
+                    int bucketDepth, Bucket left, Bucket right, boolean accepted) {
                 Entry e = new Entry();
                 e.left = left;
                 e.right = right;
+                e.leftParent = leftParent;
+                e.rightParent = rightParent;
                 e.bucketIndex = bucketIndex;
                 e.bucketDepth = bucketDepth;
                 e.accepted = accepted;
@@ -75,15 +81,18 @@ public class PostOrderDiffWalk {
             public void apply(Consumer consumer) {
                 if (accepted) {
                     if (isNode()) {
-                        consumer.tree((Node) left, (Node) right);
+                        consumer.tree((NodeRef) left, (NodeRef) right);
                     } else {
-                        consumer.bucket(bucketIndex, bucketDepth, (Bucket) left, (Bucket) right);
+                        Bucket lbucket = (Bucket) left;
+                        Bucket rbucket = (Bucket) right;
+                        consumer.bucket(leftParent, rightParent, bucketIndex, bucketDepth, lbucket,
+                                rbucket);
                     }
                 }
             }
 
             private boolean isNode() {
-                return left == null ? right instanceof Node : left instanceof Node;
+                return left == null ? right instanceof NodeRef : left instanceof NodeRef;
             }
         }
 
@@ -99,35 +108,39 @@ public class PostOrderDiffWalk {
         }
 
         @Override
-        public void feature(Node left, Node right) {
+        public boolean feature(NodeRef left, NodeRef right) {
             boolean accept = filter.apply(left) || filter.apply(right);
             if (accept) {
                 consumer.feature(left, right);
             }
+            return true;
         }
 
         @Override
-        public boolean tree(Node left, Node right) {
+        public boolean tree(NodeRef left, NodeRef right) {
             boolean accept = filter.apply(left) || filter.apply(right);
             stack.push(Entry.tree(left, right, accept));
             return accept;
         }
 
         @Override
-        public void endTree(Node left, Node right) {
+        public void endTree(NodeRef left, NodeRef right) {
             Entry entry = stack.pop();
             entry.apply(consumer);
         }
 
         @Override
-        public boolean bucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
+        public boolean bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
+                int bucketDepth, Bucket left, Bucket right) {
             boolean accept = filter.apply(left) || filter.apply(right);
-            stack.push(Entry.bucket(bucketIndex, bucketDepth, left, right, accept));
+            stack.push(Entry.bucket(leftParent, rightParent, bucketIndex, bucketDepth, left, right,
+                    accept));
             return accept;
         }
 
         @Override
-        public void endBucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
+        public void endBucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
+                int bucketDepth, Bucket left, Bucket right) {
             Entry entry = stack.pop();
             entry.apply(consumer);
         }
@@ -135,11 +148,12 @@ public class PostOrderDiffWalk {
 
     public static interface Consumer {
 
-        public abstract void feature(@Nullable final Node left, @Nullable final Node right);
+        public abstract void feature(@Nullable final NodeRef left, @Nullable final NodeRef right);
 
-        public abstract void tree(@Nullable final Node left, @Nullable final Node right);
+        public abstract void tree(@Nullable final NodeRef left, @Nullable final NodeRef right);
 
-        public abstract void bucket(final int bucketIndex, final int bucketDepth,
+        public abstract void bucket(@Nullable final NodeRef leftParent,
+                @Nullable final NodeRef rightParent, final int bucketIndex, final int bucketDepth,
                 @Nullable final Bucket left, @Nullable final Bucket right);
 
     }

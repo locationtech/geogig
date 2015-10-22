@@ -50,8 +50,11 @@ import org.opengis.feature.type.Name;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.io.ParseException;
 
 public abstract class RepositoryTestCase extends Assert {
@@ -274,17 +277,27 @@ public abstract class RepositoryTestCase extends Assert {
         for (Feature f : features) {
             insertAndAdd(f);
             if (oneCommitPerFeature) {
-                RevCommit commit = geogig.command(CommitOp.class).call();
-                commits.add(commit);
+                commits.add(commit(f.getIdentifier().getID()));
             }
         }
 
         if (!oneCommitPerFeature) {
-            RevCommit commit = geogig.command(CommitOp.class).call();
-            commits.add(commit);
+            String msg = Joiner.on(',').join(
+                    Lists.transform(features, new Function<Feature, String>() {
+                        @Override
+                        public String apply(Feature input) {
+                            return input.getIdentifier().getID();
+                        }
+                    }));
+            commits.add(commit(msg));
         }
 
         return commits;
+    }
+
+    protected RevCommit commit(String message) {
+        RevCommit commit = geogig.command(CommitOp.class).setMessage(message).call();
+        return commit;
     }
 
     /**

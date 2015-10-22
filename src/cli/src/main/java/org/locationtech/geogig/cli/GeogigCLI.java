@@ -388,7 +388,7 @@ public class GeogigCLI {
             exception = paramParseException;
             consoleMessage = paramParseException.getMessage() + ". See geogig --help";
 
-        } catch (InvalidParameterException paramValidationError) {
+        } catch (IllegalArgumentException | InvalidParameterException paramValidationError) {
             exception = paramValidationError;
             consoleMessage = paramValidationError.getMessage();
 
@@ -396,13 +396,13 @@ public class GeogigCLI {
 
             consoleMessage = cannotRun.getMessage();
 
-        } catch (CommandFailedException cmdFailed) {
+        } catch (IllegalStateException | CommandFailedException cmdFailed) {
             exception = cmdFailed;
             if (null == cmdFailed.getMessage()) {
                 // this is intentional, see the javadoc for CommandFailedException
                 printError = false;
             } else {
-                LOGGER.error(consoleMessage, cmdFailed.getCause());
+                LOGGER.error(consoleMessage, Throwables.getRootCause(cmdFailed));
                 consoleMessage = cmdFailed.getMessage();
             }
         } catch (RuntimeException e) {
@@ -461,10 +461,14 @@ public class GeogigCLI {
             return;
         }
         {
-            args = unalias(args);
-            final String commandName = args[0];
+            String commandName = args[0];
             JCommander commandParser = mainCommander.getCommands().get(commandName);
-
+            if (commandParser == null) {
+                args = unalias(args);
+                commandName = args[0];
+                commandParser = mainCommander.getCommands().get(commandName);
+            }
+            
             if (commandParser == null) {
                 consoleReader.println(args[0] + " is not a geogig command. See geogig --help.");
                 // check for similar commands

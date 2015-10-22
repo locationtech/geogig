@@ -12,7 +12,6 @@ package org.locationtech.geogig.api.plumbing.diff;
 import java.util.List;
 
 import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 
@@ -23,19 +22,16 @@ import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
  */
 public class PathFilteringDiffConsumer extends PreOrderDiffWalk.ForwardingConsumer {
 
-    private DiffPathTracker tracker;
-
     private DiffPathFilter filter;
 
     public PathFilteringDiffConsumer(List<String> pathFilters, PreOrderDiffWalk.Consumer delegate) {
         super(delegate);
-        this.tracker = new DiffPathTracker();
         this.filter = new DiffPathFilter(pathFilters);
     }
 
     @Override
-    public boolean tree(Node left, Node right) {
-        String path = tracker.tree(left, right);
+    public boolean tree(NodeRef left, NodeRef right) {
+        String path = left == null ? right.path() : left.path();
         if (filter.treeApplies(path)) {
             return super.tree(left, right);
         }
@@ -43,32 +39,30 @@ public class PathFilteringDiffConsumer extends PreOrderDiffWalk.ForwardingConsum
     }
 
     @Override
-    public void endTree(Node left, Node right) {
-        String currentPath = tracker.getCurrentPath();
-        tracker.endTree(left, right);
-        if (filter.treeApplies(currentPath)) {
+    public void endTree(NodeRef left, NodeRef right) {
+        String path = left == null ? right.path() : left.path();
+        if (filter.treeApplies(path)) {
             super.endTree(left, right);
         }
     }
 
     @Override
-    public boolean bucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
-        String treePath = tracker.getCurrentPath();
+    public boolean bucket(NodeRef lparent, NodeRef rparent, int bucketIndex, int bucketDepth,
+            Bucket left, Bucket right) {
+        String treePath = lparent == null ? rparent.path() : lparent.path();
         if (filter.bucketApplies(treePath, bucketIndex, bucketDepth)) {
-            return super.bucket(bucketIndex, bucketDepth, left, right);
+            return super.bucket(lparent, rparent, bucketIndex, bucketDepth, left, right);
         }
         return false;
     }
 
     @Override
-    public void feature(Node left, Node right) {
-        String treePath = tracker.getCurrentPath();
-        String featureName = tracker.name(left, right);
-        String featurePath = NodeRef.appendChild(treePath, featureName);
-
+    public boolean feature(NodeRef left, NodeRef right) {
+        String featurePath = left == null ? right.path() : left.path();
         if (filter.featureApplies(featurePath)) {
-            super.feature(left, right);
+            return super.feature(left, right);
         }
+        return true;
     }
 
 }

@@ -13,20 +13,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
+import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.porcelain.RemoveOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.cli.InvalidParameterException;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Optional;
 
 /**
  *
@@ -56,47 +53,27 @@ public class Remove extends AbstractCommand implements CLICommand {
             throw new CommandFailedException();
         }
 
-        /*
-         * Separate trees and features, and check that, if there are trees to remove, the -r
-         * modifier is used
-         */
-        ArrayList<String> trees = new ArrayList<String>();
-        Repository repository = cli.getGeogig().getRepository();
-        for (String pathToRemove : pathsToRemove) {
-            NodeRef.checkValidPath(pathToRemove);
-
-            Optional<NodeRef> node = repository.command(FindTreeChild.class)
-                    .setParent(repository.workingTree().getTree()).setChildPath(pathToRemove)
-                    .call();
-            checkParameter(node.isPresent(), "pathspec '%s' did not match any feature or tree",
-                    pathToRemove);
-            NodeRef nodeRef = node.get();
-            if (nodeRef.getType() == TYPE.TREE) {
-                checkParameter(recursive, "Cannot remove tree %s if -r is not specified",
-                        nodeRef.path());
-                trees.add(pathToRemove);
-            }
-        }
-        int featuresCount = pathsToRemove.size() - trees.size();
-
         /* Perform the remove operation */
-        RemoveOp op = cli.getGeogig().command(RemoveOp.class);
+        RemoveOp op = cli.getGeogig().command(RemoveOp.class).setRecursive(recursive);
 
         for (String pathToRemove : pathsToRemove) {
             op.addPathToRemove(pathToRemove);
         }
 
-        op.setProgressListener(cli.getProgressListener()).call();
-
+        DiffObjectCount result;
+        try {
+            result = op.setProgressListener(cli.getProgressListener()).call();
+        } catch (IllegalArgumentException e) {
+            throw new InvalidParameterException(e.getMessage());
+        }
         /* And inform about it */
-        if (featuresCount > 0) {
-            console.print(String.format("Deleted %d feature(s)", featuresCount));
+        console.println(String.format("Deleted %,d feature(s)", result.getFeaturesRemoved()));
+        if (result.getTreesRemoved() > 0) {
+            console.println(String.format("Deleted %,d trees", result.getTreesRemoved()));
         }
-
-        for (String tree : trees) {
-            console.print(String.format("Deleted %s tree", tree));
+        if (result.getFeaturesRemoved() == 0 && result.getTreesRemoved() == 0) {
+            throw new CommandFailedException();
         }
-
     }
 
 }

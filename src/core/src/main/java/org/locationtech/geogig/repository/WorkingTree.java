@@ -31,6 +31,7 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.api.Context;
+import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.FeatureBuilder;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
@@ -212,9 +213,10 @@ public class WorkingTree {
      * ref.
      * 
      * @param path the path to the tree to delete
+     * @return 
      * @throws Exception
      */
-    public void delete(final String path) {
+    public ObjectId delete(final String path) {
 
         final String parentPath = NodeRef.parentPath(path);
         final String childName = NodeRef.nodeFromPath(path);
@@ -231,18 +233,18 @@ public class WorkingTree {
             Optional<NodeRef> parentRef = context.command(FindTreeChild.class).setParent(workHead)
                     .setChildPath(parentPath).call();
             if (!parentRef.isPresent()) {
-                return;
+                return workHead.getId();
             }
 
             parentMetadataId = parentRef.get().getMetadataId();
-            parent = context.command(RevObjectParse.class).setObjectId(parentRef.get().getObjectId())
-                    .call(RevTree.class).get();
+            parent = context.command(RevObjectParse.class)
+                    .setObjectId(parentRef.get().getObjectId()).call(RevTree.class).get();
             parentBuilder = parent.builder(indexDatabase);
         }
         RevTree newParent = parentBuilder.remove(childName).build();
         indexDatabase.put(newParent);
         if (parent.getId().equals(newParent.getId())) {
-            return;// nothing changed
+            return workHead.getId();// nothing changed
         }
 
         ObjectId newWorkHead;
@@ -254,6 +256,7 @@ public class WorkingTree {
                     .setTree(newParent).setMetadataId(parentMetadataId).call();
         }
         updateWorkHead(newWorkHead);
+        return newWorkHead;
     }
 
     /**
@@ -324,6 +327,10 @@ public class WorkingTree {
      * @param features the features to delete
      */
     public void delete(Iterator<String> features) {
+        delete(features, DefaultProgressListener.NULL);
+    }
+
+    public void delete(Iterator<String> features, ProgressListener progress) {
 
         final ExecutorService treeBuildingService = Executors
                 .newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(
@@ -336,9 +343,12 @@ public class WorkingTree {
             insertHelper = new WorkingTreeInsertHelper(context, currewntWorkHead,
                     treeBuildingService);
 
-            while (features.hasNext()) {
+            while (features.hasNext() && !progress.isCanceled()) {
                 String featurePath = features.next();
                 insertHelper.remove(featurePath);
+            }
+            if (progress.isCanceled()) {
+                return;
             }
 
             Map<NodeRef, RevTree> trees = insertHelper.buildTrees();
@@ -346,6 +356,9 @@ public class WorkingTree {
             ObjectId newWorkHead = currewntWorkHead.getId();
 
             for (Map.Entry<NodeRef, RevTree> treeEntry : trees.entrySet()) {
+                if (progress.isCanceled()) {
+                    return;
+                }
                 NodeRef treeRef = treeEntry.getKey();
                 Preconditions.checkState(indexDatabase.exists(treeRef.getObjectId()));
                 RevTree newFeatureTree = treeEntry.getValue();

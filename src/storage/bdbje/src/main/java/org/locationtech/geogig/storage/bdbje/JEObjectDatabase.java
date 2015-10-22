@@ -901,7 +901,6 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public String toString() {
-        return String.format("%s[env=%s]", getClass().getSimpleName(), env == null ? "<unset>"
-                : env.getHome());
+        return String.format("%s[env=%s]", getClass().getSimpleName(), envName);
     }
 }

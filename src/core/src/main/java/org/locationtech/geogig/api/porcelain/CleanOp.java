@@ -71,7 +71,7 @@ public class CleanOp extends AbstractGeoGigOp<WorkingTree> {
             }
         });
 
-        workingTree().delete(addedPaths);
+        workingTree().delete(addedPaths, getProgressListener());
 
         return workingTree();
 

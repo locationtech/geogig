@@ -10,23 +10,29 @@
 package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
+import org.locationtech.geogig.api.Bounded;
+import org.locationtech.geogig.api.Bucket;
+import org.locationtech.geogig.api.Node;
+import org.locationtech.geogig.api.NodeRef;
+import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.plumbing.CreateDeduplicator;
 import org.locationtech.geogig.api.plumbing.WalkGraphOp;
+import org.locationtech.geogig.api.plumbing.WalkGraphOp.Listener;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.storage.Deduplicator;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
 /**
@@ -43,50 +49,141 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
     private boolean verbose;
 
     @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public void runInternal(final GeogigCLI cli) throws IOException {
         String ref;
         if (refList.isEmpty()) {
             ref = null;
         } else {
             ref = refList.get(0);
         }
-        Deduplicator deduplicator = cli.getGeogig().command(CreateDeduplicator.class).call();
+
+        final Function<Object, CharSequence> printFunctor = verbose ? VERBOSE_FORMATTER : FORMATTER;
+
+        Console console = cli.getConsole();
+        Listener listener = new PrintListener(console, printFunctor);
         try {
-            Iterator<RevObject> iter = cli.getGeogig() //
-                    .command(WalkGraphOp.class).setReference(ref) //
-                    .setDeduplicator(deduplicator) //
-                    // .setStrategy(lsStrategy) //
+            cli.getGeogig().command(WalkGraphOp.class).setReference(ref).setListener(listener)
                     .call();
-
-            final Console console = cli.getConsole();
-            if (!iter.hasNext()) {
-                if (ref == null) {
-                    console.println("The working tree is empty");
-                } else {
-                    console.println("The specified path is empty");
-                }
-                return;
-            }
-
-            Function<RevObject, CharSequence> printFunctor = new Function<RevObject, CharSequence>() {
-                @Override
-                public CharSequence apply(RevObject input) {
-                    if (verbose) {
-                        return String.format("%s: %s %s", input.getId(), input.getType(), input);
-                    } else {
-                        return String.format("%s: %s", input.getId(), input.getType());
-                    }
-                }
-            };
-
-            Iterator<CharSequence> lines = Iterators.transform(iter, printFunctor);
-
-            while (lines.hasNext()) {
-                console.println(lines.next());
-            }
-            console.flush();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new CommandFailedException(e.getMessage(), e);
         } finally {
-            deduplicator.release();
+            console.flush();
         }
     }
+
+    private static class PrintListener implements WalkGraphOp.Listener {
+
+        private final Console console;
+
+        private final Function<Object, CharSequence> printFunctor;
+
+        public PrintListener(Console console, Function<Object, CharSequence> printFunctor) {
+            this.console = console;
+            this.printFunctor = printFunctor;
+        }
+
+        private void print(Object b) {
+            try {
+                CharSequence line = printFunctor.apply(b);
+                console.println(line);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+
+        @Override
+        public void starTree(NodeRef treeNode) {
+            print(treeNode);
+        }
+
+        @Override
+        public void feature(NodeRef featureNode) {
+            print(featureNode);
+        }
+
+        @Override
+        public void endTree(NodeRef treeNode) {
+
+        }
+
+        @Override
+        public void bucket(int bucketIndex, int bucketDepth, Bucket bucket) {
+            print(bucket);
+        }
+
+        @Override
+        public void endBucket(int bucketIndex, int bucketDepth, Bucket bucket) {
+        }
+
+        @Override
+        public void commit(RevCommit commit) {
+            print(commit);
+        }
+
+        @Override
+        public void featureType(RevFeatureType ftype) {
+            print(ftype);
+        }
+
+    };
+
+    private static final Function<Object, CharSequence> FORMATTER = new Function<Object, CharSequence>() {
+
+        /**
+         * @param o a {@link Node}, {@link Bucket}, or {@link RevObject}
+         */
+        @Override
+        public CharSequence apply(Object o) {
+            ObjectId id;
+            String type;
+            if (o instanceof Bounded) {
+                Bounded b = (Bounded) o;
+                id = b.getObjectId();
+                if (b instanceof NodeRef) {
+                    type = ((NodeRef) b).getType().toString();
+                } else {
+                    type = "BUCKET";
+                }
+            } else if (o instanceof RevObject) {
+                id = ((RevObject) o).getId();
+                type = ((RevObject) o).getType().toString();
+            } else {
+                throw new IllegalArgumentException();
+            }
+            return String.format("%s: %s", id, type);
+        }
+    };
+
+    private static final Function<Object, CharSequence> VERBOSE_FORMATTER = new Function<Object, CharSequence>() {
+
+        /**
+         * @param o a {@link Node}, {@link Bucket}, or {@link RevObject}
+         */
+        @Override
+        public CharSequence apply(Object o) {
+            ObjectId id;
+            String type;
+            String extraData = "";
+            if (o instanceof Bounded) {
+                Bounded b = (Bounded) o;
+                id = b.getObjectId();
+                if (b instanceof NodeRef) {
+                    NodeRef node = (NodeRef) b;
+                    type = node.getType().toString();
+                    extraData = node.path();
+                    if (!node.getMetadataId().isNull()) {
+                        extraData += " [" + node.getMetadataId() + "]";
+                    }
+                } else {
+                    type = "BUCKET";
+                }
+            } else if (o instanceof RevObject) {
+                id = ((RevObject) o).getId();
+                type = ((RevObject) o).getType().toString();
+            } else {
+                throw new IllegalArgumentException();
+            }
+            return String.format("%s: %s %s", id, type, extraData);
+        }
+    };
 }

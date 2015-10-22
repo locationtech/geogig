@@ -11,16 +11,12 @@ package org.locationtech.geogig.web.api.commands;
 
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.porcelain.RemoveOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ResponseWriter;
-
-import com.google.common.base.Optional;
 
 /**
  * Interface for the Remove operation in GeoGig.
@@ -70,21 +66,9 @@ public class RemoveWebOp extends AbstractWebAPICommand {
         }
 
         final Context geogig = this.getCommandLocator(context);
-        RemoveOp command = geogig.command(RemoveOp.class);
+        RemoveOp command = geogig.command(RemoveOp.class).setRecursive(recursive);
 
         NodeRef.checkValidPath(path);
-
-        Optional<NodeRef> node = geogig.command(FindTreeChild.class)
-                .setParent(geogig.workingTree().getTree()).setChildPath(path).call();
-        if (node.isPresent()) {
-            NodeRef nodeRef = node.get();
-            if (nodeRef.getType() == TYPE.TREE) {
-                if (!recursive) {
-                    throw new CommandSpecException(
-                            "Recursive option must be used to remove a tree.");
-                }
-            }
-        }
 
         command.addPathToRemove(path).call();
         context.setResponseContent(new CommandResponse() {

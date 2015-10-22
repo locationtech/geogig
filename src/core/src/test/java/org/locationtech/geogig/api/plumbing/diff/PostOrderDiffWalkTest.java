@@ -14,9 +14,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.createFeaturesTree;
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.createTreesTree;
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.featureNode;
+import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.createFeaturesTreeBuilder;
+import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.createTreesTreeBuilder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -55,19 +54,29 @@ public class PostOrderDiffWalkTest {
         List</* @Nullable */Bounded> orderedRight = new ArrayList<>();
 
         @Override
-        public void feature(Node left, Node right) {
+        public void feature(NodeRef left, NodeRef right) {
+            synchronized (System.err) {
+                System.err.printf("feature: %s / %s\n", left, right);
+            }
             orderedLeft.add(left);
             orderedRight.add(right);
         }
 
         @Override
-        public void tree(Node left, Node right) {
+        public void tree(NodeRef left, NodeRef right) {
+            synchronized (System.err) {
+                System.err.printf("tree: %s / %s\n", left, right);
+            }
             orderedLeft.add(left);
             orderedRight.add(right);
         }
 
         @Override
-        public void bucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
+        public void bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
+                int bucketDepth, Bucket left, Bucket right) {
+            synchronized (System.err) {
+                System.err.printf("bucket: %s / %s\n", left, right);
+            }
             orderedLeft.add(left);
             orderedRight.add(right);
         }
@@ -87,15 +96,18 @@ public class PostOrderDiffWalkTest {
      * Creates a root node for the given tree as the one {@link PostOrderDiffWalk} should use to
      * start the traversal
      */
-    private Node nodeFor(RevTree root) {
+    private static NodeRef nodeFor(RevTree root) {
         Envelope bounds = SpatialOps.boundsOf(root);
-        return Node.create(NodeRef.ROOT, root.getId(), ObjectId.NULL, TYPE.TREE, bounds);
+        return NodeRef.createRoot(Node.create(NodeRef.ROOT, root.getId(), ObjectId.NULL, TYPE.TREE,
+                bounds));
     }
 
     @Test
     public void testSameRootTree() {
-        RevTree left = createFeaturesTree(leftSource, "f", 10).build();
+        RevTree left = createFeaturesTreeBuilder(leftSource, "f", 10).build();
         RevTree right = left;
+        leftSource.put(left);
+        rightSource.put(right);
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
         Consumer consumer = mock(Consumer.class);
@@ -107,8 +119,10 @@ public class PostOrderDiffWalkTest {
 
     @Test
     public void testSameChildTree() {
-        RevTree left = createFeaturesTree(leftSource, "f", 10).build();
+        RevTree left = createFeaturesTreeBuilder(leftSource, "f", 10).build();
         RevTree right = left;
+        leftSource.put(left);
+        rightSource.put(right);
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
         Consumer consumer = mock(Consumer.class);
@@ -119,12 +133,14 @@ public class PostOrderDiffWalkTest {
 
     @Test
     public void testSimple() {
-        RevTree left = createFeaturesTree(leftSource, "f", 1).build();
-        RevTree right = createFeaturesTree(rightSource, "f", 2).build();
+        RevTree left = createFeaturesTreeBuilder(leftSource, "f", 1).build();
+        RevTree right = createFeaturesTreeBuilder(rightSource, "f", 2).build();
+        leftSource.put(left);
+        rightSource.put(right);
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
         List<? extends Bounded> expectedLeft = newArrayList(null, nodeFor(left));
-        List<? extends Bounded> expectedRight = newArrayList(featureNode("f", 1), nodeFor(right));
+        List<? extends Bounded> expectedRight = newArrayList(featureNodeRef("f", 1), nodeFor(right));
 
         visitor.walk(testConsumer);
         // System.err.println(testConsumer.orderedLeft);
@@ -136,8 +152,10 @@ public class PostOrderDiffWalkTest {
     @Test
     public void testLeafLeafTwoAdds() {
         // two leaf trees
-        RevTree left = createFeaturesTree(leftSource, "f", 3).build();
-        RevTree right = createFeaturesTree(rightSource, "f", 5).build();
+        RevTree left = createFeaturesTreeBuilder(leftSource, "f", 3).build();
+        RevTree right = createFeaturesTreeBuilder(rightSource, "f", 5).build();
+        leftSource.put(left);
+        rightSource.put(right);
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
         List<? extends Bounded> expectedLeft = newArrayList(//
@@ -145,8 +163,8 @@ public class PostOrderDiffWalkTest {
                 null,//
                 nodeFor(left));
         List<? extends Bounded> expectedRight = newArrayList(//
-                featureNode("f", 3),//
-                featureNode("f", 4),//
+                featureNodeRef("f", 3),//
+                featureNodeRef("f", 4),//
                 nodeFor(right));
 
         visitor.walk(testConsumer);
@@ -155,13 +173,20 @@ public class PostOrderDiffWalkTest {
         assertEquals(expectedRight, testConsumer.orderedRight);
     }
 
+    public static NodeRef featureNodeRef(String namePrefix, int index) {
+        Node node = TreeTestSupport.featureNode(namePrefix, index, false);
+        return NodeRef.create(NodeRef.ROOT, node);
+    }
+
     @Test
     public void testLeafLeafWithSubStrees() {
         // two leaf trees
         ObjectId metadataId = ObjectId.forString("fake");
 
-        RevTree left = createTreesTree(leftSource, 2, 2, metadataId).build();
-        RevTree right = createTreesTree(rightSource, 3, 2, metadataId).build();
+        RevTree left = createTreesTreeBuilder(leftSource, 2, 2, metadataId).build();
+        RevTree right = createTreesTreeBuilder(rightSource, 3, 2, metadataId).build();
+        leftSource.put(left);
+        rightSource.put(right);
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
         visitor.walk(testConsumer);
@@ -172,8 +197,8 @@ public class PostOrderDiffWalkTest {
         System.err.println(leftCalls);
         System.err.println(rightCalls);
 
-        Node lroot = nodeFor(left);
-        Node rroot = nodeFor(right);
+        NodeRef lroot = nodeFor(left);
+        NodeRef rroot = nodeFor(right);
 
         assertEquals(4, leftCalls.size());
         assertEquals(4, rightCalls.size());
@@ -185,17 +210,19 @@ public class PostOrderDiffWalkTest {
 
         assertEquals(rroot, rightCalls.get(3));
         assertNotNull(rightCalls.get(2));
-        assertEquals(RevObject.TYPE.TREE, ((Node) rightCalls.get(2)).getType());
-        assertEquals(RevObject.TYPE.FEATURE, ((Node) rightCalls.get(1)).getType());
-        assertEquals(RevObject.TYPE.FEATURE, ((Node) rightCalls.get(0)).getType());
+        assertEquals(RevObject.TYPE.TREE, ((NodeRef) rightCalls.get(2)).getType());
+        assertEquals(RevObject.TYPE.FEATURE, ((NodeRef) rightCalls.get(1)).getType());
+        assertEquals(RevObject.TYPE.FEATURE, ((NodeRef) rightCalls.get(0)).getType());
     }
 
     @Test
     public void testBucketBucketFlat() {
-        RevTree left = createFeaturesTree(leftSource, "f", RevTree.NORMALIZED_SIZE_LIMIT + 1)
+        RevTree left = createFeaturesTreeBuilder(leftSource, "f", RevTree.NORMALIZED_SIZE_LIMIT + 1)
                 .build();
-        RevTree right = createFeaturesTree(rightSource, "f", RevTree.NORMALIZED_SIZE_LIMIT + 2)
-                .build();
+        RevTree right = createFeaturesTreeBuilder(rightSource, "f",
+                RevTree.NORMALIZED_SIZE_LIMIT + 2).build();
+        leftSource.put(left);
+        rightSource.put(right);
 
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
@@ -207,8 +234,8 @@ public class PostOrderDiffWalkTest {
         // System.err.println(leftCalls);
         // System.err.println(rightCalls);
 
-        Node lroot = nodeFor(left);
-        Node rroot = nodeFor(right);
+        NodeRef lroot = nodeFor(left);
+        NodeRef rroot = nodeFor(right);
 
         assertEquals(3, leftCalls.size());
         assertEquals(3, rightCalls.size());
@@ -219,8 +246,8 @@ public class PostOrderDiffWalkTest {
 
         assertEquals(rroot, rightCalls.get(2));
         assertTrue(rightCalls.get(1) instanceof Bucket);
-        assertTrue(rightCalls.get(0) instanceof Node);
-        assertEquals(RevObject.TYPE.FEATURE, ((Node) rightCalls.get(0)).getType());
+        assertTrue(rightCalls.get(0) instanceof NodeRef);
+        assertEquals(RevObject.TYPE.FEATURE, ((NodeRef) rightCalls.get(0)).getType());
     }
 
 }

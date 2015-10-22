@@ -68,13 +68,11 @@ class SummaryDiffPrinter implements DiffPrinter {
         final NodeRef newObject = entry.getNewObject();
         final NodeRef oldObject = entry.getOldObject();
 
-        String oldMode = oldObject == null ? shortOid(ObjectId.NULL) : shortOid(oldObject
-                .getMetadataId());
-        String newMode = newObject == null ? shortOid(ObjectId.NULL) : shortOid(newObject
-                .getMetadataId());
+        String oldMode = shortOid(oldObject == null ? ObjectId.NULL : oldObject.getMetadataId());
+        String newMode = shortOid(newObject == null ? ObjectId.NULL : newObject.getMetadataId());
 
-        String oldId = oldObject == null ? shortOid(ObjectId.NULL) : shortOid(oldObject.getObjectId());
-        String newId = newObject == null ? shortOid(ObjectId.NULL) : shortOid(newObject.getObjectId());
+        String oldId = shortOid(oldObject == null ? ObjectId.NULL : oldObject.getObjectId());
+        String newId = shortOid(newObject == null ? ObjectId.NULL : newObject.getObjectId());
 
         ansi.a(oldMode).a(" ");
         ansi.a(newMode).a(" ");
@@ -93,7 +91,7 @@ class SummaryDiffPrinter implements DiffPrinter {
     }
 
     private static String shortOid(ObjectId oid) {
-        return new StringBuilder(oid.toString().substring(0, 6)).append("...").toString();
+        return ObjectId.toString(oid, 4, new StringBuilder(19)).append("...").toString();
     }
 
     private static String formatPath(DiffEntry entry) {

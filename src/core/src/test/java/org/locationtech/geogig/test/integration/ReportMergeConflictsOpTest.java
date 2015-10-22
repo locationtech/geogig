@@ -173,7 +173,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         RevCommit masterCommit = geogig.command(CommitOp.class).call();
         geogig.command(CheckoutOp.class).setSource("TestBranch").call();
 
-        geogig.command(RemoveOp.class).addPathToRemove(pointsName).call();
+        geogig.command(RemoveOp.class).addPathToRemove(pointsName).setRecursive(true).call();
         geogig.command(AddOp.class).call();
 
         RevCommit branchCommit = geogig.command(CommitOp.class).call();

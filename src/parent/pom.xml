@@ -83,7 +83,7 @@
     <repository>
       <id>boundless</id>
       <name>Boundless Maven Repository</name>
-      <url>http://repo.boundlessgeo.com/main</url>
+      <url>https://boundless.artifactoryonline.com/boundless/release/</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
@@ -273,6 +273,13 @@
         <artifactId>jul-to-slf4j</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
+ 
+      <dependency>
+        <groupId>org.mapdb</groupId>
+        <artifactId>mapdb</artifactId>
+        <version>2.0-beta8</version>
+      </dependency>
+
       <dependency>
         <groupId>com.microsoft</groupId>
         <artifactId>sqljdbc4</artifactId>

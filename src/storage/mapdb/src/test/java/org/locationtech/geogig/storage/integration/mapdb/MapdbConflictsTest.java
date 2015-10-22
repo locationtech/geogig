@@ -52,9 +52,8 @@ public class MapdbConflictsTest extends RepositoryTestCase {
                         new TestModule(testPlatform))).getInstance(Context.class);
     }
 
-    
-    //TODO where do these Conflict Tests come from, why aren't they in the "normal" test suites?
-    //TODO they have been copied over from mongodb conflicts test.
+    // TODO where do these Conflict Tests come from, why aren't they in the "normal" test suites?
+    // TODO they have been copied over from mongodb conflicts test.
     @Test
     public void testConflicts() {
         ConflictsDatabase db = geogig.getRepository().conflictsDatabase();

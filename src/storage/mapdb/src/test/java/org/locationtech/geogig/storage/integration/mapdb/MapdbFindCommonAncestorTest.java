@@ -20,7 +20,7 @@ public class MapdbFindCommonAncestorTest extends
     @Override
     protected Context createInjector() {
         return Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new MapdbTestStorageModule())).getInstance(
-                Context.class);
+                Modules.override(new GeogigModule()).with(new MapdbTestStorageModule()))
+                .getInstance(Context.class);
     }
 }

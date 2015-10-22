@@ -17,13 +17,13 @@ import org.locationtech.geogig.test.performance.LogOpPerformanceTest;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
-public class MapdbLogOpPerformanceTest extends LogOpPerformanceTest{
+public class MapdbLogOpPerformanceTest extends LogOpPerformanceTest {
 
-	   @Override
-	    protected Context createInjector() {
-	        return Guice.createInjector(
-	                Modules.override(new GeogigModule()).with(new MapdbTestStorageModule())).getInstance(
-	                Context.class);
-	    }
-	
+    @Override
+    protected Context createInjector() {
+        return Guice.createInjector(
+                Modules.override(new GeogigModule()).with(new MapdbTestStorageModule()))
+                .getInstance(Context.class);
+    }
+
 }

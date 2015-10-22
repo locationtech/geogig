@@ -20,21 +20,22 @@ import com.google.common.base.Preconditions;
 /**
  * directed graph implementation backed by a Map.
  * <p>
- * This class isn't used outside of {@link HeapGraphDatabase}. 
+ * This class isn't used outside of {@link HeapGraphDatabase}.
  * </p>
  * 
  * @author Sebastian Schmidt, SWM Services GmbH
  *
  */
 class Graph {
-    
-	final Map<ObjectId,Node> nodes;
-    final Map<ObjectId,ObjectId> mappings;
+
+    final Map<ObjectId, Node> nodes;
+
+    final Map<ObjectId, ObjectId> mappings;
 
     /**
      * Creates an empty graph.
      */
-    Graph( Map<ObjectId,Node> nodes,Map<ObjectId,ObjectId> mappings) {
+    Graph(Map<ObjectId, Node> nodes, Map<ObjectId, ObjectId> mappings) {
         this.nodes = nodes;
         this.mappings = mappings;
     }
@@ -48,7 +49,7 @@ class Graph {
     }
 
     /**
-     * Looks up a node in the graph by its identifier. 
+     * Looks up a node in the graph by its identifier.
      */
     public Optional<Node> get(ObjectId id) {
         return Optional.fromNullable(nodes.get(id));
@@ -57,7 +58,7 @@ class Graph {
     /**
      * Creates a new node in the graph.
      * 
-     * @param id The id of the new node. 
+     * @param id The id of the new node.
      */
     public Node newNode(ObjectId id) {
         Preconditions.checkNotNull(id);
@@ -81,14 +82,14 @@ class Graph {
     }
 
     /**
-     * Creates an mapping/alias. 
+     * Creates an mapping/alias.
      */
     public void map(ObjectId mapped, ObjectId original) {
         mappings.put(mapped, original);
     }
 
     /**
-     * Returns a mapping, or <code>null</code> if one does not exist. 
+     * Returns a mapping, or <code>null</code> if one does not exist.
      *
      */
     public ObjectId getMapping(ObjectId commitId) {

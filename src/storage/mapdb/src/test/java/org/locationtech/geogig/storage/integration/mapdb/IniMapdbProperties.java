@@ -11,12 +11,10 @@ package org.locationtech.geogig.storage.integration.mapdb;
 
 import org.locationtech.geogig.test.integration.OnlineTestProperties;
 
-
 //TODO review: do we need it, it is at the right place (online test Properties?)? Do we need Properties at all?
 public class IniMapdbProperties extends OnlineTestProperties {
 
     public IniMapdbProperties() {
-        super(".geogig-mapdb-tests.properties", "mapdb.key1", "value1",
-                "mapdb.key2", "value2");
+        super(".geogig-mapdb-tests.properties", "mapdb.key1", "value1", "mapdb.key2", "value2");
     }
 }

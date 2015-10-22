@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
- * Node class used by {@link Graph}. 
+ * Node class used by {@link Graph}.
  * <p>
  * Every node contains an {@link ObjectId} representing the node in addition to a map of key/value
  * properties representing "extended" attributes.
@@ -30,18 +30,20 @@ import com.google.common.collect.Maps;
  * 
  * @author Sebastian Schmidt, SWM Services GmbH
  */
-//TODO Check if the properties get persisted inside Mapdb
-class Node implements Serializable{
+// TODO Check if the properties get persisted inside Mapdb
+class Node implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	
-	final ObjectId id;
+    private static final long serialVersionUID = 1L;
+
+    final ObjectId id;
 
     final List<Edge> in = Lists.newArrayList();
+
     final List<Edge> out = Lists.newArrayList();
 
     boolean root = false;
-    Map<String,String> props;
+
+    Map<String, String> props;
 
     /**
      * Creates a new node with the specified id.
@@ -65,10 +67,10 @@ class Node implements Serializable{
     }
 
     /**
-     * Returns all nodes reachable from this node through an outgoing relationship. 
+     * Returns all nodes reachable from this node through an outgoing relationship.
      */
     public Iterable<Node> to() {
-        return Iterables.transform(out, new Function<Edge,Node>() {
+        return Iterables.transform(out, new Function<Edge, Node>() {
             @Override
             public Node apply(Edge e) {
                 return e.dst;
@@ -80,7 +82,7 @@ class Node implements Serializable{
      * Returns all nodes related to this node through an incoming relationship.
      */
     public Iterable<Node> from() {
-        return Iterables.transform(in, new Function<Edge,Node>() {
+        return Iterables.transform(in, new Function<Edge, Node>() {
             @Override
             public Node apply(Edge e) {
                 return e.src;

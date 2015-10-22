@@ -17,10 +17,11 @@ import java.io.Serializable;
  * @author Sebastian Schmidt, SWM Services GmbH
  */
 class Edge implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
+
+    private static final long serialVersionUID = 1L;
 
     final Node src;
+
     final Node dst;
 
     /**

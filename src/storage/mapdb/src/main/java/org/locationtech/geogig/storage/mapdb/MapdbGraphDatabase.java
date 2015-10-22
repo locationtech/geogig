@@ -50,21 +50,21 @@ public class MapdbGraphDatabase implements GraphDatabase {
     };
 
     protected final Platform platform;
-    
+
     protected final ConfigDatabase config;
 
-    protected ConcurrentNavigableMap<ObjectId,Node> nodes = null;
-    
-    protected ConcurrentNavigableMap <ObjectId,ObjectId> mappings = null;
-    
+    protected ConcurrentNavigableMap<ObjectId, Node> nodes = null;
+
+    protected ConcurrentNavigableMap<ObjectId, ObjectId> mappings = null;
+
     protected DB db = null;
-    
+
     Graph graph;
 
     @Inject
     public MapdbGraphDatabase(ConfigDatabase config, Platform platform) {
         this.config = config;
-    	this.platform = platform;
+        this.platform = platform;
     }
 
     @Override
@@ -73,38 +73,36 @@ public class MapdbGraphDatabase implements GraphDatabase {
             return;
         }
 
-		Optional<URI> repoPath = new ResolveGeogigURI(platform, null).call();
+        Optional<URI> repoPath = new ResolveGeogigURI(platform, null).call();
         Preconditions.checkState(repoPath.isPresent(), "Can't find geogig repository home");
         URI uri = repoPath.get();
         Preconditions.checkState("file".equals(uri.getScheme()),
                 "Repository URL is not file system based: %s", uri);
         File repoLocation = new File(uri);
         File storeDirectory = new File(repoLocation, "graph");
-        
+
         if (!storeDirectory.exists() && !storeDirectory.mkdirs()) {
             throw new IllegalStateException("Unable to create Environment directory: '"
                     + storeDirectory.getAbsolutePath() + "'");
         }
-        
-		db = DBMaker.fileDB(new File(storeDirectory,"graphdb.mapdb")).closeOnJvmShutdown().make();
 
-		// open existing an collection (or create new)
-		nodes = db.treeMap("nodes");
-		mappings = db.treeMap("mappings");
+        db = DBMaker.fileDB(new File(storeDirectory, "graphdb.mapdb")).closeOnJvmShutdown().make();
+
+        // open existing an collection (or create new)
+        nodes = db.treeMap("nodes");
+        mappings = db.treeMap("mappings");
         graph = new Graph(nodes, mappings);
 
     }
 
     @Override
     public void configure() throws RepositoryConnectionException {
-		RepositoryConnectionException.StorageType.OBJECT.configure(config,
-				"mapdb", "0.1");
+        RepositoryConnectionException.StorageType.OBJECT.configure(config, "mapdb", "0.1");
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-    	RepositoryConnectionException.StorageType.OBJECT.verify(config,
-				"mapdb", "0.1");
+        RepositoryConnectionException.StorageType.OBJECT.verify(config, "mapdb", "0.1");
     }
 
     @Override

@@ -27,10 +27,9 @@ public class TestConfigDatabase implements ConfigDatabase {
     private Map<String, String> overrides = new HashMap<String, String>();
 
     {
-        //TODO Review if needed.
-    	final IniMapdbProperties properties = new IniMapdbProperties();
-        final String value1 = properties.get("mapdb.key1", String.class).or(
-                "defaultvalue1");
+        // TODO Review if needed.
+        final IniMapdbProperties properties = new IniMapdbProperties();
+        final String value1 = properties.get("mapdb.key1", String.class).or("defaultvalue1");
         final String value2 = properties.get("mapdb.key2", String.class).or("geogig");
         overrides.put("mapdb.key1", value1);
         overrides.put("mapdb.key2", value2);

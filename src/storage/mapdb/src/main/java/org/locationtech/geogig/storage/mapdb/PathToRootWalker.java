@@ -20,7 +20,7 @@ import com.google.common.collect.Sets;
 
 /**
  * Walks a path from the specified node to a root, bifurcating along the way in cases where a node
- * has multiple parents. 
+ * has multiple parents.
  *
  * @author Justin Deoliveira, Boundless
  *

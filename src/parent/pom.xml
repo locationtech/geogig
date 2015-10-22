@@ -83,7 +83,7 @@
     <repository>
       <id>boundless</id>
       <name>Boundless Maven Repository</name>
-      <url>http://repo.boundlessgeo.com/main</url>
+      <url>https://boundless.artifactoryonline.com/boundless/release/</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>

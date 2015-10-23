@@ -79,6 +79,7 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
     protected void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(shapeFile != null && !shapeFile.isEmpty(), "No shapefile specified");
 
+        final ProgressListener progressListener = cli.getProgressListener();
         for (String shp : shapeFile) {
 
             DataStore dataStore = null;
@@ -101,7 +102,6 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
             try {
                 cli.getConsole().println("Importing from shapefile " + shp);
 
-                ProgressListener progressListener = cli.getProgressListener();
                 ImportOp command = cli.getGeogig().command(ImportOp.class).setAll(true)
                         .setTable(null).setAlter(alter).setOverwrite(!add)
                         .setDestinationPath(destTable).setDataStore(dataStore)
@@ -111,6 +111,7 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
                 // force the import not to use paging due to a bug in the shapefile datastore
                 command.setUsePaging(false);
 
+                progressListener.setProgress(0);
                 command.setProgressListener(progressListener).call();
 
                 cli.getConsole().println(shp + " imported successfully.");

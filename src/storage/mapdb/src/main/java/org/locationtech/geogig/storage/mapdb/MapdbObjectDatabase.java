@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
@@ -47,10 +49,13 @@ import org.mapdb.BTreeKeySerializer;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Collections2;
@@ -65,6 +70,8 @@ import com.ning.compress.lzf.LZFOutputStream;
  * @see http://mapdb.org/
  */
 public class MapdbObjectDatabase implements ObjectDatabase {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MapdbObjectDatabase.class);
 
     private static final Function<byte[], ObjectId> TO_ID = new Function<byte[], ObjectId>() {
         @Override
@@ -94,6 +101,8 @@ public class MapdbObjectDatabase implements ObjectDatabase {
     private FileBlobStore blobStore;
 
     private Platform platform;
+
+    private final AtomicBoolean open = new AtomicBoolean();
 
     @Inject
     public MapdbObjectDatabase(ConfigDatabase config, Platform platform) {
@@ -127,7 +136,7 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 
     @Override
     public synchronized void open() {
-        if (db != null) {
+        if (isOpen()) {
             return;
         }
         Optional<URI> repoPath = new ResolveGeogigURI(platform, null).call();
@@ -143,17 +152,26 @@ public class MapdbObjectDatabase implements ObjectDatabase {
                     + storeDirectory.getAbsolutePath() + "'");
         }
 
-        db = DBMaker.fileDB(new File(storeDirectory, "objectdb.mapdb")).closeOnJvmShutdown().make();
+        db = DBMaker.fileDB(new File(storeDirectory, "objectdb.mapdb"))//
+                .asyncWriteEnable()//
+                // .asyncWriteFlushDelay(10_000)//
+                // .fileMmapEnableIfSupported()//
+                // .fileMmapCleanerHackEnable()//
+                // .cacheHashTableEnable()//
+                // .cacheSize(??)
+                // .closeOnJvmShutdown()//
+                .make();
 
         collection = db.treeMap(collectionName, KEY_SERIALIZER, VALUE_SERIALIZER);
 
         conflicts = new MapdbConflictsDatabase(db);
         blobStore = new FileBlobStore(platform);
+        this.open.set(true);
     }
 
     @Override
     public final boolean isOpen() {
-        return db != null;
+        return open.get();
     }
 
     @Override
@@ -166,12 +184,28 @@ public class MapdbObjectDatabase implements ObjectDatabase {
         RepositoryConnectionException.StorageType.OBJECT.verify(config, "mapdb", "0.1");
     }
 
+    private AtomicInteger pendingCommits = new AtomicInteger();
+
+    private void commit() {
+        final int pendingCount = pendingCommits.getAndSet(0);
+        if (pendingCount > 0) {
+            Stopwatch sw = Stopwatch.createStarted();
+            db.commit();
+            sw.stop();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("commit (%,d objects): %s", pendingCount, sw));
+            }
+        }
+    }
+
     @Override
     public synchronized void close() {
-        if (db != null) {
-            db.commit();
-            db.close();
+        final boolean wasOpen = open.getAndSet(false);
+        if (!wasOpen) {
+            return;
         }
+        commit();
+        db.close();
         db = null;
         collection = null;
         conflicts.close();
@@ -307,14 +341,19 @@ public class MapdbObjectDatabase implements ObjectDatabase {
         byte[] key = id.getRawValue();
         boolean deleted;
         if ((deleted = delete(key))) {
-            db.commit();
+            pendingCommits.incrementAndGet();
+            commit();
         }
         return deleted;
     }
 
     private boolean delete(byte[] rawId) {
         byte[] value = collection.remove(rawId);
-        return value != null;
+        boolean deleted = value != null;
+        if (deleted) {
+            pendingCommits.incrementAndGet();
+        }
+        return deleted;
     }
 
     @Override
@@ -330,7 +369,7 @@ public class MapdbObjectDatabase implements ObjectDatabase {
         while (chunks.hasNext()) {
             count += deleteChunk(chunks.next());
         }
-        db.commit();
+        commit();
         return count;
     }
 
@@ -339,9 +378,13 @@ public class MapdbObjectDatabase implements ObjectDatabase {
         checkState(isOpen(), "db is closed");
         byte[] key = object.getId().getRawValue();
         byte[] record = toBytes(object);
-        byte[] existed = collection.putIfAbsent(key, record);
-        db.commit();
-        return existed == null;
+        byte[] oldVal = collection.putIfAbsent(key, record);
+        boolean existed = oldVal != null;
+        if (!existed) {
+            pendingCommits.incrementAndGet();
+            commit();
+        }
+        return !existed;
     }
 
     @Override
@@ -362,7 +405,7 @@ public class MapdbObjectDatabase implements ObjectDatabase {
         byte[] value;
         byte[] key;
 
-        while (objects.hasNext()) {
+        while (isOpen() && objects.hasNext()) {
             next = objects.next();
             id = next.getId();
             key = id.getRawValue();
@@ -372,10 +415,13 @@ public class MapdbObjectDatabase implements ObjectDatabase {
             if (existed) {
                 listener.found(id, Integer.valueOf(oldVal.length));
             } else {
+                pendingCommits.incrementAndGet();
                 listener.inserted(id, Integer.valueOf(value.length));
             }
         }
-        db.commit();
+        if (isOpen()) {
+            commit();
+        }
     }
 
     @Override

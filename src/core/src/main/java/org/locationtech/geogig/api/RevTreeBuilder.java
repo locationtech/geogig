@@ -249,6 +249,17 @@ public class RevTreeBuilder {
             }
         }
 
+        checkPendingWrites();
+
+        this.initialSize = unnamedTree.size();
+        this.initialNumTrees = unnamedTree.numTrees();
+        if (this.depth == 0) {
+            LOGGER.debug("Normalization took {}. Changes: {}", sw.stop(), numPendingChanges);
+        }
+        return unnamedTree;
+    }
+
+    private void checkPendingWrites() {
         final int pendingWritesThreshold = 10 * 1000;
         final boolean topLevelTree = this.depth == 0;// am I an actual (addressable) tree or bucket
                                                      // tree of a higher level one?
@@ -262,12 +273,6 @@ public class RevTreeBuilder {
             pendingWritesCache.clear();
             LOGGER.debug("done in {}", sw2.stop());
         }
-        this.initialSize = unnamedTree.size();
-        this.initialNumTrees = unnamedTree.numTrees();
-        if (this.depth == 0) {
-            LOGGER.debug("Normalization took {}. Changes: {}", sw.stop(), numPendingChanges);
-        }
-        return unnamedTree;
     }
 
     /**
@@ -391,9 +396,13 @@ public class RevTreeBuilder {
                 }
             }
             if (!newLeafTreesToSave.isEmpty()) {
-                db.putAll(newLeafTreesToSave.iterator());
+                // db.putAll(newLeafTreesToSave.iterator());
+                for (RevTree leaf : newLeafTreesToSave) {
+                    pendingWritesCache.put(leaf.getId(), leaf);
+                }
                 newLeafTreesToSave.clear();
                 newLeafTreesToSave = null;
+                checkPendingWrites();
             }
         } catch (RuntimeException e) {
             throw e;

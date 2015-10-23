@@ -19,23 +19,23 @@ We have assumed that the new features to import have the same feature type as th
 
 Imagine that you already imported a shapefile containing polygons with a given set of attributes, and now you want to import into the same path another shapefile with polygons, which contain the same attributes but with an extra one containing the area of each polygon. In that case, feature types do not match, and the situation is different, but GeoGig provide tools to solve it. 
 
-By default, GeoGig will not let you import into an existing tree if the feature type of the data to import is not the same one as the feature type of the existing tree. This is to prevent trees with mixed feature types to appear, so in case you want taht to happen, you have to explicitly tell GeoGig to do it.
+By default, GeoGig will not let you import into an existing tree if the feature type of the data to import is not the same one as the feature type of the existing tree. This is to prevent trees with mixed feature types to appear, so in case you want that to happen, you have to explicitly tell GeoGig to do it.
 
-If the feature type is different, GeoGig will try to match it to the default existing feature type before aborting the iport operation. This is done to allow using different data formats to be used seamlessly, since they might store a given feature type differently. Let's see an example.
+If the feature type is different, GeoGig will try to match it to the default existing feature type before aborting the import operation. This is done to allow using different data formats to be used seamlessly, since they might store a given feature type differently. Let's see an example.
 
 Let's say that you have imported a shapefile with an attribute called ``Area``. Your feature type will be like this
 
 ``the_geom``: MULTIPOLYGON
 ``Area``: DOUBLE
 
-Image that youo export it to a GeoJSON file, make some changes and then reimport it. The feature type of the data to import is like this.
+Imagine that you export it to a GeoJSON file, make some changes and then reimport it. The feature type of the data to import is like this.
 
 ``Area`` : DOUBLE
 ``geom`` : MULTIPOLYGON
 
-Although the feature type is the same, the GeoTools library used by GeoGig understands the file to import in a different way, putting the geometry field as the last one instead of the first one, and using a different name. GeoGig wil, however, understand that the feature type is the same one as the existing one, and will correctly set that existing feature type as the feature type of the imported features.
+Although the feature type is the same, the GeoTools library used by GeoGig understands the file to import in a different way, putting the geometry field as the last one instead of the first one, and using a different name. GeoGig will, however, understand that the feature type is the same one as the existing one, and will correctly set that existing feature type as the feature type of the imported features.
 
-If you do not use the "--add" option, the full destination tree is removed before importing and the new imported data is used to replace the previous data. Trees with mixed feature types cannot appear in this case, but GeoGig will not let you importing a layer with a different feature type anyway. This is done to prevent unchanged features to be reported as changed, just because the feature type (although being the same) has a different definition, as in the example above. If you really want to impor something with a different feature type (like in the shapefile example mentioned about, in which a new area field is added), you must use the ``--force-featuretype`` switch.
+If you do not use the "--add" option, the full destination tree is removed before importing and the new imported data is used to replace the previous data. Trees with mixed feature types cannot appear in this case, but GeoGig will not let you importing a layer with a different feature type anyway. This is done to prevent unchanged features to be reported as changed, just because the feature type (although being the same) has a different definition, as in the example above. If you really want to import something with a different feature type (like in the shapefile example mentioned about, in which a new area field is added), you must use the ``--force-featuretype`` switch.
 
 If ``--add`` and ``--force-featuretype`` are used, features are imported, regardless of their feature type. The default feature type remains unchanged and the tree will contain features of several different feature types.
 
@@ -84,4 +84,4 @@ Using the ``--alter`` option instead, you will end up with the tree containing t
 
 The feature that was already in the tree has been changed to adapt to the feature type of the newly imported feature. That feature type is now the default feature type of the tree.
 
-When importing from a database, if the "--all" option is selected and a destination path is supplied, the ``--add`` option is automatically added. Otherwise, importing each table would overwrite the features imported previously, and only features from the last table would appear on the selected path after importing. The ``--alter`` and ``--add`` options cannot be used simultaneously
+When importing from a database, if the "--all" option is selected and a destination path is supplied, the ``--add`` option is automatically added. Otherwise, importing each table would overwrite the features imported previously, and only features from the last table would appear on the selected path after importing. The ``--alter`` and ``--add`` options cannot be used simultaneously.

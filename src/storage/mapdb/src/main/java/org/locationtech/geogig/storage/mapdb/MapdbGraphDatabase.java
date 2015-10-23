@@ -17,6 +17,7 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 
 import org.locationtech.geogig.api.ObjectId;
@@ -25,8 +26,10 @@ import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.mapdb.BTreeKeySerializer;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -45,19 +48,23 @@ public class MapdbGraphDatabase implements GraphDatabase {
     static final Function<Node, ObjectId> NODE_TO_ID = new Function<Node, ObjectId>() {
         @Override
         public ObjectId apply(Node n) {
-            return n.id;
+            return n.id();
         }
     };
 
-    protected final Platform platform;
+    private static final BTreeKeySerializer<byte[], byte[][]> KEY_SERIALIZER = BTreeKeySerializer.BYTE_ARRAY2;
 
-    protected final ConfigDatabase config;
+    private static final Serializer<Node> NODE_SERIALIZER = NodeSerializer.INSTANCE;
 
-    protected ConcurrentNavigableMap<ObjectId, Node> nodes = null;
+    private final Platform platform;
 
-    protected ConcurrentNavigableMap<ObjectId, ObjectId> mappings = null;
+    private final ConfigDatabase config;
 
-    protected DB db = null;
+    private ConcurrentNavigableMap<byte[], Node> nodes;
+
+    private ConcurrentNavigableMap<byte[], byte[]> mappings;
+
+    private DB db = null;
 
     Graph graph;
 
@@ -89,8 +96,8 @@ public class MapdbGraphDatabase implements GraphDatabase {
         db = DBMaker.fileDB(new File(storeDirectory, "graphdb.mapdb")).closeOnJvmShutdown().make();
 
         // open existing an collection (or create new)
-        nodes = db.treeMap("nodes");
-        mappings = db.treeMap("mappings");
+        nodes = db.treeMap("nodes", KEY_SERIALIZER, NODE_SERIALIZER);
+        mappings = db.treeMap("mappings", KEY_SERIALIZER, Serializer.BYTE_ARRAY);
         graph = new Graph(nodes, mappings);
 
     }
@@ -119,6 +126,7 @@ public class MapdbGraphDatabase implements GraphDatabase {
         db.close();
         graph = null;
         db = null;
+        // System.err.printf("Average: %,d", NodeSerializer.average());
     }
 
     @Override
@@ -127,7 +135,8 @@ public class MapdbGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public ImmutableList<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
+    public synchronized ImmutableList<ObjectId> getParents(ObjectId commitId)
+            throws IllegalArgumentException {
         return graph.get(commitId).transform(new Function<Node, ImmutableList<ObjectId>>() {
             @Override
             public ImmutableList<ObjectId> apply(Node n) {
@@ -140,7 +149,8 @@ public class MapdbGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
+    public synchronized ImmutableList<ObjectId> getChildren(ObjectId commitId)
+            throws IllegalArgumentException {
         return graph.get(commitId).transform(new Function<Node, ImmutableList<ObjectId>>() {
             @Override
             public ImmutableList<ObjectId> apply(Node n) {
@@ -151,7 +161,7 @@ public class MapdbGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
+    public synchronized boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
         Node n = graph.getOrAdd(commitId);
 
         if (parentIds.isEmpty()) {
@@ -180,7 +190,7 @@ public class MapdbGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public void map(ObjectId mapped, ObjectId original) {
+    public synchronized void map(ObjectId mapped, ObjectId original) {
         graph.map(mapped, original);
         db.commit();
     }
@@ -211,7 +221,8 @@ public class MapdbGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public void setProperty(ObjectId commitId, String propertyName, String propertyValue) {
+    public synchronized void setProperty(ObjectId commitId, String propertyName,
+            String propertyValue) {
         graph.get(commitId).get().put(propertyName, propertyValue);
         db.commit();
     }
@@ -232,7 +243,7 @@ public class MapdbGraphDatabase implements GraphDatabase {
 
         @Override
         public ObjectId getIdentifier() {
-            return node.id;
+            return node.id();
         }
 
         @Override
@@ -240,13 +251,13 @@ public class MapdbGraphDatabase implements GraphDatabase {
             Iterator<Edge> nodeEdges;
             switch (direction) {
             case OUT:
-                nodeEdges = node.out.iterator();
+                nodeEdges = node.out().iterator();
                 break;
             case IN:
-                nodeEdges = node.in.iterator();
+                nodeEdges = node.in().iterator();
                 break;
             default:
-                nodeEdges = Iterators.concat(node.in.iterator(), node.out.iterator());
+                nodeEdges = Iterators.concat(node.in().iterator(), node.out().iterator());
             }
             List<GraphEdge> edges = new LinkedList<GraphEdge>();
             while (nodeEdges.hasNext()) {
@@ -259,8 +270,9 @@ public class MapdbGraphDatabase implements GraphDatabase {
 
         @Override
         public boolean isSparse() {
-            return node.props != null && node.props.containsKey(SPARSE_FLAG)
-                    && Boolean.valueOf(node.props.get(SPARSE_FLAG));
+            Map<String, String> props = node.props();
+            return props != null && props.containsKey(SPARSE_FLAG)
+                    && Boolean.valueOf(props.get(SPARSE_FLAG));
         }
     }
 

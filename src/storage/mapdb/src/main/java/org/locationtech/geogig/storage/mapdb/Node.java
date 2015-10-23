@@ -9,14 +9,19 @@
  */
 package org.locationtech.geogig.storage.mapdb;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.ObjectId;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -35,21 +40,33 @@ class Node implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    final ObjectId id;
+    private ObjectId id;
 
-    final List<Edge> in = Lists.newArrayList();
+    private List<Edge> in = Lists.newArrayList();
 
-    final List<Edge> out = Lists.newArrayList();
+    private List<Edge> out = Lists.newArrayList();
 
-    boolean root = false;
+    private boolean root = false;
 
-    Map<String, String> props;
+    private Map<String, String> props;
 
     /**
      * Creates a new node with the specified id.
      */
     Node(ObjectId id) {
         this.id = id;
+    }
+
+    public ObjectId id() {
+        return id;
+    }
+
+    public List<Edge> in() {
+        return in;
+    }
+
+    public List<Edge> out() {
+        return out;
     }
 
     /**
@@ -64,6 +81,11 @@ class Node implements Serializable {
      */
     public void setRoot(boolean root) {
         this.root = root;
+    }
+
+    @Nullable
+    public Map<String, String> props() {
+        return props;
     }
 
     /**
@@ -98,6 +120,16 @@ class Node implements Serializable {
             props = Maps.newHashMap();
         }
         props.put(key, value);
+    }
+
+    public void putAll(Map<String, String> props) {
+        if (props == null) {
+            return;
+        }
+        if (this.props == null) {
+            this.props = Maps.newHashMap();
+        }
+        this.props.putAll(props);
     }
 
     /**
@@ -136,4 +168,36 @@ class Node implements Serializable {
             return false;
         return true;
     }
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        try {
+            oos.write(id.getRawValue());
+            oos.writeBoolean(this.root);
+
+            oos.writeObject(this.in);
+            oos.writeObject(this.out);
+            oos.writeObject(this.props);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException {
+        byte[] buf = new byte[ObjectId.NUM_BYTES];
+        in.readFully(buf);
+        this.id = ObjectId.createNoClone(buf);
+        this.root = in.readBoolean();
+        try {
+            this.in = (List<Edge>) in.readObject();
+            this.out = (List<Edge>) in.readObject();
+            this.props = (Map<String, String>) in.readObject();
+        } catch (ClassNotFoundException e) {
+            throw Throwables.propagate(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw Throwables.propagate(e);
+        }
+    }
+
 }

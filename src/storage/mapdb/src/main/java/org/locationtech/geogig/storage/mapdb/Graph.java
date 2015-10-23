@@ -28,14 +28,14 @@ import com.google.common.base.Preconditions;
  */
 class Graph {
 
-    final Map<ObjectId, Node> nodes;
+    final Map<byte[], Node> nodes;
 
-    final Map<ObjectId, ObjectId> mappings;
+    final Map<byte[], byte[]> mappings;
 
     /**
      * Creates an empty graph.
      */
-    Graph(Map<ObjectId, Node> nodes, Map<ObjectId, ObjectId> mappings) {
+    Graph(Map<byte[], Node> nodes, Map<byte[], byte[]> mappings) {
         this.nodes = nodes;
         this.mappings = mappings;
     }
@@ -52,7 +52,7 @@ class Graph {
      * Looks up a node in the graph by its identifier.
      */
     public Optional<Node> get(ObjectId id) {
-        return Optional.fromNullable(nodes.get(id));
+        return Optional.fromNullable(nodes.get(id.getRawValue()));
     }
 
     /**
@@ -62,9 +62,9 @@ class Graph {
      */
     public Node newNode(ObjectId id) {
         Preconditions.checkNotNull(id);
-        Preconditions.checkState(nodes.get(id) == null);
+        Preconditions.checkState(nodes.get(id.getRawValue()) == null);
         Node n = new Node(id);
-        nodes.put(id, n);
+        nodes.put(id.getRawValue(), n);
         return n;
     }
 
@@ -76,8 +76,8 @@ class Graph {
      */
     public Edge newEdge(Node src, Node dst) {
         Edge e = new Edge(src, dst);
-        src.out.add(e);
-        dst.in.add(e);
+        src.out().add(e);
+        dst.in().add(e);
         return e;
     }
 
@@ -85,7 +85,7 @@ class Graph {
      * Creates an mapping/alias.
      */
     public void map(ObjectId mapped, ObjectId original) {
-        mappings.put(mapped, original);
+        mappings.put(mapped.getRawValue(), original.getRawValue());
     }
 
     /**
@@ -93,7 +93,8 @@ class Graph {
      *
      */
     public ObjectId getMapping(ObjectId commitId) {
-        return mappings.get(commitId);
+        byte[] mapping = mappings.get(commitId.getRawValue());
+        return mapping == null ? null : ObjectId.createNoClone(mapping);
     }
 
     /**

@@ -9,20 +9,20 @@
  */
 package org.locationtech.geogig.storage.mapdb;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.SortedMap;
 import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
@@ -41,17 +41,20 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.fs.FileBlobStore;
+import org.mapdb.BTreeKeySerializer;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.ning.compress.lzf.LZFInputStream;
 import com.ning.compress.lzf.LZFOutputStream;
@@ -63,19 +66,28 @@ import com.ning.compress.lzf.LZFOutputStream;
  */
 public class MapdbObjectDatabase implements ObjectDatabase {
 
-    protected final ConfigDatabase config;
+    private static final Function<byte[], ObjectId> TO_ID = new Function<byte[], ObjectId>() {
+        @Override
+        public ObjectId apply(byte[] rawId) {
+            return ObjectId.createNoClone(rawId);
+        }
+    };
 
-    protected DB db = null;
+    private static final BTreeKeySerializer<byte[], byte[][]> KEY_SERIALIZER = BTreeKeySerializer.BYTE_ARRAY2;
+
+    private static final Serializer<byte[]> VALUE_SERIALIZER = Serializer.BYTE_ARRAY;
+
+    private final ConfigDatabase config;
+
+    private DB db = null;
 
     // TODO could be changed to Map <ObjectId, byte[]> as ObjectId implements serializable
     // what about prefix finding then?
-    protected ConcurrentNavigableMap<String, byte[]> collection = null;
+    private ConcurrentNavigableMap<byte[], byte[]> collection = null;
 
-    protected ObjectSerializingFactory serializers = DataStreamSerializationFactoryV1.INSTANCE;
+    private static final ObjectSerializingFactory serializers = DataStreamSerializationFactoryV2.INSTANCE;
 
     private final String collectionName = "objects";
-
-    private ExecutorService executor;
 
     private MapdbConflictsDatabase conflicts;
 
@@ -84,9 +96,8 @@ public class MapdbObjectDatabase implements ObjectDatabase {
     private Platform platform;
 
     @Inject
-    public MapdbObjectDatabase(ConfigDatabase config, ExecutorService executor, Platform platform) {
+    public MapdbObjectDatabase(ConfigDatabase config, Platform platform) {
         this.config = config;
-        this.executor = executor;
         this.platform = platform;
     }
 
@@ -134,14 +145,14 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 
         db = DBMaker.fileDB(new File(storeDirectory, "objectdb.mapdb")).closeOnJvmShutdown().make();
 
-        collection = db.treeMap(collectionName);
+        collection = db.treeMap(collectionName, KEY_SERIALIZER, VALUE_SERIALIZER);
 
         conflicts = new MapdbConflictsDatabase(db);
         blobStore = new FileBlobStore(platform);
     }
 
     @Override
-    public synchronized boolean isOpen() {
+    public final boolean isOpen() {
         return db != null;
     }
 
@@ -181,29 +192,52 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 
     @Override
     public boolean exists(ObjectId id) {
-        return collection.containsKey(id.toString());
+        checkState(isOpen(), "db is closed");
+        return collection.containsKey(id.getRawValue());
     }
 
     @Override
     public List<ObjectId> lookUp(final String partialId) {
+        checkState(isOpen(), "db is closed");
+        Preconditions.checkNotNull(partialId);
+        Preconditions.checkArgument(partialId.length() > 7,
+                "partial id must be at least 8 characters long: ", partialId);
+        Preconditions.checkArgument(partialId.matches("[a-fA-F0-9]+"),
+                "Prefix query must be done with hexadecimal values only");
 
-        if (partialId.matches("[a-fA-F0-9]+") && partialId.length() > 0) {
-            char nextLetter = (char) (partialId.charAt(partialId.length() - 1) + 1);
-            String end = partialId.substring(0, partialId.length() - 1) + nextLetter;
-            SortedMap<String, byte[]> matchingPairs = collection.subMap(partialId, end);
-            List<ObjectId> ids = new ArrayList<ObjectId>(4);
-            for (String objectId : matchingPairs.keySet()) {
-                ids.add(ObjectId.valueOf(objectId));
-            }
-            return ids;
-        } else {
-            throw new IllegalArgumentException(
-                    "Prefix query must be done with hexadecimal values only");
+        byte[] fromKey = ObjectId.toRaw(partialId);
+        byte[] toKey = new byte[ObjectId.NUM_BYTES];
+        {
+            int prefixLen = fromKey.length;
+            System.arraycopy(fromKey, 0, toKey, 0, prefixLen);
+            Arrays.fill(toKey, prefixLen, ObjectId.NUM_BYTES - 1, (byte) 0xFF);
         }
+
+        final Collection<ObjectId> baseResults;
+        baseResults = Collections2.transform(collection.subMap(fromKey, toKey).keySet(), TO_ID);
+
+        List<ObjectId> results = new ArrayList<ObjectId>();
+
+        // If the length of the partial string is odd, then the last character wasn't considered in
+        // the lookup, we need to filter the list further.
+        if (partialId.length() % 2 != 0) {
+            Iterator<ObjectId> listIterator = baseResults.iterator();
+            while (listIterator.hasNext()) {
+                ObjectId partialMatch = listIterator.next();
+                if (partialMatch.toString().startsWith(partialId)) {
+                    results.add(partialMatch);
+                }
+            }
+        } else {
+            results.addAll(baseResults);
+        }
+
+        return results;
     }
 
     @Override
     public RevObject get(ObjectId id) {
+        checkState(isOpen(), "db is closed");
         RevObject result = getIfPresent(id);
         if (result != null) {
             return result;
@@ -219,11 +253,10 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 
     @Override
     public RevObject getIfPresent(ObjectId id) {
-        String key = id.toString();
-        if (collection.containsKey(key)) {
-            return fromBytes(id, collection.get(key));
-        }
-        return null;
+        checkState(isOpen(), "db is closed");
+        byte[] key = id.getRawValue();
+        byte[] rawValue = collection.get(key);
+        return rawValue == null ? null : fromBytes(id, rawValue);
     }
 
     @Override
@@ -257,10 +290,10 @@ public class MapdbObjectDatabase implements ObjectDatabase {
     }
 
     private long deleteChunk(List<ObjectId> ids) {
-        // TODO this might not be the most efficient way to do this.
         long deleteCounter = 0;
         for (ObjectId id : ids) {
-            boolean deleted = delete(id);
+            byte[] key = id.getRawValue();
+            boolean deleted = delete(key);
             if (deleted) {
                 deleteCounter++;
             }
@@ -270,13 +303,18 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 
     @Override
     public boolean delete(ObjectId id) {
-        String key = id.toString();
-        if (collection.containsKey(key)) {
-            collection.remove(key);
+        checkState(isOpen(), "db is closed");
+        byte[] key = id.getRawValue();
+        boolean deleted;
+        if ((deleted = delete(key))) {
             db.commit();
-            return true;
         }
-        return false;
+        return deleted;
+    }
+
+    private boolean delete(byte[] rawId) {
+        byte[] value = collection.remove(rawId);
+        return value != null;
     }
 
     @Override
@@ -286,6 +324,7 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 
     @Override
     public long deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
+        checkState(isOpen(), "db is closed");
         Iterator<List<ObjectId>> chunks = Iterators.partition(ids, 500);
         long count = 0;
         while (chunks.hasNext()) {
@@ -297,12 +336,12 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 
     @Override
     public boolean put(final RevObject object) {
-        String key = object.getId().toString();
+        checkState(isOpen(), "db is closed");
+        byte[] key = object.getId().getRawValue();
         byte[] record = toBytes(object);
-        collection.put(key, record);
+        byte[] existed = collection.putIfAbsent(key, record);
         db.commit();
-        return true;
-        // TODO In which cases do we return false here?
+        return existed == null;
     }
 
     @Override
@@ -312,108 +351,31 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 
     @Override
     public void putAll(Iterator<? extends RevObject> objects, BulkOpListener listener) {
-        Preconditions.checkNotNull(executor, "executor service not set");
+        checkState(isOpen(), "db is closed");
+
         if (!objects.hasNext()) {
             return;
         }
 
-        final int bulkSize = 1000;
-        final int maxRunningTasks = 10;
+        RevObject next;
+        ObjectId id;
+        byte[] value;
+        byte[] key;
 
-        final AtomicBoolean cancelCondition = new AtomicBoolean();
-
-        List<ObjectId> ids = Lists.newArrayListWithCapacity(bulkSize);
-        List<byte[]> values = Lists.newArrayListWithCapacity(bulkSize);
-        List<Future<?>> runningTasks = new ArrayList<Future<?>>(maxRunningTasks);
-
-        try {
-            while (objects.hasNext()) {
-                RevObject object = objects.next();
-                ids.add(object.getId());
-                values.add(toBytes(object));
-
-                if (ids.size() == bulkSize || !objects.hasNext()) {
-                    InsertTask task = new InsertTask(collection, listener, ids, values,
-                            cancelCondition);
-                    runningTasks.add(executor.submit(task));
-
-                    if (objects.hasNext()) {
-                        ids = Lists.newArrayListWithCapacity(bulkSize);
-                        values = Lists.newArrayListWithCapacity(bulkSize);
-                    }
-                }
-                if (runningTasks.size() == maxRunningTasks) {
-                    waitForTasks(runningTasks);
-                }
-            }
-            waitForTasks(runningTasks);
-            db.commit();
-        } catch (RuntimeException e) {
-            cancelCondition.set(true);
-            throw e;
-        }
-    }
-
-    private void waitForTasks(List<Future<?>> runningTasks) {
-        // wait...
-        for (Future<?> f : runningTasks) {
-            try {
-                f.get();
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
+        while (objects.hasNext()) {
+            next = objects.next();
+            id = next.getId();
+            key = id.getRawValue();
+            value = toBytes(next);
+            byte[] oldVal = collection.putIfAbsent(key, value);
+            boolean existed = oldVal != null;
+            if (existed) {
+                listener.found(id, Integer.valueOf(oldVal.length));
+            } else {
+                listener.inserted(id, Integer.valueOf(value.length));
             }
         }
-        runningTasks.clear();
-    }
-
-    private static class InsertTask implements Runnable {
-
-        private ConcurrentNavigableMap<String, byte[]> collection;
-
-        private BulkOpListener listener;
-
-        private List<ObjectId> ids;
-
-        private List<byte[]> objects;
-
-        private AtomicBoolean cancelCondition;
-
-        // TODO Interface: could we work on RevObject directly?
-        // what about toBytes() then being called from a static context?
-        public InsertTask(ConcurrentNavigableMap<String, byte[]> collection,
-                BulkOpListener listener, List<ObjectId> ids, List<byte[]> objects,
-                AtomicBoolean cancelCondition) {
-            this.collection = collection;
-            this.listener = listener;
-            this.ids = ids;
-            this.objects = objects;
-            this.cancelCondition = cancelCondition;
-        }
-
-        @Override
-        public void run() {
-            if (cancelCondition.get()) {
-                return;
-            }
-
-            for (int i = 0; i < ids.size(); i++) {
-                if (cancelCondition.get()) {
-                    return;
-                }
-                ObjectId key = ids.get(i);
-                byte[] value = objects.get(i);
-                boolean found = collection.containsKey(key.toString());
-                collection.put(ids.get(i).toString(), objects.get(i));
-                if (found) {
-                    listener.found(key, value.length);
-                } else {
-                    listener.inserted(key, value.length);
-                }
-            }
-            ids.clear();
-            objects.clear();
-        }
-
+        db.commit();
     }
 
     @Override
@@ -428,6 +390,7 @@ public class MapdbObjectDatabase implements ObjectDatabase {
 
     @Override
     public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final BulkOpListener listener) {
+        checkState(isOpen(), "db is closed");
 
         return new AbstractIterator<RevObject>() {
             final Iterator<ObjectId> queryIds = ids.iterator();

@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,7 +36,7 @@ import com.google.common.collect.ImmutableList;
  * Create a concrete subclass of this test suite and implement {@link #createInjector()} so that
  * {@code GraphDtabase.class} is bound to your implementation instance as a singleton.
  */
-public abstract class GraphDatabaseStressTest  {
+public abstract class GraphDatabaseStressTest {
     protected GraphDatabase database;
 
     protected TestPlatform platform;
@@ -51,6 +52,13 @@ public abstract class GraphDatabaseStressTest  {
         platform.setUserHome(tmpFolder.newFolder("fake_home"));
         database = createDatabase(platform);
         database.open();
+    }
+
+    @After
+    public void after() {
+        if (database != null) {
+            database.close();
+        }
     }
 
     protected abstract GraphDatabase createDatabase(TestPlatform platform);

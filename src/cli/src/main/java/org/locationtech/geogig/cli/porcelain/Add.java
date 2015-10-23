@@ -108,10 +108,11 @@ public class Add extends AbstractCommand implements CLICommand {
         DiffObjectCount staged = geogig.getRepository().index().countStaged(null);
         unstaged = workTree.countUnstaged(null);
 
-        console.println(staged.featureCount() + " features and " + staged.treeCount()
-                + " trees staged for commit");
-        console.println(unstaged.featureCount() + " features and " + unstaged.treeCount()
-                + " trees not staged for commit");
+        console.println(String.format("%,d features and %,d trees staged for commit",
+                staged.featureCount(), staged.treeCount()));
+
+        console.println(String.format("%,d features and %,d trees not staged for commit",
+                unstaged.featureCount(), unstaged.treeCount()));
     }
 
 }

@@ -213,7 +213,7 @@ public class WorkingTree {
      * ref.
      * 
      * @param path the path to the tree to delete
-     * @return 
+     * @return
      * @throws Exception
      */
     public ObjectId delete(final String path) {
@@ -507,14 +507,15 @@ public class WorkingTree {
                 insertedCount += f.get().longValue();
             }
             sw.stop();
-            listener.setDescription(insertedCount + " distinct features inserted in " + sw);
+            listener.setDescription(String.format("%,d distinct features inserted in %s",
+                    insertedCount, sw));
 
             listener.setDescription("Building final tree...");
 
             sw.reset().start();
             newFeatureTree = builder.build();
 
-            listener.setDescription(String.format("%d features tree built in %s",
+            listener.setDescription(String.format("%,d features tree built in %s",
                     newFeatureTree.size(), sw.stop()));
             listener.complete();
 

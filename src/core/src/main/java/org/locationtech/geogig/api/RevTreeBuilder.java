@@ -29,6 +29,7 @@ import org.locationtech.geogig.api.plumbing.HashObject;
 import org.locationtech.geogig.repository.DepthSearch;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.NodePathStorageOrder;
+import org.locationtech.geogig.storage.NodeStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,9 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -48,6 +51,8 @@ import com.vividsolutions.jts.geom.Envelope;
 public class RevTreeBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RevTreeBuilder.class);
+
+    private static final NodeStorageOrder NODE_STORAGE_ORDER = new NodeStorageOrder();
 
     /**
      * How many children nodes to hold before forcing normalization of the internal data structures
@@ -236,20 +241,20 @@ public class RevTreeBuilder {
      */
     private RevTree normalize() {
         Stopwatch sw = Stopwatch.createStarted();
-        RevTree unnamedTree;
+        RevTree tree;
 
         final int numPendingChanges = numPendingChanges();
         if (bucketTreesByBucket.isEmpty() && numPendingChanges <= NORMALIZED_SIZE_LIMIT) {
-            unnamedTree = normalizeToChildren();
+            tree = normalizeToChildren();
         } else {
-            unnamedTree = normalizeToBuckets();
+            tree = normalizeToBuckets();
             checkState(featureChanges.isEmpty());
             checkState(treeChanges.isEmpty());
 
-            if (unnamedTree.size() <= NORMALIZED_SIZE_LIMIT) {
+            if (tree.size() <= NORMALIZED_SIZE_LIMIT) {
                 this.bucketTreesByBucket.clear();
-                if (unnamedTree.buckets().isPresent()) {
-                    unnamedTree = moveBucketsToChildren(unnamedTree);
+                if (tree.buckets().isPresent()) {
+                    tree = moveBucketsToChildren(tree);
                 }
                 if (this.depth == 0) {
                     pendingWritesCache.clear();
@@ -259,12 +264,12 @@ public class RevTreeBuilder {
 
         checkPendingWrites();
 
-        this.initialSize = unnamedTree.size();
-        this.initialNumTrees = unnamedTree.numTrees();
+        this.initialSize = tree.size();
+        this.initialNumTrees = tree.numTrees();
         if (this.depth == 0) {
             LOGGER.debug("Normalization took {}. Changes: {}", sw.stop(), numPendingChanges);
         }
-        return unnamedTree;
+        return tree;
     }
 
     private void checkPendingWrites() {
@@ -324,8 +329,37 @@ public class RevTreeBuilder {
         }
         Collection<Node> features = featureChanges.values();
         Collection<Node> trees = treeChanges.values();
-        RevTreeImpl unnamedTree = RevTreeImpl.createLeafTree(ObjectId.NULL, size, features, trees);
-        return unnamedTree;
+        RevTreeImpl tree = createLeafTree(size, features, trees);
+        return tree;
+    }
+
+    public static RevTreeImpl createLeafTree(long size, Collection<Node> features,
+            Collection<Node> trees) {
+        Preconditions.checkNotNull(features);
+        Preconditions.checkNotNull(trees);
+
+        ImmutableList<Node> featuresList = ImmutableList.of();
+        ImmutableList<Node> treesList = ImmutableList.of();
+
+        if (!features.isEmpty()) {
+            featuresList = NODE_STORAGE_ORDER.immutableSortedCopy(features);
+        }
+        if (!trees.isEmpty()) {
+            treesList = NODE_STORAGE_ORDER.immutableSortedCopy(trees);
+        }
+
+        final ObjectId id = HashObject.hashTree(treesList, featuresList, null);
+
+        return RevTreeImpl.createLeafTree(id, size, featuresList, treesList);
+    }
+
+    private RevTreeImpl createNodeTree(long size, int numTrees, TreeMap<Integer, Bucket> buckets) {
+
+        ImmutableSortedMap<Integer, Bucket> innerTrees = ImmutableSortedMap.copyOf(buckets);
+
+        final ObjectId id = HashObject.hashTree(null, null, innerTrees);
+
+        return RevTreeImpl.createNodeTree(id, size, numTrees, innerTrees);
     }
 
     private long sizeOf(Node node) {
@@ -426,10 +460,8 @@ public class RevTreeBuilder {
         }
         int accChildTreeCount = this.initialNumTrees + treesDelta;
 
-        RevTreeImpl unnamedTree;
-        unnamedTree = RevTreeImpl.createNodeTree(ObjectId.NULL, accSize, accChildTreeCount,
-                this.bucketTreesByBucket);
-        return unnamedTree;
+        RevTreeImpl tree = createNodeTree(accSize, accChildTreeCount, this.bucketTreesByBucket);
+        return tree;
     }
 
     private Map<Integer, RevTree> getBucketTrees(ImmutableSet<Integer> changedBucketIndexes) {
@@ -563,13 +595,10 @@ public class RevTreeBuilder {
      *         this method returns.
      */
     public RevTree build() {
-        RevTree unnamedTree = normalize();
+        RevTree tree = normalize();
         checkState(bucketTreesByBucket.isEmpty()
                 || (featureChanges.isEmpty() && treeChanges.isEmpty()));
-
-        ObjectId treeId = new HashObject().setObject(unnamedTree).call();
-        RevTreeImpl namedTree = RevTreeImpl.create(treeId, unnamedTree.size(), unnamedTree);
-        return namedTree;
+        return tree;
     }
 
     /**

@@ -17,8 +17,10 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.RandomAccess;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -68,23 +70,23 @@ class HashObjectFunnels {
     private static final byte[] NULL_BYTE_CODE = { 0x60, (byte) 0xe5, 0x6d, 0x08, (byte) 0xd3,
             0x08, 0x53, (byte) 0xb7, (byte) 0x84, 0x07, 0x77 };
 
-    public static Funnel<RevCommit> commitFunnel() {
+    public static CommitFunnel commitFunnel() {
         return CommitFunnel.INSTANCE;
     }
 
-    public static Funnel<RevTree> treeFunnel() {
+    public static TreeFunnel treeFunnel() {
         return TreeFunnel.INSTANCE;
     }
 
-    public static Funnel<RevFeature> featureFunnel() {
+    public static FeatureFunnel featureFunnel() {
         return FeatureFunnel.INSTANCE;
     }
 
-    public static Funnel<RevTag> tagFunnel() {
+    public static TagFunnel tagFunnel() {
         return TagFunnel.INSTANCE;
     }
 
-    public static Funnel<RevFeatureType> featureTypeFunnel() {
+    public static FeatureTypeFunnel featureTypeFunnel() {
         return FeatureTypeFunnel.INSTANCE;
     }
 
@@ -150,7 +152,7 @@ class HashObjectFunnels {
         }
     };
 
-    private static final class CommitFunnel implements Funnel<RevCommit> {
+    static final class CommitFunnel implements Funnel<RevCommit> {
         private static final long serialVersionUID = -1L;
 
         private static final CommitFunnel INSTANCE = new CommitFunnel();
@@ -169,7 +171,7 @@ class HashObjectFunnels {
         }
     };
 
-    private static final class TreeFunnel implements Funnel<RevTree> {
+    static final class TreeFunnel implements Funnel<RevTree> {
 
         private static final long serialVersionUID = 1L;
 
@@ -177,25 +179,35 @@ class HashObjectFunnels {
 
         @Override
         public void funnel(RevTree from, PrimitiveSink into) {
+            Optional<ImmutableList<Node>> treesOp = from.trees();
+            Optional<ImmutableList<Node>> featuresOp = from.features();
+            Optional<ImmutableSortedMap<Integer, Bucket>> bucketsOp = from.buckets();
+            funnel(into, treesOp, featuresOp, bucketsOp);
+        }
+
+        public void funnel(PrimitiveSink into, Optional<ImmutableList<Node>> treesOp,
+                Optional<ImmutableList<Node>> featuresOp,
+                Optional<ImmutableSortedMap<Integer, Bucket>> bucketsOp) {
+
             RevObjectTypeFunnel.funnel(TYPE.TREE, into);
-            if (from.trees().isPresent()) {
-                ImmutableList<Node> trees = from.trees().get();
+            if (treesOp.isPresent()) {
+                ImmutableList<Node> trees = treesOp.get();
                 Node ref;
                 for (int i = 0; i < trees.size(); i++) {
                     ref = trees.get(i);
                     NodeFunnel.funnel(ref, into);
                 }
             }
-            if (from.features().isPresent()) {
-                ImmutableList<Node> children = from.features().get();
+            if (featuresOp.isPresent()) {
+                ImmutableList<Node> children = featuresOp.get();
                 Node ref;
                 for (int i = 0; i < children.size(); i++) {
                     ref = children.get(i);
                     NodeFunnel.funnel(ref, into);
                 }
             }
-            if (from.buckets().isPresent()) {
-                ImmutableSortedMap<Integer, Bucket> buckets = from.buckets().get();
+            if (bucketsOp.isPresent()) {
+                ImmutableSortedMap<Integer, Bucket> buckets = bucketsOp.get();
                 for (Entry<Integer, Bucket> entry : buckets.entrySet()) {
                     Funnels.integerFunnel().funnel(entry.getKey(), into);
                     ObjectIdFunnel.funnel(entry.getValue().getObjectId(), into);
@@ -204,7 +216,7 @@ class HashObjectFunnels {
         }
     };
 
-    private static final class FeatureFunnel implements Funnel<RevFeature> {
+    static final class FeatureFunnel implements Funnel<RevFeature> {
 
         private static final long serialVersionUID = 1L;
 
@@ -212,15 +224,27 @@ class HashObjectFunnels {
 
         @Override
         public void funnel(RevFeature from, PrimitiveSink into) {
+            this.funnel(from.getValues(), into);
+        }
+
+        public void funnel(List<Optional<Object>> values, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
 
-            for (Optional<Object> value : from.getValues()) {
-                PropertyValueFunnel.funnel(value.orNull(), into);
+            if (values instanceof RandomAccess) {
+                Optional<Object> value;
+                for (int i = 0; i < values.size(); i++) {
+                    value = values.get(i);
+                    PropertyValueFunnel.funnel(value.orNull(), into);
+                }
+            } else {
+                for (Optional<Object> value : values) {
+                    PropertyValueFunnel.funnel(value.orNull(), into);
+                }
             }
         }
     };
 
-    private static final class FeatureTypeFunnel implements Funnel<RevFeatureType> {
+    static final class FeatureTypeFunnel implements Funnel<RevFeatureType> {
         private static final long serialVersionUID = 1L;
 
         public static final FeatureTypeFunnel INSTANCE = new FeatureTypeFunnel();
@@ -241,7 +265,7 @@ class HashObjectFunnels {
 
     };
 
-    private static final class TagFunnel implements Funnel<RevTag> {
+    static final class TagFunnel implements Funnel<RevTag> {
         private static final long serialVersionUID = 1L;
 
         public static final TagFunnel INSTANCE = new TagFunnel();

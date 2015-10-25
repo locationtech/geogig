@@ -59,6 +59,8 @@ public class RevTreeBuilder {
 
     private final ObjectDatabase db;
 
+    private int normalizationThreshold = DEFAULT_NORMALIZATION_THRESHOLD;
+
     private final Set<String> deletes;
 
     private final Map<String, Node> treeChanges;
@@ -99,23 +101,29 @@ public class RevTreeBuilder {
         pendingWritesCache = Maps.newTreeMap();
     }
 
+    public RevTreeBuilder normalizationThreshold(final int threshold) {
+        this.normalizationThreshold = threshold;
+        return this;
+    }
+
     /**
      * Copy constructor with tree depth
      */
     public RevTreeBuilder(ObjectDatabase db, @Nullable final RevTree copy) {
-        this(db, copy, 0, new TreeMap<ObjectId, RevTree>());
+        this(db, copy, 0, new TreeMap<ObjectId, RevTree>(), DEFAULT_NORMALIZATION_THRESHOLD);
     }
 
     /**
      * Copy constructor
      */
     private RevTreeBuilder(final ObjectDatabase db, @Nullable final RevTree copy, final int depth,
-            final Map<ObjectId, RevTree> pendingWritesCache) {
+            final Map<ObjectId, RevTree> pendingWritesCache, final int normalizationThreshold) {
 
         checkNotNull(db);
         checkNotNull(pendingWritesCache);
 
         this.db = db;
+        this.normalizationThreshold = normalizationThreshold;
         this.depth = depth;
         this.pendingWritesCache = pendingWritesCache;
 
@@ -351,7 +359,8 @@ public class RevTreeBuilder {
                 final RevTree currentBucketTree = bucketTrees.get(bucketIndex);
                 final int bucketDepth = this.depth + 1;
                 final RevTreeBuilder bucketTreeBuilder = new RevTreeBuilder(this.db,
-                        currentBucketTree, bucketDepth, this.pendingWritesCache);
+                        currentBucketTree, bucketDepth, this.pendingWritesCache,
+                        this.normalizationThreshold);
                 {
                     final Collection<Node> bucketEntries = changesByBucket.removeAll(bucketIndex);
                     for (Node node : bucketEntries) {
@@ -525,7 +534,7 @@ public class RevTreeBuilder {
         Preconditions.checkNotNull(node, "node can't be null");
 
         putInternal(node);
-        if (numPendingChanges() >= DEFAULT_NORMALIZATION_THRESHOLD) {
+        if (numPendingChanges() >= this.normalizationThreshold) {
             // hit the split factor modification tolerance, lets normalize
             normalize();
         }

@@ -33,6 +33,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -121,15 +122,16 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
                 "LINESTRING (7.1960069 50.7399033, 7.195868 50.7399081, 7.1950788 50.739912, 7.1949262 50.7399053, "
                         + "7.1942463 50.7398686, 7.1935778 50.7398262, 7.1931011 50.7398018, 7.1929987 50.7398009, 7.1925978 50.7397889, "
                         + "7.1924199 50.7397781, 0 1)", values.get(7).get().toString());
-        assertEquals("highway:residential|lit:no|name:newname|oneway:yes", values.get(3).get()
-                .toString());
+
+        Map<String, String> expected = ImmutableMap.of("highway", "residential", "lit", "no",
+                "name", "newname", "oneway", "yes");
+        assertEquals(expected, values.get(3).get());
 
         // now we get the 'nodes' field in the unmapped feature and check take the id of its last
         // node, which refers to the node that we have added to the geometry
         int WAY_NODES_FIELD = 6;
-        String nodes = values.get(WAY_NODES_FIELD).get().toString();
-        String[] nodeIds = nodes.split(";");
-        String newNodeId = nodeIds[nodeIds.length - 1];
+        long[] nodes = (long[]) values.get(WAY_NODES_FIELD).get();
+        long newNodeId = nodes[nodes.length - 1];
         // and we check that the node has been added to the 'node' tree and has the right
         // coordinates.
         Optional<RevFeature> newNode = geogig.command(RevObjectParse.class)
@@ -263,9 +265,12 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         assertTrue(unmapped.isPresent());
         values = unmapped.get().getValues();
         assertEquals("POINT (0 1)", values.get(6).get().toString());
-        assertEquals(
-                "VRS:gemeinde:BONN|VRS:ortsteil:Hoholz|VRS:ref:68566|bus:yes|highway:bus_stop|name:newname|public_transport:platform",
-                values.get(3).get().toString());
+
+        Map<String, String> expected = asMap("VRS:gemeinde", "BONN", "VRS:ortsteil", "Hoholz",
+                "VRS:ref", "68566", "bus", "yes", "highway", "bus_stop", "name", "newname",
+                "public_transport", "platform");
+
+        assertEquals(expected, values.get(3).get());
         // check that unchanged nodes keep their attributes
         Optional<RevFeature> unchanged = geogig.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:node/1633594723").call(RevFeature.class);
@@ -400,9 +405,11 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         assertTrue(unmapped.isPresent());
         values = unmapped.get().getValues();
         assertEquals("POINT (0 1)", values.get(6).get().toString());
-        assertEquals(
-                "VRS:gemeinde:BONN|VRS:ortsteil:Hoholz|VRS:ref:68566|bus:yes|highway:bus_stop|name:newname|public_transport:platform",
-                values.get(3).get().toString());
+
+        Map<String, String> expected = asMap("VRS:gemeinde", "BONN", "VRS:ortsteil", "Hoholz",
+                "VRS:ref", "68566", "bus", "yes", "highway", "bus_stop", "name", "newname",
+                "public_transport", "platform");
+        assertEquals(expected, values.get(3).get());
         // check that unchanged nodes keep their attributes
         Optional<RevFeature> unchanged = geogig.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:node/1633594723").call(RevFeature.class);
@@ -456,8 +463,12 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         fb.set("geom", gf.createPoint(new Coordinate(0, 1)));
         fb.set("name_alias", "newname");
         fb.set("id", 507464799l);
-        fb.set("tags",
-                "VRS:gemeinde:BONN|VRS:ortsteil:Hoholz|VRS:ref:68566|bus:yes|highway:bus_stop|name:Gielgen|public_transport:platform");
+
+        Map<String, String> tagsMap = asMap("VRS:gemeinde", "BONN", "VRS:ortsteil", "Hoholz",
+                "VRS:ref", "68566", "bus", "yes", "highway", "bus_stop", "name", "newname",
+                "public_transport", "platform");
+        fb.set("tags", tagsMap);
+
         fb.set("timestamp", 1355097351000l);
         SimpleFeature newFeature = fb.buildFeature("507464799");
         geogig.getRepository().workingTree().insert("busstops", newFeature);
@@ -471,9 +482,7 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         assertEquals(507464799l, ((Long) values.get(0).get()).longValue());
         assertEquals("newname", values.get(3).get().toString());
         assertEquals("1355097351000", values.get(2).get().toString());
-        assertEquals(
-                "VRS:gemeinde:BONN|VRS:ortsteil:Hoholz|VRS:ref:68566|bus:yes|highway:bus_stop|name:Gielgen|public_transport:platform",
-                values.get(1).get().toString());
+        assertEquals(tagsMap, values.get(1).get());
 
         // unmap
         geogig.command(OSMUnmapOp.class).setPath("busstops").call();
@@ -488,9 +497,11 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         assertTrue(unmapped.isPresent());
         values = unmapped.get().getValues();
         assertEquals("POINT (0 1)", values.get(6).get().toString());
-        assertEquals(
-                "VRS:gemeinde:BONN|VRS:ortsteil:Hoholz|VRS:ref:68566|bus:yes|highway:bus_stop|name:newname|public_transport:platform",
-                values.get(3).get().toString());
+
+        Map<String, String> expected = asMap("VRS:gemeinde", "BONN", "VRS:ortsteil", "Hoholz",
+                "VRS:ref", "68566", "bus", "yes", "highway", "bus_stop", "name", "newname",
+                "public_transport", "platform");
+        assertEquals(expected, values.get(3).get());
         // check that unchanged nodes keep their attributes
         Optional<RevFeature> unchanged = geogig.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:node/1633594723").call(RevFeature.class);
@@ -580,15 +591,14 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
                 "LINESTRING (7.1960069 50.7399033, 7.195868 50.7399081, 7.1950788 50.739912, 7.1949262 50.7399053, "
                         + "7.1942463 50.7398686, 7.1935778 50.7398262, 7.1931011 50.7398018, 7.1929987 50.7398009, 7.1925978 50.7397889, "
                         + "7.1924199 50.7397781, 0 1)", values.get(7).get().toString());
-        assertEquals("highway:residential|lit:no|name:newname|oneway:yes", values.get(3).get()
-                .toString());
+        assertEquals(ImmutableMap.of("highway", "residential", "lit", "no", "name", "newname",
+                "oneway", "yes"), values.get(3).get());
 
         // now we get the 'nodes' field in the unmapped feature and check the id of its last
         // node, which refers to the node that we have added to the geometry
         int WAY_NODES_FIELD = 6;
-        String nodes = values.get(WAY_NODES_FIELD).get().toString();
-        String[] nodeIds = nodes.split(";");
-        String newNodeId = nodeIds[nodeIds.length - 1];
+        long[] nodes = (long[]) values.get(WAY_NODES_FIELD).get();
+        long newNodeId = nodes[nodes.length - 1];
         // and we check that the node has been added to the 'node' tree and has the right
         // coordinates.
         Optional<RevFeature> newNode = geogig.command(RevObjectParse.class)

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.geotools.util.Converters;
 import org.locationtech.geogig.storage.FieldType;
 
 import com.google.common.base.Joiner;
@@ -49,6 +50,9 @@ public class TextValueSerializer {
     static abstract class ArraySerializer implements ValueSerializer {
         @Override
         public String toString(Object value) {
+            if(value.getClass().getComponentType().isPrimitive()){
+                return Converters.convert(value, String.class);
+            }
             return "[" + Joiner.on(" ").join((Object[]) value) + "]";
         }
     }
@@ -281,6 +285,18 @@ public class TextValueSerializer {
                 java.sql.Timestamp ts = (java.sql.Timestamp) value;
                 return new StringBuilder().append(ts.getTime()).append(' ').append(ts.getNanos())
                         .toString();
+            }
+        });
+        serializers.put(FieldType.MAP, new ValueSerializer() {
+            
+            @Override
+            public String toString(Object value) {
+                return Converters.convert(value, String.class);
+            }
+            
+            @Override
+            public Object fromString(String in) throws ParseException {
+                return Converters.convert(in, Map.class);
             }
         });
     }

@@ -10,21 +10,30 @@
 package org.locationtech.geogig.osm.internal;
 
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.TreeSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
+import org.locationtech.geogig.api.ProgressListener;
+import org.locationtech.geogig.storage.FieldType;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.AttributeType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.openstreetmap.osmosis.core.domain.v0_6.Tag;
+import org.openstreetmap.osmosis.core.domain.v0_6.WayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
+import com.vividsolutions.jts.geom.LineString;
 
 public class OSMUtils {
 
@@ -48,7 +57,7 @@ public class OSMUtils {
 
     public synchronized static SimpleFeatureType nodeType() {
         if (NodeType == null) {
-            String typeSpec = "visible:Boolean,version:Integer,timestamp:java.lang.Long,tags:String,"
+            String typeSpec = "visible:Boolean,version:Integer,timestamp:java.lang.Long,tags:java.util.Map,"
                     + "changeset:java.lang.Long,user:String,location:Point:srid=4326";
             try {
                 SimpleFeatureType type = DataUtilities.createType(NAMESPACE,
@@ -67,14 +76,31 @@ public class OSMUtils {
 
     public synchronized static SimpleFeatureType wayType() {
         if (WayType == null) {
-            String typeSpec = "visible:Boolean,version:Integer,timestamp:java.lang.Long,tags:String,"
-                    + "changeset:java.lang.Long,user:String,nodes:String,way:LineString:srid=4326";
+            SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+            builder.add("visible", Boolean.class);
+            builder.add("version", Integer.class);
+            builder.add("timestamp", Long.class);
+            builder.add("tags", java.util.Map.class);
+            builder.add("changeset", Long.class);
+            builder.add("user", String.class);
+            builder.add("nodes", long[].class);
             try {
-                SimpleFeatureType type = DataUtilities.createType(NAMESPACE,
-                        OSMUtils.WAY_TYPE_NAME, typeSpec);
-                boolean longitudeFirst = true;
-                CoordinateReferenceSystem forceLonLat = CRS.decode("EPSG:4326", longitudeFirst);
-                WayType = DataUtilities.createSubType(type, null, forceLonLat);
+                builder.add("way", LineString.class, CRS.decode("EPSG:4326", true));
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
+            // String typeSpec =
+            // "visible:Boolean,version:Integer,timestamp:java.lang.Long,tags:String,"
+            // + "changeset:java.lang.Long,user:String,nodes:String,way:LineString:srid=4326";
+            try {
+                // SimpleFeatureType type = DataUtilities.createType(NAMESPACE,
+                // OSMUtils.WAY_TYPE_NAME, typeSpec);
+                // boolean longitudeFirst = true;
+                // CoordinateReferenceSystem forceLonLat = CRS.decode("EPSG:4326", longitudeFirst);
+                // WayType = DataUtilities.createSubType(type, null, forceLonLat);
+                builder.setNamespaceURI(NAMESPACE);
+                builder.setName(WAY_TYPE_NAME);
+                WayType = builder.buildFeatureType();
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
@@ -90,52 +116,74 @@ public class OSMUtils {
         }
     };
 
-    /**
-     * @return a string representation of the tags list suitable to be stored as a single String
-     *         value
-     */
-    @Nullable
-    public static String buildTagsString(final Collection<Tag> collection) {
-        if (collection.isEmpty()) {
-            return null;
+    public static long[] buildNodesArray(List<WayNode> wayNodes) {
+        long[] nodeIds = new long[wayNodes.size()];
+        for (int i = 0; i < wayNodes.size(); i++) {
+            WayNode node = wayNodes.get(i);
+            nodeIds[i] = node.getNodeId();
         }
+        return nodeIds;
+    }
 
-        // Tag is a Comparable, but compares based on both key and value, which is ridiculous for
-        // sorting. We need stable sorting based on key.
-        TreeSet<Tag> tags = new TreeSet<Tag>(TAG_KEY_ORDER);
-        tags.addAll(collection);
-
-        StringBuilder sb = new StringBuilder();
-        for (Iterator<Tag> it = tags.iterator(); it.hasNext();) {
-            Tag e = it.next();
-            String key = e.getKey();
+    @Nullable
+    public static Map<String, String> buildTagsMap(Iterable<Tag> collection) {
+        Map<String, String> tags = Maps.newHashMap();
+        String key;
+        String value;
+        for (Tag e : collection) {
+            key = e.getKey();
             if (key == null || key.isEmpty()) {
                 continue;
             }
-            String value = e.getValue();
-            sb.append(key).append(':').append(value);
-            if (it.hasNext()) {
-                sb.append('|');
-            }
+            value = e.getValue();
+            tags.put(key, value);
         }
-        return sb.toString();
+        return tags.isEmpty() ? null : tags;
     }
 
-    public static Collection<Tag> buildTagsCollectionFromString(String tagsString) {
+    public static Collection<Tag> buildTagsCollection(@Nullable Map<String, String> map) {
         Collection<Tag> tags = Lists.newArrayList();
-        if (tagsString != null) {
-            String[] tokens = tagsString.split("\\|");
-            for (String token : tokens) {
-                int idx = token.lastIndexOf(':');
-                if (idx != -1) {
-                    Tag tag = new Tag(token.substring(0, idx), token.substring(idx + 1));
-                    tags.add(tag);
-                } else {
-                    LOGGER.info("found tag token '{}' with no value in tagString '{}'", token,
-                            tagsString);
-                }
+        if (map != null) {
+            for (Entry<String, String> e : map.entrySet()) {
+                String k = e.getKey();
+                String v = e.getValue();
+                Tag tag = new Tag(k, v);
+                tags.add(tag);
             }
         }
         return tags;
+    }
+
+    /**
+     * @return {@code featureType} if it doesn't contain any array or Map attribute, otherwise a new
+     *         feature type with any array or Map attribute replaced by another with the same name
+     *         but bound to {@code String.class}
+     */
+    public static SimpleFeatureType adaptIncompatibleAttributesForExport(
+            SimpleFeatureType featureType, ProgressListener progressListener) {
+
+        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+        builder.init(featureType);
+        for (int i = 0; i < featureType.getAttributeCount(); i++) {
+            AttributeDescriptor attribute = builder.get(i);
+            Class<?> binding = attribute.getType().getBinding();
+            String name = attribute.getLocalName();
+            FieldType fieldType = FieldType.forBinding(binding);
+            if (binding.isArray() || Map.class.isAssignableFrom(binding)) {
+                progressListener.setDescription(String.format(
+                        "Attribute '%s' will be written as String, target doesn't support type %s",
+                        name, fieldType));
+
+                AttributeType type = builder.getFeatureTypeFactory()
+                        .createAttributeType(attribute.getType().getName(), String.class, false,
+                                false, null, null, null);
+                AttributeDescriptor descriptor = builder.getFeatureTypeFactory()
+                        .createAttributeDescriptor(type, type.getName(), 0, 1, true, null);
+
+                // builder.remove(name);
+                builder.set(i, descriptor);
+            }
+        }
+        return builder.buildFeatureType();
     }
 }

@@ -16,6 +16,7 @@ import java.util.List;
 import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
@@ -28,6 +29,7 @@ import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.osm.internal.Mapping;
 import org.locationtech.geogig.osm.internal.MappingRule;
+import org.locationtech.geogig.osm.internal.OSMUtils;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -78,6 +80,7 @@ public class OSMExportSL extends AbstractCommand implements CLICommand {
     }
 
     private void exportRule(final MappingRule rule, final GeogigCLI cli) throws IOException {
+
         Function<Feature, Optional<Feature>> function = new Function<Feature, Optional<Feature>>() {
             @Override
             public Optional<Feature> apply(Feature feature) {
@@ -86,7 +89,11 @@ public class OSMExportSL extends AbstractCommand implements CLICommand {
             }
         };
 
+        final ProgressListener progressListener = cli.getProgressListener();
+
         SimpleFeatureType outputFeatureType = rule.getFeatureType();
+        outputFeatureType = OSMUtils.adaptIncompatibleAttributesForExport(outputFeatureType,
+                progressListener);
         String path = getOriginTreesFromOutputFeatureType(outputFeatureType);
         DataStore dataStore = support.getDataStore(commonArgs);
         try {
@@ -107,7 +114,7 @@ public class OSMExportSL extends AbstractCommand implements CLICommand {
             ExportOp op = cli.getGeogig().command(ExportOp.class).setFeatureStore(store)
                     .setPath(path).setFeatureTypeConversionFunction(function);
             try {
-                op.setProgressListener(cli.getProgressListener()).call();
+                op.setProgressListener(progressListener).call();
                 cli.getConsole().println("OSM data exported successfully to " + tableName);
             } catch (IllegalArgumentException iae) {
                 throw new InvalidParameterException(iae.getMessage(), iae);

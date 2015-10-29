@@ -18,12 +18,14 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.FieldType;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.vividsolutions.jts.geom.Geometry;
@@ -496,6 +498,39 @@ class DataStreamValueSerializerV1 {
                 data.writeInt(timestamp.getNanos());
             }
         });
+        serializers.put(FieldType.MAP, new ValueSerializer() {
+            @Override
+            public Object read(DataInput in) throws IOException {
+                final int size = in.readInt();
+                Map<Object, Object> map = Maps.newHashMap();
+                for (int i = 0; i < size; i++) {
+                    Object key = DataStreamValueSerializerV1.read(FieldType.STRING, in);
+
+                    byte fieldTag = in.readByte();
+                    FieldType fieldType = FieldType.valueOf(fieldTag);
+                    Object value = DataStreamValueSerializerV1.read(fieldType, in);
+
+                    map.put(key, value);
+                }
+                return map;
+            }
+
+            @Override
+            public void write(Object field, DataOutput data) throws IOException {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) field;
+                data.writeInt(map.size());
+                for (Entry<String, Object> e : map.entrySet()) {
+                    String key = e.getKey();
+                    DataStreamValueSerializerV1.write(key, data);
+                    
+                    Object value = e.getValue();
+                    FieldType fieldType = FieldType.forValue(value);
+                    data.writeByte(fieldType.getTag());
+                    DataStreamValueSerializerV1.write(value, data);
+                }
+            }
+        });
     }
 
     /**
@@ -511,6 +546,15 @@ class DataStreamValueSerializerV1 {
         } else {
             throw new IllegalArgumentException("The specified type (" + type + ") is not supported");
         }
+    }
+
+    public static void write(@Nullable Object value, DataOutput data) throws IOException {
+        FieldType type = FieldType.forValue(value);
+        ValueSerializer serializer = serializers.get(type);
+        if (serializer == null) {
+            throw new IllegalArgumentException("The specified type (" + type + ") is not supported");
+        }
+        serializer.write(value, data);
     }
 
     /**

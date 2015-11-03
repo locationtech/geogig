@@ -16,11 +16,16 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 import org.locationtech.geogig.storage.FieldType;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteStreams;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
@@ -133,12 +138,52 @@ class DataStreamValueSerializerV1 {
         serializers.put(FieldType.STRING, new ValueSerializer() {
             @Override
             public Object read(DataInput in) throws IOException {
-                return in.readUTF();
+                final int multiStringMarkerOrsingleLength;
+                // this is the first thing readUTF() does
+                multiStringMarkerOrsingleLength = in.readUnsignedShort();
+
+                if (65535 == multiStringMarkerOrsingleLength) {
+                    final int numChunks = in.readInt();
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < numChunks; i++) {
+                        String chunk = in.readUTF();
+                        sb.append(chunk);
+                    }
+                    return sb.toString();
+                } else {
+                    if (0 == multiStringMarkerOrsingleLength) {
+                        return "";
+                    }
+                    byte[] bytes = new byte[2 + multiStringMarkerOrsingleLength];
+                    in.readFully(bytes, 2, multiStringMarkerOrsingleLength);
+                    int utfsize = multiStringMarkerOrsingleLength;
+                    // reset the utf size header
+                    bytes[0] = (byte) (0xff & (utfsize >> 8));
+                    bytes[1] = (byte) (0xff & utfsize);
+
+                    ByteArrayDataInput sin = ByteStreams.newDataInput(bytes);
+                    return sin.readUTF();
+                }
             }
 
             @Override
             public void write(Object field, DataOutput data) throws IOException {
-                data.writeUTF((String) field);
+                final String value = (String) field;
+                // worst case scenario every character is encoded
+                // as three bytes and the encoded max length is
+                // 65535
+                final int maxSafeLength = 65535 / 3;
+                if (value.length() > maxSafeLength) {
+                    List<String> splitted = Splitter.fixedLength(maxSafeLength).splitToList(value);
+                    data.writeShort(65535);// it's safe to use the max possible UTF length since
+                                           // we'll never write such a string in a single chunk
+                    data.writeInt(splitted.size());
+                    for (String s : splitted) {
+                        data.writeUTF(s);
+                    }
+                } else {
+                    data.writeUTF(value);
+                }
             }
         });
         serializers.put(FieldType.BOOLEAN_ARRAY, new ValueSerializer() {

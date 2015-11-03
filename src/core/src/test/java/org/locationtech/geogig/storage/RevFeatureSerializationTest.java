@@ -27,6 +27,8 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 
+import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.vividsolutions.jts.io.ParseException;
 
 public abstract class RevFeatureSerializationTest extends Assert {
@@ -126,4 +128,35 @@ public abstract class RevFeatureSerializationTest extends Assert {
         }
         return builder.buildFeature(id);
     }
+
+    @Test
+    public void testLargeStringValue() throws Exception {
+
+        SimpleFeatureType type = DataUtilities.createType("LongStringType", "clob:String");
+
+        final int length = 256 * 1024;
+        final String largeString = Strings.repeat("a", length);
+
+        Feature feature = feature(type, "fid1", largeString);
+
+        RevFeature revFeature = RevFeatureBuilder.build(feature);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        serializer.write(revFeature, output);
+
+        byte[] data = output.toByteArray();
+
+        ByteArrayInputStream input = new ByteArrayInputStream(data);
+        RevFeature feat = (RevFeature) serializer.read(revFeature.getId(), input);
+        assertNotNull(feat);
+        assertEquals(1, feat.getValues().size());
+
+        Optional<Object> value = feat.getValues().get(0);
+        assertTrue(value.isPresent());
+        String deserialized = (String) value.get();
+
+        assertEquals(largeString.length(), deserialized.length());
+        assertEquals(largeString, deserialized);
+    }
+
 }

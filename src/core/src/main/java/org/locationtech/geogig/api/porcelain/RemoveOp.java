@@ -23,11 +23,14 @@ import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
+import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
+import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.di.CanRunDuringConflict;
@@ -35,6 +38,7 @@ import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
@@ -111,9 +115,17 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
         }
 
         getProgressListener().setDescription("Staging changes...");
-        stageDeletes(deleteTrees.values().iterator(), deleteFeatures.iterator());
 
         final RevTree finalWorkTree = workingTree.getTree();
+
+        Optional<ObjectId> headTree = command(ResolveTreeish.class).setTreeish(Ref.HEAD).call();
+        ObjectId stageTree = index().getTree().getId();
+        final boolean nothingElseStaged = headTree.isPresent() && headTree.get().equals(stageTree);
+        if (nothingElseStaged) {
+            index().updateStageHead(finalWorkTree.getId());
+        } else {
+            stageDeletes(deleteTrees.values().iterator(), deleteFeatures.iterator());
+        }
 
         getProgressListener().setDescription("Computing result count...");
         List<String> paths = new ArrayList<String>(deleteTrees.keySet());

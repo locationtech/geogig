@@ -34,7 +34,7 @@ import org.locationtech.geogig.api.plumbing.diff.VerifyPatchOp;
 import org.locationtech.geogig.api.plumbing.diff.VerifyPatchResults;
 import org.locationtech.geogig.repository.DepthSearch;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -140,7 +140,7 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
 
     private void applyPatch(Patch patch) {
         final WorkingTree workTree = workingTree();
-        final ObjectDatabase indexDb = objectDatabase();
+        final ObjectStore indexDb = objectDatabase();
         if (reverse) {
             patch = patch.reversed();
         }

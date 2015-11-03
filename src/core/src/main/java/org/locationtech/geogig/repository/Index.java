@@ -36,7 +36,7 @@ import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.di.Singleton;
 import org.locationtech.geogig.storage.ConflictsDatabase;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -226,7 +226,7 @@ public class Index implements StagingArea {
 
         ObjectId newRootTree = currentIndexHead.getId();
 
-        ObjectDatabase objectDatabase = context.objectDatabase();
+        ObjectStore objectDatabase = context.objectDatabase();
         for (Map.Entry<String, RevTreeBuilder> entry : parentTress.entrySet()) {
             String changedTreePath = entry.getKey();
             RevTreeBuilder changedTreeBuilder = entry.getValue();

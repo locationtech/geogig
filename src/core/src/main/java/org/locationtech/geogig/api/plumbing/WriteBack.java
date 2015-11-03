@@ -23,6 +23,7 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -202,7 +203,7 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
                 parentMetadataId);
     }
 
-    private RevTree getTree(ObjectId treeId, ObjectDatabase targetDb) {
+    private RevTree getTree(ObjectId treeId, ObjectStore targetDb) {
         RevTree revTree = targetDb.getTree(treeId);
         return revTree;
     }

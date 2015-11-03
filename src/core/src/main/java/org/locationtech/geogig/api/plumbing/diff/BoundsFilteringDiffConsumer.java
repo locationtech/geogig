@@ -22,7 +22,7 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
@@ -37,10 +37,10 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
 
     private final ReferencedEnvelope boundsFilter;
 
-    private ObjectDatabase ftypeSource;
+    private ObjectStore ftypeSource;
 
     public BoundsFilteringDiffConsumer(ReferencedEnvelope bounds,
-            PreOrderDiffWalk.Consumer delegate, ObjectDatabase ftypeSource) {
+            PreOrderDiffWalk.Consumer delegate, ObjectStore ftypeSource) {
         super(delegate);
         this.boundsFilter = bounds;
         this.ftypeSource = ftypeSource;

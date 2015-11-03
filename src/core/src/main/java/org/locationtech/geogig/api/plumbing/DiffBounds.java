@@ -33,6 +33,7 @@ import org.locationtech.geogig.api.plumbing.diff.DiffSummary;
 import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.FactoryException;
@@ -184,11 +185,11 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
 
         private final CoordinateReferenceSystem crs;
 
-        private final ObjectDatabase source;
+        private final ObjectStore source;
 
         private final ConcurrentMap<ObjectId, MathTransform> transformsByMetadataId;
 
-        public BoundsWalk(CoordinateReferenceSystem crs, ObjectDatabase source) {
+        public BoundsWalk(CoordinateReferenceSystem crs, ObjectStore source) {
             this.crs = crs;
             this.source = source;
             this.transformsByMetadataId = new ConcurrentHashMap<>();

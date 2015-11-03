@@ -26,6 +26,7 @@ import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -64,7 +65,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
      * Where to copy objects from, if at all.
      */
     @Nullable
-    private ObjectDatabase fromDb;
+    private ObjectStore fromDb;
 
     /**
      * @param oldRoot a supplier for the old root tree
@@ -85,7 +86,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
      * be copied from {@code fromDb} to the local repository; otherwise only the new tree will be
      * created without copying any object.
      */
-    public WriteTree setCopyFrom(ObjectDatabase fromDb) {
+    public WriteTree setCopyFrom(ObjectStore fromDb) {
         this.fromDb = fromDb;
         return this;
     }

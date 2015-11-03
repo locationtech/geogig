@@ -46,7 +46,7 @@ import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.NodeStorageOrder;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -81,14 +81,14 @@ public class PreOrderDiffWalk {
 
     private final RevTree right;
 
-    private final ObjectDatabase leftSource;
+    private final ObjectStore leftSource;
 
-    private final ObjectDatabase rightSource;
+    private final ObjectStore rightSource;
 
     private ObjectId metadataId;
 
-    public PreOrderDiffWalk(RevTree left, RevTree right, ObjectDatabase leftSource,
-            ObjectDatabase rightSource) {
+    public PreOrderDiffWalk(RevTree left, RevTree right, ObjectStore leftSource,
+            ObjectStore rightSource) {
 
         checkNotNull(left, "left");
         checkNotNull(right, "right");
@@ -159,7 +159,7 @@ public class PreOrderDiffWalk {
     @SuppressWarnings("serial")
     private static abstract class WalkAction extends RecursiveAction {
 
-        protected final ObjectDatabase leftSource, rightSource;
+        protected final ObjectStore leftSource, rightSource;
 
         protected final CancellableConsumer consumer;
 
@@ -169,12 +169,12 @@ public class PreOrderDiffWalk {
 
         protected final NodeRef rightParent;
 
-        WalkAction(CancellableConsumer consumer, ObjectDatabase ls, ObjectDatabase rs,
+        WalkAction(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs,
                 NodeRef leftParent, NodeRef rightParent) {
             this(consumer, ls, rs, leftParent, rightParent, 0);
         }
 
-        WalkAction(CancellableConsumer consumer, ObjectDatabase ls, ObjectDatabase rs,
+        WalkAction(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs,
                 NodeRef leftParent, NodeRef rightParent, int bucketDepth) {
             checkNotNull(consumer, "consumer");
             checkNotNull(ls, "left source database");
@@ -291,7 +291,7 @@ public class PreOrderDiffWalk {
 
         private final NodeRef rightNode;
 
-        public TraverseTree(CancellableConsumer consumer, ObjectDatabase ls, ObjectDatabase rs,
+        public TraverseTree(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs,
                 NodeRef leftRef, NodeRef rightRef) {
             super(consumer, ls, rs, leftRef, rightRef);
             this.leftNode = leftRef;
@@ -329,9 +329,9 @@ public class PreOrderDiffWalk {
 
         private final RevTree left, right;
 
-        public TraverseTreeContents(CancellableConsumer consumer, ObjectDatabase ls,
-                ObjectDatabase rs, NodeRef leftParent, NodeRef rightParent, RevTree left,
-                RevTree right, int bucketDepth) {
+        public TraverseTreeContents(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs,
+                NodeRef leftParent, NodeRef rightParent, RevTree left, RevTree right,
+                int bucketDepth) {
 
             super(consumer, ls, rs, leftParent, rightParent, bucketDepth);
 
@@ -385,7 +385,7 @@ public class PreOrderDiffWalk {
 
         private Iterator<Node> right;
 
-        TraverseLeafLeaf(CancellableConsumer consumer, ObjectDatabase ls, ObjectDatabase rs,
+        TraverseLeafLeaf(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs,
                 NodeRef leftParent, NodeRef rightParent, Iterator<Node> leftChildren,
                 Iterator<Node> rightChildren) {
             super(consumer, ls, rs, leftParent, rightParent);
@@ -470,7 +470,7 @@ public class PreOrderDiffWalk {
 
         private final RevTree left, right;
 
-        TraverseBucketBucket(CancellableConsumer consumer, ObjectDatabase ls, ObjectDatabase rs,
+        TraverseBucketBucket(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs,
                 NodeRef leftParent, NodeRef rightParent, RevTree left, RevTree right,
                 int bucketDepth) {
 
@@ -559,7 +559,7 @@ public class PreOrderDiffWalk {
             final Set<ObjectId> lbucketIds = Sets.newHashSet(transform(lb.values(), BUCKET_ID));
             final Set<ObjectId> rbucketIds = Sets.newHashSet(transform(rb.values(), BUCKET_ID));
 
-            // get all buckets at once, to leverage ObjectDatabase optimizations
+            // get all buckets at once, to leverage ObjectStore optimizations
             if (leftSource == rightSource) {
                 trees = uniqueIndex(leftSource.getAll(Sets.union(lbucketIds, rbucketIds)),
                         OBJECT_ID);
@@ -583,7 +583,7 @@ public class PreOrderDiffWalk {
 
         private Iterator<Node> leaf;
 
-        TraverseBucketLeaf(CancellableConsumer consumer, ObjectDatabase ls, ObjectDatabase rs,
+        TraverseBucketLeaf(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs,
                 NodeRef leftParent, NodeRef rightParent, RevTree bucket,
                 Iterator<Node> rightcChildren, int bucketDepth) {
             super(consumer, ls, rs, leftParent, rightParent, bucketDepth);
@@ -617,7 +617,7 @@ public class PreOrderDiffWalk {
             final SortedSet<Integer> bucketIndexes = Sets.newTreeSet(Sets.union(
                     leftBuckets.keySet(), nodesByBucket.keySet()));
 
-            // get all buckets at once, to leverage ObjectDatabase optimizations
+            // get all buckets at once, to leverage ObjectStore optimizations
             final Map<ObjectId, RevObject> bucketTrees;
             bucketTrees = uniqueIndex(
                     leftSource.getAll(transform(leftBuckets.values(), BUCKET_ID)), OBJECT_ID);
@@ -672,7 +672,7 @@ public class PreOrderDiffWalk {
 
         private RevTree bucket;
 
-        TraverseLeafBucket(CancellableConsumer consumer, ObjectDatabase ls, ObjectDatabase rs,
+        TraverseLeafBucket(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs,
                 NodeRef leftParent, NodeRef rightParent, Iterator<Node> leftcChildren,
                 RevTree bucket, int bucketDepth) {
             super(consumer, ls, rs, leftParent, rightParent, bucketDepth);
@@ -706,7 +706,7 @@ public class PreOrderDiffWalk {
             final SortedSet<Integer> bucketIndexes = Sets.newTreeSet(Sets.union(
                     rightBuckets.keySet(), nodesByBucket.keySet()));
 
-            // get all buckets at once, to leverage ObjectDatabase optimizations
+            // get all buckets at once, to leverage ObjectStore optimizations
             final Map<ObjectId, RevObject> bucketTrees;
             bucketTrees = uniqueIndex(
                     rightSource.getAll(transform(rightBuckets.values(), BUCKET_ID)), OBJECT_ID);

@@ -14,7 +14,7 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 /**
  * A {@link Consumer} for diffs that computes the number for tree and feature changes between the
@@ -26,11 +26,11 @@ import org.locationtech.geogig.storage.ObjectDatabase;
  */
 public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
 
-    private final ObjectDatabase db;
+    private final ObjectStore db;
 
     private DiffObjectCount count = new DiffObjectCount();
 
-    public DiffCountConsumer(ObjectDatabase db) {
+    public DiffCountConsumer(ObjectStore db) {
         this.db = db;
     }
 

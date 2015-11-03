@@ -29,6 +29,7 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -272,7 +273,7 @@ public class MutableTree implements Cloneable {
         this.node = newNode;
     }
 
-    public RevTree build(ObjectDatabase origin, ObjectDatabase target) {
+    public RevTree build(ObjectStore origin, ObjectDatabase target) {
         final ObjectId nodeId = node.getObjectId();
         final RevTree tree = origin.getTree(nodeId);
 

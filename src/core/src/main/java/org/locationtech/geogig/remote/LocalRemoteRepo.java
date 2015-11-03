@@ -44,6 +44,7 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryInitializer;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
@@ -382,7 +383,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         copy(ids, fromDb, toDb, progress);
     }
 
-    private void copy(Set<ObjectId> ids, ObjectDatabase from, ObjectDatabase to,
+    private void copy(Set<ObjectId> ids, ObjectStore from, ObjectStore to,
             final ProgressListener progress) {
         if (ids.isEmpty()) {
             return;

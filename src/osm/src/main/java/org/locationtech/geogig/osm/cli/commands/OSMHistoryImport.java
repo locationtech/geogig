@@ -71,7 +71,7 @@ import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.Blobs;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -479,7 +479,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
                     .call(RevTree.class).get();
             findTreeChild.setParent(headTree);
         }
-        ObjectDatabase objectDatabase = geogig.getContext().objectDatabase();
+        ObjectStore objectDatabase = geogig.getContext().objectDatabase();
         for (Long nodeId : nodes) {
             Coordinate coord = thisChangePointCache.get(nodeId);
             if (coord == null) {

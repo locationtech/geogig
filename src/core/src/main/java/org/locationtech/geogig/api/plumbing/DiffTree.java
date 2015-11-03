@@ -34,6 +34,7 @@ import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.ForwardingConsumer;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,9 +77,9 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
 
     private ObjectId metadataId;
 
-    private ObjectDatabase leftSource;
+    private ObjectStore leftSource;
 
-    private ObjectDatabase rightSource;
+    private ObjectStore rightSource;
 
     private ObjectId newTreeId;
 
@@ -182,8 +183,8 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
     protected Iterator<DiffEntry> _call() throws IllegalArgumentException {
         checkArgument(oldRefSpec != null || oldTreeId != null, "old version not specified");
         checkArgument(newRefSpec != null || oldTreeId != null, "new version not specified");
-        final ObjectDatabase leftSource;
-        final ObjectDatabase rightSource;
+        final ObjectStore leftSource;
+        final ObjectStore rightSource;
 
         leftSource = this.leftSource == null ? objectDatabase() : this.leftSource;
         rightSource = this.rightSource == null ? objectDatabase() : this.rightSource;
@@ -274,7 +275,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
     }
 
     private RevTree resolveTree(@Nullable final String treeIsh, @Nullable final ObjectId treeOid,
-            final ObjectDatabase source) {
+            final ObjectStore source) {
 
         RevTree tree = null;
         ResolveTreeish command = null;
@@ -500,12 +501,12 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         return this;
     }
 
-    public DiffTree setLeftSource(ObjectDatabase leftSource) {
+    public DiffTree setLeftSource(ObjectStore leftSource) {
         this.leftSource = leftSource;
         return this;
     }
 
-    public DiffTree setRightSource(ObjectDatabase rightSource) {
+    public DiffTree setRightSource(ObjectStore rightSource) {
         this.rightSource = rightSource;
         return this;
     }

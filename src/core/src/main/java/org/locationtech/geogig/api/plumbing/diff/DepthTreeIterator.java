@@ -22,6 +22,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -67,7 +68,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
 
     private Iterator<NodeRef> iterator;
 
-    private ObjectDatabase source;
+    private ObjectStore source;
 
     private Strategy strategy;
 

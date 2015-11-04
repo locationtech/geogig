@@ -38,7 +38,7 @@ import com.google.common.base.Preconditions;
  * "compatible" with variable-length encoding.
  * </p>
  */
-final class Varint {
+public final class Varint {
 
     private Varint() {
     }

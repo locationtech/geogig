@@ -552,7 +552,7 @@ public class RevTreeBuilder {
     }
 
     /**
-     * Adds or replaces an element in the tree with the given key.
+     * Adds or replaces an element in the tree with the given node.
      * <p>
      * <!-- Implementation detail: If the number of cached entries (entries held directly by this
      * tree) reaches {@link #DEFAULT_NORMALIZATION_THRESHOLD}, this tree will {@link #normalize()}
@@ -560,8 +560,8 @@ public class RevTreeBuilder {
      * 
      * -->
      * 
-     * @param node
-     * @return 
+     * @param node The {@link org.locationtech.geogig.api.Node Node} to add or replace.
+     * @return a reference to this {@link org.locationtech.geogig.api.RevTreeBuilder RevTreeBuilder}
      */
     public RevTreeBuilder put(final Node node) {
         Preconditions.checkNotNull(node, "node can't be null");

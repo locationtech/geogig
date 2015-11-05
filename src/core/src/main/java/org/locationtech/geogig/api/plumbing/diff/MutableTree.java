@@ -277,7 +277,7 @@ public class MutableTree implements Cloneable {
         final ObjectId nodeId = node.getObjectId();
         final RevTree tree = origin.getTree(nodeId);
 
-        RevTreeBuilder builder = tree.builder(target).clearSubtrees();
+        RevTreeBuilder builder = new RevTreeBuilder(target, tree).clearSubtrees();
 
         for (MutableTree childTree : this.childTrees.values()) {
             String name;

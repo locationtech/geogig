@@ -68,7 +68,7 @@ public final class Varint {
      * @throws IOException if {@link DataOutput} throws {@link IOException}
      */
     public static void writeUnsignedVarLong(long value, DataOutput out) throws IOException {
-        byte[] buff = new byte[9];
+        byte[] buff = new byte[10];
         int cnt = 0;
         while ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
             //out.writeByte(((int) value & 0x7F) | 0x80);

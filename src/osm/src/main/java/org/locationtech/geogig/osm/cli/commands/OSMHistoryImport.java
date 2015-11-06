@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -240,8 +239,8 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         return osmAPIUrl;
     }
 
-    private void importOsmHistory(GeogigCLI cli, Console console,
-            HistoryDownloader downloader, @Nullable Envelope featureFilter) throws IOException {
+    private void importOsmHistory(GeogigCLI cli, Console console, HistoryDownloader downloader,
+            @Nullable Envelope featureFilter) throws IOException {
 
         Iterator<Changeset> changesets = downloader.fetchChangesets();
 
@@ -547,7 +546,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         builder.set("timestamp", Long.valueOf(feature.getTimestamp()));
         builder.set("changeset", Long.valueOf(feature.getChangesetId()));
 
-        String tags = buildTagsString(feature.getTags());
+        Map<String, String> tags = feature.getTags();
         builder.set("tags", tags);
 
         String user = feature.getUserName() + ":" + feature.getUserId();
@@ -557,7 +556,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
             builder.set("location", geom);
         } else if (feature instanceof Way) {
             builder.set("way", geom);
-            String nodes = buildNodesString(((Way) feature).getNodes());
+            long[] nodes = buildNodesArray(((Way) feature).getNodes());
             builder.set("nodes", nodes);
         } else {
             throw new IllegalArgumentException();
@@ -568,41 +567,11 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         return simpleFeature;
     }
 
-    /**
-     * @param tags
-     * @return
-     */
-    @Nullable
-    private static String buildTagsString(Map<String, String> tags) {
-        if (tags.isEmpty()) {
-            return null;
+    private static long[] buildNodesArray(List<Long> nodeIds) {
+        long[] nodes = new long[nodeIds.size()];
+        for (int i = 0; i < nodeIds.size(); i++) {
+            nodes[i] = nodeIds.get(i).longValue();
         }
-        StringBuilder sb = new StringBuilder();
-        for (Iterator<Map.Entry<String, String>> it = tags.entrySet().iterator(); it.hasNext();) {
-            Entry<String, String> e = it.next();
-            String key = e.getKey();
-            if (key == null || key.isEmpty()) {
-                continue;
-            }
-            String value = e.getValue();
-            sb.append(key).append(':').append(value);
-            if (it.hasNext()) {
-                sb.append(';');
-            }
-        }
-        return sb.toString();
-    }
-
-    private static String buildNodesString(List<Long> nodeIds) {
-        StringBuilder sb = new StringBuilder();
-        for (Iterator<Long> it = nodeIds.iterator(); it.hasNext();) {
-            Long node = it.next();
-            sb.append(node);
-            if (it.hasNext()) {
-                sb.append(";");
-            }
-        }
-        return sb.toString();
-
+        return nodes;
     }
 }

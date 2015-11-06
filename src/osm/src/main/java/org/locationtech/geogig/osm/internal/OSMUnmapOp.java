@@ -10,6 +10,7 @@
 package org.locationtech.geogig.osm.internal;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.openstreetmap.osmosis.core.domain.v0_6.Tag;
 
 import com.beust.jcommander.internal.Maps;
-import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -218,25 +218,22 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void unmapNode(SimpleFeature feature, FeatureMapFlusher mapFlusher) {
         boolean modified = false;
         String id = feature.getID();
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(OSMUtils.nodeType());
         Optional<RevFeature> rawFeature = command(RevObjectParse.class).setRefSpec(
                 "WORK_HEAD:" + OSMUtils.NODE_TYPE_NAME + "/" + id).call(RevFeature.class);
-        Map<String, String> tagsMap = Maps.newHashMap();
+        Map<String, String> tagsMap = new HashMap<>();
         long timestamp = System.currentTimeMillis();
         int version = 1;
         long changeset = -1;
         String user = UNKNOWN_USER;
-        Collection<Tag> tags = Lists.newArrayList();
+
         if (rawFeature.isPresent()) {
             ImmutableList<Optional<Object>> values = rawFeature.get().getValues();
-            tags = OSMUtils.buildTagsCollectionFromString(values.get(NODE_TAGS_FIELD_INDEX).get()
-                    .toString());
-            for (Tag tag : tags) {
-                tagsMap.put(tag.getKey(), tag.getValue());
-            }
+            tagsMap = (Map<String, String>) values.get(NODE_TAGS_FIELD_INDEX).or(tagsMap);
             Optional<Object> timestampOpt = values.get(NODE_TIMESTAMP_FIELD_INDEX);
             if (timestampOpt.isPresent()) {
                 timestamp = ((Long) timestampOpt.get()).longValue();
@@ -300,7 +297,7 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         for (Entry<String, String> entry : entries) {
             newTags.add(new Tag(entry.getKey(), entry.getValue()));
         }
-        featureBuilder.set("tags", OSMUtils.buildTagsString(newTags));
+        featureBuilder.set("tags", OSMUtils.buildTagsMap(newTags));
         featureBuilder.set("location", feature.getDefaultGeometry());
         featureBuilder.set("changeset", changeset);
         featureBuilder.set("timestamp", timestamp);
@@ -334,13 +331,12 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
      * @param line
      * @return
      */
-    private String getNodeStringFromWay(SimpleFeature way, FeatureMapFlusher flusher) {
+    private long[] getNodeArrayFromWay(SimpleFeature way, FeatureMapFlusher flusher) {
 
         Map<Coordinate, Long> nodeCoords = Maps.newHashMap();
-        Object nodesAttribute = way.getAttribute("nodes");
-        if (nodesAttribute != null) {
-            String[] nodeIds = nodesAttribute.toString().split(";");
-            for (String nodeId : nodeIds) {
+        long[] nodeIds = (long[]) way.getAttribute("nodes");
+        if (nodeIds != null) {
+            for (long nodeId : nodeIds) {
                 Optional<RevFeature> revFeature = command(RevObjectParse.class).setRefSpec(
                         "WORK_HEAD:" + OSMUtils.NODE_TYPE_NAME + "/" + nodeId).call(
                         RevFeature.class);
@@ -349,7 +345,7 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
                             .get(NODE_LOCATION_FIELD_INDEX);
                     if (location.isPresent()) {
                         Coordinate coord = ((Geometry) location.get()).getCoordinate();
-                        nodeCoords.put(coord, Long.parseLong(nodeId));
+                        nodeCoords.put(coord, nodeId);
                     }
                 }
             }
@@ -365,7 +361,11 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
             }
         }
 
-        return Joiner.on(';').join(nodes);
+        nodeIds = new long[nodes.size()];
+        for (int i = 0; i < nodes.size(); i++) {
+            nodeIds[i] = nodes.get(i).longValue();
+        }
+        return nodeIds;
     }
 
     /**
@@ -388,6 +388,7 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         return id;
     }
 
+    @SuppressWarnings("unchecked")
     private void unmapWay(SimpleFeature feature, FeatureMapFlusher flusher) {
         boolean modified = false;
         String id = feature.getID();
@@ -402,11 +403,9 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         Collection<Tag> tags = Lists.newArrayList();
         if (rawFeature.isPresent()) {
             ImmutableList<Optional<Object>> values = rawFeature.get().getValues();
-            tags = OSMUtils.buildTagsCollectionFromString(values.get(WAY_TAGS_FIELD_INDEX).get()
-                    .toString());
-            for (Tag tag : tags) {
-                tagsMap.put(tag.getKey(), tag.getValue());
-            }
+            tagsMap = (Map<String, String>) values.get(WAY_TAGS_FIELD_INDEX).or(tagsMap);
+            tags = OSMUtils.buildTagsCollection(tagsMap);
+
             Optional<Object> timestampOpt = values.get(WAY_TIMESTAMP_FIELD_INDEX);
             if (timestampOpt.isPresent()) {
                 timestamp = ((Long) timestampOpt.get()).longValue();
@@ -480,13 +479,13 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
             line = gf.createLineString(geom.getCoordinates());
         }
         featureBuilder.set("visible", true);
-        featureBuilder.set("tags", OSMUtils.buildTagsString(tags));
+        featureBuilder.set("tags", OSMUtils.buildTagsMap(tags));
         featureBuilder.set("way", line);
         featureBuilder.set("changeset", changeset);
         featureBuilder.set("timestamp", timestamp);
         featureBuilder.set("version", version);
         featureBuilder.set("user", user);
-        featureBuilder.set("nodes", getNodeStringFromWay(feature, flusher));
+        featureBuilder.set("nodes", getNodeArrayFromWay(feature, flusher));
         if (rawFeature.isPresent()) {
             // the feature has changed, so we cannot reuse some attributes
             featureBuilder.set("timestamp", System.currentTimeMillis());

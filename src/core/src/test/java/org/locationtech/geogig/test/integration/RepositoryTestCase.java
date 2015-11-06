@@ -13,8 +13,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.NameImpl;
@@ -52,6 +54,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -450,4 +453,14 @@ public abstract class RepositoryTestCase extends Assert {
         }
         return bounds;
     }
+
+    public static Map<String, String> asMap(String... kvp) {
+        Preconditions.checkArgument(kvp.length % 2 == 0, "An even number of arguments is expected");
+        Map<String, String> map = new HashMap<>();
+        for (int i = 0; i < kvp.length; i += 2) {
+            map.put(kvp[i], kvp[i + 1]);
+        }
+        return map;
+    }
+
 }

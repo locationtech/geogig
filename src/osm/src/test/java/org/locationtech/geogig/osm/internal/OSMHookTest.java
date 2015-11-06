@@ -115,9 +115,11 @@ public class OSMHookTest extends RepositoryTestCase {
         assertTrue(unmapped.isPresent());
         values = unmapped.get().getValues();
         assertEquals("POINT (0 1)", values.get(6).get().toString());
-        assertEquals(
-                "VRS:gemeinde:BONN|VRS:ortsteil:Hoholz|VRS:ref:68566|bus:yes|highway:bus_stop|name:newname|public_transport:platform",
-                values.get(3).get().toString());
+
+        Map<String, String> expected = asMap("VRS:gemeinde", "BONN", "VRS:ortsteil", "Hoholz",
+                "VRS:ref", "68566", "bus", "yes", "highway", "bus_stop", "name", "newname",
+                "public_transport", "platform");
+        assertEquals(expected, values.get(3).get());
         // check that unchanged nodes keep their attributes
         Optional<RevFeature> unchanged = geogig.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:node/1633594723").call(RevFeature.class);

@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.NameImpl;
@@ -145,7 +146,7 @@ public abstract class RepositoryTestCase extends Assert {
     // prevent recursion
     private boolean setup = false;
 
-    protected File envHome;
+    protected File repositoryDirectory;
 
     protected Context injector;
 
@@ -162,12 +163,21 @@ public abstract class RepositoryTestCase extends Assert {
         doSetUp();
     }
 
+    /**
+     * In rare occasions a test fail for unknown reasons and it's definitely related to the
+     * temporary folder somehow resolving to the same directory in two different tests, which I
+     * thought was impossible and the whole point of {@link TemporaryFolder}. So although I didn't
+     * get to the root cause of the issue, appending a randon number to the repository directory
+     * name makes the trick for the time being.
+     */
+    private static final Random RANDOM = new Random();
+
     protected final void doSetUp() throws IOException, SchemaException, ParseException, Exception {
-        envHome = repositoryTempFolder.newFolder("repo");
+        repositoryDirectory = repositoryTempFolder.newFolder("repo" + RANDOM.nextInt());
 
         injector = createInjector();
 
-        geogig = new GeoGIG(injector, envHome);
+        geogig = new GeoGIG(injector, repositoryDirectory);
         repo = geogig.getOrCreateRepository();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("Gabriel Roldan").call();
@@ -217,7 +227,7 @@ public abstract class RepositoryTestCase extends Assert {
     }
 
     protected Platform createPlatform() {
-        Platform testPlatform = new TestPlatform(envHome);
+        Platform testPlatform = new TestPlatform(repositoryDirectory);
         return testPlatform;
     }
 

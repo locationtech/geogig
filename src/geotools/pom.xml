@@ -53,12 +53,6 @@
       
     <dependency>
       <groupId>org.geotools.jdbc</groupId>
-      <artifactId>gt-jdbc-spatialite</artifactId>
-      <version>${gt.version}</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.geotools.jdbc</groupId>
       <artifactId>gt-jdbc-sqlserver</artifactId>
       <version>${gt.version}</version>
     </dependency>

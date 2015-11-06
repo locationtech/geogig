@@ -107,8 +107,9 @@ public class DepthSearchTest {
                 .setChildPath(treePath).setTree(subtree).setMetadataId(fakeTreeMetadataId);
         ObjectId newRootId = writeBack.call();
 
-        return fakeGeogig.command(RevObjectParse.class).setObjectId(newRootId).call(RevTree.class)
-                .get().builder(odb);
+        return new RevTreeBuilder(odb,
+                fakeGeogig.command(RevObjectParse.class).setObjectId(newRootId).call(RevTree.class)
+                .get());
     }
 
     @Test

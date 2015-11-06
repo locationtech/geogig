@@ -64,8 +64,6 @@ public interface RevTree extends RevObject {
 
     public Optional<ImmutableSortedMap<Integer, Bucket>> buckets();
 
-    public RevTreeBuilder builder(ObjectDatabase target);
-
     /**
      * Precondition: {@code !buckets().isPresent()}
      * 

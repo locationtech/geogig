@@ -196,11 +196,6 @@ public abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
     }
 
     @Override
-    public RevTreeBuilder builder(ObjectDatabase target) {
-        return new RevTreeBuilder(target, this);
-    }
-
-    @Override
     public Iterator<Node> children() {
         Preconditions.checkState(!buckets().isPresent());
         ImmutableList<Node> trees = trees().or(ImmutableList.<Node> of());

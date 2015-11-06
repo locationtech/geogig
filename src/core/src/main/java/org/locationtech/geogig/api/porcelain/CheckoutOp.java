@@ -200,7 +200,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                         }
                         treeBuilder.put(node.get().getNode());
                         ObjectId newTreeId = command(WriteBack.class)
-                                .setAncestor(workingTree().getTree().builder(objectDatabase()))
+                                .setAncestor(new RevTreeBuilder(objectDatabase(),
+                                        workingTree().getTree()))
                                 .setChildPath(node.get().getParentPath())
                                 .setTree(treeBuilder.build()).setMetadataId(metadataId).call();
                         workingTree().updateWorkHead(newTreeId);

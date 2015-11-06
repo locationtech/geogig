@@ -126,7 +126,7 @@ public class Index implements StagingArea {
         Supplier<RevTreeBuilder> supplier = new Supplier<RevTreeBuilder>() {
             @Override
             public RevTreeBuilder get() {
-                return getTree().builder(context.objectDatabase());
+                return new RevTreeBuilder(context.objectDatabase(), getTree());
             }
         };
         return Suppliers.memoize(supplier);
@@ -263,7 +263,7 @@ public class Index implements StagingArea {
         if (parentBuilder == null) {
             ObjectId parentMetadataId = null;
             if (NodeRef.ROOT.equals(parentPath)) {
-                parentBuilder = currentIndexHead.builder(context.objectDatabase());
+                parentBuilder = new RevTreeBuilder(context.objectDatabase(), currentIndexHead);
             } else {
                 Optional<NodeRef> parentRef = context.command(FindTreeChild.class)
                         .setParent(currentIndexHead).setChildPath(parentPath).call();
@@ -272,9 +272,10 @@ public class Index implements StagingArea {
                     parentMetadataId = parentRef.get().getMetadataId();
                 }
 
-                parentBuilder = context.command(FindOrCreateSubtree.class)
+                parentBuilder = new RevTreeBuilder(context.objectDatabase(),
+                        context.command(FindOrCreateSubtree.class)
                         .setParent(Suppliers.ofInstance(Optional.of(getTree())))
-                        .setChildPath(parentPath).call().builder(context.objectDatabase());
+                        .setChildPath(parentPath).call());
             }
             parentTress.put(parentPath, parentBuilder);
             if (parentMetadataId != null) {

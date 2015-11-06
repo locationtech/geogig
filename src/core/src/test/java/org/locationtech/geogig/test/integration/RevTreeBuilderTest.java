@@ -166,7 +166,7 @@ public class RevTreeBuilderTest extends RepositoryTestCase {
                 Node ref = Node.create(name, newid, ObjectId.NULL, TYPE.FEATURE, null);
                 randomEdits.put(random, ref);
             }
-            RevTreeBuilder mutable = tree.builder(odb);
+            RevTreeBuilder mutable = new RevTreeBuilder(odb, tree);
             sw.reset().start();
             for (Node ref : randomEdits.values()) {
                 mutable.put(ref);
@@ -226,7 +226,7 @@ public class RevTreeBuilderTest extends RepositoryTestCase {
             assertEquals(100, removedKeys.size());
         }
 
-        final RevTreeBuilder builder = tree.builder(odb);
+        final RevTreeBuilder builder = new RevTreeBuilder(odb, tree);
         for (String key : removedKeys) {
             assertTrue(builder.get(key).isPresent());
             builder.remove(key);
@@ -261,7 +261,7 @@ public class RevTreeBuilderTest extends RepositoryTestCase {
             assertTrue(removedKeys.size() > 0);
         }
 
-        RevTreeBuilder builder = tree.builder(odb);
+        RevTreeBuilder builder = new RevTreeBuilder(odb, tree);
         for (String key : removedKeys) {
             assertTrue(key, builder.get(key).isPresent());
             builder.remove(key);

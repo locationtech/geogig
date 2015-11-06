@@ -66,7 +66,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
     @Override
     protected Platform createPlatform() {
-        Platform testPlatform = new TestPlatform(envHome) {
+        Platform testPlatform = new TestPlatform(repositoryDirectory) {
             @Override
             public int availableProcessors() {
                 return 2;

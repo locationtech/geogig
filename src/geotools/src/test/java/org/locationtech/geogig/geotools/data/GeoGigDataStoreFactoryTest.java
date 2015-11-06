@@ -35,7 +35,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
     @Override
     protected void setUpInternal() throws Exception {
         factory = new GeoGigDataStoreFactory();
-        repoDirectory = geogig.getPlatform().pwd();
+        repoDirectory = super.repositoryDirectory;
     }
 
     @Test
@@ -63,7 +63,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
 
     @Test
     public void testCanProcess() {
-        final File workingDir = repositoryTempFolder.getRoot();
+        final File workingDir = repoDirectory;
 
         Map<String, Serializable> params = ImmutableMap.of();
         assertFalse(factory.canProcess(params));

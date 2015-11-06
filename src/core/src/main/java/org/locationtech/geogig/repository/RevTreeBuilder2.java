@@ -95,7 +95,7 @@ public class RevTreeBuilder2 {
      */
     public RevTree build() {
         if (nodeIndex == null) {
-            return original.builder(db).build();
+            return new RevTreeBuilder(db, original).build();
         }
 
         Stopwatch sw = Stopwatch.createStarted();

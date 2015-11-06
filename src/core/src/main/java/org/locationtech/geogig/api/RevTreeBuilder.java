@@ -30,7 +30,7 @@ import org.locationtech.geogig.repository.DepthSearch;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.NodeStorageOrder;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +62,7 @@ public class RevTreeBuilder {
      */
     public static final int DEFAULT_NORMALIZATION_THRESHOLD = 1000 * 1000;
 
-    private final ObjectDatabase db;
+    private final ObjectStore obStore;
 
     private int normalizationThreshold = DEFAULT_NORMALIZATION_THRESHOLD;
 
@@ -88,9 +88,8 @@ public class RevTreeBuilder {
      * Empty tree constructor, used to create trees from scratch
      * 
      * @param db
-     * @param serialFactory
      */
-    public RevTreeBuilder(ObjectDatabase db) {
+    public RevTreeBuilder(ObjectStore db) {
         this(db, null);
     }
 
@@ -98,7 +97,7 @@ public class RevTreeBuilder {
      * Only useful to {@link #build() build} the named {@link #empty() empty} tree
      */
     private RevTreeBuilder() {
-        db = null;
+        obStore = null;
         treeChanges = Maps.newTreeMap();
         featureChanges = Maps.newTreeMap();
         deletes = Sets.newTreeSet();
@@ -113,21 +112,24 @@ public class RevTreeBuilder {
 
     /**
      * Copy constructor with tree depth
+     * @param obStore {@link org.locationtech.geogig.storage.ObjectStore ObjectStore} with which
+     * to initialize this RevTreeBuilder.
+     * @param copy {@link org.locationtech.geogig.api.RevTree RevTree} to copy.
      */
-    public RevTreeBuilder(ObjectDatabase db, @Nullable final RevTree copy) {
-        this(db, copy, 0, new TreeMap<ObjectId, RevTree>(), DEFAULT_NORMALIZATION_THRESHOLD);
+    public RevTreeBuilder(ObjectStore obStore, @Nullable final RevTree copy) {
+        this(obStore, copy, 0, new TreeMap<ObjectId, RevTree>(), DEFAULT_NORMALIZATION_THRESHOLD);
     }
 
     /**
      * Copy constructor
      */
-    private RevTreeBuilder(final ObjectDatabase db, @Nullable final RevTree copy, final int depth,
+    private RevTreeBuilder(final ObjectStore obSotre, @Nullable final RevTree copy, final int depth,
             final Map<ObjectId, RevTree> pendingWritesCache, final int normalizationThreshold) {
 
-        checkNotNull(db);
+        checkNotNull(obSotre);
         checkNotNull(pendingWritesCache);
 
-        this.db = db;
+        this.obStore = obSotre;
         this.normalizationThreshold = normalizationThreshold;
         this.depth = depth;
         this.pendingWritesCache = pendingWritesCache;
@@ -183,7 +185,7 @@ public class RevTreeBuilder {
     private RevTree loadTree(final ObjectId subtreeId) {
         RevTree subtree = this.pendingWritesCache.get(subtreeId);
         if (subtree == null) {
-            subtree = db.getTree(subtreeId);
+            subtree = obStore.getTree(subtreeId);
         }
         return subtree;
     }
@@ -212,7 +214,7 @@ public class RevTreeBuilder {
 
         RevTree subtree = loadTree(bucket.getObjectId());
 
-        DepthSearch depthSearch = new DepthSearch(db);
+        DepthSearch depthSearch = new DepthSearch(obStore);
         Optional<Node> node = depthSearch.getDirectChild(subtree, key, depth + 1);
 
         if (node.isPresent()) {
@@ -282,7 +284,7 @@ public class RevTreeBuilder {
                     .size(), (topLevelTree ? "writing top level tree" : "there are "
                     + pendingWritesCache.size() + " pending bucket writes"));
             Stopwatch sw2 = Stopwatch.createStarted();
-            db.putAll(pendingWritesCache.values().iterator());
+            obStore.putAll(pendingWritesCache.values().iterator());
             pendingWritesCache.clear();
             LOGGER.debug("done in {}", sw2.stop());
         }
@@ -392,7 +394,7 @@ public class RevTreeBuilder {
             for (Integer bucketIndex : changedBucketIndexes) {
                 final RevTree currentBucketTree = bucketTrees.get(bucketIndex);
                 final int bucketDepth = this.depth + 1;
-                final RevTreeBuilder bucketTreeBuilder = new RevTreeBuilder(this.db,
+                final RevTreeBuilder bucketTreeBuilder = new RevTreeBuilder(this.obStore,
                         currentBucketTree, bucketDepth, this.pendingWritesCache,
                         this.normalizationThreshold);
                 {
@@ -444,7 +446,6 @@ public class RevTreeBuilder {
                     pendingWritesCache.put(leaf.getId(), leaf);
                 }
                 newLeafTreesToSave.clear();
-                newLeafTreesToSave = null;
                 checkPendingWrites();
             }
         } catch (RuntimeException e) {
@@ -485,7 +486,7 @@ public class RevTreeBuilder {
                             return bucketTreesByBucket.get(index).getObjectId();
                         }
                     });
-            Iterator<RevObject> all = db.getAll(ids.keySet());
+            Iterator<RevObject> all = obStore.getAll(ids.keySet());
             while (all.hasNext()) {
                 RevObject next = all.next();
                 bucketTrees.put(ids.get(next.getId()), (RevTree) next);
@@ -551,7 +552,7 @@ public class RevTreeBuilder {
     }
 
     /**
-     * Adds or replaces an element in the tree with the given key.
+     * Adds or replaces an element in the tree with the given node.
      * <p>
      * <!-- Implementation detail: If the number of cached entries (entries held directly by this
      * tree) reaches {@link #DEFAULT_NORMALIZATION_THRESHOLD}, this tree will {@link #normalize()}
@@ -559,8 +560,8 @@ public class RevTreeBuilder {
      * 
      * -->
      * 
-     * @param key non null
-     * @param value non null
+     * @param node The {@link org.locationtech.geogig.api.Node Node} to add or replace.
+     * @return a reference to this {@link org.locationtech.geogig.api.RevTreeBuilder RevTreeBuilder}
      */
     public RevTreeBuilder put(final Node node) {
         Preconditions.checkNotNull(node, "node can't be null");

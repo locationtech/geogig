@@ -61,7 +61,7 @@
         <artifactId>appassembler-maven-plugin</artifactId>
         <configuration>
           <!-- Extra JVM arguments that will be included in the bin scripts -->
-          <extraJvmArguments>-Xmx2G -XX:MaxPermSize=128m -Dorg.geotools.referencing.forceXY=true -XX:-HeapDumpOnOutOfMemoryError -XX:+UseNUMA -XX:+UseParallelGC -XX:+TieredCompilation </extraJvmArguments>
+          <extraJvmArguments>-Dorg.geotools.referencing.forceXY=true -XX:-HeapDumpOnOutOfMemoryError -XX:+UseNUMA -XX:+UseParallelGC -XX:+TieredCompilation </extraJvmArguments>
           <!-- set alternative assemble directory -->
           <assembleDirectory>${project.build.directory}/geogig-build</assembleDirectory>
           <repositoryLayout>flat</repositoryLayout>

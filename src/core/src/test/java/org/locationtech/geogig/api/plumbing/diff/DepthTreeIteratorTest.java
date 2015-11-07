@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.api.plumbing.diff;
 
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.*;
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.createTreesTreeBuilder;
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.featureNode;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.*;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createTreesTreeBuilder;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.featureNode;
 
 import java.util.List;
 

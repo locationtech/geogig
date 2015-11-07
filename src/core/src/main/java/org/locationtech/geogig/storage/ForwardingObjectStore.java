@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2015 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -19,16 +19,33 @@ import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevTag;
 import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Provider;
+import com.google.inject.util.Providers;
 
-public class ForwardingObjectDatabase implements ObjectDatabase {
+public class ForwardingObjectStore implements ObjectStore {
 
-    protected final Provider<? extends ObjectDatabase> subject;
+    protected final Provider<? extends ObjectStore> subject;
 
-    public ForwardingObjectDatabase(Provider<? extends ObjectDatabase> odb) {
+    protected final boolean canWrite;
+
+    public ForwardingObjectStore(Provider<? extends ObjectStore> odb) {
         this.subject = odb;
+        this.canWrite = true;
+    }
+
+    public ForwardingObjectStore(final ObjectStore odb) {
+        this(odb, false);
+    }
+
+    public ForwardingObjectStore(final ObjectStore odb, final boolean readOnly) {
+        this.subject = Providers.of(odb);
+        this.canWrite = !readOnly;
+    }
+
+    private void checkWritable() {
+        Preconditions.checkState(canWrite, "Database is read only");
     }
 
     @Override
@@ -37,33 +54,13 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     }
 
     @Override
-    public void configure() throws RepositoryConnectionException {
-        subject.get().configure();
-    }
-
-    @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        subject.get().checkConfig();
-    }
-
-    @Override
     public boolean isOpen() {
         return subject.get().isOpen();
-    }
-    
-    @Override
-    public boolean isReadOnly() {
-        return subject.get().isReadOnly();
     }
 
     @Override
     public void close() {
         subject.get().close();
-    }
-
-    @Override
-    public ConflictsDatabase getConflictsDatabase() {
-        return subject.get().getConflictsDatabase();
     }
 
     @Override
@@ -124,17 +121,13 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
 
     @Override
     public boolean put(RevObject object) {
+        checkWritable();
         return subject.get().put(object);
     }
 
     @Override
-    @Deprecated
-    public ObjectInserter newObjectInserter() {
-        return new ObjectInserter(this);
-    }
-
-    @Override
     public boolean delete(ObjectId objectId) {
+        checkWritable();
         return subject.get().delete(objectId);
     }
 
@@ -150,31 +143,30 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
 
     @Override
     public void putAll(Iterator<? extends RevObject> objects) {
+        checkWritable();
         subject.get().putAll(objects);
     }
 
     @Override
     public void putAll(Iterator<? extends RevObject> objects, BulkOpListener listener) {
+        checkWritable();
         subject.get().putAll(objects, listener);
     }
 
     @Override
     public long deleteAll(Iterator<ObjectId> ids) {
-        return deleteAll(ids);
+        checkWritable();
+        return subject.get().deleteAll(ids);
     }
 
     @Override
     public long deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
+        checkWritable();
         return subject.get().deleteAll(ids, listener);
     }
 
     @Override
     public String toString() {
         return String.format("%s[%s]", getClass().getSimpleName(), subject);
-    }
-
-    @Override
-    public BlobStore getBlobStore() {
-        return subject.get().getBlobStore();
     }
 }

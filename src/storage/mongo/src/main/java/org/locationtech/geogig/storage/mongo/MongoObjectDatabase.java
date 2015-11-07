@@ -471,4 +471,9 @@ public class MongoObjectDatabase implements ObjectDatabase {
         return String.format("%s[db: %s, collection: %s]", getClass().getSimpleName(),
                 db == null ? "<unset>" : db, collectionName);
     }
+
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
 }

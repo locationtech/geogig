@@ -52,15 +52,7 @@ class MapdbConflictsDatabase implements ConflictsDatabase {
         conflicts = db.treeMapCreate("conflicts").keySerializer(keySerializer).makeOrGet();
     }
 
-    // TODO when will close() be called? Only on shutdown of the JVM or at other times too (and
-    // reopened later?)
     public synchronized void close() {
-        if (conflicts != null) {
-            if (!db.isClosed()) {
-                db.commit();
-                db.close();
-            }
-        }
         conflicts = null;
     }
 

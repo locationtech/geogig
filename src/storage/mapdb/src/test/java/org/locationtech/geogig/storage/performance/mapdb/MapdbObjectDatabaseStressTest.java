@@ -19,7 +19,7 @@ public class MapdbObjectDatabaseStressTest extends ObjectDatabaseStressTest {
     @Override
     protected MapdbObjectDatabase createDb(Platform platform, ConfigDatabase config) {
 
-        return new MapdbObjectDatabase(config, platform);
+        return new MapdbObjectDatabase(config, platform, null);
     }
 
 }

@@ -25,6 +25,8 @@ public interface ObjectDatabase extends ObjectStore {
      */
     public void configure() throws RepositoryConnectionException;
 
+    public boolean isReadOnly();
+
     /**
      * Verify the configuration before opening the database.
      */

@@ -30,6 +30,7 @@ import javax.sql.DataSource;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -61,21 +62,33 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
 
     private FileBlobStore blobStore;
 
+    private final boolean readOnly;
+
     @Inject
-    public XerialObjectDatabase(ConfigDatabase configdb, Platform platform) {
-        this(configdb, platform, "objects");
+    public XerialObjectDatabase(ConfigDatabase configdb, Platform platform, Hints hints) {
+        this(configdb, platform, "objects", readOnly(hints));
     }
 
-    public XerialObjectDatabase(ConfigDatabase configdb, Platform platform, String dbName) {
+    private static boolean readOnly(Hints hints) {
+        return hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
+    }
+
+    public XerialObjectDatabase(final ConfigDatabase configdb, final Platform platform,
+            final String dbName, final boolean readOnly) {
         super(configdb, platform);
         this.dbName = dbName;
-        // File db = new File(new File(platform.pwd(), ".geogig"), name + ".db");
-        // dataSource = Xerial.newDataSource(db);
+        this.readOnly = readOnly;
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return false;
     }
 
     @Override
     protected DataSource connect(File geogigDir) {
-        return Xerial.newDataSource(new File(geogigDir, dbName + ".db"));
+        File file = new File(geogigDir, dbName + ".db");
+        return Xerial.newDataSource(file, readOnly);
     }
 
     @Override

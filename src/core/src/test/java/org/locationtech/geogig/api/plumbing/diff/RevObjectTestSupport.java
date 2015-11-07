@@ -16,15 +16,21 @@ import org.locationtech.geogig.api.DefaultPlatform;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.api.RevFeature;
+import org.locationtech.geogig.api.RevFeatureImpl;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.repository.RevTreeBuilder2;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.util.concurrent.FakeTimeLimiter;
 import com.google.common.util.concurrent.MoreExecutors;
 
-public class TreeTestSupport {
+public class RevObjectTestSupport {
 
     public static RevTree createTreesTree(ObjectDatabase source, int numSubTrees,
             int featuresPerSubtre, ObjectId metadataId) {
@@ -119,4 +125,19 @@ public class TreeTestSupport {
         return ref;
     }
 
+    public RevFeature feature(int fakeIdIndex, Object... rawValues) {
+        ObjectId id = ObjectId.forString(String.valueOf(fakeIdIndex));
+        return feature(id, rawValues);
+    }
+
+    public RevFeature feature(ObjectId id, Object... rawValues) {
+
+        ImmutableList<Optional<Object>> values;
+        Builder<Optional<Object>> builder = ImmutableList.builder();
+        for (int i = 0; rawValues != null && i < rawValues.length; i++) {
+            builder.add(Optional.fromNullable(rawValues[i]));
+        }
+        values = builder.build();
+        return new RevFeatureImpl(id, values);
+    }
 }

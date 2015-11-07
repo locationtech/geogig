@@ -14,8 +14,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.createFeaturesTreeBuilder;
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.createTreesTreeBuilder;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createFeaturesTreeBuilder;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createTreesTreeBuilder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -174,7 +174,7 @@ public class PostOrderDiffWalkTest {
     }
 
     public static NodeRef featureNodeRef(String namePrefix, int index) {
-        Node node = TreeTestSupport.featureNode(namePrefix, index, false);
+        Node node = RevObjectTestSupport.featureNode(namePrefix, index, false);
         return NodeRef.create(NodeRef.ROOT, node);
     }
 

@@ -146,6 +146,11 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     @Override
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    @Override
     public synchronized void close() {
         if (env == null) {
             LOGGER.trace("Database already closed.");
@@ -339,7 +344,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     public boolean exists(final ObjectId id) {
         checkOpen();
 
-        Preconditions.checkNotNull(id, "id");
+        Preconditions.checkNotNull(id, "argument id is null");
 
         DatabaseEntry key = new DatabaseEntry(id.getRawValue());
         DatabaseEntry data = new DatabaseEntry();
@@ -356,7 +361,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     protected InputStream getRawInternal(final ObjectId id, final boolean failIfNotFound) {
         checkOpen();
 
-        Preconditions.checkNotNull(id, "id");
+        Preconditions.checkNotNull(id, "id is null");
         DatabaseEntry key = new DatabaseEntry(id.getRawValue());
         DatabaseEntry data = new DatabaseEntry();
 
@@ -377,8 +382,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public void putAll(final Iterator<? extends RevObject> objects, final BulkOpListener listener) {
-        checkNotNull(objects);
-        checkNotNull(listener);
+        checkNotNull(objects, "objects is null");
+        checkNotNull(listener, "listener is null");
         checkWritable();
 
         if (!objects.hasNext()) {
@@ -650,6 +655,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public boolean delete(final ObjectId id) {
+        Preconditions.checkNotNull(id, "argument id is null");
         checkWritable();
         final byte[] rawKey = id.getRawValue();
         final DatabaseEntry key = new DatabaseEntry(rawKey);
@@ -689,6 +695,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public long deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
+        Preconditions.checkNotNull(ids, "argument ids is null");
+        Preconditions.checkNotNull(listener, "argument listener is null");
         checkWritable();
 
         long count = 0;
@@ -739,7 +747,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final BulkOpListener listener) {
-        Preconditions.checkNotNull(ids, "ids");
+        Preconditions.checkNotNull(ids, "ids is null");
+        Preconditions.checkNotNull(listener, "listener is null");
         checkOpen();
 
         return new CursorRevObjectIterator(ids.iterator(), listener);
@@ -891,7 +900,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     public void checkWritable() {
         checkOpen();
         if (readOnly) {
-            throw new UnsupportedOperationException(envName + " is read only.");
+            throw new IllegalStateException(envName + " is read only.");
         }
     }
 

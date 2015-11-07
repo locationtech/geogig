@@ -13,10 +13,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.createFeaturesTree;
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.createFeaturesTreeBuilder;
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.createLargeFeaturesTree;
-import static org.locationtech.geogig.api.plumbing.diff.TreeTestSupport.createTreesTree;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createFeaturesTree;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createFeaturesTreeBuilder;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createLargeFeaturesTree;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createTreesTree;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
@@ -205,7 +205,7 @@ public class PreOrderDiffWalkTest {
     private NodeRef featureNodeRef(String namePrefix, int index) {
         boolean randomIds = false;
         return NodeRef.create(NodeRef.ROOT,
-                TreeTestSupport.featureNode(namePrefix, index, randomIds));
+                RevObjectTestSupport.featureNode(namePrefix, index, randomIds));
     }
 
     @Test

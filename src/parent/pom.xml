@@ -571,7 +571,6 @@
    <module>../core</module>
    <module>../storage</module>
    <module>../osm</module>
-   <module>../metrics</module>
    <module>../cli</module>
    <module>../cli-app</module>
    <module>../geotools</module>

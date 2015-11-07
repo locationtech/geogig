@@ -236,11 +236,13 @@ public class MapdbObjectStore implements ObjectStore {
     public <T extends RevObject> T get(ObjectId id, Class<T> clazz) {
         checkNotNull(id, "argument id is null");
         checkNotNull(clazz, "argument clazz is null");
-        try {
-            return clazz.cast(get(id));
-        } catch (ClassCastException e) {
-            throw new IllegalArgumentException(e);
+        RevObject o = get(id);
+        if (!clazz.isInstance(o)) {
+            throw new IllegalArgumentException(
+                    String.format("object %s does not exist as a %s (%s)", id,
+                            clazz.getSimpleName(), o.getType()));
         }
+        return clazz.cast(o);
     }
 
     @Override
@@ -255,11 +257,11 @@ public class MapdbObjectStore implements ObjectStore {
     @Override
     public <T extends RevObject> T getIfPresent(ObjectId id, Class<T> clazz) {
         checkNotNull(clazz, "argument clazz is null");
-        try {
-            return clazz.cast(getIfPresent(id));
-        } catch (ClassCastException e) {
-            throw new IllegalArgumentException(e);
+        RevObject o = getIfPresent(id);
+        if (o == null || !clazz.isInstance(o)) {
+            return null;
         }
+        return clazz.cast(o);
     }
 
     @Override

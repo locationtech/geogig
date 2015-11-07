@@ -342,7 +342,7 @@ public abstract class ObjectStoreConformanceTest {
             db.get(o.getId(), RevTree.class);
             fail("expected IAE on wrong type expectation");
         } catch (IllegalArgumentException e) {
-            assertTrue(e.getCause() instanceof ClassCastException);
+            assertTrue(e.getMessage().contains("does not exist"));
         }
     }
 
@@ -424,12 +424,7 @@ public abstract class ObjectStoreConformanceTest {
 
         assertEquals(RevTree.EMPTY, db.getIfPresent(RevTree.EMPTY_TREE_ID, RevTree.class));
 
-        try {
-            db.getIfPresent(RevTree.EMPTY_TREE_ID, RevTag.class);
-            fail("Expected IAE on wrong expected type");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getCause() instanceof ClassCastException);
-        }
+        assertNull(db.getIfPresent(RevTree.EMPTY_TREE_ID, RevTag.class));
     }
 
     @Test

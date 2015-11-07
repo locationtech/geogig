@@ -121,10 +121,14 @@ public abstract class AbstractObjectStore implements ObjectStore {
         checkNotNull(clazz, "argument class is null");
         checkState(isOpen(), "db is closed");
 
+        RevObject obj = null;
         try {
-            return clazz.cast(get(id, true));
+            obj = get(id, true);
+            return clazz.cast(obj);
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(String.format(
+                    "object %s does not exist as a %s (%s)", id, clazz.getSimpleName(),
+                    obj.getType()));
         }
     }
 
@@ -137,7 +141,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
         try {
             return clazz.cast(get(id, false));
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException(e);
+            return null;
         }
 
     }

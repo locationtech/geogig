@@ -76,9 +76,8 @@ public interface ObjectStore extends Closeable {
     /**
      * Reads an object with the given {@link ObjectId id} out of the database.
      * 
-     * @return the object found, or {@code null} if no object is found
-     * @throws IllegalArgumentException if the object is found but is not of the required
-     *         {@code type}
+     * @return the object found, or {@code null} if no object is found for the given id and type
+     *         (note the object may exist and be of another type)
      */
     public @Nullable <T extends RevObject> T getIfPresent(ObjectId id, Class<T> type)
             throws IllegalArgumentException;

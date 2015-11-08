@@ -149,9 +149,9 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                 "Cannot continue and abort at the same time");
 
         // count staged and unstaged changes
-        long staged = index().countStaged(null).count();
-        long unstaged = workingTree().countUnstaged(null).count();
-        Preconditions.checkState((staged == 0 && unstaged == 0) || abort || continueRevert,
+        final boolean indexClean = index().isClean();
+        final boolean workTreeClean = workingTree().isClean();
+        Preconditions.checkState((indexClean && workTreeClean) || abort || continueRevert,
                 "You must have a clean working tree and index to perform a revert.");
 
         getProgressListener().started();

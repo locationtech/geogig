@@ -1,4 +1,13 @@
-package org.locationtech.geogig.geotools.cli.geopkg.interchange;
+/* Copyright (c) 2015 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Gabriel Roldan (Boundless) - initial implementation
+ */
+package org.locationtech.geogig.geotools.geopkg;
 
 import static java.lang.String.format;
 
@@ -8,7 +17,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.locationtech.geogig.api.ObjectId;
@@ -43,11 +54,11 @@ class GeogigMetadata {
 
     private static final String AUDIT_METADATA_TABLE = "geogig_audited_tables";
 
-    private static final int AUDIT_OP_INSERT = 1;
+    static final int AUDIT_OP_INSERT = 1;
 
-    private static final int AUDIT_OP_UPDATE = 2;
+    static final int AUDIT_OP_UPDATE = 2;
 
-    private static final int AUDIT_OP_DELETE = 3;
+    static final int AUDIT_OP_DELETE = 3;
 
     private Connection cx;
 
@@ -92,6 +103,30 @@ class GeogigMetadata {
         }
     }
 
+    public List<AuditTable> getAuditTables() throws SQLException {
+        final String sql = format(
+                "SELECT table_name, mapped_path, audit_table, root_tree_id FROM %s",
+                AUDIT_METADATA_TABLE);
+
+        List<AuditTable> tables = new ArrayList<>();
+        try (Statement st = cx.createStatement()) {
+            try (ResultSet rs = st.executeQuery(sql)) {
+                while (rs.next()) {
+                    String tableName = rs.getString(1);
+                    String featureTreePath = rs.getString(2);
+                    String auditTable = rs.getString(3);
+                    String rootId = rs.getString(4);
+                    ObjectId rootTreeId = ObjectId.valueOf(rootId);
+
+                    AuditTable tableInfo = new AuditTable(tableName, featureTreePath, auditTable,
+                            rootTreeId);
+                    tables.add(tableInfo);
+                }
+            }
+        }
+        return tables;
+    }
+
     public void createAudit(final String tableName, final String mappedPath,
             final ObjectId rootTreeId) throws SQLException {
         cx.setAutoCommit(false);
@@ -129,7 +164,7 @@ class GeogigMetadata {
             String colDef = format("\"%s\" %s, ", colName, colType);
             sql.append(colDef);
         }
-        sql.append("audit_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, audit_op INTEGER)");
+        sql.append("audit_timestamp INTEGER DEFAULT CURRENT_TIMESTAMP, audit_op INTEGER)");
 
         try (Statement st = cx.createStatement()) {
             st.execute(log(sql.toString()));

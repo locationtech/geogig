@@ -42,7 +42,7 @@ public class OracleListTest extends Assert {
     @Before
     public void setUp() throws Exception {
         Console consoleReader = new Console().disableAnsi();
-        cli = new GeogigCLI(consoleReader);
+        cli = spy(new GeogigCLI(consoleReader));
 
         setUpGeogig(cli);
     }
@@ -100,22 +100,17 @@ public class OracleListTest extends Assert {
 
     @Test
     public void testListException() throws Exception {
-        Console consoleReader = new Console().disableAnsi();
-        GeogigCLI mockCli = spy(new GeogigCLI(consoleReader));
-
-        setUpGeogig(mockCli);
-
-        when(mockCli.getConsole()).thenThrow(new MockitoException("Exception"));
+        when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
         OracleList listCommand = new OracleList();
         listCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
-        listCommand.run(mockCli);
+        listCommand.run(cli);
     }
 
     private void setUpGeogig(GeogigCLI cli) throws Exception {
         final File userhome = tempFolder.newFolder("mockUserHomeDir");
         final File workingDir = tempFolder.newFolder("mockWorkingDir");
-        tempFolder.newFolder("mockWorkingDir/.geogig");
+        tempFolder.newFolder("mockWorkingDir", ".geogig");
 
         final Platform platform = mock(Platform.class);
         when(platform.pwd()).thenReturn(workingDir);

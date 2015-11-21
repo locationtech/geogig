@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -66,7 +67,7 @@ public abstract class ObjectStoreConformanceTest {
     private RevObjectTestSupport objects = new RevObjectTestSupport();
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         File root = folder.getRoot();
         folder.newFolder(".geogig");
         File home = folder.newFolder("home");

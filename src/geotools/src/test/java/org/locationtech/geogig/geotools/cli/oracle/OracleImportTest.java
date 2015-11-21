@@ -105,11 +105,9 @@ public class OracleImportTest {
 
     @Test
     public void testImportException() throws Exception {
-        Console consoleReader = new Console().disableAnsi();
-        GeogigCLI mockCli = spy(new GeogigCLI(consoleReader));
 
-        setUpGeogig(mockCli);
-
+        GeogigCLI mockCli = spy(cli);
+        
         when(mockCli.getConsole()).thenThrow(new MockitoException("Exception"));
         OracleImport importCommand = new OracleImport();
         importCommand.all = true;
@@ -168,7 +166,7 @@ public class OracleImportTest {
     private void setUpGeogig(GeogigCLI cli) throws Exception {
         final File userhome = tempFolder.newFolder("mockUserHomeDir");
         final File workingDir = tempFolder.newFolder("mockWorkingDir");
-        tempFolder.newFolder("mockWorkingDir/.geogig");
+        tempFolder.newFolder("mockWorkingDir", ".geogig");
 
         final Platform platform = mock(Platform.class);
         when(platform.pwd()).thenReturn(workingDir);

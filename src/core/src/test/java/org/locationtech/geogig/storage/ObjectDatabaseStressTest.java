@@ -59,7 +59,7 @@ public abstract class ObjectDatabaseStressTest {
     ObjectDatabase db;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         File workingDirectory = tmp.getRoot();
         tmp.newFolder(".geogig");
         Platform platform = new TestPlatform(workingDirectory);

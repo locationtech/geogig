@@ -39,12 +39,14 @@ public class OracleDescribeTest extends Assert {
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
+    private Console consoleReader;
+
     private GeogigCLI cli;
 
     @Before
     public void setUp() throws Exception {
-        Console consoleReader = new Console().disableAnsi();
-        cli = new GeogigCLI(consoleReader);
+        consoleReader = spy(new Console().disableAnsi());
+        cli = spy(new GeogigCLI(consoleReader));
 
         setUpGeogig(cli);
     }
@@ -100,39 +102,32 @@ public class OracleDescribeTest extends Assert {
 
     @Test
     public void testDescribeException() throws Exception {
-        Console consoleReader = new Console().disableAnsi();
-        GeogigCLI mockCli = spy(new GeogigCLI(consoleReader));
+        when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
 
-        setUpGeogig(mockCli);
-
-        when(mockCli.getConsole()).thenThrow(new MockitoException("Exception"));
         OracleDescribe describeCommand = new OracleDescribe();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
-        describeCommand.run(mockCli);
+        describeCommand.run(cli);
     }
 
     @Test
     public void testFlushException() throws Exception {
-        Console consoleReader = spy(new Console().disableAnsi());
-        GeogigCLI testCli = new GeogigCLI(consoleReader);
 
-        setUpGeogig(testCli);
-
+        Console consoleReader = cli.getConsole();
         doThrow(new IOException("Exception")).when(consoleReader).flush();
 
         OracleDescribe describeCommand = new OracleDescribe();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(Exception.class);
-        describeCommand.run(testCli);
+        describeCommand.run(cli);
     }
 
     private void setUpGeogig(GeogigCLI cli) throws Exception {
         final File userhome = tempFolder.newFolder("mockUserHomeDir");
         final File workingDir = tempFolder.newFolder("mockWorkingDir");
-        tempFolder.newFolder("mockWorkingDir/.geogig");
+        tempFolder.newFolder("mockWorkingDir", ".geogig");
 
         final Platform platform = mock(Platform.class);
         when(platform.pwd()).thenReturn(workingDir);

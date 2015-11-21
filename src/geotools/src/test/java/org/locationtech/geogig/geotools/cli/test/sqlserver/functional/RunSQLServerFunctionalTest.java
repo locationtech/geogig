@@ -11,7 +11,8 @@ package org.locationtech.geogig.geotools.cli.test.sqlserver.functional;
 
 import org.junit.runner.RunWith;
 
-import cucumber.junit.Cucumber;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
 
 /**
  * Single cucumber test runner. Its sole purpose is to serve as an entry point for junit. Step
@@ -19,7 +20,7 @@ import cucumber.junit.Cucumber;
  * 
  */
 @RunWith(Cucumber.class)
-@Cucumber.Options(monochrome = true, format = { "pretty", "html:target/cucumber-report" }, strict = true, //
+@CucumberOptions(monochrome = true, format = { "pretty", "html:target/cucumber-report" }, strict = true, //
 // the glue option tells cucumber where to look for step definitions
 glue = { "org.locationtech.geogig.cli.test.functional",
         "org.locationtech.geogig.geotools.cli.test.sqlserver.functional" })

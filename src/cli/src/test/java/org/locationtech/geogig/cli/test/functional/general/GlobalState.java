@@ -88,8 +88,14 @@ public class GlobalState {
     public static String repositoryURI;
 
     public static void setUpDirectories() throws IOException {
-        File homeDirectory = tempFolder.newFolder("fakeHomeDir").getCanonicalFile();
-        File currentDirectory = tempFolder.newFolder("testrepo").getCanonicalFile();
+        File homeDirectory = new File(tempFolder.getRoot(), "fakeHomeDir");
+        File currentDirectory = new File(tempFolder.getRoot(), "testrepo");
+        if (!homeDirectory.exists()) {
+            homeDirectory.mkdir();
+        }
+        if (!currentDirectory.exists()) {
+            currentDirectory.mkdir();
+        }
         if (GlobalState.platform == null) {
             GlobalState.platform = new TestPlatform(currentDirectory, homeDirectory);
         } else {

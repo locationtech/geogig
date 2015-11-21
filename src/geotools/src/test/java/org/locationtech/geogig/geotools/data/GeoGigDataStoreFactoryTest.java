@@ -100,7 +100,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testCreateDataStoreNotARepositoryDir() {
+    public void testCreateDataStoreNotARepositoryDir() throws IOException {
         Map<String, Serializable> params;
 
         File f = repositoryTempFolder.newFolder("someDir");

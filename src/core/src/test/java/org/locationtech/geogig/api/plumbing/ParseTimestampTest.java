@@ -10,6 +10,7 @@
 package org.locationtech.geogig.api.plumbing;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -58,7 +59,7 @@ public class ParseTimestampTest extends Assert {
     private GeoGIG fakeGeogig;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
 
         File workingDirectory = tempFolder.newFolder("mockWorkingDir");
         Platform testPlatform = new TestPlatform(workingDirectory) {

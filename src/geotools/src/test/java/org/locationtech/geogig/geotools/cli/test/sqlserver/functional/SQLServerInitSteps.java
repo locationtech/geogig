@@ -10,7 +10,7 @@
 package org.locationtech.geogig.geotools.cli.test.sqlserver.functional;
 
 import static org.locationtech.geogig.cli.test.functional.general.GlobalState.runCommand;
-import cucumber.annotation.en.When;
+import cucumber.api.java.en.When;
 import cucumber.runtime.java.StepDefAnnotation;
 
 @StepDefAnnotation

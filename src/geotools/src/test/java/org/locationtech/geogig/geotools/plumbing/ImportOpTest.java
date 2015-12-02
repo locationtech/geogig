@@ -45,6 +45,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -67,7 +68,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testNullTableNotAll() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(false);
         exception.expect(GeoToolsOpException.class);
         importOp.call();
@@ -78,7 +79,7 @@ public class ImportOpTest extends RepositoryTestCase {
         ImportOp importOp = geogig.command(ImportOp.class);
         importOp.setTable("");
         importOp.setAll(false);
-        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
         exception.expect(GeoToolsOpException.class);
         importOp.call();
     }
@@ -88,7 +89,7 @@ public class ImportOpTest extends RepositoryTestCase {
         ImportOp importOp = geogig.command(ImportOp.class);
         importOp.setTable("");
         importOp.setAll(true);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.call();
     }
 
@@ -97,7 +98,7 @@ public class ImportOpTest extends RepositoryTestCase {
         ImportOp importOp = geogig.command(ImportOp.class);
         importOp.setTable("table1");
         importOp.setAll(true);
-        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
         exception.expect(GeoToolsOpException.class);
         importOp.call();
     }
@@ -105,7 +106,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testTableNotFound() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(false);
         importOp.setTable("table1");
         exception.expect(GeoToolsOpException.class);
@@ -115,7 +116,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testNoFeaturesFound() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(true);
         exception.expect(GeoToolsOpException.class);
         importOp.call();
@@ -124,7 +125,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testTypeNameException() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createFactoryWithGetNamesException().createDataStore(null));
+        importOp.setDataStore(TestHelper.createFactoryWithGetNamesException().createDataStore(ImmutableMap.of()));
         importOp.setAll(false);
         importOp.setTable("table1");
         exception.expect(GeoToolsOpException.class);
@@ -135,7 +136,7 @@ public class ImportOpTest extends RepositoryTestCase {
     public void testGetFeatureSourceException() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
         importOp.setDataStore(TestHelper.createFactoryWithGetFeatureSourceException()
-                .createDataStore(null));
+                .createDataStore(ImmutableMap.of()));
         importOp.setAll(false);
         importOp.setTable("table1");
         exception.expect(GeoToolsOpException.class);
@@ -145,7 +146,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testImportTable() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(false);
         importOp.setTable("table1");
 
@@ -163,7 +164,7 @@ public class ImportOpTest extends RepositoryTestCase {
     public void testImportTableWithNoFeatures() throws Exception {
 
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(false);
         importOp.setTable("table4");
         importOp.call();
@@ -177,7 +178,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testImportAll() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(true);
 
         RevTree newWorkingTree = importOp.call();
@@ -197,7 +198,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testImportAllWithDifferentFeatureTypesAndDestPath() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(true);
         importOp.setDestinationPath("dest");
         importOp.setAdaptToDefaultFeatureType(false);
@@ -232,7 +233,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 new Object[] { gf.createPoint(new Coordinate(0, 0)), "feature0" }, "feature");
         geogig.getRepository().workingTree().insert("dest", feature);
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(true);
         importOp.setOverwrite(false);
         importOp.setDestinationPath("dest");
@@ -257,7 +258,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testAddUsingOriginalFeatureType() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setTable("table1");
         importOp.call();
         importOp.setTable("table2");
@@ -279,7 +280,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testAlter() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setTable("table1");
         importOp.call();
         importOp.setTable("table2");
@@ -312,7 +313,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testImportWithOverriddenGeomName() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setTable("table1");
         importOp.setGeometryNameOverride("my_geom_name");
         importOp.call();
@@ -331,7 +332,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testImportWithOverriddenGeomNameAlredyInUse() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setTable("table1");
         importOp.setGeometryNameOverride("label");
         try {
@@ -345,7 +346,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testImportWithFid() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setTable("table3");
         importOp.setDestinationPath("table3");
         importOp.setFidAttribute("number");
@@ -363,7 +364,7 @@ public class ImportOpTest extends RepositoryTestCase {
         doThrow(new RuntimeException("Exception")).when(workTree).delete(any(String.class));
         ImportOp importOp = new ImportOp();
         importOp.setContext(cmdl);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(true);
         exception.expect(GeoToolsOpException.class);
         importOp.call();
@@ -372,7 +373,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testAdaptFeatureType() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setTable("shpLikeTable");
         importOp.setDestinationPath("table");
         importOp.call();
@@ -411,7 +412,7 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testCannotAdaptFeatureTypeIfCRSChanges() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(null));
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setTable("GeoJsonLikeTable");
         importOp.setDestinationPath("table");
         importOp.call();

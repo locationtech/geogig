@@ -10,6 +10,7 @@
 package org.locationtech.geogig.repository;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
@@ -46,7 +47,7 @@ public abstract class AbstractNodeIndexTest extends Assert {
     private NodeIndex index;
 
     @Before
-    public void before() {
+    public void before() throws IOException {
         tempFolder.newFolder(".geogig");
         File workingDirectory = tempFolder.getRoot();
         Platform platform = new TestPlatform(workingDirectory);

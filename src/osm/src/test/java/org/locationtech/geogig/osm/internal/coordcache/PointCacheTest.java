@@ -11,6 +11,7 @@ package org.locationtech.geogig.osm.internal.coordcache;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +45,7 @@ public abstract class PointCacheTest extends Assert {
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Before
-    public void before() {
+    public void before() throws IOException {
         tmpFolder.newFolder(".geogig");
         TestPlatform platform = new TestPlatform(tmpFolder.getRoot());
         platform.setUserHome(tmpFolder.newFolder("fakeHome"));
@@ -156,6 +157,7 @@ public abstract class PointCacheTest extends Assert {
         testLargeSequencesNonSequentialQueries(1000 * 1000);
     }
 
+    @Ignore
     @Test
     public void testLargeSequencesNonSequentialQueries10M() {
         testLargeSequencesNonSequentialQueries(10 * 1000 * 1000);
@@ -214,8 +216,6 @@ public abstract class PointCacheTest extends Assert {
     }
 
     private void testLargeSequencesNonSequentialQueries(final int numNodes) {
-        after();
-        before();
         List<Long> nodeIds = new ArrayList<Long>(numNodes / 6);
         Stopwatch sw = Stopwatch.createStarted();
         for (int n = 0; n < numNodes; n++) {

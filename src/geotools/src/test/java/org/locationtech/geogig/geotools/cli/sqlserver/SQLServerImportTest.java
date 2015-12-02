@@ -40,8 +40,8 @@ public class SQLServerImportTest {
 
     @Before
     public void setUp() throws Exception {
-        Console consoleReader = new Console().disableAnsi();
-        cli = new GeogigCLI(consoleReader);
+        Console consoleReader = spy(new Console().disableAnsi());
+        cli = spy(new GeogigCLI(consoleReader));
 
         setUpGeogig(cli);
     }
@@ -106,17 +106,12 @@ public class SQLServerImportTest {
 
     @Test
     public void testImportException() throws Exception {
-        Console consoleReader = new Console().disableAnsi();
-        GeogigCLI mockCli = spy(new GeogigCLI(consoleReader));
-
-        setUpGeogig(mockCli);
-
-        when(mockCli.getConsole()).thenThrow(new MockitoException("Exception"));
+        when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
         SQLServerImport importCommand = new SQLServerImport();
         importCommand.all = true;
         importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
-        importCommand.run(mockCli);
+        importCommand.run(cli);
     }
 
     @Test
@@ -169,7 +164,7 @@ public class SQLServerImportTest {
     private void setUpGeogig(GeogigCLI cli) throws Exception {
         final File userhome = tempFolder.newFolder("mockUserHomeDir");
         final File workingDir = tempFolder.newFolder("mockWorkingDir");
-        tempFolder.newFolder("mockWorkingDir/.geogig");
+        tempFolder.newFolder("mockWorkingDir", ".geogig");
 
         final Platform platform = mock(Platform.class);
         when(platform.pwd()).thenReturn(workingDir);

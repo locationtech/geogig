@@ -42,6 +42,7 @@ public class GeopkgCommandProxy implements CLICommandExtension {
         commander.addCommand("list", new GeopkgList());
         commander.addCommand("describe", new GeopkgDescribe());
         commander.addCommand("export", new GeopkgExport());
+        commander.addCommand("pull", new GeopkgPull());
         return commander;
     }
 }

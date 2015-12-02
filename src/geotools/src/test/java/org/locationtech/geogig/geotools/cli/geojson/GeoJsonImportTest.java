@@ -42,7 +42,7 @@ public class GeoJsonImportTest extends Assert {
     @Before
     public void setUp() throws Exception {
         Console consoleReader = new Console().disableAnsi();
-        cli = new GeogigCLI(consoleReader);
+        cli = spy(new GeogigCLI(consoleReader));
 
         setUpGeogig(cli);
     }
@@ -103,23 +103,18 @@ public class GeoJsonImportTest extends Assert {
 
     @Test
     public void testImportException() throws Exception {
-        Console consoleReader = new Console().disableAnsi();
-        GeogigCLI mockCli = spy(new GeogigCLI(consoleReader));
-
-        setUpGeogig(mockCli);
-
-        when(mockCli.getConsole()).thenThrow(new MockitoException("Exception"));
+        when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
         GeoJsonImport importCommand = new GeoJsonImport();
         importCommand.geoJSONList = new ArrayList<String>();
         importCommand.geoJSONList.add(GeoJsonImport.class.getResource("sample.geojson").getFile());
         exception.expect(MockitoException.class);
-        importCommand.run(mockCli);
+        importCommand.run(cli);
     }
 
     private void setUpGeogig(GeogigCLI cli) throws Exception {
         final File userhome = tempFolder.newFolder("mockUserHomeDir");
         final File workingDir = tempFolder.newFolder("mockWorkingDir");
-        tempFolder.newFolder("mockWorkingDir/.geogig");
+        tempFolder.newFolder("mockWorkingDir", ".geogig");
 
         final Platform platform = mock(Platform.class);
         when(platform.pwd()).thenReturn(workingDir);

@@ -11,7 +11,8 @@ package org.locationtech.geogig.cli.test.functional.general;
 
 import org.junit.runner.RunWith;
 
-import cucumber.junit.Cucumber;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
 
 /**
  * Single cucumber test runner. Its sole purpose is to serve as an entry point for junit. Step
@@ -22,7 +23,7 @@ import cucumber.junit.Cucumber;
 // @Cucumber.Options(features = { "src/test/resources/org/locationtech/geogig/cli/test/functional/Branch.feature"
 // }, monochrome = true, format = {
 // "pretty", "html:target/cucumber-report" }, strict = true)
-@Cucumber.Options(monochrome = true, format = { "pretty", "html:target/cucumber-report" }, strict = true)
+@CucumberOptions(monochrome = true, format = { "pretty", "html:target/cucumber-report" }, strict = true)
 @RunWith(Cucumber.class)
 public class RunFunctionalTest {
 }

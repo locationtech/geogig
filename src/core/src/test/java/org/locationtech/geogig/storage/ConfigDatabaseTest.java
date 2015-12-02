@@ -16,6 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
     protected C config;
 
     @Before
-    public final void setUp() {
+    public final void setUp() throws IOException {
         final File userhome = tempFolder.newFolder("mockUserHomeDir");
 
         final File workingDir = tempFolder.newFolder("mockWorkingDir");

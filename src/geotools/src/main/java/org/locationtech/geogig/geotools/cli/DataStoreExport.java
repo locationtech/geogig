@@ -10,6 +10,7 @@
 package org.locationtech.geogig.geotools.cli;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,7 +20,6 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeImpl;
-import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeatureType;
@@ -39,6 +39,7 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
+import org.locationtech.geogig.repository.Repository;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 
@@ -54,8 +55,8 @@ import com.google.common.base.Optional;
 @ReadOnly
 public abstract class DataStoreExport extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<path> <table>", arity = 2)
-    public List<String> args;
+    @Parameter(description = "[<commit-ish>:]<path> <table> (define source feature type tree and target table name)", arity = 2)
+    public List<String> args = new ArrayList<>();
 
     @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output table")
     public boolean overwrite;
@@ -76,27 +77,29 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
      * Executes the export command using the provided options.
      */
     @Override
-    protected final void runInternal(GeogigCLI cli) throws IOException {
+    protected void runInternal(GeogigCLI cli) throws IOException {
         if (args.isEmpty()) {
             printUsage(cli);
             throw new CommandFailedException();
         }
 
-        String path = args.get(0);
-        String tableName = args.get(1);
+        final String sourceTreeIsh = args.get(0);
+        final String targetTableName = args.get(1);
 
-        checkParameter(tableName != null && !tableName.isEmpty(), "No table name specified");
+        checkParameter(targetTableName != null && !targetTableName.isEmpty(),
+                "No table name specified");
 
         DataStore dataStore = getDataStore();
         try {
-            exportInternal(cli, path, tableName, dataStore);
+            exportInternal(cli, sourceTreeIsh, targetTableName, dataStore);
         } finally {
             dataStore.dispose();
         }
     }
 
-    private void exportInternal(GeogigCLI cli, String path, String tableName, DataStore dataStore)
-            throws IOException {
+    private void exportInternal(final GeogigCLI cli, final String sourceTreeIsh,
+            final String tableName, final DataStore dataStore) throws IOException {
+
         ObjectId featureTypeId = null;
         if (!Arrays.asList(dataStore.getTypeNames()).contains(tableName)) {
             SimpleFeatureType outputFeatureType;
@@ -115,7 +118,8 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
                 featureTypeId = id.get();
             } else {
                 try {
-                    SimpleFeatureType sft = getFeatureType(path, cli);
+                    final Repository repository = cli.getGeogig().getRepository();
+                    SimpleFeatureType sft = getFeatureType(sourceTreeIsh, repository);
                     outputFeatureType = new SimpleFeatureTypeImpl(new NameImpl(tableName),
                             sft.getAttributeDescriptors(), sft.getGeometryDescriptor(),
                             sft.isAbstract(), sft.getRestrictions(), sft.getSuper(),
@@ -149,7 +153,7 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
             }
         }
         ExportOp op = cli.getGeogig().command(ExportOp.class).setFeatureStore(featureStore)
-                .setPath(path).setFilterFeatureTypeId(featureTypeId).setAlter(alter);
+                .setPath(sourceTreeIsh).setFilterFeatureTypeId(featureTypeId).setAlter(alter);
         if (defaultType) {
             op.exportDefaultFeatureType();
         }
@@ -169,38 +173,45 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
             }
         }
 
-        cli.getConsole().println(path + " exported successfully to " + tableName);
+        cli.getConsole().println(sourceTreeIsh + " exported successfully to " + tableName);
     }
 
-    private SimpleFeatureType getFeatureType(String path, GeogigCLI cli) {
+    private SimpleFeatureType getFeatureType(final String sourceTreeIsh, final Repository repository) {
 
-        checkParameter(path != null, "No path specified.");
+        checkParameter(sourceTreeIsh != null, "No path specified.");
 
-        String refspec;
-        if (path.contains(":")) {
-            refspec = path;
-        } else {
-            refspec = "WORK_HEAD:" + path;
+        final String headTreeish;
+        final String featureTreePath;
+        final Optional<ObjectId> rootTreeId;
+
+        {
+            String refspec;
+            if (sourceTreeIsh.contains(":")) {
+                refspec = sourceTreeIsh;
+            } else {
+                refspec = "WORK_HEAD:" + sourceTreeIsh;
+            }
+
+            checkParameter(!refspec.endsWith(":"), "No path specified.");
+
+            String[] split = refspec.split(":");
+            headTreeish = split[0];
+            featureTreePath = split[1];
+            rootTreeId = repository.command(ResolveTreeish.class).setTreeish(headTreeish).call();
+
+            checkParameter(rootTreeId.isPresent(), "Couldn't resolve '" + refspec
+                    + "' to a treeish object");
+
         }
 
-        checkParameter(!refspec.endsWith(":"), "No path specified.");
+        final RevTree rootTree = repository.getTree(rootTreeId.get());
+        Optional<NodeRef> featureTypeTree = repository.command(FindTreeChild.class)
+                .setChildPath(featureTreePath).setParent(rootTree).call();
 
-        final GeoGIG geogig = cli.getGeogig();
-
-        Optional<ObjectId> rootTreeId = geogig.command(ResolveTreeish.class)
-                .setTreeish(refspec.split(":")[0]).call();
-
-        checkParameter(rootTreeId.isPresent(), "Couldn't resolve '" + refspec
-                + "' to a treeish object");
-
-        RevTree rootTree = geogig.getRepository().getTree(rootTreeId.get());
-        Optional<NodeRef> featureTypeTree = geogig.command(FindTreeChild.class)
-                .setChildPath(refspec.split(":")[1]).setParent(rootTree).call();
-
-        checkParameter(featureTypeTree.isPresent(), "pathspec '" + refspec.split(":")[1]
+        checkParameter(featureTypeTree.isPresent(), "pathspec '" + featureTreePath
                 + "' did not match any valid path");
 
-        Optional<RevObject> revObject = cli.getGeogig().command(RevObjectParse.class)
+        Optional<RevObject> revObject = repository.command(RevObjectParse.class)
                 .setObjectId(featureTypeTree.get().getMetadataId()).call();
         if (revObject.isPresent() && revObject.get() instanceof RevFeatureType) {
             RevFeatureType revFeatureType = (RevFeatureType) revObject.get();

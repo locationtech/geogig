@@ -20,7 +20,7 @@ You can (and should) use the above for all GeoGig-related subjects, so other peo
 Testing
 ----------
 
-If you are a user, testing is the best and most simple way of helping us improve GeoGig. Use GeoGig with your own datasets, and if you find something that can be improved or doesn't work as expected, `open a new issue <https://github.com/locationtech/geogig/issues/new>`_. Please, check first that the same problem has not been reported by another user, to avoid duplicated issues. 
+If you are a user, testing is the best and most simple way of helping us improve GeoGig. Use GeoGig with your own datasets, and if you find something that can be improved or doesn't work as expected, `open a new issue <https://www.locationtech.org/projects/technology.geogig/developer>`_. Please, check first that the same problem has not been reported by another user, to avoid duplicated issues. 
 
 Documenting
 ------------

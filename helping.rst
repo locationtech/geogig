@@ -41,7 +41,7 @@ If you want to contribute code to the project, you can do it using the GitHub *f
 
 More information on this workflow and how to remotely collaborate in a project like GeoGig can be found at the `GitHub help page <https://help.github.com/categories/63/articles>`_
 
-Issues to help out on are at our `issue tracker <https://github.com/locationtech/geogig/issues>`_.
+Issues to help out on are at our `issue tracker <https://www.locationtech.org/projects/technology.geogig/developer>`_.
 
 In all cases, please let us know about your work in advance. Write to the GeoGig developers list or talk to someone on the IRC channel, so we can better coordinate all efforts.
 

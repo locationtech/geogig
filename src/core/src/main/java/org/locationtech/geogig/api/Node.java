@@ -83,7 +83,14 @@ public abstract class Node implements Bounded, Comparable<Node> {
      */
     @Override
     public int compareTo(Node o) {
-        return name.compareTo(o.getName());
+        int c = name.compareTo(o.getName());
+        if (c == 0) {
+            c = getType().compareTo(o.getType());
+        }
+        if (c == 0) {
+            c = getObjectId().compareTo(o.getObjectId());
+        }
+        return c;
     }
 
     /**

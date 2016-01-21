@@ -9,7 +9,8 @@
  */
 package org.locationtech.geogig.api.plumbing.diff;
 
-import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.*;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createFeaturesTree;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createTreesTree;
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createTreesTreeBuilder;
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.featureNode;
 
@@ -23,6 +24,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator.Strategy;
+import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
 
@@ -64,7 +66,7 @@ public class DepthTreeIteratorTest extends Assert {
         }
         mixedLeafTree = builder.build();
         source.put(mixedLeafTree);
-        
+
         featuresBucketsTree = createFeaturesTree(source, "feature.", 25000);
     }
 
@@ -78,7 +80,7 @@ public class DepthTreeIteratorTest extends Assert {
 
     @Test
     public void testFeaturesBucketsTree() {
-        int numEntries = 2 * RevTree.NORMALIZED_SIZE_LIMIT;
+        int numEntries = 2 * NodePathStorageOrder.normalizedSizeLimit(0);
         RevTree tree = createFeaturesTree(source, "feature.", numEntries);
         assertEquals(numEntries, list(tree, Strategy.FEATURES_ONLY).size());
 
@@ -103,9 +105,10 @@ public class DepthTreeIteratorTest extends Assert {
         assertEquals(10, list(mixedLeafTree, Strategy.TREES_ONLY).size());
         assertEquals(0, list(featuresBucketsTree, Strategy.TREES_ONLY).size());
 
-        int numSubTrees = RevTree.NORMALIZED_SIZE_LIMIT + 1;
-        int featuresPerTree = RevTree.NORMALIZED_SIZE_LIMIT + 1;
-        RevTreeBuilder builder = createTreesTreeBuilder(source, numSubTrees, featuresPerTree, metadataId);
+        int numSubTrees = NodePathStorageOrder.normalizedSizeLimit(0) + 1;
+        int featuresPerTree = NodePathStorageOrder.normalizedSizeLimit(0) + 1;
+        RevTreeBuilder builder = createTreesTreeBuilder(source, numSubTrees, featuresPerTree,
+                metadataId);
         for (int i = 0; i < 25000; i++) {
             builder.put(featureNode("f", i));
         }
@@ -124,9 +127,10 @@ public class DepthTreeIteratorTest extends Assert {
         assertEquals(featuresBucketsTree.size(), list(featuresBucketsTree, Strategy.RECURSIVE)
                 .size());
 
-        int numSubTrees = RevTree.NORMALIZED_SIZE_LIMIT + 1;
-        int featuresPerTree = RevTree.NORMALIZED_SIZE_LIMIT + 1;
-        RevTreeBuilder builder = createTreesTreeBuilder(source, numSubTrees, featuresPerTree, metadataId);
+        int numSubTrees = NodePathStorageOrder.normalizedSizeLimit(0) + 1;
+        int featuresPerTree = NodePathStorageOrder.normalizedSizeLimit(0) + 1;
+        RevTreeBuilder builder = createTreesTreeBuilder(source, numSubTrees, featuresPerTree,
+                metadataId);
         for (int i = 0; i < 25000; i++) {
             builder.put(featureNode("f", i));
         }
@@ -146,9 +150,10 @@ public class DepthTreeIteratorTest extends Assert {
         assertEquals(featuresBucketsTree.size(),
                 list(featuresBucketsTree, Strategy.RECURSIVE_FEATURES_ONLY).size());
 
-        int numSubTrees = RevTree.NORMALIZED_SIZE_LIMIT + 1;
-        int featuresPerTree = RevTree.NORMALIZED_SIZE_LIMIT + 1;
-        RevTreeBuilder builder = createTreesTreeBuilder(source, numSubTrees, featuresPerTree, metadataId);
+        int numSubTrees = NodePathStorageOrder.normalizedSizeLimit(0) + 1;
+        int featuresPerTree = NodePathStorageOrder.normalizedSizeLimit(0) + 1;
+        RevTreeBuilder builder = createTreesTreeBuilder(source, numSubTrees, featuresPerTree,
+                metadataId);
         for (int i = 0; i < 25000; i++) {
             builder.put(featureNode("f", i));
         }
@@ -167,9 +172,10 @@ public class DepthTreeIteratorTest extends Assert {
                 .size());
         assertEquals(0, list(featuresBucketsTree, Strategy.RECURSIVE_TREES_ONLY).size());
 
-        int numSubTrees = RevTree.NORMALIZED_SIZE_LIMIT + 1;
-        int featuresPerTree = RevTree.NORMALIZED_SIZE_LIMIT + 1;
-        RevTreeBuilder builder = createTreesTreeBuilder(source, numSubTrees, featuresPerTree, metadataId);
+        int numSubTrees = NodePathStorageOrder.normalizedSizeLimit(0) + 1;
+        int featuresPerTree = NodePathStorageOrder.normalizedSizeLimit(0) + 1;
+        RevTreeBuilder builder = createTreesTreeBuilder(source, numSubTrees, featuresPerTree,
+                metadataId);
         for (int i = 0; i < 25000; i++) {
             builder.put(featureNode("f", i));
         }

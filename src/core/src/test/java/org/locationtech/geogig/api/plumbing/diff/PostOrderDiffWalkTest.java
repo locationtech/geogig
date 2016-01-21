@@ -34,6 +34,7 @@ import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.PostOrderDiffWalk.Consumer;
 import org.locationtech.geogig.repository.SpatialOps;
+import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
 
@@ -217,10 +218,10 @@ public class PostOrderDiffWalkTest {
 
     @Test
     public void testBucketBucketFlat() {
-        RevTree left = createFeaturesTreeBuilder(leftSource, "f", RevTree.NORMALIZED_SIZE_LIMIT + 1)
-                .build();
+        RevTree left = createFeaturesTreeBuilder(leftSource, "f",
+                NodePathStorageOrder.normalizedSizeLimit(0) + 1).build();
         RevTree right = createFeaturesTreeBuilder(rightSource, "f",
-                RevTree.NORMALIZED_SIZE_LIMIT + 2).build();
+                NodePathStorageOrder.normalizedSizeLimit(0) + 2).build();
         leftSource.put(left);
         rightSource.put(right);
 

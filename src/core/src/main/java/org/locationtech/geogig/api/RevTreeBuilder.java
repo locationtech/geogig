@@ -12,7 +12,6 @@ package org.locationtech.geogig.api;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.locationtech.geogig.api.RevTree.NORMALIZED_SIZE_LIMIT;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -112,8 +111,9 @@ public class RevTreeBuilder {
 
     /**
      * Copy constructor with tree depth
-     * @param obStore {@link org.locationtech.geogig.storage.ObjectStore ObjectStore} with which
-     * to initialize this RevTreeBuilder.
+     * 
+     * @param obStore {@link org.locationtech.geogig.storage.ObjectStore ObjectStore} with which to
+     *        initialize this RevTreeBuilder.
      * @param copy {@link org.locationtech.geogig.api.RevTree RevTree} to copy.
      */
     public RevTreeBuilder(ObjectStore obStore, @Nullable final RevTree copy) {
@@ -123,8 +123,9 @@ public class RevTreeBuilder {
     /**
      * Copy constructor
      */
-    private RevTreeBuilder(final ObjectStore obSotre, @Nullable final RevTree copy, final int depth,
-            final Map<ObjectId, RevTree> pendingWritesCache, final int normalizationThreshold) {
+    private RevTreeBuilder(final ObjectStore obSotre, @Nullable final RevTree copy,
+            final int depth, final Map<ObjectId, RevTree> pendingWritesCache,
+            final int normalizationThreshold) {
 
         checkNotNull(obSotre);
         checkNotNull(pendingWritesCache);
@@ -246,14 +247,15 @@ public class RevTreeBuilder {
         RevTree tree;
 
         final int numPendingChanges = numPendingChanges();
-        if (bucketTreesByBucket.isEmpty() && numPendingChanges <= NORMALIZED_SIZE_LIMIT) {
+        if (bucketTreesByBucket.isEmpty()
+                && numPendingChanges <= NodePathStorageOrder.normalizedSizeLimit(this.depth)) {
             tree = normalizeToChildren();
         } else {
             tree = normalizeToBuckets();
             checkState(featureChanges.isEmpty());
             checkState(treeChanges.isEmpty());
 
-            if (tree.size() <= NORMALIZED_SIZE_LIMIT) {
+            if (tree.size() <= NodePathStorageOrder.normalizedSizeLimit(this.depth)) {
                 this.bucketTreesByBucket.clear();
                 if (tree.buckets().isPresent()) {
                     tree = moveBucketsToChildren(tree);
@@ -456,7 +458,7 @@ public class RevTreeBuilder {
 
         // compute final size and number of trees out of the aggregate deltas
         long accSize = sizeDelta;
-        if (initialSize > RevTree.NORMALIZED_SIZE_LIMIT) {
+        if (initialSize > NodePathStorageOrder.normalizedSizeLimit(this.depth)) {
             accSize += initialSize;
         }
         int accChildTreeCount = this.initialNumTrees + treesDelta;

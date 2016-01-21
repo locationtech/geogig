@@ -52,4 +52,8 @@ If you want to get involved in the development of GeoGig, build GeoGig yourself 
 Participation
 =============
 
+.. image:: https://badges.gitter.im/locationtech/geogig.svg
+    :alt: Join the chat at https://gitter.im/locationtech/geogig
+    :target: https://gitter.im/locationtech/geogig?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 Everyone is invited to participate in GeoGig and help in its development. Check the `How to help <https://github.com/locationtech/geogig/blob/master/helping.rst>`_ section to read about how you can help us improve GeoGig.

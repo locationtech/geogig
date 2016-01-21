@@ -33,6 +33,7 @@ import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.repository.SpatialOps;
+import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.NodeStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
@@ -138,7 +139,7 @@ public class RevTreeBuilderTest extends RepositoryTestCase {
 
     @Test
     public void testPutRandomGet() throws Exception {
-        final int numEntries = 2 * RevTree.NORMALIZED_SIZE_LIMIT + 1500;
+        final int numEntries = 2 * NodePathStorageOrder.normalizedSizeLimit(0) + 1500;
         final ObjectId treeId;
 
         Stopwatch sw;
@@ -242,7 +243,7 @@ public class RevTreeBuilderTest extends RepositoryTestCase {
 
     @Test
     public void testRemoveSplittedTree() throws Exception {
-        final int numEntries = (int) (1.5 * RevTree.NORMALIZED_SIZE_LIMIT);
+        final int numEntries = (int) (1.5 * NodePathStorageOrder.normalizedSizeLimit(0));
         final ObjectId treeId = createAndSaveTree(numEntries, true);
         final RevTree tree = odb.getTree(treeId);
 
@@ -288,7 +289,7 @@ public class RevTreeBuilderTest extends RepositoryTestCase {
     @Test
     public void testEquality() throws Exception {
         testEquality(100);
-        testEquality(100 + RevTree.NORMALIZED_SIZE_LIMIT);
+        testEquality(100 + NodePathStorageOrder.normalizedSizeLimit(0));
     }
 
     private void testEquality(final int numEntries) throws Exception {
@@ -345,7 +346,7 @@ public class RevTreeBuilderTest extends RepositoryTestCase {
 
     @Test
     public void testNodeOrderPassSplitThreshold() {
-        final int splitThreshold = RevTree.NORMALIZED_SIZE_LIMIT;
+        final int splitThreshold = NodePathStorageOrder.normalizedSizeLimit(0);
         List<Node> expectedOrder = nodes(splitThreshold + 1);
         Collections.sort(expectedOrder, new NodeStorageOrder());
 

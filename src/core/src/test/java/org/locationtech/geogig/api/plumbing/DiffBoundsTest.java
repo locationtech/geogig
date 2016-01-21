@@ -20,11 +20,11 @@ import org.geotools.referencing.CRS;
 import org.junit.Test;
 import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.DiffSummary;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -187,8 +187,8 @@ public class DiffBoundsTest extends RepositoryTestCase {
 
     @Test
     public void testReprojectToTargetBucketTree() throws Exception {
-        final int leftCount = RevTree.NORMALIZED_SIZE_LIMIT * 2;
-        final int rightCount = RevTree.NORMALIZED_SIZE_LIMIT * 3;
+        final int leftCount = NodePathStorageOrder.normalizedSizeLimit(0) * 2;
+        final int rightCount = NodePathStorageOrder.normalizedSizeLimit(0) * 3;
 
         WorkingTree workingTree = geogig.getRepository().workingTree();
         final String typeName = "newpoints";

@@ -46,6 +46,7 @@ import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.MaxFeatureDiffsLimiter;
 import org.locationtech.geogig.repository.SpatialOps;
+import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
 import org.mockito.ArgumentCaptor;
@@ -276,7 +277,8 @@ public class PreOrderDiffWalkTest {
     @Test
     public void testSkipBucket() {
         // two bucket trees of depth 2
-        final int size = RevTree.MAX_BUCKETS * RevTree.NORMALIZED_SIZE_LIMIT;
+        final int size = NodePathStorageOrder.maxBucketsForLevel(0)
+                * NodePathStorageOrder.normalizedSizeLimit(0);
         RevTree left = createFeaturesTree(leftSource, "f", size);
         RevTree right = createFeaturesTree(rightSource, "f", size, 0, true);// all features
                                                                             // changed
@@ -393,8 +395,10 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testBucketBucketFlat() {
-        RevTree left = createFeaturesTree(leftSource, "f", RevTree.NORMALIZED_SIZE_LIMIT + 1);
-        RevTree right = createFeaturesTree(rightSource, "f", RevTree.NORMALIZED_SIZE_LIMIT + 2);
+        RevTree left = createFeaturesTree(leftSource, "f",
+                NodePathStorageOrder.normalizedSizeLimit(0) + 1);
+        RevTree right = createFeaturesTree(rightSource, "f",
+                NodePathStorageOrder.normalizedSizeLimit(0) + 2);
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
@@ -417,10 +421,16 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testBucketBucketFlatMoreDepth() {
-        RevTree left = createFeaturesTree(leftSource, "f", RevTree.MAX_BUCKETS
-                * RevTree.NORMALIZED_SIZE_LIMIT);
-        RevTree right = createFeaturesTree(rightSource, "f", RevTree.MAX_BUCKETS
-                * RevTree.NORMALIZED_SIZE_LIMIT + 1);
+        RevTree left = createFeaturesTree(
+                leftSource,
+                "f",
+                NodePathStorageOrder.maxBucketsForLevel(0)
+                        * NodePathStorageOrder.normalizedSizeLimit(0));
+        RevTree right = createFeaturesTree(
+                rightSource,
+                "f",
+                NodePathStorageOrder.maxBucketsForLevel(0)
+                        * NodePathStorageOrder.normalizedSizeLimit(0) + 1);
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
@@ -450,7 +460,7 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testBucketLeafSimple() {
-        final int leftsize = 1 + RevTree.NORMALIZED_SIZE_LIMIT;
+        final int leftsize = 1 + NodePathStorageOrder.normalizedSizeLimit(0);
         RevTree left = createFeaturesTree(leftSource, "f", leftsize);
         RevTree right = createFeaturesTree(rightSource, "f", 1);
 
@@ -483,7 +493,7 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testLeafBucketSimple() {
-        final int rightsize = 1 + RevTree.NORMALIZED_SIZE_LIMIT;
+        final int rightsize = 1 + NodePathStorageOrder.normalizedSizeLimit(0);
         RevTree left = createFeaturesTree(leftSource, "f", 1);
         RevTree right = createFeaturesTree(rightSource, "f", rightsize);
 
@@ -516,8 +526,8 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testBucketLeafOneLevelDepth() {
-        final int leftsize = 2 * RevTree.NORMALIZED_SIZE_LIMIT;
-        final int rightsize = RevTree.NORMALIZED_SIZE_LIMIT;
+        final int leftsize = 2 * NodePathStorageOrder.normalizedSizeLimit(0);
+        final int rightsize = NodePathStorageOrder.normalizedSizeLimit(0);
         final int overlapCount = 100;
 
         RevTree left = createFeaturesTree(leftSource, "f", leftsize);
@@ -527,12 +537,13 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testBucketLeafTwoLevelsDepth() {
-        final int leftsize = RevTree.MAX_BUCKETS * RevTree.NORMALIZED_SIZE_LIMIT;
+        final int leftsize = NodePathStorageOrder.maxBucketsForLevel(0)
+                * NodePathStorageOrder.normalizedSizeLimit(0);
 
         RevTree left = createFeaturesTree(leftSource, "f", leftsize);
         assertDepth(left, leftSource, 2);
 
-        final int rightsize = RevTree.NORMALIZED_SIZE_LIMIT;
+        final int rightsize = NodePathStorageOrder.normalizedSizeLimit(0);
         final int overlapCount = 100;
         testBucketLeafDeeper(left, rightsize, overlapCount);
     }
@@ -540,14 +551,16 @@ public class PreOrderDiffWalkTest {
     // goes OOM with the deafult test heap size, but can be manually run with a bigger one
     @Test
     public void testBucketLeafThreeLevelsDepth() {
-        final int leftsize = RevTree.MAX_BUCKETS * RevTree.MAX_BUCKETS
-                * RevTree.NORMALIZED_SIZE_LIMIT;
+        final int leftsize = NodePathStorageOrder.maxBucketsForLevel(0)
+                * NodePathStorageOrder.maxBucketsForLevel(0)
+                * NodePathStorageOrder.normalizedSizeLimit(0);
 
         RevTree left = createLargeFeaturesTree(leftSource, "f", leftsize, 0, false);
 
         assertDepth(left, leftSource, 3);
 
-        final int rightsize = RevTree.NORMALIZED_SIZE_LIMIT * RevTree.NORMALIZED_SIZE_LIMIT;
+        final int rightsize = NodePathStorageOrder.normalizedSizeLimit(0)
+                * NodePathStorageOrder.normalizedSizeLimit(0);
         final int overlapCount = 100;
 
         long totalMillis = 0;
@@ -655,8 +668,8 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testLeafBucketOneLevelDepth() {
-        final int leftsize = RevTree.NORMALIZED_SIZE_LIMIT;
-        final int rightsize = 2 * RevTree.NORMALIZED_SIZE_LIMIT;
+        final int leftsize = NodePathStorageOrder.normalizedSizeLimit(0);
+        final int rightsize = 2 * NodePathStorageOrder.normalizedSizeLimit(0);
         final int overlapCount = 100;
 
         RevTree right = createFeaturesTree(rightSource, "f", rightsize);
@@ -666,8 +679,9 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testLeafBucketTwoLevelsDepth() {
-        final int leftsize = RevTree.NORMALIZED_SIZE_LIMIT;
-        final int rightsize = RevTree.MAX_BUCKETS * RevTree.NORMALIZED_SIZE_LIMIT;
+        final int leftsize = NodePathStorageOrder.normalizedSizeLimit(0);
+        final int rightsize = NodePathStorageOrder.maxBucketsForLevel(0)
+                * NodePathStorageOrder.normalizedSizeLimit(0);
         final int overlapCount = 100;
 
         RevTree right = createFeaturesTree(rightSource, "f", rightsize);
@@ -767,7 +781,7 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testBucketLeafSeveral() {
-        final int leftsize = 1 + RevTree.NORMALIZED_SIZE_LIMIT;
+        final int leftsize = 1 + NodePathStorageOrder.normalizedSizeLimit(0);
         RevTree left = createFeaturesTree(leftSource, "f", leftsize);
         RevTree right = createFeaturesTree(rightSource, "f", 1);
 
@@ -800,8 +814,8 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testMaxFeatureDiffsFilter() {
-        final int leftsize = 2 * RevTree.NORMALIZED_SIZE_LIMIT;
-        final int rightsize = RevTree.NORMALIZED_SIZE_LIMIT;
+        final int leftsize = 2 * NodePathStorageOrder.normalizedSizeLimit(0);
+        final int rightsize = NodePathStorageOrder.normalizedSizeLimit(0);
 
         final RevTree left = createFeaturesTree(leftSource, "f", leftsize);
 
@@ -824,7 +838,7 @@ public class PreOrderDiffWalkTest {
     public void testFalseReturnValueOnConsumerFeatureAbortsTraversal() {
 
         final int leftsize = 100;// RevTree.NORMALIZED_SIZE_LIMIT;
-        final int rightsize = 10 * RevTree.NORMALIZED_SIZE_LIMIT;
+        final int rightsize = 10 * NodePathStorageOrder.normalizedSizeLimit(0);
 
         final RevTree left = createFeaturesTree(leftSource, "f", leftsize);
 

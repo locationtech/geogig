@@ -22,11 +22,6 @@
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-mapdb</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-sqlite-xerial</artifactId>
       <version>${project.version}</version>
     </dependency>

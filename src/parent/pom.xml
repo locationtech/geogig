@@ -169,6 +169,12 @@
         <groupId>org.geotools</groupId>
         <artifactId>gt-opengis</artifactId>
         <version>${gt.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>javax.media</groupId>
+            <artifactId>jai_core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.geotools</groupId>
@@ -195,6 +201,10 @@
         <artifactId>gt-shapefile</artifactId>
         <version>${gt.version}</version>
         <exclusions>
+          <exclusion>
+            <groupId>javax.media</groupId>
+            <artifactId>jai_core</artifactId>
+          </exclusion>
           <exclusion>
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>

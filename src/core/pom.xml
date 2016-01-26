@@ -135,6 +135,12 @@
       <artifactId>gt-data</artifactId>
       <version>${gt.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.media</groupId>
+          <artifactId>jai_core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 

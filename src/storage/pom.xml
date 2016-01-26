@@ -17,8 +17,6 @@
 
   <modules>
    <module>bdbje</module>
-   <module>mongo</module>
    <module>sqlite</module>
-   <module>mapdb</module>
   </modules>
 </project>

@@ -12,13 +12,13 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 
 import org.locationtech.geogig.api.Remote;
-import org.locationtech.geogig.api.porcelain.ConfigException;
 import org.locationtech.geogig.api.porcelain.RemoteListOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.storage.ConfigException;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

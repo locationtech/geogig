@@ -15,12 +15,14 @@ import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.DeduplicationService;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.storage.TransactionBlobStore;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -130,5 +132,10 @@ public class GuiceInjector implements Context {
     @Override
     public PluginDefaults pluginDefaults() {
         return getDecoratedInstance(PluginDefaults.class);
+    }
+
+    @Override
+    public BlobStore blobStore() {
+        return getDecoratedInstance(objectDatabase().getBlobStore());
     }
 }

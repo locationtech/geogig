@@ -17,8 +17,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.CommitBuilder;
 import org.locationtech.geogig.api.ObjectId;
@@ -35,7 +34,7 @@ import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.WriteTree2;
 import org.locationtech.geogig.api.plumbing.merge.ReadMergeCommitMessageOp;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -351,7 +350,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         if (getProgressListener().isCanceled()) {
             return null;
         }
-        final ObjectDatabase objectDb = objectDatabase();
+        final ObjectStore objectDb = objectDatabase();
         objectDb.put(commit);
         // set the HEAD pointing to the new commit
         final Optional<Ref> branchHead = command(UpdateRef.class).setName(currentBranch)

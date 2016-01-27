@@ -17,8 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
@@ -168,7 +167,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
 
                 if ((ours || theirs) && !node.isPresent()) {
                     // remove the node.
-                    command(RemoveOp.class).addPathToRemove(st).call();
+                    command(RemoveOp.class).setRecursive(true).addPathToRemove(st).call();
                 } else {
                     checkState(node.isPresent(), "pathspec '" + st
                             + "' didn't match a feature in the tree");
@@ -201,7 +200,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                         }
                         treeBuilder.put(node.get().getNode());
                         ObjectId newTreeId = command(WriteBack.class)
-                                .setAncestor(workingTree().getTree().builder(objectDatabase()))
+                                .setAncestor(new RevTreeBuilder(objectDatabase(),
+                                        workingTree().getTree()))
                                 .setChildPath(node.get().getParentPath())
                                 .setTree(treeBuilder.build()).setMetadataId(metadataId).call();
                         workingTree().updateWorkHead(newTreeId);

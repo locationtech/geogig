@@ -13,8 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

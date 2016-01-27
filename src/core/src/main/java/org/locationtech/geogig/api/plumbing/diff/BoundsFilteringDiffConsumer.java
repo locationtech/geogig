@@ -9,25 +9,24 @@
  */
 package org.locationtech.geogig.api.plumbing.diff;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
+import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 
 /**
@@ -36,22 +35,19 @@ import com.google.common.base.Throwables;
  */
 public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.ForwardingConsumer {
 
-    private DiffPathTracker tracker = new DiffPathTracker();
-
     private final ReferencedEnvelope boundsFilter;
 
-    private ObjectDatabase ftypeSource;
+    private ObjectStore ftypeSource;
 
     public BoundsFilteringDiffConsumer(ReferencedEnvelope bounds,
-            PreOrderDiffWalk.Consumer delegate, ObjectDatabase ftypeSource) {
+            PreOrderDiffWalk.Consumer delegate, ObjectStore ftypeSource) {
         super(delegate);
         this.boundsFilter = bounds;
         this.ftypeSource = ftypeSource;
     }
 
     @Override
-    public boolean tree(Node left, Node right) {
-        tracker.tree(left, right);
+    public boolean tree(NodeRef left, NodeRef right) {
         if (intersects(left, right)) {
             return super.tree(left, right);
         }
@@ -59,59 +55,72 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
     }
 
     @Override
-    public void endTree(Node left, Node right) {
+    public void endTree(NodeRef left, NodeRef right) {
         if (intersects(left, right)) {
             super.endTree(left, right);
         }
-        tracker.endTree(left, right);
     }
 
     @Override
-    public boolean bucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
-        if (intersects(left, right)) {
-            return super.bucket(bucketIndex, bucketDepth, left, right);
+    public boolean bucket(NodeRef lparent, NodeRef rparent, int bucketIndex, int bucketDepth,
+            Bucket left, Bucket right) {
+        ObjectId lmd = md(lparent);
+        ObjectId rmd = md(rparent);
+        if (intersects(left, lmd) || intersects(right, rmd)) {
+            return super.bucket(lparent, rparent, bucketIndex, bucketDepth, left, right);
         }
         return false;
     }
 
     @Override
-    public void endBucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
-        if (intersects(left, right)) {
-            super.endBucket(bucketIndex, bucketDepth, left, right);
+    public void endBucket(NodeRef lparent, NodeRef rparent, int bucketIndex, int bucketDepth,
+            Bucket left, Bucket right) {
+        ObjectId lmd = md(lparent);
+        ObjectId rmd = md(rparent);
+        if (intersects(left, lmd) || intersects(right, rmd)) {
+            super.endBucket(lparent, rparent, bucketIndex, bucketDepth, left, right);
         }
     }
 
     @Override
-    public void feature(Node left, Node right) {
+    public boolean feature(NodeRef left, NodeRef right) {
         if (intersects(left, right)) {
-            super.feature(left, right);
+            return super.feature(left, right);
         }
+        return true;
     }
 
-    private boolean intersects(Bounded left, Bounded right) {
-        return intersects(left, tracker.currentLeftMetadataId())
-                || intersects(right, tracker.currentRightMetadataId());
+    private ObjectId md(@Nullable NodeRef ref) {
+        return ref == null ? ObjectId.NULL : ref.getMetadataId();
     }
 
-    private boolean intersects(@Nullable Bounded node, final Optional<ObjectId> metadataId) {
+    private boolean intersects(NodeRef left, NodeRef right) {
+        return intersects(left) || intersects(right);
+    }
+
+    private boolean intersects(@Nullable NodeRef node) {
+        return intersects(node, node == null ? ObjectId.NULL : node.getMetadataId());
+    }
+
+    private boolean intersects(@Nullable Bounded node, final ObjectId metadataId) {
         if (node == null) {
             return false;
         }
-        if (!metadataId.isPresent()) {
+        if (metadataId.isNull()) {
             return true;
         }
-        ReferencedEnvelope nativeCrsFilter = getProjectedFilter(metadataId.get());
+        ReferencedEnvelope nativeCrsFilter = getProjectedFilter(metadataId);
         boolean intersects = node.intersects(nativeCrsFilter);
         return intersects;
     }
 
-    private Map<ObjectId, ReferencedEnvelope> filtersByMetadataId = new HashMap<>();
+    private ConcurrentMap<ObjectId, ReferencedEnvelope> filtersByMetadataId = new ConcurrentHashMap<>();
 
     private ReferencedEnvelope getProjectedFilter(final ObjectId metadataId) {
         ReferencedEnvelope projectedFilter = filtersByMetadataId.get(metadataId);
         if (projectedFilter == null) {
             projectedFilter = createProjectedFilter(metadataId);
-            filtersByMetadataId.put(metadataId, projectedFilter);
+            filtersByMetadataId.putIfAbsent(metadataId, projectedFilter);
         }
         return projectedFilter;
     }

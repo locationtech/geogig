@@ -12,20 +12,19 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.api.porcelain.PullOp;
 import org.locationtech.geogig.api.porcelain.PullResult;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
+import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 
@@ -101,7 +100,7 @@ public class Pull extends AbstractCommand implements CLICommand {
         try {
             final PullResult result = pull.call();
 
-            ConsoleReader console = cli.getConsole();
+            Console console = cli.getConsole();
             TransferSummary fetchResult = result.getFetchResult();
             FetchResultPrinter.print(fetchResult, console);
 

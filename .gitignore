@@ -4,3 +4,5 @@ target
 .settings
 bin/
 git.properties
+# Netbeans project files
+nb-configuration.xml

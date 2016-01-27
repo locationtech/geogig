@@ -19,13 +19,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.plumbing.diff.Patch;
 import org.locationtech.geogig.api.plumbing.diff.PatchSerializer;
 import org.locationtech.geogig.api.plumbing.diff.VerifyPatchOp;
 import org.locationtech.geogig.api.plumbing.diff.VerifyPatchResults;
 import org.locationtech.geogig.cli.AbstractCommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 
@@ -55,7 +54,7 @@ public class VerifyPatch extends AbstractCommand {
         checkParameter(patchFiles.size() < 2, "Only one single patch file accepted");
         checkParameter(!patchFiles.isEmpty(), "No patch file specified");
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
 
         File patchFile = new File(patchFiles.get(0));
         checkParameter(patchFile.exists(), "Patch file cannot be found");

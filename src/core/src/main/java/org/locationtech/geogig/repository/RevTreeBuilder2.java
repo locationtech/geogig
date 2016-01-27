@@ -15,8 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
@@ -38,7 +37,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 
-class RevTreeBuilder2 {
+public class RevTreeBuilder2 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RevTreeBuilder2.class);
 
@@ -96,7 +95,7 @@ class RevTreeBuilder2 {
      */
     public RevTree build() {
         if (nodeIndex == null) {
-            return original.builder(db).build();
+            return new RevTreeBuilder(db, original).build();
         }
 
         Stopwatch sw = Stopwatch.createStarted();

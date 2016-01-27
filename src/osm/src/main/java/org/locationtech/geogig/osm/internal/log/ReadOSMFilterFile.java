@@ -9,20 +9,12 @@
  */
 package org.locationtech.geogig.osm.internal.log;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-
-import jline.internal.Preconditions;
-
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.Blobs;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
-import com.google.common.io.Files;
+import com.google.common.base.Preconditions;
 
 /**
  * Reads the file filter associated to a previously executed OSM import operation.
@@ -39,19 +31,12 @@ public class ReadOSMFilterFile extends AbstractGeoGigOp<Optional<String>> {
     @Override
     protected Optional<String> _call() {
         Preconditions.checkNotNull(entry);
-        URL url = command(ResolveOSMLogfile.class).call();
-        File logfile = new File(url.getFile());
-        File file = new File(logfile.getParentFile(), "filter" + entry.getId().toString());
-        if (!file.exists()) {
-            return Optional.absent();
-        }
-        try {
-            List<String> lines = Files.readLines(file, Charsets.UTF_8);
-            String line = Joiner.on("\n").join(lines);
-            return Optional.of(line);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        BlobStore blobStore = context().blobStore();
+        final String logPath = "osm/log/";
+
+        final String filterPath = logPath + "filter" + entry.getId();
+        Optional<String> filter = Blobs.getBlobAsString(blobStore, filterPath);
+        return filter;
     }
 
 }

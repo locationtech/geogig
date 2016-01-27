@@ -12,8 +12,6 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
@@ -24,6 +22,7 @@ import org.locationtech.geogig.api.porcelain.TagListOp;
 import org.locationtech.geogig.api.porcelain.TagRemoveOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 
 import com.beust.jcommander.Parameter;
@@ -73,7 +72,7 @@ public class Tag extends AbstractCommand implements CLICommand {
         String name = nameAndCommit.get(0);
         String commit = nameAndCommit.size() > 1 ? nameAndCommit.get(1) : Ref.HEAD;
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
 
         final GeoGIG geogig = cli.getGeogig();
 

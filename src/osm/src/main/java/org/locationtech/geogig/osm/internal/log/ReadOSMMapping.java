@@ -9,20 +9,13 @@
  */
 package org.locationtech.geogig.osm.internal.log;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import jline.internal.Preconditions;
-
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.osm.internal.Mapping;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.Blobs;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
-import com.google.common.io.Files;
+import com.google.common.base.Preconditions;
 
 /**
  * Reads the mapping associated to a previously executed OSM mapping operation.
@@ -39,19 +32,14 @@ public class ReadOSMMapping extends AbstractGeoGigOp<Optional<Mapping>> {
     @Override
     protected Optional<Mapping> _call() {
         Preconditions.checkNotNull(entry);
-        final File osmMapFolder = command(ResolveOSMMappingLogFolder.class).call();
-        File file = new File(osmMapFolder, entry.getPostMappingId().toString());
-        if (!file.exists()) {
-            return Optional.absent();
+        BlobStore blobStore = context().blobStore();
+        final String pathPrefix = "osm/map/";
+        final String path = pathPrefix + entry.getPostMappingId();
+        Optional<String> blob = Blobs.getBlobAsString(blobStore, path);
+        Mapping mapping = null;
+        if (blob.isPresent()) {
+            mapping = Mapping.fromString(blob.get());
         }
-        try {
-            List<String> lines = Files.readLines(file, Charsets.UTF_8);
-            String s = Joiner.on("\n").join(lines);
-            Mapping mapping = Mapping.fromString(s);
-            return Optional.of(mapping);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        return Optional.fromNullable(mapping);
     }
-
 }

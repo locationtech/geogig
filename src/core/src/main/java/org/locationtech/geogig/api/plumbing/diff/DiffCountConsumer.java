@@ -10,12 +10,11 @@
 package org.locationtech.geogig.api.plumbing.diff;
 
 import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 /**
  * A {@link Consumer} for diffs that computes the number for tree and feature changes between the
@@ -27,11 +26,11 @@ import org.locationtech.geogig.storage.ObjectDatabase;
  */
 public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
 
-    private ObjectDatabase db;
+    private final ObjectStore db;
 
     private DiffObjectCount count = new DiffObjectCount();
 
-    public DiffCountConsumer(ObjectDatabase db) {
+    public DiffCountConsumer(ObjectStore db) {
         this.db = db;
     }
 
@@ -40,7 +39,7 @@ public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
     }
 
     @Override
-    public void feature(Node left, Node right) {
+    public boolean feature(NodeRef left, NodeRef right) {
         if (left == null) {
             count.addedFeatures(1L);
         } else if (right == null) {
@@ -48,12 +47,13 @@ public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
         } else {
             count.changedFeatures(1L);
         }
+        return true;
     }
 
     @Override
-    public boolean tree(Node left, Node right) {
-        final Node node = left == null ? right : left;
-        if (NodeRef.ROOT.equals(node.getName())) {
+    public boolean tree(NodeRef left, NodeRef right) {
+        final NodeRef node = left == null ? right : left;
+        if (NodeRef.ROOT.equals(node.name())) {
             // ignore the call on the root tree and follow the traversal
             return true;
         }
@@ -72,10 +72,12 @@ public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
     }
 
     @Override
-    public boolean bucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
+    public boolean bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
+            int bucketDepth, Bucket left, Bucket right) {
+
         if (left == null || right == null) {
             Bucket bucket = left == null ? right : left;
-            addTreeFeatures(bucket.id(), left != null, right != null);
+            addTreeFeatures(bucket.getObjectId(), left != null, right != null);
             return false;
         }
         return true;
@@ -97,12 +99,13 @@ public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
     }
 
     @Override
-    public void endTree(Node left, Node right) {
+    public void endTree(NodeRef left, NodeRef right) {
         // no need to do anything
     }
 
     @Override
-    public void endBucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
+    public void endBucket(NodeRef leftp, NodeRef rightp, int bucketIndex, int bucketDepth,
+            Bucket left, Bucket right) {
         // no need to do anything
     }
 }

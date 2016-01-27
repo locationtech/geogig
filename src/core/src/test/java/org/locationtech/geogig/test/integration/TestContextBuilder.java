@@ -14,6 +14,7 @@ import org.locationtech.geogig.api.ContextBuilder;
 import org.locationtech.geogig.api.MemoryModule;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.di.GeogigModule;
+import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.repository.Hints;
 
 import com.google.inject.Guice;

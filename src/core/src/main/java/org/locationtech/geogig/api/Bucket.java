@@ -9,8 +9,9 @@
  */
 package org.locationtech.geogig.api;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
+import com.google.common.base.Optional;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -24,7 +25,16 @@ public abstract class Bucket implements Bounded {
         this.bucketTree = id;
     }
 
+    /**
+     * @deprecated use {@link #getObjectId()} instead
+     */
+    @Deprecated
     public ObjectId id() {
+        return bucketTree;
+    }
+
+    @Override
+    public ObjectId getObjectId() {
         return bucketTree;
     }
 
@@ -32,18 +42,19 @@ public abstract class Bucket implements Bounded {
     public String toString() {
         Envelope bounds = new Envelope();
         expand(bounds);
-        return getClass().getSimpleName() + "[" + id() + "] " + bounds;
+        return getClass().getSimpleName() + "[" + getObjectId() + "] "
+                + (bounds.isNull() ? "" : bounds.toString());
     }
 
     /**
-     * Equality check based purely on {@link #id() ObjectId}
+     * Equality check based purely on {@link #getObjectId() ObjectId}
      */
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Bucket)) {
             return false;
         }
-        return id().equals(((Bucket) o).id());
+        return getObjectId().equals(((Bucket) o).getObjectId());
     }
 
     private static class PointBucket extends Bucket {
@@ -67,6 +78,11 @@ public abstract class Bucket implements Bounded {
         public void expand(Envelope env) {
             env.expandToInclude(x, y);
         }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            return Optional.of(new Envelope(x, x, y, y));
+        }
     }
 
     private static class RectangleBucket extends Bucket {
@@ -87,6 +103,11 @@ public abstract class Bucket implements Bounded {
         public void expand(Envelope env) {
             env.expandToInclude(this.bucketBounds);
         }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            return Optional.of(new Envelope(bucketBounds));
+        }
     }
 
     private static class NonSpatialBucket extends Bucket {
@@ -103,6 +124,11 @@ public abstract class Bucket implements Bounded {
         @Override
         public void expand(Envelope env) {
             // nothing to do
+        }
+
+        @Override
+        public Optional<Envelope> bounds() {
+            return Optional.absent();
         }
     }
 

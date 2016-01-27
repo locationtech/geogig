@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.porcelain.ConfigException;
-import org.locationtech.geogig.api.porcelain.ConfigException.StatusCode;
 import org.locationtech.geogig.api.porcelain.ConfigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigScope;
@@ -29,6 +27,8 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.storage.ConfigException;
+import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

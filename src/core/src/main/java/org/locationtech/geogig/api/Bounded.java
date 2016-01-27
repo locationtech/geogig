@@ -9,14 +9,26 @@
  */
 package org.locationtech.geogig.api;
 
+import com.google.common.base.Optional;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
- *
+ * Superinterface for objects pointing to another object in the revision graph
+ * 
+ * @see Node
+ * @see Bucket
+ * @see NodeRef
  */
 public interface Bounded {
+
+    /**
+     * @return the id of the {@link RevObject} this object points to.
+     */
+    public ObjectId getObjectId();
 
     public boolean intersects(Envelope env);
 
     public void expand(Envelope env);
+    
+    public Optional<Envelope> bounds();
 }

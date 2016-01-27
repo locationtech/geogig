@@ -10,7 +10,7 @@ Binaries
 
 Pre-built binaries are available for GeoGig.
 
-#. If not already on your system, install a `Java JDK <http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html>`_. GeoGig requires Java 7 or higher to run. Make sure the `java` executable is accessible (i.e. check your PATH environment variable) and the JAVA_HOME environment variable points to the JDK or JRE installation directory.
+#. If not already on your system, install a `Java JDK <http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html>`_. GeoGig requires Java 8 or higher to run. Make sure the `java` executable is accessible (i.e. check your PATH environment variable) and the JAVA_HOME environment variable points to the JDK or JRE installation directory.
 
 #. After the JDK is installed, navigate to http://geogig.org and click :guilabel:`Download`.
 

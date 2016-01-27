@@ -77,12 +77,18 @@ public class Xerial {
      * Creates the injector to enable xerial sqlite storage.
      */
     public static Context injector() {
-        return Guice.createInjector(Modules.override(new GeogigModule()).with(
-                new XerialSQLiteModule())).getInstance(Context.class);
+        return Guice.createInjector(
+                Modules.override(new GeogigModule()).with(new XerialSQLiteModule())).getInstance(
+                Context.class);
     }
 
     public static SQLiteDataSource newDataSource(File db) {
+        return newDataSource(db, false);
+    }
+
+    public static SQLiteDataSource newDataSource(final File db, final boolean readOnly) {
         SQLiteDataSource dataSource = new SQLiteDataSource();
+        dataSource.setReadOnly(readOnly);
         dataSource.setUrl("jdbc:sqlite:" + db.getAbsolutePath());
         dataSource.setSynchronous(DEFAULT_SYNC_MODE.getValue());
         return dataSource;

@@ -10,11 +10,10 @@
 package org.locationtech.geogig.rest.osm;
 
 import java.io.File;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.osm.internal.OSMDownloadOp;
@@ -108,7 +107,7 @@ public class OsmDownloadWebOp extends TransactionalResource {
 
         AsyncCommand<Optional<OSMReport>> asyncCommand;
 
-        URL repo = context.repository().getLocation();
+        URI repo = context.repository().getLocation();
         String description = String
                 .format("osm download filter: %s, bbox: %s, mapping: %s, update: %s, rebase: %s, repository: %s",
                         filterFileArg, bboxArg, mappingFileArg, update, rebase, repo);

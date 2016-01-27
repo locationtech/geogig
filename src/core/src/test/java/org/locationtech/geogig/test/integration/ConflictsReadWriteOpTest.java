@@ -9,16 +9,18 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.locationtech.geogig.api.ObjectId.forString;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsWriteOp;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class ConflictsReadWriteOpTest extends RepositoryTestCase {
 
@@ -28,14 +30,16 @@ public class ConflictsReadWriteOpTest extends RepositoryTestCase {
 
     @Test
     public void testReadWriteConflicts() throws Exception {
-        Conflict conflict = new Conflict(idP1, ObjectId.forString("ancestor"),
-                ObjectId.forString("ours"), ObjectId.forString("theirs"));
-        Conflict conflict2 = new Conflict(idP2, ObjectId.forString("ancestor2"),
-                ObjectId.forString("ours2"), ObjectId.forString("theirs2"));
+        Conflict conflict = new Conflict(idP1, forString("ancestor"), forString("ours"),
+                forString("theirs"));
+        Conflict conflict2 = new Conflict(idP2, forString("ancestor2"), forString("ours2"),
+                forString("theirs2"));
         ArrayList<Conflict> conflicts = Lists.newArrayList(conflict, conflict2);
         geogig.command(ConflictsWriteOp.class).setConflicts(conflicts).call();
+
         List<Conflict> returnedConflicts = geogig.command(ConflictsReadOp.class).call();
-        assertEquals(conflicts, returnedConflicts);
+
+        assertEquals(Sets.newHashSet(conflicts), Sets.newHashSet(returnedConflicts));
     }
 
 }

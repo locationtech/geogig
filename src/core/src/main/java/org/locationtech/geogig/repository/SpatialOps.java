@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.repository;
 
-import javax.annotation.Nullable;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.JTS;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;

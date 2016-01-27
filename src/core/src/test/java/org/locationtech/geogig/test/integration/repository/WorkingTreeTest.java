@@ -43,6 +43,7 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.repository.FeatureToDelete;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.mockito.Mockito;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.Name;
@@ -65,7 +66,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
     @Override
     protected Platform createPlatform() {
-        Platform testPlatform = new TestPlatform(envHome) {
+        Platform testPlatform = new TestPlatform(repositoryDirectory) {
             @Override
             public int availableProcessors() {
                 return 2;
@@ -219,12 +220,12 @@ public class WorkingTreeTest extends RepositoryTestCase {
         MemoryDataStore store = new MemoryDataStore();
         store.addFeatures(features);
 
-        final QueryCapabilities caps = mock(QueryCapabilities.class);
-        when(caps.isOffsetSupported()).thenReturn(true);
+        final QueryCapabilities caps = Mockito.spy(new QueryCapabilities());
+        Mockito.doReturn(false).when(caps).isOffsetSupported();
 
         @SuppressWarnings("rawtypes")
-        FeatureSource source = store.getFeatureSource(pointsName);
-        assertFalse(source.getQueryCapabilities().isOffsetSupported());
+        FeatureSource source = Mockito.spy(store.getFeatureSource(pointsName));
+        Mockito.doReturn(caps).when(source).getQueryCapabilities();
 
         String treePath = "target_typename";
         workTree.insert(treePath, source, Query.ALL, LISTENER);
@@ -567,6 +568,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
         Iterator<DiffEntry> changes = workTree.getUnstaged(null);
 
         assertNotNull(changes);
+        assertEquals(4, Iterators.size(changes));
     }
 
     @Test

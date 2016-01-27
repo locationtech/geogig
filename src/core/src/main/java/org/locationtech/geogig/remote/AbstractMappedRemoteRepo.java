@@ -13,8 +13,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,7 +32,7 @@ import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.WriteTree;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -43,7 +42,7 @@ import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.api.porcelain.SynchronizationException.StatusCode;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.GraphDatabase;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -77,20 +76,15 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
         String filterFile = filterResult.get().get("sparse.filter");
         Preconditions.checkState(filterFile != null, "No filter found for sparse clone.");
         try {
-            Optional<URL> envHome = localRepository.command(ResolveGeogigDir.class).call();
+            Optional<URI> envHome = localRepository.command(ResolveGeogigURI.class).call();
             checkState(envHome.isPresent(), "Not inside a geogig directory");
-            final URL envLocation = envHome.get();
-            if (!"file".equals(envLocation.getProtocol())) {
+            final URI envLocation = envHome.get();
+            if (!"file".equals(envLocation.getScheme())) {
                 throw new UnsupportedOperationException(
                         "Sparse clone works only against file system repositories. "
-                                + "Repository location: " + envLocation.toExternalForm());
+                                + "Repository location: " + envLocation);
             }
-            File repoDir;
-            try {
-                repoDir = new File(envLocation.toURI());
-            } catch (URISyntaxException e) {
-                throw Throwables.propagate(e);
-            }
+            File repoDir = new File(envLocation);
             File newFilterFile = new File(repoDir, filterFile);
             filter = new IniRepositoryFilter(newFilterFile.getAbsolutePath());
         } catch (FileNotFoundException e) {
@@ -213,7 +207,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
             FilteredDiffIterator changes = getFilteredChanges(commit);
 
             GraphDatabase graphDatabase = localRepository.graphDatabase();
-            ObjectDatabase objectDatabase = localRepository.objectDatabase();
+            ObjectStore objectDatabase = localRepository.objectDatabase();
             graphDatabase.put(commit.getId(), commit.getParentIds());
 
             RevTree rootTree = RevTree.EMPTY;

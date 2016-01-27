@@ -12,7 +12,7 @@ package org.locationtech.geogig.storage.memory;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Function;
@@ -45,7 +45,7 @@ public class HeapGraphDatabase implements GraphDatabase {
         }
     };
 
-    static final Map<URL, Ref> graphs = Maps.newConcurrentMap();
+    static final Map<URI, Ref> graphs = Maps.newConcurrentMap();
 
     final Platform platform;
 
@@ -62,10 +62,10 @@ public class HeapGraphDatabase implements GraphDatabase {
             return;
         }
 
-        Optional<URL> url = new ResolveGeogigDir(platform).call();
+        Optional<URI> url = new ResolveGeogigURI(platform, null).call();
         if (url.isPresent()) {
             synchronized (graphs) {
-                URL key = url.get();
+                URI key = url.get();
                 if (!graphs.containsKey(key)) {
                     graphs.put(key, new Ref(new Graph()));
                 }
@@ -98,10 +98,10 @@ public class HeapGraphDatabase implements GraphDatabase {
             return;
         }
         graph = null;
-        Optional<URL> url = new ResolveGeogigDir(platform).call();
+        Optional<URI> url = new ResolveGeogigURI(platform, null).call();
         if (url.isPresent()) {
             synchronized (graphs) {
-                URL key = url.get();
+                URI key = url.get();
                 Ref ref = graphs.get(key);
                 if (ref != null && ref.release() <= -1) {
                     ref.destroy();

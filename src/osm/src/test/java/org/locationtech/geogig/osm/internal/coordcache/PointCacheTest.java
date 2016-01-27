@@ -11,6 +11,7 @@ package org.locationtech.geogig.osm.internal.coordcache;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +45,7 @@ public abstract class PointCacheTest extends Assert {
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Before
-    public void before() {
+    public void before() throws IOException {
         tmpFolder.newFolder(".geogig");
         TestPlatform platform = new TestPlatform(tmpFolder.getRoot());
         platform.setUserHome(tmpFolder.newFolder("fakeHome"));
@@ -127,6 +128,7 @@ public abstract class PointCacheTest extends Assert {
         testLargeSequences(1000 * 1000);
     }
 
+    @Ignore
     @Test
     public void testLargeSequences10M() {
         testLargeSequences(10 * 1000 * 1000);
@@ -155,6 +157,7 @@ public abstract class PointCacheTest extends Assert {
         testLargeSequencesNonSequentialQueries(1000 * 1000);
     }
 
+    @Ignore
     @Test
     public void testLargeSequencesNonSequentialQueries10M() {
         testLargeSequencesNonSequentialQueries(10 * 1000 * 1000);
@@ -179,30 +182,40 @@ public abstract class PointCacheTest extends Assert {
     }
 
     private void testLargeSequences(final int numNodes) {
-        List<Long> nodeIds = new ArrayList<Long>(numNodes / 6);
-        Stopwatch sw = Stopwatch.createStarted();
-        for (int n = 0; n < numNodes; n++) {
-            if (n % 20 == 0) {
-                nodeIds.add(Long.valueOf(n));
-            }
-            cache.put((long) n, coord(n, n));
-        }
-        System.err.printf("%,d nodes added in %s\n", numNodes, sw.stop());
+        List<Long> queryIds = new ArrayList<Long>(numNodes / 6);
 
-        Collections.shuffle(nodeIds);
+        Stopwatch sw = Stopwatch.createUnstarted();
+        final int bulkSize = 10_000;
+        List<Integer> random = new ArrayList<>(bulkSize);
+        for (int n = 1; n <= numNodes; n++) {
+            if (n % 20 == 0) {
+                queryIds.add(Long.valueOf(n));
+            }
+            random.add(Integer.valueOf(n));
+            if (random.size() == bulkSize || n == numNodes) {
+                Collections.shuffle(random);
+                sw.start();
+                for (Integer id : random) {
+                    cache.put(id.longValue(), coord(id.intValue(), id.intValue()));
+                }
+                sw.stop();
+                random.clear();
+            }
+        }
+        System.err.printf("%,d nodes added in %s\n", numNodes, sw);
+
+        Collections.shuffle(queryIds);
 
         sw.reset().start();
-        CoordinateSequence sequence = cache.get(nodeIds);
-        System.err.printf("requested %,d coordinates in %s\n", nodeIds.size(), sw.stop());
+        CoordinateSequence sequence = cache.get(queryIds);
+        System.err.printf("requested %,d coordinates in %s\n", queryIds.size(), sw.stop());
         assertNotNull(sequence);
-        assertEquals(nodeIds.size(), sequence.size());
+        assertEquals(queryIds.size(), sequence.size());
         long approxDbSize = caclDbSize();
         System.err.printf("Approx db size: %,f MB\n\n", ((double) approxDbSize / 1024D / 1024D));
     }
 
     private void testLargeSequencesNonSequentialQueries(final int numNodes) {
-        after();
-        before();
         List<Long> nodeIds = new ArrayList<Long>(numNodes / 6);
         Stopwatch sw = Stopwatch.createStarted();
         for (int n = 0; n < numNodes; n++) {

@@ -36,10 +36,9 @@
       <artifactId>guava</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
+      <groupId>org.eclipse.jdt</groupId>
+      <artifactId>org.eclipse.jdt.annotation</artifactId>
     </dependency>
-
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
@@ -50,30 +49,76 @@
       <groupId>org.geotools.jdbc</groupId>
       <artifactId>gt-jdbc-postgis</artifactId>
       <version>${gt.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.media</groupId>
+          <artifactId>jai_core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-      
-    <dependency>
-      <groupId>org.geotools.jdbc</groupId>
-      <artifactId>gt-jdbc-spatialite</artifactId>
-      <version>${gt.version}</version>
-    </dependency>
-    
+
     <dependency>
       <groupId>org.geotools.jdbc</groupId>
       <artifactId>gt-jdbc-sqlserver</artifactId>
       <version>${gt.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.media</groupId>
+          <artifactId>jai_core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     
     <dependency>
       <groupId>org.geotools.jdbc</groupId>
       <artifactId>gt-jdbc-oracle</artifactId>
       <version>${gt.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.media</groupId>
+          <artifactId>jai_core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     
     <dependency>
       <groupId>org.geotools</groupId>
+      <artifactId>gt-geopkg</artifactId>
+      <version>${gt.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.geotools</groupId>
+          <artifactId>gt-coverage</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>it.geosolutions.imageio-ext</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>it.geosolutions.jaiext</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jaitools</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.media</groupId>
+          <artifactId>jai_core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.geotools</groupId>
       <artifactId>gt-geojson</artifactId>
       <version>${gt.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.media</groupId>
+          <artifactId>jai_core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     
     <dependency>
@@ -83,9 +128,8 @@
     </dependency>
 
     <dependency>
-      <!-- https://github.com/jline/jline2 -->
-      <groupId>jline</groupId>
-      <artifactId>jline</artifactId>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
     </dependency>
 
     <!-- Test scope dependencies -->

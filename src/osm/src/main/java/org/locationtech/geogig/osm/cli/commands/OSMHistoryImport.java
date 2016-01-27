@@ -16,32 +16,27 @@ import static org.locationtech.geogig.osm.internal.OSMUtils.wayType;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
 import javax.management.relation.Relation;
 
-import jline.console.ConsoleReader;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.FeatureBuilder;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
@@ -53,7 +48,6 @@ import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
@@ -62,6 +56,7 @@ import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.osm.internal.history.Change;
@@ -73,7 +68,9 @@ import org.locationtech.geogig.osm.internal.history.Way;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.Blobs;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -90,7 +87,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -114,7 +110,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         checkParameter(args.numThreads > 0 && args.numThreads < 7,
                 "numthreads must be between 1 and 6");
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
 
         final String osmAPIUrl = resolveAPIURL();
 
@@ -134,7 +130,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
                 .setNameFormat("osm-history-fetch-thread-%d").build();
         final ExecutorService executor = Executors.newFixedThreadPool(args.numThreads,
                 threadFactory);
-        final File targetDir = resolveTargetDir();
+        final File targetDir = resolveTargetDir(cli.getPlatform());
         console.println("Downloading to " + targetDir.getAbsolutePath());
         console.flush();
 
@@ -203,12 +199,20 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
 
     }
 
-    private File resolveTargetDir() throws IOException {
+    private File resolveTargetDir(Platform platform) throws IOException {
         final File targetDir;
         if (args.saveFolder == null) {
             try {
-                File tmp = new File(System.getProperty("java.io.tmpdir"), "changesets.osm");
-                tmp.mkdirs();
+                final File tempDir = platform.getTempDir();
+                Preconditions.checkState(tempDir.isDirectory() && tempDir.canWrite());
+                File tmp = null;
+                for (int i = 0; i < 1000; i++) {
+                    tmp = new File(tempDir, "osmchangesets_" + i);
+                    if (tmp.mkdir()) {
+                        break;
+                    }
+                    i++;
+                }
                 targetDir = tmp;
             } catch (Exception e) {
                 throw Throwables.propagate(e);
@@ -235,8 +239,8 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         return osmAPIUrl;
     }
 
-    private void importOsmHistory(GeogigCLI cli, ConsoleReader console,
-            HistoryDownloader downloader, @Nullable Envelope featureFilter) throws IOException {
+    private void importOsmHistory(GeogigCLI cli, Console console, HistoryDownloader downloader,
+            @Nullable Envelope featureFilter) throws IOException {
 
         Iterator<Changeset> changesets = downloader.fetchChangesets();
 
@@ -290,7 +294,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
      */
     private void commit(GeogigCLI cli, Changeset changeset) throws IOException {
         Preconditions.checkArgument(!changeset.isOpen());
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         console.print("Committing changeset " + changeset.getId() + "...");
         console.flush();
 
@@ -338,38 +342,25 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
      * @throws IOException
      */
     private void updateBranchChangeset(GeoGIG geogig, long id) throws IOException {
-        final File branchTrackingChangesetFile = getBranchTrackingFile(geogig);
-        Preconditions.checkState(branchTrackingChangesetFile.exists());
-        Files.write(String.valueOf(id), branchTrackingChangesetFile, Charset.forName("UTF-8"));
+        String path = getBranchChangesetPath(geogig);
+        BlobStore blobStore = geogig.getContext().blobStore();
+        Blobs.putBlob(blobStore, path, String.valueOf(id));
     }
 
     private long getCurrentBranchChangeset(GeoGIG geogig) throws IOException {
-        final File branchTrackingChangesetFile = getBranchTrackingFile(geogig);
-        Preconditions.checkState(branchTrackingChangesetFile.exists());
-        String line = Files.readFirstLine(branchTrackingChangesetFile, Charset.forName("UTF-8"));
-        if (line == null) {
-            return 0;
-        }
-        long changeset = Long.parseLong(line);
-        return changeset;
+        String path = getBranchChangesetPath(geogig);
+
+        BlobStore blobStore = geogig.getContext().blobStore();
+
+        Optional<String> blob = Blobs.getBlobAsString(blobStore, path);
+
+        return blob.isPresent() ? Long.parseLong(blob.get()) : 0L;
     }
 
-    private File getBranchTrackingFile(GeoGIG geogig) throws IOException {
-        final SymRef head = getHead(geogig);
-        final String branch = head.getTarget();
-        final URL geogigDirUrl = geogig.command(ResolveGeogigDir.class).call().get();
-        File repoDir;
-        try {
-            repoDir = new File(geogigDirUrl.toURI());
-        } catch (URISyntaxException e) {
-            throw Throwables.propagate(e);
-        }
-        File branchTrackingFile = new File(new File(repoDir, "osm"), branch);
-        Files.createParentDirs(branchTrackingFile);
-        if (!branchTrackingFile.exists()) {
-            Files.touch(branchTrackingFile);
-        }
-        return branchTrackingFile;
+    private String getBranchChangesetPath(GeoGIG geogig) {
+        final String branch = getHead(geogig).getTarget();
+        String path = "osm/" + branch;
+        return path;
     }
 
     private SymRef getHead(GeoGIG geogig) {
@@ -487,7 +478,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
                     .call(RevTree.class).get();
             findTreeChild.setParent(headTree);
         }
-        ObjectDatabase objectDatabase = geogig.getContext().objectDatabase();
+        ObjectStore objectDatabase = geogig.getContext().objectDatabase();
         for (Long nodeId : nodes) {
             Coordinate coord = thisChangePointCache.get(nodeId);
             if (coord == null) {
@@ -555,7 +546,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         builder.set("timestamp", Long.valueOf(feature.getTimestamp()));
         builder.set("changeset", Long.valueOf(feature.getChangesetId()));
 
-        String tags = buildTagsString(feature.getTags());
+        Map<String, String> tags = feature.getTags();
         builder.set("tags", tags);
 
         String user = feature.getUserName() + ":" + feature.getUserId();
@@ -565,7 +556,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
             builder.set("location", geom);
         } else if (feature instanceof Way) {
             builder.set("way", geom);
-            String nodes = buildNodesString(((Way) feature).getNodes());
+            long[] nodes = buildNodesArray(((Way) feature).getNodes());
             builder.set("nodes", nodes);
         } else {
             throw new IllegalArgumentException();
@@ -576,41 +567,11 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         return simpleFeature;
     }
 
-    /**
-     * @param tags
-     * @return
-     */
-    @Nullable
-    private static String buildTagsString(Map<String, String> tags) {
-        if (tags.isEmpty()) {
-            return null;
+    private static long[] buildNodesArray(List<Long> nodeIds) {
+        long[] nodes = new long[nodeIds.size()];
+        for (int i = 0; i < nodeIds.size(); i++) {
+            nodes[i] = nodeIds.get(i).longValue();
         }
-        StringBuilder sb = new StringBuilder();
-        for (Iterator<Map.Entry<String, String>> it = tags.entrySet().iterator(); it.hasNext();) {
-            Entry<String, String> e = it.next();
-            String key = e.getKey();
-            if (key == null || key.isEmpty()) {
-                continue;
-            }
-            String value = e.getValue();
-            sb.append(key).append(':').append(value);
-            if (it.hasNext()) {
-                sb.append(';');
-            }
-        }
-        return sb.toString();
-    }
-
-    private static String buildNodesString(List<Long> nodeIds) {
-        StringBuilder sb = new StringBuilder();
-        for (Iterator<Long> it = nodeIds.iterator(); it.hasNext();) {
-            Long node = it.next();
-            sb.append(node);
-            if (it.hasNext()) {
-                sb.append(";");
-            }
-        }
-        return sb.toString();
-
+        return nodes;
     }
 }

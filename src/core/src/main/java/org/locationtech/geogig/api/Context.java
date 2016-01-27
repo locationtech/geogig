@@ -14,6 +14,7 @@ import org.locationtech.geogig.di.PluginDefaults;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.DeduplicationService;
@@ -57,11 +58,6 @@ public interface Context {
 
     public GraphDatabase graphDatabase();
 
-    /**
-     * @deprecated commands should not access the repository instance but from its components as
-     *             given by the other methods in this interface
-     */
-    @Deprecated
     public Repository repository();
 
     public DeduplicationService deduplicationService();
@@ -72,5 +68,7 @@ public interface Context {
      *       method in Injector
      */
     public PluginDefaults pluginDefaults();
+
+    public BlobStore blobStore();
 
 }

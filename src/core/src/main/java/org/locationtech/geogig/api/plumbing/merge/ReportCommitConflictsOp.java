@@ -83,7 +83,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
             case ADDED:
                 if (obj.isPresent()) {
                     TYPE type = command(ResolveObjectType.class).setObjectId(
-                            diff.getNewObject().objectId()).call();
+                            diff.getNewObject().getObjectId()).call();
                     if (TYPE.TREE.equals(type)) {
                         NodeRef headVersion = command(FindTreeChild.class).setChildPath(path)
                                 .setParent(repository.getOrCreateHeadTree()).call().get();
@@ -114,7 +114,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                 break;
             case MODIFIED:
                 TYPE type = command(ResolveObjectType.class).setObjectId(
-                        diff.getNewObject().objectId()).call();
+                        diff.getNewObject().getObjectId()).call();
                 if (TYPE.TREE.equals(type)) {
                     // TODO:see how to do this. For now, we will pass any change as a conflicted
                     // one

@@ -11,10 +11,16 @@ package org.locationtech.geogig.storage;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -23,9 +29,10 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.porcelain.ConfigException;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
 
@@ -35,10 +42,10 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    C config;
+    protected C config;
 
     @Before
-    public final void setUp() {
+    public final void setUp() throws IOException {
         final File userhome = tempFolder.newFolder("mockUserHomeDir");
 
         final File workingDir = tempFolder.newFolder("mockWorkingDir");
@@ -80,6 +87,25 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
     }
 
     @Test
+    public void testNestedSections() {
+        // Test integer and string
+        config.put("section.subsection.int", 1);
+        config.put("section.subsection.string", "2");
+
+        final int one = config.get("section.subsection.int", Integer.class).or(-1);
+        assertEquals(one, 1);
+
+        final String two = config.get("section.subsection.string").or("-1");
+        assertEquals(two, "2");
+
+        // Test overwriting a value that already exists
+        config.put("section.subsection.string", "3");
+
+        final String three = config.get("section.subsection.string").or("-1");
+        assertEquals(three, "3");
+    }
+
+    @Test
     public void testGlobal() {
         // Test integer and string
         config.putGlobal("section.int", 1);
@@ -96,6 +122,87 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
 
         final String three = config.getGlobal("section.string").or("-1");
         assertEquals(three, "3");
+    }
+
+    @Test
+    public void testGetAllSubsections() {
+        // Test integer and string
+        config.put("section1.subsection1.int", 1);
+        config.put("section1.subsection2.string", "2");
+        config.put("section1.subsection1.subsub1.int", 1);
+        config.put("section1.subsection2.subsub2.string", "2");
+
+        config.put("section2.subsection3.int", 3);
+        config.put("section2.subsection4.string", "4");
+
+        List<String> allSubsections = config.getAllSubsections("section1");
+        Set<String> expected = ImmutableSet.of("subsection1", "subsection2", "subsection1.subsub1",
+                "subsection2.subsub2");
+        assertEquals(expected, new HashSet<String>(allSubsections));
+    }
+
+    @Test
+    public void testGetAllSubsectionsGlobal() {
+        // Test integer and string
+        config.putGlobal("section1.subsection1.int", 1);
+        config.putGlobal("section1.subsection2.string", "2");
+        config.putGlobal("section1.subsection1.subsub1.int", 1);
+        config.putGlobal("section1.subsection2.subsub2.string", "2");
+
+        config.putGlobal("section2.subsection3.int", 3);
+        config.putGlobal("section2.subsection4.string", "4");
+
+        List<String> allSubsections = config.getAllSubsectionsGlobal("section1");
+        Set<String> expected = ImmutableSet.of("subsection1", "subsection2", "subsection1.subsub1",
+                "subsection2.subsub2");
+        assertEquals(expected, new HashSet<String>(allSubsections));
+    }
+
+    @Test
+    public void testGetAll() {
+        // Test integer and string
+        config.put("section1.int", 1);
+        config.put("section1.subsection.string", "2");
+        config.put("section1.subsection.subsub.int", 1);
+        config.put("section2.int", 3);
+        config.put("section2.subsection.string", "4");
+
+        Map<String, String> all = config.getAll();
+        Map<String, String> expected = ImmutableMap.of("section1.int", "1",
+                "section1.subsection.string", "2", "section1.subsection.subsub.int", "1",
+                "section2.int", "3", "section2.subsection.string", "4");
+        assertEquals(expected, all);
+    }
+
+    @Test
+    public void testGetAllGlobal() {
+        // Test integer and string
+        config.putGlobal("section1.int", 1);
+        config.putGlobal("section1.subsection.string", "2");
+        config.putGlobal("section1.subsection.subsub.int", 1);
+        config.putGlobal("section2.int", 3);
+        config.putGlobal("section2.subsection.string", "4");
+
+        Map<String, String> all = config.getAllGlobal();
+        Map<String, String> expected = ImmutableMap.of("section1.int", "1",
+                "section1.subsection.string", "2", "section1.subsection.subsub.int", "1",
+                "section2.int", "3", "section2.subsection.string", "4");
+        assertEquals(expected, all);
+    }
+
+    @Test
+    public void testGetAllSection() {
+        // Test integer and string
+        config.put("section1.int", 1);
+        config.put("section1.subsection.string", "2");
+        config.put("section1.subsection.subsub.int", 1);
+        config.put("section1.subsection.subsub.string", "4");
+        config.put("section2.int", 3);
+
+        assertEquals(ImmutableMap.of("int", "1"), config.getAllSection("section1"));
+        assertEquals(ImmutableMap.of("string", "2"), config.getAllSection("section1.subsection"));
+        assertEquals(ImmutableMap.of("int", "1", "string", "4"),
+                config.getAllSection("section1.subsection.subsub"));
     }
 
     @Test
@@ -160,6 +267,44 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
     public void testNoValue() {
         Optional<String> str = config.get("doesnt.exist");
         assertFalse(str.isPresent());
+    }
+
+    @Test
+    public void testRemove() {
+        // Test integer and string
+        config.put("section1.int", 1);
+        config.put("section1.subsection.string", "2");
+        config.put("section1.subsection.subsub.int", 1);
+        config.put("section1.subsection.subsub.string", "4");
+        config.put("section2.int", 3);
+
+        assertTrue(config.get("section1.int").isPresent());
+        config.remove("section1.int");
+        assertFalse(config.get("section1.int").isPresent());
+
+        assertTrue(config.get("section1.subsection.subsub.string").isPresent());
+        config.remove("section1.subsection.subsub.string");
+        assertFalse(config.get("section1.subsection.subsub.string").isPresent());
+    }
+
+    @Test
+    public void testRemoveSection() {
+        // Test integer and string
+        config.put("section1.int", 1);
+        config.put("section1.subsection.string", "2");
+        config.put("section1.subsection.subsub.int", 1);
+        config.put("section1.subsection.subsub.string", "4");
+        config.put("section2.int", 3);
+
+        assertTrue(config.get("section1.subsection.subsub.string").isPresent());
+        assertTrue(config.get("section1.subsection.subsub.int").isPresent());
+        config.removeSection("section1.subsection.subsub");
+        assertFalse(config.get("section1.subsection.subsub.string").isPresent());
+        assertFalse(config.get("section1.subsection.subsub.int").isPresent());
+
+        assertTrue(config.get("section1.int").isPresent());
+        config.removeSection("section1");
+        assertFalse(config.get("section1.int").isPresent());
     }
 
 }

@@ -34,16 +34,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.storage.AbstractObjectDatabase;
+import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.ObjectReader;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.fs.FileBlobStore;
 import org.locationtech.geogig.storage.fs.FileConflictsDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,6 +120,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     private final FileConflictsDatabase conflicts;
 
+    private final FileBlobStore blobStore;
+
     public JEObjectDatabase(final ObjectSerializingFactory serialization,
             final ConfigDatabase configDB, final EnvironmentBuilder envProvider,
             final boolean readOnly, final String envName) {
@@ -129,6 +131,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
         this.readOnly = readOnly;
         this.envName = envName;
         this.conflicts = new FileConflictsDatabase(envProvider.getPlatform());
+        this.blobStore = new FileBlobStore(envProvider.getPlatform());
     }
 
     /**
@@ -140,6 +143,11 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
         Environment env = envProvider.setRelativePath(this.envName).setReadOnly(readOnly).get();
 
         return env;
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return readOnly;
     }
 
     @Override
@@ -171,6 +179,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
             }
         } finally {
             conflicts.close();
+            blobStore.close();
             env.close();
             env = null;
         }
@@ -208,6 +217,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
                     .setNameFormat("BDBJE-" + env.getHome().getName() + "-SYNC-THREAD-%d").build());
         }
         this.conflicts.open();
+        this.blobStore.open();
         LOGGER.debug("Object database opened at {}. Transactional: {}", env.getHome(), objectDb
                 .getConfig().getTransactional());
 
@@ -216,6 +226,11 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     @Override
     public FileConflictsDatabase getConflictsDatabase() {
         return conflicts;
+    }
+
+    @Override
+    public BlobStore getBlobStore() {
+        return blobStore;
     }
 
     protected Database createDatabase() {
@@ -329,7 +344,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     public boolean exists(final ObjectId id) {
         checkOpen();
 
-        Preconditions.checkNotNull(id, "id");
+        Preconditions.checkNotNull(id, "argument id is null");
 
         DatabaseEntry key = new DatabaseEntry(id.getRawValue());
         DatabaseEntry data = new DatabaseEntry();
@@ -346,7 +361,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     protected InputStream getRawInternal(final ObjectId id, final boolean failIfNotFound) {
         checkOpen();
 
-        Preconditions.checkNotNull(id, "id");
+        Preconditions.checkNotNull(id, "id is null");
         DatabaseEntry key = new DatabaseEntry(id.getRawValue());
         DatabaseEntry data = new DatabaseEntry();
 
@@ -367,8 +382,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public void putAll(final Iterator<? extends RevObject> objects, final BulkOpListener listener) {
-        checkNotNull(objects);
-        checkNotNull(listener);
+        checkNotNull(objects, "objects is null");
+        checkNotNull(listener, "listener is null");
         checkWritable();
 
         if (!objects.hasNext()) {
@@ -640,6 +655,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public boolean delete(final ObjectId id) {
+        Preconditions.checkNotNull(id, "argument id is null");
         checkWritable();
         final byte[] rawKey = id.getRawValue();
         final DatabaseEntry key = new DatabaseEntry(rawKey);
@@ -679,6 +695,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public long deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
+        Preconditions.checkNotNull(ids, "argument ids is null");
+        Preconditions.checkNotNull(listener, "argument listener is null");
         checkWritable();
 
         long count = 0;
@@ -729,7 +747,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final BulkOpListener listener) {
-        Preconditions.checkNotNull(ids, "ids");
+        Preconditions.checkNotNull(ids, "ids is null");
+        Preconditions.checkNotNull(listener, "listener is null");
         checkOpen();
 
         return new CursorRevObjectIterator(ids.iterator(), listener);
@@ -881,7 +900,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     public void checkWritable() {
         checkOpen();
         if (readOnly) {
-            throw new UnsupportedOperationException(envName + " is read only.");
+            throw new IllegalStateException(envName + " is read only.");
         }
     }
 
@@ -891,7 +910,6 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public String toString() {
-        return String.format("%s[env=%s]", getClass().getSimpleName(), env == null ? "<unset>"
-                : env.getHome());
+        return String.format("%s[env=%s]", getClass().getSimpleName(), envName);
     }
 }

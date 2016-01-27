@@ -13,8 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Platform;
 
@@ -29,7 +28,9 @@ import com.google.common.base.Throwables;
  * The location can be a either the current directory, a parent of it, or {@code null} if no
  * {@code .geogig} directory is found.
  * 
+ * @deprecated use {@link ResolveGeogigURI} instead
  */
+@Deprecated
 public class ResolveGeogigDir extends AbstractGeoGigOp<Optional<URL>> {
 
     private Platform platform;

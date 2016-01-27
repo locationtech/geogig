@@ -20,12 +20,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.Node;
+import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.porcelain.LogOp;
 import org.locationtech.geogig.api.porcelain.NothingToCommitException;
 import org.locationtech.geogig.osm.internal.log.OSMLogEntry;
 import org.locationtech.geogig.osm.internal.log.ReadOSMLogEntries;
-import org.locationtech.geogig.osm.internal.log.ResolveOSMMappingLogFolder;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.Blobs;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;
@@ -153,12 +155,12 @@ public class OSMDownloadOpTest extends RepositoryTestCase {
         tree = geogig.getRepository().getRootTreeChild("onewaystreets");
         assertTrue(tree.isPresent());
         // check it has created mapping log files
-        File osmMapFolder = geogig.command(ResolveOSMMappingLogFolder.class).call();
-        File file = new File(osmMapFolder, "onewaystreets");
-        assertTrue(file.exists());
-        file = new File(osmMapFolder, geogig.getRepository().workingTree().getTree().getId()
-                .toString());
-        assertTrue(file.exists());
+        BlobStore blobStore = getRepository().context().blobStore();
+        Optional<String> blob = Blobs.getBlobAsString(blobStore, "osm/map/onewaystreets");
+        assertTrue(blob.isPresent());
+        ObjectId workingHead = getRepository().workingTree().getTree().getId();
+        blob = Blobs.getBlobAsString(blobStore, "osm/map/" + workingHead);
+        assertTrue(blob.isPresent());
     }
 
     @Test

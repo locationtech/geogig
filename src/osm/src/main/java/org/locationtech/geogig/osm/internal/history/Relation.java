@@ -11,7 +11,7 @@ package org.locationtech.geogig.osm.internal.history;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;

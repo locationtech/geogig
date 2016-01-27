@@ -195,7 +195,7 @@ To get more detail about the change in the feture that we have modified use the 
 
 ::
 
-	$ geogig diff HEAD WORK_HEAD -- aerialways/143323580
+	$ geogig diff HEAD WORK_HEAD --path aerialways/143323580
 
 
 OSM operations work on the canonical representations of OSM features in the repo, which are always stored in the ``ways`` and ``nodes`` trees. Our changes are only stored in the ``aerialways`` tree, so we have to bring them to the canonical trees. This is done by unmapping the ``aerialways`` tree. To unmap it, we can use the following command
@@ -208,7 +208,7 @@ Now changes have also been applied to the ``ways`` tree, as it can be seen by ru
 
 ::
 	
-	$ geogig diff HEAD WORK_HEAD -- ways
+	$ geogig diff HEAD WORK_HEAD --path ways
 
 To create a new snapshot in the repository history, add and commit the above changes.
 

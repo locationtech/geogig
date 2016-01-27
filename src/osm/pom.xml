@@ -36,22 +36,40 @@
       <artifactId>guava</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
+      <groupId>org.eclipse.jdt</groupId>
+      <artifactId>org.eclipse.jdt.annotation</artifactId>
     </dependency>
-    
+
+    <dependency>
+      <!-- for mapdb point cache -->
+      <groupId>org.mapdb</groupId>
+      <artifactId>mapdb</artifactId>
+    </dependency>
+
     <!-- used to implement a point cache as a temporary database -->
     <dependency>
       <groupId>com.sleepycat</groupId>
       <artifactId>je</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.openstreetmap.osmosis</groupId>
       <artifactId>osmosis-core</artifactId>
       <version>${osmosis.version}</version>
       <exclusions>
         <exclusion>
+          <!--
+           Exclude JPF (Java Plugin Framework) due to license restrictions
+           (it's LGPL which is blacklisted by Locationtech)
+          -->
+          <groupId>net.sf.jpf</groupId>
+          <artifactId>jpf</artifactId>
+        </exclusion>
+        <exclusion>
+          <!--
+           Woodstox is dual licensed under the Apache 2.0 license and LGPL.
+           Disable the LGPL transitive dependency in favour of the ASL version.
+          -->
           <groupId>org.codehaus.woodstox</groupId>
           <artifactId>woodstox-core-lgpl</artifactId>
         </exclusion>
@@ -63,7 +81,6 @@
       <artifactId>woodstox-core-asl</artifactId>
       <version>4.1.4</version>
     </dependency>
-
     <dependency>
       <groupId>org.openstreetmap.osmosis</groupId>
       <artifactId>osmosis-xml</artifactId>
@@ -74,13 +91,13 @@
       <artifactId>osmosis-pbf</artifactId>
       <version>${osmosis.version}</version>
     </dependency>
-	
+
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <classifier>no_aop</classifier>
     </dependency>
-    
+
     <!-- Test scope dependencies -->
     <dependency>
       <groupId>org.locationtech.geogig</groupId>

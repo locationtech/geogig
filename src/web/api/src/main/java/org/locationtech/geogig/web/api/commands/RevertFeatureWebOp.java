@@ -11,8 +11,7 @@ package org.locationtech.geogig.web.api.commands;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.CommitBuilder;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.NodeRef;
@@ -135,8 +134,8 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
         }
         final Context geogig = this.getCommandLocator(context);
 
-        Optional<RevTree> newTree = Optional.absent();
-        Optional<RevTree> oldTree = Optional.absent();
+        Optional<RevTree> newTree;
+        Optional<RevTree> oldTree;
 
         // get tree from new commit
         Optional<ObjectId> treeId = geogig.command(ResolveTreeish.class).setTreeish(newCommitId)
@@ -174,7 +173,7 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class).setParent(newTree.get())
                 .setChildPath(node.get().getParentPath()).call();
 
-        RevTreeBuilder treeBuilder = null;
+        RevTreeBuilder treeBuilder;
         if (parentNode.isPresent()) {
             metadataId = parentNode.get().getMetadataId();
             Optional<RevTree> parsed = geogig.command(RevObjectParse.class)
@@ -191,7 +190,7 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
             treeBuilder.put(node.get().getNode());
         }
         ObjectId newTreeId = geogig.command(WriteBack.class)
-                .setAncestor(newTree.get().builder(geogig.objectDatabase()))
+                .setAncestor(new RevTreeBuilder(geogig.objectDatabase(), newTree.get()))
                 .setChildPath(node.get().getParentPath()).setTree(treeBuilder.build())
                 .setMetadataId(metadataId).call();
 

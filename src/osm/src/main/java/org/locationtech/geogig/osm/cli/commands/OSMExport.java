@@ -15,8 +15,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.GeoGIG;
@@ -165,7 +164,7 @@ public class OSMExport extends AbstractCommand implements CLICommand {
             @Nullable
             public EntityContainer apply(@Nullable NodeRef ref) {
                 RevFeature revFeature = geogig.command(RevObjectParse.class)
-                        .setObjectId(ref.objectId()).call(RevFeature.class).get();
+                        .setObjectId(ref.getObjectId()).call(RevFeature.class).get();
                 SimpleFeatureType featureType;
                 if (ref.path().startsWith(OSMUtils.NODE_TYPE_NAME)) {
                     featureType = OSMUtils.nodeType();

@@ -11,12 +11,11 @@ package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.plumbing.RebuildGraphOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 
 import com.beust.jcommander.Parameter;
@@ -39,7 +38,7 @@ public class RebuildGraph extends AbstractCommand implements CLICommand {
         ImmutableList<ObjectId> updatedObjects = cli.getGeogig().command(RebuildGraphOp.class)
                 .call();
 
-        final ConsoleReader console = cli.getConsole();
+        final Console console = cli.getConsole();
         if (updatedObjects.size() > 0) {
             if (quiet) {
                 console.println(updatedObjects.size() + " graph elements (commits) were fixed.");

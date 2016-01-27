@@ -116,7 +116,7 @@ class WorkingTreeInsertHelper {
             Optional<NodeRef> treeNode = context.command(FindTreeChild.class).setParent(workHead)
                     .setChildPath(treePath).call();
             if (treeNode.isPresent()) {
-                RevTree parentTree = db.getTree(treeNode.get().objectId());
+                RevTree parentTree = db.getTree(treeNode.get().getObjectId());
                 ObjectId metadataId = treeNode.get().getMetadataId();
                 builder = createBuilder(parentTree, metadataId);
                 treeBuilders.put(treePath, builder);
@@ -161,7 +161,7 @@ class WorkingTreeInsertHelper {
     private RevTreeBuilder2 createBuilder(String treePath, FeatureType type) {
 
         final NodeRef treeRef = findOrCreateTree(treePath, type);
-        final ObjectId treeId = treeRef.objectId();
+        final ObjectId treeId = treeRef.getObjectId();
         final RevTree origTree = db.getTree(treeId);
 
         ObjectId defaultMetadataId = treeRef.getMetadataId();

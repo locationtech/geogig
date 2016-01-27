@@ -11,14 +11,13 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -26,10 +25,10 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryInitializer;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 
 /**
@@ -53,7 +52,7 @@ public class Init extends AbstractCommand implements CLICommand {
     @Parameter(description = "Repository location (directory).", required = false, arity = 1)
     private List<String> location;
 
-    @Parameter(names = { "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=bdbje:bdbje.version=0.1")
+    @Parameter(names = { "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=bdbje,storage.graph=bdbje,bdbje.version=0.1")
     private String config;
 
     /**
@@ -76,20 +75,29 @@ public class Init extends AbstractCommand implements CLICommand {
                 targetDirectory = currDir;
             }
         }
-        final boolean repoExisted;
+
+        URI uri;
+        try {
+            uri = super.repo == null ? targetDirectory.toURI() : new URI(super.repo);
+        } catch (URISyntaxException e) {
+            throw new CommandFailedException("--repo argument can't be parsed to a URI", e);
+        }
+        final boolean repoExisted = RepositoryInitializer.lookup(uri).repoExists(uri);
+
         final Repository repository;
         {
+            final Map<String, String> suppliedConfiguration = splitConfig(config);
+
             GeoGIG geogig = cli.getGeogig();
             if (geogig == null) {
                 Context geogigInjector = cli.getGeogigInjector();
                 geogig = new GeoGIG(geogigInjector);
             }
-            repoExisted = determineIfRepoExists(targetDirectory, geogig);
-            final Map<String, String> suppliedConfiguration = splitConfig(config);
 
             try {
                 repository = geogig.command(InitOp.class).setConfig(suppliedConfiguration)
                         .setTarget(targetDirectory).call();
+                repository.close();
             } catch (IllegalArgumentException e) {
                 throw new CommandFailedException(e.getMessage(), e);
             } finally {
@@ -97,35 +105,15 @@ public class Init extends AbstractCommand implements CLICommand {
             }
         }
 
-        File repoDirectory;
-        try {
-            repoDirectory = new File(repository.getLocation().toURI());
-        } catch (URISyntaxException e) {
-            throw new CommandFailedException("Environment home can't be resolved to a directory", e);
-        }
+        final URI repoURI = repository.getLocation();
+
         String message;
-        if (repoExisted) {
-            message = "Reinitialized existing Geogig repository in "
-                    + repoDirectory.getAbsolutePath();
-        } else {
-            message = "Initialized empty Geogig repository in " + repoDirectory.getAbsolutePath();
-        }
+        String locationStr = "file".equals(repoURI.getScheme()) ? new File(repoURI)
+                .getAbsolutePath() : repoURI.toString();
+        message = (repoExisted ? "Reinitialized existing" : "Initialized empty")
+                + " Geogig repository in " + locationStr;
+
         cli.getConsole().println(message);
-    }
-
-    private boolean determineIfRepoExists(final File targetDirectory, GeoGIG geogig) {
-        final boolean repoExisted;
-
-        final File currentDirectory = geogig.getPlatform().pwd();
-        try {
-            geogig.getPlatform().setWorkingDir(targetDirectory);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-        final Optional<URL> currentRepoUrl = geogig.command(ResolveGeogigDir.class).call();
-        repoExisted = currentRepoUrl.isPresent();
-        geogig.getPlatform().setWorkingDir(currentDirectory);
-        return repoExisted;
     }
 
     public static Map<String, String> splitConfig(final String configArg) {

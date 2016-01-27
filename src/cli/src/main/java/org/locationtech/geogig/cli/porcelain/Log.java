@@ -16,8 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import jline.console.ConsoleReader;
-
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.geotools.util.Range;
@@ -28,15 +26,18 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevPerson;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.ForEachRef;
 import org.locationtech.geogig.api.plumbing.ParseTimestamp;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.api.porcelain.LogOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
@@ -78,7 +79,7 @@ public class Log extends AbstractCommand implements CLICommand {
 
     private GeoGIG geogig;
 
-    private ConsoleReader console;
+    private Console console;
 
     /**
      * Executes the log command using the provided options.
@@ -255,7 +256,7 @@ public class Log extends AbstractCommand implements CLICommand {
 
         @Override
         public void print(RevCommit commit) throws IOException {
-            Ansi ansi = newAnsi(console.getTerminal());
+            Ansi ansi = newAnsi(console);
             ansi.fg(Color.YELLOW).a(getIdAsString(commit.getId())).reset();
             String message = Strings.nullToEmpty(commit.getMessage());
             String title = Splitter.on('\n').split(message).iterator().next();
@@ -281,7 +282,7 @@ public class Log extends AbstractCommand implements CLICommand {
 
         @Override
         public void print(RevCommit commit) throws IOException {
-            Ansi ansi = newAnsi(console.getTerminal());
+            Ansi ansi = newAnsi(console);
 
             ansi.a("Commit:  ").fg(Color.YELLOW).a(getIdAsString(commit.getId())).reset().newline();
             if (commit.getParentIds().size() > 1) {
@@ -315,35 +316,26 @@ public class Log extends AbstractCommand implements CLICommand {
                 DiffEntry diffEntry;
                 while (diff.hasNext()) {
                     diffEntry = diff.next();
-                    ansi.a("\t" + diffEntry.newPath()).newline();
+                    String path = diffEntry.isDelete() ? diffEntry.oldPath() : diffEntry.newPath();
+                    ansi.a("\t" + path).newline();
                 }
             }
-            if (detail.equals(LOG_DETAIL.STATS) && commit.getParentIds().size() == 1) {
+            if (detail.equals(LOG_DETAIL.STATS)) {
 
-                Iterator<DiffEntry> diff = geogig.command(DiffOp.class)
-                        .setOldVersion(commit.parentN(0).get()).setNewVersion(commit.getId())
-                        .call();
-                int adds = 0, deletes = 0, changes = 0;
-                DiffEntry diffEntry;
-                while (diff.hasNext()) {
-                    diffEntry = diff.next();
-                    switch (diffEntry.changeType()) {
-                    case ADDED:
-                        ++adds;
-                        break;
-                    case REMOVED:
-                        ++deletes;
-                        break;
-                    case MODIFIED:
-                        ++changes;
-                        break;
-                    }
-                }
+                String oldSpec = commit.parentN(0).isPresent() ? commit.parentN(0).get().toString()
+                        : ObjectId.NULL.toString();
+                String newSpec = commit.getId().toString();
+                DiffObjectCount diffCount = geogig.command(DiffCount.class).setOldVersion(oldSpec)
+                        .setNewVersion(newSpec).call();
+
+                long featuresAdded = diffCount.getFeaturesAdded();
+                long featuresChanged = diffCount.getFeaturesChanged();
+                long featuresRemoved = diffCount.getFeaturesRemoved();
 
                 ansi.a("Changes:");
-                ansi.fg(Color.GREEN).a(adds).reset().a(" features added, ").fg(Color.YELLOW)
-                        .a(changes).reset().a(" changed, ").fg(Color.RED).a(deletes).reset()
-                        .a(" deleted.").reset().newline();
+                ansi.fg(Color.GREEN).a(featuresAdded).reset().a(" features added, ")
+                        .fg(Color.YELLOW).a(featuresChanged).reset().a(" changed, ").fg(Color.RED)
+                        .a(featuresRemoved).reset().a(" deleted.").reset().newline();
             }
 
             console.println(ansi.toString());

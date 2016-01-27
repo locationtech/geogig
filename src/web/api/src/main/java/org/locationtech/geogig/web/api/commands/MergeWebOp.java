@@ -9,8 +9,7 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.GeogigTransaction;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;

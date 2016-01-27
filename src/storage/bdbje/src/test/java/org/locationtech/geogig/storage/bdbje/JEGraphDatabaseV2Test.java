@@ -30,7 +30,7 @@ public class JEGraphDatabaseV2Test extends GraphDatabaseTest {
         File root = platform.pwd();
         Preconditions.checkState(new File(root, ".geogig").exists());
 
-        envProvider = new EnvironmentBuilder(platform);
+        envProvider = new EnvironmentBuilder(platform, null);
 
         ConfigDatabase configDB = new IniFileConfigDatabase(platform);
         return new JEGraphDatabase_v0_2(configDB, envProvider, new Hints());

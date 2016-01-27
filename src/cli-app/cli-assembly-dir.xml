@@ -16,12 +16,12 @@
             <destName>geogig</destName>
             <fileMode>0755</fileMode>
         </file>
-        <file>
+        <!--file>
             <source>target/geogig-build/bin/geogig-console</source>
             <outputDirectory>bin</outputDirectory>
             <destName>geogig-console</destName>
             <fileMode>0755</fileMode>
-        </file>
+        </file-->
         <file>
             <source>target/geogig-build/bin/geogig-gateway</source>
             <outputDirectory>bin</outputDirectory>
@@ -32,10 +32,10 @@
             <source>target/geogig-build/bin/geogig.bat</source>
             <outputDirectory>bin</outputDirectory>
         </file>
-        <file>
+        <!--file>
             <source>target/geogig-build/bin/geogig-console.bat</source>
             <outputDirectory>bin</outputDirectory>
-        </file>
+        </file-->
         <file>
             <source>target/geogig-build/bin/geogig-gateway.bat</source>
             <outputDirectory>bin</outputDirectory>

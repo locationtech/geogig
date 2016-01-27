@@ -64,8 +64,8 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         geogig.command(CommitOp.class).setAuthor("yo", "yo@test.com")
                 .setCommitter("me", "me@test.com").setMessage("initial import").call();
 
-        pointsSource = dataStore.getFeatureSource(pointsTypeName);
-        linesSource = dataStore.getFeatureSource(linesTypeName);
+        pointsSource = dataStore.getFeatureSource(pointsName);
+        linesSource = dataStore.getFeatureSource(linesName);
     }
 
     @Override
@@ -346,7 +346,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
             assertNotNull(id + " has no featureVersion set", id.getFeatureVersion());
             NodeRef ref = expected.get(id.getID());
             assertNotNull(ref);
-            assertEquals(ref.objectId().toString(), id.getFeatureVersion());
+            assertEquals(ref.getObjectId().toString(), id.getFeatureVersion());
         }
     }
 

@@ -11,10 +11,7 @@ package org.locationtech.geogig.api.plumbing.diff;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.meta.When;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
@@ -81,8 +78,8 @@ public class DiffEntry {
      * @param oldObject the old node ref
      * @param newObject the new node ref
      */
-    public DiffEntry(@Nonnull(when = When.MAYBE) NodeRef oldObject,
-            @Nonnull(when = When.MAYBE) NodeRef newObject) {
+    public DiffEntry(@Nullable NodeRef oldObject,
+            @Nullable NodeRef newObject) {
 
         Preconditions.checkArgument(oldObject != null || newObject != null,
                 "Either oldObject or newObject shall not be null");
@@ -107,7 +104,7 @@ public class DiffEntry {
      *         {@link #changeType()} is {@code ADD}
      */
     public ObjectId oldObjectId() {
-        return oldObject == null ? ObjectId.NULL : oldObject.objectId();
+        return oldObject == null ? ObjectId.NULL : oldObject.getObjectId();
     }
 
     /**
@@ -122,7 +119,7 @@ public class DiffEntry {
      *         {@link #changeType()} is {@code DELETE}
      */
     public ObjectId newObjectId() {
-        return newObject == null ? ObjectId.NULL : newObject.objectId();
+        return newObject == null ? ObjectId.NULL : newObject.getObjectId();
     }
 
     /**
@@ -138,9 +135,9 @@ public class DiffEntry {
      */
     public ChangeType changeType() {
         ChangeType type;
-        if (oldObject == null || oldObject.objectId().isNull()) {
+        if (oldObject == null || oldObject.getObjectId().isNull()) {
             type = ChangeType.ADDED;
-        } else if (newObject == null || newObject.objectId().isNull()) {
+        } else if (newObject == null || newObject.getObjectId().isNull()) {
             type = ChangeType.REMOVED;
         } else {
             type = ChangeType.MODIFIED;

@@ -12,8 +12,7 @@ package org.locationtech.geogig.api.plumbing;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
@@ -36,6 +35,8 @@ public class DiffIndex extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
     private final List<String> pathFilters = Lists.newLinkedList();
 
     private boolean reportTrees;
+
+    private Long limit;
 
     /**
      * @param pathFilter the path filter to use during the diff operation
@@ -90,7 +91,7 @@ public class DiffIndex extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
 
         DiffTree diff = command(DiffTree.class).setPathFilter(this.pathFilters)
                 .setReportTrees(this.reportTrees).setOldTree(rootTree.getId())
-                .setNewTree(newTree.getId());
+                .setNewTree(newTree.getId()).setMaxDiffs(limit);
 
         return diff.call();
     }
@@ -112,5 +113,12 @@ public class DiffIndex extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
     @Override
     public Iterator<DiffEntry> get() {
         return call();
+    }
+
+    public DiffIndex setMaxDiffs(@Nullable Long limit) {
+        Preconditions.checkArgument(limit == null || limit.longValue() >= 0,
+                "limit must be >= 0: ", limit);
+        this.limit = limit;
+        return this;
     }
 }

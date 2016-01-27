@@ -11,8 +11,8 @@ package org.locationtech.geogig.osm.internal;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -46,7 +46,7 @@ public class EntityConverter {
         builder.set("version", Integer.valueOf(entity.getVersion()));
         builder.set("timestamp", Long.valueOf(entity.getTimestamp().getTime()));
         builder.set("changeset", Long.valueOf(entity.getChangesetId()));
-        String tags = OSMUtils.buildTagsString(entity.getTags());
+        Map<String, String> tags = OSMUtils.buildTagsMap(entity.getTags());
         builder.set("tags", tags);
         String user = entity.getUser().getName() + ":" + Integer.toString(entity.getUser().getId());
         builder.set("user", user);
@@ -54,7 +54,8 @@ public class EntityConverter {
             builder.set("location", geom);
         } else if (entity instanceof Way) {
             builder.set("way", geom);
-            String nodes = buildNodesString(((Way) entity).getWayNodes());
+            List<WayNode> wayNodes = ((Way) entity).getWayNodes();
+            long[] nodes = OSMUtils.buildNodesArray(wayNodes);
             builder.set("nodes", nodes);
         } else {
             throw new IllegalArgumentException();
@@ -63,19 +64,6 @@ public class EntityConverter {
         String fid = String.valueOf(entity.getId());
         SimpleFeature simpleFeature = builder.buildFeature(fid);
         return simpleFeature;
-    }
-
-    protected String buildNodesString(List<WayNode> wayNodes) {
-        StringBuilder sb = new StringBuilder();
-        for (Iterator<WayNode> it = wayNodes.iterator(); it.hasNext();) {
-            WayNode node = it.next();
-            sb.append(Long.toString(node.getNodeId()));
-            if (it.hasNext()) {
-                sb.append(";");
-            }
-        }
-        return sb.toString();
-
     }
 
     /**
@@ -105,8 +93,9 @@ public class EntityConverter {
         } catch (Exception e) {
             osmuser = OsmUser.NONE;
         }
-        String tagsString = (String) feature.getAttribute("tags");
-        Collection<Tag> tags = OSMUtils.buildTagsCollectionFromString(tagsString);
+        @SuppressWarnings("unchecked")
+        Map<String, String> tagsMap = (Map<String, String>) feature.getAttribute("tags");
+        Collection<Tag> tags = OSMUtils.buildTagsCollection(tagsMap);
 
         CommonEntityData entityData = new CommonEntityData(id, version, timestamp, osmuser,
                 changeset, tags);
@@ -116,9 +105,9 @@ public class EntityConverter {
 
         } else {
             List<WayNode> nodes = Lists.newArrayList();
-            String nodesString = (String) feature.getAttribute("nodes");
-            for (String s : nodesString.split(";")) {
-                nodes.add(new WayNode(Long.parseLong(s)));
+            long[] nodeIds = (long[]) feature.getAttribute("nodes");
+            for (long nodeId : nodeIds) {
+                nodes.add(new WayNode(nodeId));
             }
             entity = new Way(entityData, nodes);
         }

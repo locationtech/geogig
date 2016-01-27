@@ -50,6 +50,11 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     public boolean isOpen() {
         return subject.get().isOpen();
     }
+    
+    @Override
+    public boolean isReadOnly() {
+        return subject.get().isReadOnly();
+    }
 
     @Override
     public void close() {
@@ -166,5 +171,10 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     @Override
     public String toString() {
         return String.format("%s[%s]", getClass().getSimpleName(), subject);
+    }
+
+    @Override
+    public BlobStore getBlobStore() {
+        return subject.get().getBlobStore();
     }
 }

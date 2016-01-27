@@ -19,17 +19,17 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.AbstractObjectDatabase;
+import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
@@ -37,6 +37,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -62,6 +63,8 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
 
     private FileConflictsDatabase conflicts;
 
+    private FileBlobStore blobStore;
+
     /**
      * Constructs a new {@code FileObjectDatabase} using the given platform.
      * 
@@ -81,6 +84,7 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
         this.databaseName = databaseName;
         this.configDB = configDB;
         this.conflicts = new FileConflictsDatabase(platform);
+        this.blobStore = new FileBlobStore(platform);
     }
 
     protected File getDataRoot() {
@@ -99,6 +103,11 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
         return dataRoot != null;
     }
 
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
+
     /**
      * Opens the database for use by GeoGig.
      */
@@ -107,14 +116,10 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
         if (isOpen()) {
             return;
         }
-        final Optional<URL> repoUrl = new ResolveGeogigDir(platform).call();
+        final Optional<URI> repoUrl = new ResolveGeogigURI(platform, null).call();
         checkState(repoUrl.isPresent(), "Can't find geogig repository home");
 
-        try {
-            dataRoot = new File(new File(repoUrl.get().toURI()), databaseName);
-        } catch (URISyntaxException e) {
-            throw Throwables.propagate(e);
-        }
+        dataRoot = new File(new File(repoUrl.get()), databaseName);
 
         if (!dataRoot.exists() && !dataRoot.mkdirs()) {
             throw new IllegalStateException("Can't create environment: "
@@ -129,7 +134,16 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
                     + dataRoot.getAbsolutePath());
         }
         dataRootPath = dataRoot.getAbsolutePath();
-        conflicts.open();
+        try {
+            conflicts.open();
+        } finally {
+            try {
+                blobStore.open();
+            } catch (RuntimeException e) {
+                conflicts.close();
+                throw e;
+            }
+        }
     }
 
     /**
@@ -139,7 +153,11 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
     public void close() {
         dataRoot = null;
         dataRootPath = null;
-        conflicts.close();
+        try {
+            conflicts.close();
+        } finally {
+            blobStore.close();
+        }
     }
 
     /**
@@ -244,6 +262,8 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
      */
     @Override
     public List<ObjectId> lookUp(final String partialId) {
+        Preconditions.checkArgument(partialId.length() > 7,
+                "partial id must be at least 8 characters long: ", partialId);
         File parent = filePath(partialId).getParentFile();
         String[] list = parent.list();
         if (null == list) {
@@ -293,5 +313,10 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
     @Override
     public ConflictsDatabase getConflictsDatabase() {
         return conflicts;
+    }
+
+    @Override
+    public BlobStore getBlobStore() {
+        return blobStore;
     }
 }

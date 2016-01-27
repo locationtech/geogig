@@ -13,8 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
@@ -24,6 +23,7 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -183,11 +183,11 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
         RevTreeBuilder parentBuilder;
         ObjectId parentMetadataId = ObjectId.NULL;
         if (parentRef.isPresent()) {
-            ObjectId parentId = parentRef.get().objectId();
+            ObjectId parentId = parentRef.get().getObjectId();
             parentMetadataId = parentRef.get().getMetadataId();
-            parentBuilder = getTree(parentId, targetDatabase).builder(targetDatabase);
+            parentBuilder = new RevTreeBuilder(targetDatabase, getTree(parentId, targetDatabase));
         } else {
-            parentBuilder = RevTree.EMPTY.builder(targetDatabase);
+            parentBuilder = new RevTreeBuilder(targetDatabase, RevTree.EMPTY);
         }
 
         String childName = NodeRef.nodeFromPath(childPath);
@@ -203,7 +203,7 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
                 parentMetadataId);
     }
 
-    private RevTree getTree(ObjectId treeId, ObjectDatabase targetDb) {
+    private RevTree getTree(ObjectId treeId, ObjectStore targetDb) {
         RevTree revTree = targetDb.getTree(treeId);
         return revTree;
     }

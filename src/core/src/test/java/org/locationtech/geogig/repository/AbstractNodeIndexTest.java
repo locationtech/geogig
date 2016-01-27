@@ -10,13 +10,11 @@
 package org.locationtech.geogig.repository;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,7 +34,6 @@ import org.locationtech.geogig.storage.NodeStorageOrder;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 
 public abstract class AbstractNodeIndexTest extends Assert {
@@ -50,7 +47,7 @@ public abstract class AbstractNodeIndexTest extends Assert {
     private NodeIndex index;
 
     @Before
-    public void before() {
+    public void before() throws IOException {
         tempFolder.newFolder(".geogig");
         File workingDirectory = tempFolder.getRoot();
         Platform platform = new TestPlatform(workingDirectory);
@@ -141,8 +138,14 @@ public abstract class AbstractNodeIndexTest extends Assert {
         testNodes(1000 * 1000 * 50);
     }
 
+    private double getMemUsage() {
+        MemoryUsage heapUsage = MEMORY_MX_BEAN.getHeapMemoryUsage();
+        final double mbFactor = 1024 * 1024;
+        return heapUsage.getUsed() / mbFactor;
+    }
+
     private void testNodes(final int count) throws Exception {
-        MemoryUsage initialMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
+        final double initialMem = getMemUsage();
 
         Stopwatch sw = Stopwatch.createStarted();
         for (int i = 0; i < count; i++) {
@@ -152,48 +155,44 @@ public abstract class AbstractNodeIndexTest extends Assert {
         assertNotNull(nodes);
         System.err.printf("Added %,d nodes to %s index in %s. Traversing...\n", count, index
                 .getClass().getSimpleName(), sw.stop());
-        MemoryUsage indexCreateMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
+        final double indexCreateMem = getMemUsage();
 
         sw.reset().start();
         int size = Iterators.size(nodes);
         System.err.printf("Traversed %,d nodes in %s\n", size, sw.stop());
-        MemoryUsage indexTraversedMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
-        final double mbFactor = 1024 * 1024;
+        final double indexTraversedMem = getMemUsage();
+
         System.err
                 .printf("Initial memory usage: %.2fMB, after creating index: %.2fMB, after traversing: %.2fMB\n",
-                        (initialMem.getUsed() / mbFactor), (indexCreateMem.getUsed() / mbFactor),
-                        (indexTraversedMem.getUsed() / mbFactor));
-        assertEquals(count, size);
-        if (count >= 1000 * 1000) {
+                        initialMem, indexCreateMem, indexTraversedMem);
+        if (count >= 1_000_000) {
             System.gc();
             Thread.sleep(1000);
             System.gc();
             Thread.sleep(1000);
-            MemoryUsage afterGCMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
-            System.err.printf("Mem usage after GC: %.2fMB\n", (afterGCMem.getUsed() / mbFactor));
+            final double afterGCMem = getMemUsage();
+            System.err.printf("Mem usage after GC: %.2fMB\n", afterGCMem);
         }
         System.err.println();
+        assertEquals(count, size);
     }
 
     private void testOrder(final int count) throws Exception {
 
-        List<Node> expected = new ArrayList<Node>(count);
         for (int i = 0; i < count; i++) {
             Node node = node(i);
             index.add(node);
-            expected.add(node);
         }
-        Collections.sort(expected, new NodeStorageOrder());
 
-        Iterator<Node> nodeIterator = index.nodes();
-        List<Node> actual = Lists.newArrayList(nodeIterator);
-
-        assertEquals(expected.size(), actual.size());
-        for (int i = 0; i < expected.size(); i++) {
-            Node expectedNode = expected.get(i);
-            Node actualNode = actual.get(i);
-            assertEquals("At index " + i, expectedNode, actualNode);
-        }
+        final Iterator<Node> nodes = index.nodes();
+        Iterable<Node> iterable = new Iterable<Node>() {
+            @Override
+            public Iterator<Node> iterator() {
+                return nodes;
+            }
+        };
+        NodeStorageOrder ordering = new NodeStorageOrder();
+        assertTrue(ordering.isStrictlyOrdered(iterable));
     }
 
     private Node node(int i) {

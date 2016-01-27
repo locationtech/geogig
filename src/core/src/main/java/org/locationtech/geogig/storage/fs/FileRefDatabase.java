@@ -18,15 +18,14 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.AbstractRefDatabase;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -68,21 +67,16 @@ public class FileRefDatabase extends AbstractRefDatabase {
      */
     @Override
     public void create() {
-        Optional<URL> envHome = new ResolveGeogigDir(platform).call();
+        Optional<URI> envHome = new ResolveGeogigURI(platform, null).call();
         checkState(envHome.isPresent(), "Not inside a geogig directory");
 
-        final URL envURL = envHome.get();
-        if (!"file".equals(envURL.getProtocol())) {
+        final URI envURL = envHome.get();
+        if (!"file".equals(envURL.getScheme())) {
             throw new UnsupportedOperationException(
                     "This References Database works only against file system repositories. "
-                            + "Repository location: " + envURL.toExternalForm());
+                            + "Repository location: " + envURL);
         }
-        File repoDir;
-        try {
-            repoDir = new File(envURL.toURI());
-        } catch (URISyntaxException e) {
-            throw Throwables.propagate(e);
-        }
+        File repoDir = new File(envURL);
         File refs = new File(repoDir, "refs");
         if (!refs.exists() && !refs.mkdir()) {
             throw new IllegalStateException("Cannot create refs directory '"
@@ -190,6 +184,9 @@ public class FileRefDatabase extends AbstractRefDatabase {
         String oldRef;
         if (refFile.exists()) {
             oldRef = readRef(refFile);
+            if (oldRef.startsWith("ref: ")) {
+                oldRef = oldRef.substring("ref: ".length());
+            }
             if (!refFile.delete()) {
                 throw new RuntimeException("Unable to delete ref file '"
                         + refFile.getAbsolutePath() + "'");
@@ -205,12 +202,12 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @return
      */
     private File toFile(String refPath) {
-        Optional<URL> envHome = new ResolveGeogigDir(platform).call();
+        Optional<URI> envHome = new ResolveGeogigURI(platform, null).call();
 
         String[] path = refPath.split("/");
 
         try {
-            File file = new File(envHome.get().toURI());
+            File file = new File(envHome.get());
             for (String subpath : path) {
                 file = new File(file, subpath);
             }
@@ -295,11 +292,11 @@ public class FileRefDatabase extends AbstractRefDatabase {
      */
     @Override
     public Map<String, String> getAll(String namespace) {
-        Preconditions.checkNotNull(namespace);
+        Preconditions.checkNotNull(namespace, "namespace can't be null");
         File refsRoot;
         try {
-            Optional<URL> envHome = new ResolveGeogigDir(platform).call();
-            refsRoot = new File(envHome.get().toURI());
+            Optional<URI> envHome = new ResolveGeogigURI(platform, null).call();
+            refsRoot = new File(envHome.get());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -345,11 +342,13 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     @Override
     public Map<String, String> removeAll(String namespace) {
+        Preconditions.checkNotNull(namespace, "provided namespace is null");
+        Map<String, String> oldvalues = getAll(namespace);
         final File file = toFile(namespace);
         if (file.exists() && file.isDirectory()) {
             deleteDir(file);
         }
-        return null;
+        return oldvalues;
     }
 
     /**
@@ -387,7 +386,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     @Override
     public String toString() {
-        Optional<URL> envHome = new ResolveGeogigDir(platform).call();
+        Optional<URI> envHome = new ResolveGeogigURI(platform, null).call();
         return String.format("%s[geogig dir: %s]", getClass().getSimpleName(), envHome.orNull());
     }
 }

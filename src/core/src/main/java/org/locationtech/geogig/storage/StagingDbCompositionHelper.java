@@ -22,8 +22,8 @@ import com.google.common.collect.Lists;
 
 public class StagingDbCompositionHelper {
 
-    public static Iterator<RevObject> getAll(final ObjectDatabase objectDb,
-            final ObjectDatabase stagingDb, final Iterable<ObjectId> ids,
+    public static Iterator<RevObject> getAll(final ObjectStore objectDb,
+            final ObjectStore stagingDb, final Iterable<ObjectId> ids,
             final BulkOpListener listener) {
 
         final List<ObjectId> missingInStaging = Lists.newLinkedList();

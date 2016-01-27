@@ -14,10 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.util.IllegalFormatException;
 
-import javax.annotation.Nullable;
-
-import jline.Terminal;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.fusesource.jansi.Ansi;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.cli.porcelain.ColorArg;
@@ -50,6 +47,9 @@ public abstract class AbstractCommand implements CLICommand {
     @Parameter(names = "--help", help = true, hidden = true)
     public boolean help;
 
+    @Parameter(hidden = true, names = "--repo", description = "Repository location. Either a backend specific URL or the path to the folder containing the .geogig directory.")
+    public String repo;
+
     @Parameter(hidden = true, names = "--color", description = "Whether to apply colored output. Possible values are auto|never|always.", converter = ColorArg.Converter.class)
     public ColorArg color = ColorArg.auto;
 
@@ -61,6 +61,9 @@ public abstract class AbstractCommand implements CLICommand {
             return;
         }
 
+        if (repo != null) {
+            cli.setRepositoryURI(repo);
+        }
         try {
             runInternal(cli);
         } catch (IOException e) {
@@ -68,7 +71,7 @@ public abstract class AbstractCommand implements CLICommand {
         }
     }
 
-    protected Ansi newAnsi(Terminal terminal) {
+    protected Ansi newAnsi(Console console) {
         boolean useColor;
         switch (color) {
         case never:
@@ -78,14 +81,14 @@ public abstract class AbstractCommand implements CLICommand {
             useColor = true;
             break;
         default:
-            useColor = terminal.isAnsiSupported();
+            useColor = console.isAnsiSupported();
         }
 
         Ansi ansi = AnsiDecorator.newAnsi(useColor);
         return ansi;
     }
 
-    protected Ansi newAnsi(Terminal terminal, StringBuilder target) {
+    protected Ansi newAnsi(Console console, StringBuilder target) {
         boolean useColor;
         switch (color) {
         case never:
@@ -95,7 +98,7 @@ public abstract class AbstractCommand implements CLICommand {
             useColor = true;
             break;
         default:
-            useColor = terminal.isAnsiSupported();
+            useColor = console.isAnsiSupported();
         }
 
         Ansi ansi = AnsiDecorator.newAnsi(useColor, target);

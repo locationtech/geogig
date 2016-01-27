@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.locationtech.geogig.api.GeoGIG;
@@ -32,6 +30,7 @@ import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.storage.FieldType;
@@ -81,7 +80,7 @@ public class Show extends AbstractCommand implements CLICommand {
     }
 
     private void printRaw(GeogigCLI cli) throws IOException {
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
         for (String ref : refs) {
             Optional<RevObject> obj = geogig.command(RevObjectParse.class).setRefSpec(ref).call();
@@ -98,7 +97,7 @@ public class Show extends AbstractCommand implements CLICommand {
                     RevFeatureType ft = opt.get();
                     ImmutableList<PropertyDescriptor> attribs = ft.sortedDescriptors();
                     RevFeature feature = (RevFeature) revObject;
-                    Ansi ansi = super.newAnsi(console.getTerminal());
+                    Ansi ansi = super.newAnsi(console);
                     ansi.a(ref).newline();
                     ansi.a(feature.getId().toString()).newline();
                     ImmutableList<Optional<Object>> values = feature.getValues();
@@ -134,7 +133,7 @@ public class Show extends AbstractCommand implements CLICommand {
     }
 
     public void printFormatted(GeogigCLI cli) throws IOException {
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
         for (String ref : refs) {
             Optional<RevObject> obj = geogig.command(RevObjectParse.class).setRefSpec(ref).call();
@@ -151,7 +150,7 @@ public class Show extends AbstractCommand implements CLICommand {
                     RevFeatureType ft = opt.get();
                     ImmutableList<PropertyDescriptor> attribs = ft.sortedDescriptors();
                     RevFeature feature = (RevFeature) revObject;
-                    Ansi ansi = super.newAnsi(console.getTerminal());
+                    Ansi ansi = super.newAnsi(console);
                     ansi.newline().fg(Color.YELLOW).a("ID:  ").reset()
                             .a(feature.getId().toString()).newline();
                     ansi.fg(Color.YELLOW).a("FEATURE TYPE ID:  ").reset().a(ft.getId().toString())
@@ -179,7 +178,7 @@ public class Show extends AbstractCommand implements CLICommand {
                 checkParameter(opt.isPresent(),
                         "Refspec must resolve to a commit, tree, feature or feature type");
                 RevFeatureType ft = opt.get();
-                Ansi ansi = super.newAnsi(console.getTerminal());
+                Ansi ansi = super.newAnsi(console);
 
                 ansi.fg(Color.YELLOW).a("TREE ID:  ").reset().a(tree.getId().toString()).newline();
                 ansi.fg(Color.YELLOW).a("SIZE:  ").reset().a(Long.toString(tree.size())).newline();
@@ -191,7 +190,7 @@ public class Show extends AbstractCommand implements CLICommand {
                 console.println(ansi.toString());
             } else if (revObject instanceof RevCommit) {
                 RevCommit commit = (RevCommit) revObject;
-                Ansi ansi = super.newAnsi(console.getTerminal());
+                Ansi ansi = super.newAnsi(console);
                 ansi.a(Strings.padEnd("Commit:", 15, ' ')).fg(Color.YELLOW)
                         .a(commit.getId().toString()).reset().newline();
                 ansi.a(Strings.padEnd("Author:", 15, ' ')).fg(Color.GREEN)
@@ -210,7 +209,7 @@ public class Show extends AbstractCommand implements CLICommand {
                 ansi.a(Strings.padEnd("Subject:", 15, ' ')).a(commit.getMessage()).newline();
                 console.println(ansi.toString());
             } else if (revObject instanceof RevFeatureType) {
-                Ansi ansi = super.newAnsi(console.getTerminal());
+                Ansi ansi = super.newAnsi(console);
                 printFeatureType(ansi, (RevFeatureType) revObject, false);
                 console.println(ansi.toString());
             } else {

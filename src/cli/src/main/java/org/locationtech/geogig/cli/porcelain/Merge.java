@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.locationtech.geogig.api.GeoGIG;
@@ -33,6 +31,7 @@ import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 
 import com.beust.jcommander.Parameter;
@@ -69,8 +68,16 @@ public class Merge extends AbstractCommand implements CLICommand {
     @Parameter(names = "--no-commit", description = "Do not perform a commit after merging")
     private boolean noCommit;
 
+    @Parameter(names = "--no-ff", description = "Create a merge commit even when the merge resolves as fast forward")
+    private boolean noFastForward;
+
+    @Parameter(names = "--ff-only", description = "Refuse to merge unless the current HEAD is already up-to-date or the merge can be resolved as a fast forward")
+    private boolean fastForwardOnly;
+
     @Parameter(names = "--abort", description = "Aborts the current merge")
     private boolean abort;
+
+
 
     @Parameter(description = "<commitish>...")
     private List<String> commits = Lists.newArrayList();
@@ -82,11 +89,11 @@ public class Merge extends AbstractCommand implements CLICommand {
     public void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(commits.size() > 0 || abort, "No commits provided to merge.");
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
 
         final GeoGIG geogig = cli.getGeogig();
 
-        Ansi ansi = newAnsi(console.getTerminal());
+        Ansi ansi = newAnsi(console);
 
         if (abort) {
             Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
@@ -105,6 +112,7 @@ public class Merge extends AbstractCommand implements CLICommand {
             MergeOp merge = geogig.command(MergeOp.class);
             merge.setOurs(ours).setTheirs(theirs).setNoCommit(noCommit);
             merge.setMessage(message).setProgressListener(cli.getProgressListener());
+            merge.setFastForwardOnly(fastForwardOnly).setNoFastForward(noFastForward);
             for (String commitish : commits) {
                 Optional<ObjectId> commitId;
                 commitId = geogig.command(RevParse.class).setRefSpec(commitish).call();

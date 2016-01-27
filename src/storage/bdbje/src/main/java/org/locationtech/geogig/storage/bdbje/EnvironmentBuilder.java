@@ -11,14 +11,16 @@ package org.locationtech.geogig.storage.bdbje;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.repository.Hints;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
@@ -44,9 +46,12 @@ public class EnvironmentBuilder implements Provider<Environment> {
 
     private boolean readOnly;
 
+    private Hints hints;
+
     @Inject
-    public EnvironmentBuilder(Platform platform) {
+    public EnvironmentBuilder(Platform platform, @Nullable Hints hints) {
         this.platform = platform;
+        this.hints = hints;
     }
 
     public EnvironmentBuilder setRelativePath(String... path) {
@@ -68,7 +73,7 @@ public class EnvironmentBuilder implements Provider<Environment> {
     @Override
     public synchronized Environment get() {
 
-        final Optional<URL> repoUrl = new ResolveGeogigDir(platform).call();
+        final Optional<URI> repoUrl = new ResolveGeogigURI(platform, hints).call();
         if (!repoUrl.isPresent() && absolutePath == null) {
             throw new IllegalStateException("Can't find geogig repository home");
         }
@@ -77,12 +82,10 @@ public class EnvironmentBuilder implements Provider<Environment> {
         if (absolutePath != null) {
             storeDirectory = absolutePath;
         } else {
-            File currDir;
-            try {
-                currDir = new File(repoUrl.get().toURI());
-            } catch (URISyntaxException e) {
-                throw Throwables.propagate(e);
-            }
+            URI uri = repoUrl.get();
+            Preconditions.checkState("file".equals(uri.getScheme()),
+                    "Can't create BDB JE Environment on a non file repository URI: %s", uri);
+            File currDir = new File(uri);
             File dir = currDir;
             for (String subdir : path) {
                 dir = new File(dir, subdir);
@@ -94,6 +97,7 @@ public class EnvironmentBuilder implements Provider<Environment> {
             throw new IllegalStateException("Unable to create Environment directory: '"
                     + storeDirectory.getAbsolutePath() + "'");
         }
+
         EnvironmentConfig envCfg;
         if (this.forceConfig == null) {
             File conf = new File(storeDirectory, "je.properties");

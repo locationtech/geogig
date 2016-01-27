@@ -28,8 +28,9 @@ import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.osm.internal.MappingRule.DefaultField;
-import org.locationtech.geogig.osm.internal.log.ResolveOSMMappingLogFolder;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.Blobs;
 import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -56,7 +57,7 @@ public class OSMMapOpTest extends RepositoryTestCase {
     public void testMappingWays() throws Exception {
         // import and check that we have both ways and nodes
         String filename = OSMImportOp.class.getResource("ways.xml").getFile();
-        File file = new File(filename);
+        final File file = new File(filename);
         geogig.command(OSMImportOp.class).setDataSource(file.getAbsolutePath()).call();
         WorkingTree workTree = geogig.getRepository().workingTree();
         long unstaged = workTree.countUnstaged("way").count();
@@ -91,13 +92,12 @@ public class OSMMapOpTest extends RepositoryTestCase {
         assertEquals("yes", values.get(1).get());
 
         // Check that the corresponding log files have been added
-        File osmMapFolder = geogig.command(ResolveOSMMappingLogFolder.class).call();
-        file = new File(osmMapFolder, "onewaystreets");
-        assertTrue(file.exists());
-        file = new File(osmMapFolder, geogig.getRepository().workingTree().getTree().getId()
-                .toString());
-        assertTrue(file.exists());
-
+        BlobStore blobStore = getRepository().blobStore();
+        Optional<String> blob = Blobs.getBlobAsString(blobStore, "osm/map/onewaystreets");
+        assertTrue(blob.isPresent());
+        blob = Blobs.getBlobAsString(blobStore, "osm/map/"
+                + getRepository().workingTree().getTree().getId());
+        assertTrue(blob.isPresent());
     }
 
     @Test
@@ -309,12 +309,12 @@ public class OSMMapOpTest extends RepositoryTestCase {
         assertEquals(507464799l, values.get(0).get());
 
         // Check that the corresponding log files have been added
-        File osmMapFolder = geogig.command(ResolveOSMMappingLogFolder.class).call();
-        file = new File(osmMapFolder, "busstops");
-        assertTrue(file.exists());
-        file = new File(osmMapFolder, geogig.getRepository().workingTree().getTree().getId()
-                .toString());
-        assertTrue(file.exists());
+        BlobStore blobStore = getRepository().blobStore();
+        Optional<String> blob = Blobs.getBlobAsString(blobStore, "osm/map/busstops");
+        assertTrue(blob.isPresent());
+        blob = Blobs.getBlobAsString(blobStore, "osm/map/"
+                + getRepository().workingTree().getTree().getId());
+        assertTrue(blob.isPresent());
     }
 
     @Test

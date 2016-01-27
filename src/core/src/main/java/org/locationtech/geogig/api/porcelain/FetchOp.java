@@ -9,12 +9,10 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
@@ -32,7 +30,7 @@ import org.locationtech.geogig.remote.IRemoteRepo;
 import org.locationtech.geogig.remote.RemoteUtils;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.DeduplicationService;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -238,14 +236,13 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                 }
             }
 
-            Optional<IRemoteRepo> remoteRepo = getRemoteRepo(remote, repository()
-                    .deduplicationService());
+            Optional<IRemoteRepo> remoteRepo = getRemoteRepo(remote);
 
             Preconditions.checkState(remoteRepo.isPresent(), "Failed to connect to the remote.");
             IRemoteRepo remoteRepoInstance = remoteRepo.get();
             try {
                 remoteRepoInstance.open();
-            } catch (IOException e) {
+            } catch (RepositoryConnectionException e) {
                 Throwables.propagate(e);
             }
             try {
@@ -303,11 +300,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                     }
                 }
             } finally {
-                try {
-                    remoteRepoInstance.close();
-                } catch (IOException e) {
-                    Throwables.propagate(e);
-                }
+                remoteRepoInstance.close();
             }
         }
 
@@ -326,10 +319,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * @param remote the remote to get
      * @return an interface for the remote repository
      */
-    public Optional<IRemoteRepo> getRemoteRepo(Remote remote,
-            DeduplicationService deduplicationService) {
-        return RemoteUtils.newRemote(GlobalContextBuilder.builder.build(Hints.readOnly()), remote,
-                repository(), deduplicationService);
+    public Optional<IRemoteRepo> getRemoteRepo(Remote remote) {
+        return RemoteUtils.newRemote(repository(), remote, Hints.readOnly());
     }
 
     private Ref updateLocalRef(Ref remoteRef, Remote remote, ImmutableSet<Ref> localRemoteRefs) {

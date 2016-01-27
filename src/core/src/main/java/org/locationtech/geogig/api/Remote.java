@@ -11,19 +11,21 @@ package org.locationtech.geogig.api;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.Base64;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 
 /**
  * Internal representation of a GeoGig remote repository.
@@ -76,19 +78,21 @@ public class Remote {
         }
 
         try {
-            URL parsed = new URL(url);
-            return url;
-        } catch (MalformedURLException e) {
-            // we were just checking to see whether the url was already valid. if not, we'll try to resolve it as a local file
+            new URI(url);
+        } catch (URISyntaxException e) {
+            throw Throwables.propagate(e);
         }
-
-        File file = new File(url);
-        try {
-            url = file.toURI().toURL().toString();
-        } catch (MalformedURLException e) {
-            // shouldn't reach here, since the file exists and the path should then be correct
-            return url;
-        }
+//
+//        // we were just checking to see whether the url was already valid. if not, we'll try to
+//        // resolve it as a local file
+//
+//        File file = new File(url);
+//        try {
+//            url = file.toURI().toURL().toString();
+//        } catch (MalformedURLException e) {
+//            // shouldn't reach here, since the file exists and the path should then be correct
+//            return url;
+//        }
         return url;
     }
 

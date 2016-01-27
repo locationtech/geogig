@@ -8,15 +8,15 @@ geogig-diff documentation
 
 SYNOPSIS
 ********
-geogig diff [<commit> [<commit>]] [--cached] [-- <path>[ <path>]...] 
+geogig diff [<commit> [<commit>]] [--cached] [--path <path>[ <path>]...] 
 
-geogig diff [<commit> [<commit>]] [--cached] --nogeom  [-- <path>[ <path>]...] 
+geogig diff [<commit> [<commit>]] [--cached] --nogeom  [--path <path>[ <path>]...] 
 
-geogig diff [<commit> [<commit>]] [--cached] --summary [-- <path>[ <path>]...] 
+geogig diff [<commit> [<commit>]] [--cached] --summary [--path <path>[ <path>]...] 
 
-geogig diff [<commit> [<commit>]] [--cached] --count [-- <path>[ <path>]...] 
+geogig diff [<commit> [<commit>]] [--cached] --count [--path <path>[ <path>]...] 
 
-geogig diff [<commit> [<commit>]] [--cached] --bounds [--crs EPSG:<number>] [-- <path>[ <path>]...] 
+geogig diff [<commit> [<commit>]] [--cached] --bounds [--crs EPSG:<number>] [--path <path>[ <path>]...] 
 
 
 DESCRIPTION
@@ -26,7 +26,7 @@ Shows changes between two commits, a commit and the working tree or a commit and
 
 If no commits are specified, it will compare the working tree and index. If only a single commit is passed, it will compare the working tree and the specified commit.
 
-Comparison can be restricted to a given path, by using ``-- <path>``.
+Comparison can be restricted to a given path, by using ``--path <path>``.
 
 By default, a full detailed report of changes is shown. By using the ``--nogeom`` and ``--summary`` switches, a less detailed output can be obtained.
 

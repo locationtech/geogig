@@ -21,12 +21,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.porcelain.ConfigException;
-import org.locationtech.geogig.api.porcelain.ConfigException.StatusCode;
 import org.locationtech.geogig.api.porcelain.ConfigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConfigException;
+import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.google.common.base.Optional;
 

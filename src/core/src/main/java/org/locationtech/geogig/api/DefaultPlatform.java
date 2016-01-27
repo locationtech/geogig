@@ -13,15 +13,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.TimeZone;
 
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * Standard platform for GeoGig.
@@ -89,17 +86,13 @@ public class DefaultPlatform implements Platform {
 
     @Override
     public synchronized File getTempDir() {
-        Optional<URL> url = new ResolveGeogigDir(this).call();
+        Optional<URI> url = new ResolveGeogigURI(this, null).call();
         final File tmpDir;
         if (url.isPresent()) {
-            try {
-                URI uri = url.get().toURI();
-                tmpDir = new File(new File(uri), "tmp");
-                Preconditions.checkState(tmpDir.exists() || tmpDir.mkdir(),
-                        "unable to create directory %s", tmpDir.getAbsolutePath());
-            } catch (URISyntaxException e) {
-                throw Throwables.propagate(e);
-            }
+            URI uri = url.get();
+            tmpDir = new File(new File(uri), "tmp");
+            Preconditions.checkState(tmpDir.exists() || tmpDir.mkdir(),
+                    "unable to create directory %s", tmpDir.getAbsolutePath());
         } else {
             String systmplocation = System.getProperty("java.io.tmpdir");
             tmpDir = new File(systmplocation);

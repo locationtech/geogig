@@ -10,7 +10,7 @@
     </encoder>
   </appender>
 
-  <!-- geogigdir is a variable set on the logging context by the cli application by calling the resolve-geogig-dir plumbing 
+  <!-- geogigdir is a variable set on the logging context by the cli application by calling the resolve-geogig-uri plumbing 
     command -->
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 
@@ -31,61 +31,6 @@
     </encoder>
   </appender>
 
-  <appender name="METRICS" class="ch.qos.logback.core.rolling.RollingFileAppender">
-
-    <file>${geogigdir}/log/metrics.csv</file>
-
-    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-      <fileNamePattern>${geogigdir}/log/metrics.csv.%i</fileNamePattern>
-      <minIndex>1</minIndex>
-      <maxIndex>9</maxIndex>
-    </rollingPolicy>
-
-    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-      <maxFileSize>10MB</maxFileSize>
-    </triggeringPolicy>
-
-    <encoder>
-      <pattern>%m%n</pattern>
-    </encoder>
-  </appender>
-  <appender name="METRICS_STACK" class="ch.qos.logback.core.rolling.RollingFileAppender">
-
-    <file>${geogigdir}/log/command_trace.txt</file>
-
-    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-      <fileNamePattern>${geogigdir}/log/command_trace.txt.%i</fileNamePattern>
-      <minIndex>1</minIndex>
-      <maxIndex>9</maxIndex>
-    </rollingPolicy>
-
-    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-      <maxFileSize>10MB</maxFileSize>
-    </triggeringPolicy>
-
-    <encoder>
-      <pattern>%m%n</pattern>
-    </encoder>
-  </appender>
-  <appender name="MEMORY" class="ch.qos.logback.core.rolling.RollingFileAppender">
-
-    <file>${geogigdir}/log/memory.csv</file>
-
-    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-      <fileNamePattern>${geogigdir}/log/memory.csv.%i</fileNamePattern>
-      <minIndex>1</minIndex>
-      <maxIndex>9</maxIndex>
-    </rollingPolicy>
-
-    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-      <maxFileSize>10MB</maxFileSize>
-    </triggeringPolicy>
-
-    <encoder>
-      <pattern>%m%n</pattern>
-    </encoder>
-  </appender>
-
   <!-- level: one of TRACE, DEBUG, INFO, WARN, ERROR -->
   <logger name="org.locationtech.geogig" level="INFO" />
   <logger name="org.locationtech.geogig.api.plumbing" level="INFO" />
@@ -100,17 +45,4 @@
     <appender-ref ref="FILE" />
   </root>
 
-  <logger name="org.locationtech.geogig.metrics.csv" additivity="false">
-    <level value="INFO" />
-    <appender-ref ref="METRICS" />
-  </logger>
-
-  <logger name="org.locationtech.geogig.metrics.stack" additivity="false">
-    <level value="INFO" />
-    <appender-ref ref="METRICS_STACK" />
-  </logger>
-  <logger name="org.locationtech.geogig.metrics.memory" additivity="false">
-    <level value="INFO" />
-    <appender-ref ref="MEMORY" />
-  </logger>
 </configuration>

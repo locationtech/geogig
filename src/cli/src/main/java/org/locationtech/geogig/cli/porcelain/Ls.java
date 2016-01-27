@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject.TYPE;
@@ -22,6 +20,7 @@ import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 
@@ -82,7 +81,7 @@ public class Ls extends AbstractCommand implements CLICommand {
         Iterator<NodeRef> iter = cli.getGeogig().command(LsTreeOp.class).setReference(ref)
                 .setStrategy(lsStrategy).call();
 
-        final ConsoleReader console = cli.getConsole();
+        final Console console = cli.getConsole();
         if (!iter.hasNext()) {
             if (ref == null) {
                 console.println("The working tree is empty");
@@ -118,7 +117,7 @@ public class Ls extends AbstractCommand implements CLICommand {
                 }
                 if (verbose) {
                     sb.append(' ').append(abbrev(input.getMetadataId())).append(' ')
-                            .append(abbrev(input.objectId()));
+                            .append(abbrev(input.getObjectId()));
                 }
                 return sb.toString();
             }

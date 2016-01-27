@@ -11,8 +11,7 @@ package org.locationtech.geogig.api.plumbing;
 
 import java.util.Iterator;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
@@ -38,6 +37,8 @@ public class DiffWorkTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implemen
     private String refSpec;
 
     private boolean reportTrees;
+
+    private Long limit;
 
     /**
      * @param refSpec the name of the root tree object in the to compare the working tree against.
@@ -75,7 +76,7 @@ public class DiffWorkTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implemen
         final RevTree newTree = workingTree().getTree();
 
         DiffTree diff = command(DiffTree.class).setReportTrees(this.reportTrees)
-                .setOldTree(oldTree.getId()).setNewTree(newTree.getId());
+                .setOldTree(oldTree.getId()).setNewTree(newTree.getId()).setMaxDiffs(limit);
         if (this.pathFilter != null) {
             diff.setPathFilter(ImmutableList.of(pathFilter));
         }
@@ -105,6 +106,13 @@ public class DiffWorkTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implemen
      */
     public DiffWorkTree setReportTrees(boolean reportTrees) {
         this.reportTrees = reportTrees;
+        return this;
+    }
+
+    public DiffWorkTree setMaxDiffs(@Nullable Long limit) {
+        Preconditions.checkArgument(limit == null || limit.longValue() >= 0L,
+                "limit must be >= 0: ", limit);
+        this.limit = limit;
         return this;
     }
 

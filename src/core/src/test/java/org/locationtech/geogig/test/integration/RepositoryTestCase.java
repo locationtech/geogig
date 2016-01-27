@@ -13,8 +13,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.NameImpl;
@@ -50,8 +53,12 @@ import org.opengis.feature.type.Name;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.io.ParseException;
 
 public abstract class RepositoryTestCase extends Assert {
@@ -139,7 +146,7 @@ public abstract class RepositoryTestCase extends Assert {
     // prevent recursion
     private boolean setup = false;
 
-    protected File envHome;
+    protected File repositoryDirectory;
 
     protected Context injector;
 
@@ -156,12 +163,21 @@ public abstract class RepositoryTestCase extends Assert {
         doSetUp();
     }
 
+    /**
+     * In rare occasions a test fail for unknown reasons and it's definitely related to the
+     * temporary folder somehow resolving to the same directory in two different tests, which I
+     * thought was impossible and the whole point of {@link TemporaryFolder}. So although I didn't
+     * get to the root cause of the issue, appending a randon number to the repository directory
+     * name makes the trick for the time being.
+     */
+    private static final Random RANDOM = new Random();
+
     protected final void doSetUp() throws IOException, SchemaException, ParseException, Exception {
-        envHome = repositoryTempFolder.newFolder("repo");
+        repositoryDirectory = repositoryTempFolder.newFolder("repo" + RANDOM.nextInt());
 
         injector = createInjector();
 
-        geogig = new GeoGIG(injector, envHome);
+        geogig = new GeoGIG(injector, repositoryDirectory);
         repo = geogig.getOrCreateRepository();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("Gabriel Roldan").call();
@@ -211,7 +227,7 @@ public abstract class RepositoryTestCase extends Assert {
     }
 
     protected Platform createPlatform() {
-        Platform testPlatform = new TestPlatform(envHome);
+        Platform testPlatform = new TestPlatform(repositoryDirectory);
         return testPlatform;
     }
 
@@ -274,17 +290,27 @@ public abstract class RepositoryTestCase extends Assert {
         for (Feature f : features) {
             insertAndAdd(f);
             if (oneCommitPerFeature) {
-                RevCommit commit = geogig.command(CommitOp.class).call();
-                commits.add(commit);
+                commits.add(commit(f.getIdentifier().getID()));
             }
         }
 
         if (!oneCommitPerFeature) {
-            RevCommit commit = geogig.command(CommitOp.class).call();
-            commits.add(commit);
+            String msg = Joiner.on(',').join(
+                    Lists.transform(features, new Function<Feature, String>() {
+                        @Override
+                        public String apply(Feature input) {
+                            return input.getIdentifier().getID();
+                        }
+                    }));
+            commits.add(commit(msg));
         }
 
         return commits;
+    }
+
+    protected RevCommit commit(String message) {
+        RevCommit commit = geogig.command(CommitOp.class).setMessage(message).call();
+        return commit;
     }
 
     /**
@@ -437,4 +463,14 @@ public abstract class RepositoryTestCase extends Assert {
         }
         return bounds;
     }
+
+    public static Map<String, String> asMap(String... kvp) {
+        Preconditions.checkArgument(kvp.length % 2 == 0, "An even number of arguments is expected");
+        Map<String, String> map = new HashMap<>();
+        for (int i = 0; i < kvp.length; i += 2) {
+            map.put(kvp[i], kvp[i + 1]);
+        }
+        return map;
+    }
+
 }

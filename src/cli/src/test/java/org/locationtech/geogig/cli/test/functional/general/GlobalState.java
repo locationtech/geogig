@@ -24,9 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import jline.UnsupportedTerminal;
-import jline.console.ConsoleReader;
-
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.ContextBuilder;
@@ -36,6 +33,7 @@ import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.TestPlatform;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
@@ -81,11 +79,23 @@ public class GlobalState {
 
     public static GeogigCLI geogigCLI;
 
-    public static ConsoleReader consoleReader;
+    public static Console consoleReader;
+
+    /**
+     * If non null, {@link #setupGeogig()} will use it as the repository URI, otherwise it'll use
+     * the platform's current directory
+     */
+    public static String repositoryURI;
 
     public static void setUpDirectories() throws IOException {
-        File homeDirectory = tempFolder.newFolder("fakeHomeDir").getCanonicalFile();
-        File currentDirectory = tempFolder.newFolder("testrepo").getCanonicalFile();
+        File homeDirectory = new File(tempFolder.getRoot(), "fakeHomeDir");
+        File currentDirectory = new File(tempFolder.getRoot(), "testrepo");
+        if (!homeDirectory.exists()) {
+            homeDirectory.mkdir();
+        }
+        if (!currentDirectory.exists()) {
+            currentDirectory.mkdir();
+        }
         if (GlobalState.platform == null) {
             GlobalState.platform = new TestPlatform(currentDirectory, homeDirectory);
         } else {
@@ -100,25 +110,27 @@ public class GlobalState {
         stdIn = new ByteArrayInputStream(new byte[0]);
         stdOut = new ByteArrayOutputStream();
 
-        if (GlobalState.consoleReader != null) {
-            GlobalState.consoleReader.shutdown();
-        }
-        // GlobalState.consoleReader = new ConsoleReader(stdIn,
-        // new TeeOutputStream(stdOut, System.err), new UnsupportedTerminal());
-        GlobalState.consoleReader = new ConsoleReader(stdIn, stdOut, new UnsupportedTerminal());
-
-        ContextBuilder injectorBuilder = new CLITestContextBuilder(platform);
-        Context injector = injectorBuilder.build();
+        GlobalState.consoleReader = new Console(stdIn, stdOut).disableAnsi();
 
         if (geogigCLI != null) {
             geogigCLI.close();
         }
 
         geogigCLI = new GeogigCLI(GlobalState.consoleReader);
+
+        ContextBuilder injectorBuilder = new CLITestContextBuilder(platform);
         GlobalContextBuilder.builder = injectorBuilder;
-        Platform platform = injector.platform();
+
+        Context context = injectorBuilder.build();
+        Platform platform = context.platform();
+
         geogigCLI.setPlatform(platform);
         geogigCLI.tryConfigureLogging();
+
+        String uri = GlobalState.repositoryURI;
+        if (uri != null) {
+            geogigCLI.setRepositoryURI(uri);
+        }
     }
 
     /**

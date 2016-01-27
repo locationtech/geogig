@@ -11,9 +11,7 @@ package org.locationtech.geogig.api.hooks;
 
 import java.util.ServiceLoader;
 
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.ThreadSafe;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 
 /**
@@ -27,7 +25,6 @@ import org.locationtech.geogig.api.AbstractGeoGigOp;
  * Implementations must have a default constructor (or no explicit constructor at all), and must be
  * thread safe.
  */
-@ThreadSafe
 public interface CommandHook {
 
     public <C extends AbstractGeoGigOp<?>> C pre(C command)

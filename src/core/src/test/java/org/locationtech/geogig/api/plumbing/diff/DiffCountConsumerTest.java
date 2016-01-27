@@ -59,6 +59,7 @@ public class DiffCountConsumerTest extends Assert {
         {
             RevTreeBuilder builder = createFeaturesTree("", 10);
             this.childrenFeatureTree = builder.build();
+            odb.put(childrenFeatureTree);
         }
         {
             RevTreeBuilder rootBuilder = new RevTreeBuilder(odb);
@@ -67,12 +68,14 @@ public class DiffCountConsumerTest extends Assert {
             childTree2 = createFeaturesTree("tree2", 5);
             createFeatureTypesTree(rootBuilder, "tree2", childTree2);
             childrenFeatureTypesTree = rootBuilder.build();
+            odb.put(childrenFeatureTypesTree);
         }
 
         {
             RevTreeBuilder builder = createFeaturesTree("", 2 * RevTree.NORMALIZED_SIZE_LIMIT);
             this.bucketsFeatureTree = builder.build();
             assertTrue(bucketsFeatureTree.buckets().isPresent());
+            odb.put(bucketsFeatureTree);
         }
     }
 
@@ -111,17 +114,21 @@ public class DiffCountConsumerTest extends Assert {
     public void testChildrenChildren() {
         RevTreeBuilder builder = new RevTreeBuilder(odb, childrenFeatureTree);
         RevTree changed = builder.remove("3").build();
+        odb.put(changed);
         assertEquals(1, count(childrenFeatureTree, changed).featureCount());
         assertEquals(1, count(changed, childrenFeatureTree).featureCount());
 
         changed = builder.put(
                 Node.create("new", FAKE_FEATURE_ID, ObjectId.NULL, TYPE.FEATURE, null)).build();
+        odb.put(changed);
+        
         assertEquals(2, count(childrenFeatureTree, changed).featureCount());
         assertEquals(2, count(changed, childrenFeatureTree).featureCount());
 
         changed = builder.put(
                 Node.create("1", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null))
                 .build();
+        odb.put(changed);
         assertEquals(3, count(childrenFeatureTree, changed).featureCount());
         assertEquals(3, count(changed, childrenFeatureTree).featureCount());
     }
@@ -132,18 +139,21 @@ public class DiffCountConsumerTest extends Assert {
         childTree1.put(featureRef("tree1", 1000));
         createFeatureTypesTree(rootBuilder, "tree1", childTree1);
         RevTree newRoot = rootBuilder.build();
-
+        odb.put(newRoot);
+        
         assertEquals(1, count(childrenFeatureTypesTree, newRoot).featureCount());
 
         childTree2.remove("tree2/2");
         createFeatureTypesTree(rootBuilder, "tree2", childTree2);
         newRoot = rootBuilder.build();
+        odb.put(newRoot);
         assertEquals(2, count(childrenFeatureTypesTree, newRoot).featureCount());
 
         childTree2.put(Node.create("tree2/1", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE,
                 null));
         createFeatureTypesTree(rootBuilder, "tree2", childTree2);
         newRoot = rootBuilder.build();
+        odb.put(newRoot);
         assertEquals(3, count(childrenFeatureTypesTree, newRoot).featureCount());
     }
 
@@ -158,6 +168,7 @@ public class DiffCountConsumerTest extends Assert {
         }
 
         RevTree changed = builder.build();
+        odb.put(changed);
         assertEquals(initialSize + added, changed.size());
 
         assertEquals(added, count(bucketsFeatureTree, changed).featureCount());
@@ -179,6 +190,7 @@ public class DiffCountConsumerTest extends Assert {
 
         RevTree changed;
         changed = builder.remove("3").build();
+        odb.put(changed);
         assertEquals(1, count(bucketsFeatureTree, changed).featureCount());
         assertEquals(1, count(changed, bucketsFeatureTree).featureCount());
 
@@ -186,6 +198,7 @@ public class DiffCountConsumerTest extends Assert {
             builder.remove(String.valueOf(i));
         }
         changed = builder.build();
+        odb.put(changed);
         assertEquals(RevTree.NORMALIZED_SIZE_LIMIT + 1, changed.size());
         assertTrue(changed.buckets().isPresent());
 
@@ -197,6 +210,7 @@ public class DiffCountConsumerTest extends Assert {
         builder.remove(String.valueOf(RevTree.NORMALIZED_SIZE_LIMIT + 1));
 
         changed = builder.build();
+        odb.put(changed);
         assertEquals(RevTree.NORMALIZED_SIZE_LIMIT, changed.size());
         assertFalse(changed.buckets().isPresent());
     }
@@ -211,6 +225,8 @@ public class DiffCountConsumerTest extends Assert {
         changed = builder.put(
                 Node.create("1023", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null))
                 .build();
+        odb.put(changed);
+        
         DiffObjectCount count = count(bucketsFeatureTree, changed);
         assertEquals(1, count.featureCount());
         assertEquals(0, count.treeCount());
@@ -227,6 +243,7 @@ public class DiffCountConsumerTest extends Assert {
             expected++;
         }
         changed = builder.build();
+        odb.put(changed);
         assertEquals(expected, count(bucketsFeatureTree, changed).featureCount());
         assertEquals(expected, count(changed, bucketsFeatureTree).featureCount());
 
@@ -244,6 +261,7 @@ public class DiffCountConsumerTest extends Assert {
             builder.remove(String.valueOf(i));
         }
         changed = builder.build();
+        odb.put(changed);
         assertEquals(RevTree.NORMALIZED_SIZE_LIMIT, changed.size());
         assertFalse(changed.buckets().isPresent());
 
@@ -258,6 +276,7 @@ public class DiffCountConsumerTest extends Assert {
 
         final RevTree deepTree = createFeaturesTree("", 20000 + RevTree.NORMALIZED_SIZE_LIMIT)
                 .build();
+        odb.put(deepTree);
         // sanity check
         assertTrue(deepTree.buckets().isPresent());
 
@@ -276,6 +295,8 @@ public class DiffCountConsumerTest extends Assert {
             }
         }
         RevTree changed = builder.build();
+        odb.put(changed);
+        
         assertEquals(RevTree.NORMALIZED_SIZE_LIMIT, changed.size());
         // sanity check
         assertTrue(changed.features().isPresent());
@@ -293,7 +314,7 @@ public class DiffCountConsumerTest extends Assert {
         }
         int depth = currDepth;
         for (Bucket bucket : deepTree.buckets().get().values()) {
-            RevTree bucketTree = odb.get(bucket.id(), RevTree.class);
+            RevTree bucketTree = odb.get(bucket.getObjectId(), RevTree.class);
             int d = depth(bucketTree, currDepth + 1);
             depth = Math.max(depth, d);
         }

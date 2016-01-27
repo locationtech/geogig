@@ -10,25 +10,30 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.awt.RenderingHints.Key;
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.util.KVP;
+import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.ContextBuilder;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.cli.CLIContextBuilder;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.RepositoryInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 
 public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
 
@@ -45,13 +50,17 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
     }
 
     public static interface RepositoryLookup {
-        public File resolve(String repository);
+        public URI resolve(String repository);
     }
 
     public static class DefaultRepositoryLookup implements RepositoryLookup {
         @Override
-        public File resolve(String repository) {
-            return new File(repository);
+        public URI resolve(String repository) {
+            try {
+                return new URI(repository);
+            } catch (URISyntaxException e) {
+                throw Throwables.propagate(e);
+            }
         }
     }
 
@@ -62,7 +71,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             false, DefaultRepositoryLookup.class.getName(), new KVP(Param.LEVEL, "advanced"));
 
     public static final Param REPOSITORY = new Param("geogig_repository", String.class,
-            "Root directory for the geogig repository", true, "/path/to/repository") {
+            "Repository URI", true, "/path/to/repository") {
 
         @Override
         public String lookUp(Map<String, ?> map) throws IOException {
@@ -119,12 +128,18 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
                 return true;
             }
 
-            File repository = new File(repoParam);
+            final URI repository = URI.create(repoParam);
 
-            // check that repository points to a file, and either that fiel is a directory, or the
-            // the create option is set
-            return repository instanceof File && ((File) repository).isDirectory()
-                    || Boolean.TRUE.equals(CREATE.lookUp(params));
+            if (Boolean.TRUE.equals(CREATE.lookUp(params))) {
+                return true;
+            }
+
+            try {
+                RepositoryInitializer.lookup(repository);
+            } catch (IllegalArgumentException e) {
+                return false;
+            }
+            return true;
         } catch (IOException ignoreMe) {
             //
         }
@@ -173,18 +188,25 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         @Nullable
         final Boolean create = (Boolean) CREATE.lookUp(params);
 
-        final File repositoryDirectory = resolver.resolve(repositoryLocation);
+        final URI repositoryDirectory = resolver.resolve(repositoryLocation);
 
+        final RepositoryInitializer initializer;
+        try {
+            initializer = RepositoryInitializer.lookup(repositoryDirectory);
+        } catch (IllegalArgumentException e) {
+            throw new IOException(e.getMessage(), e);
+        }
         if (create != null && create.booleanValue()) {
-            if (!repositoryDirectory.exists()) {
+            if (!initializer.repoExists(repositoryDirectory)) {
                 return createNewDataStore(params);
             }
         }
 
         GeoGIG geogig;
         try {
-            geogig = new GeoGIG(repositoryDirectory);
-        } catch (RuntimeException e) {
+            Repository repo = initializer.open(repositoryDirectory);
+            geogig = new GeoGIG(repo);
+        } catch (RepositoryConnectionException | RuntimeException e) {
             throw new IOException(e.getMessage(), e);
         }
         Repository repository = geogig.getRepository();
@@ -194,7 +216,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             }
 
             throw new IOException(String.format("Directory is not a geogig repository: '%s'",
-                    repositoryDirectory.getAbsolutePath()));
+                    repositoryDirectory));
         }
 
         GeoGigDataStore store = new GeoGigDataStore(geogig);
@@ -231,15 +253,16 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
     public GeoGigDataStore createNewDataStore(Map<String, Serializable> params) throws IOException {
         String defaultNamespace = (String) DEFAULT_NAMESPACE.lookUp(params);
 
-        File repositoryRoot = new File((String) REPOSITORY.lookUp(params));
-        if (!repositoryRoot.isDirectory()) {
-            if (repositoryRoot.exists()) {
-                throw new IOException(repositoryRoot.getAbsolutePath() + " is not a directory");
-            }
-            repositoryRoot.mkdirs();
+        URI repositoryRoot = URI.create((String) REPOSITORY.lookUp(params));
+        RepositoryInitializer initializer = RepositoryInitializer.lookup(repositoryRoot);
+        if (initializer.repoExists(repositoryRoot)) {
+            throw new IOException("Repository already exists " + repositoryRoot);
         }
 
-        GeoGIG geogig = new GeoGIG(repositoryRoot);
+        Hints hints = new Hints();
+        hints.set(Hints.REPOSITORY_URL, repositoryRoot.toString());
+        Context context = GlobalContextBuilder.builder.build(hints);
+        GeoGIG geogig = new GeoGIG(context);
 
         try {
             Repository repository = geogig.getOrCreateRepository();

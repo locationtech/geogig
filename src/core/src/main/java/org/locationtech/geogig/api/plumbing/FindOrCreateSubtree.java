@@ -16,7 +16,7 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -97,7 +97,7 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
                     throw new IllegalArgumentException("Object exists as child of tree "
                             + parent.getId() + " but is not a tree: " + treeChildRef);
                 }
-                subtreeId = treeRef.objectId();
+                subtreeId = treeRef.getObjectId();
             } else {
                 subtreeId = RevTree.EMPTY_TREE_ID;
             }
@@ -107,7 +107,7 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
         if (RevTree.EMPTY_TREE_ID.equals(subtreeId)) {
             return RevTree.EMPTY;
         }
-        ObjectDatabase target = objectDatabase();
+        ObjectStore target = objectDatabase();
         RevTree tree = target.getTree(subtreeId);
         return tree;
     }

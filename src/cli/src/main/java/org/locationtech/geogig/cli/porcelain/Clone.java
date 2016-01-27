@@ -11,18 +11,24 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.Context;
+import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.porcelain.CloneOp;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryInitializer;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -72,8 +78,8 @@ public class Clone extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=bdbje:bdbje.version=0.1")
     private String config;
 
-    @Parameter(description = "<repository> [<directory>]")
-    private List<String> args;
+    @Parameter(description = "<repository> [<directory>|<clone URI>]")
+    private List<String> args = new ArrayList<>(2);
 
     /**
      * Executes the clone command using the provided options.
@@ -87,59 +93,73 @@ public class Clone extends AbstractCommand implements CLICommand {
                     "Sparse Clone: You must explicitly specify a remote branch to clone by using '--branch <branch>'.");
         }
 
-        String repoURL = args.get(0).replace('\\', '/');
-
-        File repoDir;
-        {
-            File currDir = cli.getPlatform().pwd();
-
-            // Construct a non-relative repository URL in case of a local remote
-            if (!repoURL.startsWith("http")) {
-                File repo = new File(repoURL);
-                if (!repo.isAbsolute()) {
-                    repo = new File(currDir, repoURL).getCanonicalFile();
-                }
-                repoURL = repo.toURI().getPath();
-            }
-
-            if (args != null && args.size() == 2) {
-                String target = args.get(1);
-                File f = new File(target);
-                if (!f.isAbsolute()) {
-                    f = new File(currDir, target).getCanonicalFile();
-                }
-                repoDir = f;
-            } else {
-                String[] sp = repoURL.split("/");
-                repoDir = new File(currDir, sp[sp.length - 1]).getCanonicalFile();
-            }
-            if (!repoDir.exists() && !repoDir.mkdirs()) {
-                throw new CommandFailedException("Can't create directory "
-                        + repoDir.getAbsolutePath());
-            }
+        final URI remoteURI;
+        final URI cloneURI;
+        final Platform platform = cli.getPlatform();
+        try {
+            String remoteArg = args.get(0);
+            remoteURI = checkAbsolute(remoteArg, platform);
+        } catch (URISyntaxException e) {
+            throw new CommandFailedException("Can't parse remote URI", e);
         }
 
-        GeoGIG geogig = new GeoGIG(cli.getGeogigInjector(), repoDir);
+        final String targetArg;
+        if (args.size() == 2) {
+            targetArg = args.get(1);
+            try {
+                cloneURI = checkAbsolute(targetArg, platform);
+            } catch (URISyntaxException e) {
+                throw new CommandFailedException("Can't parse target URI", e);
+            }
+        } else {
+            cloneURI = platform.pwd().toURI();
+            targetArg = cloneURI.getPath();
+        }
 
-        checkParameter(!geogig.command(ResolveGeogigDir.class).call().isPresent(),
+        RepositoryInitializer cloneInitializer = RepositoryInitializer.lookup(cloneURI);
+        checkParameter(!cloneInitializer.repoExists(cloneURI),
                 "Destination path already exists and is not an empty directory.");
 
-        geogig.command(InitOp.class).setConfig(Init.splitConfig(config)).setFilterFile(filterFile)
-                .call();
+        cli.setRepositoryURI(cloneURI.toString());
+        Context cloneContext = cli.getGeogigInjector();
+        cloneInitializer.initialize(cloneURI, cloneContext);
+        cli.setPlatform(cloneContext.platform());
 
-        cli.setGeogig(geogig);
-        cli.getPlatform().setWorkingDir(repoDir);
+        Console console = cli.getConsole();
 
-        cli.getConsole().println("Cloning into '" + cli.getPlatform().pwd().getName() + "'...");
+        Repository cloneRepo = cloneContext.command(InitOp.class)
+                .setConfig(Init.splitConfig(config)).setFilterFile(filterFile).call();
+        try {
+            console.println("Cloning into '" + targetArg + "'...");
+            console.flush();
 
-        CloneOp clone = cli.getGeogig().command(CloneOp.class);
-        clone.setProgressListener(cli.getProgressListener());
-        clone.setBranch(branch).setRepositoryURL(repoURL);
-        clone.setUserName(username).setPassword(password);
-        clone.setDepth(depth);
+            CloneOp clone = cloneRepo.command(CloneOp.class);
+            clone.setProgressListener(cli.getProgressListener());
+            clone.setBranch(branch).setRepositoryURL(remoteURI.toString());
+            clone.setUserName(username).setPassword(password);
+            clone.setDepth(depth);
 
-        clone.call();
+            clone.call();
+        } finally {
+            cloneRepo.close();
+        }
+        console.println("Done.");
+    }
 
-        cli.getConsole().println("Done.");
+    private URI checkAbsolute(String repoUri, Platform platform) throws URISyntaxException {
+        URI uri;
+
+        uri = new URI(repoUri.replace('\\', '/').replaceAll(" ", "%20"));
+
+        String scheme = uri.getScheme();
+        if (null == scheme) {
+            uri = new File(platform.pwd(), repoUri).toURI();
+        } else if ("file".equals(scheme)) {
+            File f = new File(uri);
+            if (!f.isAbsolute()) {
+                uri = new File(platform.pwd(), repoUri).toURI();
+            }
+        }
+        return uri;
     }
 }

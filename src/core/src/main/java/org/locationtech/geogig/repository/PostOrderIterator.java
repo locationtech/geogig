@@ -24,7 +24,7 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevTag;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.storage.Deduplicator;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.collect.AbstractIterator;
 
@@ -48,10 +48,10 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
     /**
      * A traversal of all objects reachable from the given origin, with deduplication.
      */
-    public static Iterator<RevObject> all(ObjectId top, ObjectDatabase database, Deduplicator deduplicator) {
+    public static Iterator<RevObject> all(ObjectId top, ObjectStore database, Deduplicator deduplicator) {
         List<ObjectId> start = new ArrayList<ObjectId>();
         start.add(top);
-        return new PostOrderIterator(start, database, unique(ALL_SUCCESSORS));
+        return new PostOrderIterator(start, database, uniqueWithDeduplicator(ALL_SUCCESSORS, deduplicator));
     }
 
     /**
@@ -60,7 +60,7 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
      * commits will be traversed as well as the content, otherwise only the content.
      */
     public static Iterator<RevObject> range(List<ObjectId> start, List<ObjectId> base,
-            ObjectDatabase database, boolean traverseCommits, Deduplicator deduplicator) {
+            ObjectStore database, boolean traverseCommits, Deduplicator deduplicator) {
         return new PostOrderIterator(new ArrayList<ObjectId>(start), database, //
                 uniqueWithDeduplicator(blacklist((traverseCommits ? ALL_SUCCESSORS : COMMIT_SUCCESSORS), base), deduplicator));
     }
@@ -72,19 +72,19 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
      * @param database
      * @return
      */
-    public static Iterator<RevObject> rangeOfCommits(List<ObjectId> start, List<ObjectId> base, ObjectDatabase database, Deduplicator deduplicator) {
+    public static Iterator<RevObject> rangeOfCommits(List<ObjectId> start, List<ObjectId> base, ObjectStore database, Deduplicator deduplicator) {
         return new PostOrderIterator(new ArrayList<ObjectId>(start), database, uniqueWithDeduplicator(blacklist( COMMIT_PARENTS, base), deduplicator));
     }
 
     public static Iterator<RevObject> contentsOf(List<ObjectId> needsPrevisit,
-            ObjectDatabase database, Deduplicator deduplicator) {
+            ObjectStore database, Deduplicator deduplicator) {
         return new PostOrderIterator(new ArrayList<ObjectId>(needsPrevisit), database, uniqueWithDeduplicator(COMMIT_SUCCESSORS, deduplicator));
     }
 
     /**
      * A handle to the object database used for the traversal
      */
-    private final ObjectDatabase database;
+    private final ObjectStore database;
 
     /**
      * The collection of ObjectIds that must be visited. It is organized as a list of lists - the
@@ -113,7 +113,7 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
      * @param database the objectdatabase used for retrieving objects
      * @param successors the traversal policy for this iteration.
      */
-    private PostOrderIterator(List<ObjectId> start, ObjectDatabase database, Successors successors) {
+    private PostOrderIterator(List<ObjectId> start, ObjectStore database, Successors successors) {
         super();
         this.database = database;
         this.enqueue = true;
@@ -299,7 +299,7 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
                 if (tree.buckets().isPresent()) {
                     for (Map.Entry<?, Bucket> entry : tree.buckets().get().entrySet()) {
                         final Bucket bucket = entry.getValue();
-                        successors.add(bucket.id());
+                        successors.add(bucket.getObjectId());
                     }
                 }
             }

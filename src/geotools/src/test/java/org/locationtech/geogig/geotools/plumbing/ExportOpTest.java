@@ -11,8 +11,7 @@ package org.locationtech.geogig.geotools.plumbing;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -135,7 +134,7 @@ public class ExportOpTest extends RepositoryTestCase {
         // check for exceptions when using a function that returns features with a wrong featuretype
         try {
             String wrongFeaturesName = "wrongFeatures";
-            String wrongFeaturesTypeSpec = "sp:String";
+            String wrongFeaturesTypeSpec = "noCommonAtt:String";
             SimpleFeatureType wrongFeaturesType = DataUtilities.createType(pointsNs,
                     wrongFeaturesName, wrongFeaturesTypeSpec);
             final SimpleFeatureBuilder wrongFeatureBuilder = new SimpleFeatureBuilder(
@@ -153,6 +152,7 @@ public class ExportOpTest extends RepositoryTestCase {
                     .setFeatureTypeConversionFunction(wrongFunction).call();
             fail();
         } catch (GeoToolsOpException e) {
+            e.printStackTrace();
             assertEquals(e.statusCode, StatusCode.UNABLE_TO_ADD);
         }
 
@@ -255,7 +255,8 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
                 .setAlter(true)
-                .setFilterFeatureTypeId(RevFeatureTypeImpl.build(modifiedPointsType).getId()).call();
+                .setFilterFeatureTypeId(RevFeatureTypeImpl.build(modifiedPointsType).getId())
+                .call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();
@@ -280,7 +281,8 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
-                .setFilterFeatureTypeId(RevFeatureTypeImpl.build(modifiedPointsType).getId()).call();
+                .setFilterFeatureTypeId(RevFeatureTypeImpl.build(modifiedPointsType).getId())
+                .call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
         SimpleFeatureCollection featureCollection = featureStore.getFeatures();

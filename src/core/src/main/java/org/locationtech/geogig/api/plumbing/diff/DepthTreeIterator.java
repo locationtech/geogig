@@ -13,8 +13,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Iterator;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
@@ -23,6 +22,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -68,7 +68,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
 
     private Iterator<NodeRef> iterator;
 
-    private ObjectDatabase source;
+    private ObjectStore source;
 
     private Strategy strategy;
 
@@ -304,7 +304,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             while (!bucketEntries.hasNext()) {
                 if (buckets.hasNext()) {
                     Bucket nextBucket = buckets.next();
-                    bucketEntries = resolveBucketEntries(nextBucket.id());
+                    bucketEntries = resolveBucketEntries(nextBucket.getObjectId());
                 } else {
                     return endOfData();
                 }

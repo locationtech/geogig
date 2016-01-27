@@ -13,15 +13,13 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.concurrent.ThreadSafe;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 
-@ThreadSafe
+
 class QueueIterator<T> extends AbstractIterator<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QueueIterator.class);

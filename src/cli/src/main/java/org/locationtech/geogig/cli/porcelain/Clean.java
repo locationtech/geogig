@@ -14,8 +14,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevObject.TYPE;
@@ -25,6 +23,7 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.porcelain.CleanOp;
 import org.locationtech.geogig.cli.AbstractCommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.repository.Repository;
 
@@ -43,7 +42,7 @@ public class Clean extends AbstractCommand {
 
     @Override
     public void runInternal(GeogigCLI cli) throws IOException {
-        final ConsoleReader console = cli.getConsole();
+        final Console console = cli.getConsole();
         final GeoGIG geogig = cli.getGeogig();
 
         String pathFilter = null;

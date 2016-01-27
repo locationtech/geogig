@@ -9,15 +9,11 @@
  */
 package org.locationtech.geogig.osm.internal.log;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.Blobs;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
-import com.google.common.io.Files;
 
 /**
  * Returns the stored information about a mapping for a given tree path. Returns an absent object if
@@ -34,18 +30,13 @@ public class ReadOSMMappingLogEntry extends AbstractGeoGigOp<Optional<OSMMapping
 
     @Override
     protected Optional<OSMMappingLogEntry> _call() {
-        final File osmMapFolder = command(ResolveOSMMappingLogFolder.class).call();
-        File file = new File(osmMapFolder, path);
+        BlobStore blobStore = context().blobStore();
+        final String pathPrefix = "osm/map/";
+        final String path = pathPrefix + this.path;
+        Optional<String> blob = Blobs.getBlobAsString(blobStore, path);
         OSMMappingLogEntry entry = null;
-        if (file.exists()) {
-            try {
-                synchronized (file.getCanonicalPath().intern()) {
-                    String line = Files.readFirstLine(file, Charsets.UTF_8);
-                    entry = OSMMappingLogEntry.fromString(line);
-                }
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
+        if (blob.isPresent()) {
+            entry = OSMMappingLogEntry.fromString(blob.get());
         }
         return Optional.fromNullable(entry);
     }

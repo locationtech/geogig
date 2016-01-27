@@ -117,7 +117,7 @@ public class HooksTest extends RepositoryTestCase {
         } catch (Exception e) {
             assertTrue(e instanceof CannotRunGeogigOperationException);
         }
-
+ 
         // a hook that returns zero
         if (Scripting.isWindows()) {
             commitPreHookCode = "exit 0";

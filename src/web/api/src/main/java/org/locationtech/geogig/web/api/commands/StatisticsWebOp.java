@@ -92,7 +92,7 @@ public class StatisticsWebOp extends AbstractWebAPICommand {
         while (treeIter.hasNext()) {
             NodeRef node = treeIter.next();
             stats.add(new FeatureTypeStats(node.path(), context.getGeoGIG().getRepository()
-                    .getTree(node.objectId()).size()));
+                    .getTree(node.getObjectId()).size()));
         }
         log = logOp.call();
 

@@ -12,14 +12,13 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.porcelain.FetchOp;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 
@@ -101,7 +100,7 @@ public class Fetch extends AbstractCommand implements CLICommand {
             throw new CommandFailedException(ise.getMessage(), ise);
         }
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         if (result.getChangedRefs().isEmpty()) {
             console.println("Already up to date.");
         } else {

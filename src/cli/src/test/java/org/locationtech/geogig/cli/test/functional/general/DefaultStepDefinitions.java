@@ -75,9 +75,9 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
-import cucumber.annotation.en.Given;
-import cucumber.annotation.en.Then;
-import cucumber.annotation.en.When;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
 import cucumber.runtime.java.StepDefAnnotation;
 
 /**
@@ -88,21 +88,20 @@ public class DefaultStepDefinitions {
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
-    @cucumber.annotation.Before
+    @cucumber.api.java.Before
     public void before() throws Exception {
         tempFolder = new TemporaryFolder();
         tempFolder.create();
         setupFeatures();
     }
 
-    @cucumber.annotation.After
+    @cucumber.api.java.After
     public void after() {
         if (GlobalState.geogigCLI != null) {
             GlobalState.geogigCLI.close();
             GlobalState.geogigCLI = null;
         }
         if (GlobalState.consoleReader != null) {
-            GlobalState.consoleReader.shutdown();
             GlobalState.consoleReader = null;
         }
         System.gc();
@@ -117,6 +116,7 @@ public class DefaultStepDefinitions {
     public void I_am_in_an_empty_directory() throws Throwable {
         setUpDirectories();
         assertEquals(0, platform.pwd().list().length);
+        GlobalState.repositoryURI = null;
         setupGeogig();
     }
 
@@ -181,7 +181,7 @@ public class DefaultStepDefinitions {
 
     @Then("^the repository directory shall exist$")
     public void the_repository_directory_shall_exist() throws Throwable {
-        List<String> output = runAndParseCommand(true, "rev-parse", "--resolve-geogig-dir");
+        List<String> output = runAndParseCommand(true, "rev-parse", "--resolve-geogig-uri");
         assertEquals(output.toString(), 1, output.size());
         String location = output.get(0);
         assertNotNull(location);
@@ -492,7 +492,7 @@ public class DefaultStepDefinitions {
         insert(points1_modified);
     }
 
-    @Given("^I modify a feature type$")
+    @Given("^I a featuretype is modified$")
     public void I_modify_a_feature_type() throws Throwable {
         deleteAndReplaceFeatureType();
     }

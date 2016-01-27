@@ -17,7 +17,7 @@ import java.util.List;
 import org.locationtech.geogig.api.DefaultPlatform;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -87,7 +87,7 @@ public class Serve extends AbstractCommand {
         platform.setWorkingDir(new File(repo));
 
         GeoGIG geogig = new GeoGIG(cli.getGeogigInjector(), platform.pwd());
-        if (geogig.command(ResolveGeogigDir.class).call().isPresent()) {
+        if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
             geogig.getRepository();
         }
 

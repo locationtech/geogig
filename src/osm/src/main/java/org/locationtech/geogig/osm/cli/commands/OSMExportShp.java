@@ -18,21 +18,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.geotools.cli.porcelain.AbstractShpCommand;
+import org.locationtech.geogig.geotools.cli.shp.AbstractShpCommand;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.osm.internal.Mapping;
 import org.locationtech.geogig.osm.internal.MappingRule;
+import org.locationtech.geogig.osm.internal.OSMUtils;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -110,7 +111,10 @@ public class OSMExportShp extends AbstractShpCommand implements CLICommand {
             }
         };
 
+        final ProgressListener progressListener = cli.getProgressListener();
+        
         SimpleFeatureType outputFeatureType = rule.getFeatureType();
+        outputFeatureType = OSMUtils.adaptIncompatibleAttributesForExport(outputFeatureType, progressListener);
         String path = getOriginTreesFromOutputFeatureType(outputFeatureType);
 
         ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
@@ -130,7 +134,7 @@ public class OSMExportShp extends AbstractShpCommand implements CLICommand {
             ExportOp op = cli.getGeogig().command(ExportOp.class).setFeatureStore(store)
                     .setPath(path).setFeatureTypeConversionFunction(function);
             try {
-                op.setProgressListener(cli.getProgressListener()).call();
+                op.setProgressListener(progressListener).call();
                 cli.getConsole().println("OSM data exported successfully to " + shapeFile);
             } catch (IllegalArgumentException iae) {
                 shapeFile.delete();

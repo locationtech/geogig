@@ -10,14 +10,13 @@
 package org.locationtech.geogig.api.porcelain;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.CommitBuilder;
 import org.locationtech.geogig.api.ObjectId;
@@ -30,7 +29,6 @@ import org.locationtech.geogig.api.plumbing.CatObject;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.WriteTree2;
@@ -43,7 +41,8 @@ import org.locationtech.geogig.api.plumbing.merge.ReportCommitConflictsOp;
 import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.ObjectReader;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.Blobs;
 import org.locationtech.geogig.storage.text.TextSerializationFactory;
 
 import com.google.common.base.Charsets;
@@ -52,7 +51,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.io.Files;
 
 /**
  * 
@@ -60,18 +58,18 @@ import com.google.common.io.Files;
  * 
  * Rebasing is done following these steps:
  * 
- * -Commits to apply are computed and for each one a file is created in the rebase-apply folder,
- * containing the ID of the commit. Files have correlative names starting on 1, indicating the order
- * in which they should be applied
+ * -Commits to apply are computed and for each one a blob is created in the {@code rebase-apply/}
+ * {@link BlobStore} path, containing the ID of the commit. Blobs have correlative names starting on
+ * 1, indicating the order in which they should be applied
  * 
  * -HEAD is rewinded to starting point
  * 
- * -Commits are applied. For each commit applied, the corresponding file is deleted
+ * -Commits are applied. For each commit applied, the corresponding blob is deleted
  * 
- * -A file named 'next' keeps track of the next commit to apply between executions of the rebase
+ * -A blob named 'next' keeps track of the next commit to apply between executions of the rebase
  * command, in case of conflicts
  * 
- * - A file named 'branch' keeps track of the current branch name
+ * - A blob named 'branch' keeps track of the current branch name
  * 
  * 
  * 
@@ -79,6 +77,14 @@ import com.google.common.io.Files;
 @CanRunDuringConflict
 @Hookable(name = "rebase")
 public class RebaseOp extends AbstractGeoGigOp<Boolean> {
+
+    private static final String REBASE_FOLDER_PREFIX = "rebase-apply/";
+
+    private static final String NEXT = REBASE_FOLDER_PREFIX + "next";
+
+    private static final String BRANCH = REBASE_FOLDER_PREFIX + "branch";
+
+    private static final String SQUASH = REBASE_FOLDER_PREFIX + "squash";
 
     private Supplier<ObjectId> upstream;
 
@@ -187,24 +193,24 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
         Preconditions.checkState(conflicts.isEmpty() || skip || abort,
                 "Cannot run operation while merge conflicts exist.");
 
-        Optional<Ref> ref = command(RefParse.class).setName(Ref.ORIG_HEAD).call();
-        File branchFile = new File(getRebaseFolder(), "branch");
+        Optional<Ref> origHead = command(RefParse.class).setName(Ref.ORIG_HEAD).call();
+        final Optional<byte[]> branch = Blobs.getBlob(context().blobStore(), BRANCH);
         RevCommit squashCommit = readSquashCommit();
         if (abort) {
-            Preconditions.checkState(ref.isPresent() && branchFile.exists(),
+            Preconditions.checkState(origHead.isPresent() && branch.isPresent(),
                     "Cannot abort. You are not in the middle of a rebase process.");
             command(ResetOp.class).setMode(ResetMode.HARD)
-                    .setCommit(Suppliers.ofInstance(ref.get().getObjectId())).call();
+                    .setCommit(Suppliers.ofInstance(origHead.get().getObjectId())).call();
             command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
-            branchFile.delete();
             return true;
         } else if (continueRebase) {
-            Preconditions.checkState(ref.isPresent() && branchFile.exists(),
+            Preconditions.checkState(origHead.isPresent() && branch.isPresent(),
                     "Cannot continue. You are not in the middle of a rebase process.");
             try {
-                currentBranch = Files.readFirstLine(branchFile, Charsets.UTF_8);
-            } catch (IOException e) {
-                throw new IllegalStateException("Cannot read current branch info file");
+                List<String> branchLines = Blobs.readLines(branch);
+                currentBranch = branchLines.get(0);
+            } catch (Exception e) {
+                throw new IllegalStateException("Cannot read current branch info", e);
             }
             rebaseHead = currHead.get().getObjectId();
             if (squashCommit == null) {
@@ -216,12 +222,13 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 applyCommit(squashCommit, false);
             }
         } else if (skip) {
-            Preconditions.checkState(ref.isPresent() && branchFile.exists(),
+            Preconditions.checkState(origHead.isPresent() && branch.isPresent(),
                     "Cannot skip. You are not in the middle of a rebase process.");
             try {
-                currentBranch = Files.readFirstLine(branchFile, Charsets.UTF_8);
-            } catch (IOException e) {
-                throw new IllegalStateException("Cannot read current branch info file");
+                List<String> branchLines = Blobs.readLines(branch);
+                currentBranch = branchLines.get(0);
+            } catch (Exception e) {
+                throw new IllegalStateException("Cannot read current branch info");
             }
             rebaseHead = currHead.get().getObjectId();
             command(ResetOp.class).setCommit(Suppliers.ofInstance(rebaseHead))
@@ -234,7 +241,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             }
         } else {
             Preconditions
-                    .checkState(!ref.isPresent(),
+                    .checkState(!origHead.isPresent(),
                             "You are currently in the middle of a merge or rebase project <ORIG_HEAD is present>.");
 
             getProgressListener().started();
@@ -310,16 +317,15 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 // there is a conflict
                 CharSequence commitString = command(CatObject.class).setObject(
                         Suppliers.ofInstance(squashCommit)).call();
-                File squashFile = new File(getRebaseFolder(), "squash");
                 try {
-                    Files.write(commitString, squashFile, Charsets.UTF_8);
-                } catch (IOException e) {
-                    throw new IllegalStateException("Cannot create squash commit info file");
+                    Blobs.putBlob(context().blobStore(), SQUASH, commitString);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Cannot create squash commit info blob", e);
                 }
                 applyCommit(squashCommit, true);
                 return true;
             } else {
-                createRebaseCommitsInfoFiles(commitsToRebase);
+                createRebaseCommitsInfo(commitsToRebase);
             }
 
             // ProgressListener subProgress = subProgress(90.f);
@@ -333,12 +339,9 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
         }
 
         // clean up
-        File squashFile = new File(getRebaseFolder(), "squash");
-        if (squashFile.exists()) {
-            squashFile.delete();
-        }
+        context().blobStore().removeBlob(SQUASH);
         command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
-        branchFile.delete();
+        context().blobStore().removeBlob(BRANCH);
 
         // subProgress.complete();
 
@@ -348,71 +351,61 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
 
     }
 
-    private File getRebaseFolder() {
-        URL dir = command(ResolveGeogigDir.class).call().get();
-        File rebaseFolder = new File(dir.getFile(), "rebase-apply");
-        if (!rebaseFolder.exists()) {
-            Preconditions.checkState(rebaseFolder.mkdirs(), "Cannot create 'rebase-apply' folder");
-        }
-        return rebaseFolder;
-    }
-
     private void skipCurrentCommit() {
-        File rebaseFolder = getRebaseFolder();
-        File nextFile = new File(rebaseFolder, "next");
+        List<String> nextFile = Blobs.readLines(context().blobStore(), NEXT);
         try {
-            String idx = Files.readFirstLine(nextFile, Charsets.UTF_8);
-            File commitFile = new File(rebaseFolder, idx);
-            commitFile.delete();
+            String idx = nextFile.get(0);
+            String blobName = REBASE_FOLDER_PREFIX + idx;
+            context().blobStore().removeBlob(blobName);
             int newIdx = Integer.parseInt(idx) + 1;
-            Files.write(Integer.toString(newIdx), nextFile, Charsets.UTF_8);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot read/write rebase commits index file");
+            Blobs.putBlob(context().blobStore(), NEXT, String.valueOf(newIdx));
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot read/write rebase commits index", e);
         }
 
     }
 
-    private void createRebaseCommitsInfoFiles(List<RevCommit> commitsToRebase) {
-        File rebaseFolder = getRebaseFolder();
-        for (int i = commitsToRebase.size() - 1, idx = 1; i >= 0; i--, idx++) {
+    private void createRebaseCommitsInfo(List<RevCommit> commitsToRebase) {
 
-            File file = new File(rebaseFolder, Integer.toString(idx));
+        for (int i = commitsToRebase.size() - 1, idx = 1; i >= 0; i--, idx++) {
+            String blobName = REBASE_FOLDER_PREFIX + Integer.toString(idx);
             try {
-                Files.write(commitsToRebase.get(i).getId().toString(), file, Charsets.UTF_8);
-            } catch (IOException e) {
-                throw new IllegalStateException("Cannot create rebase commits info files");
+                String contents = commitsToRebase.get(i).getId().toString();
+                Blobs.putBlob(context().blobStore(), blobName, contents);
+            } catch (Exception e) {
+                throw new IllegalStateException("Cannot create rebase commits info");
             }
         }
-        File nextFile = new File(rebaseFolder, "next");
         try {
-            Files.write("1", nextFile, Charsets.UTF_8);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot create next rebase commit info file");
+            Blobs.putBlob(context().blobStore(), NEXT, "1");
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot create next rebase commit info");
         }
 
     }
 
     private boolean applyNextCommit(boolean useCommitChanges) {
-        File rebaseFolder = getRebaseFolder();
-        File nextFile = new File(rebaseFolder, "next");
-        try {
-            String idx = Files.readFirstLine(nextFile, Charsets.UTF_8);
-            File commitFile = new File(rebaseFolder, idx);
-            if (commitFile.exists()) {
-                String commitId = Files.readFirstLine(commitFile, Charsets.UTF_8);
-                RevCommit commit = repository().getCommit(ObjectId.valueOf(commitId));
-                applyCommit(commit, useCommitChanges);
-                commitFile.delete();
-                int newIdx = Integer.parseInt(idx) + 1;
-                Files.write(Integer.toString(newIdx), nextFile, Charsets.UTF_8);
-                return true;
-            } else {
-                return false;
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot read/write rebase commits index file");
+        List<String> nextFile = Blobs.readLines(context().blobStore(), NEXT);
+        if (nextFile.isEmpty()) {
+            return false;
         }
-
+        String idx = nextFile.get(0);
+        String blobName = REBASE_FOLDER_PREFIX + idx;
+        List<String> commitFile = Blobs.readLines(context().blobStore(), blobName);
+        if (commitFile.isEmpty()) {
+            return false;
+        }
+        String commitId = commitFile.get(0);
+        RevCommit commit = objectDatabase().getCommit(ObjectId.valueOf(commitId));
+        applyCommit(commit, useCommitChanges);
+        context().blobStore().removeBlob(blobName);
+        int newIdx = Integer.parseInt(idx) + 1;
+        try {
+            Blobs.putBlob(context().blobStore(), NEXT, String.valueOf(newIdx));
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot read/write rebase commits index", e);
+        }
+        return true;
     }
 
     /**
@@ -489,11 +482,10 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                     msg.append("CONFLICT: conflict in " + conflict.getPath() + "\n");
                 }
 
-                File branchFile = new File(getRebaseFolder(), "branch");
                 try {
-                    Files.write(currentBranch, branchFile, Charsets.UTF_8);
-                } catch (IOException e) {
-                    throw new IllegalStateException("Cannot create current branch info file");
+                    Blobs.putBlob(context().blobStore(), BRANCH, currentBranch);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Cannot create current branch info", e);
                 }
 
                 throw new RebaseConflictsException(msg.toString());
@@ -532,16 +524,11 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
      * 
      * @return
      */
+    @Nullable
     private RevCommit readSquashCommit() {
-        File file = new File(getRebaseFolder(), "squash");
-        if (!file.exists()) {
+        List<String> lines = Blobs.readLines(context().blobStore(), SQUASH);
+        if (lines.isEmpty()) {
             return null;
-        }
-        List<String> lines;
-        try {
-            lines = Files.readLines(file, Charsets.UTF_8);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot create squash commit info file");
         }
         ObjectId id = ObjectId.valueOf(lines.get(0).split("\t")[1].trim());
         String commitString = Joiner.on("\n").join(lines.subList(1, lines.size()));
@@ -554,6 +541,5 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             throw new IllegalStateException("Unable to parse commit " + commitString, e);
         }
         return revCommit;
-
     }
 }

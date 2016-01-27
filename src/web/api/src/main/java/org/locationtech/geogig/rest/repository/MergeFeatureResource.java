@@ -124,7 +124,7 @@ public class MergeFeatureResource extends Resource {
                             ggit);
                     if (ourNode.isPresent()) {
                         Optional<RevObject> object = ggit.command(RevObjectParse.class)
-                                .setObjectId(ourNode.get().objectId()).call();
+                                .setObjectId(ourNode.get().getObjectId()).call();
                         Preconditions.checkState(object.isPresent()
                                 && object.get() instanceof RevFeature);
 
@@ -145,7 +145,7 @@ public class MergeFeatureResource extends Resource {
                             ggit);
                     if (theirNode.isPresent()) {
                         Optional<RevObject> object = ggit.command(RevObjectParse.class)
-                                .setObjectId(theirNode.get().objectId()).call();
+                                .setObjectId(theirNode.get().getObjectId()).call();
                         Preconditions.checkState(object.isPresent()
                                 && object.get() instanceof RevFeature);
 

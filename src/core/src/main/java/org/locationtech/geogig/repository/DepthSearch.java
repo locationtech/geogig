@@ -22,6 +22,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
@@ -38,7 +39,7 @@ import com.google.common.collect.Lists;
  */
 public class DepthSearch {
 
-    private final ObjectDatabase objectDb;
+    private final ObjectStore objectDb;
 
     private NodePathStorageOrder refOrder = new NodePathStorageOrder();
 
@@ -47,7 +48,7 @@ public class DepthSearch {
      * 
      * @param db the object database where {@link Node}s and {@link RevTree}s are stored
      */
-    public DepthSearch(final ObjectDatabase db) {
+    public DepthSearch(final ObjectStore db) {
         this.objectDb = db;
     }
 
@@ -96,7 +97,7 @@ public class DepthSearch {
         checkNotNull(childPath, "childPath");
         checkArgument(parentPath.isEmpty()
                 || parentPath.charAt(parentPath.length() - 1) != PATH_SEPARATOR);
-        checkArgument(!childPath.isEmpty(), "empty child path");
+        checkArgument(!childPath.isEmpty(), "empty child path: '%s/%s'", parentPath, childPath);
         checkArgument(childPath.charAt(childPath.length() - 1) != PATH_SEPARATOR);
 
         checkArgument(parentPath.isEmpty() || childPath.startsWith(parentPath + PATH_SEPARATOR));
@@ -165,7 +166,7 @@ public class DepthSearch {
         if (subtreeBucket == null) {
             return Optional.absent();
         }
-        RevTree subtree = objectDb.get(subtreeBucket.id(), RevTree.class);
+        RevTree subtree = objectDb.get(subtreeBucket.getObjectId(), RevTree.class);
         return getDirectChild(subtree, directChildName, subtreesDepth + 1);
     }
 }

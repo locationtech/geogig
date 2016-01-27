@@ -39,7 +39,7 @@ public class ResolveFeatureTypeTest extends RepositoryTestCase {
         Optional<RevFeatureType> featureType = geogig.command(ResolveFeatureType.class)
                 .setRefSpec(pointsName).call();
         assertTrue(featureType.isPresent());
-        assertEquals(pointsTypeName, featureType.get().getName());
+        assertEquals(pointsName, featureType.get().getName().getLocalPart());
         assertEquals(TYPE.FEATURETYPE, featureType.get().getType());
     }
 
@@ -51,7 +51,7 @@ public class ResolveFeatureTypeTest extends RepositoryTestCase {
         Optional<RevFeatureType> featureType = geogig.command(ResolveFeatureType.class)
                 .setRefSpec("WORK_HEAD:" + pointsName).call();
         assertTrue(featureType.isPresent());
-        assertEquals(pointsTypeName, featureType.get().getName());
+        assertEquals(pointsName, featureType.get().getName().getLocalPart());
         assertEquals(TYPE.FEATURETYPE, featureType.get().getType());
     }
 

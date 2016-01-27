@@ -13,8 +13,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.CommitBuilder;
@@ -37,6 +36,7 @@ import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.plumbing.diff.MutableTree;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 
@@ -560,16 +560,16 @@ public class WriteTree2Test extends RepositoryTestCase {
 
     private void print(NodeRef ref) {
         System.err.printf("\t%s '%s' -> %s (%s)\n", ref.getType().toString().charAt(0), ref.path(),
-                ref.objectId(), ref.getNode().getMetadataId());
+                ref.getObjectId(), ref.getNode().getMetadataId());
     }
 
     private void verifyRepositoryTree(String path, ObjectId repoTreeId) {
-        ObjectDatabase objectDb = this.objectDb;
+        ObjectStore objectDb = this.objectDb;
 
         verifyTree(objectDb, path, repoTreeId);
     }
 
-    private void verifyTree(ObjectDatabase objectDb, String path, ObjectId repoTreeId) {
+    private void verifyTree(ObjectStore objectDb, String path, ObjectId repoTreeId) {
         assertTrue(String.format("tree '%s' (%s) is not present", path, repoTreeId),
                 objectDb.exists(repoTreeId));
 
@@ -592,7 +592,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         if (tree.buckets().isPresent()) {
             ImmutableCollection<Bucket> buckets = tree.buckets().get().values();
             for (Bucket b : buckets) {
-                ObjectId bucketTreeId = b.id();
+                ObjectId bucketTreeId = b.getObjectId();
                 verifyRepositoryTree(path + "/" + bucketTreeId.toString().substring(0, 8),
                         bucketTreeId);
             }
@@ -718,7 +718,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         return "POINT(" + i + " " + i + ")";
     }
 
-    private Node feature(ObjectDatabase db, String idPrefix, int index) {
+    private Node feature(ObjectStore db, String idPrefix, int index) {
         final String id = idPrefix + "." + index;
         final Feature feature;
         try {

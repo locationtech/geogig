@@ -15,8 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.FeatureBuilder;
 import org.locationtech.geogig.api.NodeRef;
@@ -160,7 +159,7 @@ public class OSMMapOp extends AbstractGeoGigOp<RevTree> {
             @Override
             @Nullable
             public Feature apply(@Nullable NodeRef ref) {
-                RevFeature revFeature = parseCommand.setObjectId(ref.objectId())
+                RevFeature revFeature = parseCommand.setObjectId(ref.getObjectId())
                         .call(RevFeature.class).get();
                 final String parentPath = ref.getParentPath();
                 FeatureBuilder featureBuilder = builders.get(parentPath);

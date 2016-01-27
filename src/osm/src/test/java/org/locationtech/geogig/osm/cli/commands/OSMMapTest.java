@@ -11,10 +11,8 @@ package org.locationtech.geogig.osm.cli.commands;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
-
-import jline.UnsupportedTerminal;
-import jline.console.ConsoleReader;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,6 +29,7 @@ import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
@@ -49,8 +48,7 @@ public class OSMMapTest extends Assert {
 
     @Before
     public void setUp() throws Exception {
-        ConsoleReader consoleReader = new ConsoleReader(System.in, System.out,
-                new UnsupportedTerminal());
+        Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
         File workingDirectory = tempFolder.getRoot();
         TestPlatform platform = new TestPlatform(workingDirectory);
@@ -91,7 +89,10 @@ public class OSMMapTest extends Assert {
         ImmutableList<Optional<Object>> values = revFeature.get().getValues();
         String wkt = "LINESTRING (7.1923367 50.7395887, 7.1923127 50.7396946, 7.1923444 50.7397419, 7.1924199 50.7397781)";
         assertEquals(wkt, values.get(2).get().toString());
-        assertEquals("345117525;345117526;1300224327;345117527", values.get(3).get());
+
+        long[] nodes = new long[] { 345117525, 345117526, 1300224327, 345117527 };
+        long[] actual = (long[]) values.get(3).get();
+        assertTrue(Arrays.equals(nodes, actual));
         assertEquals("yes", values.get(1).get());
         // check that a feature was correctly ignored
         revFeature = geogig.command(RevObjectParse.class).setRefSpec("HEAD:onewaystreets/31347480")

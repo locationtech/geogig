@@ -13,15 +13,13 @@ import java.io.File;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLDecoder;
 
-import org.locationtech.geogig.api.Context;
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Remote;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.DeduplicationService;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 
@@ -33,30 +31,28 @@ public class RemoteUtils {
     /**
      * Constructs an interface to allow access to a remote repository.
      * 
-     * @param injector a Guice injector for the new repository
-     * @param remoteConfig the remote to connect to
      * @param localRepository the local repository
+     * @param remoteConfig the remote to connect to
+     * @param remoteHints hints for the remote repo, like read-only, etc.
      * @return an {@link Optional} of the interface to the remote repository, or
      *         {@link Optional#absent()} if a connection to the remote could not be established.
      */
-    public static Optional<IRemoteRepo> newRemote(Context injector, Remote remoteConfig,
-            Repository localRepository, DeduplicationService deduplicationService) {
+    public static Optional<IRemoteRepo> newRemote(Repository localRepository, Remote remoteConfig,
+            @Nullable Hints remoteHints) {
 
+        if (remoteHints == null) {
+            remoteHints = new Hints();
+        }
         try {
-            URI fetchURI = URI.create(remoteConfig.getFetchURL());
-            String protocol = fetchURI.getScheme();
+            String fetchURL = remoteConfig.getFetchURL();
+            URI fetchURI = URI.create(fetchURL);
+            if (null == fetchURI.getScheme()) {
+                fetchURI = new File(fetchURL).toURI();
+            }
+            final String protocol = fetchURI.getScheme();
 
             IRemoteRepo remoteRepo = null;
-            if (protocol == null || protocol.equals("file")) {
-                String filepath = new URL(remoteConfig.getFetchURL()).getFile();
-                filepath = URLDecoder.decode(filepath, Charsets.UTF_8.displayName());
-                if (remoteConfig.getMapped()) {
-                    remoteRepo = new LocalMappedRemoteRepo(injector, new File(filepath),
-                            localRepository);
-                } else {
-                    remoteRepo = new LocalRemoteRepo(injector, new File(filepath), localRepository);
-                }
-            } else if (protocol.equals("http") || protocol.equals("https")) {
+            if (protocol.equals("http") || protocol.equals("https")) {
                 final String username = remoteConfig.getUserName();
                 final String password = remoteConfig.getPassword();
                 if (username != null && password != null) {
@@ -72,13 +68,20 @@ public class RemoteUtils {
                 if (remoteConfig.getMapped()) {
                     remoteRepo = new HttpMappedRemoteRepo(fetchURI.toURL(), localRepository);
                 } else {
+                    DeduplicationService deduplicationService;
+                    deduplicationService = localRepository.deduplicationService();
                     remoteRepo = new HttpRemoteRepo(fetchURI.toURL(), localRepository,
                             deduplicationService);
                 }
+
             } else {
-                throw new UnsupportedOperationException(
-                        "Only file and http remotes are currently supported.");
+                if (remoteConfig.getMapped()) {
+                    remoteRepo = new LocalMappedRemoteRepo(fetchURI, localRepository);
+                } else {
+                    remoteRepo = new LocalRemoteRepo(fetchURI, localRepository);
+                }
             }
+
             return Optional.fromNullable(remoteRepo);
         } catch (Exception e) {
             // Invalid fetch URL

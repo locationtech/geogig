@@ -33,7 +33,13 @@ public class GeoToolsOpException extends RuntimeException {
      * @param statusCode the status code for this exception
      */
     public GeoToolsOpException(StatusCode statusCode) {
-        this(null, statusCode);
+        super(statusCode.toString());
+        this.statusCode = statusCode;
+    }
+
+    public GeoToolsOpException(StatusCode statusCode, String message) {
+        super(message);
+        this.statusCode = statusCode;
     }
 
     /**
@@ -43,7 +49,7 @@ public class GeoToolsOpException extends RuntimeException {
      * @param statusCode the status code for this exception
      */
     public GeoToolsOpException(Exception e, StatusCode statusCode) {
-        super(e);
+        super(statusCode.toString(), e);
         this.statusCode = statusCode;
     }
 }

@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.api.plumbing.merge;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -24,7 +24,7 @@ public class ConflictsReadOp extends AbstractGeoGigOp<List<Conflict>> implements
 
     @Override
     protected  List<Conflict> _call() {
-        final Optional<URL> repoUrl = command(ResolveGeogigDir.class).call();
+        final Optional<URI> repoUrl = command(ResolveGeogigURI.class).call();
         if (repoUrl.isPresent()) {
             return conflictsDatabase().getConflicts(null, null);
         } else {

@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.osm.internal;
 
-import static com.google.common.collect.Sets.*;
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.File;
 import java.util.List;
@@ -26,8 +26,9 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.osm.internal.log.ResolveOSMMappingLogFolder;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.Blobs;
 import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
@@ -35,7 +36,6 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class OSMImportOpTest extends RepositoryTestCase {
     @Rule
@@ -130,7 +130,7 @@ public class OSMImportOpTest extends RepositoryTestCase {
     @Test
     public void testImportWithMappingAndNoRaw() throws Exception {
         String filename = getClass().getResource("ways.xml").getFile();
-        File file = new File(filename);
+        final File file = new File(filename);
 
         // Define a mapping
         Map<String, AttributeDefinition> fields = Maps.newHashMap();
@@ -170,12 +170,12 @@ public class OSMImportOpTest extends RepositoryTestCase {
         assertEquals("yes", values.get(1).get());
 
         // check it has not created mapping log files
-        File osmMapFolder = geogig.command(ResolveOSMMappingLogFolder.class).call();
-        file = new File(osmMapFolder, "onewaystreets");
-        assertFalse(file.exists());
-        file = new File(osmMapFolder, geogig.getRepository().workingTree().getTree().getId()
-                .toString());
-        assertFalse(file.exists());
+        BlobStore blobStore = getRepository().blobStore();
+        Optional<String> blob = Blobs.getBlobAsString(blobStore, "osm/map/onewaystreets");
+        assertFalse(blob.isPresent());
+        blob = Blobs.getBlobAsString(blobStore, "osm/map/"
+                + getRepository().workingTree().getTree().getId());
+        assertFalse(blob.isPresent());
     }
 
     @Test

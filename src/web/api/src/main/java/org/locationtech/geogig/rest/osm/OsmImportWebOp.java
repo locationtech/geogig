@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.rest.osm;
 
-import java.net.URL;
+import java.net.URI;
 
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.osm.internal.Mapping;
@@ -77,7 +77,7 @@ public class OsmImportWebOp extends TransactionalResource {
 
         AsyncCommand<Optional<OSMReport>> asyncCommand;
 
-        URL repo = context.repository().getLocation();
+        URI repo = context.repository().getLocation();
         String description = String.format("osm import %s, repository: %s", urlOrFilepath, repo);
         asyncCommand = AsyncContext.get().run(command, description);
 

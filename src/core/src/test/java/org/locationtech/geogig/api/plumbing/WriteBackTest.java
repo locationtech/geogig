@@ -119,7 +119,7 @@ public class WriteBackTest extends Assert {
         ObjectId newRootId1 = writeBack.setAncestor(ancestor).setChildPath("subtree1")
                 .setTree(tree1).call();
 
-        ancestor = odb.getTree(newRootId1).builder(odb);
+        ancestor = new RevTreeBuilder(odb, odb.getTree(newRootId1));
         ObjectId newRootId2 = writeBack.setAncestor(ancestor).setChildPath("subtree2")
                 .setTree(tree2).call();
 
@@ -142,7 +142,8 @@ public class WriteBackTest extends Assert {
         ObjectId newRootId1 = writeBack.setAncestor(oldRoot).setChildPath("subtree1/level2")
                 .setTree(tree1).call();
 
-        ObjectId newRootId2 = writeBack.setAncestor(odb.getTree(newRootId1).builder(odb))
+        RevTreeBuilder newRevTreeBuilder = new RevTreeBuilder(odb, odb.getTree(newRootId1));
+        ObjectId newRootId2 = writeBack.setAncestor(newRevTreeBuilder)
                 .setChildPath("subtree2/level2/level3").setTree(tree2).call();
 
         // created the intermediate tree node?

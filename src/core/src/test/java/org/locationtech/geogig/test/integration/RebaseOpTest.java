@@ -515,6 +515,10 @@ public class RebaseOpTest extends RepositoryTestCase {
         // o - Points 1 modified, 2 removed
         // |
         // o - master - HEAD - Lines 1 added
+        final RevCommit masterCommit;
+        final RevCommit branchCommit;
+        final Ref branch1;
+
         insertAndAdd(points1, points2);
         geogig.command(CommitOp.class).call();
         geogig.command(BranchCreateOp.class).setName("branch1").call();
@@ -523,11 +527,11 @@ public class RebaseOpTest extends RepositoryTestCase {
         insert(points1Modified);
         delete(points2);
         geogig.command(AddOp.class).call();
-        RevCommit masterCommit2 = geogig.command(CommitOp.class)
-                .setMessage("adding points1 modified, deleting point2").call();
+        geogig.command(CommitOp.class).setMessage("adding points1 modified, deleting point2")
+                .call();
         insert(lines1);
         geogig.command(AddOp.class).call();
-        RevCommit masterCommit = geogig.command(CommitOp.class).setMessage("adding lines.1").call();
+        masterCommit = geogig.command(CommitOp.class).setMessage("adding lines.1").call();
         geogig.command(CheckoutOp.class).setSource("branch1").call();
         insert(points3);
         Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
@@ -535,9 +539,9 @@ public class RebaseOpTest extends RepositoryTestCase {
         insert(points1ModifiedB);
         delete(points2);
         geogig.command(AddOp.class).call();
-        RevCommit branchCommit = geogig.command(CommitOp.class).setMessage("branch commit").call();
+        branchCommit = geogig.command(CommitOp.class).setMessage("branch commit").call();
         geogig.command(CheckoutOp.class).setSource("master").call();
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
+        branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
 
         try {
             geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))

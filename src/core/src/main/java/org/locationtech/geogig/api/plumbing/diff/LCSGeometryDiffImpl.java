@@ -16,8 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.plumbing.diff.DiffMatchPatch.Diff;
 import org.locationtech.geogig.api.plumbing.diff.DiffMatchPatch.LinesToCharsResult;
 import org.locationtech.geogig.api.plumbing.diff.DiffMatchPatch.Operation;

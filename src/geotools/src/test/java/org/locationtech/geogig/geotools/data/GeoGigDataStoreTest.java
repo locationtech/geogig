@@ -269,7 +269,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
     @Test
     public void testGetFeatureSourceName() throws Exception {
         try {
-            dataStore.getFeatureSource(RepositoryTestCase.linesTypeName);
+            dataStore.getFeatureSource(RepositoryTestCase.linesName);
             fail("Expected IOException");
         } catch (IOException e) {
             assertTrue(true);
@@ -279,17 +279,17 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
         insertAndAdd(lines1);
         try {
-            dataStore.getFeatureSource(RepositoryTestCase.linesTypeName);
+            dataStore.getFeatureSource(RepositoryTestCase.linesName);
             fail("Expected IOE as feature typ is not committed yet");
         } catch (IOException e) {
             assertTrue(e.getMessage().contains("does not exist"));
         }
         commit();
-        source = dataStore.getFeatureSource(RepositoryTestCase.linesTypeName);
+        source = dataStore.getFeatureSource(RepositoryTestCase.linesName);
         assertTrue(source instanceof GeogigFeatureStore);
 
         try {
-            dataStore.getFeatureSource(RepositoryTestCase.pointsTypeName);
+            dataStore.getFeatureSource(RepositoryTestCase.pointsName);
             fail("Expected IOException");
         } catch (IOException e) {
             assertTrue(true);
@@ -297,7 +297,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
         insertAndAdd(points1);
         commit();
-        source = dataStore.getFeatureSource(RepositoryTestCase.pointsTypeName);
+        source = dataStore.getFeatureSource(RepositoryTestCase.pointsName);
         assertTrue(source instanceof GeogigFeatureStore);
     }
 
@@ -350,11 +350,11 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         tx.commit();
 
         FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore
-                .getFeatureSource(linesTypeName);
+                .getFeatureSource(linesName);
         assertEquals(1, source.getCount(null));
 
         FeatureReader<SimpleFeatureType, SimpleFeature> r = dataStore.getFeatureReader(new Query(
-                linesTypeName.getLocalPart()), Transaction.AUTO_COMMIT);
+                linesName), Transaction.AUTO_COMMIT);
         assertTrue(r.hasNext());
 
         f = r.next();

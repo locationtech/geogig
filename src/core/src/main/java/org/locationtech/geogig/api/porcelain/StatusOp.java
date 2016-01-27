@@ -11,6 +11,7 @@ package org.locationtech.geogig.api.porcelain;
 
 import java.util.Iterator;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.plumbing.DiffIndex;
 import org.locationtech.geogig.api.plumbing.DiffWorkTree;
@@ -21,6 +22,7 @@ import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -76,6 +78,8 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
         }
     }
 
+    private Long limit;
+
     @Override
     protected StatusSummary _call() {
         WorkingTree workTree = workingTree();
@@ -87,15 +91,32 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
         summary.countUnstaged = workTree.countUnstaged(null).count();
         summary.countConflicted = index.countConflicted(null);
 
-        if (summary.countStaged > 0) {
-            summary.staged = command(DiffIndex.class).setReportTrees(true);
-        }
-        if (summary.countUnstaged > 0) {
-            summary.unstaged = command(DiffWorkTree.class).setReportTrees(true);
-        }
-        if (summary.countConflicted > 0) {
-            summary.conflicts = command(ConflictsReadOp.class);
+        final Long limit = this.limit == null ? null : this.limit;
+
+        if (limit == null || limit.longValue() > 0) {
+            if (summary.countStaged > 0) {
+                summary.staged = command(DiffIndex.class).setMaxDiffs(limit).setReportTrees(true);
+            }
+            if (summary.countUnstaged > 0) {
+                summary.unstaged = command(DiffWorkTree.class).setMaxDiffs(limit).setReportTrees(
+                        true);
+            }
+            if (summary.countConflicted > 0) {
+                summary.conflicts = command(ConflictsReadOp.class);
+            }
         }
         return summary;
+    }
+
+    /**
+     * @param limit {@code null} for no limit, an integer >= 0 to set a limit on the number of
+     *        {@link DiffEntry} returned by {@link StatusSummary#getConflicts()},
+     *        {@link StatusSummary#getStaged()}, and {@link StatusSummary#getUnstaged()}
+     */
+    public StatusOp setReportLimit(@Nullable Long limit) {
+        Preconditions.checkArgument(limit == null || limit.intValue() >= 0, "limit must be >= 0: ",
+                limit);
+        this.limit = limit;
+        return this;
     }
 }

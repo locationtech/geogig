@@ -35,7 +35,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
     @Override
     protected void setUpInternal() throws Exception {
         factory = new GeoGigDataStoreFactory();
-        repoDirectory = geogig.getPlatform().pwd();
+        repoDirectory = super.repositoryDirectory;
     }
 
     @Test
@@ -63,12 +63,12 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
 
     @Test
     public void testCanProcess() {
-        final File workingDir = repositoryTempFolder.getRoot();
+        final File workingDir = repoDirectory;
 
         Map<String, Serializable> params = ImmutableMap.of();
         assertFalse(factory.canProcess(params));
         params = ImmutableMap.of(REPOSITORY.key,
-                (Serializable) (workingDir.getName() + "/shouldntExist"));
+                (Serializable) (workingDir.getName() + "/testCanProcess"));
         assertFalse(factory.canProcess(params));
 
         params = ImmutableMap.of(REPOSITORY.key, (Serializable) workingDir.getAbsolutePath());
@@ -89,8 +89,8 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         Map<String, Serializable> params;
 
         File root = repositoryTempFolder.getRoot();
-        params = ImmutableMap
-                .of(REPOSITORY.key, (Serializable) (root.getName() + "/shouldntExist"));
+        params = ImmutableMap.of(REPOSITORY.key,
+                (Serializable) (root.getName() + "/testCreateDataStoreNonExistentDirectory"));
         try {
             factory.createDataStore(params);
             fail("Expectd IOE on non existing directory");
@@ -100,7 +100,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testCreateDataStoreNotARepositoryDir() {
+    public void testCreateDataStoreNotARepositoryDir() throws IOException {
         Map<String, Serializable> params;
 
         File f = repositoryTempFolder.newFolder("someDir");
@@ -121,7 +121,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
 
         GeoGigDataStore store = factory.createDataStore(params);
         assertNotNull(store);
-
+        store.dispose();
     }
 
     @Test
@@ -134,7 +134,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
 
         GeoGigDataStore store = factory.createNewDataStore(params);
         assertNotNull(store);
-
+        store.dispose();
     }
 
     @Test
@@ -147,6 +147,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         assertTrue(factory.canProcess(params));
         GeoGigDataStore store = factory.createDataStore(params);
         assertNotNull(store);
+        store.dispose();
     }
 
     @Test
@@ -158,5 +159,6 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         assertTrue(factory.canProcess(params));
         GeoGigDataStore store = factory.createDataStore(params);
         assertNotNull(store);
+        store.dispose();
     }
 }

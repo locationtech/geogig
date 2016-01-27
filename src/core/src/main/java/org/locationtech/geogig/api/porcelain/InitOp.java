@@ -14,34 +14,30 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.hooks.Hookables;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.di.PluginDefaults;
 import org.locationtech.geogig.di.VersionedFormat;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.RepositoryInitializer;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ConfigException;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -49,7 +45,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
-import com.google.common.io.Resources;
 import com.google.inject.Inject;
 
 /**
@@ -61,7 +56,7 @@ import com.google.inject.Inject;
  * <p>
  * If no repository directory is found, then a new one is created on the current directory.
  * 
- * @see ResolveGeogigDir
+ * @see ResolveGeogigURI
  * @see RefParse
  * @see UpdateRef
  * @see UpdateSymRef
@@ -78,18 +73,21 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
     @Nullable
     private File targetDir;
 
+    private Hints hints;
+
     /**
      * Constructs a new {@code InitOp} with the specified parameters.
      * 
      * @param platform where to get the current directory from
-     * @param context where to get the repository from (with auto-wired dependencies) once ensured
-     *        the {@code .geogig} repository directory is found or created.
+     * @param hints may contain where to get the repository from (using the
+     *        {@link Hints#REPOSITORY_URL} argument)
      */
     @Inject
-    public InitOp(PluginDefaults defaults) {
+    public InitOp(PluginDefaults defaults, Hints hints) {
         checkNotNull(defaults);
         this.defaults = defaults;
         this.config = Maps.newTreeMap();
+        this.hints = hints;
     }
 
     public InitOp setConfig(Map<String, String> suppliedConfiguration) {
@@ -113,7 +111,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
      * @return the initialized repository
      * @throws IllegalStateException if a repository cannot be created on the current directory or
      *         re-initialized in the current dir or one if its parents as determined by
-     *         {@link ResolveGeogigDir}
+     *         {@link ResolveGeogigURI}
      */
     @Override
     protected Repository _call() {
@@ -122,14 +120,9 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         checkState(workingDirectory != null, "working directory is null");
 
         final File targetDir = this.targetDir == null ? workingDirectory : this.targetDir;
-        if (!targetDir.exists() && !targetDir.mkdirs()) {
-            throw new IllegalArgumentException("Can't create directory "
-                    + targetDir.getAbsolutePath());
-        }
         Repository repository;
         try {
-            platform.setWorkingDir(targetDir);
-            repository = callInternal();
+            repository = callInternal(targetDir);
         } finally {
             // restore current directory
             platform.setWorkingDir(workingDirectory);
@@ -137,27 +130,20 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         return repository;
     }
 
-    private Repository callInternal() {
+    private Repository callInternal(File targetDir) {
         final Platform platform = platform();
-        final File workingDirectory = platform.pwd();
-        final Optional<URL> repoUrl = new ResolveGeogigDir(platform).call();
+        final Optional<URI> resolvedURI = new ResolveGeogigURI(platform, hints).call();
 
-        final boolean repoExisted = repoUrl.isPresent();
-        final File envHome;
-        if (repoExisted) {
-            // we're at either the repo working dir or a subdirectory of it
-            try {
-                envHome = new File(repoUrl.get().toURI());
-            } catch (URISyntaxException e) {
-                throw Throwables.propagate(e);
-            }
+        URI repoURI;
+        if (resolvedURI.isPresent()) {
+            repoURI = resolvedURI.get();
         } else {
-            envHome = new File(workingDirectory, ".geogig");
-            if (!envHome.mkdirs()) {
-                throw new RuntimeException("Unable to create geogig environment at '"
-                        + envHome.getAbsolutePath() + "'");
-            }
+            repoURI = targetDir.toURI();
         }
+        RepositoryInitializer repoInitializer = RepositoryInitializer.lookup(repoURI);
+        final boolean repoExisted = repoInitializer.repoExists(repoURI);
+
+        repoInitializer.initialize(repoURI, context());
 
         Map<String, String> effectiveConfigBuilder = Maps.newTreeMap();
         addDefaults(defaults, effectiveConfigBuilder);
@@ -174,21 +160,20 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                     throw new FileNotFoundException("No filter file found at " + filterFile + ".");
                 }
 
-                Optional<URL> envHomeURL = new ResolveGeogigDir(platform).call();
+                Optional<URI> envHomeURL = new ResolveGeogigURI(platform, hints).call();
                 Preconditions.checkState(envHomeURL.isPresent(), "Not inside a geogig directory");
-                final URL url = envHomeURL.get();
-                if (!"file".equals(url.getProtocol())) {
+                final URI url = envHomeURL.get();
+                if (!"file".equals(url.getScheme())) {
                     throw new UnsupportedOperationException(
                             "Sparse clone works only against file system repositories. "
-                                    + "Repository location: " + url.toExternalForm());
+                                    + "Repository location: " + url);
                 }
 
                 File repoDir;
                 try {
-                    repoDir = new File(url.toURI());
-                } catch (URISyntaxException e) {
-                    throw new IllegalStateException("Unable to access directory "
-                            + url.toExternalForm(), e);
+                    repoDir = new File(url);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Unable to access directory " + url, e);
                 }
 
                 File newFilterFile = new File(repoDir, FILTER_FILE);
@@ -200,13 +185,9 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                         + " to the new repository.", e);
             }
         }
-
-        try {
-            Preconditions.checkState(envHome.toURI().toURL()
-                    .equals(new ResolveGeogigDir(platform).call().get()));
-        } catch (MalformedURLException e) {
-            Throwables.propagate(e);
-        }
+        //
+        // Preconditions.checkState(envHome.toURI().equals(
+        // new ResolveGeogigDir(platform, hints).call().get()));
 
         Repository repository;
         try {
@@ -231,19 +212,17 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
             try {
                 repository.open();
                 // make sure the repo has the empty tree
-                ObjectDatabase objectDatabase = repository.objectDatabase();
+                ObjectStore objectDatabase = repository.objectDatabase();
                 objectDatabase.put(RevTree.EMPTY);
             } catch (RepositoryConnectionException e) {
                 throw new IllegalStateException("Error opening repository databases: "
                         + e.getMessage(), e);
             }
-            createSampleHooks(envHome);
         } catch (ConfigException e) {
             throw e;
         } catch (RuntimeException e) {
             Throwables.propagateIfInstanceOf(e, IllegalStateException.class);
-            throw new IllegalStateException("Can't access repository at '"
-                    + envHome.getAbsolutePath() + "'", e);
+            throw new IllegalStateException("Can't access repository at '" + repoURI + "'", e);
         }
 
         if (!repoExisted) {
@@ -254,27 +233,6 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
             }
         }
         return repository;
-    }
-
-    private void createSampleHooks(File envHome) {
-        File hooks = new File(envHome, "hooks");
-        hooks.mkdirs();
-        if (!hooks.exists()) {
-            throw new RuntimeException();
-        }
-        try {
-            copyHookFile(hooks.getAbsolutePath(), "pre_commit.js.sample");
-            // TODO: add other example hooks
-        } catch (IOException e) {
-            throw new RuntimeException();
-        }
-    }
-
-    private void copyHookFile(String folder, String file) throws IOException {
-        URL url = Resources.getResource(Hookables.class, file);
-        OutputStream os = new FileOutputStream(new File(folder, file).getAbsolutePath());
-        Resources.copy(url, os);
-        os.close();
     }
 
     private void addDefaults(PluginDefaults defaults, Map<String, String> configProps) {

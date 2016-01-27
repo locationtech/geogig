@@ -16,8 +16,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
@@ -75,7 +74,7 @@ public class MappingRule {
     }
 
     public enum DefaultField {
-        visible(Boolean.class), timestamp(Long.class), tags(String.class), changeset(Long.class), version(
+        visible(Boolean.class), timestamp(Long.class), tags(Map.class), changeset(Long.class), version(
                 Integer.class), user(String.class);
 
         private Class<?> clazz;
@@ -207,7 +206,7 @@ public class MappingRule {
             Preconditions.checkNotNull(geometryType,
                     "The mapping rule does not define a geometry field");
             if (!geometryType.equals(Point.class)) {
-                fb.add("nodes", String.class);
+                fb.add("nodes", long[].class);
             }
             featureType = fb.buildFeatureType();
 
@@ -236,8 +235,10 @@ public class MappingRule {
      * @return
      */
     public Optional<Feature> apply(Feature feature) {
-        String tagsString = (String) ((SimpleFeature) feature).getAttribute("tags");
-        Collection<Tag> tags = OSMUtils.buildTagsCollectionFromString(tagsString);
+        @SuppressWarnings("unchecked")
+        Map<String, String> tagsMap = (Map<String, String>) ((SimpleFeature) feature)
+                .getAttribute("tags");
+        Collection<Tag> tags = OSMUtils.buildTagsCollection(tagsMap);
         return apply(feature, tags);
     }
 
@@ -288,7 +289,8 @@ public class MappingRule {
             }
         }
         if (!featureType.getGeometryDescriptor().getType().getBinding().equals(Point.class)) {
-            featureBuilder.set("nodes", feature.getProperty("nodes").getValue());
+            long[] nodeIds = (long[]) feature.getProperty("nodes").getValue();
+            featureBuilder.set("nodes", nodeIds);
         }
         return Optional.of((Feature) featureBuilder.buildFeature(id));
 

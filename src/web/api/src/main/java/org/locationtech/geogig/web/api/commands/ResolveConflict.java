@@ -113,7 +113,7 @@ public class ResolveConflict extends AbstractWebAPICommand {
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class)
                 .setParent(geogig.workingTree().getTree()).setChildPath(node.getParentPath())
                 .call();
-        RevTreeBuilder treeBuilder = null;
+        RevTreeBuilder treeBuilder;
         ObjectId metadataId = ObjectId.NULL;
         if (parentNode.isPresent()) {
             metadataId = parentNode.get().getMetadataId();
@@ -127,7 +127,8 @@ public class ResolveConflict extends AbstractWebAPICommand {
         }
         treeBuilder.put(node.getNode());
         ObjectId newTreeId = geogig.command(WriteBack.class)
-                .setAncestor(geogig.workingTree().getTree().builder(geogig.objectDatabase()))
+                .setAncestor(new RevTreeBuilder(geogig.objectDatabase(),
+                        geogig.workingTree().getTree()))
                 .setChildPath(node.getParentPath()).setTree(treeBuilder.build())
                 .setMetadataId(metadataId).call();
         geogig.workingTree().updateWorkHead(newTreeId);

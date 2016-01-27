@@ -22,8 +22,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import jline.console.ConsoleReader;
-
 import org.fusesource.jansi.Ansi;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
@@ -40,6 +38,7 @@ import org.locationtech.geogig.api.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.api.plumbing.diff.GeometryAttributeDiff;
 import org.locationtech.geogig.api.plumbing.diff.LCSGeometryDiffImpl;
 import org.locationtech.geogig.cli.AnsiDecorator;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.type.PropertyDescriptor;
 
@@ -55,27 +54,25 @@ interface DiffPrinter {
      * @param entry
      * @throws IOException
      */
-    void print(GeoGIG geogig, ConsoleReader console, DiffEntry entry) throws IOException;
+    void print(GeoGIG geogig, Console console, DiffEntry entry) throws IOException;
 
 }
 
 class SummaryDiffPrinter implements DiffPrinter {
 
     @Override
-    public void print(GeoGIG geogig, ConsoleReader console, DiffEntry entry) throws IOException {
+    public void print(GeoGIG geogig, Console console, DiffEntry entry) throws IOException {
 
-        Ansi ansi = AnsiDecorator.newAnsi(console.getTerminal().isAnsiSupported());
+        Ansi ansi = AnsiDecorator.newAnsi(console.isAnsiSupported());
 
         final NodeRef newObject = entry.getNewObject();
         final NodeRef oldObject = entry.getOldObject();
 
-        String oldMode = oldObject == null ? shortOid(ObjectId.NULL) : shortOid(oldObject
-                .getMetadataId());
-        String newMode = newObject == null ? shortOid(ObjectId.NULL) : shortOid(newObject
-                .getMetadataId());
+        String oldMode = shortOid(oldObject == null ? ObjectId.NULL : oldObject.getMetadataId());
+        String newMode = shortOid(newObject == null ? ObjectId.NULL : newObject.getMetadataId());
 
-        String oldId = oldObject == null ? shortOid(ObjectId.NULL) : shortOid(oldObject.objectId());
-        String newId = newObject == null ? shortOid(ObjectId.NULL) : shortOid(newObject.objectId());
+        String oldId = shortOid(oldObject == null ? ObjectId.NULL : oldObject.getObjectId());
+        String newId = shortOid(newObject == null ? ObjectId.NULL : newObject.getObjectId());
 
         ansi.a(oldMode).a(" ");
         ansi.a(newMode).a(" ");
@@ -94,7 +91,7 @@ class SummaryDiffPrinter implements DiffPrinter {
     }
 
     private static String shortOid(ObjectId oid) {
-        return new StringBuilder(oid.toString().substring(0, 6)).append("...").toString();
+        return ObjectId.toString(oid, 4, new StringBuilder(19)).append("...").toString();
     }
 
     private static String formatPath(DiffEntry entry) {
@@ -131,7 +128,7 @@ class FullDiffPrinter implements DiffPrinter {
     }
 
     @Override
-    public void print(GeoGIG geogig, ConsoleReader console, DiffEntry diffEntry) throws IOException {
+    public void print(GeoGIG geogig, Console console, DiffEntry diffEntry) throws IOException {
 
         if (!noHeader) {
             summaryPrinter.print(geogig, console, diffEntry);
@@ -144,7 +141,7 @@ class FullDiffPrinter implements DiffPrinter {
 
             Map<PropertyDescriptor, AttributeDiff> diffs = diff.getDiffs();
 
-            Ansi ansi = AnsiDecorator.newAnsi(console.getTerminal().isAnsiSupported());
+            Ansi ansi = AnsiDecorator.newAnsi(console.isAnsiSupported());
             Set<Entry<PropertyDescriptor, AttributeDiff>> entries = diffs.entrySet();
             Iterator<Entry<PropertyDescriptor, AttributeDiff>> iter = entries.iterator();
             while (iter.hasNext()) {
@@ -197,7 +194,7 @@ class FullDiffPrinter implements DiffPrinter {
             RevFeatureType featureType = geogig.command(RevObjectParse.class)
                     .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class).get();
             Optional<RevObject> obj = geogig.command(RevObjectParse.class)
-                    .setObjectId(noderef.objectId()).call();
+                    .setObjectId(noderef.getObjectId()).call();
             RevFeature feature = (RevFeature) obj.get();
             ImmutableList<Optional<Object>> values = feature.getValues();
             int i = 0;

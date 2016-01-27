@@ -9,15 +9,11 @@
  */
 package org.locationtech.geogig.osm.internal.log;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.Blobs;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.common.io.Files;
+import com.google.common.base.Optional;
 
 /**
  * Adds an entry to the OSM log. The osm is used to keep track of trees created after importing from
@@ -36,12 +32,16 @@ public class AddOSMLogEntry extends AbstractGeoGigOp<Void> {
 
     @Override
     protected Void _call() {
-        URL file = command(ResolveOSMLogfile.class).call();
-        try {
-            Files.append(entry.toString() + "\n", new File(file.getFile()), Charsets.UTF_8);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
+        BlobStore blobStore = context().blobStore();
+        final String logPath = "osm/log";
+
+        Optional<String> log = Blobs.getBlobAsString(blobStore, logPath);
+        StringBuilder newLog = new StringBuilder();
+        if (log.isPresent()) {
+            newLog.append(log.get());
         }
+        newLog.append(entry.toString()).append('\n');
+        Blobs.putBlob(blobStore, logPath, newLog);
         return null;
     }
 

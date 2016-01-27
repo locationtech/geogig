@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
@@ -31,7 +30,7 @@ import org.locationtech.geogig.api.SubProgressListener;
 import org.locationtech.geogig.api.hooks.Hookable;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.osm.internal.coordcache.MappedPointCache;
+import org.locationtech.geogig.osm.internal.coordcache.MapdbPointCache;
 import org.locationtech.geogig.osm.internal.coordcache.PointCache;
 import org.locationtech.geogig.osm.internal.log.AddOSMLogEntry;
 import org.locationtech.geogig.osm.internal.log.OSMLogEntry;
@@ -418,8 +417,8 @@ public class OSMImportOp extends AbstractGeoGigOp<Optional<OSMReport>> {
             this.progressListener = progressListener;
             this.latestChangeset = 0;
             this.latestTimestamp = 0;
-            // this.pointCache = new BDBJEPointCache(platform);
-            this.pointCache = new MappedPointCache(platform);
+            // this.pointCache = new MappedPointCache(platform);
+            this.pointCache = new MapdbPointCache(platform);
             this.sw = Stopwatch.createStarted();
         }
 

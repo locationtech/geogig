@@ -13,10 +13,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
-import jline.console.ConsoleReader;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.fusesource.jansi.Ansi;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -31,6 +28,7 @@ import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.AnsiDecorator;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
@@ -66,7 +64,7 @@ public class Diff extends AbstractCommand implements CLICommand {
     @Parameter(description = "[<commit> [<commit>]] [-- <path>...]", arity = 2)
     private List<String> refSpec = Lists.newArrayList();
 
-    @Parameter(names = "--", hidden = true, variableArity = true)
+    @Parameter(names = { "--path", "-p" }, hidden = true, variableArity = true)
     private List<String> paths = Lists.newArrayList();
 
     @Parameter(names = "--cached", description = "compares the specified tree (commit, branch, etc) and the staging area")
@@ -127,9 +125,13 @@ public class Diff extends AbstractCommand implements CLICommand {
                     .setNewVersion(newVersion);
             cdiff.setFilter(paths);
             DiffObjectCount count = cdiff.call();
-            ConsoleReader console = cli.getConsole();
-            console.println(String.format("Trees changed: %d, features changed: %,d",
-                    count.treeCount(), count.featureCount()));
+            Console console = cli.getConsole();
+            console.println(String.format("Trees: added %,d, changed %,d, removed %,d",
+                    count.getTreesAdded(), count.getTreesChanged(), count.getTreesRemoved()));
+            console.println(String.format(
+                    "Features: added %,d, changed %,d, removed %,d, total: %,d",
+                    count.getFeaturesAdded(), count.getFeaturesChanged(),
+                    count.getFeaturesRemoved(), count.featureCount()));
             console.flush();
             return;
         }
@@ -201,7 +203,7 @@ public class Diff extends AbstractCommand implements CLICommand {
 
     private static final class BoundsDiffPrinter {
 
-        public static void print(GeoGIG geogig, ConsoleReader console,
+        public static void print(GeoGIG geogig, Console console,
                 DiffSummary<BoundingBox, BoundingBox> diffBounds) throws IOException {
 
             BoundingBox left = diffBounds.getLeft();
@@ -212,7 +214,7 @@ public class Diff extends AbstractCommand implements CLICommand {
                 both = mergedResult.get();
             }
 
-            Ansi ansi = AnsiDecorator.newAnsi(console.getTerminal().isAnsiSupported());
+            Ansi ansi = AnsiDecorator.newAnsi(console.isAnsiSupported());
 
             ansi.a("left:  ").a(bounds(left)).newline();
             ansi.a("right: ").a(bounds(right)).newline();

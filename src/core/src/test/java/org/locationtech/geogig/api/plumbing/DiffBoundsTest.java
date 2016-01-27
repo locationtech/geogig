@@ -12,8 +12,7 @@ package org.locationtech.geogig.api.plumbing;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.SchemaException;
 import org.geotools.geometry.jts.ReferencedEnvelope;

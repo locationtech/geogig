@@ -15,7 +15,6 @@ import org.locationtech.geogig.osm.cli.commands.OSMApplyDiff;
 import org.locationtech.geogig.osm.cli.commands.OSMDownload;
 import org.locationtech.geogig.osm.cli.commands.OSMExport;
 import org.locationtech.geogig.osm.cli.commands.OSMExportPG;
-import org.locationtech.geogig.osm.cli.commands.OSMExportSL;
 import org.locationtech.geogig.osm.cli.commands.OSMExportShp;
 import org.locationtech.geogig.osm.cli.commands.OSMHistoryImport;
 import org.locationtech.geogig.osm.cli.commands.OSMImport;
@@ -46,7 +45,6 @@ public class OSMCommandProxy implements CLICommandExtension {
         commander.addCommand("unmap", new OSMUnmap());
         commander.addCommand("export-shp", new OSMExportShp());
         commander.addCommand("export-pg", new OSMExportPG());
-        commander.addCommand("export-sl", new OSMExportSL());
         commander.addCommand("apply-diff", new OSMApplyDiff());
         return commander;
     }

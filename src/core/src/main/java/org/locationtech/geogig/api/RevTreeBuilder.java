@@ -23,14 +23,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.plumbing.HashObject;
 import org.locationtech.geogig.repository.DepthSearch;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.NodePathStorageOrder;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.NodeStorageOrder;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +39,9 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -50,6 +52,8 @@ public class RevTreeBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RevTreeBuilder.class);
 
+    private static final NodeStorageOrder NODE_STORAGE_ORDER = new NodeStorageOrder();
+
     /**
      * How many children nodes to hold before forcing normalization of the internal data structures
      * into tree buckets on the database
@@ -58,7 +62,9 @@ public class RevTreeBuilder {
      */
     public static final int DEFAULT_NORMALIZATION_THRESHOLD = 1000 * 1000;
 
-    private final ObjectDatabase db;
+    private final ObjectStore obStore;
+
+    private int normalizationThreshold = DEFAULT_NORMALIZATION_THRESHOLD;
 
     private final Set<String> deletes;
 
@@ -82,9 +88,8 @@ public class RevTreeBuilder {
      * Empty tree constructor, used to create trees from scratch
      * 
      * @param db
-     * @param serialFactory
      */
-    public RevTreeBuilder(ObjectDatabase db) {
+    public RevTreeBuilder(ObjectStore db) {
         this(db, null);
     }
 
@@ -92,7 +97,7 @@ public class RevTreeBuilder {
      * Only useful to {@link #build() build} the named {@link #empty() empty} tree
      */
     private RevTreeBuilder() {
-        db = null;
+        obStore = null;
         treeChanges = Maps.newTreeMap();
         featureChanges = Maps.newTreeMap();
         deletes = Sets.newTreeSet();
@@ -100,23 +105,32 @@ public class RevTreeBuilder {
         pendingWritesCache = Maps.newTreeMap();
     }
 
+    public RevTreeBuilder normalizationThreshold(final int threshold) {
+        this.normalizationThreshold = threshold;
+        return this;
+    }
+
     /**
      * Copy constructor with tree depth
+     * @param obStore {@link org.locationtech.geogig.storage.ObjectStore ObjectStore} with which
+     * to initialize this RevTreeBuilder.
+     * @param copy {@link org.locationtech.geogig.api.RevTree RevTree} to copy.
      */
-    public RevTreeBuilder(ObjectDatabase db, @Nullable final RevTree copy) {
-        this(db, copy, 0, new TreeMap<ObjectId, RevTree>());
+    public RevTreeBuilder(ObjectStore obStore, @Nullable final RevTree copy) {
+        this(obStore, copy, 0, new TreeMap<ObjectId, RevTree>(), DEFAULT_NORMALIZATION_THRESHOLD);
     }
 
     /**
      * Copy constructor
      */
-    private RevTreeBuilder(final ObjectDatabase db, @Nullable final RevTree copy, final int depth,
-            final Map<ObjectId, RevTree> pendingWritesCache) {
+    private RevTreeBuilder(final ObjectStore obSotre, @Nullable final RevTree copy, final int depth,
+            final Map<ObjectId, RevTree> pendingWritesCache, final int normalizationThreshold) {
 
-        checkNotNull(db);
+        checkNotNull(obSotre);
         checkNotNull(pendingWritesCache);
 
-        this.db = db;
+        this.obStore = obSotre;
+        this.normalizationThreshold = normalizationThreshold;
         this.depth = depth;
         this.pendingWritesCache = pendingWritesCache;
 
@@ -171,7 +185,7 @@ public class RevTreeBuilder {
     private RevTree loadTree(final ObjectId subtreeId) {
         RevTree subtree = this.pendingWritesCache.get(subtreeId);
         if (subtree == null) {
-            subtree = db.getTree(subtreeId);
+            subtree = obStore.getTree(subtreeId);
         }
         return subtree;
     }
@@ -198,9 +212,9 @@ public class RevTreeBuilder {
             return Optional.absent();
         }
 
-        RevTree subtree = loadTree(bucket.id());
+        RevTree subtree = loadTree(bucket.getObjectId());
 
-        DepthSearch depthSearch = new DepthSearch(db);
+        DepthSearch depthSearch = new DepthSearch(obStore);
         Optional<Node> node = depthSearch.getDirectChild(subtree, key, depth + 1);
 
         if (node.isPresent()) {
@@ -229,20 +243,20 @@ public class RevTreeBuilder {
      */
     private RevTree normalize() {
         Stopwatch sw = Stopwatch.createStarted();
-        RevTree unnamedTree;
+        RevTree tree;
 
         final int numPendingChanges = numPendingChanges();
         if (bucketTreesByBucket.isEmpty() && numPendingChanges <= NORMALIZED_SIZE_LIMIT) {
-            unnamedTree = normalizeToChildren();
+            tree = normalizeToChildren();
         } else {
-            unnamedTree = normalizeToBuckets();
+            tree = normalizeToBuckets();
             checkState(featureChanges.isEmpty());
             checkState(treeChanges.isEmpty());
 
-            if (unnamedTree.size() <= NORMALIZED_SIZE_LIMIT) {
+            if (tree.size() <= NORMALIZED_SIZE_LIMIT) {
                 this.bucketTreesByBucket.clear();
-                if (unnamedTree.buckets().isPresent()) {
-                    unnamedTree = moveBucketsToChildren(unnamedTree);
+                if (tree.buckets().isPresent()) {
+                    tree = moveBucketsToChildren(tree);
                 }
                 if (this.depth == 0) {
                     pendingWritesCache.clear();
@@ -250,6 +264,17 @@ public class RevTreeBuilder {
             }
         }
 
+        checkPendingWrites();
+
+        this.initialSize = tree.size();
+        this.initialNumTrees = tree.numTrees();
+        if (this.depth == 0) {
+            LOGGER.debug("Normalization took {}. Changes: {}", sw.stop(), numPendingChanges);
+        }
+        return tree;
+    }
+
+    private void checkPendingWrites() {
         final int pendingWritesThreshold = 10 * 1000;
         final boolean topLevelTree = this.depth == 0;// am I an actual (addressable) tree or bucket
                                                      // tree of a higher level one?
@@ -259,16 +284,10 @@ public class RevTreeBuilder {
                     .size(), (topLevelTree ? "writing top level tree" : "there are "
                     + pendingWritesCache.size() + " pending bucket writes"));
             Stopwatch sw2 = Stopwatch.createStarted();
-            db.putAll(pendingWritesCache.values().iterator());
+            obStore.putAll(pendingWritesCache.values().iterator());
             pendingWritesCache.clear();
             LOGGER.debug("done in {}", sw2.stop());
         }
-        this.initialSize = unnamedTree.size();
-        this.initialNumTrees = unnamedTree.numTrees();
-        if (this.depth == 0) {
-            LOGGER.debug("Normalization took {}. Changes: {}", sw.stop(), numPendingChanges);
-        }
-        return unnamedTree;
     }
 
     /**
@@ -280,7 +299,7 @@ public class RevTreeBuilder {
         checkState(this.bucketTreesByBucket.isEmpty());
 
         for (Bucket bucket : tree.buckets().get().values()) {
-            ObjectId id = bucket.id();
+            ObjectId id = bucket.getObjectId();
             RevTree bucketTree = this.loadTree(id);
             if (bucketTree.buckets().isPresent()) {
                 moveBucketsToChildren(bucketTree);
@@ -312,8 +331,37 @@ public class RevTreeBuilder {
         }
         Collection<Node> features = featureChanges.values();
         Collection<Node> trees = treeChanges.values();
-        RevTreeImpl unnamedTree = RevTreeImpl.createLeafTree(ObjectId.NULL, size, features, trees);
-        return unnamedTree;
+        RevTreeImpl tree = createLeafTree(size, features, trees);
+        return tree;
+    }
+
+    public static RevTreeImpl createLeafTree(long size, Collection<Node> features,
+            Collection<Node> trees) {
+        Preconditions.checkNotNull(features);
+        Preconditions.checkNotNull(trees);
+
+        ImmutableList<Node> featuresList = ImmutableList.of();
+        ImmutableList<Node> treesList = ImmutableList.of();
+
+        if (!features.isEmpty()) {
+            featuresList = NODE_STORAGE_ORDER.immutableSortedCopy(features);
+        }
+        if (!trees.isEmpty()) {
+            treesList = NODE_STORAGE_ORDER.immutableSortedCopy(trees);
+        }
+
+        final ObjectId id = HashObject.hashTree(treesList, featuresList, null);
+
+        return RevTreeImpl.createLeafTree(id, size, featuresList, treesList);
+    }
+
+    private RevTreeImpl createNodeTree(long size, int numTrees, TreeMap<Integer, Bucket> buckets) {
+
+        ImmutableSortedMap<Integer, Bucket> innerTrees = ImmutableSortedMap.copyOf(buckets);
+
+        final ObjectId id = HashObject.hashTree(null, null, innerTrees);
+
+        return RevTreeImpl.createNodeTree(id, size, numTrees, innerTrees);
     }
 
     private long sizeOf(Node node) {
@@ -346,8 +394,9 @@ public class RevTreeBuilder {
             for (Integer bucketIndex : changedBucketIndexes) {
                 final RevTree currentBucketTree = bucketTrees.get(bucketIndex);
                 final int bucketDepth = this.depth + 1;
-                final RevTreeBuilder bucketTreeBuilder = new RevTreeBuilder(this.db,
-                        currentBucketTree, bucketDepth, this.pendingWritesCache);
+                final RevTreeBuilder bucketTreeBuilder = new RevTreeBuilder(this.obStore,
+                        currentBucketTree, bucketDepth, this.pendingWritesCache,
+                        this.normalizationThreshold);
                 {
                     final Collection<Node> bucketEntries = changesByBucket.removeAll(bucketIndex);
                     for (Node node : bucketEntries) {
@@ -368,7 +417,8 @@ public class RevTreeBuilder {
                     bucketTreesByBucket.remove(bucketIndex);
                 } else {
                     final Bucket currBucket = this.bucketTreesByBucket.get(bucketIndex);
-                    if (currBucket == null || !currBucket.id().equals(modifiedBucketTree.getId())) {
+                    if (currBucket == null
+                            || !currBucket.getObjectId().equals(modifiedBucketTree.getId())) {
                         // if (currBucket != null) {
                         // db.delete(currBucket.id());
                         // }
@@ -391,9 +441,12 @@ public class RevTreeBuilder {
                 }
             }
             if (!newLeafTreesToSave.isEmpty()) {
-                db.putAll(newLeafTreesToSave.iterator());
+                // db.putAll(newLeafTreesToSave.iterator());
+                for (RevTree leaf : newLeafTreesToSave) {
+                    pendingWritesCache.put(leaf.getId(), leaf);
+                }
                 newLeafTreesToSave.clear();
-                newLeafTreesToSave = null;
+                checkPendingWrites();
             }
         } catch (RuntimeException e) {
             throw e;
@@ -408,10 +461,8 @@ public class RevTreeBuilder {
         }
         int accChildTreeCount = this.initialNumTrees + treesDelta;
 
-        RevTreeImpl unnamedTree;
-        unnamedTree = RevTreeImpl.createNodeTree(ObjectId.NULL, accSize, accChildTreeCount,
-                this.bucketTreesByBucket);
-        return unnamedTree;
+        RevTreeImpl tree = createNodeTree(accSize, accChildTreeCount, this.bucketTreesByBucket);
+        return tree;
     }
 
     private Map<Integer, RevTree> getBucketTrees(ImmutableSet<Integer> changedBucketIndexes) {
@@ -419,7 +470,8 @@ public class RevTreeBuilder {
         List<Integer> missing = new ArrayList<>(changedBucketIndexes.size());
         for (Integer bucketIndex : changedBucketIndexes) {
             Bucket bucket = bucketTreesByBucket.get(bucketIndex);
-            RevTree cached = bucket == null ? RevTree.EMPTY : pendingWritesCache.get(bucket.id());
+            RevTree cached = bucket == null ? RevTree.EMPTY : pendingWritesCache.get(bucket
+                    .getObjectId());
             if (cached == null) {
                 missing.add(bucketIndex);
             } else {
@@ -431,10 +483,10 @@ public class RevTreeBuilder {
                     new Function<Integer, ObjectId>() {
                         @Override
                         public ObjectId apply(Integer index) {
-                            return bucketTreesByBucket.get(index).id();
+                            return bucketTreesByBucket.get(index).getObjectId();
                         }
                     });
-            Iterator<RevObject> all = db.getAll(ids.keySet());
+            Iterator<RevObject> all = obStore.getAll(ids.keySet());
             while (all.hasNext()) {
                 RevObject next = all.next();
                 bucketTrees.put(ids.get(next.getId()), (RevTree) next);
@@ -452,7 +504,7 @@ public class RevTreeBuilder {
         if (bucket == null) {
             return RevTree.EMPTY;
         } else {
-            return loadTree(bucket.id());
+            return loadTree(bucket.getObjectId());
         }
     }
 
@@ -500,7 +552,7 @@ public class RevTreeBuilder {
     }
 
     /**
-     * Adds or replaces an element in the tree with the given key.
+     * Adds or replaces an element in the tree with the given node.
      * <p>
      * <!-- Implementation detail: If the number of cached entries (entries held directly by this
      * tree) reaches {@link #DEFAULT_NORMALIZATION_THRESHOLD}, this tree will {@link #normalize()}
@@ -508,14 +560,14 @@ public class RevTreeBuilder {
      * 
      * -->
      * 
-     * @param key non null
-     * @param value non null
+     * @param node The {@link org.locationtech.geogig.api.Node Node} to add or replace.
+     * @return a reference to this {@link org.locationtech.geogig.api.RevTreeBuilder RevTreeBuilder}
      */
     public RevTreeBuilder put(final Node node) {
         Preconditions.checkNotNull(node, "node can't be null");
 
         putInternal(node);
-        if (numPendingChanges() >= DEFAULT_NORMALIZATION_THRESHOLD) {
+        if (numPendingChanges() >= this.normalizationThreshold) {
             // hit the split factor modification tolerance, lets normalize
             normalize();
         }
@@ -544,13 +596,10 @@ public class RevTreeBuilder {
      *         this method returns.
      */
     public RevTree build() {
-        RevTree unnamedTree = normalize();
+        RevTree tree = normalize();
         checkState(bucketTreesByBucket.isEmpty()
                 || (featureChanges.isEmpty() && treeChanges.isEmpty()));
-
-        ObjectId treeId = new HashObject().setObject(unnamedTree).call();
-        RevTreeImpl namedTree = RevTreeImpl.create(treeId, unnamedTree.size(), unnamedTree);
-        return namedTree;
+        return tree;
     }
 
     /**

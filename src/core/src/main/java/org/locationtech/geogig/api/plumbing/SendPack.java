@@ -7,14 +7,11 @@ import static org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef.C
 import static org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef.ChangeTypes.CHANGED_REF;
 import static org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef.ChangeTypes.REMOVED_REF;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.Remote;
@@ -28,7 +25,7 @@ import org.locationtech.geogig.remote.IRemoteRepo;
 import org.locationtech.geogig.remote.RemoteUtils;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.DeduplicationService;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,11 +124,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
             transferResult = callInternal(remoteRepo);
             checkState(transferResult != null);
         } finally {
-            try {
-                remoteRepo.close();
-            } catch (IOException e) {
-                Throwables.propagate(e);
-            }
+            remoteRepo.close();
         }
         return transferResult;
     }
@@ -183,7 +176,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         remoteRepo = resolvedRemoteRepo.get();
         try {
             remoteRepo.open();
-        } catch (IOException e) {
+        } catch (RepositoryConnectionException e) {
             Throwables.propagate(e);
         }
         return remoteRepo;
@@ -229,9 +222,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         Hints remoteHints = new Hints();
         remoteHints.set(Hints.REMOTES_READ_ONLY, Boolean.FALSE);
         Repository localRepository = repository();
-        DeduplicationService deduplicationService = context.deduplicationService();
-        return RemoteUtils.newRemote(GlobalContextBuilder.builder.build(remoteHints), remote,
-                localRepository, deduplicationService);
+        return RemoteUtils.newRemote(localRepository, remote, remoteHints);
     }
 
     private Optional<Ref> refParse(String refSpec) {

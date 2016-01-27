@@ -20,7 +20,7 @@ import org.locationtech.geogig.api.RevObject;
  */
 public class ObjectInserter {
 
-    private ObjectDatabase objectDb;
+    private ObjectStore objectDb;
 
     // TODO: transaction management
     /**
@@ -28,7 +28,7 @@ public class ObjectInserter {
      * 
      * @param objectDatabase the database to insert to
      */
-    public ObjectInserter(ObjectDatabase objectDatabase) {
+    public ObjectInserter(ObjectStore objectDatabase) {
         objectDb = objectDatabase;
     }
 

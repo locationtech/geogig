@@ -9,32 +9,34 @@
  */
 package org.locationtech.geogig.api.plumbing.merge;
 
-import java.io.File;
-import java.net.URL;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.storage.BlobStore;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.google.common.io.Files;
+import com.google.common.io.CharStreams;
 
 public class ReadMergeCommitMessageOp extends AbstractGeoGigOp<String> {
 
     @Override
     protected String _call() {
-        URL envHome = new ResolveGeogigDir(platform()).call().get();
-        try {
-            File file = new File(envHome.toURI());
-            file = new File(file, "MERGE_MSG");
-            if (!file.exists()) {
-                return "";
-            }
-            List<String> lines = Files.readLines(file, Charsets.UTF_8);
+        BlobStore blobStore = context.blobStore();
+
+        Optional<InputStream> blobAsStream = blobStore.getBlobAsStream("MERGE_MSG");
+        if (!blobAsStream.isPresent()) {
+            return "";
+        }
+        try (InputStream in = blobAsStream.get()) {
+            List<String> lines = CharStreams.readLines(new InputStreamReader(in, Charsets.UTF_8));
             return Joiner.on("\n").join(lines);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }

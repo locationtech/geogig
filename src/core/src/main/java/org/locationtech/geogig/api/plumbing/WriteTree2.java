@@ -16,8 +16,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
@@ -299,13 +298,13 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
         // find the diffs that apply to the path filters
         final ObjectId leftTreeId = leftTreeRef == null ? RevTree.EMPTY_TREE_ID : leftTreeRef
-                .objectId();
+                .getObjectId();
         final ObjectId rightTreeId = rightTreeRef == null ? RevTree.EMPTY_TREE_ID : rightTreeRef
-                .objectId();
+                .getObjectId();
 
         final RevTree currentLeftTree = repositoryDatabase.getTree(leftTreeId);
 
-        final RevTreeBuilder builder = currentLeftTree.builder(repositoryDatabase);
+        final RevTreeBuilder builder = new RevTreeBuilder(repositoryDatabase, currentLeftTree);
 
         // create the new trees taking into account all the nodes
         DiffTree diffs = command(DiffTree.class).setRecursive(false).setReportTrees(false)
@@ -466,7 +465,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
     @Nullable
     private NodeRef findTree(ObjectId objectId, Map<String, NodeRef> treeEntries) {
         for (NodeRef ref : treeEntries.values()) {
-            if (objectId.equals(ref.objectId())) {
+            if (objectId.equals(ref.getObjectId())) {
                 return ref;
             }
         }

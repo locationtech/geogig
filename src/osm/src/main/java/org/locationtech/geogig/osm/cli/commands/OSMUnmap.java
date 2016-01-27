@@ -12,13 +12,12 @@ package org.locationtech.geogig.osm.cli.commands;
 import java.io.IOException;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.osm.internal.OSMUnmapOp;
 
@@ -58,7 +57,7 @@ public class OSMUnmap extends AbstractCommand implements CLICommand {
 
         ObjectId newTreeId = geogig.command(OSMUnmapOp.class).setPath(path).call().getId();
 
-        ConsoleReader console = cli.getConsole();
+        Console console = cli.getConsole();
         if (newTreeId.equals(oldTreeId)) {
             console.println("No differences were found after unmapping.\n"
                     + "No changes have been made to the working tree");

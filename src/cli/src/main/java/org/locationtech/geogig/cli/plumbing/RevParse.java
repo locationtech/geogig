@@ -11,16 +11,14 @@ package org.locationtech.geogig.cli.plumbing;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
-
-import jline.console.ConsoleReader;
 
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.cli.AbstractCommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.repository.Hints;
@@ -28,7 +26,6 @@ import org.locationtech.geogig.repository.Hints;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
 /**
@@ -36,7 +33,7 @@ import com.google.common.collect.Lists;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig rev-parse --resolve-geogig-dir}: check if the current directory is inside a
+ * <li> {@code geogig rev-parse --resolve-geogig-uri}: check if the current directory is inside a
  * geogig repository and print out the repository location
  * <li> {@code geogig rev-parse --is-inside-work-tree}: check if the current directory is inside a
  * geogig repository and print out the repository location
@@ -46,8 +43,8 @@ import com.google.common.collect.Lists;
 @Parameters(commandNames = "rev-parse", commandDescription = "Resolve parameters according to the arguments")
 public class RevParse extends AbstractCommand {
 
-    @Parameter(names = "--resolve-geogig-dir", description = "Check if the current directory is inside a geogig repository and print out the repository location")
-    private boolean resolve_geogig_dir;
+    @Parameter(names = "--resolve-geogig-uri", description = "Print out the repository location")
+    private boolean resolve_geogig_uri;
 
     @Parameter(names = "--is-inside-work-tree", description = "Check if the current directory is inside a geogig repository and print out the repository location")
     private boolean is_inside_work_tree;
@@ -63,9 +60,9 @@ public class RevParse extends AbstractCommand {
         GeoGIG geogig = cli.getGeogig();
 
         if (!refSpecs.isEmpty()) {
-            checkParameter(!(resolve_geogig_dir || is_inside_work_tree),
-                    "if refSpec is given, --resolve-geogig-dir or --is-inside-work-tree shall not be specified");
-            ConsoleReader console = cli.getConsole();
+            checkParameter(!(resolve_geogig_uri || is_inside_work_tree),
+                    "if refSpec is given, --resolve-geogig-uri or --is-inside-work-tree shall not be specified");
+            Console console = cli.getConsole();
             for (String refSpec : this.refSpecs) {
                 Optional<ObjectId> resolved = geogig
                         .command(org.locationtech.geogig.api.plumbing.RevParse.class)
@@ -84,7 +81,7 @@ public class RevParse extends AbstractCommand {
             closeIt = true;
         }
         try {
-            if (resolve_geogig_dir) {
+            if (resolve_geogig_uri) {
                 resolveGeogigDir(cli.getConsole(), geogig);
             } else if (is_inside_work_tree) {
                 isInsideWorkTree(cli.getConsole(), geogig);
@@ -96,8 +93,8 @@ public class RevParse extends AbstractCommand {
         }
     }
 
-    private void isInsideWorkTree(ConsoleReader console, GeoGIG geogig) throws IOException {
-        Optional<URL> repoUrl = geogig.command(ResolveGeogigDir.class).call();
+    private void isInsideWorkTree(Console console, GeoGIG geogig) throws IOException {
+        Optional<URI> repoUrl = geogig.command(ResolveGeogigURI.class).call();
 
         File pwd = geogig.getPlatform().pwd();
 
@@ -110,21 +107,17 @@ public class RevParse extends AbstractCommand {
         }
     }
 
-    private void resolveGeogigDir(ConsoleReader console, GeoGIG geogig) throws IOException {
+    private void resolveGeogigDir(Console console, GeoGIG geogig) throws IOException {
 
-        URL repoUrl = geogig.command(ResolveGeogigDir.class).call().orNull();
+        URI repoUrl = geogig.command(ResolveGeogigURI.class).call().orNull();
         if (null == repoUrl) {
             File currDir = geogig.getPlatform().pwd();
             console.println("Error: not a geogig dir '"
                     + currDir.getCanonicalFile().getAbsolutePath() + "'");
-        } else if ("file".equals(repoUrl.getProtocol())) {
-            try {
-                console.println(new File(repoUrl.toURI()).getCanonicalFile().getAbsolutePath());
-            } catch (URISyntaxException e) {
-                Throwables.propagate(e);
-            }
+        } else if ("file".equals(repoUrl.getScheme())) {
+            console.println(new File(repoUrl).getCanonicalFile().getAbsolutePath());
         } else {
-            console.println(repoUrl.toExternalForm());
+            console.println(repoUrl.toString());
         }
     }
 

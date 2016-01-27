@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 

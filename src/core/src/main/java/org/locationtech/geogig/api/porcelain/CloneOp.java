@@ -9,12 +9,8 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
-import java.io.IOException;
-
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.Remote;
@@ -28,6 +24,7 @@ import org.locationtech.geogig.remote.IRemoteRepo;
 import org.locationtech.geogig.remote.RemoteUtils;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -43,7 +40,7 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
 
     private Optional<String> branch = Optional.absent();
 
-    private String repositoryURL;
+    private String remoteURI;
 
     private String username = null;
 
@@ -56,7 +53,7 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
      * @return {@code this}
      */
     public CloneOp setRepositoryURL(final String repositoryURL) {
-        this.repositoryURL = repositoryURL;
+        this.remoteURI = repositoryURL;
         return this;
     }
 
@@ -64,7 +61,7 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
      * Get the repository URL to be cloned
      */
     public Optional<String> getRepositoryURL() {
-        return Optional.fromNullable(repositoryURL);
+        return Optional.fromNullable(remoteURI);
     }
 
     /**
@@ -121,10 +118,10 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
      */
     @Override
     protected Void _call() {
-        Preconditions.checkArgument(repositoryURL != null && !repositoryURL.isEmpty(),
+        Preconditions.checkArgument(remoteURI != null && !remoteURI.isEmpty(),
                 "No repository specified to clone from.");
-        Repository repository = repository();
-        if (repository.isSparse()) {
+        Repository localRepo = repository();
+        if (localRepo.isSparse()) {
             Preconditions
                     .checkArgument(branch.isPresent(), "No branch specified for sparse clone.");
         }
@@ -133,37 +130,33 @@ public class CloneOp extends AbstractGeoGigOp<Void> {
         progressListener.started();
 
         // Set up origin
-        Remote remote = command(RemoteAddOp.class).setName("origin").setURL(repositoryURL)
-                .setMapped(repository.isSparse()).setUserName(username).setPassword(password)
-                .setBranch(repository.isSparse() ? branch.get() : null).call();
+        Remote remote = command(RemoteAddOp.class).setName("origin").setURL(remoteURI)
+                .setMapped(localRepo.isSparse()).setUserName(username).setPassword(password)
+                .setBranch(localRepo.isSparse() ? branch.get() : null).call();
 
         if (!depth.isPresent()) {
             // See if we are cloning a shallow clone. If so, a depth must be specified.
-            Optional<IRemoteRepo> remoteRepo = RemoteUtils.newRemote(
-                    GlobalContextBuilder.builder.build(Hints.readOnly()), remote, repository,
-                    repository.deduplicationService());
+            Optional<IRemoteRepo> remoteRepo = RemoteUtils.newRemote(localRepo, remote,
+                    Hints.readOnly());
 
             Preconditions.checkState(remoteRepo.isPresent(), "Failed to connect to the remote.");
             IRemoteRepo remoteRepoInstance = remoteRepo.get();
             try {
                 remoteRepoInstance.open();
-            } catch (IOException e) {
+            } catch (RepositoryConnectionException e) {
                 Throwables.propagate(e);
             }
             try {
                 depth = remoteRepoInstance.getDepth();
             } finally {
-                try {
-                    remoteRepoInstance.close();
-                } catch (IOException e) {
-                    Throwables.propagate(e);
-                }
+                remoteRepoInstance.close();
             }
         }
 
         if (depth.isPresent()) {
+            String depthVal = depth.get().toString();
             command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setScope(ConfigScope.LOCAL)
-                    .setName(Repository.DEPTH_CONFIG_KEY).setValue(depth.get().toString()).call();
+                    .setName(Repository.DEPTH_CONFIG_KEY).setValue(depthVal).call();
         }
 
         // Fetch remote data

@@ -13,9 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.porcelain.ConfigException.StatusCode;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ConfigException;
+import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;

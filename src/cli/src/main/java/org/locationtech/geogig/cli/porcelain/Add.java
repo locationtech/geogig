@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import jline.console.ConsoleReader;
-
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
@@ -22,6 +20,7 @@ import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -62,6 +61,9 @@ public class Add extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--update", "-u" }, description = "Only add features that have already been tracked")
     private boolean updateOnly;
 
+    @Parameter(names = { "--quiet", "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
+    private boolean quiet;
+
     @Parameter(description = "<patterns>...")
     private List<String> patterns = new ArrayList<String>();
 
@@ -75,7 +77,7 @@ public class Add extends AbstractCommand implements CLICommand {
     public void runInternal(GeogigCLI cli) throws IOException {
         final GeoGIG geogig = cli.getGeogig();
 
-        final ConsoleReader console = cli.getConsole();
+        final Console console = cli.getConsole();
 
         String pathFilter = null;
         if (patterns.size() == 1) {
@@ -86,15 +88,18 @@ public class Add extends AbstractCommand implements CLICommand {
 
         List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
 
-        console.print("Counting unstaged elements...");
-        console.flush();
-        DiffObjectCount unstaged = geogig.getRepository().workingTree().countUnstaged(pathFilter);
-        if (0 == unstaged.count() && conflicts.isEmpty()) {
-            console.println();
-            console.println("No unstaged elements, exiting.");
-            return;
-        } else {
-            console.println(String.valueOf(unstaged.count()));
+        if (!quiet) {
+            console.print("Counting unstaged elements...");
+            console.flush();
+            DiffObjectCount unstaged = geogig.getRepository().workingTree()
+                    .countUnstaged(pathFilter);
+            if (0 == unstaged.count() && conflicts.isEmpty()) {
+                console.println();
+                console.println("No unstaged elements, exiting.");
+                return;
+            } else {
+                console.println(String.valueOf(unstaged.count()));
+            }
         }
 
         console.println("Staging changes...");
@@ -106,13 +111,18 @@ public class Add extends AbstractCommand implements CLICommand {
         WorkingTree workTree = op.setUpdateOnly(updateOnly)
                 .setProgressListener(cli.getProgressListener()).call();
 
-        DiffObjectCount staged = geogig.getRepository().index().countStaged(null);
-        unstaged = workTree.countUnstaged(null);
+        if (quiet) {
+            console.println("done.");
+        } else {
+            DiffObjectCount staged = geogig.getRepository().index().countStaged(null);
+            DiffObjectCount unstaged = workTree.countUnstaged(null);
 
-        console.println(staged.featureCount() + " features and " + staged.treeCount()
-                + " trees staged for commit");
-        console.println(unstaged.featureCount() + " features and " + unstaged.treeCount()
-                + " trees not staged for commit");
+            console.println(String.format("%,d features and %,d trees staged for commit",
+                    staged.featureCount(), staged.treeCount()));
+
+            console.println(String.format("%,d features and %,d trees not staged for commit",
+                    unstaged.featureCount(), unstaged.treeCount()));
+        }
     }
 
 }

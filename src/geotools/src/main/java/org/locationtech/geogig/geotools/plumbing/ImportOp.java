@@ -16,8 +16,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
@@ -490,7 +489,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
      * @return a feature with the passed feature type and data taken from the input feature
      */
     private Feature alter(NodeRef node, RevFeatureType featureType) {
-        RevFeature oldFeature = command(RevObjectParse.class).setObjectId(node.objectId())
+        RevFeature oldFeature = command(RevObjectParse.class).setObjectId(node.getObjectId())
                 .call(RevFeature.class).get();
         RevFeatureType oldFeatureType;
         oldFeatureType = command(RevObjectParse.class).setObjectId(node.getMetadataId())

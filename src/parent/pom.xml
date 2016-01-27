@@ -220,6 +220,10 @@
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>jgridshift</groupId>
+            <artifactId>jgridshift</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -281,7 +285,7 @@
         <artifactId>jul-to-slf4j</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
- 
+
       <dependency>
         <groupId>org.mapdb</groupId>
         <artifactId>mapdb</artifactId>
@@ -424,7 +428,7 @@
           <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
           <reuseForks>true</reuseForks>
           <argLine>-Xms256m -Xmx512m</argLine>
-          <workingDirectory>${project.build.directory}</workingDirectory>
+          <workingDirectory>${project.build.directory}</workingDirectory>
           <systemPropertyVariables>
             <java.io.tmpdir>${test.tmpDir}</java.io.tmpdir>
           </systemPropertyVariables>

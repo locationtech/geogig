@@ -13,7 +13,7 @@
   <artifactId>geogig-core</artifactId>
   <packaging>jar</packaging>
   <name>GeoGig Core</name>
-  <!-- Build Instructions and Profiles Handled as a normal maven java project: mvn clean install Online tests available using: 
+  <!-- Build Instructions and Profiles Handled as a normal maven java project: mvn clean install Online tests available using:
     mvn -Ponline Corertura is configured for a test coverage report: mvn cobertura:cobertura open target/site/cobertura/index.html -->
   <dependencies>
     <dependency>
@@ -40,6 +40,10 @@
       <artifactId>gt-referencing</artifactId>
       <version>${gt.version}</version>
       <exclusions>
+        <exclusion>
+          <groupId>jgridshift</groupId>
+          <artifactId>jgridshift</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>javax.media</groupId>
           <artifactId>jai_core</artifactId>

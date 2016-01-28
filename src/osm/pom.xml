@@ -79,7 +79,7 @@
     <dependency>
       <groupId>org.codehaus.woodstox</groupId>
       <artifactId>woodstox-core-asl</artifactId>
-      <version>4.1.4</version>
+      <version>4.2.0</version>
       <exclusions>
         <exclusion>
           <groupId>javax.xml.stream</groupId>
@@ -91,11 +91,39 @@
       <groupId>org.openstreetmap.osmosis</groupId>
       <artifactId>osmosis-xml</artifactId>
       <version>${osmosis.version}</version>
+      <exclusions>
+        <!--
+         Bump commons-codec from 1.7 to 1.8 at request of IP team.
+        -->
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.8</version>
     </dependency>
     <dependency>
       <groupId>org.openstreetmap.osmosis</groupId>
       <artifactId>osmosis-pbf</artifactId>
       <version>${osmosis.version}</version>
+      <exclusions>
+        <!--
+         Bump protobuf from 2.4.1 to 2.5.0 at request of IP team.
+        -->
+        <exclusion>
+          <groupId>com.google.protobuf</groupId>
+          <artifactId>protobuf-java</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>2.5.0</version>
     </dependency>
 
     <dependency>

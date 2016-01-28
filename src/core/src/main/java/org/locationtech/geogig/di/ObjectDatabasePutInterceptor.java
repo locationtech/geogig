@@ -18,6 +18,7 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -45,7 +46,7 @@ class ObjectDatabasePutInterceptor implements Decorator {
 
     @SuppressWarnings("unchecked")
     @Override
-    public ObjectDatabase decorate(Object subject) {
+    public ObjectStore decorate(Object subject) {
         return new GraphUpdatingObjectDatabase(graphDb, (ObjectDatabase) subject);
     }
 

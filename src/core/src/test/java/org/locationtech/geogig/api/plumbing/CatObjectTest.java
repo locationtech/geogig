@@ -18,6 +18,7 @@ import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.storage.FieldType;
+import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
@@ -38,7 +39,7 @@ public class CatObjectTest extends RepositoryTestCase {
 
     @Test
     public void TestCatTreeWithoutBucketsObject() throws Exception {
-        int numChildren = RevTree.NORMALIZED_SIZE_LIMIT / 2;
+        int numChildren = NodePathStorageOrder.normalizedSizeLimit(0) / 2;
         RevTree tree = createTree(numChildren);
         CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
                 .call();
@@ -53,7 +54,7 @@ public class CatObjectTest extends RepositoryTestCase {
 
     @Test
     public void TestCatTreeWithBucketsObject() throws Exception {
-        int numChildren = RevTree.NORMALIZED_SIZE_LIMIT * 2;
+        int numChildren = NodePathStorageOrder.normalizedSizeLimit(0) * 2;
         RevTree tree = createTree(numChildren);
         CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
                 .call();

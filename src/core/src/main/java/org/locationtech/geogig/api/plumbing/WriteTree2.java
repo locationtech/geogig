@@ -304,7 +304,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
         final RevTree currentLeftTree = repositoryDatabase.getTree(leftTreeId);
 
-        final RevTreeBuilder builder = currentLeftTree.builder(repositoryDatabase);
+        final RevTreeBuilder builder = new RevTreeBuilder(repositoryDatabase, currentLeftTree);
 
         // create the new trees taking into account all the nodes
         DiffTree diffs = command(DiffTree.class).setRecursive(false).setReportTrees(false)

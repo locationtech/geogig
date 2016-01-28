@@ -103,6 +103,11 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
         return dataRoot != null;
     }
 
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
+
     /**
      * Opens the database for use by GeoGig.
      */

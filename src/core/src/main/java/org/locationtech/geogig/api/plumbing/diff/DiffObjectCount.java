@@ -9,15 +9,27 @@
  */
 package org.locationtech.geogig.api.plumbing.diff;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * A class with the counts of changed elements between two commits, divided in trees and features
  * 
  */
 public class DiffObjectCount {
 
-    private long featuresAdded, featuresRemoved, featuresChanged;
+    private final AtomicLong featuresAdded, featuresRemoved, featuresChanged;
 
-    private int treesAdded, treesRemoved, treesChanged;
+    private final AtomicInteger treesAdded, treesRemoved, treesChanged;
+
+    public DiffObjectCount() {
+        featuresAdded = new AtomicLong();
+        featuresRemoved = new AtomicLong();
+        featuresChanged = new AtomicLong();
+        treesAdded = new AtomicInteger();
+        treesRemoved = new AtomicInteger();
+        treesChanged = new AtomicInteger();
+    }
 
     /**
      * Returns the total count of modified elements (i.e. sum of added, changed, and removed trees
@@ -31,80 +43,93 @@ public class DiffObjectCount {
      * Returns the sum of added, modified, and removed features
      */
     public long featureCount() {
-        return featuresAdded + featuresChanged + featuresRemoved;
+        return featuresAdded.longValue() + featuresChanged.longValue()
+                + featuresRemoved.longValue();
     }
 
     /**
      * Returns the sum of added, modified, and removed trees
      */
     public int treeCount() {
-        return treesAdded + treesChanged + treesRemoved;
+        return treesAdded.intValue() + treesChanged.intValue() + treesRemoved.intValue();
     }
 
     /**
      * Increases the number of added features by a given number
+     * 
+     * @return
      */
-    void addedFeatures(long count) {
-        featuresAdded += count;
+    long addedFeatures(long count) {
+        return featuresAdded.addAndGet(count);
     }
 
     /**
      * Increases the number of removed features by a given number
+     * 
+     * @return
      */
-    void removedFeatures(long count) {
-        featuresRemoved += count;
+    long removedFeatures(long count) {
+        return featuresRemoved.addAndGet(count);
     }
 
     /**
      * Increases the number of changed features by a given number
+     * 
+     * @return
      */
-    void changedFeatures(long count) {
-        featuresChanged += count;
+    long changedFeatures(long count) {
+        return featuresChanged.addAndGet(count);
     }
 
     /**
      * Increases the number of added trees by a given number
+     * 
+     * @return
      */
-    void addedTrees(int count) {
-        treesAdded += count;
+    int addedTrees(int count) {
+        return treesAdded.addAndGet(count);
     }
 
     /**
      * Increases the number of removed trees by a given number
+     * 
+     * @return
      */
-    void removedTrees(int count) {
-        treesRemoved += count;
+    int removedTrees(int count) {
+        return treesRemoved.addAndGet(count);
     }
 
     /**
      * Increases the number of changed trees by a given number
+     * 
+     * @return
      */
-    void changedTrees(int count) {
-        treesChanged += count;
+    int changedTrees(int count) {
+        return treesChanged.addAndGet(count);
     }
 
     public long getFeaturesAdded() {
-        return featuresAdded;
+        return featuresAdded.longValue();
     }
 
     public long getFeaturesRemoved() {
-        return featuresRemoved;
+        return featuresRemoved.longValue();
     }
 
     public long getFeaturesChanged() {
-        return featuresChanged;
+        return featuresChanged.longValue();
     }
 
     public int getTreesAdded() {
-        return treesAdded;
+        return treesAdded.intValue();
     }
 
     public int getTreesRemoved() {
-        return treesRemoved;
+        return treesRemoved.intValue();
     }
 
     public int getTreesChanged() {
-        return treesChanged;
+        return treesChanged.intValue();
     }
 
 }

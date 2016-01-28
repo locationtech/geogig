@@ -10,7 +10,6 @@
 package org.locationtech.geogig.api.plumbing;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -24,19 +23,18 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.BoundsFilteringDiffConsumer;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
-import org.locationtech.geogig.api.plumbing.diff.DiffPathTracker;
 import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.ForwardingConsumer;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,6 +75,16 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
 
     private Long limit;
 
+    private ObjectId metadataId;
+
+    private ObjectStore leftSource;
+
+    private ObjectStore rightSource;
+
+    private ObjectId newTreeId;
+
+    private ObjectId oldTreeId;
+
     /**
      * Constructs a new instance of the {@code DiffTree} operation with the given parameters.
      */
@@ -107,7 +115,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
      * @return {@code this}
      */
     public DiffTree setOldTree(ObjectId oldTreeId) {
-        this.oldRefSpec = oldTreeId.toString();
+        this.oldTreeId = oldTreeId;
         return this;
     }
 
@@ -116,7 +124,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
      * @return {@code this}
      */
     public DiffTree setNewTree(ObjectId newTreeId) {
-        this.newRefSpec = newTreeId.toString();
+        this.newTreeId = newTreeId;
         return this;
     }
 
@@ -173,19 +181,24 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
      */
     @Override
     protected Iterator<DiffEntry> _call() throws IllegalArgumentException {
-        checkNotNull(oldRefSpec, "old version not specified");
-        checkNotNull(newRefSpec, "new version not specified");
-        final RevTree oldTree = resolveTree(oldRefSpec);
-        final RevTree newTree = resolveTree(newRefSpec);
+        checkArgument(oldRefSpec != null || oldTreeId != null, "old version not specified");
+        checkArgument(newRefSpec != null || oldTreeId != null, "new version not specified");
+        final ObjectStore leftSource;
+        final ObjectStore rightSource;
+
+        leftSource = this.leftSource == null ? objectDatabase() : this.leftSource;
+        rightSource = this.rightSource == null ? objectDatabase() : this.rightSource;
+
+        final RevTree oldTree = resolveTree(oldRefSpec, this.oldTreeId, leftSource);
+        final RevTree newTree = resolveTree(newRefSpec, this.newTreeId, rightSource);
 
         if (oldTree.equals(newTree)) {
             return Iterators.emptyIterator();
         }
 
-        ObjectDatabase leftSource = objectDatabase();
-        ObjectDatabase rightSource = objectDatabase();
         final PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource,
                 rightSource);
+        visitor.setDefaultMetadataId(this.metadataId);
 
         final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(10_000);
         final DiffEntryProducer diffProducer = new DiffEntryProducer(queue);
@@ -215,7 +228,9 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
                     consumer = new PathFilteringDiffConsumer(pathFilters, consumer);
                 }
                 try {
+                    LOGGER.trace("waking diff {} / {}", oldRefSpec, newRefSpec);
                     visitor.walk(consumer);
+                    LOGGER.trace("finished waking diff {} / {}", oldRefSpec, newRefSpec);
                 } catch (RuntimeException e) {
                     LOGGER.error("Error traversing diffs", e);
                     producerErrors.add(e);
@@ -259,17 +274,31 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         return consumerIterator;
     }
 
-    private RevTree resolveTree(final String treeIsh) {
-        RevTree tree;
-        if (treeIsh.equals(ObjectId.NULL.toString())) {
+    private RevTree resolveTree(@Nullable final String treeIsh, @Nullable final ObjectId treeOid,
+            final ObjectStore source) {
+
+        RevTree tree = null;
+        ResolveTreeish command = null;
+
+        if (treeOid != null) {
+            if (ObjectId.NULL.equals(treeOid) || RevTree.EMPTY_TREE_ID.equals(treeOid)) {
+                tree = RevTree.EMPTY;
+            } else {
+                command = command(ResolveTreeish.class).setTreeish(treeOid);
+            }
+        } else if (treeIsh.equals(ObjectId.NULL.toString())
+                || RevTree.EMPTY_TREE_ID.toString().equals(treeIsh)) {
             tree = RevTree.EMPTY;
         } else {
-            final Optional<ObjectId> treeId = command(ResolveTreeish.class).setTreeish(treeIsh)
-                    .call();
-            checkArgument(treeId.isPresent(), treeIsh + " did not resolve to a tree");
-            tree = command(RevObjectParse.class).setObjectId(treeId.get()).call(RevTree.class)
-                    .or(RevTree.EMPTY);
+            command = command(ResolveTreeish.class).setTreeish(treeIsh);
         }
+
+        if (tree == null) {
+            final Optional<ObjectId> treeId = command.call();
+            checkArgument(treeId.isPresent(), treeIsh + " did not resolve to a tree");
+            tree = source.getTree(treeId.get());
+        }
+
         return tree;
     }
 
@@ -283,7 +312,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         }
 
         @Override
-        public boolean feature(final Node left, final Node right) {
+        public boolean feature(final NodeRef left, final NodeRef right) {
             if (featureApplies(left, right)) {
                 super.feature(left, right);
             }
@@ -291,7 +320,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         }
 
         @Override
-        public boolean tree(final Node left, final Node right) {
+        public boolean tree(final NodeRef left, final NodeRef right) {
             if (isRoot(left, right) || treeApplies(left, right)) {
                 return super.tree(left, right);
             }
@@ -299,30 +328,32 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         }
 
         @Override
-        public void endTree(final Node left, final Node right) {
+        public void endTree(final NodeRef left, final NodeRef right) {
             if (isRoot(left, right) || treeApplies(left, right)) {
                 super.endTree(left, right);
             }
         }
 
         @Override
-        public boolean bucket(final int bucketIndex, final int bucketDepth, final Bucket left,
-                final Bucket right) {
-            return treeApplies(left, right) && super.bucket(bucketIndex, bucketDepth, left, right);
+        public boolean bucket(NodeRef lparent, NodeRef rparent, final int bucketIndex,
+                final int bucketDepth, final Bucket left, final Bucket right) {
+            return treeApplies(left, right)
+                    && super.bucket(lparent, rparent, bucketIndex, bucketDepth, left, right);
         }
 
         @Override
-        public void endBucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
+        public void endBucket(NodeRef lparent, NodeRef rparent, int bucketIndex, int bucketDepth,
+                Bucket left, Bucket right) {
             if (treeApplies(left, right)) {
-                super.endBucket(bucketIndex, bucketDepth, left, right);
+                super.endBucket(lparent, rparent, bucketIndex, bucketDepth, left, right);
             }
         }
 
-        private boolean isRoot(final Node left, final Node right) {
-            return left == null ? right.getName().isEmpty() : left.getName().isEmpty();
+        private boolean isRoot(final NodeRef left, final NodeRef right) {
+            return NodeRef.ROOT.equals((left == null ? right : left).name());
         }
 
-        private boolean featureApplies(final Node left, final Node right) {
+        private boolean featureApplies(final NodeRef left, final NodeRef right) {
             switch (changeTypeFilter) {
             case ADDED:
                 return left == null;
@@ -357,8 +388,6 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
 
     private static class DiffEntryProducer implements Consumer {
 
-        private DiffPathTracker tracker = new DiffPathTracker();
-
         private boolean reportFeatures = true, reportTrees = false;
 
         private BlockingQueue<DiffEntry> entries;
@@ -372,17 +401,10 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         }
 
         @Override
-        public boolean feature(Node left, Node right) {
+        public boolean feature(NodeRef left, NodeRef right) {
             if (!finished && reportFeatures) {
-                String treePath = tracker.getCurrentPath();
-
-                NodeRef oldRef = left == null ? null : new NodeRef(left, treePath, tracker
-                        .currentLeftMetadataId().or(ObjectId.NULL));
-                NodeRef newRef = right == null ? null : new NodeRef(right, treePath, tracker
-                        .currentRightMetadataId().or(ObjectId.NULL));
-
                 try {
-                    entries.put(new DiffEntry(oldRef, newRef));
+                    entries.put(new DiffEntry(left, right));
                 } catch (InterruptedException e) {
                     // throw Throwables.propagate(e);
                 }
@@ -403,19 +425,13 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         }
 
         @Override
-        public boolean tree(Node left, Node right) {
-            final String parentPath = tracker.getCurrentPath();
-            tracker.tree(left, right);
-            // System.err.printf("%s.tree(%s, %s)\n", getClass().getSimpleName(), left, right);
+        public boolean tree(NodeRef left, NodeRef right) {
+            final String parentPath = left == null ? right.getParentPath() : left.getParentPath();
+
             if (!finished && reportTrees) {
                 if (parentPath != null) {// do not report the root tree
-                    NodeRef oldRef = left == null ? null : new NodeRef(left, parentPath, tracker
-                            .currentLeftMetadataId().or(ObjectId.NULL));
-
-                    NodeRef newRef = right == null ? null : new NodeRef(right, parentPath, tracker
-                            .currentRightMetadataId().or(ObjectId.NULL));
                     try {
-                        entries.put(new DiffEntry(oldRef, newRef));
+                        entries.put(new DiffEntry(left, right));
                     } catch (InterruptedException e) {
                         // throw Throwables.propagate(e);
                         // die gracefully
@@ -430,22 +446,28 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         }
 
         @Override
-        public void endTree(Node left, Node right) {
-            // System.err.printf("%s.endTree(%s, %s)\n", getClass().getSimpleName(), left, right);
-            tracker.endTree(left, right);
-            if (tracker.isEmpty()) {
+        public void endTree(NodeRef left, NodeRef right) {
+            final String name = (left == null ? right : left).name();
+
+            if (NodeRef.ROOT.equals(name)) {
+                LOGGER.trace("Reached end of tree traversal");
                 finished = true;
             }
         }
 
         @Override
-        public boolean bucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
+        public boolean bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
+                int bucketDepth, @Nullable Bucket left, @Nullable Bucket right) {
+
             return !finished;
         }
 
         @Override
-        public void endBucket(int bucketIndex, int bucketDepth, Bucket left, Bucket right) {
-            // no action required
+        public void endBucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
+                int bucketDepth, @Nullable Bucket left, @Nullable Bucket right) {
+
+            // do nothing
+
         }
     }
 
@@ -471,6 +493,21 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         Preconditions.checkArgument(limit == null || limit.longValue() >= 0L,
                 "limit must be >= 0: ", limit);
         this.limit = limit;
+        return this;
+    }
+
+    public DiffTree setDefaultMetadataId(ObjectId metadataId) {
+        this.metadataId = metadataId;
+        return this;
+    }
+
+    public DiffTree setLeftSource(ObjectStore leftSource) {
+        this.leftSource = leftSource;
+        return this;
+    }
+
+    public DiffTree setRightSource(ObjectStore rightSource) {
+        this.rightSource = rightSource;
         return this;
     }
 }

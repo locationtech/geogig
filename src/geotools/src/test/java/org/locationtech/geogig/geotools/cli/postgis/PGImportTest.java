@@ -45,7 +45,7 @@ public class PGImportTest extends Assert {
     @Before
     public void setUp() throws Exception {
         Console consoleReader = new Console().disableAnsi();
-        cli = new GeogigCLI(consoleReader);
+        cli = spy(new GeogigCLI(consoleReader));
 
         setUpGeogig(cli);
     }
@@ -110,17 +110,12 @@ public class PGImportTest extends Assert {
 
     @Test
     public void testImportException() throws Exception {
-        Console consoleReader = new Console().disableAnsi();
-        GeogigCLI mockCli = spy(new GeogigCLI(consoleReader));
-
-        setUpGeogig(mockCli);
-
-        when(mockCli.getConsole()).thenThrow(new MockitoException("Exception"));
+        when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
         PGImport importCommand = new PGImport();
         importCommand.all = true;
         importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
-        importCommand.run(mockCli);
+        importCommand.run(cli);
     }
 
     @Test
@@ -173,7 +168,7 @@ public class PGImportTest extends Assert {
     private void setUpGeogig(GeogigCLI cli) throws Exception {
         final File userhome = tempFolder.newFolder("mockUserHomeDir");
         final File workingDir = tempFolder.newFolder("mockWorkingDir");
-        tempFolder.newFolder("mockWorkingDir/.geogig");
+        tempFolder.newFolder("mockWorkingDir", ".geogig");
 
         final Platform platform = mock(Platform.class);
         when(platform.pwd()).thenReturn(workingDir);

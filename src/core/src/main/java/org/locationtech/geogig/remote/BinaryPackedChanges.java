@@ -30,7 +30,7 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.datastream.FormatCommonV1;
 import org.slf4j.Logger;
@@ -115,7 +115,7 @@ public final class BinaryPackedChanges {
      * @return the number of objects written
      */
     public long write(OutputStream out, Iterator<DiffEntry> changes) throws IOException {
-        final ObjectDatabase objectDatabase = repository.objectDatabase();
+        final ObjectStore objectDatabase = repository.objectDatabase();
         out = new CountingOutputStream(out);
 
         // avoids sending the same metadata object multiple times
@@ -185,7 +185,7 @@ public final class BinaryPackedChanges {
 
         Iterator<RevObject> asObjects = asObjects(readingIterator, callback);
 
-        ObjectDatabase objectDatabase = repository.objectDatabase();
+        ObjectStore objectDatabase = repository.objectDatabase();
         CountingListener listener = BulkOpListener.newCountingListener();
         objectDatabase.putAll(asObjects, listener);
         LOGGER.info("Ingested %,d objects. Inserted: %,d. Already existing: %,d\n",

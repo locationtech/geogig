@@ -13,11 +13,8 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,13 +22,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -41,76 +39,35 @@ import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.NodeStorageOrder;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import sun.misc.Cleaner;
+import sun.nio.ch.DirectBuffer;
+
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.UnmodifiableIterator;
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
+import com.google.common.primitives.UnsignedLong;
 import com.ning.compress.lzf.LZFInputStream;
 import com.ning.compress.lzf.LZFOutputStream;
 
+@SuppressWarnings("restriction")
 class FileNodeIndex implements Closeable, NodeIndex {
 
-    private static final int PARTITION_SIZE = 1000 * 1000;
+    private static final Logger LOG = LoggerFactory.getLogger(FileNodeIndex.class);
 
-    private static final class IndexPartition {
+    private static final NodePathStorageOrder PATH_STORAGE_ORDER = new NodePathStorageOrder();
 
-        // use a TreeMap instead of a TreeSet to account for the rare case of a hash collision
-        private SortedMap<String, Node> cache = new TreeMap<>(new NodePathStorageOrder());
-
-        private File tmpFolder;
-
-        public IndexPartition(final File tmpFolder) {
-            this.tmpFolder = tmpFolder;
-        }
-
-        public void add(Node node) {
-            cache.put(node.getName(), node);
-        }
-
-        public Iterable<Node> getSortedNodes() {
-            return cache.values();
-        }
-
-        public File flush() {
-            Iterable<Node> cache = getSortedNodes();
-            final File file;
-            try {
-                file = File.createTempFile("geogigNodes", ".idx", tmpFolder);
-                file.deleteOnExit();
-                // System.err.println("Created index file " + file.getAbsolutePath());
-                FastByteArrayOutputStream buf = new FastByteArrayOutputStream();
-
-                OutputStream fileOut = new BufferedOutputStream(new FileOutputStream(file),
-                        1024 * 1024);
-                fileOut = new LZFOutputStream(fileOut);
-                try {
-                    for (Node node : cache) {
-                        buf.reset();
-                        DataOutput out = new DataOutputStream(buf);
-                        try {
-                            FormatCommonV2.writeNode(node, out);
-                        } catch (IOException e) {
-                            throw Throwables.propagate(e);
-                        }
-                        int size = buf.size();
-                        fileOut.write(buf.bytes(), 0, size);
-                    }
-                } finally {
-                    this.cache.clear();
-                    this.cache = null;
-                    fileOut.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw Throwables.propagate(e);
-            }
-            return file;
-        }
-    }
+    private static final NodeStorageOrder NODE_STORAGE_ORDER = new NodeStorageOrder();
 
     private static final Random random = new Random();
 
@@ -129,7 +86,7 @@ class FileNodeIndex implements Closeable, NodeIndex {
         checkState(tmpFolder.mkdirs());
         this.tmpFolder = tmpFolder;
         this.executorService = executorService;
-        this.currPartition = new IndexPartition(this.tmpFolder);
+        this.currPartition = new OffHeapIndexPartition(this.tmpFolder);
     }
 
     @Override
@@ -137,14 +94,6 @@ class FileNodeIndex implements Closeable, NodeIndex {
         try {
             for (CompositeNodeIterator it : openIterators) {
                 it.close();
-            }
-            for (Future<File> ff : indexFiles) {
-                try {
-                    File file = ff.get();
-                    file.delete();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
             }
         } finally {
             tmpFolder.delete();
@@ -155,10 +104,10 @@ class FileNodeIndex implements Closeable, NodeIndex {
 
     @Override
     public synchronized void add(Node node) {
-        currPartition.add(node);
-        if (currPartition.cache.size() == PARTITION_SIZE) {
+        if (!currPartition.add(node)) {
             flush(currPartition);
-            currPartition = new IndexPartition(this.tmpFolder);
+            currPartition = new OffHeapIndexPartition(this.tmpFolder);
+            currPartition.add(node);
         }
     }
 
@@ -182,39 +131,39 @@ class FileNodeIndex implements Closeable, NodeIndex {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            close();
             throw Throwables.propagate(Throwables.getRootCause(e));
         }
 
-        List<Node> unflushed = Lists.newArrayList(currPartition.getSortedNodes());
-        currPartition.cache.clear();
+        // files.add(currPartition.flush());
+        AutoCloseableIterator<Node> unflushed = currPartition.iterator();
         return new CompositeNodeIterator(files, unflushed);
     }
 
-    private static class CompositeNodeIterator extends AbstractIterator<Node> {
+    private static class CompositeNodeIterator extends AbstractIterator<Node> implements
+            AutoCloseableIterator<Node> {
 
-        private NodeStorageOrder order = new NodeStorageOrder();
-
-        private List<IndexIterator> openIterators;
+        private List<AutoCloseableIterator<Node>> openIterators;
 
         private UnmodifiableIterator<Node> delegate;
 
-        public CompositeNodeIterator(List<File> files, List<Node> unflushedAndSorted) {
+        public CompositeNodeIterator(List<File> files,
+                AutoCloseableIterator<Node> unflushedAndSorted) {
 
-            openIterators = new ArrayList<IndexIterator>();
-            LinkedList<Iterator<Node>> iterators = new LinkedList<Iterator<Node>>();
+            openIterators = new ArrayList<>(files.size() + 1);
             for (File f : files) {
-                IndexIterator iterator = new IndexIterator(f);
+                AutoCloseableIterator<Node> iterator = new IndexIterator(f);
                 openIterators.add(iterator);
-                iterators.add(iterator);
             }
-            if (!unflushedAndSorted.isEmpty()) {
-                iterators.add(unflushedAndSorted.iterator());
+            if (unflushedAndSorted != null) {
+                openIterators.add(unflushedAndSorted);
             }
-            delegate = Iterators.mergeSorted(iterators, order);
+            delegate = Iterators.mergeSorted(openIterators, NODE_STORAGE_ORDER);
         }
 
+        @Override
         public void close() {
-            for (IndexIterator it : openIterators) {
+            for (AutoCloseableIterator<Node> it : openIterators) {
                 it.close();
             }
             openIterators.clear();
@@ -230,11 +179,15 @@ class FileNodeIndex implements Closeable, NodeIndex {
 
     }
 
-    private static class IndexIterator extends AbstractIterator<Node> {
+    private static class IndexIterator extends AbstractIterator<Node> implements
+            AutoCloseableIterator<Node> {
 
         private DataInputStream in;
 
-        public IndexIterator(File file) {
+        private final File file;
+
+        public IndexIterator(final File file) {
+            this.file = file;
             Preconditions.checkArgument(file.exists(), "file %s does not exist", file);
             try {
                 if (this.in == null) {
@@ -248,8 +201,10 @@ class FileNodeIndex implements Closeable, NodeIndex {
             }
         }
 
+        @Override
         public void close() {
             Closeables.closeQuietly(in);
+            file.delete();
         }
 
         @Override
@@ -258,28 +213,248 @@ class FileNodeIndex implements Closeable, NodeIndex {
                 Node node = FormatCommonV2.readNode(in);
                 return node;
             } catch (EOFException eof) {
-                Closeables.closeQuietly(in);
+                close();
                 return endOfData();
             } catch (Exception e) {
-                Closeables.closeQuietly(in);
+                close();
                 throw Throwables.propagate(e);
             }
         }
 
     }
 
-    private static class FastByteArrayOutputStream extends ByteArrayOutputStream {
+    static interface AutoCloseableIterator<N> extends Iterator<N>, AutoCloseable {
+        @Override
+        void close();
+    }
 
-        public FastByteArrayOutputStream() {
-            super(16 * 1024);
+    interface IndexPartition extends Iterable<Node> {
+
+        /**
+         * @return {@code true} if the node was added to the buffer, {@code false} if adding the
+         *         node would exceed the buffer's capacity and hence a new partition needs to be
+         *         created and this one shall be {@link #flush() flushed}
+         */
+        public boolean add(Node node);
+
+        public File flush();
+
+        public void clear();
+
+        @Override
+        public AutoCloseableIterator<Node> iterator();
+
+    }
+
+    /**
+     * Holds actual node data in an off-heap {@link ByteBuffer} and an index of node order based on
+     * Node's storage order in heap memory, until {@link #flush() flushed} to disk, then both off
+     * heap cache and heap index get released.
+     *
+     */
+    private static class OffHeapIndexPartition implements IndexPartition, Iterable<Node> {
+
+        private File tmpFolder;
+
+        private ByteBuffer buffer;
+
+        private static final class Entry implements Comparable<Entry> {
+
+            private final UnsignedLong nodeHash;
+
+            private final int offset, length;
+
+            Entry(UnsignedLong nodeHash, int offset, int length) {
+                this.nodeHash = nodeHash;
+                this.offset = offset;
+                this.length = length;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (!(o instanceof Entry)) {
+                    return false;
+                }
+                Entry e = (Entry) o;
+                return nodeHash.equals(e.nodeHash) && offset == e.offset && length == e.length;
+            }
+
+            @Override
+            public int compareTo(Entry o) {
+                return nodeHash.compareTo(o.nodeHash);
+            }
         }
 
-        public int size() {
-            return super.count;
+        private SortedSet<Entry> positionIndex = new TreeSet<>();
+
+        public OffHeapIndexPartition(final File tmpFolder) {
+            this.tmpFolder = tmpFolder;
+            final int maxBufferCapacity = figureOutBufferCapacity();
+            buffer = ByteBuffer.allocateDirect(maxBufferCapacity);
         }
 
-        public byte[] bytes() {
-            return super.buf;
+        private int figureOutBufferCapacity() {
+            final long maxMemory = Runtime.getRuntime().maxMemory();
+            if (maxMemory <= 512 * 1024 * 1024) {
+                return 32 * 1024 * 1024;
+            }
+            if (maxMemory <= 1024 * 1024 * 1024) {
+                return 64 * 1024 * 1024;
+            }
+            if (maxMemory <= 2048 * 1024 * 1024) {
+                return 128 * 1024 * 1024;
+            }
+            return 256 * 1024 * 1024;
+        }
+
+        @Override
+        public synchronized boolean add(Node node) {
+            final UnsignedLong nodeHashKey = PATH_STORAGE_ORDER.hashCodeLong(node.getName());
+            final int[] offsetLengh = encode(node);
+            if (offsetLengh == null) {
+                LOG.debug(String.format("reached max capacicy %,d at %,d nodes", buffer.position(),
+                        positionIndex.size()));
+                return false;
+            }
+            Entry e = new Entry(nodeHashKey, offsetLengh[0], offsetLengh[1]);
+            positionIndex.add(e);
+            return true;
+        }
+
+        private int[] encode(Node node) {
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+            try {
+                FormatCommonV2.writeNode(node, out);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+            byte[] bytes = out.toByteArray();
+            final int offset = buffer.position();
+            final int length = bytes.length;
+            if (offset + length > buffer.limit()) {
+                return null;
+            }
+            ByteBuffer buffer = this.buffer;
+            buffer.put(bytes, 0, length);
+            return new int[] { offset, length };
+        }
+
+        private static class NodeReader implements Function<Entry, Node> {
+
+            private ByteBuffer buffer;
+
+            private byte[] buff = new byte[1024];
+
+            public NodeReader(ByteBuffer buffer) {
+                this.buffer = buffer;
+            }
+
+            @Override
+            public Node apply(Entry e) {
+                final int offset = e.offset;
+                final int length = e.length;
+                buff = ensureCapacity(buff, length);
+                buffer.position(offset);
+                buffer.get(buff, 0, length);
+
+                ByteArrayDataInput in = ByteStreams.newDataInput(buff);
+                Node node;
+                try {
+                    node = FormatCommonV2.readNode(in);
+                } catch (IOException ex) {
+                    throw Throwables.propagate(ex);
+                }
+                return node;
+            }
+
+        }
+
+        private class NodeIterator extends AbstractIterator<Node> implements
+                AutoCloseableIterator<Node> {
+
+            private Iterator<Node> nodes = Iterators.transform(positionIndex.iterator(),
+                    new NodeReader(buffer));
+
+            @Override
+            protected Node computeNext() {
+                if (nodes.hasNext()) {
+                    return nodes.next();
+                }
+                close();
+                return endOfData();
+            }
+
+            @Override
+            public void close() {
+                OffHeapIndexPartition.this.clear();
+            }
+        }
+
+        @Override
+        public AutoCloseableIterator<Node> iterator() {
+            return new NodeIterator();
+        }
+
+        @Override
+        public File flush() {
+            final File file;
+            try {
+                file = File.createTempFile("geogigNodes", ".idx", tmpFolder);
+                file.deleteOnExit();
+                LOG.trace("Created index file {}", file.getName());
+
+                final ByteBuffer buffer = this.buffer;
+                Stopwatch sw = Stopwatch.createStarted();
+                byte[] buff = new byte[1024];
+                int count = 0;
+                try (OutputStream fileOut = new LZFOutputStream(new BufferedOutputStream(
+                        new FileOutputStream(file), 1024 * 1024))) {
+
+                    for (Entry e : positionIndex) {
+                        final int offset = e.offset;
+                        final int length = e.length;
+                        buff = ensureCapacity(buff, length);
+                        buffer.position(offset);
+                        buffer.get(buff, 0, length);
+                        fileOut.write(buff, 0, length);
+                        count++;
+                    }
+                } finally {
+                    sw.stop();
+                    clear();
+                    double fileSize = file.length() / 1024d / 1024d;
+                    LOG.debug(String.format("Dumped %,d nodes to %s (%.2fMB) in %s", count,
+                            file.getName(), fileSize, sw));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw Throwables.propagate(e);
+            }
+            return file;
+        }
+
+        private static byte[] ensureCapacity(byte[] buff, int length) {
+            if (buff.length >= length) {
+                return buff;
+            }
+            return new byte[length];
+        }
+
+        @Override
+        public void clear() {
+            if (positionIndex != null) {
+                positionIndex.clear();
+                positionIndex = null;
+
+                ByteBuffer buffer = this.buffer;
+                this.buffer = null;
+                if (buffer instanceof DirectBuffer) {
+                    Cleaner cleaner = ((DirectBuffer) buffer).cleaner();
+                    if (cleaner != null) {
+                        cleaner.clean();
+                    }
+                }
+            }
         }
     }
 

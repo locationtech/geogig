@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.NodeStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
@@ -164,7 +165,7 @@ public abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
 
         Preconditions.checkNotNull(id);
         Preconditions.checkNotNull(bucketTrees);
-        Preconditions.checkArgument(bucketTrees.size() <= RevTree.MAX_BUCKETS);
+        Preconditions.checkArgument(bucketTrees.size() <= NodePathStorageOrder.maxBucketsForLevel(0));
 
         ImmutableSortedMap<Integer, Bucket> innerTrees = ImmutableSortedMap.copyOf(bucketTrees);
 
@@ -193,11 +194,6 @@ public abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
     @Override
     public TYPE getType() {
         return TYPE.TREE;
-    }
-
-    @Override
-    public RevTreeBuilder builder(ObjectDatabase target) {
-        return new RevTreeBuilder(target, this);
     }
 
     @Override

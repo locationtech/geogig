@@ -29,8 +29,8 @@ import org.locationtech.geogig.repository.PostOrderIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.Deduplicator;
-import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +52,9 @@ public final class BinaryPackedObjects {
     private final ObjectSerializingFactory marshaller;
 
 
-    private final ObjectDatabase database;
+    private final ObjectStore database;
 
-    public BinaryPackedObjects(ObjectDatabase database) {
+    public BinaryPackedObjects(ObjectStore database) {
         this.database = database;
         this.marshaller = DataStreamSerializationFactoryV1.INSTANCE;
     }

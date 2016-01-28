@@ -61,6 +61,9 @@ public class Add extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--update", "-u" }, description = "Only add features that have already been tracked")
     private boolean updateOnly;
 
+    @Parameter(names = { "--quiet", "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
+    private boolean quiet;
+
     @Parameter(description = "<patterns>...")
     private List<String> patterns = new ArrayList<String>();
 
@@ -85,15 +88,18 @@ public class Add extends AbstractCommand implements CLICommand {
 
         List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
 
-        console.print("Counting unstaged elements...");
-        console.flush();
-        DiffObjectCount unstaged = geogig.getRepository().workingTree().countUnstaged(pathFilter);
-        if (0 == unstaged.count() && conflicts.isEmpty()) {
-            console.println();
-            console.println("No unstaged elements, exiting.");
-            return;
-        } else {
-            console.println(String.valueOf(unstaged.count()));
+        if (!quiet) {
+            console.print("Counting unstaged elements...");
+            console.flush();
+            DiffObjectCount unstaged = geogig.getRepository().workingTree()
+                    .countUnstaged(pathFilter);
+            if (0 == unstaged.count() && conflicts.isEmpty()) {
+                console.println();
+                console.println("No unstaged elements, exiting.");
+                return;
+            } else {
+                console.println(String.valueOf(unstaged.count()));
+            }
         }
 
         console.println("Staging changes...");
@@ -105,14 +111,18 @@ public class Add extends AbstractCommand implements CLICommand {
         WorkingTree workTree = op.setUpdateOnly(updateOnly)
                 .setProgressListener(cli.getProgressListener()).call();
 
-        DiffObjectCount staged = geogig.getRepository().index().countStaged(null);
-        unstaged = workTree.countUnstaged(null);
+        if (quiet) {
+            console.println("done.");
+        } else {
+            DiffObjectCount staged = geogig.getRepository().index().countStaged(null);
+            DiffObjectCount unstaged = workTree.countUnstaged(null);
 
-        console.println(String.format("%,d features and %,d trees staged for commit",
-                staged.featureCount(), staged.treeCount()));
+            console.println(String.format("%,d features and %,d trees staged for commit",
+                    staged.featureCount(), staged.treeCount()));
 
-        console.println(String.format("%,d features and %,d trees not staged for commit",
-                unstaged.featureCount(), unstaged.treeCount()));
+            console.println(String.format("%,d features and %,d trees not staged for commit",
+                    unstaged.featureCount(), unstaged.treeCount()));
+        }
     }
 
 }

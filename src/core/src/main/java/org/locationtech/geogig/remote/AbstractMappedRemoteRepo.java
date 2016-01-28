@@ -42,7 +42,7 @@ import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.api.porcelain.SynchronizationException.StatusCode;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.GraphDatabase;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -207,7 +207,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
             FilteredDiffIterator changes = getFilteredChanges(commit);
 
             GraphDatabase graphDatabase = localRepository.graphDatabase();
-            ObjectDatabase objectDatabase = localRepository.objectDatabase();
+            ObjectStore objectDatabase = localRepository.objectDatabase();
             graphDatabase.put(commit.getId(), commit.getParentIds());
 
             RevTree rootTree = RevTree.EMPTY;

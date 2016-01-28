@@ -17,8 +17,8 @@ import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.l
 import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points1_FTmodified;
 import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points2;
 import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points3;
-import cucumber.annotation.en.Given;
-import cucumber.annotation.en.When;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.When;
 import cucumber.runtime.java.StepDefAnnotation;
 
 /**

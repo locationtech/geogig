@@ -60,7 +60,7 @@ Scenario: Show diff between working tree and index, describing the modified elem
 Scenario: Show diff between working tree and index, with a change in the feature type
     Given I have a repository
       And I stage 6 features  
-      And I modify a feature type     
+      And I a featuretype is modified
      When I run the command "diff-tree WORK_HEAD:Points STAGE_HEAD:Points"
      Then the response should contain 3 lines   
           

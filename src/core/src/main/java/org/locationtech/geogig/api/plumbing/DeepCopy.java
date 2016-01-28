@@ -23,6 +23,7 @@ import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -45,7 +46,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
 
     private Supplier<Iterator<Node>> nodesToCopy;
 
-    private ObjectDatabase from;
+    private ObjectStore from;
 
     /**
      * @param id the id of the object to move, mutually exclusive with
@@ -87,8 +88,8 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
     @Override
     protected ObjectId _call() {
         Preconditions.checkState(from != null, "No from databse specified");
-        ObjectDatabase from = this.from;
-        ObjectDatabase to = objectDatabase();
+        ObjectStore from = this.from;
+        ObjectStore to = objectDatabase();
 
         Set<ObjectId> metadataIds = new HashSet<ObjectId>();
 
@@ -115,7 +116,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
         return ret;
     }
 
-    private void copyObjects(final ObjectDatabase from, final ObjectDatabase to,
+    private void copyObjects(final ObjectStore from, final ObjectStore to,
             final Supplier<Iterator<Node>> nodesToMove, final Set<ObjectId> metadataIds) {
 
         Iterable<ObjectId> ids = new Iterable<ObjectId>() {
@@ -149,7 +150,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
      * Transfers the object referenced by {@code objectRef} from the given object database to the
      * given objectInserter as well as any child object if {@code objectRef} references a tree.
      */
-    private void deepCopy(final Node objectRef, final ObjectDatabase from, final ObjectDatabase to,
+    private void deepCopy(final Node objectRef, final ObjectStore from, final ObjectStore to,
             Set<ObjectId> metadataIds) {
 
         if (objectRef.getMetadataId().isPresent()) {
@@ -164,8 +165,8 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
         }
     }
 
-    private void copyTree(final ObjectId treeId, final ObjectDatabase from,
-            final ObjectDatabase to, final Set<ObjectId> metadataIds) {
+    private void copyTree(final ObjectId treeId, final ObjectStore from,
+            final ObjectStore to, final Set<ObjectId> metadataIds) {
         if (to.exists(treeId)) {
             return;
         }
@@ -199,7 +200,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
 
         private RevTree tree;
 
-        private ObjectDatabase from;
+        private ObjectStore from;
 
         private Iterator<Node> trees;
 
@@ -207,7 +208,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
 
         private Iterator<RevTree> bucketTrees;
 
-        public AllTrees(ObjectId id, ObjectDatabase from) {
+        public AllTrees(ObjectId id, ObjectStore from) {
             this.from = from;
             this.tree = from.getTree(id);
             this.trees = Iterators.emptyIterator();
@@ -244,12 +245,12 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
 
     }
 
-    private void copyObject(RevObject object, ObjectDatabase from, ObjectDatabase to) {
+    private void copyObject(RevObject object, ObjectStore from, ObjectStore to) {
         to.put(object);
     }
 
-    private void copyObject(final ObjectId objectId, final ObjectDatabase from,
-            final ObjectDatabase to) {
+    private void copyObject(final ObjectId objectId, final ObjectStore from,
+            final ObjectStore to) {
 
         RevObject object = from.get(objectId);
 
@@ -264,7 +265,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
         }
     }
 
-    public DeepCopy setFrom(ObjectDatabase odb) {
+    public DeepCopy setFrom(ObjectStore odb) {
         this.from = odb;
         return this;
     }

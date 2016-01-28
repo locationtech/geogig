@@ -37,7 +37,6 @@ Contents:
     osmexport.rst
     osmexportpg.rst
     osmexportshp.rst
-    osmexportsl.rst
     osmimport.rst
     osmmap.rst
     osmunmap.rst
@@ -60,11 +59,6 @@ Contents:
     shp.rst
     shpexport.rst
     shpimport.rst
-    sl.rst
-    sldescribe.rst
-    slexport.rst
-    slimport.rst
-    sllist.rst
     sqlserverdescribe.rst
     sqlserverexport.rst
     sqlserverimport.rst

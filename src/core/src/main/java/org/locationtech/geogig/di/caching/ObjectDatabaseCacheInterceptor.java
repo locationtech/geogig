@@ -29,6 +29,7 @@ import org.locationtech.geogig.di.Decorator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
@@ -62,7 +63,7 @@ class ObjectDatabaseCacheInterceptor {
 
             @SuppressWarnings("unchecked")
             @Override
-            public ObjectDatabase decorate(Object subject) {
+            public ObjectStore decorate(Object subject) {
                 Provider<ObjectDatabase> odb = Providers.of((ObjectDatabase) subject);
                 CachingObjectDatabase cachingObjectDatabase = new CachingObjectDatabase(odb,
                         cacheProvider);
@@ -159,9 +160,9 @@ class ObjectDatabaseCacheInterceptor {
 
         private ObjectId id;
 
-        private ObjectDatabase db;
+        private ObjectStore db;
 
-        public ValueLoader(ObjectId id, ObjectDatabase db) {
+        public ValueLoader(ObjectId id, ObjectStore db) {
             this.id = id;
             this.db = db;
         }
@@ -184,7 +185,7 @@ class ObjectDatabaseCacheInterceptor {
         }
 
         @Nullable
-        public RevObject getIfPresent(ObjectId id, ObjectDatabase db)
+        public RevObject getIfPresent(ObjectId id, ObjectStore db)
                 throws IllegalArgumentException {
             final Cache<ObjectId, RevObject> cache = cacheProvider.get().get();
             RevObject obj = cache.getIfPresent(id);
@@ -197,11 +198,11 @@ class ObjectDatabaseCacheInterceptor {
             return obj;
         }
 
-        public RevObject get(ObjectId id, ObjectDatabase db) throws IllegalArgumentException {
+        public RevObject get(ObjectId id, ObjectStore db) throws IllegalArgumentException {
             return get(id, RevObject.class, db);
         }
 
-        public <T extends RevObject> T get(ObjectId id, Class<T> type, ObjectDatabase db)
+        public <T extends RevObject> T get(ObjectId id, Class<T> type, ObjectStore db)
                 throws IllegalArgumentException {
 
             final Cache<ObjectId, RevObject> cache = cacheProvider.get().get();
@@ -219,7 +220,7 @@ class ObjectDatabaseCacheInterceptor {
         }
 
         public Iterator<RevObject> getAll(final Iterable<ObjectId> ids,
-                final BulkOpListener listener, final ObjectDatabase db) {
+                final BulkOpListener listener, final ObjectStore db) {
 
             final int partitionSize = 10_000;
             Iterable<List<ObjectId>> partition = Iterables.partition(ids, partitionSize);
@@ -265,7 +266,7 @@ class ObjectDatabaseCacheInterceptor {
             return Iterators.concat(iterators.iterator());
         }
 
-        public boolean delete(ObjectId objectId, ObjectDatabase db) {
+        public boolean delete(ObjectId objectId, ObjectStore db) {
             boolean deleted = db.delete(objectId);
             if (deleted) {
                 final Cache<ObjectId, RevObject> cache = cacheProvider.get().get();
@@ -274,7 +275,7 @@ class ObjectDatabaseCacheInterceptor {
             return deleted;
         }
 
-        public long deleteAll(Iterator<ObjectId> ids, BulkOpListener listener, ObjectDatabase db) {
+        public long deleteAll(Iterator<ObjectId> ids, BulkOpListener listener, ObjectStore db) {
 
             final BulkOpListener invalidatingListener = new BulkOpListener() {
 

@@ -39,7 +39,7 @@ import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -166,7 +166,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
     }
 
     private static Iterator<SimpleFeature> getFeatures(Iterator<DiffEntry> diffs,
-            final boolean old, final ObjectDatabase database, final ObjectId metadataId,
+            final boolean old, final ObjectStore database, final ObjectId metadataId,
             final ProgressListener progressListener) {
 
         final SimpleFeatureType featureType = addChangeTypeAttribute(database

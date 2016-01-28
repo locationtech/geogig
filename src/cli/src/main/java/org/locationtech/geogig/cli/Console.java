@@ -119,7 +119,7 @@ public class Console {
      * @param s the character sequence to write to the console
      * @throws IOException
      */
-    public void print(CharSequence s) throws IOException {
+    public synchronized void print(CharSequence s) throws IOException {
         cursorBuffer.append(s);
     }
 
@@ -139,7 +139,7 @@ public class Console {
      * @param line the text to write
      * @throws IOException
      */
-    public void println(CharSequence line) throws IOException {
+    public synchronized void println(CharSequence line) throws IOException {
         print(line);
         cursorBuffer.append("\n");
         flush();
@@ -150,7 +150,7 @@ public class Console {
      * 
      * @throws IOException
      */
-    public void flush() throws IOException {
+    public synchronized void flush() throws IOException {
         String s = cursorBuffer.toString();
         out.print(s);
         clearBuffer();

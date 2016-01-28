@@ -36,7 +36,7 @@ import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.di.Singleton;
 import org.locationtech.geogig.storage.ConflictsDatabase;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -126,7 +126,7 @@ public class Index implements StagingArea {
         Supplier<RevTreeBuilder> supplier = new Supplier<RevTreeBuilder>() {
             @Override
             public RevTreeBuilder get() {
-                return getTree().builder(context.objectDatabase());
+                return new RevTreeBuilder(context.objectDatabase(), getTree());
             }
         };
         return Suppliers.memoize(supplier);
@@ -226,7 +226,7 @@ public class Index implements StagingArea {
 
         ObjectId newRootTree = currentIndexHead.getId();
 
-        ObjectDatabase objectDatabase = context.objectDatabase();
+        ObjectStore objectDatabase = context.objectDatabase();
         for (Map.Entry<String, RevTreeBuilder> entry : parentTress.entrySet()) {
             String changedTreePath = entry.getKey();
             RevTreeBuilder changedTreeBuilder = entry.getValue();
@@ -263,7 +263,7 @@ public class Index implements StagingArea {
         if (parentBuilder == null) {
             ObjectId parentMetadataId = null;
             if (NodeRef.ROOT.equals(parentPath)) {
-                parentBuilder = currentIndexHead.builder(context.objectDatabase());
+                parentBuilder = new RevTreeBuilder(context.objectDatabase(), currentIndexHead);
             } else {
                 Optional<NodeRef> parentRef = context.command(FindTreeChild.class)
                         .setParent(currentIndexHead).setChildPath(parentPath).call();
@@ -272,9 +272,10 @@ public class Index implements StagingArea {
                     parentMetadataId = parentRef.get().getMetadataId();
                 }
 
-                parentBuilder = context.command(FindOrCreateSubtree.class)
+                parentBuilder = new RevTreeBuilder(context.objectDatabase(),
+                        context.command(FindOrCreateSubtree.class)
                         .setParent(Suppliers.ofInstance(Optional.of(getTree())))
-                        .setChildPath(parentPath).call().builder(context.objectDatabase());
+                        .setChildPath(parentPath).call());
             }
             parentTress.put(parentPath, parentBuilder);
             if (parentMetadataId != null) {

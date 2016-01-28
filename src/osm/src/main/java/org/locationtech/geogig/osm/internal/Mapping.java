@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -56,8 +57,10 @@ public class Mapping {
         if (feature == null) {
             return ImmutableList.of();
         }
-        String tagsString = (String) ((SimpleFeature) feature).getAttribute("tags");
-        Collection<Tag> tags = OSMUtils.buildTagsCollectionFromString(tagsString);
+        @SuppressWarnings("unchecked")
+        Map<String, String> tagsMap = (Map<String, String>) ((SimpleFeature) feature)
+                .getAttribute("tags");
+        Collection<Tag> tags = OSMUtils.buildTagsCollection(tagsMap);
         ImmutableList.Builder<MappedFeature> builder = ImmutableList.<MappedFeature> builder();
         for (MappingRule rule : rules) {
             Optional<Feature> newFeature = rule.apply(feature, tags);
@@ -76,8 +79,10 @@ public class Mapping {
      * @return
      */
     public boolean canBeApplied(Feature feature) {
-        String tagsString = (String) ((SimpleFeature) feature).getAttribute("tags");
-        Collection<Tag> tags = OSMUtils.buildTagsCollectionFromString(tagsString);
+        @SuppressWarnings("unchecked")
+        Map<String, String> tagsMap = (Map<String, String>) ((SimpleFeature) feature)
+                .getAttribute("tags");
+        Collection<Tag> tags = OSMUtils.buildTagsCollection(tagsMap);
         if (tags.isEmpty()) {
             return false;
         }

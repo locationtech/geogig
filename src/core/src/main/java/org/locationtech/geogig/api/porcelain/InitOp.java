@@ -37,7 +37,7 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryInitializer;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -212,7 +212,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
             try {
                 repository.open();
                 // make sure the repo has the empty tree
-                ObjectDatabase objectDatabase = repository.objectDatabase();
+                ObjectStore objectDatabase = repository.objectDatabase();
                 objectDatabase.put(RevTree.EMPTY);
             } catch (RepositoryConnectionException e) {
                 throw new IllegalStateException("Error opening repository databases: "

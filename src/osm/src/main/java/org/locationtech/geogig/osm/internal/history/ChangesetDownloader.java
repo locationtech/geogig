@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -31,8 +32,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -85,13 +84,10 @@ class ChangesetDownloader {
         this.executor = executor;
     }
 
-    private static class FutureSupplier<T> implements Supplier<T> {
+    private class FutureSupplier<T> implements Supplier<T> {
 
         private Future<T> future;
 
-        /**
-         * @param future
-         */
         public FutureSupplier(Future<T> future) {
             this.future = future;
         }
@@ -99,17 +95,13 @@ class ChangesetDownloader {
         @Override
         public T get() {
             try {
-                return future.get(3, TimeUnit.MINUTES);
+                return future.get();
             } catch (InterruptedException e) {
                 throw Throwables.propagate(e);
             } catch (ExecutionException e) {
                 throw Throwables.propagate(e.getCause());
-            } catch (TimeoutException e) {
-                System.err.println("****\n**** Timeout waiting for changeset");
-                throw Throwables.propagate(e);
             }
         }
-
     }
 
     public List<Changeset> fetchChangesets(List<Long> batchIds) {
@@ -119,8 +111,8 @@ class ChangesetDownloader {
 
         InputStream stream;
         try {
-            stream = openStream(url, null);
-        } catch (FileNotFoundException e) {
+            stream = openStream(url, 3, null);
+        } catch (FileNotFoundException | SocketTimeoutException e) {
             throw Throwables.propagate(e);
         }
 
@@ -166,7 +158,7 @@ class ChangesetDownloader {
                     String changeUrl = changeUrl(changesetId);
                     InputStream stream = null;
                     try {
-                        stream = openStream(changeUrl, null);
+                        stream = tryFetch(changeUrl);
                         copy(stream, changesFile);
                     } catch (FileNotFoundException e) {
                         return Optional.absent();
@@ -177,6 +169,30 @@ class ChangesetDownloader {
             }
             return Optional.of(changesFile);
         }
+
+        private InputStream tryFetch(final String changeUrl) throws SocketTimeoutException,
+                FileNotFoundException {
+
+            final int maxTryCount = 5;
+
+            int timeout = 5;
+
+            for (int i = 0; i < maxTryCount; i++) {
+                try {
+                    return openStream(changeUrl, timeout, null);
+                } catch (SocketTimeoutException e) {
+                    String url = changeUrl(changesetId);
+                    timeout += 2;
+                    System.err.println(String.format(
+                            "**** Timeout waiting for %s, retrying with a %d minutes timeout...",
+                            url, timeout));
+                }
+            }
+
+            throw new SocketTimeoutException(String.format("Unable to fetch %s after %d attempts.",
+                    changeUrl, maxTryCount));
+        }
+
     }
 
     /**
@@ -199,14 +215,9 @@ class ChangesetDownloader {
         return new File(parent, "download.xml");
     }
 
-    /**
-     * @param listener
-     * @param changesetUrl
-     * @return
-     * @throws IOException
-     */
-    private static InputStream openStream(String uri, @Nullable ProgressListener listener)
-            throws FileNotFoundException {
+    private static InputStream openStream(final String uri, final int readTimeoutMinutes,
+            @Nullable ProgressListener listener) throws FileNotFoundException,
+            SocketTimeoutException {
         InputStream stream;
         URLConnection conn;
         try {
@@ -217,7 +228,7 @@ class ChangesetDownloader {
         }
         try {
             conn.setConnectTimeout(10000);
-            conn.setReadTimeout(180000);
+            conn.setReadTimeout(60 * 1000 * readTimeoutMinutes);
             if (conn instanceof HttpURLConnection) {
                 ((HttpURLConnection) conn).addRequestProperty("Accept-Encoding", "gzip, deflate");
                 int responseCode = ((HttpURLConnection) conn).getResponseCode();
@@ -243,6 +254,8 @@ class ChangesetDownloader {
                     stream = new InflaterInputStream(stream);
                 }
             }
+        } catch (java.net.SocketTimeoutException timeout) {
+            throw timeout;
         } catch (Exception e) {
             consumeBody(conn);
             Throwables.propagateIfInstanceOf(e, FileNotFoundException.class);

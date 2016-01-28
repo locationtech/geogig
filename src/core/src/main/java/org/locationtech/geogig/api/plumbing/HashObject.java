@@ -15,11 +15,21 @@ import static org.locationtech.geogig.api.RevObject.TYPE.FEATURETYPE;
 import static org.locationtech.geogig.api.RevObject.TYPE.TAG;
 import static org.locationtech.geogig.api.RevObject.TYPE.TREE;
 
+import java.util.List;
+
+import javax.swing.text.html.Option;
+
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.api.Bucket;
+import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 
@@ -58,7 +68,7 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
      * @return a new ObjectId created from the hash of the RevObject.
      */
     @Override
-    protected  ObjectId _call() {
+    protected ObjectId _call() {
         Preconditions.checkState(object != null, "Object has not been set.");
 
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
@@ -71,4 +81,35 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
         return id;
     }
 
+    public static ObjectId hashFeature(List<Optional<Object>> values) {
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+
+        HashObjectFunnels.featureFunnel().funnel(values, hasher);
+
+        final byte[] rawKey = hasher.hash().asBytes();
+        final ObjectId id = ObjectId.createNoClone(rawKey);
+
+        return id;
+    }
+
+    public static ObjectId hashTree(@Nullable ImmutableList<Node> trees,
+            @Nullable ImmutableList<Node> features,
+            @Nullable ImmutableSortedMap<Integer, Bucket> buckets) {
+
+        return hashTree(Optional.fromNullable(trees), Optional.fromNullable(features),
+                Optional.fromNullable(buckets));
+    }
+
+    public static ObjectId hashTree(Optional<ImmutableList<Node>> trees,
+            Optional<ImmutableList<Node>> features,
+            Optional<ImmutableSortedMap<Integer, Bucket>> buckets) {
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+
+        HashObjectFunnels.treeFunnel().funnel(hasher, trees, features, buckets);
+
+        final byte[] rawKey = hasher.hash().asBytes();
+        final ObjectId id = ObjectId.createNoClone(rawKey);
+
+        return id;
+    }
 }

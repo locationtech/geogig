@@ -72,7 +72,7 @@ Scenario: Show diff between working tree and index, for a single modified tree, 
 Scenario: Show diff between working tree and index, for a single feature whose feature type has changed
     Given I have a repository
       And I stage 6 features   
-      And I modify a feature type         
+      And I a featuretype is modified         
      When I run the command "diff --path Points/Points.1"
      Then the response should contain "extra: [MISSING] -> "
      And the response should contain "ExtraString"  

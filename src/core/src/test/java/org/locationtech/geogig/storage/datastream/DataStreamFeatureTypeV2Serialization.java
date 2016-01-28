@@ -13,8 +13,10 @@ import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.RevFeatureTypeSerializationTest;
 
 public class DataStreamFeatureTypeV2Serialization extends RevFeatureTypeSerializationTest {
+
     @Override
     protected ObjectSerializingFactory getObjectSerializingFactory() {
         return new DataStreamSerializationFactoryV2();
     }
+
 }

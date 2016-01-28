@@ -11,11 +11,11 @@ package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
+import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeatureType;
@@ -32,8 +32,6 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
@@ -50,9 +48,6 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
     @Parameter(names = { "-v", "--verbose" }, description = "Verbose output, include metadata, object id, and object type among object path.")
     private boolean verbose;
 
-    @Parameter(names = { "-i", "--indent" }, description = "Indent output.")
-    private boolean indent;
-
     @Override
     public void runInternal(final GeogigCLI cli) throws IOException {
         String ref;
@@ -62,19 +57,10 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
             ref = refList.get(0);
         }
 
-        AtomicInteger indentLevel = new AtomicInteger();
+        final Function<Object, CharSequence> printFunctor = verbose ? VERBOSE_FORMATTER : FORMATTER;
 
-        final Function<Object, CharSequence> printFunctor;
-        {
-            Function<Object, CharSequence> formatFunctor = verbose ? VERBOSE_FORMATTER : FORMATTER;
-            Function<CharSequence, CharSequence> indentFunctor = Functions.identity();
-            if (indent) {
-                indentFunctor = new Indenter(indentLevel);
-            }
-            printFunctor = Functions.compose(indentFunctor, formatFunctor);
-        }
         Console console = cli.getConsole();
-        Listener listener = new PrintListener(console, printFunctor, indentLevel);
+        Listener listener = new PrintListener(console, printFunctor);
         try {
             cli.getGeogig().command(WalkGraphOp.class).setReference(ref).setListener(listener)
                     .call();
@@ -91,48 +77,42 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
 
         private final Function<Object, CharSequence> printFunctor;
 
-        private AtomicInteger indentLevel;
-
-        public PrintListener(Console console, Function<Object, CharSequence> printFunctor,
-                AtomicInteger indentLevel) {
+        public PrintListener(Console console, Function<Object, CharSequence> printFunctor) {
             this.console = console;
             this.printFunctor = printFunctor;
-            this.indentLevel = indentLevel;
         }
 
         private void print(Object b) {
             try {
-                console.println(printFunctor.apply(b));
+                CharSequence line = printFunctor.apply(b);
+                console.println(line);
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
         }
 
         @Override
-        public void starTree(Node treeNode) {
-            indentLevel.incrementAndGet();
+        public void starTree(NodeRef treeNode) {
             print(treeNode);
         }
 
         @Override
-        public void feature(Node featureNode) {
+        public void feature(NodeRef featureNode) {
             print(featureNode);
         }
 
         @Override
-        public void endTree(Node treeNode) {
-            indentLevel.decrementAndGet();
+        public void endTree(NodeRef treeNode) {
+
         }
 
         @Override
         public void bucket(int bucketIndex, int bucketDepth, Bucket bucket) {
             print(bucket);
-            indentLevel.incrementAndGet();
         }
 
         @Override
         public void endBucket(int bucketIndex, int bucketDepth, Bucket bucket) {
-            indentLevel.decrementAndGet();
         }
 
         @Override
@@ -159,8 +139,8 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
             if (o instanceof Bounded) {
                 Bounded b = (Bounded) o;
                 id = b.getObjectId();
-                if (b instanceof Node) {
-                    type = ((Node) b).getType().toString();
+                if (b instanceof NodeRef) {
+                    type = ((NodeRef) b).getType().toString();
                 } else {
                     type = "BUCKET";
                 }
@@ -187,12 +167,12 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
             if (o instanceof Bounded) {
                 Bounded b = (Bounded) o;
                 id = b.getObjectId();
-                if (b instanceof Node) {
-                    Node node = (Node) b;
+                if (b instanceof NodeRef) {
+                    NodeRef node = (NodeRef) b;
                     type = node.getType().toString();
-                    extraData = node.getName();
-                    if (node.getMetadataId().isPresent()) {
-                        extraData += " [" + node.getMetadataId().get() + "]";
+                    extraData = node.path();
+                    if (!node.getMetadataId().isNull()) {
+                        extraData += " [" + node.getMetadataId() + "]";
                     }
                 } else {
                     type = "BUCKET";
@@ -204,20 +184,6 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
                 throw new IllegalArgumentException();
             }
             return String.format("%s: %s %s", id, type, extraData);
-        }
-    };
-
-    private static class Indenter implements Function<CharSequence, CharSequence> {
-
-        private AtomicInteger indentLevel;
-
-        Indenter(AtomicInteger indentLevel) {
-            this.indentLevel = indentLevel;
-        }
-
-        @Override
-        public CharSequence apply(CharSequence input) {
-            return new StringBuilder(Strings.repeat(" ", indentLevel.get())).append(input);
         }
     };
 }

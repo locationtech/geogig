@@ -6,7 +6,7 @@ Exporting from a GeoGig repository
 Data can also be exported from the GeoGig repository, allowing full synchronization with external applications that cannot use the native format of the GeoGig working tree.
 This also allows to export changes that have been incorporated into the working tree from an external repository, making those changes available to applications, and making them aware of edits done remotely.
 
-GeoGig supports the same formats for exporting that it does for importing. That is, GeoJSON, shapefiles, PostGIS/SQL Server/Oracle databases and Spatialite. To export from a GeoGig repository, the following syntax is used
+GeoGig supports the same formats for exporting that it does for importing. That is, GeoJSON, shapefiles, PostGIS/SQL Server/Oracle databases and Geopackage. To export from a GeoGig repository, the following syntax is used
 
 ::
 

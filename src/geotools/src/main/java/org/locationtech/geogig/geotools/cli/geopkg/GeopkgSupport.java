@@ -17,12 +17,10 @@ import java.util.Map;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
-import org.geotools.data.spatialite.SpatiaLiteDataStoreFactory;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
-import org.locationtech.geogig.geotools.cli.spatialite.SLCommonArgs;
 
 import com.beust.jcommander.internal.Maps;
 

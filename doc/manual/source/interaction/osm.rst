@@ -430,7 +430,6 @@ When exporting OSM data. OSM data can be exported to OSM formats using the ``osm
 
 - ``osm export-shp``. Export to a shapefile
 - ``osm export-pg``. Export to a PostGIS database
-- ``osm export-sl``. Export to a Spatialite database.
 
 .. note:: only shp and pg export currently implemented
 

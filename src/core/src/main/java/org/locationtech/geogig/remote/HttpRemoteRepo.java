@@ -39,8 +39,8 @@ import org.locationtech.geogig.remote.HttpUtils.ReportingOutputStream;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.DeduplicationService;
 import org.locationtech.geogig.storage.Deduplicator;
-import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -272,7 +272,7 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
                         }
                     }
                 };
-                ObjectDatabase database = localRepository.objectDatabase();
+                ObjectStore database = localRepository.objectDatabase();
                 BinaryPackedObjects packer = new BinaryPackedObjects(database);
 
                 ImmutableList<ObjectId> have = ImmutableList.copyOf(roots);

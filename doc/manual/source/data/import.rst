@@ -10,11 +10,11 @@ The first step to add data to a GeoGig repository, so it can be versioned, is to
 
 Importing data into the working tree of a GeoGig repository is done using GeoGig commands which read a given data source and add all or part of its content to the repository. Data can also be exported from the repository into common formats that can be then used in other applications such as a desktop GIS. That provides the necessary tools to work against a GeoGig repository and make it independent of the tools used to actually edit the data.
 
-Currently, data can be imported/exported from/to GeoJSON, shapefiles, and PostGIS, SQLServer, Oracle Spatial and SpatiaLite databases. Depending on the type of data source, a different command should be used. For these supported data sources, the general syntax is as follows:
+Currently, data can be imported/exported from/to GeoJSON, shapefiles, and PostGIS, SQLServer, Oracle Spatial and Geopackage databases. Depending on the type of data source, a different command should be used. For these supported data sources, the general syntax is as follows:
 
 ::
 
-	$ geogig <shp|geojson|pg|sl|sqlserver|oracle> <import|export> <specific_parameters>
+	$ geogig <shp|geojson|geopkg|sl|sqlserver|oracle> <import|export> <specific_parameters>
 
 
 In the case	of importing data, the following syntax is used
@@ -52,7 +52,7 @@ When importing from a database, additional parameters can be supplied to configu
 * ``--user``: User name.  Default: postgres
 * ``--password``: Password.  Default: <no password>
 
-I using a SpatiaLite database only the following parameters are used.
+If using a Geopackage database only the following parameters are used.
 
 * ``--database``: The database to connect to.  Default: database.sqlite
 * ``--user``: User name.  Default: user

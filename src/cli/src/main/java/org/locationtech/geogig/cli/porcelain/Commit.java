@@ -67,6 +67,9 @@ public class Commit extends AbstractCommand implements CLICommand {
     @Parameter(names = "--amend", description = "Amends last commit")
     private boolean amend;
 
+    @Parameter(names = { "--quiet", "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
+    private boolean quiet;
+
     @Parameter(description = "<pathFilter>  [<paths_to_commit]...")
     private List<String> pathFilters = Lists.newLinkedList();
 
@@ -122,21 +125,25 @@ public class Commit extends AbstractCommand implements CLICommand {
         if (progress.isCanceled()) {
             return;
         }
-        console.print("Committed, counting objects...");
-        console.flush();
 
-        final DiffObjectCount diffCount = geogig.command(DiffCount.class)
-                .setOldVersion(parentId.toString()).setNewVersion(commit.getId().toString())
-                .setProgressListener(progress).call();
+        if (quiet) {
+            console.println("Committed.");
+        } else {
+            console.print("Committed, counting objects...");
+            console.flush();
+            final DiffObjectCount diffCount = geogig.command(DiffCount.class)
+                    .setOldVersion(parentId.toString()).setNewVersion(commit.getId().toString())
+                    .setProgressListener(progress).call();
 
-        if (progress.isCanceled()) {
-            return;
+            if (progress.isCanceled()) {
+                return;
+            }
+            ansi.fg(Color.GREEN).a(diffCount.getFeaturesAdded()).reset().a(" features added, ")
+                    .fg(Color.YELLOW).a(diffCount.getFeaturesChanged()).reset().a(" changed, ")
+                    .fg(Color.RED).a(diffCount.getFeaturesRemoved()).reset().a(" deleted.").reset()
+                    .newline();
+
+            console.print(ansi.toString());
         }
-        ansi.fg(Color.GREEN).a(diffCount.getFeaturesAdded()).reset().a(" features added, ")
-                .fg(Color.YELLOW).a(diffCount.getFeaturesChanged()).reset().a(" changed, ")
-                .fg(Color.RED).a(diffCount.getFeaturesRemoved()).reset().a(" deleted.").reset()
-                .newline();
-
-        console.print(ansi.toString());
     }
 }

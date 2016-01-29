@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.locationtech.geogig</groupId>
     <artifactId>geogig</artifactId>
-    <version>1.0-RC1</version>
+    <version>1.0-SNAPSHOT</version>
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 

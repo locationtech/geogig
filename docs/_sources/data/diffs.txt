@@ -151,7 +151,7 @@ By default, all the differences between the specified commits (or the working tr
 
 ::
 
-	$ geogig diff -- parks
+	$ geogig diff --path parks
 
 This will just list the differences in the ``parks`` path.
 
@@ -159,7 +159,7 @@ The path can point to a single feature, as in the command line below
 
 ::
 
-	$ geogig diff -- parks/1
+	$ geogig diff --path parks/1
 
 
 Notice that, in this case, GeoGig will not complain if the path does not resolve to anything. It will tell you that there are no differences between the selected versions to compare, since the specified feature is missing in both of them.

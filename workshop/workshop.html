@@ -6,14 +6,17 @@
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
   <title>An Introduction to GeoGig &mdash; GeoGig 1.0 Workshop</title>
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
-  <link rel="stylesheet" href="_static/print.css" type="text/css" media="print" /> 
+  <link rel="stylesheet" href="_static/print.css" type="text/css" media="print" />
   <!--[if IE]>
   <link rel="stylesheet" href="_static/blueprint/ie.css" type="text/css" media="screen, projection" />
   <![endif]-->
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+   <link rel="stylesheet" href="_static/bootstrap.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/offcanvas.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -66,7 +69,7 @@
       <div id="content">
       <div class="container">
         <div class="row row-offcanvas row-offcanvas-right">
-          <div class="col-md-8"> 
+          <div class="col-md-8">
             <div class="row pull-right">
              <div class="visible-sm visible-xs" id="menu-btn">
                 <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
@@ -112,7 +115,7 @@
 <h3>Installing GeoGig<a class="headerlink" href="#installing-geogig" title="Permalink to this headline">¶</a></h3>
 <p>To install GeoGig, follow these steps.</p>
 <ol class="arabic">
-<li><p class="first">If not already on your system, install a <a class="reference external" href="http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html">Java JDK</a>. GeoGig requires Java 7 or higher to run. Make sure the <cite>java</cite> executable is accessible (i.e. check your PATH environment variable) and the JAVA_HOME environment variable points to the JDK or JRE installation directory.</p>
+<li><p class="first">If not already on your system, install a <a class="reference external" href="http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html">Java JDK</a>. GeoGig requires Java 8 or higher to run. Make sure the <cite>java</cite> executable is accessible (i.e. check your PATH environment variable) and the JAVA_HOME environment variable points to the JDK or JRE installation directory.</p>
 </li>
 <li><p class="first">After the JDK is installed, navigate to <a class="reference external" href="http://geogig.org">http://geogig.org</a> and click <em class="guilabel">Download</em>.</p>
 </li>
@@ -359,7 +362,7 @@ Committed, counting objects...92035 features added, 0 changed, 0 deleted.
 <p>You can explore the repository history using the <tt class="docutils literal"><span class="pre">log</span></tt> command.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig log
 Commit:  fc9e9e6d97e979293a028857d275eef31e8a0ce5
-Author:  volaya &lt;volaya@opengeo.org&gt;
+Author:  volaya &lt;volaya@boundlessgeo.com&gt;
 Date:    (9 minutes ago) 2013-10-31 10:57:02 +0100
 Subject: Initial add
 </pre></div>
@@ -442,12 +445,12 @@ Committed, counting objects...1 features added, 0 changed, 0 deleted.
 <p>The history of the repository now contains two different snapshots. The output of the <tt class="docutils literal"><span class="pre">log</span></tt> command will now show something like this:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig log
 Commit:  c1a072734c9de17dc98dfec74d8ce169b94b90c2
-Author:  volaya &lt;volaya@opengeo.org&gt;
+Author:  volaya &lt;volaya@boundlessgeo.com&gt;
 Date:    (1 minutes ago) 2013-10-31 11:45:07 +0100
 Subject: Added building
 
 Commit:  fc9e9e6d97e979293a028857d275eef31e8a0ce5
-Author:  volaya &lt;volaya@opengeo.org&gt;
+Author:  volaya &lt;volaya@boundlessgeo.com&gt;
 Date:    (49 minutes ago) 2013-10-31 10:57:02 +0100
 Subject: Initial add
 </pre></div>
@@ -494,12 +497,12 @@ Done.
 <div class="highlight-python"><div class="highlight"><pre>$ cd geogig-ethiopia-clone
 $ geogig log
 Commit:  c1a072734c9de17dc98dfec74d8ce169b94b90c2
-Author:  volaya &lt;volaya@opengeo.org&gt;
+Author:  volaya &lt;volaya@boundlessgeo.com&gt;
 Date:    (1 minutes ago) 2013-10-31 11:45:07 +0100
 Subject: Added building
 
 Commit:  fc9e9e6d97e979293a028857d275eef31e8a0ce5
-Author:  volaya &lt;volaya@opengeo.org&gt;
+Author:  volaya &lt;volaya@boundlessgeo.com&gt;
 Date:    (49 minutes ago) 2013-10-31 10:57:02 +0100
 Subject: Initial add
 </pre></div>
@@ -605,7 +608,7 @@ clone http://localhost:8080/geoserver/geogig/opengeo:ethiopia (push)
         </form>
 
 
-        <div class="btn-group-vertical" id="docs_toc"> 
+        <div class="btn-group-vertical" id="docs_toc">
           <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
           <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
           <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
@@ -661,7 +664,7 @@ clone http://localhost:8080/geoserver/geogig/opengeo:ethiopia (push)
         </div>
         <div class="section">
           <h3>License</h3>
-          <p>This project is licensed under the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">BSD New License</a>.</p>
+          <p>This project is licensed under the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse License</a>.</p>
         </div>
 
   </div><!-- /#sidebar -->

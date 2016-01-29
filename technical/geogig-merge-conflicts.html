@@ -5,25 +5,28 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoGig merge conflicts strategy &mdash; GeoGig 1.0-beta1 Technical Manual</title>
+  <title>GeoGig merge conflicts strategy &mdash; GeoGig 1.0-RC1 Technical Manual</title>
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
-  <link rel="stylesheet" href="_static/print.css" type="text/css" media="print" /> 
+  <link rel="stylesheet" href="_static/print.css" type="text/css" media="print" />
   <!--[if IE]>
   <link rel="stylesheet" href="_static/blueprint/ie.css" type="text/css" media="screen, projection" />
   <![endif]-->
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+   <link rel="stylesheet" href="_static/bootstrap.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/offcanvas.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-beta1',
+        VERSION:     '1.0-RC1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
   <link rel="shortcut icon" href="_static/favicon.ico"/>
-      <link rel="top" title="GeoGig 1.0-beta1 Technical Manual" href="index.html" />
+      <link rel="top" title="GeoGig 1.0-RC1 Technical Manual" href="index.html" />
       <link rel="next" title="Sparse clone" href="sparse-clone.html" />
       <link rel="prev" title="GeoGig for developers" href="developers.html" />
 </head>
@@ -67,7 +70,7 @@
       <div id="content">
       <div class="container">
         <div class="row row-offcanvas row-offcanvas-right">
-          <div class="col-md-8"> 
+          <div class="col-md-8">
             <div class="row pull-right">
              <div class="visible-sm visible-xs" id="menu-btn">
                 <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
@@ -78,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.0-beta1 Technical Manual</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.0-RC1 Technical Manual</a> &raquo;</li>
   <li>GeoGig merge conflicts strategy</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -156,7 +159,7 @@ Both actors have added a feature or feature type with the same name, but differe
 </div>
 <div class="section" id="import-of-solved-elements">
 <h2>Import of solved elements<a class="headerlink" href="#import-of-solved-elements" title="Permalink to this headline">¶</a></h2>
-<p>If external merge tools are planned, there should be a way for them to import solved elements in the working tree. Currently, the only way of importing is from shp/PostGIS/Spatialite, but that might not be the best solution in this case. A simpler way, like importing from a text string, should be implemeted in GeoGig. Normal users will not use those method to import their data, but tools needing to alter the working tree could use them and it would be much easier to implement a working connection between them and GeoGig.</p>
+<p>If external merge tools are planned, there should be a way for them to import solved elements in the working tree. Currently, the only way of importing is from shp/PostGIS/Geopackage, but that might not be the best solution in this case. A simpler way, like importing from a text string, should be implemeted in GeoGig. Normal users will not use those method to import their data, but tools needing to alter the working tree could use them and it would be much easier to implement a working connection between them and GeoGig.</p>
 </div>
 <div class="section" id="tree-feature-type-changes">
 <h2>Tree/Feature type changes<a class="headerlink" href="#tree-feature-type-changes" title="Permalink to this headline">¶</a></h2>
@@ -187,7 +190,7 @@ Both actors have added a feature or feature type with the same name, but differe
         </form>
 
 
-        <div class="btn-group-vertical" id="docs_toc"> 
+        <div class="btn-group-vertical" id="docs_toc">
           <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
           <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
           <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
@@ -225,7 +228,7 @@ Both actors have added a feature or feature type with the same name, but differe
         </div>
         <div class="section">
           <h3>License</h3>
-          <p>This project is licensed under the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">BSD New License</a>.</p>
+          <p>This project is licensed under the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse License</a>.</p>
         </div>
 
   </div><!-- /#sidebar -->

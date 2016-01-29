@@ -12,7 +12,7 @@ To build GeoGig from source, follow these steps:
 
 ::
 
-	$git clone http://github.com/opengeo/GeoGig.git
+	$git clone https://github.com/locationtech/geogig.git
 
 - Install the software needed to build GeoGig (you can skip one or both of the steps below in case you have Java and/or Maven already installed in your system)
 

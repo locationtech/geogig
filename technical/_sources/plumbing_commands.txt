@@ -145,8 +145,8 @@ Commit
 	COMMIT	
 	tree    6bc0644ba38372860254c61a62009448ebd8c1e0
 	parents    8c08469ffc54f6cc9132855f0415c79cf3fc7785
-	author    volaya    volaya@opengeo.org    1358773135891    3600000
-	committer    volaya    volaya@opengeo.org    1358773135891    3600000
+	author    volaya    volaya@boundlessgeo.com    1358773135891    3600000
+	committer    volaya    volaya@boundlessgeo.com    1358773135891    3600000
 	message    Updated geometry
 
 
@@ -259,11 +259,11 @@ The following is an example of the porcelain output of the ``blame`` command
 
 ::
 
-	parktype 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@opengeo.org 1367236628965 7200000
-	area 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@opengeo.org 1367236628965 7200000
-	perimeter 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@opengeo.org 1367236628965 7200000
-	the_geom 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@opengeo.org 1367236628965 7200000
-	name 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@opengeo.org 1367236628965 7200000
-	owner 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@opengeo.org 1367236628965 7200000
-	usage a1d6e2c8d377ea90c7639b3834d7ece3ad161d91 volaya volaya@opengeo.org 1367236528690 7200000
-	agency 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@opengeo.org 1367236628965 7200000
+	parktype 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@boundlessgeo.com 1367236628965 7200000
+	area 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@boundlessgeo.com 1367236628965 7200000
+	perimeter 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@boundlessgeo.com 1367236628965 7200000
+	the_geom 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@boundlessgeo.com 1367236628965 7200000
+	name 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@boundlessgeo.com 1367236628965 7200000
+	owner 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@boundlessgeo.com 1367236628965 7200000
+	usage a1d6e2c8d377ea90c7639b3834d7ece3ad161d91 volaya volaya@boundlessgeo.com 1367236528690 7200000
+	agency 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@boundlessgeo.com 1367236628965 7200000

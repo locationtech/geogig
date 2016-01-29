@@ -95,7 +95,7 @@ Currently, a ``conflicts`` commands is implemented, which returns a description 
 Import of solved elements
 -----------------------------
 
-If external merge tools are planned, there should be a way for them to import solved elements in the working tree. Currently, the only way of importing is from shp/PostGIS/Spatialite, but that might not be the best solution in this case. A simpler way, like importing from a text string, should be implemeted in GeoGig. Normal users will not use those method to import their data, but tools needing to alter the working tree could use them and it would be much easier to implement a working connection between them and GeoGig.
+If external merge tools are planned, there should be a way for them to import solved elements in the working tree. Currently, the only way of importing is from shp/PostGIS/Geopackage, but that might not be the best solution in this case. A simpler way, like importing from a text string, should be implemeted in GeoGig. Normal users will not use those method to import their data, but tools needing to alter the working tree could use them and it would be much easier to implement a working connection between them and GeoGig.
 
 
 Tree/Feature type changes

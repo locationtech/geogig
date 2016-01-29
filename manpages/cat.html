@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>geogig-pg-export documentation &mdash; GeoGig 1.0-RC1 Man Pages</title>
+  <title>geogig-cat documentation &mdash; GeoGig 1.0-RC1 Man Pages</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -27,7 +27,7 @@
   </script>
       <link rel="top" title="GeoGig 1.0-RC1 Man Pages" href="index.html" />
 </head>
-<body class="pgexport">
+<body class="cat">
     <div id="blacktop"></div>
     <header id="masthead">
       <div class="navbar">
@@ -79,7 +79,7 @@
 <ul id="breadcrumbs">
   
   <li><a href="index.html">GeoGig 1.0-RC1 Man Pages</a> &raquo;</li>
-  <li>geogig-pg-export documentation</li>
+  <li>geogig-cat documentation</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
   <li class="first">
@@ -87,18 +87,17 @@
        accesskey="I">index</a></li>
 </ul>
         
-  <div class="section" id="geogig-pg-export-documentation">
-<span id="geogig-pg-export"></span><h1>geogig-pg-export documentation<a class="headerlink" href="#geogig-pg-export-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="geogig-cat-documentation">
+<span id="geogig-cat"></span><h1>geogig-cat documentation<a class="headerlink" href="#geogig-cat-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="synopsis">
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>geogig pg export [options] &lt;feature_type&gt; &lt;table&gt;</p>
+<p>geogig cat &lt;reference&gt;</p>
 </div>
 <div class="section" id="description">
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
-<p>This command exports features from a feature type into a PostGIS database.</p>
-<p>The feature type can be defined using the &lt;refspec&gt;:&lt;table&gt; notation, so a feature type from a different tree can be exported.</p>
-<p>If no origin tree is specified and just a feature type name is used, the working tree will be used, so <tt class="docutils literal"><span class="pre">table</span></tt> is equivalent to <tt class="docutils literal"><span class="pre">WORK_TREE:table</span></tt>.</p>
-<p>If the table already exists, it will not be overwritten, unless the <tt class="docutils literal"><span class="pre">-o</span></tt> modifier is used.</p>
+<p>Displays a machine-readable, non-formatted description of the passed reference. The reference can be a feature, a tree, or a commit. In the case of a tree, the default feature type is described along with some other characteristics of the tree. Identical to <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">show</span> <span class="pre">--raw</span></tt>.</p>
+<p>To get a human-readable description of an element in a geogig repository, the <tt class="docutils literal"><span class="pre">show</span></tt> command can be used instead.</p>
+<p>The reference can be a SHA-1, a full refspec, or just a path. If a path is used, it&#8217;s assumed to refer to an element in the working head.</p>
 </div>
 <div class="section" id="options">
 <h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
@@ -107,32 +106,14 @@
 <col class="description" />
 <tbody valign="top">
 <tr><td class="option-group">
-<kbd><span class="option">-o</span></kbd></td>
-<td>Overwrite the output table if it already exists.</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--host</span></kbd></td>
-<td>Machine name or IP address to connect to. Default: localhost</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--port</span></kbd></td>
-<td>Port number to connect to.  Default: 5432</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--schema</span></kbd></td>
-<td>The database schema to access.  Default: public</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--database</span></kbd></td>
-<td>The database to connect to.  Default: database</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--user</span></kbd></td>
-<td>User name.  Default: postgres</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--password</span></kbd></td>
-<td>Password.  Default: &lt;no password&gt;</td></tr>
+<kbd><span class="option">--binary</span></kbd></td>
+<td>Shows binary output instead.</td></tr>
 </tbody>
 </table>
 </div>
 <div class="section" id="see-also">
 <h2>SEE ALSO<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="pglist.html#geogig-pg-list"><em>geogig-pg-list documentation</em></a></p>
+<p><a class="reference internal" href="show.html#geogig-show"><em>geogig-show documentation</em></a></p>
 </div>
 <div class="section" id="bugs">
 <h2>BUGS<a class="headerlink" href="#bugs" title="Permalink to this headline">¶</a></h2>
@@ -163,7 +144,7 @@
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
-<li><a class="reference internal" href="#">geogig-pg-export documentation</a><ul>
+<li><a class="reference internal" href="#">geogig-cat documentation</a><ul>
 <li><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
 <li><a class="reference internal" href="#description">DESCRIPTION</a></li>
 <li><a class="reference internal" href="#options">OPTIONS</a></li>
@@ -178,7 +159,7 @@
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">
-          <li><a href="_sources/pgexport.txt">Show Source</a></li>
+          <li><a href="_sources/cat.txt">Show Source</a></li>
         </ul>
         </div>
         <div class="section">

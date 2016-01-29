@@ -39,7 +39,6 @@
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-web-app</artifactId>
       <version>${project.version}</version>
-      <classifier>classes</classifier>
     </dependency>
 
   </dependencies>

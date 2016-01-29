@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createFeaturesTree;
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createFeaturesTreeBuilder;
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createTreesTreeBuilder;
 import static org.mockito.Mockito.mock;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.api.Bounded;
@@ -56,18 +58,18 @@ public class PostOrderDiffWalkTest {
 
         @Override
         public void feature(NodeRef left, NodeRef right) {
-            synchronized (System.err) {
-                System.err.printf("feature: %s / %s\n", left, right);
-            }
+            // synchronized (System.err) {
+            // System.err.printf("feature: %s / %s\n", left, right);
+            // }
             orderedLeft.add(left);
             orderedRight.add(right);
         }
 
         @Override
         public void tree(NodeRef left, NodeRef right) {
-            synchronized (System.err) {
-                System.err.printf("tree: %s / %s\n", left, right);
-            }
+            // synchronized (System.err) {
+            // System.err.printf("tree: %s / %s\n", left, right);
+            // }
             orderedLeft.add(left);
             orderedRight.add(right);
         }
@@ -75,9 +77,9 @@ public class PostOrderDiffWalkTest {
         @Override
         public void bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
                 int bucketDepth, Bucket left, Bucket right) {
-            synchronized (System.err) {
-                System.err.printf("bucket: %s / %s\n", left, right);
-            }
+            // synchronized (System.err) {
+            // System.err.printf("bucket: %s / %s\n", left, right);
+            // }
             orderedLeft.add(left);
             orderedRight.add(right);
         }
@@ -251,4 +253,68 @@ public class PostOrderDiffWalkTest {
         assertEquals(RevObject.TYPE.FEATURE, ((NodeRef) rightCalls.get(0)).getType());
     }
 
+    /**
+     * Checks that a tree split into more than one depth level is fully reported to the postorder
+     * consumer
+     */
+    @Test
+    public void testBucketNested() {
+        final RevTree origLeft = RevTree.EMPTY;
+        final RevTree origRight = createFeaturesTree(
+                leftSource,
+                "f",
+                NodePathStorageOrder.normalizedSizeLimit(0)
+                        * NodePathStorageOrder.maxBucketsForLevel(0));
+
+        PostOrderDiffWalk visitor = new PostOrderDiffWalk(origLeft, origRight, leftSource,
+                leftSource);
+
+        Consumer copyConsumer = new Consumer() {
+
+            private void copy(Bounded nodeOrBucket) {
+                if (nodeOrBucket != null) {
+                    ObjectId objectId = nodeOrBucket.getObjectId();
+                    if (!RevTree.EMPTY_TREE_ID.equals(objectId)) {
+                        RevObject object = leftSource.get(objectId);
+                        rightSource.put(object);
+                    }
+                }
+            }
+
+            @Override
+            public void tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+                copy(left);
+                copy(right);
+            }
+
+            @Override
+            public void feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+                // features are not put in the db by the createFeaturesTree() helper function, but
+                // we're testing the tree is well reported to the consumer anyway
+                // copy(left);
+                // copy(right);
+            }
+
+            @Override
+            public void bucket(@Nullable NodeRef leftParent, @Nullable NodeRef rightParent,
+                    int bucketIndex, int bucketDepth, @Nullable Bucket left, @Nullable Bucket right) {
+                copy(left);
+                copy(right);
+            }
+        };
+        visitor.walk(copyConsumer);
+
+        // make sure all tree objects have been copied over
+        walkTree(origRight.getId(), rightSource);
+    }
+
+    private void walkTree(ObjectId treeId, ObjectDatabase source) {
+        assertTrue(source.exists(treeId));
+        RevTree tree = source.getTree(treeId);
+        if (tree.buckets().isPresent()) {
+            for (Bucket b : tree.buckets().get().values()) {
+                walkTree(b.getObjectId(), source);
+            }
+        }
+    }
 }

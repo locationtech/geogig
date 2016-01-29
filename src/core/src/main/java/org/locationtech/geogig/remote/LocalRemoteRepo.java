@@ -10,6 +10,7 @@
 package org.locationtech.geogig.remote;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.api.RevObject.TYPE.FEATURE;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -21,7 +22,6 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Bounded;
 import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
@@ -172,6 +172,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             Throwables.propagate(e);
         }
     }
@@ -273,7 +274,8 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             // }
             copyNewObjects(oldTree, newTree, fromDb, toDb, progress);
             // }
-            Preconditions.checkState(toDb.exists(newTree.getId()));
+            Preconditions.checkState(toDb.exists(newTree.getId()),
+                    "tree %s wasn't copied to the target databse", newTree.getId());
 
             toDb.put(commit);
         }
@@ -307,24 +309,16 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
                 if (b == null) {
                     return false;
                 }
-                if (progress.isCanceled()) {
-                    return false;// abort traversal
+
+                if (b instanceof NodeRef && FEATURE.equals(((NodeRef) b).getType())) {
+                    // check of existence of trees only. For features the diff filtering is good
+                    // enough and checking for existence on each feature would be killer
+                    // performance wise
+                    return true;
                 }
-                ObjectId id;
-                if (b instanceof NodeRef) {
-                    NodeRef node = (NodeRef) b;
-                    if (RevObject.TYPE.TREE.equals(node.getType())) {
-                        // check of existence of trees only. For features the diff filtering is good
-                        // enough and checking for existence on each feature would be killer
-                        // performance wise
-                        id = node.getObjectId();
-                    } else {
-                        return true;
-                    }
-                } else {
-                    id = ((Bucket) b).getObjectId();
-                }
-                boolean exists = ids.contains(id) || toDb.exists(id);
+
+                final ObjectId id = b.getObjectId();
+                boolean exists = !progress.isCanceled() && (ids.contains(id) || toDb.exists(id));
                 return !exists;
             }
         };
@@ -336,13 +330,13 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
 
             @Override
             public void feature(@Nullable NodeRef left, NodeRef right) {
-                add(left);
+                // add(left);
                 add(right);
             }
 
             @Override
             public void tree(@Nullable NodeRef left, NodeRef right) {
-                add(left);
+                // add(left);
                 add(right);
             }
 
@@ -350,10 +344,12 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
                 if (node == null) {
                     return;
                 }
-                ids.add(node.getObjectId());
                 ObjectId metadataId = node.getMetadataId();
-                if (!metadataId.isNull()) {
-                    ids.add(metadataId);
+                synchronized (ids) {
+                    ids.add(node.getObjectId());
+                    if (!metadataId.isNull()) {
+                        ids.add(metadataId);
+                    }
                 }
                 checkLimitAndCopy();
             }
@@ -361,20 +357,28 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             @Override
             public void bucket(NodeRef lparent, NodeRef rparent, int bucketIndex, int bucketDepth,
                     @Nullable Bucket left, Bucket right) {
-                if (left != null) {
-                    ids.add(left.getObjectId());
-                }
+                // if (left != null) {
+                // ids.add(left.getObjectId());
+                // }
                 if (right != null) {
-                    ids.add(right.getObjectId());
+                    synchronized (ids) {
+                        ids.add(right.getObjectId());
+                    }
                 }
                 checkLimitAndCopy();
             }
 
             private void checkLimitAndCopy() {
+                // double check lock on ids to reduce contention when pruning it as this method can
+                // be called from several concurrent threads from inside PreOrderDiffWalk
                 if (ids.size() >= bulkSize) {
-                    Set<ObjectId> copyIds = Sets.newHashSet(ids);
-                    ids.clear();
-                    copy(copyIds, fromDb, toDb, progress);
+                    synchronized (ids) {
+                        if (ids.size() >= bulkSize) {
+                            Set<ObjectId> copyIds = Sets.newHashSet(ids);
+                            copy(copyIds, fromDb, toDb, progress);
+                            ids.clear();
+                        }
+                    }
                 }
             }
         };

@@ -45,7 +45,6 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.repository.SpatialOps;
-import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.NodeStorageOrder;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -594,10 +593,9 @@ public class PreOrderDiffWalk {
         }
 
         /**
-         * Compares a bucket tree (i.e. its size is greater than
-         * {@link NodePathStorageOrder#NORMALIZED_SIZE_LIMIT} and hence has been split into buckets) at the left
-         * side of the comparison, and a the {@link RevTree#children() children} nodes of a leaf
-         * tree at the right side of the comparison.
+         * Compares a bucket tree at the left side of the comparison, and a the
+         * {@link RevTree#children() children} nodes of a leaf tree at the right side of the
+         * comparison.
          * <p>
          * This happens when the left tree is much larger than the right tree
          * <p>
@@ -683,10 +681,9 @@ public class PreOrderDiffWalk {
         }
 
         /**
-         * Compares a bucket tree (i.e. its size is greater than
-         * {@link NodePathStorageOrder#NORMALIZED_SIZE_LIMIT} and hence has been split into buckets) at the right
-         * side of the comparison, and a the {@link RevTree#children() children} nodes of a leaf
-         * tree at the left side of the comparison.
+         * Compares a bucket tree at the right side of the comparison, and a the
+         * {@link RevTree#children() children} nodes of a leaf tree at the left side of the
+         * comparison.
          * <p>
          * This happens when the right tree is much larger than the left tree
          * <p>

@@ -16,6 +16,7 @@ import java.util.List;
 
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,18 +108,17 @@ final class DiffPathFilter {
      * 
      * @param treePath the path of the tree the bucket belong to
      * @param bucketIndex
-     * @param bucketDepth
      * @return
      */
-    public boolean bucketApplies(final String treePath, final int bucketIndex, final int bucketDepth) {
+    public boolean bucketApplies(final String treePath, final BucketIndex bucketIndex) {
         String filter;
         for (int i = 0; i < pathFilters.size(); i++) {
             filter = pathFilters.get(i);
             if (filter.equals(treePath)) {
                 // all buckets apply
                 if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace("Filter: '{}', tree: '{}', depth: {}, bucket idx {}, applies: {}",
-                            filter, treePath, bucketDepth, bucketIndex, true);
+                    LOGGER.trace("Filter: '{}', tree: '{}', bucket idx {}, applies: {}", filter,
+                            treePath, bucketIndex, true);
                 }
                 return true;
             }
@@ -128,14 +128,13 @@ final class DiffPathFilter {
                 ImmutableList<String> treeSteps = NodeRef.split(treePath);
 
                 String childName = filterSteps.get(treeSteps.size());
-                int childBucket = ORDER.bucket(childName, bucketDepth);
-                boolean applies = childBucket == bucketIndex;
+                int childBucket = ORDER.bucket(childName, bucketIndex.depthIndex());
+                boolean applies = childBucket == bucketIndex.lastIndex().intValue();
 
                 if (LOGGER.isTraceEnabled()) {
                     LOGGER.trace(
-                            "Filter: '{}', tree: '{}', depth: {}, bucket idx {}, child bucket: {}, child name: '{}', applies: {}",
-                            filter, treePath, bucketDepth, bucketIndex, childBucket, childName,
-                            applies);
+                            "Filter: '{}', tree: '{}', bucket idx {}, child bucket: {}, child name: '{}', applies: {}",
+                            filter, treePath, bucketIndex, childBucket, childName, applies);
                 }
                 if (applies) {
                     return true;

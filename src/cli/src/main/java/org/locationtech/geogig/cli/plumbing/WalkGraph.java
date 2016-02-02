@@ -22,6 +22,7 @@ import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.plumbing.WalkGraphOp;
 import org.locationtech.geogig.api.plumbing.WalkGraphOp.Listener;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
@@ -107,12 +108,12 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
         }
 
         @Override
-        public void bucket(int bucketIndex, int bucketDepth, Bucket bucket) {
+        public void bucket(BucketIndex bucketIndex, Bucket bucket) {
             print(bucket);
         }
 
         @Override
-        public void endBucket(int bucketIndex, int bucketDepth, Bucket bucket) {
+        public void endBucket(BucketIndex bucketIndex, Bucket bucket) {
         }
 
         @Override

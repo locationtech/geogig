@@ -159,7 +159,7 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
      */
     public static int maxBucketsForLevel(final int depthIndex) {
         Preconditions.checkArgument(depthIndex > -1,
-                "depthIndex must be a positive integer or zero");
+                "depthIndex must be a positive integer or zero (%s)", depthIndex);
         switch (depthIndex) {
         case 0:
         case 1:

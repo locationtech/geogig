@@ -12,6 +12,7 @@ import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Predicate;
@@ -51,9 +52,7 @@ public class PostOrderDiffWalk {
 
             private Bounded right;
 
-            private int bucketIndex;
-
-            private int bucketDepth;
+            private BucketIndex bucketIndex;
 
             private boolean accepted;
 
@@ -69,15 +68,14 @@ public class PostOrderDiffWalk {
                 return e;
             }
 
-            static Entry bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
-                    int bucketDepth, Bucket left, Bucket right, boolean accepted) {
+            static Entry bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                    Bucket left, Bucket right, boolean accepted) {
                 Entry e = new Entry();
                 e.left = left;
                 e.right = right;
                 e.leftParent = leftParent;
                 e.rightParent = rightParent;
                 e.bucketIndex = bucketIndex;
-                e.bucketDepth = bucketDepth;
                 e.accepted = accepted;
                 return e;
             }
@@ -89,8 +87,7 @@ public class PostOrderDiffWalk {
                     } else {
                         Bucket lbucket = (Bucket) left;
                         Bucket rbucket = (Bucket) right;
-                        consumer.bucket(leftParent, rightParent, bucketIndex, bucketDepth, lbucket,
-                                rbucket);
+                        consumer.bucket(leftParent, rightParent, bucketIndex, lbucket, rbucket);
                     }
                 }
             }
@@ -117,9 +114,13 @@ public class PostOrderDiffWalk {
          * called from the same thread. This method prepends the thread name to the node path so
          * there are no clashes in the "stack" map above.
          */
-        private String path(NodeRef left, NodeRef right) {
-            return Thread.currentThread().getName() + "/"
-                    + (left == null ? right.path() : left.path());
+        private String treePath(NodeRef left, NodeRef right) {
+            return left == null ? right.path() : left.path();
+        }
+
+        private String bucketPath(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex) {
+            String path = treePath(leftParent, rightParent) + "/" + bucketIndex;
+            return path;
         }
 
         @Override
@@ -135,7 +136,7 @@ public class PostOrderDiffWalk {
         public boolean tree(NodeRef left, NodeRef right) {
             boolean accept = filter.apply(left) || filter.apply(right);
             Entry entry = Entry.tree(left, right, accept);
-            String path = path(left, right);
+            String path = treePath(left, right);
 
             checkState(null == stack.put(path, entry), "Tree entry already present: '%s'", path);
             return accept;
@@ -143,7 +144,7 @@ public class PostOrderDiffWalk {
 
         @Override
         public void endTree(NodeRef left, NodeRef right) {
-            String path = path(left, right);
+            String path = treePath(left, right);
 
             Entry entry = stack.remove(path);
             checkNotNull(entry, "No entry for tree '%s'", path);
@@ -151,22 +152,22 @@ public class PostOrderDiffWalk {
         }
 
         @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
-                int bucketDepth, Bucket left, Bucket right) {
-            boolean accept = filter.apply(left) || filter.apply(right);
-            String path = path(leftParent, rightParent) + "/" + bucketDepth + "/" + bucketIndex;
+        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                Bucket left, Bucket right) {
+            final boolean accept = filter.apply(left) || filter.apply(right);
 
-            Entry entry = Entry.bucket(leftParent, rightParent, bucketIndex, bucketDepth, left,
-                    right, accept);
+            final String path = bucketPath(leftParent, rightParent, bucketIndex);
+
+            Entry entry = Entry.bucket(leftParent, rightParent, bucketIndex, left, right, accept);
             checkState(null == stack.put(path, entry), "Bucket entry already present: '%s'", path);
             return accept;
         }
 
         @Override
-        public void endBucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
-                int bucketDepth, Bucket left, Bucket right) {
-            final String path = path(leftParent, rightParent) + "/" + bucketDepth + "/"
-                    + bucketIndex;
+        public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                Bucket left, Bucket right) {
+
+            final String path = bucketPath(leftParent, rightParent, bucketIndex);
 
             Entry entry = stack.remove(path);
             checkNotNull(entry, "No entry for bucket %s", path);
@@ -181,7 +182,7 @@ public class PostOrderDiffWalk {
         public abstract void tree(@Nullable final NodeRef left, @Nullable final NodeRef right);
 
         public abstract void bucket(@Nullable final NodeRef leftParent,
-                @Nullable final NodeRef rightParent, final int bucketIndex, final int bucketDepth,
+                @Nullable final NodeRef rightParent, final BucketIndex bucketIndex,
                 @Nullable final Bucket left, @Nullable final Bucket right);
 
     }

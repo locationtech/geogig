@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.NodeRef;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 
 /**
@@ -47,11 +48,12 @@ public class PathFilteringDiffConsumer extends PreOrderDiffWalk.ForwardingConsum
     }
 
     @Override
-    public boolean bucket(NodeRef lparent, NodeRef rparent, int bucketIndex, int bucketDepth,
-            Bucket left, Bucket right) {
+    public boolean bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex, Bucket left,
+            Bucket right) {
         String treePath = lparent == null ? rparent.path() : lparent.path();
-        if (filter.bucketApplies(treePath, bucketIndex, bucketDepth)) {
-            return super.bucket(lparent, rparent, bucketIndex, bucketDepth, left, right);
+
+        if (filter.bucketApplies(treePath, bucketIndex)) {
+            return super.bucket(lparent, rparent, bucketIndex, left, right);
         }
         return false;
     }

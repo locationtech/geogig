@@ -31,6 +31,7 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.ForwardingConsumer;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -335,17 +336,17 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         }
 
         @Override
-        public boolean bucket(NodeRef lparent, NodeRef rparent, final int bucketIndex,
-                final int bucketDepth, final Bucket left, final Bucket right) {
+        public boolean bucket(NodeRef lparent, NodeRef rparent, final BucketIndex bucketIndex,
+                final Bucket left, final Bucket right) {
             return treeApplies(left, right)
-                    && super.bucket(lparent, rparent, bucketIndex, bucketDepth, left, right);
+                    && super.bucket(lparent, rparent, bucketIndex, left, right);
         }
 
         @Override
-        public void endBucket(NodeRef lparent, NodeRef rparent, int bucketIndex, int bucketDepth,
+        public void endBucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
                 Bucket left, Bucket right) {
             if (treeApplies(left, right)) {
-                super.endBucket(lparent, rparent, bucketIndex, bucketDepth, left, right);
+                super.endBucket(lparent, rparent, bucketIndex, left, right);
             }
         }
 
@@ -456,15 +457,15 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         }
 
         @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
-                int bucketDepth, @Nullable Bucket left, @Nullable Bucket right) {
+        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                @Nullable Bucket left, @Nullable Bucket right) {
 
             return !finished;
         }
 
         @Override
-        public void endBucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
-                int bucketDepth, @Nullable Bucket left, @Nullable Bucket right) {
+        public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                @Nullable Bucket left, @Nullable Bucket right) {
 
             // do nothing
 

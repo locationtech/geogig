@@ -22,6 +22,7 @@ import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -47,9 +48,9 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
 
         public void endTree(final NodeRef treeNode);
 
-        public void bucket(final int bucketIndex, final int bucketDepth, final Bucket bucket);
+        public void bucket(final BucketIndex bucketIndex, final Bucket bucket);
 
-        public void endBucket(final int bucketIndex, final int bucketDepth, final Bucket bucket);
+        public void endBucket(final BucketIndex bucketIndex, final Bucket bucket);
     }
 
     public WalkGraphOp setListener(final Listener listener) {
@@ -127,17 +128,19 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
             }
 
             @Override
-            public boolean bucket(NodeRef lp, NodeRef rp, int bucketIndex, int bucketDepth,
+            public boolean bucket(NodeRef lp, NodeRef rp, BucketIndex bucketIndex,
                     @Nullable Bucket left, @Nullable Bucket right) {
-                listener.bucket(bucketIndex, bucketDepth, right);
+
+                listener.bucket(bucketIndex, right);
                 checkExists(right.getObjectId(), right);
                 return true;
             }
 
             @Override
-            public void endBucket(NodeRef lp, NodeRef rp, int bucketIndex, int bucketDepth,
+            public void endBucket(NodeRef lp, NodeRef rp, BucketIndex bucketIndex,
                     @Nullable Bucket left, @Nullable Bucket right) {
-                listener.endBucket(bucketIndex, bucketDepth, right);
+
+                listener.endBucket(bucketIndex, right);
             }
 
             private void checkExists(ObjectId id, Object o) {

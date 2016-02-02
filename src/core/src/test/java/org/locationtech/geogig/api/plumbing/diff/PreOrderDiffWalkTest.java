@@ -17,11 +17,7 @@ import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.cre
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createFeaturesTreeBuilder;
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createLargeFeaturesTree;
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createTreesTree;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Matchers.notNull;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -34,6 +30,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.hamcrest.CustomMatcher;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.api.Bucket;
@@ -43,6 +41,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.MaxFeatureDiffsLimiter;
 import org.locationtech.geogig.repository.SpatialOps;
@@ -294,22 +293,22 @@ public class PreOrderDiffWalkTest {
 
         // skip all buckets of depth 0
         when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), eq(0),
+                consumer.bucket(any(NodeRef.class), any(NodeRef.class), argThat(depthMatches(0)),
                         any(Bucket.class), any(Bucket.class))).thenReturn(false);
 
         visitor.walk(consumer);
 
         verify(consumer, times(1)).tree(eq(lroot), eq(rroot));
 
-        verify(consumer, times(32)).bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), eq(0),
-                any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(32)).bucket(any(NodeRef.class), any(NodeRef.class),
+                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
 
         // should not be any call to consumer.features as we skipped all buckets of depth 0 (which
         // point to leaf trees)
         verify(consumer, times(0)).feature(any(NodeRef.class), any(NodeRef.class));
 
-        verify(consumer, times(32)).endBucket(any(NodeRef.class), any(NodeRef.class), anyInt(),
-                eq(0), any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(32)).endBucket(any(NodeRef.class), any(NodeRef.class),
+                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
         verify(consumer, times(1)).endTree(eq(lroot), eq(rroot));
         verifyNoMoreInteractions(consumer);
     }
@@ -404,18 +403,18 @@ public class PreOrderDiffWalkTest {
 
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
         when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), anyInt(),
+                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
                         any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
         verify(consumer, times(1)).tree(any(NodeRef.class), any(NodeRef.class));
-        verify(consumer, times(1)).bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), eq(0),
-                any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(1)).bucket(any(NodeRef.class), any(NodeRef.class),
+                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
         verify(consumer, times(1)).feature((NodeRef) isNull(), any(NodeRef.class));
 
         verify(consumer, times(1)).endTree(any(NodeRef.class), any(NodeRef.class));
-        verify(consumer, times(1)).endBucket(any(NodeRef.class), any(NodeRef.class), anyInt(),
-                eq(0), any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(1)).endBucket(any(NodeRef.class), any(NodeRef.class),
+                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
         verifyNoMoreInteractions(consumer);
     }
 
@@ -436,24 +435,24 @@ public class PreOrderDiffWalkTest {
 
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
         when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), anyInt(),
+                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
                         any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
         verify(consumer, times(1)).tree(any(NodeRef.class), any(NodeRef.class));
 
         // consumer.bucket should be called for depth 0 and then 1
-        verify(consumer, times(1)).bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), eq(0),
-                any(Bucket.class), any(Bucket.class));
-        verify(consumer, times(1)).bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), eq(1),
-                any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(1)).bucket(any(NodeRef.class), any(NodeRef.class),
+                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(1)).bucket(any(NodeRef.class), any(NodeRef.class),
+                argThat(depthMatches(1)), any(Bucket.class), any(Bucket.class));
 
         verify(consumer, times(1)).feature((NodeRef) isNull(), any(NodeRef.class));
 
-        verify(consumer, times(1)).endBucket(any(NodeRef.class), any(NodeRef.class), anyInt(),
-                eq(0), any(Bucket.class), any(Bucket.class));
-        verify(consumer, times(1)).endBucket(any(NodeRef.class), any(NodeRef.class), anyInt(),
-                eq(1), any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(1)).endBucket(any(NodeRef.class), any(NodeRef.class),
+                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
+        verify(consumer, times(1)).endBucket(any(NodeRef.class), any(NodeRef.class),
+                argThat(depthMatches(1)), any(Bucket.class), any(Bucket.class));
         verify(consumer, times(1)).endTree(any(NodeRef.class), any(NodeRef.class));
         verifyNoMoreInteractions(consumer);
     }
@@ -469,7 +468,7 @@ public class PreOrderDiffWalkTest {
         // consume all
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
         when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), anyInt(),
+                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
                         any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
@@ -481,12 +480,12 @@ public class PreOrderDiffWalkTest {
         final int leftBucketCount = left.buckets().get().size();
         final int expectedBucketCalls = leftBucketCount - 1;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
-                anyInt(), eq(0), any(Bucket.class), any(Bucket.class));
+                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
 
         verify(consumer, times(leftsize - 1)).feature(any(NodeRef.class), (NodeRef) isNull());
 
         verify(consumer, times(expectedBucketCalls)).endBucket(any(NodeRef.class),
-                any(NodeRef.class), anyInt(), eq(0), any(Bucket.class), any(Bucket.class));
+                any(NodeRef.class), argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
         verify(consumer, times(1)).endTree(any(NodeRef.class), any(NodeRef.class));
         verifyNoMoreInteractions(consumer);
     }
@@ -502,7 +501,7 @@ public class PreOrderDiffWalkTest {
         // consume all
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
         when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), anyInt(),
+                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
                         any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
@@ -514,12 +513,12 @@ public class PreOrderDiffWalkTest {
         final int leftBucketCount = right.buckets().get().size();
         final int expectedBucketCalls = leftBucketCount - 1;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
-                anyInt(), eq(0), any(Bucket.class), any(Bucket.class));
+                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
 
         verify(consumer, times(rightsize - 1)).feature((NodeRef) isNull(), any(NodeRef.class));
 
         verify(consumer, times(expectedBucketCalls)).endBucket(any(NodeRef.class),
-                any(NodeRef.class), anyInt(), eq(0), any(Bucket.class), any(Bucket.class));
+                any(NodeRef.class), argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
         verify(consumer, times(1)).endTree(any(NodeRef.class), any(NodeRef.class));
         verifyNoMoreInteractions(consumer);
     }
@@ -589,7 +588,7 @@ public class PreOrderDiffWalkTest {
         // consume all
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
         when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), anyInt(),
+                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
                         any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         Stopwatch sw = Stopwatch.createStarted();
@@ -621,8 +620,10 @@ public class PreOrderDiffWalkTest {
             }
 
             @Override
-            public boolean bucket(NodeRef leftParent, NodeRef rigthParent, int bucketIndex,
-                    int bucketDepth, @Nullable Bucket left, @Nullable Bucket right) {
+            public boolean bucket(NodeRef leftParent, NodeRef rigthParent, BucketIndex bucketIndex,
+                    @Nullable Bucket left, @Nullable Bucket right) {
+
+                int bucketDepth = bucketIndex.depthIndex();
                 if (bucketDepth > 3) {
                     throw new IllegalStateException();
                 }
@@ -639,8 +640,9 @@ public class PreOrderDiffWalkTest {
             }
 
             @Override
-            public void endBucket(NodeRef leftParent, NodeRef rigthParent, int bucketIndex,
-                    int bucketDepth, @Nullable Bucket left, @Nullable Bucket right) {
+            public void endBucket(NodeRef leftParent, NodeRef rigthParent, BucketIndex bucketIndex,
+                    @Nullable Bucket left, @Nullable Bucket right) {
+                int bucketDepth = bucketIndex.depthIndex();
                 if (bucketDepth > 3) {
                     throw new IllegalStateException();
                 }
@@ -706,7 +708,7 @@ public class PreOrderDiffWalkTest {
         // consume all
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
         when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), anyInt(),
+                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
                         any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
@@ -751,8 +753,9 @@ public class PreOrderDiffWalkTest {
             }
 
             @Override
-            public boolean bucket(NodeRef lparent, NodeRef rparent, int bucketIndex,
-                    int bucketDepth, Bucket left, Bucket right) {
+            public boolean bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
+                    Bucket left, Bucket right) {
+                int bucketDepth = bucketIndex.depthIndex();
                 // System.err.printf("bucket:  %s, %s, %d, %d, %s %s\n", lparent, rparent,
                 // bucketIndex, bucketDepth, left, right);
                 // System.err.printf("bucket: index: %d, depth: %d, %s %s\n", bucketIndex,
@@ -770,8 +773,8 @@ public class PreOrderDiffWalkTest {
             }
 
             @Override
-            public void endBucket(NodeRef lparent, NodeRef rparent, int bucketIndex,
-                    int bucketDepth, Bucket left, Bucket right) {
+            public void endBucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
+                    Bucket left, Bucket right) {
                 // System.err.printf("end bucket: index: %d, depth: %d, %s %s\n", bucketIndex,
                 // bucketDepth, left, right);
             }
@@ -790,7 +793,7 @@ public class PreOrderDiffWalkTest {
         // consume all
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
         when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), anyInt(), anyInt(),
+                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
                         any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
@@ -802,12 +805,12 @@ public class PreOrderDiffWalkTest {
         final int leftBucketCount = left.buckets().get().size();
         final int expectedBucketCalls = leftBucketCount - 1;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
-                anyInt(), eq(0), any(Bucket.class), any(Bucket.class));
+                argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
 
         verify(consumer, times(leftsize - 1)).feature(any(NodeRef.class), (NodeRef) isNull());
 
         verify(consumer, times(expectedBucketCalls)).endBucket(any(NodeRef.class),
-                any(NodeRef.class), anyInt(), eq(0), any(Bucket.class), any(Bucket.class));
+                any(NodeRef.class), argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
         verify(consumer, times(1)).endTree(any(NodeRef.class), any(NodeRef.class));
         verifyNoMoreInteractions(consumer);
     }
@@ -889,16 +892,26 @@ public class PreOrderDiffWalkTest {
 
         @Override
         public boolean bucket(final NodeRef leftParent, final NodeRef rightParent,
-                final int bucketIndex, final int bucketDepth, @Nullable final Bucket left,
+                final BucketIndex bucketIndex, @Nullable final Bucket left,
                 @Nullable final Bucket right) {
             return true;
         }
 
         @Override
-        public void endBucket(NodeRef leftParent, NodeRef rightParent, final int bucketIndex,
-                final int bucketDepth, @Nullable final Bucket left, @Nullable final Bucket right) {
+        public void endBucket(NodeRef leftParent, NodeRef rightParent,
+                final BucketIndex bucketIndex, @Nullable final Bucket left,
+                @Nullable final Bucket right) {
         }
 
     }
 
+    private static Matcher<BucketIndex> depthMatches(final int expectedDepth) {
+        return new CustomMatcher<BucketIndex>("<Bucket depth equals> " + expectedDepth) {
+            @Override
+            public boolean matches(Object item) {
+                int bucketDepth = ((BucketIndex) item).depthIndex();
+                return bucketDepth == expectedDepth;
+            }
+        };
+    }
 }

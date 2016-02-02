@@ -13,6 +13,7 @@ import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -72,8 +73,8 @@ public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
     }
 
     @Override
-    public boolean bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
-            int bucketDepth, Bucket left, Bucket right) {
+    public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+            Bucket left, Bucket right) {
 
         if (left == null || right == null) {
             Bucket bucket = left == null ? right : left;
@@ -104,8 +105,8 @@ public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
     }
 
     @Override
-    public void endBucket(NodeRef leftp, NodeRef rightp, int bucketIndex, int bucketDepth,
-            Bucket left, Bucket right) {
+    public void endBucket(NodeRef leftp, NodeRef rightp, BucketIndex bucketIndex, Bucket left,
+            Bucket right) {
         // no need to do anything
     }
 }

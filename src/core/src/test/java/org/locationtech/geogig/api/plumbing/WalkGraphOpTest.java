@@ -9,7 +9,8 @@
  */
 package org.locationtech.geogig.api.plumbing;
 
-import java.util.ArrayList;
+import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,7 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeatureType;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;
@@ -31,9 +33,9 @@ public class WalkGraphOpTest extends RepositoryTestCase {
 
     private static class AccumulatingListener implements WalkGraphOp.Listener {
 
-        public List<Object> events = new ArrayList<>();
+        public List<Object> events = newCopyOnWriteArrayList();
 
-        public List<String> sevents = new ArrayList<>();
+        public List<String> sevents = newCopyOnWriteArrayList();
 
         @Override
         public void starTree(NodeRef treeNode) {
@@ -59,7 +61,7 @@ public class WalkGraphOpTest extends RepositoryTestCase {
         }
 
         @Override
-        public void endBucket(int bucketIndex, int bucketDepth, Bucket bucket) {
+        public void endBucket(BucketIndex bucketIndex, Bucket bucket) {
             sevents.add("END BUCKET");
         }
 
@@ -70,7 +72,7 @@ public class WalkGraphOpTest extends RepositoryTestCase {
         }
 
         @Override
-        public void bucket(int bucketIndex, int bucketDepth, Bucket bucket) {
+        public void bucket(BucketIndex bucketIndex, Bucket bucket) {
             events.add(bucket);
             sevents.add("END BUCKET");
         }

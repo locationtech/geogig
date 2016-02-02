@@ -38,6 +38,7 @@ import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.diff.PostOrderDiffWalk;
 import org.locationtech.geogig.api.plumbing.diff.PostOrderDiffWalk.Consumer;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
@@ -355,7 +356,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             }
 
             @Override
-            public void bucket(NodeRef lparent, NodeRef rparent, int bucketIndex, int bucketDepth,
+            public void bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
                     @Nullable Bucket left, Bucket right) {
                 // if (left != null) {
                 // ids.add(left.getObjectId());

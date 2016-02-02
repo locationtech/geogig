@@ -1,1 +1,2 @@
 org.locationtech.geogig.rest.osm.OSMReportRepresentation$Factory
+org.locationtech.geogig.rest.postgis.RevTreeRepresentation$Factory

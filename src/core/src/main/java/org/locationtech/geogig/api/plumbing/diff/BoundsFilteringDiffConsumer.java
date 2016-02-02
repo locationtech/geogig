@@ -21,6 +21,7 @@ import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeatureType;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.referencing.FactoryException;
@@ -62,23 +63,23 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
     }
 
     @Override
-    public boolean bucket(NodeRef lparent, NodeRef rparent, int bucketIndex, int bucketDepth,
-            Bucket left, Bucket right) {
+    public boolean bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex, Bucket left,
+            Bucket right) {
         ObjectId lmd = md(lparent);
         ObjectId rmd = md(rparent);
         if (intersects(left, lmd) || intersects(right, rmd)) {
-            return super.bucket(lparent, rparent, bucketIndex, bucketDepth, left, right);
+            return super.bucket(lparent, rparent, bucketIndex, left, right);
         }
         return false;
     }
 
     @Override
-    public void endBucket(NodeRef lparent, NodeRef rparent, int bucketIndex, int bucketDepth,
-            Bucket left, Bucket right) {
+    public void endBucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex, Bucket left,
+            Bucket right) {
         ObjectId lmd = md(lparent);
         ObjectId rmd = md(rparent);
         if (intersects(left, lmd) || intersects(right, rmd)) {
-            super.endBucket(lparent, rparent, bucketIndex, bucketDepth, left, right);
+            super.endBucket(lparent, rparent, bucketIndex, left, right);
         }
     }
 

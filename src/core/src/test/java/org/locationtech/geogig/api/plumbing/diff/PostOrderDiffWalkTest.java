@@ -35,6 +35,7 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.PostOrderDiffWalk.Consumer;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -75,8 +76,8 @@ public class PostOrderDiffWalkTest {
         }
 
         @Override
-        public void bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
-                int bucketDepth, Bucket left, Bucket right) {
+        public void bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                Bucket left, Bucket right) {
             // synchronized (System.err) {
             // System.err.printf("bucket: %s / %s\n", left, right);
             // }
@@ -297,7 +298,7 @@ public class PostOrderDiffWalkTest {
 
             @Override
             public void bucket(@Nullable NodeRef leftParent, @Nullable NodeRef rightParent,
-                    int bucketIndex, int bucketDepth, @Nullable Bucket left, @Nullable Bucket right) {
+                    BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
                 copy(left);
                 copy(right);
             }

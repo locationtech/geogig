@@ -32,6 +32,7 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.DiffSummary;
 import org.locationtech.geogig.api.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk;
+import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.type.FeatureType;
@@ -248,8 +249,8 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         }
 
         @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
-                int bucketDepth, @Nullable Bucket left, @Nullable Bucket right) {
+        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                @Nullable Bucket left, @Nullable Bucket right) {
 
             ReferencedEnvelope leftHelper = getEnv(left, leftParent);
             ReferencedEnvelope rightHelper = getEnv(right, rightParent);
@@ -269,8 +270,8 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         }
 
         @Override
-        public void endBucket(NodeRef leftParent, NodeRef rightParent, int bucketIndex,
-                int bucketDepth, @Nullable Bucket left, @Nullable Bucket right) {
+        public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                @Nullable Bucket left, @Nullable Bucket right) {
             // TODO Auto-generated method stub
 
         }

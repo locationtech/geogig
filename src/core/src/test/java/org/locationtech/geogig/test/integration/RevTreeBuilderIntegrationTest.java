@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2014 Boundless and others.
+/* Copyright (c) 2012-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -43,7 +43,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 
-public class RevTreeBuilderTest extends RepositoryTestCase {
+public class RevTreeBuilderIntegrationTest extends RepositoryTestCase {
 
     private ObjectDatabase odb;
 

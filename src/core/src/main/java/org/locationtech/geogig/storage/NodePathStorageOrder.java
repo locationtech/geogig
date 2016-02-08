@@ -103,6 +103,8 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
 
     private static final FNV1a64bitHash hashOrder = new FNV1a64bitHash();
 
+    public static final NodePathStorageOrder INSTANCE = new NodePathStorageOrder();
+    
     @Override
     public int compare(String p1, String p2) {
         return hashOrder.compare(p1, p2);

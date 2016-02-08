@@ -242,7 +242,7 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
         private static UnsignedLong fnv(CharSequence chars) {
             final int length = chars.length();
 
-            UnsignedLong hash = FNV64_OFFSET_BASIS;
+            long hash = FNV64_OFFSET_BASIS.longValue();
 
             for (int i = 0; i < length; i++) {
                 char c = chars.charAt(i);
@@ -251,13 +251,13 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
                 hash = update(hash, b1);
                 hash = update(hash, b2);
             }
-            return hash;
+            return UnsignedLong.fromLongBits(hash);
         }
 
-        private static UnsignedLong update(UnsignedLong hash, final byte octet) {
+        private static long update(long hash, final byte octet) {
             // it's ok to use the signed long value here, its a bitwise operation anyways, and its
             // on the lower byte of the long value
-            final long longValue = hash.longValue();
+            final long longValue = hash;
             final long bits = longValue ^ octet;
 
             // System.err.println("hash : " + Long.toBinaryString(longValue));
@@ -265,10 +265,15 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
             // System.err.println("octet: " + Integer.toBinaryString(octet));
 
             // convert back to unsigned long
-            hash = UnsignedLong.fromLongBits(bits);
+            // hash = UnsignedLong.fromLongBits(bits);
             // multiply by prime
-            hash = hash.times(FNV64_PRIME);
-            return hash;
+            // /hash = hash.times(FNV64_PRIME);
+
+            // this does the same than the above commented out block without an extra object
+            // allocation per call
+            return bits * FNV64_PRIME.longValue();
+
+            // return hash;
         }
 
         /**

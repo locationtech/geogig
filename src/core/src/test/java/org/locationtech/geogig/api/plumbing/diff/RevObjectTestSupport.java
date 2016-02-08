@@ -113,11 +113,15 @@ public class RevObjectTestSupport {
         return featureNode(namePrefix, index, false);
     }
 
+    private static Random RND = new Random();
+
     public static Node featureNode(String namePrefix, int index, boolean randomIds) {
         String name = namePrefix + String.valueOf(index);
         ObjectId oid;
         if (randomIds) {
-            oid = ObjectId.forString(name + index + String.valueOf(new Random(index).nextInt()));
+            byte[] raw = new byte[ObjectId.NUM_BYTES];
+            RND.nextBytes(raw);
+            oid = ObjectId.createNoClone(raw);
         } else {// predictable id
             oid = ObjectId.forString(name);
         }

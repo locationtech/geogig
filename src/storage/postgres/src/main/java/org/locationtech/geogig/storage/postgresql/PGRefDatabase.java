@@ -23,9 +23,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.sql.DataSource;
 
@@ -35,10 +39,12 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 
 public class PGRefDatabase implements RefDatabase {
@@ -52,6 +58,8 @@ public class PGRefDatabase implements RefDatabase {
     private DataSource dataSource;
 
     private final String refsTableName;
+
+    private static HashMap<String, Lock> locks = new HashMap<String, Lock>();
 
     @Inject
     public PGRefDatabase(ConfigDatabase configDB, Hints hints) throws URISyntaxException {
@@ -103,14 +111,79 @@ public class PGRefDatabase implements RefDatabase {
 
     @Override
     public void lock() throws TimeoutException {
-        // TODO Auto-generated method stub
+        final String repo = PGRefDatabase.this.config.repositoryId;
+        Lock repoLock;
+        if (locks.containsKey(repo)) {
+            repoLock = locks.get(repo);
+        } else {
+            repoLock = new ReentrantLock();
+            locks.put(repo, repoLock);
+        }
+        try {
+            if (!repoLock.tryLock(30, TimeUnit.SECONDS)) {
+                throw new TimeoutException("The attempt to lock the database timed out.");
+            }
+        } catch (InterruptedException e) {
+            Throwables.propagate(e);
+        }
+        new DbOp<Boolean>() {
+
+            @Override
+            protected Boolean doRun(Connection cx)
+                    throws IOException, SQLException, TimeoutException {
+                final String repoTable = PGRefDatabase.this.config.getTables().repositories();
+                final String sql = format(
+                        "SELECT pg_advisory_lock((SELECT lock_id FROM %s WHERE repository=?));",
+                        repoTable);
+                try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repo))) {
+                    st.setString(1, repo);
+                    st.setQueryTimeout(30);
+                    try (ResultSet rs = st.executeQuery()) {
+                        if (rs.next()) {
+                            return true;
+                        }
+                        return false;
+                    } catch (PSQLException e) {
+                        if (e.getMessage().contains("canceling")) {
+                            throw new TimeoutException(
+                                    "The attempt to lock the database timed out.");
+                        }
+                        Throwables.propagate(e);
+                    }
+                }
+                return true;
+            }
+
+        }.run(dataSource);
 
     }
 
     @Override
     public void unlock() {
-        // TODO Auto-generated method stub
+        final String repo = PGRefDatabase.this.config.repositoryId;
+        if (locks.containsKey(repo)) {
+            locks.get(repo).unlock();
+        }
+        new DbOp<Boolean>() {
 
+            @Override
+            protected Boolean doRun(Connection cx) throws IOException, SQLException {
+                final String repoTable = PGRefDatabase.this.config.getTables().repositories();
+                final String sql = format(
+                        "SELECT pg_advisory_unlock((SELECT lock_id FROM %s WHERE repository=?));",
+                        repoTable);
+                try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repo))) {
+                    st.setString(1, repo);
+                    try (ResultSet rs = st.executeQuery()) {
+                        if (rs.next()) {
+                            return rs.getString(1).equals("t");
+                        }
+                        return false;
+                    }
+                }
+            }
+
+        }.run(dataSource);
     }
 
     @Override

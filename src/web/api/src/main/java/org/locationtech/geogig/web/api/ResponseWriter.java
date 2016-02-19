@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Boundless and others.
+/* Copyright (c) 2013-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -616,6 +616,12 @@ public class ResponseWriter {
         }
         out.writeEndElement();
 
+    }
+
+    public void writeBranchCreateResponse(Ref createdBranch) throws XMLStreamException {
+        out.writeStartElement("BranchCreated");
+        writeElement("name", createdBranch.localName());
+        out.writeEndElement(); // End BranchCreated
     }
 
     /**

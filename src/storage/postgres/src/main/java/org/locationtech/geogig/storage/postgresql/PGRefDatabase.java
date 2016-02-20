@@ -23,9 +23,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
@@ -59,7 +59,7 @@ public class PGRefDatabase implements RefDatabase {
 
     private final String refsTableName;
 
-    private static HashMap<String, Lock> locks = new HashMap<String, Lock>();
+    private static ConcurrentHashMap<String, Lock> Locks = new ConcurrentHashMap<String, Lock>();
 
     @Inject
     public PGRefDatabase(ConfigDatabase configDB, Hints hints) throws URISyntaxException {
@@ -112,15 +112,16 @@ public class PGRefDatabase implements RefDatabase {
     @Override
     public void lock() throws TimeoutException {
         final String repo = PGRefDatabase.this.config.repositoryId;
-        Lock repoLock;
-        if (locks.containsKey(repo)) {
-            repoLock = locks.get(repo);
-        } else {
-            repoLock = new ReentrantLock();
-            locks.put(repo, repoLock);
+        Lock lock = Locks.get(repo);
+        if (lock == null) {
+            lock = new ReentrantLock();
+            Lock existing = Locks.putIfAbsent(repo, lock);
+            if (existing != null) {
+                lock = existing;
+            }
         }
         try {
-            if (!repoLock.tryLock(30, TimeUnit.SECONDS)) {
+            if (!lock.tryLock(30, TimeUnit.SECONDS)) {
                 throw new TimeoutException("The attempt to lock the database timed out.");
             }
         } catch (InterruptedException e) {
@@ -161,8 +162,8 @@ public class PGRefDatabase implements RefDatabase {
     @Override
     public void unlock() {
         final String repo = PGRefDatabase.this.config.repositoryId;
-        if (locks.containsKey(repo)) {
-            locks.get(repo).unlock();
+        if (Locks.containsKey(repo)) {
+            Locks.get(repo).unlock();
         }
         new DbOp<Boolean>() {
 

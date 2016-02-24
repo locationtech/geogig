@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (Prominent Edge) - initial implementation
  */
-package org.locationtech.geogig.rest.postgis;
+package org.locationtech.geogig.rest.geotools;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;

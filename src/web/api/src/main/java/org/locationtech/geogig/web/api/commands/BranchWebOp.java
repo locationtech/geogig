@@ -60,7 +60,7 @@ public class BranchWebOp extends AbstractWebAPICommand {
     * A branch ref or commit id where the branch to create starts at. If not set
     * defaults to the current {@link Ref#HEAD HEAD}
     */
-    private String source;
+    String source;
     /**
      * Mutator for the list option
      * 

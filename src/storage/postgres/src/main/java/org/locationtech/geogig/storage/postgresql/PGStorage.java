@@ -209,15 +209,18 @@ public class PGStorage {
                             return null;
                         }
                     }
-                    cx.setAutoCommit(false);
                     try {
                         // tell postgres to send bytea fields in a more compact format than hex
                         // encoding
+                        cx.setAutoCommit(true);
+                        PGStorage.run(cx, "SELECT pg_advisory_lock(-1)");
                         String sql = String.format(
                                 "ALTER DATABASE \"%s\" SET bytea_output = 'escape'",
                                 config.getDatabaseName());
                         PGStorage.run(cx, sql);
+                        PGStorage.run(cx, "SELECT pg_advisory_unlock(-1)");
 
+                        cx.setAutoCommit(false);
                         PGStorage.run(cx, "SET constraint_exclusion=ON");
 
                         createConfigTable(cx, tables);

@@ -57,6 +57,11 @@ public class BranchWebOp extends AbstractWebAPICommand {
     private boolean orphan;
 
     /**
+    * A branch ref or commit id where the branch to create starts at. If not set
+    * defaults to the current {@link Ref#HEAD HEAD}
+    */
+    private String source;
+    /**
      * Mutator for the list option
      * 
      * @param list - true if you want to list any branches
@@ -114,6 +119,16 @@ public class BranchWebOp extends AbstractWebAPICommand {
     }
 
     /**
+     * Mutator for source.
+     *
+     * @param source - A branch ref or commit id where the branch to create starts at. If not set
+     * defaults to the current {@link Ref#HEAD HEAD}.
+     */
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    /**
      * Runs the command and builds the appropriate response
      * 
      * @param context - the context to use for this command
@@ -142,7 +157,8 @@ public class BranchWebOp extends AbstractWebAPICommand {
             // branchName provided, must be a create branch request
             final Context geogig = this.getCommandLocator(context);
             Ref createdBranch = geogig.command(BranchCreateOp.class).setName(branchName)
-                    .setAutoCheckout(autoCheckout).setForce(force).setOrphan(orphan).call();
+                    .setAutoCheckout(autoCheckout).setForce(force).setOrphan(orphan)
+                    .setSource(source).call();
             context.setResponseContent(new CommandResponse() {
                 @Override
                 public void write(ResponseWriter out) throws Exception {

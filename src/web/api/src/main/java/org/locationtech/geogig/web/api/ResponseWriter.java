@@ -621,6 +621,7 @@ public class ResponseWriter {
     public void writeBranchCreateResponse(Ref createdBranch) throws XMLStreamException {
         out.writeStartElement("BranchCreated");
         writeElement("name", createdBranch.localName());
+        writeElement("source", createdBranch.getObjectId().toString());
         out.writeEndElement(); // End BranchCreated
     }
 

@@ -15,6 +15,7 @@ import static org.locationtech.geogig.storage.postgresql.PGStorageModule.LOG;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
@@ -133,7 +134,7 @@ abstract class DbOp<T> {
      * @return The op result, or <code>null</code> for opts that don't return a value.
      * 
      */
-    protected abstract T doRun(Connection cx) throws IOException, SQLException;
+    protected abstract T doRun(Connection cx) throws IOException, SQLException, TimeoutException;
 
     /**
      * Subclass hook to determine if the operation runs within a transaction.

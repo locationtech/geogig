@@ -252,7 +252,8 @@ public class PGStorage {
 
     private static void createRepositoriesTable(Connection cx, TableNames tables)
             throws SQLException {
-        String sql = format("CREATE TABLE %s (repository TEXT PRIMARY KEY, created TIMESTAMP);"
+        String sql = format(
+                "CREATE TABLE %s (repository TEXT PRIMARY KEY, created TIMESTAMP, lock_id SERIAL);"
                 + "INSERT INTO %s (repository, created) VALUES ( '" + PGConfigDatabase.GLOBAL_KEY
                 + "', NOW())", tables.repositories(), tables.repositories());
         run(cx, sql);

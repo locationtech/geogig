@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
+import static org.locationtech.geogig.storage.postgresql.PGStorage.newConnection;
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
 
@@ -39,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 
 public class PGRefDatabase implements RefDatabase {
@@ -52,6 +54,8 @@ public class PGRefDatabase implements RefDatabase {
     private DataSource dataSource;
 
     private final String refsTableName;
+
+    private static ThreadLocal<Connection> LockConnection = new ThreadLocal<>();
 
     @Inject
     public PGRefDatabase(ConfigDatabase configDB, Hints hints) throws URISyntaxException {
@@ -103,14 +107,58 @@ public class PGRefDatabase implements RefDatabase {
 
     @Override
     public void lock() throws TimeoutException {
-        // TODO Auto-generated method stub
-
+        final String repo = PGRefDatabase.this.config.repositoryId;
+        Connection c = LockConnection.get();
+        if (c == null) {
+            c = newConnection(dataSource);
+            LockConnection.set(c);
+        }
+        final String repoTable = PGRefDatabase.this.config.getTables().repositories();
+        final String sql = format(
+                "SELECT pg_advisory_lock((SELECT lock_id FROM %s WHERE repository=?));", repoTable);
+        try (PreparedStatement st = c.prepareStatement(log(sql, LOG, repo))) {
+            st.setString(1, repo);
+            st.setQueryTimeout(30);
+            st.executeQuery();
+        } catch (SQLException e) {
+            LockConnection.remove();
+            try {
+                c.close();
+            } catch (SQLException ex) {
+                LOG.debug("error closing object: " + c, ex);
+            }
+            // executeQuery should throw an SQLTimeoutException when the query times out, but it is
+            // actually throwing an SQLException with a message that the query was cancelled.
+            if (e.getMessage().contains("canceling")) {
+                throw new TimeoutException("The attempt to lock the database timed out.");
+            }
+            Throwables.propagate(e);
+        }
     }
 
     @Override
     public void unlock() {
-        // TODO Auto-generated method stub
-
+        final String repo = PGRefDatabase.this.config.repositoryId;
+        Connection c = LockConnection.get();
+        if (c != null) {
+            final String repoTable = PGRefDatabase.this.config.getTables().repositories();
+            final String sql = format(
+                    "SELECT pg_advisory_unlock((SELECT lock_id FROM %s WHERE repository=?));",
+                    repoTable);
+            try (PreparedStatement st = c.prepareStatement(log(sql, LOG, repo))) {
+                st.setString(1, repo);
+                st.executeQuery();
+            } catch (SQLException e) {
+                Throwables.propagate(e);
+            } finally {
+                LockConnection.remove();
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                    LOG.debug("error closing object: " + c, e);
+                }
+            }
+        }
     }
 
     @Override

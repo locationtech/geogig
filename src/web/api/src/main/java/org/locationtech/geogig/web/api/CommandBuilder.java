@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Boundless and others.
+/* Copyright (c) 2013-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -269,6 +269,11 @@ public class CommandBuilder {
         BranchWebOp command = new BranchWebOp();
         command.setList(Boolean.valueOf(options.getFirstValue("list", "false")));
         command.setRemotes(Boolean.valueOf(options.getFirstValue("remotes", "false")));
+        command.setBranchName(options.getFirstValue("branchName", null));
+        // TODO: enable these options if necessary
+        //command.setAutoCheckout(Boolean.valueOf(options.getFirstValue("autoCheckout", "false")));
+        //command.setCreateForce(Boolean.valueOf(options.getFirstValue("force", "false")));
+        //command.setOrphan(Boolean.valueOf(options.getFirstValue("orphan", "false")));
         return command;
     }
 

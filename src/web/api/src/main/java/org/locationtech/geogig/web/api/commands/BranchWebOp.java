@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Boundless and others.
+/* Copyright (c) 2013-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.Ref;
+import org.locationtech.geogig.api.porcelain.BranchCreateOp;
 import org.locationtech.geogig.api.porcelain.BranchListOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -35,6 +36,27 @@ public class BranchWebOp extends AbstractWebAPICommand {
     private boolean remotes;
 
     /**
+     * Branch name to create.
+     */
+    private String branchName;
+
+    /**
+     * Force create. Will overwrite an existing branch, if it already exists.
+     */
+    private boolean force;
+
+    /**
+     * Automatically checkout created branch after creation.
+     */
+    private boolean autoCheckout;
+
+    /**
+     * Orphan history. Setting this will ignore the history of the branch from which a new branch is
+     * created.
+     */
+    private boolean orphan;
+
+    /**
      * Mutator for the list option
      * 
      * @param list - true if you want to list any branches
@@ -50,6 +72,45 @@ public class BranchWebOp extends AbstractWebAPICommand {
      */
     public void setRemotes(boolean remotes) {
         this.remotes = remotes;
+    }
+
+    /**
+     * Mutator for the Branch Name.
+     *
+     * @param branchName The name of the Branch to create.
+     */
+    public void setBranchName(String branchName) {
+        this.branchName = branchName;
+    }
+
+    /**
+     * Mutator for the Force option.
+     *
+     * @param createForce - true if branch creation should overwrite an existing branch with the
+     * same Branch Name.
+     */
+    public void setCreateForce(boolean createForce) {
+        this.force = createForce;
+    }
+
+    /**
+     * Mutator for AutoCheckout.
+     *
+     * @param autoCheckout - true if the working branch should switch/checkout the newly created
+     * branch.
+     */
+    public void setAutoCheckout(boolean autoCheckout) {
+        this.autoCheckout = autoCheckout;
+    }
+
+    /**
+     * Mutator for Orphan.
+     *
+     * @param orphan - true is the newly created branch should NOT inherit the history of the branch
+     * it was created from.
+     */
+    public void setOrphan(boolean orphan) {
+        this.orphan = orphan;
     }
 
     /**
@@ -74,6 +135,19 @@ public class BranchWebOp extends AbstractWebAPICommand {
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
                     out.writeBranchListResponse(localBranches, remoteBranches);
+                    out.finish();
+                }
+            });
+        } else if (branchName != null) {
+            // branchName provided, must be a create branch request
+            final Context geogig = this.getCommandLocator(context);
+            Ref createdBranch = geogig.command(BranchCreateOp.class).setName(branchName)
+                    .setAutoCheckout(autoCheckout).setForce(force).setOrphan(orphan).call();
+            context.setResponseContent(new CommandResponse() {
+                @Override
+                public void write(ResponseWriter out) throws Exception {
+                    out.start();
+                    out.writeBranchCreateResponse(createdBranch);
                     out.finish();
                 }
             });

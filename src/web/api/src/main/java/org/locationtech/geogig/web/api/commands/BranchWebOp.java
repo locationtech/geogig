@@ -31,30 +31,30 @@ import com.google.common.collect.Lists;
 
 public class BranchWebOp extends AbstractWebAPICommand {
 
-    private boolean list;
+    boolean list;
 
-    private boolean remotes;
+    boolean remotes;
 
     /**
      * Branch name to create.
      */
-    private String branchName;
+    String branchName;
 
     /**
      * Force create. Will overwrite an existing branch, if it already exists.
      */
-    private boolean force;
+    boolean force;
 
     /**
      * Automatically checkout created branch after creation.
      */
-    private boolean autoCheckout;
+    boolean autoCheckout;
 
     /**
      * Orphan history. Setting this will ignore the history of the branch from which a new branch is
      * created.
      */
-    private boolean orphan;
+    boolean orphan;
 
     /**
      * Mutator for the list option

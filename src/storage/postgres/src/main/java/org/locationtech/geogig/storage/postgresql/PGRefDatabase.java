@@ -39,6 +39,7 @@ import org.locationtech.geogig.storage.RefDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.inject.Inject;
@@ -107,6 +108,11 @@ public class PGRefDatabase implements RefDatabase {
 
     @Override
     public void lock() throws TimeoutException {
+        lockWithTimeout(30);
+    }
+
+    @VisibleForTesting
+    void lockWithTimeout(int timeout) throws TimeoutException {
         final String repo = PGRefDatabase.this.config.repositoryId;
         Connection c = LockConnection.get();
         if (c == null) {
@@ -118,7 +124,7 @@ public class PGRefDatabase implements RefDatabase {
                 "SELECT pg_advisory_lock((SELECT lock_id FROM %s WHERE repository=?));", repoTable);
         try (PreparedStatement st = c.prepareStatement(log(sql, LOG, repo))) {
             st.setString(1, repo);
-            st.setQueryTimeout(30);
+            st.setQueryTimeout(timeout);
             st.executeQuery();
         } catch (SQLException e) {
             LockConnection.remove();

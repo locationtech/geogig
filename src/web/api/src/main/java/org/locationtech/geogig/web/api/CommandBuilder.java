@@ -270,6 +270,7 @@ public class CommandBuilder {
         command.setList(Boolean.valueOf(options.getFirstValue("list", "false")));
         command.setRemotes(Boolean.valueOf(options.getFirstValue("remotes", "false")));
         command.setBranchName(options.getFirstValue("branchName", null));
+        command.setSource(options.getFirstValue("source", null));
         // TODO: enable these options if necessary
         //command.setAutoCheckout(Boolean.valueOf(options.getFirstValue("autoCheckout", "false")));
         //command.setCreateForce(Boolean.valueOf(options.getFirstValue("force", "false")));

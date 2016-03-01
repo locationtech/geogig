@@ -60,7 +60,8 @@ public class BranchWebOpTest {
     @Test
     public void testBuildParameters() {
         ParameterSet options = TestParams.of("list", "true", "remotes", "true", "branchName",
-                "testbranch", "force", "true", "autoCheckout", "true", "orphan", "true");
+                "testbranch", "force", "true", "autoCheckout", "true", "orphan", "true",
+                "source", "COMMIT_X");
 
         WebAPICommand cmd = CommandBuilder.build("branch", options);
 
@@ -68,6 +69,7 @@ public class BranchWebOpTest {
         assertTrue(op.list);
         assertTrue(op.remotes);
         assertEquals("testbranch", op.branchName);
+        assertEquals("COMMIT_X", op.source);
 
         // NOTE these options are disabled (not being set), amend the test case if enabled
         assertFalse(op.autoCheckout);

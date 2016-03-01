@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -28,6 +28,8 @@ public class Variants {
 
     public static final Variant CSV = new Variant(CSV_MEDIA_TYPE);
 
+    public static final Variant GEOPKG = new Variant(MediaType.APPLICATION_OCTET_STREAM);
+
     public static Optional<Variant> getVariantByExtension(Request request, List<Variant> supported) {
         String extension = RESTUtils.getStringAttribute(request, "extension");
         Variant v = null;
@@ -37,6 +39,8 @@ public class Variants {
             v = JSON;
         } else if ("csv".equals(extension) && supported.contains(CSV)) {
             v = CSV;
+        } else if ("geopkg".equals(extension) && supported.contains(GEOPKG)) {
+            v = GEOPKG;
         }
         return Optional.fromNullable(v);
     }

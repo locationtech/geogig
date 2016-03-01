@@ -22,6 +22,7 @@ import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.rest.TaskStatusResource;
+import org.locationtech.geogig.rest.geopkg.GeoPkgRouter;
 import org.locationtech.geogig.rest.osm.OSMRouter;
 import org.locationtech.geogig.rest.postgis.PGRouter;
 import org.locationtech.geogig.rest.repository.CommandResource;
@@ -104,6 +105,7 @@ public class Main extends Application {
         Router repo = new RepositoryRouter();
         Router osm = new OSMRouter();
         Router postgis = new PGRouter();
+        Router geopackage = new GeoPkgRouter();
 
         router.attach("/tasks", TaskStatusResource.class);
         router.attach("/tasks/{taskId}.{extension}", TaskStatusResource.class);
@@ -111,6 +113,7 @@ public class Main extends Application {
 
         router.attach("/osm", osm);
         router.attach("/postgis", postgis);
+        router.attach("/geopkg", geopackage);
         router.attach("/repo", repo);
         router.attach("/{command}.{extension}", CommandResource.class);
         router.attach("/{command}", CommandResource.class);
@@ -156,8 +159,10 @@ public class Main extends Application {
         application.setContext(context);
         Component comp = new Component();
         comp.getDefaultHost().attach(application);
+        System.err.printf("Starting server at port %d for repo %s\n", 8182, repo);
         comp.getServers().add(Protocol.HTTP, 8182);
         comp.start();
+        System.err.println("started.");
     }
 
     static void setup() {

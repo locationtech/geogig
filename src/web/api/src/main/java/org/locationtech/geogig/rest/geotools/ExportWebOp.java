@@ -17,13 +17,14 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
-import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.TransactionalResource;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.opengis.filter.Filter;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.resource.FileRepresentation;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Variant;
 
@@ -34,10 +35,15 @@ public abstract class ExportWebOp extends TransactionalResource {
 
     // Form parameters
     public static final String PATH_PARAM = "path";
+
     public static final String TABLE_PARAM = "table";
+
     public static final String OVERWRITE_PARAM = "overwrite";
+
     public static final String ALTER_PARAM = "alter";
+
     public static final String DEFAULT_TYPE_PARAM = "defaultType";
+
     public static final String FEATURE_TYPE_PARAM = "featureType";
 
     @Override
@@ -57,20 +63,20 @@ public abstract class ExportWebOp extends TransactionalResource {
 
         final String srcPath = options.getFirstValue(PATH_PARAM, null);
         if (srcPath == null) {
-            throw new RuntimeException("\"path\" query parameter must be specified");
+            throw new CommandSpecException("\"path\" query parameter must be specified");
         }
-        final String targetTable= options.getFirstValue(TABLE_PARAM, null);
+        final String targetTable = options.getFirstValue(TABLE_PARAM, null);
         if (targetTable == null) {
-            throw new RuntimeException("\"table\" query parameter must be specified");
+            throw new CommandSpecException("\"table\" query parameter must be specified");
         }
         final boolean overwrite = Boolean.valueOf(options.getFirstValue(OVERWRITE_PARAM, "false"));
         final boolean alter = Boolean.valueOf(options.getFirstValue(ALTER_PARAM, "false"));
-        final boolean defaultType = Boolean
-            .valueOf(options.getFirstValue(DEFAULT_TYPE_PARAM, "false"));
+        final boolean defaultType = Boolean.valueOf(options.getFirstValue(DEFAULT_TYPE_PARAM,
+                "false"));
 
         FeatureStoreWrapper featureStoreWrapper;
         try {
-            featureStoreWrapper = getFeatureStoreWrapper(srcPath, targetTable,options);
+            featureStoreWrapper = getFeatureStoreWrapper(srcPath, targetTable, options);
         } catch (IOException ioe) {
             throw new RuntimeException("Failed to obtain SimpleFeatureStore", ioe);
         }
@@ -94,14 +100,19 @@ public abstract class ExportWebOp extends TransactionalResource {
             command.exportDefaultFeatureType();
         }
         command.setFeatureStore(featureStore).setAlter(alter).setPath(srcPath)
-            .setFilterFeatureTypeId(featureTypeFilterId);
+                .setFilterFeatureTypeId(featureTypeFilterId);
 
-        AsyncContext.AsyncCommand<SimpleFeatureStore> asyncCommand;
-
-        asyncCommand = AsyncContext.get().run(command, getCommandDescription(options));
+        command.call();
 
         MediaType mediaType = variant.getMediaType();
-        return new SimpleFeatureStoreRepresentation(mediaType, asyncCommand, binaryFile);
+        return new FileRepresentation(binaryFile, mediaType, 10);
+        //
+        // AsyncContext.AsyncCommand<SimpleFeatureStore> asyncCommand;
+        //
+        // asyncCommand = AsyncContext.get().run(command, getCommandDescription(options));
+        //
+        // MediaType mediaType = variant.getMediaType();
+        // return new SimpleFeatureStoreRepresentation(mediaType, asyncCommand, binaryFile);
 
     }
 
@@ -112,18 +123,20 @@ public abstract class ExportWebOp extends TransactionalResource {
      * @param targetTable Table name of the destination feature table.
      * @param options Form option parameters.
      * @return A wrapper object containing the target SimpleFeatureStore, target SimpleFeatureType
-     * and the ObjectID of the feature filter.
+     *         and the ObjectID of the feature filter.
      * @throws java.io.IOException If a suitable SimpleFeatureStore can't be obtained.
      */
     public abstract FeatureStoreWrapper getFeatureStoreWrapper(String srcPath, String targetTable,
-        Form options) throws IOException;
+            Form options) throws IOException;
 
     public abstract String getCommandDescription(final Form options);
 
     public static class FeatureStoreWrapper {
 
         private SimpleFeatureStore featureStore;
+
         private ObjectId featureTypeFilterId;
+
         private File binary;
 
         public FeatureStoreWrapper() {

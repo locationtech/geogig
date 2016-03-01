@@ -10,6 +10,7 @@
 package org.locationtech.geogig.rest.geotools;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutionException;
@@ -25,20 +26,21 @@ import org.restlet.data.MediaType;
 import com.google.common.io.ByteStreams;
 
 /**
- * Representation for asynchronous commands with SimpleFeatureStore results AND a binary file
- * that contains the result that can be streamed back to the consumer.
+ * Representation for asynchronous commands with SimpleFeatureStore results AND a binary file that
+ * contains the result that can be streamed back to the consumer.
  */
-public class SimpleFeatureStoreRepresentation extends AsyncCommandBinaryRepresentation<SimpleFeatureStore> {
+public class SimpleFeatureStoreRepresentation extends
+        AsyncCommandBinaryRepresentation<SimpleFeatureStore> {
 
     protected final File binary;
 
     public SimpleFeatureStoreRepresentation(MediaType mediaType,
-        AsyncCommand<SimpleFeatureStore> cmd, File binary) {
+            AsyncCommand<SimpleFeatureStore> cmd, File binary) {
         super(binary, mediaType, cmd);
         // keep local reference to the file
         this.binary = binary;
     }
-    
+
     @Override
     public void write(OutputStream outputStream) {
         try {
@@ -53,7 +55,9 @@ public class SimpleFeatureStoreRepresentation extends AsyncCommandBinaryRepresen
             // Until then, this solution is somewhat fragile.
             command.get();
             // command is finished, send the binary file contents out through the output stream
-            ByteStreams.copy(getStream(), outputStream);
+            try (FileInputStream stream = getStream()) {
+                ByteStreams.copy(stream, outputStream);
+            }
             // flush the stream
             outputStream.flush();
         } catch (IOException | InterruptedException | ExecutionException ex) {
@@ -72,8 +76,8 @@ public class SimpleFeatureStoreRepresentation extends AsyncCommandBinaryRepresen
         }
 
         @Override
-        public AsyncCommandBinaryRepresentation<SimpleFeatureStore> newRepresentation(AsyncCommand<SimpleFeatureStore> cmd,
-                MediaType mediaType, File binary) {
+        public AsyncCommandBinaryRepresentation<SimpleFeatureStore> newRepresentation(
+                AsyncCommand<SimpleFeatureStore> cmd, MediaType mediaType, File binary) {
             return new SimpleFeatureStoreRepresentation(mediaType, cmd, binary);
         }
 

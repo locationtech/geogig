@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.rest.geopkg;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.cli.AbstractCommand.checkParameter;
 
 import java.io.File;
@@ -16,7 +17,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +60,7 @@ public class GeoPkgExportWebOp extends ExportWebOp {
 
     @Override
     public FeatureStoreWrapper getFeatureStoreWrapper(String srcPath, String targetTable,
-        Form options) throws IOException {
+            Form options) throws IOException {
         FeatureStoreWrapper wrapper = new FeatureStoreWrapper();
         // get a datastore
         final GeoPkgDataStoreFactory factory = new GeoPkgDataStoreFactory();
@@ -70,9 +70,8 @@ public class GeoPkgExportWebOp extends ExportWebOp {
         // generate a temp file for the output database
         final Path databasePath = Files.createTempFile(UUID.randomUUID().toString(), ".gpkg");
         final File databaseFile = databasePath.toFile();
-        params.put(GeoPkgDataStoreFactory.DATABASE.key,databaseFile.getAbsolutePath());
-        params.put(GeoPkgDataStoreFactory.USER.key,
-            options.getFirstValue("user", "user"));
+        params.put(GeoPkgDataStoreFactory.DATABASE.key, databaseFile.getAbsolutePath());
+        params.put(GeoPkgDataStoreFactory.USER.key, options.getFirstValue("user", "user"));
         JDBCDataStore dataStore;
         try {
             dataStore = factory.createDataStore(params);
@@ -89,22 +88,21 @@ public class GeoPkgExportWebOp extends ExportWebOp {
         wrapper.setFeatureTypeFilterId(featureTypeId);
         // set the SimpleFeatureStore on the wrapper
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(targetTable);
-        if (!SimpleFeatureStore.class.isAssignableFrom(featureSource.getClass())) {
-            // not a SimpleFeatureStore
-            throw new RuntimeException("Can't write to selected table. Not a SimpleFeatureStore.");
-        }
-        SimpleFeatureStore featureStore = SimpleFeatureStore.class.cast(featureSource);
-        wrapper.setFeatureStore(featureStore);
+        checkState(featureSource instanceof SimpleFeatureStore,
+                "Can't write to selected table. Not a SimpleFeatureStore.");
+
+        wrapper.setFeatureStore((SimpleFeatureStore) featureSource);
 
         // handle GeoPackage interchange format
-        if (Boolean.valueOf(options.getFirstValue(INTERCHANGE_PARAM, Boolean.FALSE.toString()))) {
+        final String interchangeArg = options.getFirstValue(INTERCHANGE_PARAM);
+        if (Boolean.parseBoolean(interchangeArg)) {
             // need the geogig context
             final Request request = getRequest();
             final Context context = super.getContext(request);
             GeopkgAuditExport auditExport = context.command(GeopkgAuditExport.class);
             // get the DB file
             auditExport.setDatabase(databaseFile).setSourceTreeish(srcPath)
-                .setTargetTableName(targetTable).call();
+                    .setTargetTableName(targetTable).call();
         }
         return wrapper;
     }
@@ -115,7 +113,7 @@ public class GeoPkgExportWebOp extends ExportWebOp {
     }
 
     private ObjectId createFeatureTypeSchema(JDBCDataStore dataStore, String srcPath,
-        String targetTable, Form options) throws IOException {
+            String targetTable, Form options) throws IOException {
 
         ObjectId featureTypeId = null;
         // see if the dataStore already has the target table
@@ -129,16 +127,15 @@ public class GeoPkgExportWebOp extends ExportWebOp {
             SimpleFeatureType outputFeatureType;
             if (sFeatureTypeId != null) {
                 // Check the feature type id string is a correct id
-                Optional<ObjectId> id = context.command(RevParse.class)
-                    .setRefSpec(sFeatureTypeId).call();
+                Optional<ObjectId> id = context.command(RevParse.class).setRefSpec(sFeatureTypeId)
+                        .call();
                 checkParameter(id.isPresent(), "Invalid feature type reference", sFeatureTypeId);
-                RevObject.TYPE type = context.command(ResolveObjectType.class).setObjectId(id.get())
-                    .call();
+                RevObject.TYPE type = context.command(ResolveObjectType.class)
+                        .setObjectId(id.get()).call();
                 checkParameter(type.equals(RevObject.TYPE.FEATURETYPE),
-                    "Provided reference does not resolve to a feature type: ", sFeatureTypeId);
-                outputFeatureType = (SimpleFeatureType) context
-                    .command(RevObjectParse.class).setObjectId(id.get())
-                    .call(RevFeatureType.class).get().type();
+                        "Provided reference does not resolve to a feature type: ", sFeatureTypeId);
+                outputFeatureType = (SimpleFeatureType) context.command(RevObjectParse.class)
+                        .setObjectId(id.get()).call(RevFeatureType.class).get().type();
                 featureTypeId = id.get();
             } else {
                 // no specified featureType, get it from the source
@@ -146,9 +143,9 @@ public class GeoPkgExportWebOp extends ExportWebOp {
                     final Repository repository = context.repository();
                     SimpleFeatureType sft = getFeatureType(srcPath, repository);
                     outputFeatureType = new SimpleFeatureTypeImpl(new NameImpl(targetTable),
-                        sft.getAttributeDescriptors(), sft.getGeometryDescriptor(),
-                        sft.isAbstract(), sft.getRestrictions(), sft.getSuper(),
-                        sft.getDescription());
+                            sft.getAttributeDescriptors(), sft.getGeometryDescriptor(),
+                            sft.isAbstract(), sft.getRestrictions(), sft.getSuper(),
+                            sft.getDescription());
                 } catch (GeoToolsOpException e) {
                     throw new RuntimeException("No features to export.", e);
                 }
@@ -186,26 +183,25 @@ public class GeoPkgExportWebOp extends ExportWebOp {
             rootTreeId = repository.command(ResolveTreeish.class).setTreeish(headTreeish).call();
 
             checkParameter(rootTreeId.isPresent(), "Couldn't resolve '" + refspec
-                + "' to a treeish object");
+                    + "' to a treeish object");
 
         }
 
         final RevTree rootTree = repository.getTree(rootTreeId.get());
         Optional<NodeRef> featureTypeTree = repository.command(FindTreeChild.class)
-            .setChildPath(featureTreePath).setParent(rootTree).call();
+                .setChildPath(featureTreePath).setParent(rootTree).call();
 
         checkParameter(featureTypeTree.isPresent(), "pathspec '" + featureTreePath
-            + "' did not match any valid path");
+                + "' did not match any valid path");
 
         Optional<RevObject> revObject = repository.command(RevObjectParse.class)
-            .setObjectId(featureTypeTree.get().getMetadataId()).call();
+                .setObjectId(featureTypeTree.get().getMetadataId()).call();
         if (revObject.isPresent() && revObject.get() instanceof RevFeatureType) {
             RevFeatureType revFeatureType = (RevFeatureType) revObject.get();
             if (revFeatureType.type() instanceof SimpleFeatureType) {
                 return (SimpleFeatureType) revFeatureType.type();
             } else {
-                throw new RuntimeException(
-                    "Cannot find feature type for the specified path");
+                throw new RuntimeException("Cannot find feature type for the specified path");
             }
         } else {
             throw new RuntimeException("Cannot find feature type for the specified path");

@@ -22,13 +22,16 @@ public class Variants {
     public static final MediaType CSV_MEDIA_TYPE = new MediaType("text/csv",
             "Comma-separated Values");
 
+    public static final MediaType GEOPKG_MEDIA_TYPE = new MediaType(
+            "application/octet-stream;type=geopackage", "GeoPackage database file");
+
     public static final Variant JSON = new Variant(MediaType.APPLICATION_JSON);
 
     public static final Variant XML = new Variant(MediaType.APPLICATION_XML);
 
     public static final Variant CSV = new Variant(CSV_MEDIA_TYPE);
 
-    public static final Variant GEOPKG = new Variant(MediaType.APPLICATION_OCTET_STREAM);
+    public static final Variant GEOPKG = new Variant(GEOPKG_MEDIA_TYPE);
 
     public static Optional<Variant> getVariantByExtension(Request request, List<Variant> supported) {
         String extension = RESTUtils.getStringAttribute(request, "extension");

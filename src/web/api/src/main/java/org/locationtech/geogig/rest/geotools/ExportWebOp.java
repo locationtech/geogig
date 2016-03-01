@@ -11,15 +11,15 @@ package org.locationtech.geogig.rest.geotools;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.channels.WritableByteChannel;
 import java.util.List;
 
-import org.geotools.data.simple.SimpleFeatureStore;
+import org.eclipse.jdt.annotation.Nullable;
+import org.geotools.data.DataStore;
 import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.geotools.plumbing.ExportOp;
+import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
 import org.locationtech.geogig.rest.TransactionalResource;
-import org.locationtech.geogig.web.api.CommandSpecException;
-import org.opengis.filter.Filter;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
@@ -28,12 +28,17 @@ import org.restlet.resource.FileRepresentation;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Variant;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Supplier;
+
 /**
  * Base class for Geotools exports.
  */
 public abstract class ExportWebOp extends TransactionalResource {
 
     // Form parameters
+    public static final String ROOT_PARAM = "root";
+
     public static final String PATH_PARAM = "path";
 
     public static final String TABLE_PARAM = "table";
@@ -61,51 +66,65 @@ public abstract class ExportWebOp extends TransactionalResource {
 
         Form options = getRequest().getResourceRef().getQueryAsForm();
 
-        final String srcPath = options.getFirstValue(PATH_PARAM, null);
-        if (srcPath == null) {
-            throw new CommandSpecException("\"path\" query parameter must be specified");
-        }
-        final String targetTable = options.getFirstValue(TABLE_PARAM, null);
-        if (targetTable == null) {
-            throw new CommandSpecException("\"table\" query parameter must be specified");
-        }
-        final boolean overwrite = Boolean.valueOf(options.getFirstValue(OVERWRITE_PARAM, "false"));
-        final boolean alter = Boolean.valueOf(options.getFirstValue(ALTER_PARAM, "false"));
-        final boolean defaultType = Boolean.valueOf(options.getFirstValue(DEFAULT_TYPE_PARAM,
-                "false"));
+        @Nullable
+        final String rootTreeIsh = options.getFirstValue(ROOT_PARAM);
 
-        FeatureStoreWrapper featureStoreWrapper;
+        @Nullable
+        final String srcPaths = options.getValues(PATH_PARAM);
+        List<String> sourceTreeNames = null;
+        if (srcPaths != null) {
+            sourceTreeNames = Splitter.on(',').omitEmptyStrings().splitToList(srcPaths);
+        }
+        // final String targetTable = options.getFirstValue(TABLE_PARAM, null);
+        // if (targetTable == null) {
+        // throw new CommandSpecException("\"table\" query parameter must be specified");
+        // }
+        // final boolean overwrite = Boolean.valueOf(options.getFirstValue(OVERWRITE_PARAM,
+        // "false"));
+        // final boolean alter = Boolean.valueOf(options.getFirstValue(ALTER_PARAM, "false"));
+        // final boolean defaultType = Boolean.valueOf(options.getFirstValue(DEFAULT_TYPE_PARAM,
+        // "false"));
+
+        DataStoreWrapper dataStoreWrapper;
         try {
-            featureStoreWrapper = getFeatureStoreWrapper(srcPath, targetTable, options);
+            dataStoreWrapper = getDataStoreWrapper(options);
         } catch (IOException ioe) {
             throw new RuntimeException("Failed to obtain SimpleFeatureStore", ioe);
         }
 
-        final SimpleFeatureStore featureStore = featureStoreWrapper.getFeatureStore();
-        final ObjectId featureTypeFilterId = featureStoreWrapper.getFeatureTypeFilterId();
-        final File binaryFile = featureStoreWrapper.getBinary();
-
         // if overwrite is true, remove all the features first
-        if (overwrite) {
-            try {
-                featureStore.removeFeatures(Filter.INCLUDE);
-            } catch (IOException ioe) {
-                throw new RuntimeException("Failed to trucnate table", ioe);
-            }
-        }
+        // if (overwrite) {
+        // try {
+        // featureStore.removeFeatures(Filter.INCLUDE);
+        // } catch (IOException ioe) {
+        // throw new RuntimeException("Failed to trucnate table", ioe);
+        // }
+        // }
 
         // setup the Export command
-        ExportOp command = context.command(ExportOp.class);
-        if (defaultType) {
-            command.exportDefaultFeatureType();
-        }
-        command.setFeatureStore(featureStore).setAlter(alter).setPath(srcPath)
-                .setFilterFeatureTypeId(featureTypeFilterId);
+        Supplier<DataStore> targetStore = dataStoreWrapper.getDataStore();
+        DataStoreExportOp command = dataStoreWrapper.createCommand(context, options);
+        command.setTarget(targetStore);
+        command.setSourceTreePaths(sourceTreeNames);
+        command.setSourceCommitish(rootTreeIsh);
 
         command.call();
 
-        MediaType mediaType = variant.getMediaType();
-        return new FileRepresentation(binaryFile, mediaType, 10);
+        final MediaType mediaType = variant.getMediaType();
+        final File binaryFile = dataStoreWrapper.getBinary();
+        return new FileRepresentation(binaryFile, mediaType, 10) {
+            @Override
+            public void write(OutputStream outputStream) throws IOException {
+                super.write(outputStream);
+                binaryFile.delete();
+            }
+
+            @Override
+            public void write(WritableByteChannel writableChannel) throws IOException {
+                super.write(writableChannel);
+                binaryFile.delete();
+            }
+        };
         //
         // AsyncContext.AsyncCommand<SimpleFeatureStore> asyncCommand;
         //
@@ -118,54 +137,41 @@ public abstract class ExportWebOp extends TransactionalResource {
 
     /**
      * Create a SimpleFeatureStore from Form options.
-     *
-     * @param srcPath Path describing which feature to export.
-     * @param targetTable Table name of the destination feature table.
+     * 
      * @param options Form option parameters.
      * @return A wrapper object containing the target SimpleFeatureStore, target SimpleFeatureType
      *         and the ObjectID of the feature filter.
      * @throws java.io.IOException If a suitable SimpleFeatureStore can't be obtained.
      */
-    public abstract FeatureStoreWrapper getFeatureStoreWrapper(String srcPath, String targetTable,
-            Form options) throws IOException;
+    public abstract DataStoreWrapper getDataStoreWrapper(Form options) throws IOException;
 
     public abstract String getCommandDescription(final Form options);
 
-    public static class FeatureStoreWrapper {
+    public static class DataStoreWrapper {
 
-        private SimpleFeatureStore featureStore;
-
-        private ObjectId featureTypeFilterId;
+        private Supplier<DataStore> dataStore;
 
         private File binary;
 
-        public FeatureStoreWrapper() {
-            super();
-        }
-
-        public SimpleFeatureStore getFeatureStore() {
-            return featureStore;
-        }
-
-        public ObjectId getFeatureTypeFilterId() {
-            return featureTypeFilterId;
+        public DataStoreWrapper(Supplier<DataStore> store) {
+            this.dataStore = store;
         }
 
         public File getBinary() {
             return binary;
         }
 
-        public void setFeatureStore(SimpleFeatureStore featureStore) {
-            this.featureStore = featureStore;
-        }
-
-        public void setFeatureTypeFilterId(ObjectId featureTypeFilterId) {
-            this.featureTypeFilterId = featureTypeFilterId;
-        }
-
         public void setBinary(File binary) {
             this.binary = binary;
         }
 
+        public Supplier<DataStore> getDataStore() {
+            return dataStore;
+        }
+
+        public DataStoreExportOp createCommand(final Context context, final Form options) {
+            DataStoreExportOp command = context.command(DataStoreExportOp.class);
+            return command;
+        }
     }
 }

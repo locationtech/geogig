@@ -30,12 +30,9 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
 
     private GeoGigDataStoreFactory factory;
 
-    private File repoDirectory;
-
     @Override
     protected void setUpInternal() throws Exception {
         factory = new GeoGigDataStoreFactory();
-        repoDirectory = super.repositoryDirectory;
     }
 
     @Test
@@ -55,7 +52,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         dataStore = DataStoreFinder.getDataStore(params);
         assertNull(dataStore);
 
-        params = ImmutableMap.of(REPOSITORY.key, repoDirectory);
+        params = ImmutableMap.of(REPOSITORY.key, repositoryDirectory);
         dataStore = DataStoreFinder.getDataStore(params);
         assertNotNull(dataStore);
         assertTrue(dataStore instanceof GeoGigDataStore);
@@ -63,24 +60,19 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
 
     @Test
     public void testCanProcess() {
-        final File workingDir = repoDirectory;
-
         Map<String, Serializable> params = ImmutableMap.of();
         assertFalse(factory.canProcess(params));
         params = ImmutableMap.of(REPOSITORY.key,
-                (Serializable) (workingDir.getName() + "/testCanProcess"));
+                (Serializable) (repositoryDirectory.getName() + "/testCanProcess"));
         assertFalse(factory.canProcess(params));
 
-        params = ImmutableMap.of(REPOSITORY.key, (Serializable) workingDir.getAbsolutePath());
+        params = ImmutableMap.of(REPOSITORY.key, (Serializable) repositoryDirectory.getPath());
         assertTrue(factory.canProcess(params));
 
-        params = ImmutableMap.of(REPOSITORY.key, (Serializable) repoDirectory.getPath());
+        params = ImmutableMap.of(REPOSITORY.key, (Serializable) repositoryDirectory.getAbsolutePath());
         assertTrue(factory.canProcess(params));
 
-        params = ImmutableMap.of(REPOSITORY.key, (Serializable) repoDirectory.getAbsolutePath());
-        assertTrue(factory.canProcess(params));
-
-        params = ImmutableMap.of(REPOSITORY.key, (Serializable) repoDirectory);
+        params = ImmutableMap.of(REPOSITORY.key, (Serializable) repositoryDirectory);
         assertTrue(factory.canProcess(params));
     }
 
@@ -117,7 +109,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
     public void testCreateDataStore() throws IOException {
         Map<String, Serializable> params;
 
-        params = ImmutableMap.of(REPOSITORY.key, (Serializable) repoDirectory.getAbsolutePath());
+        params = ImmutableMap.of(REPOSITORY.key, (Serializable) repositoryDirectory.getAbsolutePath());
 
         GeoGigDataStore store = factory.createDataStore(params);
         assertNotNull(store);

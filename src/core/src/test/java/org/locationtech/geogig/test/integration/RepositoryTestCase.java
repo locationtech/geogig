@@ -163,17 +163,8 @@ public abstract class RepositoryTestCase extends Assert {
         doSetUp();
     }
 
-    /**
-     * In rare occasions a test fail for unknown reasons and it's definitely related to the
-     * temporary folder somehow resolving to the same directory in two different tests, which I
-     * thought was impossible and the whole point of {@link TemporaryFolder}. So although I didn't
-     * get to the root cause of the issue, appending a randon number to the repository directory
-     * name makes the trick for the time being.
-     */
-    private static final Random RANDOM = new Random();
-
     protected final void doSetUp() throws IOException, SchemaException, ParseException, Exception {
-        repositoryDirectory = repositoryTempFolder.newFolder("repo" + RANDOM.nextInt());
+        repositoryDirectory = repositoryTempFolder.newFolder("repo");
 
         injector = createInjector();
 

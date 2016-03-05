@@ -25,6 +25,7 @@ import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
+import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
@@ -47,8 +48,8 @@ public class BranchWebOpTest extends AbstractWebOpTest {
     @Test
     public void testBuildParameters() {
         ParameterSet options = TestParams.of("list", "true", "remotes", "true", "branchName",
-                "testbranch", "force", "true", "autoCheckout", "true", "orphan", "true",
-                "source", "COMMIT_X");
+                "testbranch", "force", "true", "autoCheckout", "true", "orphan", "true", "source",
+                "COMMIT_X");
 
         BranchWebOp op = (BranchWebOp) buildCommand(options);
 

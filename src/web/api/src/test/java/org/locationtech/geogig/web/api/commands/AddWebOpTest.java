@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
+import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestParams;
@@ -34,8 +35,8 @@ public class AddWebOpTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ParameterSet options = TestParams.of("path", "points", "transactionId",
-                UUID.randomUUID().toString());
+        ParameterSet options = TestParams.of("path", "points", "transactionId", UUID.randomUUID()
+                .toString());
 
         AddWebOp op = (AddWebOp) buildCommand(options);
         assertEquals("points", op.path);

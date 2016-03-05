@@ -25,7 +25,7 @@ import org.locationtech.geogig.web.api.ResponseWriter;
 
 public class AddWebOp extends AbstractWebAPICommand {
 
-    private String path;
+    String path;
 
     /**
      * Mutator for the path variable

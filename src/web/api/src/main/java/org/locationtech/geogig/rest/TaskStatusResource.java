@@ -33,7 +33,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 
 /**
- * Resource for {@code /osm/tasks /tasksId[?params]}
+ * Resource for {@code /tasks/<tasksId>[?params]}
  * <p>
  * Params:
  * <ul>

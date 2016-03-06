@@ -98,7 +98,7 @@ public abstract class JettisonRepresentation extends WriterRepresentation {
         element(w, name, String.valueOf(value));
     }
 
-    private String href(String link, MediaType format) {
+    protected String href(String link, MediaType format) {
         String baseURL = this.baseURL;
         link = baseURL + "/" + link;
 

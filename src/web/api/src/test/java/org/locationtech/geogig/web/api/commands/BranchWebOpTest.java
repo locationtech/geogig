@@ -70,12 +70,12 @@ public class BranchWebOpTest extends AbstractWebOpTest {
         BranchWebOp cmd = (BranchWebOp) buildCommand(options);
         ex.expect(IllegalArgumentException.class);
         ex.expectMessage("HEAD has no commits");
-        cmd.run(context.get());
+        cmd.run(testContext.get());
     }
 
     @Test
     public void createBranch() throws Exception {
-        GeoGIG geogig = context.get().getGeoGIG();
+        GeoGIG geogig = testContext.get().getGeoGIG();
         // have a commit to allow creating branch
         geogig.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("gabriel").call();
@@ -86,9 +86,9 @@ public class BranchWebOpTest extends AbstractWebOpTest {
 
         ParameterSet options = TestParams.of("branchName", "newBranch");
         WebAPICommand cmd = buildCommand(options);
-        cmd.run(context.get());
+        cmd.run(testContext.get());
 
-        JSONObject obj = getResponse();
+        JSONObject obj = getJSONResponse().getJSONObject("response");
         assertTrue(obj.getBoolean("success"));
         assertTrue(obj.has("BranchCreated"));
         JSONObject branchResponse = obj.getJSONObject("BranchCreated");

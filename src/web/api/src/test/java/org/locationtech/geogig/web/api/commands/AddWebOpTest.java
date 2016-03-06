@@ -49,6 +49,6 @@ public class AddWebOpTest extends AbstractWebOpTest {
 
         ex.expect(CommandSpecException.class);
         ex.expectMessage("No transaction was specified");
-        cmd.run(context.get());
+        cmd.run(testContext.get());
     }
 }

@@ -13,12 +13,14 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
+import org.geotools.data.Query;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.junit.Test;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeatureTypeImpl;
@@ -78,6 +80,27 @@ public class ExportOpTest extends RepositoryTestCase {
         assertEquals(featureCollection.size(), points.length);
         SimpleFeatureIterator features = featureCollection.features();
         assertTrue(collectionsAreEqual(features, points));
+    }
+
+    @Test
+    public void testExportWithBBOXFilter() throws Exception {
+        Feature[] points = new Feature[] { points1, points2, points3 };
+        for (Feature feature : points) {
+            insert(feature);
+        }
+        geogig.command(AddOp.class).call();
+        geogig.command(CommitOp.class).setAll(true).call();
+        MemoryDataStore dataStore = new MemoryDataStore(pointsType);
+        final String typeName = dataStore.getTypeNames()[0];
+        SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
+        SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
+
+        ReferencedEnvelope bbox = (ReferencedEnvelope) points1.getBounds();
+        geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath("HEAD:" + pointsName)
+                .setBBoxFilter(bbox).call();
+
+        featureSource = dataStore.getFeatureSource(typeName);
+        assertEquals(1, featureSource.getCount(Query.ALL));
     }
 
     @Test
@@ -152,7 +175,6 @@ public class ExportOpTest extends RepositoryTestCase {
                     .setFeatureTypeConversionFunction(wrongFunction).call();
             fail();
         } catch (GeoToolsOpException e) {
-            e.printStackTrace();
             assertEquals(e.statusCode, StatusCode.UNABLE_TO_ADD);
         }
 

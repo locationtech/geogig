@@ -23,6 +23,5 @@ public class GeoPkgRouter extends Router {
     private void initRouter() {
         attach("/import", GeoPkgImportWebOp.class);
         attach("/import.{extension}", GeoPkgImportWebOp.class);
-        attach("/export", GeoPkgExportWebOp.class);
     }
 }

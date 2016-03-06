@@ -17,6 +17,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,8 +30,14 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.collection.BaseFeatureCollection;
 import org.geotools.feature.collection.DelegateFeatureIterator;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.api.Bounded;
+import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.FeatureBuilder;
+import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
@@ -46,11 +54,14 @@ import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -66,6 +77,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.PeekingIterator;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * Internal operation for creating a FeatureCollection from a tree content.
@@ -97,6 +109,8 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
     private boolean alter;
 
     private boolean transactional;
+
+    private ReferencedEnvelope bboxFilter;
 
     /**
      * Constructs a new export operation.
@@ -136,11 +150,11 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         progressListener.setDescription("Exporting from " + path + " to "
                 + targetStore.getName().getLocalPart() + "... ");
 
+        final ReferencedEnvelope bboxFilter = this.bboxFilter;
         final Iterator<SimpleFeature> filtered;
         {
             final Iterator<SimpleFeature> plainFeatures = getFeatures(typeTree, database,
-
-            defaultMetadataId, progressListener);
+                    defaultMetadataId, bboxFilter, progressListener);
 
             Iterator<SimpleFeature> adaptedFeatures = adaptToArguments(plainFeatures,
                     defaultMetadataId);
@@ -220,11 +234,20 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
     private static Iterator<SimpleFeature> getFeatures(final RevTree typeTree,
             final ObjectDatabase database, final ObjectId defaultMetadataId,
-            final ProgressListener progressListener) {
+            final @Nullable ReferencedEnvelope bboxFilter, final ProgressListener progressListener) {
 
-        Iterator<NodeRef> nodes = new DepthTreeIterator("", defaultMetadataId, typeTree, database,
-                Strategy.FEATURES_ONLY);
+        Iterator<NodeRef> nodes;
+        {
+            DepthTreeIterator iterator = new DepthTreeIterator("", defaultMetadataId, typeTree,
+                    database, Strategy.FEATURES_ONLY);
 
+            if (bboxFilter != null) {
+                Predicate<Bounded> bboxPredicate = new BBoxPredicate(database, bboxFilter,
+                        defaultMetadataId);
+                iterator.setBoundsFilter(bboxPredicate);
+            }
+            nodes = iterator;
+        }
         // progress reporting
         nodes = Iterators.transform(nodes, new Function<NodeRef, NodeRef>() {
 
@@ -248,8 +271,10 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                 final RevFeature revFeature = database.getFeature(input.getObjectId());
 
                 FeatureBuilder featureBuilder = getBuilderFor(metadataId);
-                Feature feature = featureBuilder.build(input.name(), revFeature);
-                feature.getUserData().put(Hints.USE_PROVIDED_FID, true);
+                final String fid = input.name();
+                Feature feature = featureBuilder.build(fid, revFeature);
+                feature.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
+                feature.getUserData().put(Hints.PROVIDED_FID, fid);
                 feature.getUserData().put(RevFeature.class, revFeature);
                 feature.getUserData().put(RevFeatureType.class, featureBuilder.getType());
 
@@ -469,12 +494,20 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
     /**
      * If set to true, all features will be exported, even if they do not have
      * 
-     * @param alter whther to alter features before exporting, if they do not have the output
+     * @param alter whether to alter features before exporting, if they do not have the output
      *        feature type
      * @return
      */
     public ExportOp setAlter(boolean alter) {
         this.alter = alter;
+        return this;
+    }
+
+    /**
+     * @param bboxFilter if provided, the bounding box filter to apply when exporting
+     */
+    public ExportOp setBBoxFilter(@Nullable ReferencedEnvelope bboxFilter) {
+        this.bboxFilter = bboxFilter;
         return this;
     }
 
@@ -525,4 +558,64 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         this.transactional = transactional;
         return this;
     }
+
+    private static class BBoxPredicate implements Predicate<Bounded> {
+
+        private final ObjectStore store;
+
+        private ReferencedEnvelope bbox;
+
+        private ConcurrentMap<ObjectId, Envelope> filterByMetadataIdCRS = new ConcurrentHashMap<>();
+
+        private final ObjectId defaultMetadataId;
+
+        public BBoxPredicate(final ObjectStore store, final ReferencedEnvelope bbox,
+                final ObjectId defaultMetadataId) {
+            this.store = store;
+            this.bbox = bbox;
+            this.defaultMetadataId = defaultMetadataId;
+        }
+
+        @Override
+        public boolean apply(Bounded input) {
+            final ObjectId metadataId = getMetadataId(input);
+            Envelope projectedFilter = getProjectedFilter(metadataId);
+            boolean applies = input.intersects(projectedFilter);
+            return applies;
+        }
+
+        private ObjectId getMetadataId(Bounded input) {
+            if (input instanceof Bucket) {
+                return defaultMetadataId;
+            }
+            if (input instanceof Node) {
+                return ((Node) input).getMetadataId().or(defaultMetadataId);
+            }
+            return ((NodeRef) input).getMetadataId();
+        }
+
+        private Envelope getProjectedFilter(final ObjectId metadataId) {
+            Envelope projectedFilter = filterByMetadataIdCRS.get(metadataId);
+            if (projectedFilter == null) {
+                projectedFilter = project(bbox, metadataId);
+                filterByMetadataIdCRS.put(metadataId, projectedFilter);
+            }
+            return projectedFilter;
+        }
+
+        private Envelope project(ReferencedEnvelope bbox, ObjectId metadataId) {
+            RevFeatureType featureType = store.getFeatureType(metadataId);
+            CoordinateReferenceSystem targetCRS = featureType.type().getCoordinateReferenceSystem();
+            Envelope transformed;
+            try {
+                CoordinateReferenceSystem sourceCRS = bbox.getCoordinateReferenceSystem();
+                MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
+                transformed = JTS.transform(bbox, null, transform, 10);
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
+            return transformed;
+        }
+    }
+
 }

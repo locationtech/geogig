@@ -1,3 +1,3 @@
 org.locationtech.geogig.rest.osm.OSMReportRepresentation$Factory
-org.locationtech.geogig.rest.postgis.RevTreeRepresentation$Factory
-org.locationtech.geogig.rest.geotools.SimpleFeatureStoreRepresentation$Factory
+org.locationtech.geogig.rest.geotools.RevTreeRepresentation$Factory
+org.locationtech.geogig.rest.geopkg.GeoPkgExportOutputFormat$RepresentationFactory

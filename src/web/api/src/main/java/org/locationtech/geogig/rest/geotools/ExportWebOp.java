@@ -6,156 +6,218 @@
  *
  * Contributors:
  * Erik Merkle (Boundless) - initial implementation
+ * Gabriel Roldan (Boundless) - pull up functionality to new internal command DataStoreExportOp
  */
 package org.locationtech.geogig.rest.geotools;
 
+import static org.locationtech.geogig.repository.SpatialOps.parseBBOX;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.channels.WritableByteChannel;
 import java.util.List;
+import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
-import org.locationtech.geogig.api.Context;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
-import org.locationtech.geogig.rest.TransactionalResource;
-import org.restlet.data.Form;
+import org.locationtech.geogig.rest.AsyncCommandRepresentation;
+import org.locationtech.geogig.rest.AsyncContext;
+import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
+import org.locationtech.geogig.rest.Representations;
+import org.locationtech.geogig.rest.geopkg.GeoPkgExportOutputFormat;
+import org.locationtech.geogig.web.api.AbstractWebAPICommand;
+import org.locationtech.geogig.web.api.CommandContext;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
-import org.restlet.resource.FileRepresentation;
 import org.restlet.resource.Representation;
-import org.restlet.resource.Variant;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
 
 /**
- * Base class for Geotools exports.
+ * Command for Geotools exports through the WEB API.
+ * <p>
+ * Concrete format options are handles by specializations of {@link OutputFormat}.
+ * <p>
+ * Arguments:
+ * <ul>
+ * <li><b>format</b>: Mandatory, output format for the exported data. Currently only {@code GPKG} is
+ * supported. Format argument value is case insensitive.
+ * <li><b>root</b>: Optional, defaults to {@code HEAD}. ref spec that resolves to the root tree from
+ * where to export data (e.g. {@code HEAD}, {@code WORK_HEAD}, a branch name like {@code master},
+ * {@code refs/heads/master}, a commit id, possibly abbreviated like {@code 50e295dd}, a relative
+ * refspec like {@code HEAD~2}, {@code master^4}, etc)
+ * <li><b>path</b>: Optional, a comma separated list of layer names to export. Defaults to exporting
+ * all layers in the resolved root tree.
+ * <li><b>bbox</b>: Optional, a bounding box filter. If present, only features matching the
+ * indicated bounding box filter will be exported. Applies to all exported layers. Format is
+ * {@code minx,miny,maxx,maxy,<SRS>}, where SRS is the EPSG code for the coordinates (e.g.
+ * {@code EPSG:4326}, {@code EPSG:26986}, etc), always using <b>"latidude first"</b> axis order.
+ * </ul>
+ * 
+ * <b>NOTE</b>: export format specializations may add additional, format specific arguments.
+ * 
+ * <p>
+ * Usage:
+ * {@code GET <repository url>/export[.xml|.json]?format=<format name>[&root=<refspec>][&path=[layerName]+][&bbox=<minx,miny,maxx,maxy,SRS>]}
+ * <p>
+ * Usage example:
+ * 
+ * <pre>
+ * <code>
+ * GET <repository url>/export?format=GPKG
+ * GET <repository url>/export?format=GPKG&root=HEAD~1&path=buildings,roads,places
+ * GET <repository url>/export?format=GPKG&root=HEAD~1&path=buildings,roads,places&bbox=-180,-90,0,90,EPSG:4326
+ * </code>
+ * </pre>
+ * 
+ * @see DataStoreExportOp
+ * @see GeoPkgExportOutputFormat
  */
-public abstract class ExportWebOp extends TransactionalResource {
+public class ExportWebOp extends AbstractWebAPICommand {
 
     // Form parameters
+    public static final String FORMAT_PARAM = "format";
+
     public static final String ROOT_PARAM = "root";
 
     public static final String PATH_PARAM = "path";
 
-    public static final String TABLE_PARAM = "table";
+    public static final String BBOX_PARAM = "bbox";
 
-    public static final String OVERWRITE_PARAM = "overwrite";
+    private String format, root, path, bbox;
 
-    public static final String ALTER_PARAM = "alter";
+    private final ParameterSet options;
 
-    public static final String DEFAULT_TYPE_PARAM = "defaultType";
+    private OutputFormat outputFormat;
 
-    public static final String FEATURE_TYPE_PARAM = "featureType";
-
-    @Override
-    public void init(org.restlet.Context context, Request request, Response response) {
-        super.init(context, request, response);
-        addSupportedVariants(getVariants());
+    public ExportWebOp(ParameterSet options) {
+        super(options);
+        this.options = options;
+        setOutputFormat(options.getFirstValue(FORMAT_PARAM));
+        setRoot(options.getFirstValue(ROOT_PARAM));
+        setPath(options.getFirstValue(PATH_PARAM));
+        setBBox(options.getFirstValue(BBOX_PARAM));
     }
 
-    protected abstract void addSupportedVariants(List<Variant> variants);
+    /**
+     * @param format Mandatory, format identifier for the export output.
+     */
+    public void setOutputFormat(String format) {
+        this.format = format;
+        this.outputFormat = null;
+    }
 
-    @Override
-    public Representation getRepresentation(final Variant variant) {
-        final Request request = getRequest();
-        final Context context = super.getContext(request);
+    @VisibleForTesting
+    void setOutputFormat(OutputFormat format) {
+        this.outputFormat = format;
+        this.format = null;
+    }
 
-        Form options = getRequest().getResourceRef().getQueryAsForm();
+    public void setRoot(@Nullable String refSpec) {
+        this.root = refSpec;
+    }
 
-        @Nullable
-        final String rootTreeIsh = options.getFirstValue(ROOT_PARAM);
+    public void setPath(@Nullable String paths) {
+        this.path = paths;
+    }
 
-        @Nullable
-        final String srcPaths = options.getValues(PATH_PARAM);
-        List<String> sourceTreeNames = null;
-        if (srcPaths != null) {
-            sourceTreeNames = Splitter.on(',').omitEmptyStrings().splitToList(srcPaths);
-        }
-        // final String targetTable = options.getFirstValue(TABLE_PARAM, null);
-        // if (targetTable == null) {
-        // throw new CommandSpecException("\"table\" query parameter must be specified");
-        // }
-        // final boolean overwrite = Boolean.valueOf(options.getFirstValue(OVERWRITE_PARAM,
-        // "false"));
-        // final boolean alter = Boolean.valueOf(options.getFirstValue(ALTER_PARAM, "false"));
-        // final boolean defaultType = Boolean.valueOf(options.getFirstValue(DEFAULT_TYPE_PARAM,
-        // "false"));
-
-        DataStoreWrapper dataStoreWrapper;
-        try {
-            dataStoreWrapper = getDataStoreWrapper(options);
-        } catch (IOException ioe) {
-            throw new RuntimeException("Failed to obtain SimpleFeatureStore", ioe);
-        }
-
-        // if overwrite is true, remove all the features first
-        // if (overwrite) {
-        // try {
-        // featureStore.removeFeatures(Filter.INCLUDE);
-        // } catch (IOException ioe) {
-        // throw new RuntimeException("Failed to trucnate table", ioe);
-        // }
-        // }
-
-        // setup the Export command
-        Supplier<DataStore> targetStore = dataStoreWrapper.getDataStore();
-        DataStoreExportOp command = dataStoreWrapper.createCommand(context, options);
-        command.setTarget(targetStore);
-        command.setSourceTreePaths(sourceTreeNames);
-        command.setSourceCommitish(rootTreeIsh);
-
-        command.call();
-
-        final MediaType mediaType = variant.getMediaType();
-        final File binaryFile = dataStoreWrapper.getBinary();
-        return new FileRepresentation(binaryFile, mediaType, 10) {
-            @Override
-            public void write(OutputStream outputStream) throws IOException {
-                super.write(outputStream);
-                binaryFile.delete();
-            }
-
-            @Override
-            public void write(WritableByteChannel writableChannel) throws IOException {
-                super.write(writableChannel);
-                binaryFile.delete();
-            }
-        };
-        //
-        // AsyncContext.AsyncCommand<SimpleFeatureStore> asyncCommand;
-        //
-        // asyncCommand = AsyncContext.get().run(command, getCommandDescription(options));
-        //
-        // MediaType mediaType = variant.getMediaType();
-        // return new SimpleFeatureStoreRepresentation(mediaType, asyncCommand, binaryFile);
-
+    public void setBBox(@Nullable String bbox) {
+        this.bbox = bbox;
     }
 
     /**
      * Create a SimpleFeatureStore from Form options.
      * 
-     * @param options Form option parameters.
      * @return A wrapper object containing the target SimpleFeatureStore, target SimpleFeatureType
      *         and the ObjectID of the feature filter.
      * @throws java.io.IOException If a suitable SimpleFeatureStore can't be obtained.
      */
-    public abstract DataStoreWrapper getDataStoreWrapper(Form options) throws IOException;
+    OutputFormat getDataStoreWrapper(final String format, final ParameterSet options)
+            throws IOException {
 
-    public abstract String getCommandDescription(final Form options);
+        if ("gpkg".equalsIgnoreCase(format)) {
+            return new GeoPkgExportOutputFormat(options);
+        }
 
-    public static class DataStoreWrapper {
+        throw new IllegalArgumentException("Unsupported output format: " + format);
+    }
 
-        private Supplier<DataStore> dataStore;
+    @Override
+    public void run(CommandContext context) {
+        final OutputFormat outputFormat = resolveOutputFormat();
+
+        @Nullable
+        final String rootTreeIsh = this.root;
+
+        @Nullable
+        final ReferencedEnvelope bboxFilter = parseBBOX(this.bbox);
+
+        @Nullable
+        final List<String> sourceTreeNames = parseTreePahts(this.path);
+
+        // setup the Export command
+        Supplier<DataStore> targetStore = outputFormat.getDataStore();
+        DataStoreExportOp<?> command = outputFormat.createCommand(context);
+        command.setTarget(targetStore);
+        command.setSourceTreePaths(sourceTreeNames);
+        command.setSourceCommitish(rootTreeIsh);
+        command.setBBoxFilter(bboxFilter);
+
+        final AsyncContext asyncContext = AsyncContext.get();
+        final String commandDescription = outputFormat.getCommandDescription();
+
+        final AsyncCommand<?> asyncCommand = asyncContext.run(command, commandDescription);
+
+        Function<MediaType, Representation> rep = new Function<MediaType, Representation>() {
+
+            private final String baseUrl = context.getBaseURL();
+
+            @Override
+            public Representation apply(MediaType mediaType) {
+                AsyncCommandRepresentation<?> repr;
+                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl);
+                return repr;
+            }
+        };
+
+        context.setResponse(rep);
+    }
+
+    private OutputFormat resolveOutputFormat() {
+        final String format = this.format;
+        OutputFormat outputFormat = this.outputFormat;
+        Preconditions.checkArgument(format != null || outputFormat != null,
+                "output format not provided");
+        if (format != null) {
+            try {
+                outputFormat = getDataStoreWrapper(format, options);
+            } catch (IOException ioe) {
+                throw new RuntimeException("Failed to obtain target DataStore", ioe);
+            }
+        }
+        return outputFormat;
+    }
+
+    @Nullable
+    private List<String> parseTreePahts(@Nullable String srcPaths) {
+        List<String> sourceTreeNames = null;
+        if (srcPaths != null) {
+            sourceTreeNames = Splitter.on(',').omitEmptyStrings().splitToList(srcPaths);
+        }
+        return sourceTreeNames;
+    }
+
+    public static abstract class OutputFormat {
 
         private File binary;
 
-        public DataStoreWrapper(Supplier<DataStore> store) {
-            this.dataStore = store;
-        }
+        public abstract String getCommandDescription();
+
+        public abstract Supplier<DataStore> getDataStore();
 
         public File getBinary() {
             return binary;
@@ -165,13 +227,7 @@ public abstract class ExportWebOp extends TransactionalResource {
             this.binary = binary;
         }
 
-        public Supplier<DataStore> getDataStore() {
-            return dataStore;
-        }
-
-        public DataStoreExportOp createCommand(final Context context, final Form options) {
-            DataStoreExportOp command = context.command(DataStoreExportOp.class);
-            return command;
-        }
+        public abstract DataStoreExportOp<?> createCommand(final CommandContext context);
     }
+
 }

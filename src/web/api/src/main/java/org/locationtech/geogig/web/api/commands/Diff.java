@@ -18,6 +18,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 /**
@@ -38,6 +39,16 @@ public class Diff extends AbstractWebAPICommand {
     private int page;
 
     private int elementsPerPage;
+
+    public Diff(ParameterSet options) {
+        setOldRefSpec(options.getFirstValue("oldRefSpec", null));
+        setNewRefSpec(options.getFirstValue("newRefSpec", null));
+        setPathFilter(options.getFirstValue("pathFilter", null));
+        setShowGeometryChanges(Boolean.parseBoolean(options.getFirstValue("showGeometryChanges",
+                "false")));
+        setPage(parseInt(options, "page", 0));
+        setElementsPerPage(parseInt(options, "show", 30));
+    }
 
     /**
      * Mutator for the oldRefSpec variable

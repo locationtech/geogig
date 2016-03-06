@@ -21,6 +21,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -36,6 +37,11 @@ public class BlameWebOp extends AbstractWebAPICommand {
     private String path;
 
     private String branchOrCommit;
+
+    public BlameWebOp(ParameterSet options) {
+        setCommit(options.getFirstValue("commit", null));
+        setPath(options.getFirstValue("path", null));
+    }
 
     /**
      * Mutator for the branchOrCommit variable

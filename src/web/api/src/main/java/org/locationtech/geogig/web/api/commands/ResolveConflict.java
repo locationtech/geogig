@@ -30,6 +30,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -49,6 +50,11 @@ public class ResolveConflict extends AbstractWebAPICommand {
     private String path;
 
     private ObjectId objectId;
+
+    public ResolveConflict(ParameterSet options) {
+        setPath(options.getFirstValue("path", null));
+        setFeatureObjectId(options.getFirstValue("objectid", null));
+    }
 
     /**
      * Mutator for the path variable
@@ -126,9 +132,10 @@ public class ResolveConflict extends AbstractWebAPICommand {
             treeBuilder = new RevTreeBuilder(geogig.objectDatabase());
         }
         treeBuilder.put(node.getNode());
-        ObjectId newTreeId = geogig.command(WriteBack.class)
-                .setAncestor(new RevTreeBuilder(geogig.objectDatabase(),
-                        geogig.workingTree().getTree()))
+        ObjectId newTreeId = geogig
+                .command(WriteBack.class)
+                .setAncestor(
+                        new RevTreeBuilder(geogig.objectDatabase(), geogig.workingTree().getTree()))
                 .setChildPath(node.getParentPath()).setTree(treeBuilder.build())
                 .setMetadataId(metadataId).call();
         geogig.workingTree().updateWorkHead(newTreeId);

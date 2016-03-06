@@ -30,6 +30,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.opengis.feature.type.PropertyDescriptor;
 
@@ -54,6 +55,13 @@ public class FeatureDiffWeb extends AbstractWebAPICommand {
     private String oldTreeish;
 
     private boolean all;
+
+    public FeatureDiffWeb(ParameterSet options) {
+        setPath(options.getFirstValue("path", null));
+        setOldTreeish(options.getFirstValue("oldTreeish", ObjectId.NULL.toString()));
+        setNewTreeish(options.getFirstValue("newTreeish", ObjectId.NULL.toString()));
+        setAll(Boolean.valueOf(options.getFirstValue("all", "false")));
+    }
 
     /**
      * Mutator of the path variable
@@ -155,7 +163,8 @@ public class FeatureDiffWeb extends AbstractWebAPICommand {
             } else {
                 throw new CommandSpecException("Couldn't resolve newCommit's featureType");
             }
-            object = geogig.command(RevObjectParse.class).setObjectId(ref.get().getObjectId()).call();
+            object = geogig.command(RevObjectParse.class).setObjectId(ref.get().getObjectId())
+                    .call();
             if (object.isPresent() && object.get() instanceof RevFeature) {
                 newFeature = (RevFeature) object.get();
             } else {

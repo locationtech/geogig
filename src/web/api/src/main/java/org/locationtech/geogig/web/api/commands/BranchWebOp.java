@@ -18,6 +18,7 @@ import org.locationtech.geogig.api.porcelain.BranchListOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.collect.Lists;
@@ -57,10 +58,22 @@ public class BranchWebOp extends AbstractWebAPICommand {
     boolean orphan;
 
     /**
-    * A branch ref or commit id where the branch to create starts at. If not set
-    * defaults to the current {@link Ref#HEAD HEAD}
-    */
+     * A branch ref or commit id where the branch to create starts at. If not set defaults to the
+     * current {@link Ref#HEAD HEAD}
+     */
     String source;
+
+    public BranchWebOp(ParameterSet options) {
+        setList(Boolean.valueOf(options.getFirstValue("list", "false")));
+        setRemotes(Boolean.valueOf(options.getFirstValue("remotes", "false")));
+        setBranchName(options.getFirstValue("branchName", null));
+        setSource(options.getFirstValue("source", null));
+        // TODO: enable these options if necessary
+        // setAutoCheckout(Boolean.valueOf(options.getFirstValue("autoCheckout", "false")));
+        // setCreateForce(Boolean.valueOf(options.getFirstValue("force", "false")));
+        // setOrphan(Boolean.valueOf(options.getFirstValue("orphan", "false")));
+    }
+
     /**
      * Mutator for the list option
      * 
@@ -92,7 +105,7 @@ public class BranchWebOp extends AbstractWebAPICommand {
      * Mutator for the Force option.
      *
      * @param createForce - true if branch creation should overwrite an existing branch with the
-     * same Branch Name.
+     *        same Branch Name.
      */
     public void setCreateForce(boolean createForce) {
         this.force = createForce;
@@ -102,7 +115,7 @@ public class BranchWebOp extends AbstractWebAPICommand {
      * Mutator for AutoCheckout.
      *
      * @param autoCheckout - true if the working branch should switch/checkout the newly created
-     * branch.
+     *        branch.
      */
     public void setAutoCheckout(boolean autoCheckout) {
         this.autoCheckout = autoCheckout;
@@ -112,7 +125,7 @@ public class BranchWebOp extends AbstractWebAPICommand {
      * Mutator for Orphan.
      *
      * @param orphan - true is the newly created branch should NOT inherit the history of the branch
-     * it was created from.
+     *        it was created from.
      */
     public void setOrphan(boolean orphan) {
         this.orphan = orphan;
@@ -122,7 +135,7 @@ public class BranchWebOp extends AbstractWebAPICommand {
      * Mutator for source.
      *
      * @param source - A branch ref or commit id where the branch to create starts at. If not set
-     * defaults to the current {@link Ref#HEAD HEAD}.
+     *        defaults to the current {@link Ref#HEAD HEAD}.
      */
     public void setSource(String source) {
         this.source = source;

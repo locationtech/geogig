@@ -11,12 +11,13 @@ package org.locationtech.geogig.web.api.commands;
 
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.porcelain.FetchOp;
-import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
+import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 /**
@@ -31,6 +32,12 @@ public class FetchWebOp extends AbstractWebAPICommand {
     private boolean fetchAll;
 
     private String remote;
+
+    public FetchWebOp(ParameterSet options) {
+        setFetchAll(Boolean.valueOf(options.getFirstValue("all", "false")));
+        setPrune(Boolean.valueOf(options.getFirstValue("prune", "false")));
+        setRemote(options.getFirstValue("remote"));
+    }
 
     /**
      * Mutator for the prune variable

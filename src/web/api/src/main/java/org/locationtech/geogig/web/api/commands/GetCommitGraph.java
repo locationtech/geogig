@@ -19,6 +19,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.collect.Iterators;
@@ -38,6 +39,13 @@ public class GetCommitGraph extends AbstractWebAPICommand {
     private int page;
 
     private int elementsPerPage;
+
+    public GetCommitGraph(ParameterSet options) {
+        setDepth(parseInt(options, "depth", 0));
+        setCommitId(options.getFirstValue("commitId", ObjectId.NULL.toString()));
+        setPage(parseInt(options, "page", 0));
+        setElementsPerPage(parseInt(options, "show", 30));
+    }
 
     /**
      * Mutator for the commitId variable

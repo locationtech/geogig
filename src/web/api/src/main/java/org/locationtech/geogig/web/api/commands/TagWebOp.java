@@ -31,6 +31,7 @@ public class TagWebOp extends AbstractWebAPICommand {
     private boolean list;
 
     public TagWebOp(ParameterSet options) {
+        super(options);
         setList(Boolean.valueOf(options.getFirstValue("list", "false")));
     }
 

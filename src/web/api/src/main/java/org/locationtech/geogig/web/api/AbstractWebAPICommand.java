@@ -22,6 +22,10 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
 
     private UUID transactionId = null;
 
+    protected AbstractWebAPICommand(ParameterSet options) {
+        setTransactionId(options.getFirstValue("transactionId", null));
+    }
+
     /**
      * Accessor for the transactionId
      * 

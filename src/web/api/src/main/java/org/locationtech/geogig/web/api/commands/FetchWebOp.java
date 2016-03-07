@@ -34,6 +34,7 @@ public class FetchWebOp extends AbstractWebAPICommand {
     private String remote;
 
     public FetchWebOp(ParameterSet options) {
+        super(options);
         setFetchAll(Boolean.valueOf(options.getFirstValue("all", "false")));
         setPrune(Boolean.valueOf(options.getFirstValue("prune", "false")));
         setRemote(options.getFirstValue("remote"));

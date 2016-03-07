@@ -41,6 +41,7 @@ public class UpdateRefWeb extends AbstractWebAPICommand {
     private boolean delete;
 
     public UpdateRefWeb(ParameterSet options) {
+        super(options);
         setName(options.getFirstValue("name", null));
         setDelete(Boolean.valueOf(options.getFirstValue("delete", "false")));
         setNewValue(options.getFirstValue("newValue", ObjectId.NULL.toString()));

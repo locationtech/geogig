@@ -40,6 +40,7 @@ public class CheckoutWebOp extends AbstractWebAPICommand {
     private String path;
 
     public CheckoutWebOp(ParameterSet options) {
+        super(options);
         setName(options.getFirstValue("branch", null));
         setOurs(Boolean.valueOf(options.getFirstValue("ours", "false")));
         setTheirs(Boolean.valueOf(options.getFirstValue("theirs", "false")));

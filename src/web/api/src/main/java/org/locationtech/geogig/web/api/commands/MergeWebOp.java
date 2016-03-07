@@ -48,6 +48,7 @@ public class MergeWebOp extends AbstractWebAPICommand {
     private Optional<String> authorEmail = Optional.absent();
 
     public MergeWebOp(ParameterSet options) {
+        super(options);
         setNoCommit(Boolean.valueOf(options.getFirstValue("noCommit", "false")));
         setCommit(options.getFirstValue("commit", null));
         setAuthorName(options.getFirstValue("authorName", null));

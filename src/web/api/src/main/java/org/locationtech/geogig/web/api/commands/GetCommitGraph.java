@@ -41,6 +41,7 @@ public class GetCommitGraph extends AbstractWebAPICommand {
     private int elementsPerPage;
 
     public GetCommitGraph(ParameterSet options) {
+        super(options);
         setDepth(parseInt(options, "depth", 0));
         setCommitId(options.getFirstValue("commitId", ObjectId.NULL.toString()));
         setPage(parseInt(options, "page", 0));

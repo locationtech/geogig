@@ -32,6 +32,7 @@ public class RefParseWeb extends AbstractWebAPICommand {
     private String refSpec;
 
     public RefParseWeb(ParameterSet options) {
+        super(options);
         setName(options.getFirstValue("name", null));
     }
 

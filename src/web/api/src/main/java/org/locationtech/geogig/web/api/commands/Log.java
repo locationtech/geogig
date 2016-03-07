@@ -84,6 +84,7 @@ public class Log extends AbstractWebAPICommand {
     boolean summary = false;
 
     public Log(ParameterSet options) {
+        super(options);
         setLimit(parseInt(options, "limit", null));
         setOffset(parseInt(options, "offset", null));
         setPaths(Arrays.asList(options.getValuesArray("path")));

@@ -57,6 +57,7 @@ public class FeatureDiffWeb extends AbstractWebAPICommand {
     private boolean all;
 
     public FeatureDiffWeb(ParameterSet options) {
+        super(options);
         setPath(options.getFirstValue("path", null));
         setOldTreeish(options.getFirstValue("oldTreeish", ObjectId.NULL.toString()));
         setNewTreeish(options.getFirstValue("newTreeish", ObjectId.NULL.toString()));

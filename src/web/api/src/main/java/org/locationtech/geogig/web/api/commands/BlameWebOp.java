@@ -39,6 +39,7 @@ public class BlameWebOp extends AbstractWebAPICommand {
     private String branchOrCommit;
 
     public BlameWebOp(ParameterSet options) {
+        super(options);
         setCommit(options.getFirstValue("commit", null));
         setPath(options.getFirstValue("path", null));
     }

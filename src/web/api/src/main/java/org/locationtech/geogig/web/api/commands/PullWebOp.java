@@ -54,6 +54,7 @@ public class PullWebOp extends AbstractWebAPICommand {
     private Optional<String> authorEmail = Optional.absent();
 
     public PullWebOp(ParameterSet options) {
+        super(options);
         setFetchAll(Boolean.valueOf(options.getFirstValue("all", "false")));
         setRefSpec(options.getFirstValue("ref", null));
         setRemoteName(options.getFirstValue("remoteName", null));

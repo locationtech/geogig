@@ -41,6 +41,7 @@ public class Diff extends AbstractWebAPICommand {
     private int elementsPerPage;
 
     public Diff(ParameterSet options) {
+        super(options);
         setOldRefSpec(options.getFirstValue("oldRefSpec", null));
         setNewRefSpec(options.getFirstValue("newRefSpec", null));
         setPathFilter(options.getFirstValue("pathFilter", null));

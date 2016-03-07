@@ -52,6 +52,7 @@ public class ResolveConflict extends AbstractWebAPICommand {
     private ObjectId objectId;
 
     public ResolveConflict(ParameterSet options) {
+        super(options);
         setPath(options.getFirstValue("path", null));
         setFeatureObjectId(options.getFirstValue("objectid", null));
     }

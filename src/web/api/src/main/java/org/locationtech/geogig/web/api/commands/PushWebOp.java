@@ -32,6 +32,7 @@ public class PushWebOp extends AbstractWebAPICommand {
     private String refSpec;
 
     public PushWebOp(ParameterSet options) {
+        super(options);
         setPushAll(Boolean.valueOf(options.getFirstValue("all", "false")));
         setRefSpec(options.getFirstValue("ref", null));
         setRemoteName(options.getFirstValue("remoteName", null));

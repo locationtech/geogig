@@ -31,6 +31,7 @@ public class RebuildGraphWebOp extends AbstractWebAPICommand {
     private boolean quiet = false;
 
     public RebuildGraphWebOp(ParameterSet options) {
+        super(options);
         setQuiet(Boolean.valueOf(options.getFirstValue("quiet", "false")));
     }
 

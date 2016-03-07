@@ -29,6 +29,7 @@ public class AddWebOp extends AbstractWebAPICommand {
     String path;
 
     public AddWebOp(ParameterSet options) {
+        super(options);
         setPath(options.getFirstValue("path", null));
     }
 

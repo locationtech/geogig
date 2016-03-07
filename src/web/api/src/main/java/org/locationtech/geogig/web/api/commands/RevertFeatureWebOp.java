@@ -66,6 +66,7 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
     private Optional<String> mergeMessage = Optional.absent();
 
     public RevertFeatureWebOp(ParameterSet options) {
+        super(options);
         setAuthorName(options.getFirstValue("authorName", null));
         setAuthorEmail(options.getFirstValue("authorEmail", null));
         setCommitMessage(options.getFirstValue("commitMessage", null));

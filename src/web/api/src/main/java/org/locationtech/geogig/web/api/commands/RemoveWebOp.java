@@ -32,6 +32,7 @@ public class RemoveWebOp extends AbstractWebAPICommand {
     private boolean recursive;
 
     public RemoveWebOp(ParameterSet options) {
+        super(options);
         setPath(options.getFirstValue("path", null));
         setRecursive(Boolean.valueOf(options.getFirstValue("recursive", "false")));
     }

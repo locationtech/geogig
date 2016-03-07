@@ -37,6 +37,7 @@ public class Status extends AbstractWebAPICommand {
     int limit = -1;
 
     public Status(ParameterSet options){
+        super(options);
         setLimit(parseInt(options, "limit", 50));
         setOffset(parseInt(options, "offset", 0));
     }

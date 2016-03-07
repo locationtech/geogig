@@ -97,11 +97,6 @@ public class CommandBuilder {
 
         WebAPICommand command = MAPPINGS.get(commandName).apply(options);
 
-        if (command instanceof AbstractWebAPICommand) {
-            ((AbstractWebAPICommand) command).setTransactionId(options.getFirstValue(
-                    "transactionId", null));
-        }
-
         return command;
     }
 

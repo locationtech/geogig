@@ -61,6 +61,7 @@ public class RemoteWebOp extends AbstractWebAPICommand {
     private String password = null;
 
     public RemoteWebOp(ParameterSet options) {
+        super(options);
         setList(Boolean.valueOf(options.getFirstValue("list", "false")));
         setRemove(Boolean.valueOf(options.getFirstValue("remove", "false")));
         setPing(Boolean.valueOf(options.getFirstValue("ping", "false")));

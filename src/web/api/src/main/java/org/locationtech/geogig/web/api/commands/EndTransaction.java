@@ -39,6 +39,7 @@ public class EndTransaction extends AbstractWebAPICommand {
     private boolean cancel;
     
     public EndTransaction (ParameterSet options) {
+        super(options);
         setCancel(Boolean.valueOf(options.getFirstValue("cancel", "false")));
     }
     /**

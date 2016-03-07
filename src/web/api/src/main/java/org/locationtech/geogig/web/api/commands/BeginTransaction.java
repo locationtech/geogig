@@ -28,7 +28,7 @@ import org.locationtech.geogig.web.api.ResponseWriter;
 public class BeginTransaction extends AbstractWebAPICommand {
 
     public BeginTransaction(ParameterSet options) {
-        // no-op
+        super(options);
     }
 
     /**

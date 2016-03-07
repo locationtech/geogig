@@ -37,6 +37,7 @@ public class CatWebOp extends AbstractWebAPICommand {
     private ObjectId object;
 
     public CatWebOp(ParameterSet options) {
+        super(options);
         String objectId = options.getFirstValue("objectid", null);
         if (objectId != null) {
             setObjectId(ObjectId.valueOf(objectId));

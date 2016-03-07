@@ -44,6 +44,7 @@ public class Commit extends AbstractWebAPICommand {
     private Optional<String> authorEmail = Optional.absent();
 
     public Commit(ParameterSet options) {
+        super(options);
         setAll(Boolean.valueOf(options.getFirstValue("all", "false")));
         setMessage(options.getFirstValue("message", null));
         setAuthorName(options.getFirstValue("authorName", null));

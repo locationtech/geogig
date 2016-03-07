@@ -27,7 +27,7 @@ import org.locationtech.geogig.web.api.ResponseWriter;
 public class VersionWebOp extends AbstractWebAPICommand {
 
     public VersionWebOp(ParameterSet options) {
-        // no-op
+        super(options);
     }
 
     /**

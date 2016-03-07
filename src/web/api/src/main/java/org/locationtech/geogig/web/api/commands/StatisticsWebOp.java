@@ -48,6 +48,7 @@ public class StatisticsWebOp extends AbstractWebAPICommand {
     String until;
 
     public StatisticsWebOp(ParameterSet options) {
+        super(options);
         setPath(options.getFirstValue("path", null));
         setSince(options.getFirstValue("since", null));
         setUntil(options.getFirstValue("branch", null));

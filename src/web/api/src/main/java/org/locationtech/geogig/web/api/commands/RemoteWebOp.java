@@ -27,6 +27,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -58,6 +59,20 @@ public class RemoteWebOp extends AbstractWebAPICommand {
     private String username = null;
 
     private String password = null;
+
+    public RemoteWebOp(ParameterSet options) {
+        super(options);
+        setList(Boolean.valueOf(options.getFirstValue("list", "false")));
+        setRemove(Boolean.valueOf(options.getFirstValue("remove", "false")));
+        setPing(Boolean.valueOf(options.getFirstValue("ping", "false")));
+        setUpdate(Boolean.valueOf(options.getFirstValue("update", "false")));
+        setVerbose(Boolean.valueOf(options.getFirstValue("verbose", "false")));
+        setRemoteName(options.getFirstValue("remoteName", null));
+        setNewName(options.getFirstValue("newName", null));
+        setRemoteURL(options.getFirstValue("remoteURL", null));
+        setUserName(options.getFirstValue("username", null));
+        setPassword(options.getFirstValue("password", null));
+    }
 
     /**
      * Mutator for the list variable

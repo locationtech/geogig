@@ -21,6 +21,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -38,6 +39,13 @@ public class UpdateRefWeb extends AbstractWebAPICommand {
     private String newValue;
 
     private boolean delete;
+
+    public UpdateRefWeb(ParameterSet options) {
+        super(options);
+        setName(options.getFirstValue("name", null));
+        setDelete(Boolean.valueOf(options.getFirstValue("delete", "false")));
+        setNewValue(options.getFirstValue("newValue", ObjectId.NULL.toString()));
+    }
 
     /**
      * Mutator for the name variable

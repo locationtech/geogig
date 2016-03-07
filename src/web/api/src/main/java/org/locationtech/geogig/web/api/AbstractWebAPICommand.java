@@ -22,6 +22,10 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
 
     private UUID transactionId = null;
 
+    protected AbstractWebAPICommand(ParameterSet options) {
+        setTransactionId(options.getFirstValue("transactionId", null));
+    }
+
     /**
      * Accessor for the transactionId
      * 
@@ -58,4 +62,26 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
 
     public abstract void run(CommandContext context);
 
+    /**
+     * Parses a string to an Integer, using a default value if the was not found in the parameter
+     * set.
+     * 
+     * @param form the parameter set
+     * @param key the attribute key
+     * @param defaultValue the default value
+     * @return the parsed integer
+     */
+    protected static Integer parseInt(ParameterSet form, String key, Integer defaultValue) {
+        String val = form.getFirstValue(key);
+        Integer retval = defaultValue;
+        if (val != null) {
+            try {
+                retval = new Integer(val);
+            } catch (NumberFormatException nfe) {
+                throw new CommandSpecException("Invalid value '" + val + "' specified for option: "
+                        + key);
+            }
+        }
+        return retval;
+    }
 }

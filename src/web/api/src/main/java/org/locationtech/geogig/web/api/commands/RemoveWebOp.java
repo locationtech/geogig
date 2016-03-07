@@ -16,6 +16,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 /**
@@ -29,6 +30,12 @@ public class RemoveWebOp extends AbstractWebAPICommand {
     private String path;
 
     private boolean recursive;
+
+    public RemoveWebOp(ParameterSet options) {
+        super(options);
+        setPath(options.getFirstValue("path", null));
+        setRecursive(Boolean.valueOf(options.getFirstValue("recursive", "false")));
+    }
 
     /**
      * Mutator for the path variable

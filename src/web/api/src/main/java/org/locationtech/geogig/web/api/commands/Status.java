@@ -19,6 +19,7 @@ import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -35,6 +36,11 @@ public class Status extends AbstractWebAPICommand {
 
     int limit = -1;
 
+    public Status(ParameterSet options){
+        super(options);
+        setLimit(parseInt(options, "limit", 50));
+        setOffset(parseInt(options, "offset", 0));
+    }
     /**
      * Mutator for the offset variable
      * 

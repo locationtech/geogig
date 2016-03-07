@@ -30,6 +30,7 @@ import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -51,6 +52,15 @@ public class PullWebOp extends AbstractWebAPICommand {
     private Optional<String> authorName = Optional.absent();
 
     private Optional<String> authorEmail = Optional.absent();
+
+    public PullWebOp(ParameterSet options) {
+        super(options);
+        setFetchAll(Boolean.valueOf(options.getFirstValue("all", "false")));
+        setRefSpec(options.getFirstValue("ref", null));
+        setRemoteName(options.getFirstValue("remoteName", null));
+        setAuthorName(options.getFirstValue("authorName", null));
+        setAuthorEmail(options.getFirstValue("authorEmail", null));
+    }
 
     /**
      * Mutator for the remoteName variable

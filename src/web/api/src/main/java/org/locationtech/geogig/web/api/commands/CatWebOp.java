@@ -21,6 +21,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Preconditions;
@@ -34,6 +35,14 @@ import com.google.common.base.Preconditions;
 public class CatWebOp extends AbstractWebAPICommand {
 
     private ObjectId object;
+
+    public CatWebOp(ParameterSet options) {
+        super(options);
+        String objectId = options.getFirstValue("objectid", null);
+        if (objectId != null) {
+            setObjectId(ObjectId.valueOf(objectId));
+        }
+    }
 
     /**
      * Mutator for the object variable

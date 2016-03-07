@@ -13,6 +13,7 @@ import java.io.Writer;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -39,6 +40,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamResponse;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -80,6 +82,23 @@ public class Log extends AbstractWebAPICommand {
     boolean returnRange = false;
 
     boolean summary = false;
+
+    public Log(ParameterSet options) {
+        super(options);
+        setLimit(parseInt(options, "limit", null));
+        setOffset(parseInt(options, "offset", null));
+        setPaths(Arrays.asList(options.getValuesArray("path")));
+        setSince(options.getFirstValue("since"));
+        setUntil(options.getFirstValue("until"));
+        setSinceTime(options.getFirstValue("sinceTime"));
+        setUntilTime(options.getFirstValue("untilTime"));
+        setPage(parseInt(options, "page", 0));
+        setElementsPerPage(parseInt(options, "show", 30));
+        setFirstParentOnly(Boolean.valueOf(options.getFirstValue("firstParentOnly", "false")));
+        setCountChanges(Boolean.valueOf(options.getFirstValue("countChanges", "false")));
+        setReturnRange(Boolean.valueOf(options.getFirstValue("returnRange", "false")));
+        setSummary(Boolean.valueOf(options.getFirstValue("summary", "false")));
+    }
 
     /**
      * Mutator for the limit variable

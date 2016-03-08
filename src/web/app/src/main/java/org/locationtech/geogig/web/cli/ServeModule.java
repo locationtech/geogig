@@ -14,6 +14,12 @@ import org.locationtech.geogig.web.cli.commands.Serve;
 
 import com.google.inject.Binder;
 
+/**
+ * Hooks up into the CLI commands through the {@link CLIModule} SPI lookup by means of the
+ * {@code META-INF/services/org.locationtech.geogig.cli.CLIModule} text file, and binds the
+ * {@link Serve} command.
+ *
+ */
 public class ServeModule implements CLIModule {
 
     @Override

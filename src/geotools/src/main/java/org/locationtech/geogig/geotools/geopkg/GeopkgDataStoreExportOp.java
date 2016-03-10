@@ -15,7 +15,20 @@ import org.geotools.data.DataStore;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
 
-public class GeopkgDataStoreExportOp extends DataStoreExportOp {
+/**
+ * Exports layers from a repository snapshot to a GeoPackage file.
+ * <p>
+ * Enabling the GeoGig geopackage interchange format extension is enabled through the
+ * {@link #setInterchangeFormat(boolean) interchangeFormat} argument.
+ * <p>
+ * Implementation detail: since the GeoTools geopackage datastore does not expose the file it writes
+ * to, it shall be given as an argument through {@link #setDatabaseFile(File)}, while the
+ * {@link DataStore} given at {@link #setDataStore(DataStore)} must already be a geopackage one.
+ * 
+ * @see DataStoreExportOp
+ * @see GeopkgAuditExport
+ */
+public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
 
     private boolean enableInterchangeFormat;
 
@@ -31,6 +44,10 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp {
         return this;
     }
 
+    /**
+     * Overrides to call {@code super.export} and then enable the geopackage interchange format
+     * after the data has been exported for the given layer. {@inheritDoc}
+     */
     @Override
     protected void export(final String treeSpec, final DataStore targetStore,
             final String targetTableName, final ProgressListener progress) {
@@ -41,5 +58,10 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp {
             command(GeopkgAuditExport.class).setSourceTreeish(treeSpec)
                     .setTargetTableName(targetTableName).setDatabase(geopackage).call();
         }
+    }
+
+    @Override
+    protected File buildResult(DataStore targetStore) {
+        return geopackage;
     }
 }

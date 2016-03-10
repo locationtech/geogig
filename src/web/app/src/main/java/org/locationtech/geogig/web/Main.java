@@ -21,6 +21,7 @@ import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.cli.CLIContextBuilder;
+import org.locationtech.geogig.rest.TaskResultDownloadResource;
 import org.locationtech.geogig.rest.TaskStatusResource;
 import org.locationtech.geogig.rest.geopkg.GeoPkgRouter;
 import org.locationtech.geogig.rest.osm.OSMRouter;
@@ -110,6 +111,7 @@ public class Main extends Application {
         router.attach("/tasks", TaskStatusResource.class);
         router.attach("/tasks/{taskId}.{extension}", TaskStatusResource.class);
         router.attach("/tasks/{taskId}", TaskStatusResource.class);
+        router.attach("/tasks/{taskId}/download", TaskResultDownloadResource.class);
 
         router.attach("/osm", osm);
         router.attach("/postgis", postgis);

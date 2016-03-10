@@ -12,28 +12,22 @@ package org.locationtech.geogig.web.api;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.StringWriter;
+import java.io.ByteArrayOutputStream;
 import java.util.UUID;
 
-import javax.xml.stream.XMLStreamWriter;
-
 import org.codehaus.jettison.json.JSONObject;
-import org.codehaus.jettison.mapped.MappedNamespaceConvention;
-import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.web.api.AbstractWebAPICommand;
-import org.locationtech.geogig.web.api.CommandBuilder;
-import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.ResponseWriter;
-import org.locationtech.geogig.web.api.WebAPICommand;
+import org.locationtech.geogig.rest.Variants;
+import org.restlet.data.MediaType;
+import org.restlet.resource.Representation;
 
 import com.google.common.base.Throwables;
 
 public abstract class AbstractWebOpTest {
     @Rule
-    public TestContext context = new TestContext();
+    public TestContext testContext = new TestContext();
 
     @Rule
     public ExpectedException ex = ExpectedException.none();
@@ -57,18 +51,25 @@ public abstract class AbstractWebOpTest {
         assertEquals(txId, cmd.getTransactionId());
     }
 
-    protected WebAPICommand buildCommand(ParameterSet options) {
-        return CommandBuilder.build(getRoute(), options);
+    @SuppressWarnings("unchecked")
+    protected <T extends WebAPICommand> T buildCommand(ParameterSet options) {
+        return (T) CommandBuilder.build(getRoute(), options);
     }
 
-    public JSONObject getResponse() {
+    public Representation getResponseRepresentation(MediaType mediaType) {
+        Representation representation = testContext.getRepresentation(mediaType);
+        return representation;
+    }
+
+    public JSONObject getJSONResponse() {
         JSONObject response = null;
         try {
-            StringWriter writer = new StringWriter();
-            XMLStreamWriter xmlwriter = new MappedXMLStreamWriter(new MappedNamespaceConvention(),
-                    writer);
-            context.getCommandResponse().write(new ResponseWriter(xmlwriter));
-            response = new JSONObject(writer.getBuffer().toString()).getJSONObject("response");
+            Representation representation = getResponseRepresentation(Variants.JSON.getMediaType());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            representation.write(out);
+
+            String content = out.toString();
+            response = new JSONObject(content);
         } catch (Exception e) {
             Throwables.propagate(e);
         }

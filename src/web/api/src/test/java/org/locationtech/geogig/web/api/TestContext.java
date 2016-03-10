@@ -9,9 +9,15 @@
  */
 package org.locationtech.geogig.web.api;
 
+import static org.locationtech.geogig.rest.Variants.CSV_MEDIA_TYPE;
+
+import java.util.function.Function;
+
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.locationtech.geogig.api.GeoGIG;
+import org.restlet.data.MediaType;
+import org.restlet.resource.Representation;
 
 import com.google.common.base.Preconditions;
 
@@ -56,6 +62,10 @@ public class TestContext extends ExternalResource {
         return context.streamResponse;
     }
 
+    public Representation getRepresentation(MediaType format) {
+        return context.getRepresentation(format, null);
+    }
+
     private static class TestCommandContext implements CommandContext {
 
         private TestRepository repo;
@@ -63,6 +73,8 @@ public class TestContext extends ExternalResource {
         private CommandResponse commandResponse;
 
         private StreamResponse streamResponse;
+
+        private Function<MediaType, Representation> representation;
 
         public TestCommandContext(TestRepository testRepo) {
             Preconditions.checkNotNull(testRepo);
@@ -74,16 +86,48 @@ public class TestContext extends ExternalResource {
             return repo.getGeogig();
         }
 
+        public Representation getRepresentation(MediaType format, String callback) {
+            if (representation != null) {
+                return representation.apply(format);
+            }
+            if (streamResponse != null) {
+                if (format != CSV_MEDIA_TYPE) {
+                    throw new CommandSpecException(
+                            "Unsupported Media Type: This response is only compatible with text/csv.");
+                }
+                return new StreamWriterRepresentation(format, streamResponse);
+            }
+            if (format != MediaType.APPLICATION_JSON && format != MediaType.APPLICATION_XML) {
+                throw new CommandSpecException(
+                        "Unsupported Media Type: This response is only compatible with application/json and application/xml.");
+            }
+            return new CommandResponseJettisonRepresentation(format, commandResponse, callback);
+        }
+
         @Override
         public void setResponseContent(CommandResponse responseContent) {
             this.commandResponse = responseContent;
             this.streamResponse = null;
+            this.representation = null;
         }
 
         @Override
         public void setResponseContent(StreamResponse responseContent) {
             this.streamResponse = responseContent;
             this.commandResponse = null;
+            this.representation = null;
+        }
+
+        @Override
+        public String getBaseURL() {
+            return "/geogig";
+        }
+
+        @Override
+        public void setResponse(Function<MediaType, Representation> representation) {
+            this.representation = representation;
+            this.commandResponse = null;
+            this.streamResponse = null;
         }
 
     }

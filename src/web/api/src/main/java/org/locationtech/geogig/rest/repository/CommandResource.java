@@ -16,29 +16,22 @@ import static org.locationtech.geogig.rest.Variants.XML;
 import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
 import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.codehaus.jettison.mapped.MappedNamespaceConvention;
-import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.rest.RestletException;
-import org.locationtech.geogig.rest.WriterRepresentation;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.CommandResponseJettisonRepresentation;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamResponse;
+import org.locationtech.geogig.web.api.StreamWriterRepresentation;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.restlet.Context;
 import org.restlet.data.Form;
@@ -97,7 +90,7 @@ public class CommandResource extends Resource {
         }
         try {
             if (command != null) {
-                RestletContext ctx = new RestletContext(geogig.get());
+                RestletContext ctx = new RestletContext(geogig.get(), request);
                 command.run(ctx);
                 rep = ctx.getRepresentation(format, getJSONPCallback());
             }
@@ -117,7 +110,7 @@ public class CommandResource extends Resource {
         if (format == CSV_MEDIA_TYPE) {
             return new StreamWriterRepresentation(format, StreamResponse.error(ex.getMessage()));
         }
-        return new JettisonRepresentation(format, CommandResponse.error(ex.getMessage()),
+        return new CommandResponseJettisonRepresentation(format, CommandResponse.error(ex.getMessage()),
                 getJSONPCallback());
 
     }
@@ -138,7 +131,7 @@ public class CommandResource extends Resource {
         if (format == CSV_MEDIA_TYPE) {
             return new StreamWriterRepresentation(format, StreamResponse.error(stack));
         }
-        return new JettisonRepresentation(format, CommandResponse.error(stack), getJSONPCallback());
+        return new CommandResponseJettisonRepresentation(format, CommandResponse.error(stack), getJSONPCallback());
     }
 
     private String getJSONPCallback() {
@@ -172,8 +165,13 @@ public class CommandResource extends Resource {
 
         final GeoGIG geogig;
 
-        RestletContext(GeoGIG geogig) {
+        private Request request;
+
+        private Function<MediaType, Representation> representation;
+
+        RestletContext(GeoGIG geogig, Request request) {
             this.geogig = geogig;
+            this.request = request;
         }
 
         @Override
@@ -181,7 +179,10 @@ public class CommandResource extends Resource {
             return geogig;
         }
 
-        Representation getRepresentation(MediaType format, String callback) {
+        public Representation getRepresentation(MediaType format, String callback) {
+            if (representation != null) {
+                return representation.apply(format);
+            }
             if (streamContent != null) {
                 if (format != CSV_MEDIA_TYPE) {
                     throw new CommandSpecException(
@@ -193,7 +194,12 @@ public class CommandResource extends Resource {
                 throw new CommandSpecException(
                         "Unsupported Media Type: This response is only compatible with application/json and application/xml.");
             }
-            return new JettisonRepresentation(format, responseContent, callback);
+            return new CommandResponseJettisonRepresentation(format, responseContent, callback);
+        }
+
+        @Override
+        public void setResponse(Function<MediaType, Representation> representation) {
+            this.representation = representation;
         }
 
         @Override
@@ -205,75 +211,10 @@ public class CommandResource extends Resource {
         public void setResponseContent(StreamResponse responseContent) {
             this.streamContent = responseContent;
         }
-    }
-
-    public static class JettisonRepresentation extends WriterRepresentation {
-
-        final CommandResponse impl;
-
-        String callback;
-
-        public JettisonRepresentation(MediaType mediaType, CommandResponse impl, String callback) {
-            super(mediaType);
-            this.impl = impl;
-            this.callback = callback;
-        }
-
-        private XMLStreamWriter createWriter(Writer writer) {
-            final MediaType mediaType = getMediaType();
-            XMLStreamWriter xml;
-            if (mediaType.getSubType().equalsIgnoreCase("xml")) {
-                try {
-                    xml = XMLOutputFactory.newFactory().createXMLStreamWriter(writer);
-                } catch (XMLStreamException ex) {
-                    throw new RuntimeException(ex);
-                }
-                callback = null; // this doesn't make sense
-            } else if (mediaType == MediaType.APPLICATION_JSON) {
-                xml = new MappedXMLStreamWriter(new MappedNamespaceConvention(), writer);
-            } else {
-                throw new RuntimeException("mediatype not handled " + mediaType);
-            }
-            return xml;
-        }
 
         @Override
-        public void write(Writer writer) throws IOException {
-            XMLStreamWriter stax = null;
-            if (callback != null) {
-                writer.write(callback);
-                writer.write('(');
-            }
-            try {
-                stax = createWriter(writer);
-                impl.write(new ResponseWriter(stax));
-                stax.flush();
-                stax.close();
-            } catch (Exception ex) {
-                throw new IOException(ex);
-            }
-            if (callback != null) {
-                writer.write(");");
-            }
-        }
-    }
-
-    static class StreamWriterRepresentation extends WriterRepresentation {
-
-        final StreamResponse impl;
-
-        public StreamWriterRepresentation(MediaType mediaType, StreamResponse impl) {
-            super(mediaType);
-            this.impl = impl;
-        }
-
-        @Override
-        public void write(Writer writer) throws IOException {
-            try {
-                impl.write(writer);
-            } catch (Exception e) {
-                throw new IOException(e);
-            }
+        public String getBaseURL() {
+            return request.getRootRef().toString();
         }
     }
 }

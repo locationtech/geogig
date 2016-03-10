@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.locationtech.geogig.rest.geotools.ExportWebOp;
 import org.locationtech.geogig.web.api.commands.AddWebOp;
 import org.locationtech.geogig.web.api.commands.BeginTransaction;
 import org.locationtech.geogig.web.api.commands.BlameWebOp;
@@ -78,6 +79,7 @@ public class CommandBuilder {
         MAPPINGS.put("version", VersionWebOp::new);
         MAPPINGS.put("cat", CatWebOp::new);
         MAPPINGS.put("statistics", StatisticsWebOp::new);
+        MAPPINGS.put("export", ExportWebOp::new);
     }
 
     /**

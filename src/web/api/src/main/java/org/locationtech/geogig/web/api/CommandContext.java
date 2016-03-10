@@ -9,12 +9,18 @@
  */
 package org.locationtech.geogig.web.api;
 
+import java.util.function.Function;
+
 import org.locationtech.geogig.api.GeoGIG;
+import org.restlet.data.MediaType;
+import org.restlet.resource.Representation;
 
 /**
  *
  */
 public interface CommandContext {
+
+    String getBaseURL();
 
     /**
      * @return the {@link GeoGIG} for this context.
@@ -34,5 +40,7 @@ public interface CommandContext {
      * @param responseContent the command response
      */
     void setResponseContent(StreamResponse responseContent);
+
+    void setResponse(Function<MediaType, Representation> representation);
 
 }

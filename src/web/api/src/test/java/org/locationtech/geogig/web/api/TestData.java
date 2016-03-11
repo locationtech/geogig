@@ -170,7 +170,7 @@ public class TestData {
                 .mergeNoFF("branch1", "merge branch branch1 onto master")//
                 .mergeNoFF("branch2", "merge branch branch2 onto master");
 
-        LOG.info("HEAD: " + repo.command(RefParse.class).setName(Ref.HEAD).call().get());
+        LOG.debug("HEAD: " + repo.command(RefParse.class).setName(Ref.HEAD).call().get());
         List<NodeRef> treeRefs = Lists.newArrayList(repo.command(LsTreeOp.class)
                 .setReference(Ref.HEAD).call());
         checkState(3 == treeRefs.size());
@@ -189,7 +189,7 @@ public class TestData {
                 .setMessage(mergeCommitMessage).addCommit(commit).call();
         RevCommit mergeCommit = report.getMergeCommit();
         checkState(mergeCommit.getParentIds().size() == 2);
-        LOG.info(mergeCommit.toString());
+        LOG.debug(mergeCommit.toString());
         return this;
     }
 
@@ -226,7 +226,7 @@ public class TestData {
     private TestData commit(String commitMessage, boolean allowEmpty) {
         RevCommit commit = repo.command(CommitOp.class).setAllowEmpty(allowEmpty)
                 .setMessage(commitMessage).call();
-        LOG.info(commit.toString());
+        LOG.debug(commit.toString());
         return this;
     }
 

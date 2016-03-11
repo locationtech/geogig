@@ -90,12 +90,13 @@ public class ExportWebOp extends AbstractWebAPICommand {
 
     private String format, root, path, bbox;
 
-    private final ParameterSet options;
+    @VisibleForTesting
+    public final ParameterSet options;
 
     private OutputFormat outputFormat;
 
     @VisibleForTesting
-    AsyncContext asyncContext = AsyncContext.get();
+    public AsyncContext asyncContext;
 
     public ExportWebOp(ParameterSet options) {
         super(options);
@@ -172,6 +173,10 @@ public class ExportWebOp extends AbstractWebAPICommand {
 
         final String commandDescription = outputFormat.getCommandDescription();
 
+        AsyncContext asyncContext = this.asyncContext;
+        if (asyncContext == null) {
+            asyncContext = AsyncContext.get();
+        }
         final AsyncCommand<?> asyncCommand = asyncContext.run(command, commandDescription);
 
         Function<MediaType, Representation> rep = new Function<MediaType, Representation>() {

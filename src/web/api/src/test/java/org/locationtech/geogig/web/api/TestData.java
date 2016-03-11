@@ -66,7 +66,40 @@ import com.vividsolutions.jts.io.ParseException;
 
 /**
  * A helper class to set repositories to a desired state to aid in integration testing.
- *
+ * <p>
+ * The test data is as follows:
+ * 
+ * <pre>
+ * <code>
+ * 
+ *                              ______ (11, 11)
+ *                              |    /|
+ *                            Line.2/ |
+ *                              |  o (10,10) Point.2
+ *                              | /   |
+ *                              |/____| Polygon.2
+ *                           (9, 9)
+ *        
+ * 
+ *                 ______ (1, 1)
+ *                 |    /|
+ *               Line.1/ |
+ *                 |  o (0,0) Point.1
+ *                 | /   |
+ *                 |/____| Polygon.1
+ *              (-1, -1)
+ *        
+ *        
+ * 
+ *     ______ (-9, -9)
+ *     |    /|
+ *   Line.3/ |
+ *     |  o (-10,-10) Point.3
+ *     | /   |
+ *     |/____| Polygon.3
+ * (-11, -11)
+ * </code>
+ * </pre>
  */
 public class TestData {
 

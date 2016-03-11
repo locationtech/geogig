@@ -10,23 +10,35 @@
 package org.locationtech.geogig.rest.geotools;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.locationtech.geogig.web.api.TestData.line1;
+import static org.locationtech.geogig.web.api.TestData.line2;
+import static org.locationtech.geogig.web.api.TestData.line3;
+import static org.locationtech.geogig.web.api.TestData.linesType;
+import static org.locationtech.geogig.web.api.TestData.point1;
+import static org.locationtech.geogig.web.api.TestData.point2;
+import static org.locationtech.geogig.web.api.TestData.point3;
+import static org.locationtech.geogig.web.api.TestData.pointsType;
+import static org.locationtech.geogig.web.api.TestData.poly1;
+import static org.locationtech.geogig.web.api.TestData.poly2;
+import static org.locationtech.geogig.web.api.TestData.poly3;
+import static org.locationtech.geogig.web.api.TestData.polysType;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.geotools.data.DataStore;
-import org.geotools.data.Query;
-import org.geotools.data.QueryCapabilities;
 import org.geotools.data.memory.MemoryDataStore;
-import org.geotools.data.memory.MemoryFeatureStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.data.store.ContentEntry;
-import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.data.store.FeatureIteratorIterator;
+import org.json.JSONException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.api.GeoGIG;
@@ -36,10 +48,10 @@ import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandContext;
-import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.geometry.BoundingBox;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.base.Optional;
@@ -47,14 +59,23 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class ExportWebOpTest extends AbstractWebOpTest {
 
     private CommandContext context;
 
+    private AsyncContext testAsyncContext;
+
     @Before
     public void before() {
         context = super.testContext.get();
+        testAsyncContext = AsyncContext.createNew();
+    }
+
+    @After
+    public void after() {
+        testAsyncContext.shutDown();
     }
 
     @Override
@@ -71,30 +92,122 @@ public class ExportWebOpTest extends AbstractWebOpTest {
     public void testExportDefaults() throws Exception {
         GeoGIG repo = context.getGeoGIG();
         TestData testData = new TestData(repo);
+        testData.init().loadDefaultData();
+
+        ExportWebOp op = buildCommand(TestParams.of());
+        op.asyncContext = testAsyncContext;
+        op.setOutputFormat(new TestOutputFormat());
+
+        MemoryDataStore result = run(op);
+
+        assertFeatures(result, pointsType.getTypeName(), point1, point2, point3);
+        assertFeatures(result, linesType.getTypeName(), line1, line2, line3);
+        assertFeatures(result, polysType.getTypeName(), poly1, poly2, poly3);
+    }
+
+    @Test
+    public void testExportBranch() throws Exception {
+        GeoGIG repo = context.getGeoGIG();
+        TestData testData = new TestData(repo);
+        // HEAD is at branch1
         testData.init().loadDefaultData().checkout("branch1");
 
-        ParameterSet options = TestParams.of();
-        ExportWebOp op = buildCommand(options);
+        // but we request branch2
+        ExportWebOp op = buildCommand("root", "branch2");
+        op.asyncContext = testAsyncContext;
+        op.setOutputFormat(new TestOutputFormat());
 
-        ExportWebOp.OutputFormat testFormat = new TestOutputFormat();
-        op.setOutputFormat(testFormat);
+        MemoryDataStore result = run(op);
+
+        assertFeatures(result, pointsType.getTypeName(), point1, point3);
+        assertFeatures(result, linesType.getTypeName(), line1, line3);
+        assertFeatures(result, polysType.getTypeName(), poly1, poly3);
+    }
+
+    @Test
+    public void testExportLayernameFilter() throws Exception {
+        GeoGIG repo = context.getGeoGIG();
+        new TestData(repo).init().loadDefaultData();
+
+        // but we request branch2
+        String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
+        ExportWebOp op = buildCommand("path", layerFilter);
+        op.asyncContext = testAsyncContext;
+        op.setOutputFormat(new TestOutputFormat());
+
+        MemoryDataStore result = run(op);
+
+        assertFeatures(result, linesType.getTypeName(), line1, line2, line3);
+        assertFeatures(result, polysType.getTypeName(), poly1, poly2, poly3);
+
+        Set<String> exportedTypeNames = Sets.newHashSet(result.getTypeNames());
+        assertFalse(exportedTypeNames.contains(pointsType.getTypeName()));
+    }
+
+    @Test
+    public void testExportBranchBBoxFilter() throws Exception {
+        GeoGIG repo = context.getGeoGIG();
+        TestData testData = new TestData(repo);
+        // HEAD is at branch1
+        testData.init().loadDefaultData().checkout("branch1");
+
+        BoundingBox bounds = point3.getDefaultGeometryProperty().getBounds();
+        String bboxStr = String.format("%f,%f,%f,%f,EPSG:4326", bounds.getMinX(), bounds.getMinY(),
+                bounds.getMaxX(), bounds.getMaxY());
+        // but we request branch2
+        ExportWebOp op = buildCommand("root", "branch2", "bbox", bboxStr);
+        op.asyncContext = testAsyncContext;
+        op.setOutputFormat(new TestOutputFormat());
+
+        MemoryDataStore result = run(op);
+
+        assertFeatures(result, pointsType.getTypeName(), point3);
+        assertFeatures(result, linesType.getTypeName(), line3);
+        assertFeatures(result, polysType.getTypeName(), poly3);
+    }
+
+    @Test
+    public void testExportBranchBBoxAndLayerFilter() throws Exception {
+        GeoGIG repo = context.getGeoGIG();
+        TestData testData = new TestData(repo);
+        // HEAD is at branch1
+        testData.init().loadDefaultData().checkout("branch1");
+
+        BoundingBox bounds = point3.getDefaultGeometryProperty().getBounds();
+        String bboxFilter = String.format("%f,%f,%f,%f,EPSG:4326", bounds.getMinX(),
+                bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY());
+        String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
+        // but we request branch2
+        ExportWebOp op = buildCommand("root", "branch2", "bbox", bboxFilter, "path", layerFilter);
+        op.asyncContext = testAsyncContext;
+        op.setOutputFormat(new TestOutputFormat());
+
+        MemoryDataStore result = run(op);
+
+        assertFeatures(result, linesType.getTypeName(), line3);
+        assertFeatures(result, polysType.getTypeName(), poly3);
+
+        Set<String> exportedTypeNames = Sets.newHashSet(result.getTypeNames());
+        assertFalse(exportedTypeNames.contains(pointsType.getTypeName()));
+    }
+
+    private MemoryDataStore run(ExportWebOp op) throws JSONException, InterruptedException,
+            ExecutionException {
 
         op.run(context);
 
         final String expected = "{'task':{'id':1,'status':'RUNNING','description':'MemoryDataStore test output format','href':'/geogig/tasks/1.json'}}";
         JSONObject response = getJSONResponse();
-        // System.err.println(response);
         JSONAssert.assertEquals(expected, response.toString(), false);
 
-        AsyncContext asyncContext = AsyncContext.get();
         Optional<AsyncCommand<?>> asyncCommand = Optional.absent();
         while (!asyncCommand.isPresent()) {
-            asyncCommand = asyncContext.getAndPruneIfFinished("1");
+            asyncCommand = testAsyncContext.getAndPruneIfFinished("1");
         }
 
         MemoryDataStore result = (MemoryDataStore) asyncCommand.get().get();
         assertNotNull(result);
-
+        return result;
     }
 
     private void assertFeatures(DataStore store, String typeName, SimpleFeature... expected)
@@ -123,26 +236,7 @@ public class ExportWebOpTest extends AbstractWebOpTest {
         private Supplier<DataStore> ds;
 
         public TestOutputFormat() {
-            this.ds = Suppliers.ofInstance(new MemoryDataStore() {
-
-                @Override
-                protected ContentFeatureSource createFeatureSource(ContentEntry entry, Query query) {
-                    return new MemoryFeatureStore(entry, query) {
-                        @Override
-                        protected QueryCapabilities buildQueryCapabilities() {
-                            return new QueryCapabilities() {
-                                @Override
-                                public boolean isUseProvidedFIDSupported() {
-                                    return true;
-                                }
-
-                            };
-                        };
-
-                    };
-                }
-
-            });
+            this.ds = Suppliers.ofInstance(TestData.newMemoryDataStore());
         }
 
         @Override
@@ -169,5 +263,4 @@ public class ExportWebOpTest extends AbstractWebOpTest {
 
         }
     }
-
 }

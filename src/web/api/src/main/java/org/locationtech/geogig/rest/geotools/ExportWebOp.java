@@ -94,6 +94,9 @@ public class ExportWebOp extends AbstractWebAPICommand {
 
     private OutputFormat outputFormat;
 
+    @VisibleForTesting
+    AsyncContext asyncContext = AsyncContext.get();
+
     public ExportWebOp(ParameterSet options) {
         super(options);
         this.options = options;
@@ -167,7 +170,6 @@ public class ExportWebOp extends AbstractWebAPICommand {
         command.setSourceCommitish(rootTreeIsh);
         command.setBBoxFilter(bboxFilter);
 
-        final AsyncContext asyncContext = AsyncContext.get();
         final String commandDescription = outputFormat.getCommandDescription();
 
         final AsyncCommand<?> asyncCommand = asyncContext.run(command, commandDescription);

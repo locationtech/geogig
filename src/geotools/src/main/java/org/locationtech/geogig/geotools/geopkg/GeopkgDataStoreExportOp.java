@@ -23,7 +23,7 @@ import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
  * <p>
  * Implementation detail: since the GeoTools geopackage datastore does not expose the file it writes
  * to, it shall be given as an argument through {@link #setDatabaseFile(File)}, while the
- * {@link DataStore} given at {@link #setDataStore(DataStore)} must already be a geopackage one.
+ * {@link DataStore} given at {@link #setDataStore} must already be a geopackage one.
  * 
  * @see DataStoreExportOp
  * @see GeopkgAuditExport

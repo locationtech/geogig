@@ -16,6 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.UUID;
 
 import org.codehaus.jettison.json.JSONObject;
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -49,6 +50,10 @@ public abstract class AbstractWebOpTest {
         ParameterSet options = TestParams.of("transactionId", txId.toString());
         AbstractWebAPICommand cmd = (AbstractWebAPICommand) buildCommand(options);
         assertEquals(txId, cmd.getTransactionId());
+    }
+
+    protected <T extends WebAPICommand> T buildCommand(@Nullable String... optionsKvp) {
+        return buildCommand(TestParams.of(optionsKvp));
     }
 
     @SuppressWarnings("unchecked")

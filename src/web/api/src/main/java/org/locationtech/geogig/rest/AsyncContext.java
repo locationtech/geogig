@@ -27,6 +27,7 @@ import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.GeogigTransaction;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -51,12 +52,24 @@ public class AsyncContext {
 
     private ScheduledExecutorService commandExecutor;
 
+    private AtomicLong ID_SEQ = new AtomicLong();
+
     private AsyncContext() {
         int nThreads = Math.max(2, Runtime.getRuntime().availableProcessors());
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
                 .setNameFormat("GeoGIG async tasks-%d").build();
         this.commandExecutor = Executors.newScheduledThreadPool(nThreads, threadFactory);
         this.commandExecutor.scheduleAtFixedRate(new PruneTask(), 0, 10, TimeUnit.MINUTES);
+    }
+
+    @VisibleForTesting
+    public static AsyncContext createNew() {
+        return new AsyncContext();
+    }
+
+    @VisibleForTesting
+    public void shutDown() {
+        commandExecutor.shutdown();
     }
 
     private class PruneTask implements Runnable {
@@ -77,7 +90,8 @@ public class AsyncContext {
 
         CommandCall<T> callable = new CommandCall<T>(command);
         Future<T> future = commandExecutor.submit(callable);
-        AsyncCommand<T> asyncCommand = new AsyncCommand<T>(callable, future, description);
+        String taskId = String.valueOf(ID_SEQ.incrementAndGet());
+        AsyncCommand<T> asyncCommand = new AsyncCommand<T>(taskId, callable, future, description);
         commands.put(asyncCommand.getTaskId(), asyncCommand);
         return asyncCommand;
     }
@@ -97,8 +111,6 @@ public class AsyncContext {
 
     public static class AsyncCommand<T> {
 
-        private static AtomicLong ID_SEQ = new AtomicLong();
-
         private final CommandCall<T> command;
 
         private final Future<T> future;
@@ -107,11 +119,12 @@ public class AsyncContext {
 
         private String description;
 
-        public AsyncCommand(CommandCall<T> command, Future<T> future, String description) {
+        public AsyncCommand(String taskId, CommandCall<T> command, Future<T> future,
+                String description) {
             this.command = command;
             this.future = future;
             this.description = description;
-            this.taskId = String.valueOf(ID_SEQ.incrementAndGet());
+            this.taskId = taskId;
         }
 
         public Optional<UUID> getTransactionId() {

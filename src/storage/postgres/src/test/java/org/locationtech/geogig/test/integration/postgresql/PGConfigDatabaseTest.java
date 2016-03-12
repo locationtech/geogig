@@ -9,10 +9,15 @@
  */
 package org.locationtech.geogig.test.integration.postgresql;
 
+import static org.junit.Assert.assertEquals;
+
+import java.net.URISyntaxException;
+
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.ConfigDatabaseTest;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.postgresql.Environment;
@@ -52,10 +57,45 @@ public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
         }
     }
 
+    /**
+     * Override as a no-op, since the pg config database's global settings don't depend on the
+     * {@code $HOME/.geogigconfig} file.
+     */
     @Override
     @Test
     @Ignore
     public void testNoUserHome() {
         // intentionally empty
+    }
+
+    @Test
+    public void testHintsConstructor() throws URISyntaxException {
+        Hints hints = new Hints();
+        String repoURI = testConfig.getRepoURL();
+        hints.set(Hints.REPOSITORY_URL, repoURI);
+
+        try (PGConfigDatabase db = new PGConfigDatabase(hints)) {
+            db.put("testSection.testKey", "testValue");
+            assertEquals("testValue", db.get("testSection.testKey").get());
+        }
+    }
+
+    @SuppressWarnings("resource")
+    @Test
+    public void testHintsConstructorNoRepoURIProvided() throws URISyntaxException {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("REPOSITORY_URL was not given");
+        new PGConfigDatabase(new Hints());
+    }
+
+    @SuppressWarnings("resource")
+    @Test
+    public void testHintsConstructorBadURI() throws URISyntaxException {
+        Hints hints = new Hints();
+        String repoURI = "this is not a valid URI";
+        hints.set(Hints.REPOSITORY_URL, repoURI);
+
+        exception.expect(URISyntaxException.class);
+        new PGConfigDatabase(hints);
     }
 }

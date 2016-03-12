@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 Boundless.
+/* Copyright (c) 2015-2016 Boundless.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -43,7 +43,23 @@ import com.google.inject.Inject;
 
 /**
  * PostgreSQL based config database.
+ * <p>
+ * Operates over the {@code geogig_config} table, which has the following DDL:
  * 
+ * <pre>
+ * <code>
+ *  CREATE TABLE IF NOT EXISTS geogig_config (repository TEXT, section TEXT, key TEXT, value TEXT,
+ *  PRIMARY KEY (repository, section, key) 
+ *  FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)
+ * </code>
+ * </pre>
+ * <p>
+ * The {@code repository} column holds the value given by {@link Environment#repositoryId}, which in
+ * turn comes from the repository URI: {@code postgresql://<host>[:port]/<database>/<repositoryId>}.
+ * <p>
+ * {@link #putGlobal(String, Object) global} values are stored under the {@code __GLOBAL__} key for
+ * the {@code repository} column, and hence {@code __GLOBAL__} it's invalid to provide
+ * {@code __GLOBAL__} as repository id.
  */
 public class PGConfigDatabase implements ConfigDatabase {
 

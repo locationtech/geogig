@@ -62,9 +62,9 @@ public abstract class ObjectStoreConformanceTest {
 
     private Hints hints;
 
-    private ObjectStore db;
+    protected ObjectStore db;
 
-    private RevObjectTestSupport objects = new RevObjectTestSupport();
+    protected RevObjectTestSupport objects = new RevObjectTestSupport();
 
     @Before
     public void setUp() throws IOException {

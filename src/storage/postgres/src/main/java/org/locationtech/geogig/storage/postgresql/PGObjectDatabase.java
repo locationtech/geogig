@@ -72,6 +72,7 @@ import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactory
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -245,6 +246,11 @@ public class PGObjectDatabase implements ObjectDatabase {
         Preconditions.checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
         return blobStore;
+    }
+
+    @VisibleForTesting
+    void setPutAllBatchSize(int size) {
+        this.putAllBatchSize = size;
     }
 
     private void printStats(String methodName, AtomicLong callCount, AtomicLong totalTimeNanos,

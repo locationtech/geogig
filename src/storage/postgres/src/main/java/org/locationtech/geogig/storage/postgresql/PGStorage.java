@@ -62,7 +62,12 @@ public class PGStorage {
                 }
                 sb.setLength(sb.length() - 2);
             }
-            log.debug(sb.toString());
+            String statement = sb.toString();
+            if (!statement.trim().endsWith(";")) {
+                statement += ";";
+            }
+            log.debug(statement);
+            // System.out.println(statement);
         }
         return sql;
     }
@@ -221,6 +226,8 @@ public class PGStorage {
                         PGStorage.run(cx, "SELECT pg_advisory_unlock(-1)");
 
                         cx.setAutoCommit(false);
+
+                        PGStorage.createObjectIdCompositeType(cx);
                         PGStorage.run(cx, "SET constraint_exclusion=ON");
 
                         createConfigTable(cx, tables);
@@ -233,12 +240,14 @@ public class PGStorage {
                         createGraphTables(cx, tables);
                         cx.commit();
                     } catch (SQLException | RuntimeException e) {
+                        e.printStackTrace();
                         cx.rollback();
                         Throwables.propagateIfInstanceOf(e, SQLException.class);
                         throw Throwables.propagate(e);
                     }
                     return null;
                 }
+
             }.run(ds);
         } finally {
             PGStorage.closeDataSource(ds);
@@ -253,12 +262,46 @@ public class PGStorage {
         }
     }
 
+    private static void createObjectIdCompositeType(Connection cx) throws SQLException {
+        final boolean autoCommit = cx.getAutoCommit();
+        cx.setAutoCommit(false);
+
+        // There's no CREATE TYPE IF NOT EXIST, so use this trick
+        final String func = "-- All of this to create a type if it does not exist\n"//
+                + "CREATE OR REPLACE FUNCTION create_objectid_type() RETURNS integer AS $$\n"//
+                + "DECLARE v_exists INTEGER;\n"//
+
+                + "BEGIN\n"//
+                + "    SELECT into v_exists (SELECT 1 FROM pg_type WHERE typname = 'objectid');\n"//
+                + "    IF v_exists IS NULL THEN\n"//
+                + "        CREATE TYPE OBJECTID AS(h1 INTEGER, h2 BIGINT, h3 BIGINT);\n"//
+                + "    END IF;\n"//
+                + "    RETURN v_exists;\n"//
+                + "END;\n"//
+                + "$$ LANGUAGE plpgsql;";
+
+        try (Statement st = cx.createStatement()) {
+            st.execute(log(func, LOG));
+            // Call the function you just created
+            st.execute(log("SELECT create_objectid_type()", LOG));
+
+            // Remove the function you just created
+            st.execute(log("DROP function create_objectid_type()", LOG));
+            cx.commit();
+            cx.setAutoCommit(autoCommit);
+        } catch (SQLException e) {
+            cx.rollback();
+            throw e;
+        }
+    }
+
     private static void createRepositoriesTable(Connection cx, TableNames tables)
             throws SQLException {
         String sql = format(
                 "CREATE TABLE %s (repository TEXT PRIMARY KEY, created TIMESTAMP, lock_id SERIAL);"
-                + "INSERT INTO %s (repository, created) VALUES ( '" + PGConfigDatabase.GLOBAL_KEY
-                + "', NOW())", tables.repositories(), tables.repositories());
+                        + "INSERT INTO %s (repository, created) VALUES ( '"
+                        + PGConfigDatabase.GLOBAL_KEY + "', NOW())", tables.repositories(),
+                tables.repositories());
         run(cx, sql);
     }
 
@@ -311,9 +354,7 @@ public class PGStorage {
         run(cx, sql);
     }
 
-    // static final String OBJECT_TABLE_STMT =
-    // "CREATE TABLE %s (hash1 INTEGER, hash2 TEXT, object BYTEA, PRIMARY KEY(hash1, hash2))";
-    static final String OBJECT_TABLE_STMT = "CREATE TABLE %s (hash1 INTEGER, hash2 BIGINT, hash3 BIGINT, object BYTEA) WITHOUT OIDS";
+    static final String OBJECT_TABLE_STMT = "CREATE TABLE %s (id OBJECTID, object BYTEA) WITHOUT OIDS;";
 
     static final String CHILD_TABLE_STMT = "CREATE TABLE %s ( ) INHERITS(%s)";
 
@@ -355,14 +396,14 @@ public class PGStorage {
         String rule = "CREATE OR REPLACE RULE " + rulePrefix
                 + "_ignore_duplicate_inserts AS ON INSERT TO " + tableName
                 + " WHERE (EXISTS ( SELECT 1 FROM " + tableName + " WHERE " + tableName
-                + ".hash1 = NEW.hash1 AND " + tableName + ".hash2 = NEW.hash2 AND " + tableName
-                + ".hash3 = NEW.hash3)) DO INSTEAD NOTHING";
+                + ".id = NEW.id)) DO INSTEAD NOTHING;";
         run(cx, rule);
     }
 
     private static void createObjectTableIndex(Connection cx, String tableName) throws SQLException {
 
-        String index = String.format("CREATE INDEX %s_hash1 ON %s USING HASH(hash1)",
+        String index = String.format(
+                "CREATE INDEX %s_objectid_h1_hash ON %s USING HASH(((id).h1))",
                 stripSchema(tableName), tableName);
         run(cx, index);
         // index = String.format("CREATE INDEX %s_hash2 ON %s USING HASH(hash2)",
@@ -379,38 +420,47 @@ public class PGStorage {
 
         final String triggerFunction = stripSchema(String.format("%s_partitioning_insert_trigger",
                 parentTable));
-        StringBuilder f = new StringBuilder(String.format("CREATE OR REPLACE FUNCTION %s()\n",
-                triggerFunction));
-        f.append("RETURNS TRIGGER AS $$\n");
-        f.append("BEGIN\n");
+        StringBuilder funcSql = new StringBuilder(String.format(
+                "CREATE OR REPLACE FUNCTION %s()\n", triggerFunction));
+        funcSql.append("RETURNS TRIGGER AS $$\n");
+        funcSql.append("DECLARE\n\n");
+        funcSql.append("id objectid;\n");
+        funcSql.append("h1 integer;\n");
+        funcSql.append("\nBEGIN\n\n");
+
+        funcSql.append("id = NEW.id;\n");
+        funcSql.append("-- raise notice 'id : %', id;\n");
+        funcSql.append("h1 = id.h1;\n");
+        funcSql.append("-- raise notice 'h1 : %', h1;\n");
+
         long curr = min;
         for (long i = 0; i < numTables; i++) {
             long next = curr + step;
             String tableName = String.format("%s_%d", parentTable, i);
             String sql = String.format("CREATE TABLE %s"
-                    + " ( CHECK (hash1 >= %d AND hash1 < %d) ) INHERITS (%s)", tableName, curr,
-                    next, parentTable);
+                    + " ( CHECK ( ((id).h1) >= %d AND ((id).h1) < %d) ) INHERITS (%s)", tableName,
+                    curr, next, parentTable);
 
             run(cx, sql);
             createIgnoreDuplicatesRule(cx, tableName);
             createObjectTableIndex(cx, tableName);
 
-            f.append(i == 0 ? "IF" : "ELSIF");
-            f.append(" ( NEW.hash1 >= ").append(curr);
+            funcSql.append(i == 0 ? "IF" : "ELSIF");
+            funcSql.append(" ( h1 >= ").append(curr);
             if (i < numTables - 1) {
-                f.append(" AND NEW.hash1 < ").append(next);
+                funcSql.append(" AND h1 < ").append(next);
             }
-            f.append(" ) THEN\n");
-            f.append(String.format("  INSERT INTO %s_%d VALUES (NEW.*);\n", parentTable, i));
+            funcSql.append(" ) THEN\n");
+            funcSql.append(String.format("  INSERT INTO %s_%d VALUES (NEW.*);\n", parentTable, i));
             curr = next;
         }
-        f.append("END IF;\n");
-        f.append("RETURN NULL;\n");
-        f.append("END;\n");
-        f.append("$$\n");
-        f.append("LANGUAGE plpgsql;\n");
+        funcSql.append("END IF;\n");
+        funcSql.append("RETURN NULL;\n");
+        funcSql.append("END;\n");
+        funcSql.append("$$\n");
+        funcSql.append("LANGUAGE plpgsql;\n");
 
-        String sql = f.toString();
+        String sql = funcSql.toString();
         run(cx, sql);
 
         sql = String.format("CREATE TRIGGER %s BEFORE INSERT ON "
@@ -439,12 +489,13 @@ public class PGStorage {
 
     private static void createGraphTables(Connection cx, TableNames tables) throws SQLException {
 
+        final String commits = tables.commits();
         final String nodes = tables.graphNodes();
         final String edges = tables.graphEdges();
         final String properties = tables.graphProperties();
         final String mappings = tables.graphMappings();
 
-        String sql = format("CREATE TABLE %s (id VARCHAR(40) PRIMARY KEY)", nodes);
+        String sql = format("CREATE VIEW %s AS SELECT id FROM %s", nodes, commits);
         run(cx, sql);
 
         sql = format("CREATE TABLE %s (src VARCHAR(40), dst VARCHAR(40), PRIMARY KEY (src,dst))",

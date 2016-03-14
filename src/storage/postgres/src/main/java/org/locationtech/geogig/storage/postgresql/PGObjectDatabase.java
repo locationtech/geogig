@@ -95,7 +95,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
     static final Logger LOG = LoggerFactory.getLogger(PGObjectDatabase.class);
 
-    private static final int DEFAULT_PUT_ALL_PARTITION_SIZE = 1000;
+    private static final int DEFAULT_PUT_ALL_PARTITION_SIZE = 10_000;
 
     private static final int DEFAULT_GET_ALL_PARTITION_SIZE = 50;
 
@@ -268,7 +268,7 @@ public class PGObjectDatabase implements ObjectDatabase {
             @Override
             protected Boolean doRun(Connection cx) throws SQLException {
                 String sql = format(
-                        "SELECT count(*) FROM %s WHERE hash1 = ? AND hash2 = ? AND hash3 = ?",
+                        "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID) )",
                         config.getTables().objects());
                 final PGId pgid = PGId.valueOf(id);
                 try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
@@ -276,8 +276,8 @@ public class PGObjectDatabase implements ObjectDatabase {
                     ps.setLong(2, pgid.hash2());
                     ps.setLong(3, pgid.hash3());
                     try (ResultSet rs = ps.executeQuery()) {
-                        rs.next();
-                        return rs.getInt(1) > 0;
+                        boolean exists = rs.next();
+                        return exists;
                     }
                 }
 
@@ -300,7 +300,8 @@ public class PGObjectDatabase implements ObjectDatabase {
             protected List<ObjectId> doRun(Connection cx) throws IOException, SQLException {
                 final String objects = config.getTables().objects();
                 final String sql = format(
-                        "SELECT hash1, hash2, hash3 FROM %s WHERE hash1 = ? LIMIT 100", objects);
+                        "SELECT ((id).h2), ((id).h3) FROM %s WHERE ((id).h1) = ? LIMIT 1000",
+                        objects);
 
                 try (PreparedStatement ps = cx.prepareStatement(sql)) {
                     ps.setInt(1, hash1);
@@ -308,9 +309,10 @@ public class PGObjectDatabase implements ObjectDatabase {
                     List<ObjectId> matchList = new ArrayList<>();
                     try (ResultSet rs = ps.executeQuery()) {
                         while (rs.next()) {
-                            ObjectId id = PGId.valueOf(rs.getInt(1), rs.getLong(2), rs.getLong(3))
+                            ObjectId id = PGId.valueOf(hash1, rs.getLong(1), rs.getLong(2))
                                     .toObjectId();
-                            if (id.toString().startsWith(partialId)) {
+                            final String idStr = id.toString();
+                            if (idStr.startsWith(partialId)) {
                                 matchList.add(id);
                             }
                         }
@@ -541,8 +543,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                 final String tableName = tableName(config.getTables(), object.getType(),
                         pgid.hash1());
 
-                String sql = format(
-                        "INSERT INTO %s (hash1, hash2, hash3, object) VALUES (?,?,?,?)", tableName);
+                String sql = format("INSERT INTO %s (id, object) VALUES (ROW(?,?,?),?)", tableName);
 
                 try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id, object))) {
                     ps.setInt(1, pgid.hash1());
@@ -677,28 +678,25 @@ public class PGObjectDatabase implements ObjectDatabase {
                     }
                 }
 
-                String sql = format("SELECT hash2, hash3, object FROM %s WHERE hash1 = ?",
+                // NOTE: the AND clause is for the ((id).h1) = ? comparison to use the hash index
+                // and enable constraint exclusion
+                String sql = format(
+                        "SELECT object FROM %s WHERE ((id).h1) = ? AND id = CAST(ROW(?,?,?) AS OBJECTID)",
                         tableName);
 
                 try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
                     ps.setInt(1, pgid.hash1());
+                    pgid.setArgs(ps, 2);
 
                     InputStream in = null;
 
                     try (ResultSet rs = ps.executeQuery()) {
-                        final long hash2 = pgid.hash2();
-                        final long hash3 = pgid.hash3();
-                        while (rs.next()) {
-                            long rethash2 = rs.getLong(1);
-                            long rethash3 = rs.getLong(2);
-                            if (rethash2 == hash2 && rethash3 == hash3) {
-                                byte[] bytes = rs.getBytes(3);
-                                try {
-                                    in = new LZFInputStream(new ByteArrayInputStream(bytes));
-                                } catch (IOException e) {
-                                    throw Throwables.propagate(e);
-                                }
-                                break;
+                        if (rs.next()) {
+                            byte[] bytes = rs.getBytes(1);
+                            try {
+                                in = new LZFInputStream(new ByteArrayInputStream(bytes));
+                            } catch (IOException e) {
+                                throw Throwables.propagate(e);
                             }
                         }
                         // Preconditions.checkState(!rs.next());
@@ -767,7 +765,8 @@ public class PGObjectDatabase implements ObjectDatabase {
                 }
             }
             final String sql = format(
-                    "SELECT hash1, hash2, hash3, object FROM %s WHERE hash1 = ANY(?)", tableName);
+                    "SELECT ((id).h1), ((id).h2),((id).h3), object FROM %s WHERE ((id).h1) = ANY(?)",
+                    tableName);
 
             final int queryCount = queryIds.size();
             List<RevObject> found = new ArrayList<>(queryCount);
@@ -853,7 +852,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         return new DbOp<Boolean>() {
             @Override
             protected Boolean doRun(Connection cx) throws SQLException {
-                String sql = format("DELETE FROM %s WHERE hash1 = ? AND hash2 = ? AND hash3 = ?",
+                String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
                         config.getTables().objects());
 
                 try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG, id))) {
@@ -967,8 +966,10 @@ public class PGObjectDatabase implements ObjectDatabase {
                         PreparedStatement tableStatement;
                         tableStatement = perTableStatements.get(tableName);
                         List<ObjectId> ids = perTableIds.removeAll(tableName);
-
+                        // Stopwatch sw = Stopwatch.createStarted();
                         int[] batchResults = tableStatement.executeBatch();
+                        // System.err.printf("%,d batch inserts to %s in %s\n", ids.size(),
+                        // tableName, sw.stop());
                         tableStatement.clearParameters();
                         tableStatement.clearBatch();
 
@@ -1007,8 +1008,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
             PreparedStatement stmt = perTableStatements.get(tableName);
             if (stmt == null) {
-                String sql = format("INSERT INTO %s (hash1, hash2, hash3, object) VALUES(?,?,?,?)",
-                        tableName);
+                String sql = format("INSERT INTO %s (id, object) VALUES(ROW(?,?,?),?)", tableName);
                 stmt = cx.prepareStatement(sql);
                 perTableStatements.put(tableName, stmt);
             }
@@ -1148,7 +1148,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
             @Override
             protected Long doRun(Connection cx) throws SQLException, IOException {
-                String sql = format("DELETE FROM %s WHERE hash1 = ? AND hash2 = ? AND hash3 = ?",
+                String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
                         config.getTables().objects());
 
                 long count = 0;

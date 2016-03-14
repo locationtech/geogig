@@ -354,7 +354,7 @@ public class PGStorage {
         run(cx, sql);
     }
 
-    static final String OBJECT_TABLE_STMT = "CREATE TABLE %s (id OBJECTID, object BYTEA) WITHOUT OIDS;";
+    static final String OBJECT_TABLE_STMT = "CREATE TABLE %s (id OBJECTID PRIMARY KEY, object BYTEA) WITHOUT OIDS;";
 
     static final String CHILD_TABLE_STMT = "CREATE TABLE %s ( ) INHERITS(%s)";
 
@@ -388,6 +388,14 @@ public class PGStorage {
 
         String sql = format(CHILD_TABLE_STMT, tableName, parentTable);
         run(cx, sql);
+    }
+
+    private static String partitionedObjectTableDDL(String tableName, final String parentTable,
+            long checkMinValue, long checkMaxValue) {
+        return String
+                .format("CREATE TABLE %s"
+                        + " (id OBJECTID PRIMARY KEY, object BYTEA, CHECK ( ((id).h1) >= %d AND ((id).h1) < %d) ) INHERITS (%s)",
+                        tableName, checkMinValue, checkMaxValue, parentTable);
     }
 
     private static void createIgnoreDuplicatesRule(Connection cx, String tableName)
@@ -437,9 +445,7 @@ public class PGStorage {
         for (long i = 0; i < numTables; i++) {
             long next = curr + step;
             String tableName = String.format("%s_%d", parentTable, i);
-            String sql = String.format("CREATE TABLE %s"
-                    + " ( CHECK ( ((id).h1) >= %d AND ((id).h1) < %d) ) INHERITS (%s)", tableName,
-                    curr, next, parentTable);
+            String sql = partitionedObjectTableDDL(tableName, parentTable, curr, next);
 
             run(cx, sql);
             createIgnoreDuplicatesRule(cx, tableName);

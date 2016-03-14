@@ -504,8 +504,7 @@ public class PGStorage {
         String sql = format("CREATE VIEW %s AS SELECT id FROM %s", nodes, commits);
         run(cx, sql);
 
-        sql = format("CREATE TABLE %s (src VARCHAR(40), dst VARCHAR(40), PRIMARY KEY (src,dst))",
-                edges);
+        sql = format("CREATE TABLE %s (src OBJECTID, dst OBJECTID, PRIMARY KEY (src,dst))", edges);
         run(cx, sql);
 
         sql = format("CREATE INDEX %s_src_index ON %s(src)", stripSchema(edges), edges);
@@ -514,11 +513,11 @@ public class PGStorage {
         sql = format("CREATE INDEX %s_dst_index ON %s(dst)", stripSchema(edges), edges);
         run(cx, sql);
 
-        sql = format("CREATE TABLE %s (nid VARCHAR(40), key VARCHAR, val VARCHAR,"
+        sql = format("CREATE TABLE %s (nid OBJECTID, key VARCHAR, val VARCHAR,"
                 + " PRIMARY KEY(nid,key))", properties);
         run(cx, sql);
 
-        sql = format("CREATE TABLE %s (alias VARCHAR PRIMARY KEY, nid VARCHAR(40))", mappings);
+        sql = format("CREATE TABLE %s (alias OBJECTID PRIMARY KEY, nid OBJECTID)", mappings);
         run(cx, sql);
 
         sql = format("CREATE INDEX %s_nid_index ON %s(nid)", stripSchema(mappings), mappings);

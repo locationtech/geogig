@@ -9,6 +9,10 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.locationtech.geogig.api.ObjectId;
 
 import com.google.common.io.ByteArrayDataOutput;
@@ -95,5 +99,16 @@ final class PGId {
     @Override
     public String toString() {
         return String.format("ID[%d, %d, %d]", hash1(), hash2(), hash3());
+    }
+
+    public void setArgs(PreparedStatement ps, final int startIndex) throws SQLException {
+        ps.setInt(startIndex, hash1());
+        ps.setLong(startIndex + 1, hash2());
+        ps.setLong(startIndex + 2, hash3());
+    }
+
+    public static PGId valueOf(ResultSet rs, int startIndex) throws SQLException {
+        return valueOf(rs.getInt(startIndex), rs.getLong(startIndex + 1),
+                rs.getLong(startIndex + 2));
     }
 }

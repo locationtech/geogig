@@ -26,6 +26,7 @@ import org.locationtech.geogig.web.api.commands.EndTransaction;
 import org.locationtech.geogig.web.api.commands.FeatureDiffWeb;
 import org.locationtech.geogig.web.api.commands.FetchWebOp;
 import org.locationtech.geogig.web.api.commands.GetCommitGraph;
+import org.locationtech.geogig.web.api.commands.InitWebOp;
 import org.locationtech.geogig.web.api.commands.Log;
 import org.locationtech.geogig.web.api.commands.LsTree;
 import org.locationtech.geogig.web.api.commands.MergeWebOp;
@@ -51,6 +52,7 @@ public class CommandBuilder {
 
     private static Map<String, Function<ParameterSet, WebAPICommand>> MAPPINGS = new HashMap<>();
     static {
+        MAPPINGS.put("init", InitWebOp::new);
         MAPPINGS.put("status", Status::new);
         MAPPINGS.put("log", Log::new);
         MAPPINGS.put("commit", Commit::new);

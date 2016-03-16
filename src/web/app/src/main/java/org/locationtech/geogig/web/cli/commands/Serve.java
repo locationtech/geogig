@@ -23,7 +23,10 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.rest.repository.RepositoryProvider;
+import org.locationtech.geogig.web.DirectoryRepositoryProvider;
 import org.locationtech.geogig.web.Main;
+import org.locationtech.geogig.web.SingleRepositoryProvider;
 import org.restlet.Application;
 import org.restlet.Component;
 import org.restlet.data.Protocol;
@@ -49,6 +52,10 @@ public class Serve extends AbstractCommand {
     @Parameter(description = "Repository location (directory).", required = false, arity = 1)
     private List<String> repo;
 
+    @Parameter(names = { "--multirepo",
+            "-m" }, description = "Serve all of the repositories in the directory.", required = false)
+    private boolean multiRepo = false;
+
     @Parameter(names = { "--port", "-p" }, description = "Port to run server on")
     private int port = 8182;
 
@@ -58,8 +65,13 @@ public class Serve extends AbstractCommand {
 
         String loc = repo != null && repo.size() > 0 ? repo.get(0) : ".";
 
-        GeoGIG geogig = loadGeoGIG(loc, cli);
-        Application application = new Main(geogig);
+        final RepositoryProvider provider;
+        if (multiRepo) {
+            provider = new DirectoryRepositoryProvider(new File(loc).getCanonicalFile());
+        } else {
+            provider = new SingleRepositoryProvider(loadGeoGIG(loc, cli));
+        }
+        Application application = new Main(provider, multiRepo);
 
         Component comp = new Component();
 

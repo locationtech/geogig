@@ -59,7 +59,6 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
 
     private LoadingCache<String, GeoGIG> repositories;
 
-    private final File repositoriesDirectory;
 
     public DirectoryRepositoryProvider(final File repositoriesDirectory) {
 
@@ -70,8 +69,6 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
         checkArgument(repositoriesDirectory.canRead(), "%s can't be read by this process",
                 repositoriesDirectory);
 
-        this.repositoriesDirectory = repositoriesDirectory;
-
         try {
             this.repositories = buildCache(repositoriesDirectory);
         } catch (IOException e) {
@@ -79,23 +76,26 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
         }
 
         try {
-            loadReposiroties(repositoriesDirectory);
+            loadRepositories(repositoriesDirectory);
         } catch (IOException e) {
             repositories.invalidateAll();
             throw Throwables.propagate(e);
         }
     }
 
-    private void loadReposiroties(File baseDir) throws IOException {
+    private void loadRepositories(File baseDir) throws IOException {
         LOG.debug("Loading repositories under " + baseDir);
 
         final List<Path> subdirs = new ArrayList<Path>();
 
-        Files.walkFileTree(baseDir.toPath(), new SimpleFileVisitor<Path>() {
+        final Path basePath = baseDir.toPath();
+        Files.walkFileTree(basePath, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
                     throws IOException {
-
+                if (dir.equals(basePath)) {
+                    return FileVisitResult.CONTINUE;
+                }
                 if (dir.getFileName().toString().startsWith(".")) {
                     LOG.info("Ignoring hidden directory " + dir);
                 } else {
@@ -118,7 +118,7 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
                     LOG.info("Loaded repository " + dir.getFileName());
                 }
             } catch (ExecutionException e) {
-                throw Throwables.propagate(e);
+                Throwables.propagate(e);
             }
         }
     }
@@ -131,7 +131,13 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
         }
 
         try {
-            GeoGIG repo = repositories.get(repositoryId);
+            GeoGIG repo = repositories.getIfPresent(repositoryId);
+            if (repo == null) {
+                repo = repositories.get(repositoryId);
+            } else if (!repo.isOpen()) {
+                repositories.invalidate(repositoryId);
+                repo = repositories.get(repositoryId);
+            }
             return Optional.of(repo);
         } catch (ExecutionException e) {
             LOG.warn("Unable to load repository {}", repositoryId, e);
@@ -205,13 +211,19 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
 
         Context context = GlobalContextBuilder.builder.build(hints);
 
-        GeoGIG geogig = new GeoGIG(context, repo.toFile());
+        final GeoGIG geogig;
+        if (repo.toFile().exists()) {
+            geogig = new GeoGIG(context, repo.toFile());
+        } else {
+            geogig = new GeoGIG(context);
+        }
 
-        if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
+        Optional<URI> resolvedRepoURI = geogig.command(ResolveGeogigURI.class).call();
+
+        if (resolvedRepoURI.isPresent() && new File(resolvedRepoURI.get()).exists()) {
             Repository repository = geogig.getRepository();
             URI location = repository.getLocation();
             Preconditions.checkNotNull(location);
-            Preconditions.checkState(repoURI.equals(location));
             LOG.info("Loaded existing repository " + repo);
         } else {
             LOG.info("Using non existing repository " + repo

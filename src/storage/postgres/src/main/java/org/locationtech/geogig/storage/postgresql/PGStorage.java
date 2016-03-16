@@ -354,9 +354,21 @@ public class PGStorage {
         run(cx, sql);
     }
 
-    static final String OBJECT_TABLE_STMT = "CREATE TABLE %s (id OBJECTID PRIMARY KEY, object BYTEA) WITHOUT OIDS;";
+    /**
+     * @see #createObjectsTables
+     */
+    static final String OBJECT_TABLE_STMT = "CREATE TABLE %s (id OBJECTID, object BYTEA) WITHOUT OIDS;";
 
+    /**
+     * @see #createObjectChildTable
+     */
     static final String CHILD_TABLE_STMT = "CREATE TABLE %s ( ) INHERITS(%s)";
+
+    /**
+     * @see #partitionedObjectTableDDL
+     */
+    static final String PARTITIONED_CHILD_TABLE_STMT = "CREATE TABLE %s"
+            + " (id OBJECTID, object BYTEA, CHECK ( ((id).h1) >= %d AND ((id).h1) < %d) ) INHERITS (%s)";
 
     /**
      * TODO: compare performance in case we also created indexes for the "abstract" tables (object
@@ -392,19 +404,18 @@ public class PGStorage {
 
     private static String partitionedObjectTableDDL(String tableName, final String parentTable,
             long checkMinValue, long checkMaxValue) {
-        return String
-                .format("CREATE TABLE %s"
-                        + " (id OBJECTID PRIMARY KEY, object BYTEA, CHECK ( ((id).h1) >= %d AND ((id).h1) < %d) ) INHERITS (%s)",
-                        tableName, checkMinValue, checkMaxValue, parentTable);
+        return String.format(PARTITIONED_CHILD_TABLE_STMT, tableName, checkMinValue, checkMaxValue,
+                parentTable);
     }
 
     private static void createIgnoreDuplicatesRule(Connection cx, String tableName)
             throws SQLException {
         String rulePrefix = stripSchema(tableName);
+
         String rule = "CREATE OR REPLACE RULE " + rulePrefix
                 + "_ignore_duplicate_inserts AS ON INSERT TO " + tableName
-                + " WHERE (EXISTS ( SELECT 1 FROM " + tableName + " WHERE " + tableName
-                + ".id = NEW.id)) DO INSTEAD NOTHING;";
+                + " WHERE (EXISTS ( SELECT 1 FROM " + tableName
+                + " WHERE ((id).h1) = (NEW.id).h1 AND id = NEW.id))" + " DO INSTEAD NOTHING;";
         run(cx, rule);
     }
 

@@ -76,7 +76,7 @@ public abstract class ObjectStoreConformanceTest {
         hints = new Hints();
 
         this.db = createOpen(platform, hints);
-        this.db.open();
+        //this.db.open();
     }
 
     @After

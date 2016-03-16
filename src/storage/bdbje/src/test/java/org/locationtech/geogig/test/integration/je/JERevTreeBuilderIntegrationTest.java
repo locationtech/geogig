@@ -16,8 +16,8 @@ import org.locationtech.geogig.di.GeogigModule;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
-public class JERevTreeBuilderTest extends
-        org.locationtech.geogig.test.integration.RevTreeBuilderTest {
+public class JERevTreeBuilderIntegrationTest extends
+        org.locationtech.geogig.test.integration.RevTreeBuilderIntegrationTest {
     @Override
     protected Context createInjector() {
         return Guice.createInjector(
@@ -38,7 +38,7 @@ public class JERevTreeBuilderTest extends
     }
 
     public static void main(String... args) {
-        JERevTreeBuilderTest test = new JERevTreeBuilderTest();
+        JERevTreeBuilderIntegrationTest test = new JERevTreeBuilderIntegrationTest();
         try {
             test.setUp();
             test.testPutRandomGet();

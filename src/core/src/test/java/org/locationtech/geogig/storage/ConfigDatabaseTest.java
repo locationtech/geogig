@@ -69,6 +69,7 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
 
     @Test
     public void testLocal() {
+        assertFalse(config.get("section.int").isPresent());
         // Test integer and string
         config.put("section.int", 1);
         config.put("section.string", "2");
@@ -172,6 +173,22 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
                 "section1.subsection.string", "2", "section1.subsection.subsub.int", "1",
                 "section2.int", "3", "section2.subsection.string", "4");
         assertEquals(expected, all);
+    }
+
+    @Test
+    public void testGetAllSectionGlobal() {
+        // Test integer and string
+        config.putGlobal("section1.int", 1);
+        config.putGlobal("section1.subsection.string", "2");
+        config.putGlobal("section1.subsection.subsub.int", 1);
+        config.putGlobal("section1.subsection.subsub.string", "4");
+        config.putGlobal("section2.int", 3);
+
+        assertEquals(ImmutableMap.of("int", "1"), config.getAllSectionGlobal("section1"));
+        assertEquals(ImmutableMap.of("string", "2"),
+                config.getAllSectionGlobal("section1.subsection"));
+        assertEquals(ImmutableMap.of("int", "1", "string", "4"),
+                config.getAllSectionGlobal("section1.subsection.subsub"));
     }
 
     @Test
@@ -307,4 +324,41 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         assertFalse(config.get("section1.int").isPresent());
     }
 
+    @Test
+    public void testRemoveGlobal() {
+        // Test integer and string
+        config.putGlobal("section1.int", 1);
+        config.putGlobal("section1.subsection.string", "2");
+        config.putGlobal("section1.subsection.subsub.int", 1);
+        config.putGlobal("section1.subsection.subsub.string", "4");
+        config.putGlobal("section2.int", 3);
+
+        assertTrue(config.getGlobal("section1.int").isPresent());
+        config.removeGlobal("section1.int");
+        assertFalse(config.getGlobal("section1.int").isPresent());
+
+        assertTrue(config.getGlobal("section1.subsection.subsub.string").isPresent());
+        config.removeGlobal("section1.subsection.subsub.string");
+        assertFalse(config.getGlobal("section1.subsection.subsub.string").isPresent());
+    }
+
+    @Test
+    public void testRemoveSectionGlobal() {
+        // Test integer and string
+        config.putGlobal("section1.int", 1);
+        config.putGlobal("section1.subsection.string", "2");
+        config.putGlobal("section1.subsection.subsub.int", 1);
+        config.putGlobal("section1.subsection.subsub.string", "4");
+        config.putGlobal("section2.int", 3);
+
+        assertTrue(config.getGlobal("section1.subsection.subsub.string").isPresent());
+        assertTrue(config.getGlobal("section1.subsection.subsub.int").isPresent());
+        config.removeSectionGlobal("section1.subsection.subsub");
+        assertFalse(config.getGlobal("section1.subsection.subsub.string").isPresent());
+        assertFalse(config.getGlobal("section1.subsection.subsub.int").isPresent());
+
+        assertTrue(config.getGlobal("section1.int").isPresent());
+        config.removeSectionGlobal("section1");
+        assertFalse(config.getGlobal("section1.int").isPresent());
+    }
 }

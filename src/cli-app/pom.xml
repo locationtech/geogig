@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.locationtech.geogig</groupId>
     <artifactId>geogig</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
@@ -33,6 +33,11 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-osm</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-postgres</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

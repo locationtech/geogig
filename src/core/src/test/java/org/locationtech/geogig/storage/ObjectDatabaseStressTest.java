@@ -34,17 +34,15 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.RevCommitImpl;
+import org.locationtech.geogig.api.RevFeatureImpl;
 import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevPerson;
-import org.locationtech.geogig.api.RevPersonImpl;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
@@ -108,7 +106,7 @@ public abstract class ObjectDatabaseStressTest {
         testPutAll(100_000);
     }
 
-    @Ignore
+    // @Ignore
     @Test
     public void testPutAll_1M() throws Exception {
         testPutAll(1000_000);
@@ -166,6 +164,7 @@ public abstract class ObjectDatabaseStressTest {
         }
         sw.stop();
         System.err.printf("--- %,d inserted in %s\n", listener.inserted(), sw);
+        Assert.assertEquals(count, listener.inserted());
 
         final MemoryUsage indexCreateMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
 
@@ -186,9 +185,10 @@ public abstract class ObjectDatabaseStressTest {
 
         CountingListener getAllListener = BulkOpListener.newCountingListener();
         sw.reset().start();
-        Iterators.filter(db.getAll(ids, getAllListener), Predicates.alwaysFalse()).hasNext();
+        final int returnedObjectCount = Iterators.size(db.getAll(ids, getAllListener));
         System.err.printf("----- %,d random objects queried (%,d not found) with getAll() in %s\n",
                 getAllListener.found(), getAllListener.notFound(), sw.stop());
+        System.err.printf("%,d objects returned on iterator\n", returnedObjectCount);
 
         MemoryUsage getAllTraversedMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
 
@@ -316,13 +316,22 @@ public abstract class ObjectDatabaseStressTest {
     }
 
     private RevObject fakeObject(ObjectId objectId) {
-        String oidString = objectId.toString();
-        ObjectId treeId = ObjectId.forString("tree" + oidString);
-        ImmutableList<ObjectId> parentIds = ImmutableList.of();
-        RevPerson author = new RevPersonImpl("Gabriel", "groldan@boundlessgeo.com", 1000, -3);
-        RevPerson committer = new RevPersonImpl("Gabriel", "groldan@boundlessgeo.com", 1000, -3);
-        String message = "message " + oidString;
-        return new RevCommitImpl(objectId, treeId, parentIds, author, committer, message);
+        // String oidString = objectId.toString();
+        // ObjectId treeId = ObjectId.forString("tree" + oidString);
+        // ImmutableList<ObjectId> parentIds = ImmutableList.of();
+        // RevPerson author = new RevPersonImpl("Gabriel", "groldan@boundlessgeo.com", 1000, -3);
+        // RevPerson committer = new RevPersonImpl("Gabriel", "groldan@boundlessgeo.com", 1000, -3);
+        // String message = "message " + oidString;
+        // return new RevCommitImpl(objectId, treeId, parentIds, author, committer, message);
+
+        ImmutableList.Builder<Optional<Object>> builder = new ImmutableList.Builder();
+
+        builder.add(Optional.absent());
+        builder.add(Optional.of("Some string value " + objectId));
+
+        ImmutableList<Optional<Object>> values = builder.build();
+        RevFeatureImpl feature = new RevFeatureImpl(objectId, values);
+        return feature;
     }
 
     private ObjectId fakeId(int i) {

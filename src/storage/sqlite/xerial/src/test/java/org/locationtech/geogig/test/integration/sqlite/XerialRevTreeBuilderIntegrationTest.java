@@ -15,10 +15,10 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.test.integration.RevTreeBuilderTest;
+import org.locationtech.geogig.test.integration.RevTreeBuilderIntegrationTest;
 
 
-public class XerialRevTreeBuilderTest extends RevTreeBuilderTest {
+public class XerialRevTreeBuilderIntegrationTest extends RevTreeBuilderIntegrationTest {
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 

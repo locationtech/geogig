@@ -219,7 +219,7 @@ public class PGGraphDatabase implements GraphDatabase {
 
     @Override
     public GraphNode getNode(ObjectId id) {
-        return new SQLiteGraphNode(id);
+        return new PGGraphNode(id);
     }
 
     /**
@@ -465,37 +465,11 @@ public class PGGraphDatabase implements GraphDatabase {
         return rs;
     }
 
-    /**
-     * Clears the contents of the graph.
-     */
-    void clear(DataSource ds) {
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                try (Statement st = cx.createStatement()) {
-
-                    String sql = format("DELETE FROM %s", PROPS);
-                    st.execute(log(sql, LOG));
-
-                    sql = format("DELETE FROM %s", EDGES);
-                    st.execute(log(sql, LOG));
-
-                    sql = format("DELETE FROM %s", NODES);
-                    st.execute(log(sql, LOG));
-
-                    sql = format("DELETE FROM %s", MAPPINGS);
-                    st.execute(log(sql, LOG));
-                }
-                return null;
-            }
-        }.run(ds);
-    }
-
-    private class SQLiteGraphNode extends GraphNode {
+    private class PGGraphNode extends GraphNode {
 
         private ObjectId id;
 
-        public SQLiteGraphNode(ObjectId id) {
+        public PGGraphNode(ObjectId id) {
             this.id = id;
         }
 
@@ -514,14 +488,14 @@ public class PGGraphDatabase implements GraphDatabase {
                 Iterator<PGId> nodeEdges = incoming(pgId, dataSource).iterator();
                 while (nodeEdges.hasNext()) {
                     PGId otherNode = nodeEdges.next();
-                    edges.add(new GraphEdge(new SQLiteGraphNode(otherNode.toObjectId()), this));
+                    edges.add(new GraphEdge(new PGGraphNode(otherNode.toObjectId()), this));
                 }
             }
             if (direction == Direction.OUT || direction == Direction.BOTH) {
                 Iterator<PGId> nodeEdges = outgoing(pgId, dataSource).iterator();
                 while (nodeEdges.hasNext()) {
                     PGId otherNode = nodeEdges.next();
-                    edges.add(new GraphEdge(this, new SQLiteGraphNode(otherNode.toObjectId())));
+                    edges.add(new GraphEdge(this, new PGGraphNode(otherNode.toObjectId())));
                 }
             }
             return edges.iterator();

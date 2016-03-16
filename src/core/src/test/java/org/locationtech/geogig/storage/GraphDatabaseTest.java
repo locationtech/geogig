@@ -10,10 +10,13 @@
 package org.locationtech.geogig.storage;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -23,6 +26,9 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.TestPlatform;
+import org.locationtech.geogig.storage.GraphDatabase.Direction;
+import org.locationtech.geogig.storage.GraphDatabase.GraphEdge;
+import org.locationtech.geogig.storage.GraphDatabase.GraphNode;
 
 import com.google.common.collect.ImmutableList;
 
@@ -185,5 +191,81 @@ public abstract class GraphDatabaseTest {
         assertEquals(4, database.getDepth(commit4));
         System.out.println("Testing depth 11");
         assertEquals(1, database.getDepth(commit11));
+    }
+
+    @Test
+    public void testProperties() throws IOException {
+        ObjectId rootId = ObjectId.forString("root");
+        ImmutableList<ObjectId> parents = ImmutableList.of();
+        database.put(rootId, parents);
+
+        database.setProperty(rootId, GraphDatabase.SPARSE_FLAG, "true");
+        assertTrue(database.getNode(rootId).isSparse());
+    }
+
+    @Test
+    public void testEdges() throws IOException {
+        ObjectId rootId = ObjectId.forString("root");
+        database.put(rootId, ImmutableList.of());
+        ObjectId commit1 = ObjectId.forString("c1");
+        database.put(commit1, ImmutableList.of(rootId));
+        ObjectId commit2 = ObjectId.forString("c2");
+        database.put(commit2, ImmutableList.of(commit1, rootId));
+
+        GraphNode node;
+        List<GraphEdge> edges;
+
+        node = database.getNode(commit2);
+        assertNotNull(node);
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        assertTrue(edges.isEmpty());
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        assertEquals(2, edges.size());
+        assertEquals(commit1, edges.get(0).getToNode().getIdentifier());
+        assertEquals(rootId, edges.get(1).getToNode().getIdentifier());
+
+        node = database.getNode(commit1);
+        assertNotNull(node);
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        assertEquals(1, edges.size());
+
+        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        assertEquals(1, edges.size());
+
+    }
+
+    @Test
+    public void testTruncate() throws IOException {
+        ObjectId rootId = ObjectId.forString("root");
+        database.put(rootId, ImmutableList.of());
+        ObjectId commit1 = ObjectId.forString("c1");
+        database.put(commit1, ImmutableList.of(rootId));
+        ObjectId commit2 = ObjectId.forString("c2");
+        database.put(commit2, ImmutableList.of(commit1, rootId));
+
+        assertTrue(database.exists(rootId));
+        assertTrue(database.exists(commit1));
+        assertTrue(database.exists(commit2));
+
+        assertNotNull(database.getNode(rootId));
+        assertNotNull(database.getNode(commit1));
+        assertNotNull(database.getNode(commit2));
+        assertEquals(1, database.getDepth(commit2));
+
+        database.truncate();
+
+        // not using getNode for assertions cause it's contract is not well defined for an invalid
+        // argument and implementations behave differently. Created an issue to fix it.
+        // assertNull(database.getNode(rootId));
+        // assertNull(database.getNode(commit1));
+        // assertNull(database.getNode(commit2));
+        // assertEquals(0, database.getDepth(commit2));
+
+        assertFalse(database.exists(rootId));
+        assertFalse(database.exists(commit1));
+        assertFalse(database.exists(commit2));
     }
 }

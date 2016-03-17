@@ -47,6 +47,8 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnels;
 
 public abstract class ObjectDatabaseStressTest {
     private static final MemoryMXBean MEMORY_MX_BEAN = ManagementFactory.getMemoryMXBean();
@@ -90,7 +92,6 @@ public abstract class ObjectDatabaseStressTest {
         // Assert.assertFalse(db.put(o));
     }
 
-    @Ignore
     @Test
     public void testPutAll_1K() throws Exception {
         testPutAll(1000);
@@ -106,7 +107,7 @@ public abstract class ObjectDatabaseStressTest {
         testPutAll(100_000);
     }
 
-    // @Ignore
+    @Ignore
     @Test
     public void testPutAll_1M() throws Exception {
         testPutAll(1000_000);
@@ -203,6 +204,7 @@ public abstract class ObjectDatabaseStressTest {
         reportMem(initialMem, indexCreateMem, getIfPresentTraversedMem, getAllTraversedMem,
                 afterGCMem);
         reportRepoSize();
+        Assert.assertEquals(getAllListener.toString(), queryCount, getAllListener.found());
     }
 
     private void testGettIfPresent(final int count, final int queryCount) {
@@ -282,6 +284,10 @@ public abstract class ObjectDatabaseStressTest {
             @Override
             public Iterator<ObjectId> iterator() {
                 return new AbstractIterator<ObjectId>() {
+
+                    final BloomFilter<Integer> bloomFilter = BloomFilter.create(
+                            Funnels.integerFunnel(), count, 0.001);
+
                     final Random random = new Random();
 
                     int c = 0;
@@ -292,8 +298,13 @@ public abstract class ObjectDatabaseStressTest {
                             return endOfData();
                         }
                         c++;
-                        int q = random.nextInt(total);
-                        return fakeId(q);
+                        Integer q;
+                        do {
+                            q = Integer.valueOf(random.nextInt(total));
+                        } while (bloomFilter.mightContain(q));
+                        bloomFilter.put(q);
+
+                        return fakeId(q.intValue());
                     }
                 };
             }

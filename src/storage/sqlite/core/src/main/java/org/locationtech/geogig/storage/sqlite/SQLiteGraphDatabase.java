@@ -153,6 +153,7 @@ public abstract class SQLiteGraphDatabase<T> implements GraphDatabase {
 
     @Override
     public void truncate() {
+        clear(cx);
     }
 
     /**

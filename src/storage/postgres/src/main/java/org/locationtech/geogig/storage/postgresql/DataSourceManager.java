@@ -9,15 +9,23 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import javax.sql.DataSource;
 
 import org.locationtech.geogig.storage.ConnectionManager;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Throwables;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, DataSource> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DataSourceManager.class);
 
     @Override
     protected DataSource connect(Environment.ConnectionConfig config) {
@@ -31,11 +39,18 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
 
         hc.setMaximumPoolSize(10);
         hc.setMinimumIdle(0);
-        //hc.setIdleTimeout(30/* seconds */);
+        // hc.setIdleTimeout(30/* seconds */);
         hc.setUsername(config.getUser());
         hc.setPassword(config.getPassword());
 
+        LOG.debug("Connecting to " + jdbcUrl + " as user " + config.getUser());
         HikariDataSource ds = new HikariDataSource(hc);
+        try (Connection c = ds.getConnection()) {
+            LOG.debug("Connected to " + jdbcUrl + " as " + config.getUser());
+        } catch (SQLException e) {
+            LOG.error("Unable to connect to " + jdbcUrl + " as " + config.getUser(), e);
+            throw Throwables.propagate(e);
+        }
         return ds;
     }
 

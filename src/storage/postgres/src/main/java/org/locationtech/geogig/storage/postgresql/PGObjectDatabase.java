@@ -32,6 +32,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -272,9 +273,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                         config.getTables().objects());
                 final PGId pgid = PGId.valueOf(id);
                 try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
-                    ps.setInt(1, pgid.hash1());
-                    ps.setLong(2, pgid.hash2());
-                    ps.setLong(3, pgid.hash3());
+                    pgid.setArgs(ps, 1);
                     try (ResultSet rs = ps.executeQuery()) {
                         boolean exists = rs.next();
                         return exists;
@@ -464,7 +463,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
         private PGObjectDatabase db;
 
-        private Iterator<RevObject> delegate = Iterators.emptyIterator();
+        private Iterator<RevObject> delegate = Collections.emptyIterator();
 
         private TYPE type;
 
@@ -546,9 +545,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                 String sql = format("INSERT INTO %s (id, object) VALUES (ROW(?,?,?),?)", tableName);
 
                 try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id, object))) {
-                    ps.setInt(1, pgid.hash1());
-                    ps.setLong(2, pgid.hash2());
-                    ps.setLong(3, pgid.hash3());
+                    pgid.setArgs(ps, 1);
                     byte[] blob = writeObject(object);
                     ps.setBytes(4, blob);
 
@@ -789,8 +786,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                         byte[] bytes;
                         RevObject obj;
                         while (rs.next()) {
-                            id = PGId.valueOf(rs.getInt(1), rs.getLong(2), rs.getLong(3))
-                                    .toObjectId();
+                            id = PGId.valueOf(rs, 1).toObjectId();
                             // only add those that are in the query set. The resultset may contain
                             // more due to hash1 clashes
                             if (queryIds.remove(id)) {
@@ -856,10 +852,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                         config.getTables().objects());
 
                 try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG, id))) {
-                    PGId pgid = PGId.valueOf(id);
-                    stmt.setInt(1, pgid.hash1());
-                    stmt.setLong(2, pgid.hash2());
-                    stmt.setLong(3, pgid.hash3());
+                    PGId.valueOf(id).setArgs(stmt, 1);
                     int updateCount = stmt.executeUpdate();
                     return Boolean.valueOf(updateCount > 0);
                 }
@@ -951,9 +944,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                             perTableIds.put(tableName, id);
 
                             PreparedStatement stmt = prepare(cx, tableName, perTableStatements);
-                            stmt.setInt(1, pgid.hash1());
-                            stmt.setLong(2, pgid.hash2());
-                            stmt.setLong(3, pgid.hash3());
+                            pgid.setArgs(stmt, 1);
                             stmt.setBytes(4, bytes);
                             stmt.addBatch();
                         }
@@ -1160,10 +1151,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                     while (it.hasNext()) {
                         List<ObjectId> l = it.next();
                         for (ObjectId id : l) {
-                            PGId pgid = PGId.valueOf(id);
-                            stmt.setInt(1, pgid.hash1());
-                            stmt.setLong(2, pgid.hash2());
-                            stmt.setLong(3, pgid.hash3());
+                            PGId.valueOf(id).setArgs(stmt, 1);
                             stmt.addBatch();
                         }
 

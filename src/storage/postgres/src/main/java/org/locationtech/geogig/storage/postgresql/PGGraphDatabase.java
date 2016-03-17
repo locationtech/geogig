@@ -52,8 +52,6 @@ import com.google.inject.Inject;
 public class PGGraphDatabase implements GraphDatabase {
     static Logger LOG = LoggerFactory.getLogger(PGGraphDatabase.class);
 
-    private final String NODES;
-
     private final String EDGES;
 
     private final String PROPS;
@@ -82,7 +80,6 @@ public class PGGraphDatabase implements GraphDatabase {
         this.config = config;
         this.formatVersion = PGStorageProvider.VERSION;
         TableNames tables = config.getTables();
-        this.NODES = tables.graphNodes();
         this.EDGES = tables.graphEdges();
         this.PROPS = tables.graphProperties();
         this.MAPPINGS = tables.graphMappings();

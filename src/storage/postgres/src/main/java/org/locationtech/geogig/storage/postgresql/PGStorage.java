@@ -507,13 +507,11 @@ public class PGStorage {
     private static void createGraphTables(Connection cx, TableNames tables) throws SQLException {
 
         final String commits = tables.commits();
-        final String nodes = tables.graphNodes();
         final String edges = tables.graphEdges();
         final String properties = tables.graphProperties();
         final String mappings = tables.graphMappings();
 
-        String sql = format("CREATE VIEW %s AS SELECT id FROM %s", nodes, commits);
-        run(cx, sql);
+        String sql;
 
         sql = format("CREATE TABLE %s (src OBJECTID, dst OBJECTID, PRIMARY KEY (src,dst))", edges);
         run(cx, sql);

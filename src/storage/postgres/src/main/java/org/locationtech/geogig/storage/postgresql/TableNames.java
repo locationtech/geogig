@@ -102,10 +102,6 @@ class TableNames {
         return name("conflict");
     }
 
-    public String graphNodes() {
-        return name("graph_node");
-    }
-
     public String graphEdges() {
         return name("graph_edge");
     }
@@ -125,7 +121,7 @@ class TableNames {
     public List<String> all() {
         return ImmutableList.of(repositories(), config(), refs(), conflicts(), objects(),
                 commits(), features(), featureTypes(), trees(), graphEdges(), graphMappings(),
-                graphNodes(), graphProperties(), blobs());
+                graphProperties(), blobs());
     }
 
 }

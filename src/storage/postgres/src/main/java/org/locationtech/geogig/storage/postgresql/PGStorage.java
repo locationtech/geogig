@@ -67,7 +67,6 @@ public class PGStorage {
                 statement += ";";
             }
             log.debug(statement);
-            // System.out.println(statement);
         }
         return sql;
     }
@@ -222,7 +221,14 @@ public class PGStorage {
                         String sql = String.format(
                                 "ALTER DATABASE \"%s\" SET bytea_output = 'escape'",
                                 config.getDatabaseName());
-                        PGStorage.run(cx, sql);
+                        try {
+                            PGStorage.run(cx, sql);
+                        } catch (SQLException e) {
+                            LOG.warn(
+                                    String.format(
+                                            "Unable to run '%s'. User may need more priviledges. This is not fatal, but recommended.",
+                                            sql), e);
+                        }
                         PGStorage.run(cx, "SELECT pg_advisory_unlock(-1)");
 
                         cx.setAutoCommit(false);

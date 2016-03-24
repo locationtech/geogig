@@ -17,6 +17,7 @@ import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.locationtech.geogig.api.GeoGIG;
 import org.restlet.data.MediaType;
+import org.restlet.data.Method;
 import org.restlet.resource.Representation;
 
 import com.google.common.base.Preconditions;
@@ -128,6 +129,11 @@ public class TestContext extends ExternalResource {
             this.representation = representation;
             this.commandResponse = null;
             this.streamResponse = null;
+        }
+
+        @Override
+        public Method getMethod() {
+            return Method.GET;
         }
 
     }

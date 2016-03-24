@@ -36,6 +36,7 @@ import org.locationtech.geogig.web.api.WebAPICommand;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
+import org.restlet.data.Method;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.resource.Representation;
@@ -179,6 +180,11 @@ public class CommandResource extends Resource {
             return geogig;
         }
 
+        @Override
+        public Method getMethod() {
+            return request.getMethod();
+        }
+
         public Representation getRepresentation(MediaType format, String callback) {
             if (representation != null) {
                 return representation.apply(format);
@@ -216,5 +222,6 @@ public class CommandResource extends Resource {
         public String getBaseURL() {
             return request.getRootRef().toString();
         }
+
     }
 }

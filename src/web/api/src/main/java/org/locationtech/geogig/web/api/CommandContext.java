@@ -13,6 +13,7 @@ import java.util.function.Function;
 
 import org.locationtech.geogig.api.GeoGIG;
 import org.restlet.data.MediaType;
+import org.restlet.data.Method;
 import org.restlet.resource.Representation;
 
 /**
@@ -26,6 +27,8 @@ public interface CommandContext {
      * @return the {@link GeoGIG} for this context.
      */
     GeoGIG getGeoGIG();
+
+    Method getMethod();
 
     /**
      * Sets the response for the context.

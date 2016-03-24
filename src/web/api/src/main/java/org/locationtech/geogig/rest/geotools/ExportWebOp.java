@@ -55,7 +55,7 @@ import com.google.common.base.Supplier;
  * <li><b>bbox</b>: Optional, a bounding box filter. If present, only features matching the
  * indicated bounding box filter will be exported. Applies to all exported layers. Format is
  * {@code minx,miny,maxx,maxy,<SRS>}, where SRS is the EPSG code for the coordinates (e.g.
- * {@code EPSG:4326}, {@code EPSG:26986}, etc), always using <b>"latidude first"</b> axis order.
+ * {@code EPSG:4326}, {@code EPSG:26986}, etc), always using <b>"longitude first"</b> axis order.
  * </ul>
  * 
  * <b>NOTE</b>: export format specializations may add additional, format specific arguments.

@@ -133,6 +133,7 @@
     <online.skip.pattern>**/*OnlineTest.java</online.skip.pattern>
     <sqlServerOnline.skip.pattern>**/*SQLServerFunctionalTest.java</sqlServerOnline.skip.pattern>
     <allow.test.skip>true</allow.test.skip>
+    <argLine>-Xms256m -Xmx512m</argLine>
   </properties>
 
   <dependencyManagement>
@@ -427,7 +428,6 @@
           </excludes>
           <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
           <reuseForks>true</reuseForks>
-          <argLine>-Xms256m -Xmx512m</argLine>
           <workingDirectory>${project.build.directory}</workingDirectory>
           <systemPropertyVariables>
             <java.io.tmpdir>${test.tmpDir}</java.io.tmpdir>
@@ -514,6 +514,40 @@
           <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.6.201602180812</version>
+        <configuration>
+          <excludes>
+            <exclude>**/*Exception.class</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>pre-unit-test</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <!-- 
+              uncomment this to enable automatic coverage reports during test phase 
+              To generate reports manually, specify the jacoco:report goal at the end
+              of the mavne command. Example:
+              
+              mvn clean insatll jacoco:report
+          -->
+          <!--
+          <execution>
+            <id>post-unit-test</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+          -->
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <profiles>
@@ -547,21 +581,6 @@
         <version>2.16</version>
         <configuration>
           <aggregate>true</aggregate>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-        <version>2.6</version>
-        <configuration>
-          <aggregate>true</aggregate>
-          <instrumentation>
-            <!-- ignores> <ignore>**/*Exception.class</ignore> </ignores -->
-            <excludes>
-              <exclude>**/*Exception.class</exclude>
-            </excludes>
-            <!-- includes> <include>**/*Test.class</include> </includes -->
-          </instrumentation>
         </configuration>
       </plugin>
     </plugins>

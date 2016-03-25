@@ -1073,7 +1073,7 @@ These commands can be used by using the ``repo/`` endpoint, instead of the stand
       Returns the list of refs and the ids they point to. 
 	   		  
 Issues
-=======
+------
 
 The main concern with the web-api currently is that it doesn't have any kind of authentication on it, which means that anyone with the url can potentially destroy your repo or steal you data with commands like updateref and pull.
 

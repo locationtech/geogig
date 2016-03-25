@@ -2,6 +2,7 @@ target
 .classpath
 .project
 .settings
+*~
 bin/
 git.properties
 # Netbeans project files

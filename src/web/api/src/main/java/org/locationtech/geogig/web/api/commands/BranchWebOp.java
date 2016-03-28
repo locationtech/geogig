@@ -148,7 +148,7 @@ public class BranchWebOp extends AbstractWebAPICommand {
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (list) {
             final Context geogig = this.getCommandLocator(context);
             final List<Ref> localBranches = geogig.command(BranchListOp.class).call();

@@ -99,7 +99,7 @@ public class LsTree extends AbstractWebAPICommand {
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         String ref = null;
         if (refList != null && !refList.isEmpty()) {
             ref = refList.get(0);

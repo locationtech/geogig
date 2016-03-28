@@ -129,7 +129,7 @@ public class FeatureDiffWeb extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (path == null || path.trim().isEmpty()) {
             throw new CommandSpecException("No path for feature name specifed");
         }

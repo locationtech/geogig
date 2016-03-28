@@ -10,9 +10,9 @@ import org.junit.Test;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
-public class RepositoryInitializerTest {
+public class RepositoryResolverTest {
 
-    public static class TestInitializer extends RepositoryInitializer {
+    public static class TestResolver extends RepositoryResolver {
 
         @Override
         public boolean canHandle(URI repoURI) {
@@ -23,6 +23,11 @@ public class RepositoryInitializerTest {
         @Override
         public boolean repoExists(URI repoURI) {
             return false;
+        }
+
+        @Override
+        public String getName(URI repoURI) {
+            return "test";
         }
 
         @Override
@@ -40,14 +45,19 @@ public class RepositoryInitializerTest {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public boolean delete(URI repositoryLocation) throws Exception {
+            throw new UnsupportedOperationException();
+        }
+
     }
 
     @Test
     public void testLookup() throws URISyntaxException {
         URI uri = new URI("test://somerepo");
-        RepositoryInitializer initializer = RepositoryInitializer.lookup(uri);
+        RepositoryResolver initializer = RepositoryResolver.lookup(uri);
         assertNotNull(initializer);
-        assertTrue(initializer instanceof TestInitializer);
+        assertTrue(initializer instanceof TestResolver);
     }
 
 }

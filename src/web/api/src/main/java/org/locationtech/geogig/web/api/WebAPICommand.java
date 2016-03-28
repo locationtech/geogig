@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.web.api;
 
+import org.restlet.data.Method;
+import org.restlet.data.Status;
+
 /**
  * A basic interface from which all Web API commands will be derived.
  */
@@ -21,4 +24,7 @@ public interface WebAPICommand {
      */
     void run(CommandContext context);
 
+    boolean supports(Method method);
+
+    Status getStatus();
 }

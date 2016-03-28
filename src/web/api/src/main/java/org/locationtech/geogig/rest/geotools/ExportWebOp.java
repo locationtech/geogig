@@ -151,7 +151,7 @@ public class ExportWebOp extends AbstractWebAPICommand {
     }
 
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         final OutputFormat outputFormat = resolveOutputFormat();
 
         @Nullable

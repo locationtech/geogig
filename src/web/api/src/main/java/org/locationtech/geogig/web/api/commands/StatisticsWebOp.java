@@ -72,7 +72,7 @@ public class StatisticsWebOp extends AbstractWebAPICommand {
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         final Context geogig = this.getCommandLocator(context);
         final List<FeatureTypeStats> stats = Lists.newArrayList();
         LogOp logOp = geogig.command(LogOp.class).setFirstParentOnly(true);

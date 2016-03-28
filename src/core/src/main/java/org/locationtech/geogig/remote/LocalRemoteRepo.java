@@ -42,7 +42,7 @@ import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryInitializer;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -93,7 +93,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
     @Override
     public void open() throws RepositoryConnectionException {
         if (remoteRepository == null) {
-            remoteRepository = RepositoryInitializer.load(remoteRepoURI);
+            remoteRepository = RepositoryResolver.load(remoteRepoURI);
         }
     }
 

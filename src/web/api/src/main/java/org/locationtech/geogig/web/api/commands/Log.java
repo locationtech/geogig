@@ -227,7 +227,7 @@ public class Log extends AbstractWebAPICommand {
      * @throws IllegalArgumentException
      */
     @Override
-    public void run(final CommandContext context) {
+    protected void runInternal(final CommandContext context) {
         final Context geogig = this.getCommandLocator(context);
 
         LogOp op = geogig.command(LogOp.class).setFirstParentOnly(firstParentOnly);

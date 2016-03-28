@@ -50,7 +50,7 @@ public class TagWebOp extends AbstractWebAPICommand {
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (list) {
             final Context geogig = this.getCommandLocator(context);
             final List<RevTag> tags = geogig.command(TagListOp.class).call();

@@ -90,7 +90,7 @@ public class Commit extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (this.getTransactionId() == null) {
             throw new CommandSpecException(
                     "No transaction was specified, commit requires a transaction to preserve the stability of the repository.");

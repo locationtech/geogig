@@ -9,12 +9,16 @@
  */
 package org.locationtech.geogig.web.api;
 
+import org.restlet.data.Status;
+
 /**
  * A user-input (or lack thereof) driven exception. Purposefully does not have a constructor to
  * allow a Throwable cause to be specified.
  */
 @SuppressWarnings("serial")
 public class CommandSpecException extends IllegalArgumentException {
+
+    private Status status = Status.SERVER_ERROR_INTERNAL;
 
     /**
      * Constructs a new {code CommandSpecException} with the given message.
@@ -23,6 +27,15 @@ public class CommandSpecException extends IllegalArgumentException {
      */
     public CommandSpecException(String message) {
         super(message);
+    }
+
+    public CommandSpecException(String message, Status status) {
+        super(message);
+        this.status = status;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 
 }

@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,7 +35,7 @@ import org.locationtech.geogig.di.VersionedFormat;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryInitializer;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -140,7 +141,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         } else {
             repoURI = targetDir.toURI();
         }
-        RepositoryInitializer repoInitializer = RepositoryInitializer.lookup(repoURI);
+        RepositoryResolver repoInitializer = RepositoryResolver.lookup(repoURI);
         final boolean repoExisted = repoInitializer.repoExists(repoURI);
 
         repoInitializer.initialize(repoURI, context());
@@ -149,6 +150,11 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         addDefaults(defaults, effectiveConfigBuilder);
         if (config != null) {
             effectiveConfigBuilder.putAll(config);
+        }
+
+        Optional<Serializable> repoName = hints.get(Hints.REPOSITORY_NAME);
+        if (repoName.isPresent()) {
+            effectiveConfigBuilder.put("repo.name", String.valueOf(repoName.get()));
         }
 
         if (filterFile != null) {

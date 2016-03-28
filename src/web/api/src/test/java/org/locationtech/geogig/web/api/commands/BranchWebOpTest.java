@@ -24,6 +24,7 @@ import org.locationtech.geogig.api.porcelain.BranchListOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -99,5 +100,16 @@ public class BranchWebOpTest extends AbstractWebOpTest {
         assertEquals(2, branchRefs.size());
         List<String> branchNames = Lists.transform(branchRefs, (r) -> r.getName());
         assertTrue(branchNames.toString(), branchNames.contains("refs/heads/newBranch"));
+    }
+    
+    @Test
+    public void testRequireRepository() {
+        testContext.createUninitializedRepo();
+        ParameterSet options = TestParams.of("branchName", "newBranch");
+        WebAPICommand cmd = buildCommand(options);
+
+        ex.expect(RestletException.class);
+        ex.expectMessage("Repository not found.");
+        cmd.run(testContext.get());
     }
 }

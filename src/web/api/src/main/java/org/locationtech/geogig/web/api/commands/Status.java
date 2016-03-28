@@ -65,7 +65,7 @@ public class Status extends AbstractWebAPICommand {
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         final Context geogig = this.getCommandLocator(context);
 
         final String pathFilter = null;

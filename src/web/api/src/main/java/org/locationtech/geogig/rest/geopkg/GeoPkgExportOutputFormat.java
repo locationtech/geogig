@@ -28,6 +28,7 @@ import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.geotools.ExportWebOp;
 import org.locationtech.geogig.rest.geotools.ExportWebOp.OutputFormat;
+import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.restlet.data.MediaType;
@@ -187,11 +188,11 @@ public class GeoPkgExportOutputFormat extends ExportWebOp.OutputFormat {
                 w.writeStartElement("atom:link");
                 w.writeAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
                 w.writeAttribute("rel", "alternate");
-                w.writeAttribute("href", href(link, null));
+                w.writeAttribute("href", RESTUtils.buildHref(baseURL, link, null));
                 w.writeAttribute("type", outputFormat.toString());
                 w.writeEndElement();
             } else if (MediaType.APPLICATION_JSON.equals(format)) {
-                element(w, "href", href(link, null));
+                element(w, "href", RESTUtils.buildHref(baseURL, link, null));
             }
         }
     }

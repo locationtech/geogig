@@ -29,6 +29,8 @@ public class Variants {
 
     public static final Variant XML = new Variant(MediaType.APPLICATION_XML);
 
+    public static final Variant TEXT_XML = new Variant(MediaType.TEXT_XML);
+
     public static final Variant CSV = new Variant(CSV_MEDIA_TYPE);
 
     public static final Variant GEOPKG = new Variant(GEOPKG_MEDIA_TYPE);

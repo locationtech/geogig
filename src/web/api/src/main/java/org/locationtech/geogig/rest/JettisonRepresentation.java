@@ -19,6 +19,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.codehaus.jettison.mapped.MappedNamespaceConvention;
 import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.restlet.data.MediaType;
 
 import com.google.common.base.Preconditions;
@@ -71,18 +72,8 @@ public abstract class JettisonRepresentation extends WriterRepresentation {
     protected void encodeAlternateAtomLink(XMLStreamWriter w, String link)
             throws XMLStreamException {
         MediaType format = getMediaType();
-        if (MediaType.TEXT_XML.equals(format) || MediaType.APPLICATION_XML.equals(format)) {
-            w.writeStartElement("atom:link");
-            w.writeAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
-            w.writeAttribute("rel", "alternate");
-            w.writeAttribute("href", href(link, format));
-            if (format != null) {
-                w.writeAttribute("type", format.toString());
-            }
-            w.writeEndElement();
-        } else if (MediaType.APPLICATION_JSON.equals(format)) {
-            element(w, "href", href(link, format));
-        }
+        RESTUtils.encodeAlternateAtomLink(format, w,
+                RESTUtils.buildHref(baseURL, link, format));
     }
 
     protected void element(XMLStreamWriter w, String name, @Nullable String value)
@@ -96,22 +87,5 @@ public abstract class JettisonRepresentation extends WriterRepresentation {
 
     protected void element(XMLStreamWriter w, String name, Object value) throws XMLStreamException {
         element(w, name, String.valueOf(value));
-    }
-
-    protected String href(String link, MediaType format) {
-        String baseURL = this.baseURL;
-        link = baseURL + "/" + link;
-
-        // try to figure out extension
-        String ext = null;
-        if (format != null) {
-            ext = format.getSubType();
-        }
-
-        if (ext != null && ext.length() > 0) {
-            link = link + "." + ext;
-        }
-
-        return link;
     }
 }

@@ -71,7 +71,7 @@ public class PushWebOp extends AbstractWebAPICommand {
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         final Context geogig = this.getCommandLocator(context);
 
         PushOp command = geogig.command(PushOp.class);

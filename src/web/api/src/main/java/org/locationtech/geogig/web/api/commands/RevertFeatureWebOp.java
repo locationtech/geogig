@@ -139,7 +139,7 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (this.getTransactionId() == null) {
             throw new CommandSpecException(
                     "No transaction was specified, revert feature requires a transaction to preserve the stability of the repository.");

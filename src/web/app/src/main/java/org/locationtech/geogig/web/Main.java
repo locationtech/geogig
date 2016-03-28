@@ -27,9 +27,11 @@ import org.locationtech.geogig.rest.geopkg.GeoPkgRouter;
 import org.locationtech.geogig.rest.osm.OSMRouter;
 import org.locationtech.geogig.rest.postgis.PGRouter;
 import org.locationtech.geogig.rest.repository.CommandResource;
+import org.locationtech.geogig.rest.repository.DeleteRepository;
 import org.locationtech.geogig.rest.repository.FixedEncoder;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.RepositoryRouter;
+import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.restlet.Application;
 import org.restlet.Component;
 import org.restlet.Restlet;
@@ -51,13 +53,17 @@ public class Main extends Application {
 
     private RepositoryProvider repoProvider;
 
+    private final boolean multiRepo;
+
     public Main() {
         super();
+        this.multiRepo = false;
     }
 
-    public Main(GeoGIG geogig) {
+    public Main(RepositoryProvider repoProvider, boolean multiRepo) {
         super();
-        this.repoProvider = new SingleRepositoryProvider(geogig);
+        this.repoProvider = repoProvider;
+        this.multiRepo = multiRepo;
     }
 
     @Override
@@ -92,7 +98,7 @@ public class Main extends Application {
     @Override
     public Restlet createRoot() {
 
-        Router router = new Router() {
+        final Router router = new Router() {
 
             @Override
             protected synchronized void init(Request request, Response response) {
@@ -103,22 +109,33 @@ public class Main extends Application {
                 request.getAttributes().put(RepositoryProvider.KEY, repoProvider);
             }
         };
+        final Router singleRepoRouter;
+
+        if (multiRepo) {
+            singleRepoRouter = new Router();
+            router.attach("/", new RepositoryFinder(repoProvider));
+            router.attach("/{repository}", singleRepoRouter);
+        } else {
+            singleRepoRouter = router;
+        }
+
         Router repo = new RepositoryRouter();
         Router osm = new OSMRouter();
         Router postgis = new PGRouter();
         Router geopackage = new GeoPkgRouter();
+        singleRepoRouter.attach("", DeleteRepository.class);
 
-        router.attach("/tasks", TaskStatusResource.class);
-        router.attach("/tasks/{taskId}.{extension}", TaskStatusResource.class);
-        router.attach("/tasks/{taskId}", TaskStatusResource.class);
-        router.attach("/tasks/{taskId}/download", TaskResultDownloadResource.class);
+        singleRepoRouter.attach("/tasks", TaskStatusResource.class);
+        singleRepoRouter.attach("/tasks/{taskId}.{extension}", TaskStatusResource.class);
+        singleRepoRouter.attach("/tasks/{taskId}", TaskStatusResource.class);
+        singleRepoRouter.attach("/tasks/{taskId}/download", TaskResultDownloadResource.class);
 
-        router.attach("/osm", osm);
-        router.attach("/postgis", postgis);
-        router.attach("/geopkg", geopackage);
-        router.attach("/repo", repo);
-        router.attach("/{command}.{extension}", CommandResource.class);
-        router.attach("/{command}", CommandResource.class);
+        singleRepoRouter.attach("/osm", osm);
+        singleRepoRouter.attach("/postgis", postgis);
+        singleRepoRouter.attach("/geopkg", geopackage);
+        singleRepoRouter.attach("/repo", repo);
+        singleRepoRouter.attach("/{command}.{extension}", CommandResource.class);
+        singleRepoRouter.attach("/{command}", CommandResource.class);
 
         org.restlet.Context context = getContext();
         // enable support for compressing responses if the client supports it.
@@ -154,14 +171,23 @@ public class Main extends Application {
         return geogig;
     }
 
-    static void startServer(String repo) throws Exception {
-        GeoGIG geogig = loadGeoGIG(repo);
+    static void startServer(String path, boolean multiRepo) throws Exception {
+        final RepositoryProvider provider;
+        if (multiRepo) {
+            provider = new DirectoryRepositoryProvider(new File(path));
+        } else {
+            provider = new SingleRepositoryProvider(loadGeoGIG(path));
+        }
         org.restlet.Context context = new org.restlet.Context();
-        Application application = new Main(geogig);
+        Application application = new Main(provider, multiRepo);
         application.setContext(context);
         Component comp = new Component();
         comp.getDefaultHost().attach(application);
-        System.err.printf("Starting server at port %d for repo %s\n", 8182, repo);
+        if (multiRepo) {
+            System.err.printf("Starting server at port %d for multiple repositories\n", 8182);
+        } else {
+            System.err.printf("Starting server at port %d for repo %s\n", 8182, path);
+        }
         comp.getServers().add(Protocol.HTTP, 8182);
         comp.start();
         System.err.println("started.");
@@ -178,7 +204,8 @@ public class Main extends Application {
             System.exit(1);
         }
         String repo = argList.pop();
-        startServer(repo);
+        // TODO: Support multiRepo from this entry point?
+        startServer(repo, false);
     }
 
 }

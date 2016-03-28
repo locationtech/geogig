@@ -122,12 +122,9 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
 
         final File targetDir = this.targetDir == null ? workingDirectory : this.targetDir;
         Repository repository;
-        try {
-            repository = callInternal(targetDir);
-        } finally {
-            // restore current directory
-            platform.setWorkingDir(workingDirectory);
-        }
+
+        repository = callInternal(targetDir);
+
         return repository;
     }
 
@@ -221,8 +218,8 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                 ObjectStore objectDatabase = repository.objectDatabase();
                 objectDatabase.put(RevTree.EMPTY);
             } catch (RepositoryConnectionException e) {
-                throw new IllegalStateException("Error opening repository databases: "
-                        + e.getMessage(), e);
+                throw new IllegalStateException(
+                        "Error opening repository databases: " + e.getMessage(), e);
             }
         } catch (ConfigException e) {
             throw e;
@@ -271,14 +268,14 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                 .setReason("Repository initialization").call();
 
         Optional<Ref> workhead = command(RefParse.class).setName(Ref.WORK_HEAD).call();
-        Preconditions
-                .checkState(!workhead.isPresent(), Ref.WORK_HEAD + " was already initialized.");
+        Preconditions.checkState(!workhead.isPresent(),
+                Ref.WORK_HEAD + " was already initialized.");
         command(UpdateRef.class).setName(Ref.WORK_HEAD).setNewValue(RevTree.EMPTY.getId())
                 .setReason("Repository initialization").call();
 
         Optional<Ref> stagehead = command(RefParse.class).setName(Ref.STAGE_HEAD).call();
-        Preconditions.checkState(!stagehead.isPresent(), Ref.STAGE_HEAD
-                + " was already initialized.");
+        Preconditions.checkState(!stagehead.isPresent(),
+                Ref.STAGE_HEAD + " was already initialized.");
         command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(RevTree.EMPTY.getId())
                 .setReason("Repository initialization").call();
 

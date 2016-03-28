@@ -23,7 +23,7 @@ import cucumber.api.junit.Cucumber;
 // @Cucumber.Options(features = { "src/test/resources/org/locationtech/geogig/cli/test/functional/Branch.feature"
 // }, monochrome = true, format = {
 // "pretty", "html:target/cucumber-report" }, strict = true)
-@CucumberOptions(monochrome = true, format = { "pretty", "html:target/cucumber-report" }, strict = true)
+@CucumberOptions(monochrome = true, plugin = { "pretty", "html:cucumber-report-general" }, strict = true)
 @RunWith(Cucumber.class)
 public class RunFunctionalTest {
 }

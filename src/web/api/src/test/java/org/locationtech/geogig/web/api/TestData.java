@@ -152,7 +152,7 @@ public class TestData {
     }
 
     public static MemoryDataStore newMemoryDataStore() {
-        return new MemodyDataStoreWithProvidedFIDSupport();
+        return new MemoryDataStoreWithProvidedFIDSupport();
     }
 
     public TestData init() {
@@ -304,7 +304,7 @@ public class TestData {
      * writing, hence this subclass decorates it to support it.
      *
      */
-    private static class MemodyDataStoreWithProvidedFIDSupport extends MemoryDataStore {
+    private static class MemoryDataStoreWithProvidedFIDSupport extends MemoryDataStore {
 
         @Override
         public Map<String, SimpleFeature> features(String typeName) throws IOException {
@@ -354,7 +354,7 @@ public class TestData {
                 this.state = state;
                 featureType = state.getFeatureType();
                 String typeName = featureType.getTypeName();
-                MemodyDataStoreWithProvidedFIDSupport store = (MemodyDataStoreWithProvidedFIDSupport) state
+                MemoryDataStoreWithProvidedFIDSupport store = (MemoryDataStoreWithProvidedFIDSupport) state
                         .getEntry().getDataStore();
                 contents = store.features(typeName);
                 iterator = contents.values().iterator();

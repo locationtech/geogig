@@ -213,7 +213,8 @@ public class ExportWebOpTest extends AbstractWebOpTest {
 
         op.run(context);
 
-        final String expected = "{'task':{'id':1,'status':'RUNNING','description':'MemoryDataStore test output format','href':'/geogig/tasks/1.json'}}";
+        //final String expected = "{'task':{'id':1,'status':'RUNNING','description':'MemoryDataStore test output format','href':'/geogig/tasks/1.json'}}";
+        final String expected = "{'task':{'id':1,'description':'MemoryDataStore test output format','href':'/geogig/tasks/1.json'}}";
         JSONObject response = getJSONResponse();
         JSONAssert.assertEquals(expected, response.toString(), false);
 
@@ -250,7 +251,7 @@ public class ExportWebOpTest extends AbstractWebOpTest {
         assertEquals(expectedFeatures, actualFeatures);
     }
 
-    private static class TestOutputFormat extends ExportWebOp.OutputFormat {
+    static class TestOutputFormat extends ExportWebOp.OutputFormat {
 
         private Supplier<DataStore> ds;
 

@@ -157,6 +157,10 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
             return Optional.absent();
         }
 
+        return Optional.of(getGeogig(repositoryName));
+    }
+
+    public GeoGIG getGeogig(final String repositoryName) {
         try {
             if (!nameToRepoId.containsKey(repositoryName)) {
                 loadRepositories();
@@ -180,7 +184,7 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
                 repo = repositories.get(repoId);
             }
 
-            return Optional.of(repo);
+            return repo;
         } catch (ExecutionException e) {
             LOG.warn("Unable to load repository {}", repositoryName, e);
             throw Throwables.propagate(e);

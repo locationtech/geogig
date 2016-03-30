@@ -22,7 +22,7 @@ import cucumber.api.junit.Cucumber;
 @RunWith(Cucumber.class)
 @CucumberOptions(//
 monochrome = true//
-, format = { "pretty", "html:target/cucumber-report" }//
+, plugin = { "pretty", "html:cucumber-report-porcelain" }//
 , strict = true//
 , glue = { "org.locationtech.geogig.cli.test.functional.general" }// where step definitions are
 //, features = { "src/test/resources/org/locationtech/geogig/cli/test/functional/porcelain/Clean.feature" }//

@@ -151,6 +151,10 @@ public class TestData {
         this.repo = repo;
     }
 
+    public GeoGIG getRepo() {
+        return repo;
+    }
+
     public static MemoryDataStore newMemoryDataStore() {
         return new MemodyDataStoreWithProvidedFIDSupport();
     }
@@ -204,8 +208,8 @@ public class TestData {
                 .mergeNoFF("branch2", "merge branch branch2 onto master");
 
         LOG.debug("HEAD: " + repo.command(RefParse.class).setName(Ref.HEAD).call().get());
-        List<NodeRef> treeRefs = Lists.newArrayList(repo.command(LsTreeOp.class)
-                .setReference(Ref.HEAD).call());
+        List<NodeRef> treeRefs = Lists
+                .newArrayList(repo.command(LsTreeOp.class).setReference(Ref.HEAD).call());
         checkState(3 == treeRefs.size());
         for (NodeRef r : treeRefs) {
             RevTree tree = repo.getRepository().objectDatabase().getTree(r.getObjectId());
@@ -335,8 +339,8 @@ public class TestData {
 
         }
 
-        private static class MemoryFeatureWriterWithProvidedFIDSupport implements
-                FeatureWriter<SimpleFeatureType, SimpleFeature> {
+        private static class MemoryFeatureWriterWithProvidedFIDSupport
+                implements FeatureWriter<SimpleFeatureType, SimpleFeature> {
             ContentState state;
 
             SimpleFeatureType featureType;

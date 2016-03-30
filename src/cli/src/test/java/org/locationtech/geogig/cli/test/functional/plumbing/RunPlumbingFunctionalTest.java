@@ -21,7 +21,7 @@ import cucumber.api.junit.Cucumber;
  */
 @RunWith(Cucumber.class)
 @CucumberOptions(//
-monochrome = true, format = { "pretty", "html:target/cucumber-report" }, strict = true,//
+monochrome = true, plugin = { "pretty", "html:cucumber-report-plumbing" }, strict = true,//
 // the glue option tells cucumber where else to look for step definitions
 glue = { "org.locationtech.geogig.cli.test.functional.general" })
 public class RunPlumbingFunctionalTest {

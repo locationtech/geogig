@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli.test.functional.general;
+package org.geogig.web.functional;
 
 import org.junit.runner.RunWith;
 
@@ -20,10 +20,11 @@ import cucumber.api.junit.Cucumber;
  * 
  */
 // use features=... to specify one or more specific features to execute
-// @Cucumber.Options(features = { "src/test/resources/org/locationtech/geogig/cli/test/functional/Branch.feature"
+// @Cucumber.Options(features = {
+// "src/test/resources/org/locationtech/geogig/cli/test/functional/Branch.feature"
 // }, monochrome = true, format = {
 // "pretty", "html:target/cucumber-report" }, strict = true)
-@CucumberOptions(monochrome = true, plugin = { "pretty", "html:cucumber-report-general" }, strict = true)
 @RunWith(Cucumber.class)
+@CucumberOptions(plugin = { "pretty", "html:cucumber-report", "json:cucumber-report/cucumber.json" })
 public class RunFunctionalTest {
 }

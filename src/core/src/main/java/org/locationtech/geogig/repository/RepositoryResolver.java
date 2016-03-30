@@ -18,25 +18,25 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.base.Preconditions;
 
-public abstract class RepositoryInitializer {
+public abstract class RepositoryResolver {
 
     /**
-     * Finds a {@code RepositoryInitializer} that {@link #canHandle(URI) can handle} the given URI,
-     * or throws an {@code IllegalArgumentException} if no such initializer can be found.
+     * Finds a {@code RepositoryResolver} that {@link #canHandle(URI) can handle} the given URI, or
+     * throws an {@code IllegalArgumentException} if no such initializer can be found.
      * <p>
      * The lookup method uses the standard JAVA SPI (Service Provider Interface) mechanism, by which
-     * all the {@code META-INF/services/org.locationtech.geogig.repository.RepositoryInitializer}
-     * files in the classpath will be scanned for fully qualified names of implementing classes.
+     * all the {@code META-INF/services/org.locationtech.geogig.repository.RepositoryResolver} files
+     * in the classpath will be scanned for fully qualified names of implementing classes.
      */
-    public static RepositoryInitializer lookup(URI repoURI) throws IllegalArgumentException {
+    public static RepositoryResolver lookup(URI repoURI) throws IllegalArgumentException {
 
         Preconditions.checkNotNull(repoURI, "Repository URI is null");
 
-        Iterator<RepositoryInitializer> initializers = ServiceLoader.load(
-                RepositoryInitializer.class).iterator();
+        Iterator<RepositoryResolver> initializers = ServiceLoader.load(
+                RepositoryResolver.class).iterator();
 
         while (initializers.hasNext()) {
-            RepositoryInitializer initializer = initializers.next();
+            RepositoryResolver initializer = initializers.next();
             if (initializer.canHandle(repoURI)) {
                 return initializer;
             }
@@ -49,13 +49,15 @@ public abstract class RepositoryInitializer {
 
     public abstract boolean repoExists(URI repoURI) throws IllegalArgumentException;
 
+    public abstract String getName(URI repoURI);
+
     public abstract void initialize(URI repoURI, Context repoContext)
             throws IllegalArgumentException;
 
     public abstract ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext);
 
     public static ConfigDatabase resolveConfigDatabase(URI repoURI, Context repoContext) {
-        RepositoryInitializer initializer = RepositoryInitializer.lookup(repoURI);
+        RepositoryResolver initializer = RepositoryResolver.lookup(repoURI);
         return initializer.getConfigDatabase(repoURI, repoContext);
     }
 
@@ -63,16 +65,28 @@ public abstract class RepositoryInitializer {
      * @param repositoryLocation the URI with the location of the repository to load
      * @return a {@link Repository} loaded from the given URI, already {@link Repository#open()
      *         open}
-     * @throws IllegalArgumentException if no registered {@link RepositoryInitializer}
+     * @throws IllegalArgumentException if no registered {@link RepositoryResolver}
      *         implementation can load the repository at the given location
      * @throws RepositoryConnectionException if the repository can't be opened
      */
     public static Repository load(URI repositoryLocation) throws RepositoryConnectionException {
-        RepositoryInitializer initializer = RepositoryInitializer.lookup(repositoryLocation);
+        RepositoryResolver initializer = RepositoryResolver.lookup(repositoryLocation);
         Repository repository = initializer.open(repositoryLocation);
         return repository;
     }
 
     public abstract Repository open(URI repositoryLocation) throws RepositoryConnectionException;
+
+    /**
+     * Deletes the repository addressed by the given URI.
+     * <p>
+     * 
+     * @return {@code true} if the repository was deleted, {@code false} is the repository didn't
+     *         exist.
+     * @throws IllegalArgumentException if this implementation can't handle the given URI
+     * @throws Exception if an error happens while deleting the repository, in which case it may
+     *         have left in an inconsistent state.
+     */
+    public abstract boolean delete(URI repositoryLocation) throws Exception;
 
 }

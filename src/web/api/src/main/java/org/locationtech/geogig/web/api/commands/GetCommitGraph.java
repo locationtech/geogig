@@ -92,7 +92,7 @@ public class GetCommitGraph extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (commitId.equals(ObjectId.NULL.toString())) {
             throw new CommandSpecException("No commitId was given.");
         }

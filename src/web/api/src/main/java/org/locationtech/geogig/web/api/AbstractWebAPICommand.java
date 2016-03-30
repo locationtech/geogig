@@ -13,6 +13,9 @@ import java.util.UUID;
 
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeogigTransaction;
+import org.locationtech.geogig.rest.RestletException;
+import org.restlet.data.Method;
+import org.restlet.data.Status;
 
 /**
  * An abstract command that allows WebAPICommands to support long transactions.
@@ -22,8 +25,24 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
 
     private UUID transactionId = null;
 
+    private Status commandStatus = Status.SUCCESS_OK;
+
     protected AbstractWebAPICommand(ParameterSet options) {
         setTransactionId(options.getFirstValue("transactionId", null));
+    }
+
+    @Override
+    public boolean supports(final Method method) {
+        return Method.GET.equals(method);
+    }
+
+    /**
+     * Check for commands that require an open repository.
+     * 
+     * @return whether or not this command requires an open repository.
+     */
+    protected boolean requiresOpenRepo() {
+        return true;
     }
 
     /**
@@ -47,6 +66,25 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
     }
 
     /**
+     * Accessor for the status of the command
+     * 
+     * @return the command status.
+     */
+    @Override
+    public Status getStatus() {
+        return commandStatus;
+    }
+
+    /**
+     * Mutator for the command status.
+     * 
+     * @param status - the status of the command
+     */
+    protected void setStatus(Status status) {
+        this.commandStatus = status;
+    }
+
+    /**
      * This function either builds a GeoGigTransaction to run commands off of if there is a
      * transactionId to build off of or the GeoGig commandLocator otherwise.
      * 
@@ -60,7 +98,15 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
         return context.getGeoGIG().getContext();
     }
 
-    public abstract void run(CommandContext context);
+    public void run(CommandContext context) {
+        if (requiresOpenRepo() && !context.getGeoGIG().isOpen()) {
+            throw new RestletException("Repository not found.",
+                    org.restlet.data.Status.CLIENT_ERROR_NOT_FOUND);
+        }
+        runInternal(context);
+    }
+
+    protected abstract void runInternal(CommandContext context);
 
     /**
      * Parses a string to an Integer, using a default value if the was not found in the parameter
@@ -78,8 +124,8 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
             try {
                 retval = new Integer(val);
             } catch (NumberFormatException nfe) {
-                throw new CommandSpecException("Invalid value '" + val + "' specified for option: "
-                        + key);
+                throw new CommandSpecException(
+                        "Invalid value '" + val + "' specified for option: " + key);
             }
         }
         return retval;

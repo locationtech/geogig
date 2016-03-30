@@ -25,7 +25,7 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryInitializer;
+import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -82,7 +82,7 @@ public class Init extends AbstractCommand implements CLICommand {
         } catch (URISyntaxException e) {
             throw new CommandFailedException("--repo argument can't be parsed to a URI", e);
         }
-        final boolean repoExisted = RepositoryInitializer.lookup(uri).repoExists(uri);
+        final boolean repoExisted = RepositoryResolver.lookup(uri).repoExists(uri);
 
         final Repository repository;
         {

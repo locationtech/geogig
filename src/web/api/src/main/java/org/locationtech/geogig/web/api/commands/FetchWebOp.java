@@ -75,7 +75,7 @@ public class FetchWebOp extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         final Context geogig = this.getCommandLocator(context);
 
         FetchOp command = geogig.command(FetchOp.class);

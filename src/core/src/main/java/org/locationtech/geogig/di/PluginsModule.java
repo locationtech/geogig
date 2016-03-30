@@ -16,7 +16,7 @@ import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.RepositoryInitializer;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -62,7 +62,7 @@ public class PluginsModule extends AbstractModule {
             Optional<URI> uri = new ResolveGeogigURI(platform, hints).call();
             ConfigDatabase config = null;
             if (uri.isPresent()) {
-                config = RepositoryInitializer.resolveConfigDatabase(uri.get(), context);
+                config = RepositoryResolver.resolveConfigDatabase(uri.get(), context);
             } else {
                 config = new IniFileConfigDatabase(platform);
             }

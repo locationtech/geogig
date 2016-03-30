@@ -12,6 +12,7 @@ package org.locationtech.geogig.web.api;
 import java.util.function.Function;
 
 import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.restlet.resource.Representation;
@@ -45,5 +46,7 @@ public interface CommandContext {
     void setResponseContent(StreamResponse responseContent);
 
     void setResponse(Function<MediaType, Representation> representation);
+
+    RepositoryProvider getRepositoryProvider();
 
 }

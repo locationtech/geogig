@@ -113,7 +113,7 @@ public class Diff extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (oldRefSpec == null || oldRefSpec.trim().isEmpty()) {
             throw new CommandSpecException("No old ref spec");
         }

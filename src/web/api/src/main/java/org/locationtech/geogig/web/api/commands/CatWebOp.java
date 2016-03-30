@@ -61,7 +61,7 @@ public class CatWebOp extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         Preconditions.checkArgument(object != null && !object.equals(ObjectId.NULL));
         final Context geogig = this.getCommandLocator(context);
 

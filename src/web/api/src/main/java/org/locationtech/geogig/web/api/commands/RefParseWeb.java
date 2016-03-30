@@ -53,7 +53,7 @@ public class RefParseWeb extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (refSpec == null) {
             throw new CommandSpecException("No name was given.");
         }

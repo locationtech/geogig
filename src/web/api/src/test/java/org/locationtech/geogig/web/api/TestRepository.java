@@ -21,6 +21,8 @@ import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
 
+import com.google.common.base.Preconditions;
+
 /**
  * JUnit {@link Rule} to set up a temporary repository.
  * <p>
@@ -28,6 +30,8 @@ import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder
  *
  */
 public class TestRepository extends ExternalResource {
+
+    public static final String REPO_NAME = "testrepo";
 
     private TemporaryFolder tmpFolder;
 
@@ -52,8 +56,8 @@ public class TestRepository extends ExternalResource {
             tmpFolder.delete();
         }
     }
-
-    public GeoGIG createRpository(String name) {
+    
+    public GeoGIG createGeoGIG(String name) {
         File dataDirectory = tmpFolder.getRoot();
         repoDir = new File(dataDirectory, name);
         Assert.assertTrue(repoDir.mkdir());
@@ -61,8 +65,13 @@ public class TestRepository extends ExternalResource {
         TestPlatform testPlatform = new TestPlatform(dataDirectory);
         GlobalContextBuilder.builder = new CLITestContextBuilder(testPlatform);
         GeoGIG geogig = new GeoGIG(repoDir);
-        geogig.command(InitOp.class).call();
         return geogig;
+    }
+
+    public void initializeRpository() {
+        Preconditions.checkState(geogig != null);
+        geogig.command(InitOp.class).call();
+        geogig.getOrCreateRepository();
     }
 
     public TemporaryFolder tmpFolder() {
@@ -72,10 +81,17 @@ public class TestRepository extends ExternalResource {
     public File repoDirectory() {
         return repoDir;
     }
-
+    
     public GeoGIG getGeogig() {
+        return getGeogig(true);
+    }
+
+    public GeoGIG getGeogig(boolean initialized) {
         if (this.geogig == null) {
-            this.geogig = createRpository("testrepo");
+            this.geogig = createGeoGIG(REPO_NAME);
+            if (initialized) {
+                initializeRpository();
+            }
         }
         return geogig;
     }

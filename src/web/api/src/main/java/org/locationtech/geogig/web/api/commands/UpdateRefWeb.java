@@ -82,7 +82,7 @@ public class UpdateRefWeb extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (name == null) {
             throw new CommandSpecException("No name was given.");
         } else if (!(delete) && newValue == null) {

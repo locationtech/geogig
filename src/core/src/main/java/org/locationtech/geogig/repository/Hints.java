@@ -35,6 +35,8 @@ public class Hints implements Serializable {
 
     public static final String REPOSITORY_URL = "REPOSITORY_URL";
 
+    public static final String REPOSITORY_NAME = "REPOSITORY_NAME";
+
     private Map<String, Serializable> hintsMap = Maps.newHashMap();
 
     public void set(String key, Serializable value) {

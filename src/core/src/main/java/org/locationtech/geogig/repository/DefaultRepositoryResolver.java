@@ -28,7 +28,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 
-public class DefaultRepositoryInitializer extends RepositoryInitializer {
+public class DefaultRepositoryResolver extends RepositoryResolver {
 
     @Override
     public boolean canHandle(URI repoURI) {
@@ -59,6 +59,15 @@ public class DefaultRepositoryInitializer extends RepositoryInitializer {
         File directory = toFile(repoURI);
         Optional<URI> lookup = ResolveGeogigURI.lookup(directory);
         return lookup.isPresent();
+    }
+
+    @Override
+    public String getName(URI repoURI) {
+        File file = toFile(repoURI);
+        if (file.getName().equals(".geogig")) {
+            file = file.getParentFile();
+        }
+        return file.getName();
     }
 
     @Override
@@ -136,5 +145,35 @@ public class DefaultRepositoryInitializer extends RepositoryInitializer {
         repository.open();
 
         return repository;
+    }
+
+    @Override
+    public boolean delete(URI repositoryLocation) throws Exception {
+        Preconditions.checkArgument(canHandle(repositoryLocation), "Not a file repository: %s",
+                repositoryLocation);
+
+        if (!repoExists(repositoryLocation)) {
+            return false;
+        }
+
+        File workingDir = toFile(repositoryLocation);
+        deleteDirectoryAndContents(workingDir);
+
+        return true;
+    }
+
+    private void deleteDirectoryAndContents(File directory) throws IOException {
+        for (File file : directory.listFiles()) {
+            if (file.isDirectory()) {
+                deleteDirectoryAndContents(file);
+            } else {
+                if (!file.delete()) {
+                    throw new IOException("Unable to delete file: " + file.getCanonicalPath());
+                }
+            }
+        }
+        if (!directory.delete()) {
+            throw new IOException("Unable to delete directory: " + directory.getCanonicalPath());
+        }
     }
 }

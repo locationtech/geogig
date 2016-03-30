@@ -9,54 +9,44 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.util.UUID;
-
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
-import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
 
-public class AddWebOpTest extends AbstractWebOpTest {
+public class RequestDeleteRepositoryTokenTest extends AbstractWebOpTest {
 
     @Override
     protected String getRoute() {
-        return "add";
+        return "delete";
     }
 
     @Override
     protected Class<? extends AbstractWebAPICommand> getCommandClass() {
-        return AddWebOp.class;
+        return RequestDeleteRepositoryToken.class;
     }
 
     @Test
-    public void testBuildParameters() {
-        ParameterSet options = TestParams.of("path", "points", "transactionId", UUID.randomUUID()
-                .toString());
-
-        AddWebOp op = (AddWebOp) buildCommand(options);
-        assertEquals("points", op.path);
-    }
-
-    @Test
-    public void testRequireTransaction() {
-        ParameterSet options = TestParams.of("path", "points");
+    public void testRequestToken() throws Exception {
+        ParameterSet options = TestParams.of();
         WebAPICommand cmd = buildCommand(options);
-
-        ex.expect(CommandSpecException.class);
-        ex.expectMessage("No transaction was specified");
         cmd.run(testContext.get());
+
+        JSONObject response = getJSONResponse().getJSONObject("response");
+        String token = response.getString("token");
+        assertTrue(token.length() > 0);
     }
-    
+
     @Test
     public void testRequireRepository() {
         testContext.createUninitializedRepo();
-        ParameterSet options = TestParams.of("path", "points");
+        ParameterSet options = TestParams.of();
         WebAPICommand cmd = buildCommand(options);
 
         ex.expect(RestletException.class);

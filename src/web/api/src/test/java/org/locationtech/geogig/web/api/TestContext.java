@@ -16,6 +16,8 @@ import java.util.function.Function;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.rest.repository.RepositoryProvider;
+import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.restlet.resource.Representation;
@@ -55,6 +57,14 @@ public class TestContext extends ExternalResource {
         return context;
     }
 
+    public void createUninitializedRepo() {
+        ((TestCommandContext) get()).createUninitializedRepo();
+    }
+
+    public void setRequestMethod(Method method) {
+        ((TestCommandContext) get()).setRequestMethod(method);
+    }
+
     public CommandResponse getCommandResponse() {
         return context.commandResponse;
     }
@@ -67,6 +77,10 @@ public class TestContext extends ExternalResource {
         return context.getRepresentation(format, null);
     }
 
+    public void reset() {
+        context = new TestCommandContext(testRepo);
+    }
+
     private static class TestCommandContext implements CommandContext {
 
         private TestRepository repo;
@@ -77,14 +91,26 @@ public class TestContext extends ExternalResource {
 
         private Function<MediaType, Representation> representation;
 
+        private Method requestMethod = Method.GET;
+
+        private RepositoryProvider repoProvider = null;
+
         public TestCommandContext(TestRepository testRepo) {
             Preconditions.checkNotNull(testRepo);
             this.repo = testRepo;
         }
 
+        public void createUninitializedRepo() {
+            repo.getGeogig(false);
+        }
+
         @Override
         public GeoGIG getGeoGIG() {
             return repo.getGeogig();
+        }
+
+        public void setRequestMethod(Method method) {
+            this.requestMethod = method;
         }
 
         public Representation getRepresentation(MediaType format, String callback) {
@@ -133,7 +159,15 @@ public class TestContext extends ExternalResource {
 
         @Override
         public Method getMethod() {
-            return Method.GET;
+            return requestMethod;
+        }
+
+        @Override
+        public RepositoryProvider getRepositoryProvider() {
+            if (repoProvider == null) {
+                repoProvider = new SingleRepositoryProvider(repo.getGeogig());
+            }
+            return repoProvider;
         }
 
     }

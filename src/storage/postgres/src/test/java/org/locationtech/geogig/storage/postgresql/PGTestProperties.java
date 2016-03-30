@@ -14,17 +14,22 @@ import org.locationtech.geogig.test.integration.OnlineTestProperties;
 
 public class PGTestProperties extends OnlineTestProperties {
 
-    private static final String[] DEFAULTS = {//
-    Environment.KEY_DB_SERVER, "localhost",//
-            Environment.KEY_DB_PORT, "5432",//
-            Environment.KEY_DB_SCHEMA, "public",//
-            Environment.KEY_DB_NAME, "database",//
-            Environment.KEY_DB_USERNAME, "postgres",//
+    static final String CONFIG_FILE = ".geogig-pg-backend-tests.properties";
+
+    static final String TESTS_ENABLED_KEY = "postgres.enabled";
+
+    private static final String[] DEFAULTS = { //
+            TESTS_ENABLED_KEY, "false", //
+            Environment.KEY_DB_SERVER, "localhost", //
+            Environment.KEY_DB_PORT, "5432", //
+            Environment.KEY_DB_SCHEMA, "public", //
+            Environment.KEY_DB_NAME, "database", //
+            Environment.KEY_DB_USERNAME, "postgres", //
             Environment.KEY_DB_PASSWORD, "postgres"//
     };
 
     public PGTestProperties() {
-        super(".geogig-pg-backend-tests.properties", DEFAULTS);
+        super(CONFIG_FILE, DEFAULTS);
     }
 
     public Environment getConfig(@Nullable String repositoryId) {
@@ -53,9 +58,9 @@ public class PGTestProperties extends OnlineTestProperties {
         if (repoId == null) {
             repoId = "";
         }
-        String url = String.format(
-                "postgresql://%s:%s/%s/%s/%s?user=%s&password=%s&tablePrefix=%s", server, port,
-                dbName, schema, repoId, user, pwd, tablePrefix == null ? "" : tablePrefix);
+        String url = String.format("postgresql://%s:%s/%s/%s/%s?user=%s&password=%s&tablePrefix=%s",
+                server, port, dbName, schema, repoId, user, pwd,
+                tablePrefix == null ? "" : tablePrefix);
         return url;
     }
 

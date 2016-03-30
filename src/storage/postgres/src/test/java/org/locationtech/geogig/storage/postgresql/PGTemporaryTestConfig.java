@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -41,6 +42,18 @@ public class PGTemporaryTestConfig extends ExternalResource {
     @Override
     public void before() throws Throwable {
         create();
+        org.junit.Assume.assumeTrue(isEnabled());
+    }
+
+    private boolean isEnabled() {
+        final boolean enabled = props.get(PGTestProperties.TESTS_ENABLED_KEY, Boolean.class)
+                .or(Boolean.FALSE).booleanValue();
+        if (!enabled) {
+            final String home = System.getProperty("user.home");
+            String propsFile = new File(home, PGTestProperties.CONFIG_FILE).getAbsolutePath();
+            LOG.info("PostgreSQL backend tests disabled. Configure " + propsFile);
+        }
+        return enabled;
     }
 
     @Override

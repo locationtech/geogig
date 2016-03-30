@@ -332,4 +332,11 @@ public class XerialObjectDatabase extends SQLiteObjectDatabase<DataSource> {
         return count;
     }
 
+    @Override
+    public <T extends RevObject> Iterator<T> getAll(Iterable<ObjectId> ids, BulkOpListener listener,
+            Class<T> type) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

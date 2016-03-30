@@ -20,12 +20,14 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createFeaturesTree;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -76,7 +78,7 @@ public abstract class ObjectStoreConformanceTest {
         hints = new Hints();
 
         this.db = createOpen(platform, hints);
-        //this.db.open();
+        // this.db.open();
     }
 
     @After
@@ -217,6 +219,7 @@ public abstract class ObjectStoreConformanceTest {
         checkNullArgument(() -> db.get(RevTree.EMPTY_TREE_ID, null));
         checkNullArgument(() -> db.getAll(null));
         checkNullArgument(() -> db.getAll(null, BulkOpListener.NOOP_LISTENER));
+        checkNullArgument(() -> db.getAll(ImmutableList.of(), BulkOpListener.NOOP_LISTENER, null));
         checkNullArgument(() -> db.getAll(ImmutableList.of(), null));
         checkNullArgument(() -> db.getIfPresent(null));
         checkNullArgument(() -> db.getIfPresent(null, RevTree.class));
@@ -350,8 +353,7 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testGetAll() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(
-                objects.feature(0, null, "some value"),
+        ImmutableList<RevObject> expected = ImmutableList.of(objects.feature(0, null, "some value"),
                 objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null),
                 RevTree.EMPTY);
 
@@ -374,8 +376,7 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testGetAllWithListener() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(
-                objects.feature(0, null, "some value"),
+        ImmutableList<RevObject> expected = ImmutableList.of(objects.feature(0, null, "some value"),
                 objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null),
                 RevTree.EMPTY);
 
@@ -404,9 +405,47 @@ public abstract class ObjectStoreConformanceTest {
     }
 
     @Test
+    public void testGetAllOfASpecificType() {
+        final RevFeature f1 = objects.feature(0, null, "some value");
+        final RevFeature f2 = objects.feature(1, "value", new Integer(111));
+        final RevFeature f3 = objects.feature(2, (Object) null);
+        final RevTree t1 = RevTree.EMPTY;
+        final RevTree t2 = createFeaturesTree(db, "t", 10);
+        final RevTree t3 = createFeaturesTree(db, "t", 100);
+
+        db.putAll(ImmutableList.of(f1, f2, f3, t1, t2, t3).iterator());
+
+        Iterable<ObjectId> queryIds = ImmutableList.of(f1.getId(), f3.getId(), t1.getId(),
+                t2.getId(), t3.getId());
+
+        CountingListener listener;
+
+        listener = BulkOpListener.newCountingListener();
+        Set<RevFeature> features = Sets.newHashSet(db.getAll(queryIds, listener, RevFeature.class));
+        assertEquals(2, listener.found());
+        assertEquals(3, listener.notFound());
+        assertEquals(Sets.newHashSet(f1.getId(), f3.getId()),
+                Sets.newHashSet(Iterables.transform(features, (f) -> f.getId())));
+
+        listener = BulkOpListener.newCountingListener();
+        Set<RevTree> trees = Sets.newHashSet(db.getAll(queryIds, listener, RevTree.class));
+        assertEquals(3, listener.found());
+        assertEquals(2, listener.notFound());
+        assertEquals(Sets.newHashSet(t1.getId(), t2.getId(), t3.getId()),
+                Sets.newHashSet(Iterables.transform(trees, (t) -> t.getId())));
+
+        listener = BulkOpListener.newCountingListener();
+        Set<RevObject> all = Sets.newHashSet(db.getAll(queryIds, listener, RevObject.class));
+        assertEquals(5, listener.found());
+        assertEquals(0, listener.notFound());
+        assertEquals(Sets.newHashSet(f1.getId(), f3.getId(), t1.getId(), t2.getId(), t3.getId()),
+                Sets.newHashSet(Iterables.transform(all, (o) -> o.getId())));
+
+    }
+
+    @Test
     public void testGetIfPresent() {
-        ImmutableList<RevObject> expected = ImmutableList.of(
-                objects.feature(0, null, "some value"),
+        ImmutableList<RevObject> expected = ImmutableList.of(objects.feature(0, null, "some value"),
                 objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null),
                 RevTree.EMPTY);
 
@@ -499,8 +538,7 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testPutAll() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(
-                objects.feature(0, null, "some value"),
+        ImmutableList<RevObject> expected = ImmutableList.of(objects.feature(0, null, "some value"),
                 objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null),
                 RevTree.EMPTY);
 
@@ -513,8 +551,7 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testPutAllWithListener() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(
-                objects.feature(0, null, "some value"),
+        ImmutableList<RevObject> expected = ImmutableList.of(objects.feature(0, null, "some value"),
                 objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null),
                 RevTree.EMPTY);
 

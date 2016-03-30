@@ -157,6 +157,36 @@ public interface ObjectStore extends Closeable {
     public Iterator<RevObject> getAll(Iterable<ObjectId> ids, BulkOpListener listener);
 
     /**
+     * Query method to retrieve a collection of objects of a given type from the database, given a
+     * collection of object identifiers.
+     * <p>
+     * The returned iterator may not preserve the order of the argument list of ids.
+     * <p>
+     * The {@link BulkOpListener#found(RevObject, Integer) listener.found} method is going to be
+     * called for each object found as the returned iterator is traversed.
+     * <p>
+     * The {@link BulkOpListener#notFound(ObjectId) listener.notFound} method is to be called for
+     * each object not found as the iterator is traversed.
+     * <p>
+     * If the object for one of the query ids exists but is not of the requested type, it's ignored
+     * and reported as {@link BulkOpListener#notFound(ObjectId) not found} to the listener.
+     * <p>
+     * Note, however, it's recommended the client code provides unique object ids in the {@code ids}
+     * argument, as if it were a {@code java.util.Set}. The behavior on what the {@link ObjectStore}
+     * implementation does if repeated ids are requested is undefined. Some implementations may
+     * ignore them and return less objects than requested, others return duplicated objects matching
+     * the argument id count. In any case the calls to {@code listener.found} and
+     * {@code listener.notFound} might be misleading.
+     * 
+     * @param ids an iterable holding the list of ids to fetch from the database
+     * @param listener a listener that gets notified of {@link BulkOpListener#deleted(ObjectId)
+     *        deleted} and {@link BulkOpListener#notFound(ObjectId) not found} items
+     * @return an iterator with the objects <b>found</b> on the database, in no particular order
+     */
+    public <T extends RevObject> Iterator<T> getAll(Iterable<ObjectId> ids, BulkOpListener listener,
+            Class<T> type);
+
+    /**
      * Shorthand for {@link #putAll(Iterator, BulkOpListener)} with
      * {@link BulkOpListener#NOOP_LISTENER} as second argument
      */

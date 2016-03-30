@@ -124,8 +124,8 @@ public class PGObjectDatabase implements ObjectDatabase {
      * The serialized object is added a header that's one unsigned byte with the index of the
      * corresponding factory in this array
      */
-    private static final ObjectSerializingFactory[] SUPPORTED_FORMATS = {//
-    DataStreamSerializationFactoryV1.INSTANCE,//
+    private static final ObjectSerializingFactory[] SUPPORTED_FORMATS = { //
+            DataStreamSerializationFactoryV1.INSTANCE, //
             DataStreamSerializationFactoryV2.INSTANCE //
     };
 
@@ -184,8 +184,8 @@ public class PGObjectDatabase implements ObjectDatabase {
             this.putAllBatchSize = batchSize;
         }
 
-        Optional<Integer> tpoolSize = configdb.get(KEY_THREADPOOL_SIZE, Integer.class).or(
-                configdb.getGlobal(KEY_THREADPOOL_SIZE, Integer.class));
+        Optional<Integer> tpoolSize = configdb.get(KEY_THREADPOOL_SIZE, Integer.class)
+                .or(configdb.getGlobal(KEY_THREADPOOL_SIZE, Integer.class));
         if (tpoolSize.isPresent()) {
             Integer poolSize = tpoolSize.get();
             Preconditions.checkState(poolSize.intValue() > 0,
@@ -252,8 +252,8 @@ public class PGObjectDatabase implements ObjectDatabase {
         if (callTimes == 0) {
             return;
         }
-        long totalMillis = TimeUnit.MILLISECONDS
-                .convert(totalTimeNanos.get(), TimeUnit.NANOSECONDS);
+        long totalMillis = TimeUnit.MILLISECONDS.convert(totalTimeNanos.get(),
+                TimeUnit.NANOSECONDS);
         double avgMillis = (double) totalMillis / callTimes;
         LOG.debug(String.format(
                 "%s call count: %,d, objects found: %,d, total time: %,dms, avg call time: %fms\n",
@@ -437,23 +437,26 @@ public class PGObjectDatabase implements ObjectDatabase {
 
     @Override
     public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final BulkOpListener listener) {
-        return getAll(ids, null, listener);
+        return getAll(ids, listener, RevObject.class);
     }
 
-    // @Override
-    public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final @Nullable TYPE type,
-            final BulkOpListener listener) {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public <T extends RevObject> Iterator<T> getAll(Iterable<ObjectId> ids, BulkOpListener listener,
+            Class<T> type) {
+
         checkNotNull(ids, "ids is null");
         checkNotNull(listener, "listener is null");
+        checkNotNull(type, "type is null");
         checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
 
         Iterator<ObjectId> iterator = ids.iterator();
-        return new GetAllIterator(dataSource, iterator, type, listener, this);
 
+        return new GetAllIterator(dataSource, iterator, type, listener, this);
     }
 
-    private static class GetAllIterator extends AbstractIterator<RevObject> {
+    private static class GetAllIterator<T extends RevObject> extends AbstractIterator<T> {
 
         private Iterator<ObjectId> ids;
 
@@ -465,21 +468,25 @@ public class PGObjectDatabase implements ObjectDatabase {
 
         private Iterator<RevObject> delegate = Collections.emptyIterator();
 
+        @Nullable
         private TYPE type;
 
-        GetAllIterator(DataSource ds, Iterator<ObjectId> ids, @Nullable TYPE type,
+        private final Class<T> classFilter;
+
+        GetAllIterator(DataSource ds, Iterator<ObjectId> ids, Class<T> type,
                 BulkOpListener listener, PGObjectDatabase db) {
             this.dataSource = ds;
             this.ids = ids;
             this.listener = listener;
             this.db = db;
-            this.type = type;
+            this.classFilter = type;
+            this.type = type == RevObject.class ? null : TYPE.valueOf(type);
         }
 
         @Override
-        protected RevObject computeNext() {
+        protected T computeNext() {
             if (delegate.hasNext()) {
-                return delegate.next();
+                return classFilter.cast(delegate.next());
             }
             if (ids.hasNext()) {
                 delegate = nextPartition();
@@ -713,8 +720,8 @@ public class PGObjectDatabase implements ObjectDatabase {
         return future;
     }
 
-    private static class GetAllOp extends DbOp<List<RevObject>> implements
-            Callable<List<RevObject>> {
+    private static class GetAllOp extends DbOp<List<RevObject>>
+            implements Callable<List<RevObject>> {
 
         private final List<ObjectId> queryIds;
 
@@ -813,7 +820,8 @@ public class PGObjectDatabase implements ObjectDatabase {
             return found;
         }
 
-        private Array toJDBCArray(Connection cx, final List<ObjectId> queryIds) throws SQLException {
+        private Array toJDBCArray(Connection cx, final List<ObjectId> queryIds)
+                throws SQLException {
             Array array;
             Object[] arr = new Object[queryIds.size()];
             Iterator<ObjectId> it = queryIds.iterator();
@@ -889,7 +897,8 @@ public class PGObjectDatabase implements ObjectDatabase {
         private final AtomicBoolean eofFlag;
 
         public InsertDbOp(DataSource ds, AtomicBoolean abortFlag, AtomicBoolean eofFlag,
-                BlockingQueue<List<EncodedObject>> queue, BulkOpListener listener, TableNames tables) {
+                BlockingQueue<List<EncodedObject>> queue, BulkOpListener listener,
+                TableNames tables) {
             this.ds = ds;
             this.abortFlag = abortFlag;
             this.eofFlag = eofFlag;
@@ -968,7 +977,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                         insertedCount += newObjects;
                     }
 
-                }// while
+                } // while
 
                 for (PreparedStatement tableStatement : perTableStatements.values()) {
                     tableStatement.close();
@@ -1036,8 +1045,8 @@ public class PGObjectDatabase implements ObjectDatabase {
         final int maxTasks = Math.max(1,
                 Math.min(Runtime.getRuntime().availableProcessors(), this.threadPoolSize) / 2);
 
-        final Iterator<List<EncodedObject>> encoded = Iterators.partition(
-                Iterators.transform(objects, new Encoder(serializer)), putAllBatchSize);
+        final Iterator<List<EncodedObject>> encoded = Iterators
+                .partition(Iterators.transform(objects, new Encoder(serializer)), putAllBatchSize);
 
         final BlockingQueue<List<EncodedObject>> queue = new ArrayBlockingQueue<>(2 + maxTasks);
 

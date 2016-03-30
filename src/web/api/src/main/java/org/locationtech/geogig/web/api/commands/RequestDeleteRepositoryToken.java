@@ -16,6 +16,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.locationtech.geogig.api.Context;
+import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.DeleteRepository;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
@@ -26,7 +28,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.hash.Hashing;
-
 
 /**
  * Allows a user to delete a repository.
@@ -64,9 +65,16 @@ public class RequestDeleteRepositoryToken extends AbstractWebAPICommand {
         final BlobStore blobStore = geogig.repository().blobStore();
         blobStore.putBlob(deleteKey, nowBytes);
         deleteTokenExecutor.schedule(new Runnable() {
+
+            private GeoGIG repo = context.getGeoGIG();
+
             @Override
             public void run() {
-                blobStore.removeBlob(deleteKey);
+                if (repo.isOpen()) {
+                    Repository repository = repo.getRepository();
+                    BlobStore blobs = repository.blobStore();
+                    blobs.removeBlob(deleteKey);
+                }
 
             }
         }, 60, TimeUnit.SECONDS);

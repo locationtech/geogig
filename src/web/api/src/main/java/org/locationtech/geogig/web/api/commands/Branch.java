@@ -30,7 +30,7 @@ import com.google.common.collect.Lists;
  * Web interface for {@link BranchListOp}
  */
 
-public class BranchWebOp extends AbstractWebAPICommand {
+public class Branch extends AbstractWebAPICommand {
 
     boolean list;
 
@@ -63,7 +63,7 @@ public class BranchWebOp extends AbstractWebAPICommand {
      */
     String source;
 
-    public BranchWebOp(ParameterSet options) {
+    public Branch(ParameterSet options) {
         super(options);
         setList(Boolean.valueOf(options.getFirstValue("list", "false")));
         setRemotes(Boolean.valueOf(options.getFirstValue("remotes", "false")));

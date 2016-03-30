@@ -29,7 +29,7 @@ import org.restlet.resource.Variant;
 
 import com.google.common.base.Optional;
 
-public class OsmImportWebOp extends TransactionalResource {
+public class OSMImport extends TransactionalResource {
 
     @Override
     public void init(org.restlet.Context context, Request request, Response response) {

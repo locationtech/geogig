@@ -29,7 +29,7 @@ import com.google.common.base.Optional;
  * Web interface for {@link CheckoutOp}
  */
 
-public class CheckoutWebOp extends AbstractWebAPICommand {
+public class Checkout extends AbstractWebAPICommand {
 
     private String branchOrCommit;
 
@@ -39,7 +39,7 @@ public class CheckoutWebOp extends AbstractWebAPICommand {
 
     private String path;
 
-    public CheckoutWebOp(ParameterSet options) {
+    public Checkout(ParameterSet options) {
         super(options);
         setName(options.getFirstValue("branch", null));
         setOurs(Boolean.valueOf(options.getFirstValue("ours", "false")));

@@ -11,7 +11,6 @@ package org.locationtech.geogig.web.api.commands;
 
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -27,11 +26,11 @@ import com.google.common.base.Optional;
  * Web interface for {@link RefParse}
  */
 
-public class RefParseWeb extends AbstractWebAPICommand {
+public class RefParse extends AbstractWebAPICommand {
 
     private String refSpec;
 
-    public RefParseWeb(ParameterSet options) {
+    public RefParse(ParameterSet options) {
         super(options);
         setName(options.getFirstValue("name", null));
     }
@@ -62,7 +61,8 @@ public class RefParseWeb extends AbstractWebAPICommand {
         Optional<Ref> ref;
 
         try {
-            ref = geogig.command(RefParse.class).setName(refSpec).call();
+            ref = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+                    .setName(refSpec).call();
         } catch (Exception e) {
             context.setResponseContent(CommandResponse.error("Aborting UpdateRef: "
                     + e.getMessage()));

@@ -41,7 +41,7 @@ import com.google.common.base.Optional;
  * Web interface for {@link PullOp}
  */
 
-public class PullWebOp extends AbstractWebAPICommand {
+public class Pull extends AbstractWebAPICommand {
 
     private String remoteName;
 
@@ -53,7 +53,7 @@ public class PullWebOp extends AbstractWebAPICommand {
 
     private Optional<String> authorEmail = Optional.absent();
 
-    public PullWebOp(ParameterSet options) {
+    public Pull(ParameterSet options) {
         super(options);
         setFetchAll(Boolean.valueOf(options.getFirstValue("all", "false")));
         setRefSpec(options.getFirstValue("ref", null));

@@ -29,7 +29,7 @@ import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-public class InitWebOpTest extends AbstractWebOpTest {
+public class InitTest extends AbstractWebOpTest {
 
     @Override
     protected String getRoute() {
@@ -38,7 +38,7 @@ public class InitWebOpTest extends AbstractWebOpTest {
 
     @Override
     protected Class<? extends AbstractWebAPICommand> getCommandClass() {
-        return InitWebOp.class;
+        return Init.class;
     }
 
     @Test

@@ -1,67 +1,77 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2013-2014 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/org/documents/edl-v10.html
  *
  * Contributors:
- * Johnathan Garrett (LMN Solutions) - initial implementation
+ * Kelsey Ishmael (LMN Solutions) - initial implementation
  */
 package org.locationtech.geogig.web.api.commands;
 
 import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.plumbing.RebuildGraphOp;
+import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
-import com.google.common.collect.ImmutableList;
-
 /**
- * Interface for the rebuild graph operation in GeoGig.
+ * The interface for the Add operation in GeoGig.
  * 
- * Web interface for {@link RebuildGraphOp}
+ * Web interface for {@link AddOp}
  */
 
-public class RebuildGraphWebOp extends AbstractWebAPICommand {
+public class Add extends AbstractWebAPICommand {
 
-    private boolean quiet = false;
+    String path;
 
-    public RebuildGraphWebOp(ParameterSet options) {
+    public Add(ParameterSet options) {
         super(options);
-        setQuiet(Boolean.valueOf(options.getFirstValue("quiet", "false")));
+        setPath(options.getFirstValue("path", null));
     }
 
     /**
-     * Mutator for the quiet variable
+     * Mutator for the path variable
      * 
-     * @param quiet - If true, limit the output of the command.
+     * @param path - the path to the feature you want to add
      */
-    public void setQuiet(boolean quiet) {
-        this.quiet = quiet;
+    public void setPath(String path) {
+        this.path = path;
     }
 
     /**
-     * Runs the command and builds the appropriate response.
+     * Runs the command and builds the appropriate response
      * 
      * @param context - the context to use for this command
+     * 
+     * @throws CommandSpecException
      */
     @Override
     protected void runInternal(CommandContext context) {
+        if (this.getTransactionId() == null) {
+            throw new CommandSpecException(
+                    "No transaction was specified, add requires a transaction to preserve the stability of the repository.");
+        }
         final Context geogig = this.getCommandLocator(context);
 
-        final ImmutableList<ObjectId> updatedObjects = geogig.command(RebuildGraphOp.class).call();
+        AddOp command = geogig.command(AddOp.class);
 
+        if (path != null) {
+            command.addPattern(path);
+        }
+
+        command.call();
         context.setResponseContent(new CommandResponse() {
             @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();
-                out.writeRebuildGraphResponse(updatedObjects, quiet);
+                out.writeElement("Add", "Success");
                 out.finish();
             }
         });
     }
+
 }

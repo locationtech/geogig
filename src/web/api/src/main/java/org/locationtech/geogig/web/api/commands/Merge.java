@@ -37,7 +37,7 @@ import com.google.common.base.Suppliers;
  * Web interface for {@link MergeOp}
  */
 
-public class MergeWebOp extends AbstractWebAPICommand {
+public class Merge extends AbstractWebAPICommand {
 
     private boolean noCommit;
 
@@ -47,7 +47,7 @@ public class MergeWebOp extends AbstractWebAPICommand {
 
     private Optional<String> authorEmail = Optional.absent();
 
-    public MergeWebOp(ParameterSet options) {
+    public Merge(ParameterSet options) {
         super(options);
         setNoCommit(Boolean.valueOf(options.getFirstValue("noCommit", "false")));
         setCommit(options.getFirstValue("commit", null));

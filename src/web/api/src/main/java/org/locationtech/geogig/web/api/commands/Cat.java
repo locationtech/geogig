@@ -32,11 +32,11 @@ import com.google.common.base.Preconditions;
  * Note: This class does not use the internal CatObject implementation.
  */
 
-public class CatWebOp extends AbstractWebAPICommand {
+public class Cat extends AbstractWebAPICommand {
 
     private ObjectId object;
 
-    public CatWebOp(ParameterSet options) {
+    public Cat(ParameterSet options) {
         super(options);
         String objectId = options.getFirstValue("objectid", null);
         if (objectId != null) {

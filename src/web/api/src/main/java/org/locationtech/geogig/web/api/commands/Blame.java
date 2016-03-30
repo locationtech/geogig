@@ -32,13 +32,13 @@ import com.google.common.base.Optional;
  * Web interface for {@link BlameOp}, {@link BlameReport}
  */
 
-public class BlameWebOp extends AbstractWebAPICommand {
+public class Blame extends AbstractWebAPICommand {
 
     private String path;
 
     private String branchOrCommit;
 
-    public BlameWebOp(ParameterSet options) {
+    public Blame(ParameterSet options) {
         super(options);
         setCommit(options.getFirstValue("commit", null));
         setPath(options.getFirstValue("path", null));

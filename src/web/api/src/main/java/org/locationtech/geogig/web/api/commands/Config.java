@@ -34,13 +34,13 @@ import com.google.common.base.Optional;
  * Web interface for {@link ConfigOp}
  */
 
-public class ConfigWebOp extends AbstractWebAPICommand {
+public class Config extends AbstractWebAPICommand {
 
     String name;
 
     String value;
 
-    public ConfigWebOp(ParameterSet options) {
+    public Config(ParameterSet options) {
         super(options);
         setName(options.getFirstValue("name", null));
         setValue(options.getFirstValue("value", null));

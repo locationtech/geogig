@@ -26,11 +26,11 @@ import org.locationtech.geogig.web.api.ResponseWriter;
  * Web interface for {@link TagListOp}
  */
 
-public class TagWebOp extends AbstractWebAPICommand {
+public class Tag extends AbstractWebAPICommand {
 
     private boolean list;
 
-    public TagWebOp(ParameterSet options) {
+    public Tag(ParameterSet options) {
         super(options);
         setList(Boolean.valueOf(options.getFirstValue("list", "false")));
     }

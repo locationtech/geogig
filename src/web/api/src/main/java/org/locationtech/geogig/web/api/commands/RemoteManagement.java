@@ -38,7 +38,7 @@ import com.google.common.base.Optional;
  * Web interface for {@link RemoteListOp}, {@link RemoteRemoveOp}, {@link RemoteAddOp}
  */
 
-public class RemoteWebOp extends AbstractWebAPICommand {
+public class RemoteManagement extends AbstractWebAPICommand {
 
     private boolean list;
 
@@ -60,7 +60,7 @@ public class RemoteWebOp extends AbstractWebAPICommand {
 
     private String password = null;
 
-    public RemoteWebOp(ParameterSet options) {
+    public RemoteManagement(ParameterSet options) {
         super(options);
         setList(Boolean.valueOf(options.getFirstValue("list", "false")));
         setRemove(Boolean.valueOf(options.getFirstValue("remove", "false")));

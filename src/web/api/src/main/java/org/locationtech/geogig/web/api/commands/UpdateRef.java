@@ -15,7 +15,6 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -32,7 +31,7 @@ import com.google.common.base.Optional;
  * Web interface for {@link UpdateRef}, {@link UpdateSymRef}
  */
 
-public class UpdateRefWeb extends AbstractWebAPICommand {
+public class UpdateRef extends AbstractWebAPICommand {
 
     private String name;
 
@@ -40,7 +39,7 @@ public class UpdateRefWeb extends AbstractWebAPICommand {
 
     private boolean delete;
 
-    public UpdateRefWeb(ParameterSet options) {
+    public UpdateRef(ParameterSet options) {
         super(options);
         setName(options.getFirstValue("name", null));
         setDelete(Boolean.valueOf(options.getFirstValue("delete", "false")));
@@ -113,7 +112,8 @@ public class UpdateRefWeb extends AbstractWebAPICommand {
                 Optional<ObjectId> target = geogig.command(RevParse.class).setRefSpec(newValue)
                         .call();
                 if (target.isPresent()) {
-                    ref = geogig.command(UpdateRef.class).setDelete(delete)
+                    ref = geogig.command(org.locationtech.geogig.api.plumbing.UpdateRef.class)
+                            .setDelete(delete)
                             .setName(ref.get().getName()).setNewValue(target.get()).call();
                 } else {
                     throw new CommandSpecException("Invalid new value: " + newValue);

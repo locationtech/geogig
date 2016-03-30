@@ -62,7 +62,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public class ExportWebOpTest extends AbstractWebOpTest {
+public class ExportTest extends AbstractWebOpTest {
 
     private CommandContext context;
 
@@ -86,7 +86,7 @@ public class ExportWebOpTest extends AbstractWebOpTest {
 
     @Override
     protected Class<? extends AbstractWebAPICommand> getCommandClass() {
-        return ExportWebOp.class;
+        return Export.class;
     }
 
     @Test
@@ -95,7 +95,7 @@ public class ExportWebOpTest extends AbstractWebOpTest {
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
-        ExportWebOp op = buildCommand(TestParams.of());
+        Export op = buildCommand(TestParams.of());
         op.asyncContext = testAsyncContext;
         op.setOutputFormat(new TestOutputFormat());
 
@@ -117,7 +117,7 @@ public class ExportWebOpTest extends AbstractWebOpTest {
         testData.init().loadDefaultData().checkout("branch1");
 
         // but we request branch2
-        ExportWebOp op = buildCommand("root", "branch2");
+        Export op = buildCommand("root", "branch2");
         op.asyncContext = testAsyncContext;
         op.setOutputFormat(new TestOutputFormat());
 
@@ -139,7 +139,7 @@ public class ExportWebOpTest extends AbstractWebOpTest {
 
         // but we request branch2
         String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
-        ExportWebOp op = buildCommand("path", layerFilter);
+        Export op = buildCommand("path", layerFilter);
         op.asyncContext = testAsyncContext;
         op.setOutputFormat(new TestOutputFormat());
 
@@ -166,7 +166,7 @@ public class ExportWebOpTest extends AbstractWebOpTest {
         String bboxStr = String.format("%f,%f,%f,%f,EPSG:4326", bounds.getMinX(), bounds.getMinY(),
                 bounds.getMaxX(), bounds.getMaxY());
         // but we request branch2
-        ExportWebOp op = buildCommand("root", "branch2", "bbox", bboxStr);
+        Export op = buildCommand("root", "branch2", "bbox", bboxStr);
         op.asyncContext = testAsyncContext;
         op.setOutputFormat(new TestOutputFormat());
 
@@ -192,7 +192,7 @@ public class ExportWebOpTest extends AbstractWebOpTest {
                 bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY());
         String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
         // but we request branch2
-        ExportWebOp op = buildCommand("root", "branch2", "bbox", bboxFilter, "path", layerFilter);
+        Export op = buildCommand("root", "branch2", "bbox", bboxFilter, "path", layerFilter);
         op.asyncContext = testAsyncContext;
         op.setOutputFormat(new TestOutputFormat());
 
@@ -208,7 +208,7 @@ public class ExportWebOpTest extends AbstractWebOpTest {
         }
     }
 
-    private MemoryDataStore run(ExportWebOp op) throws JSONException, InterruptedException,
+    private MemoryDataStore run(Export op) throws JSONException, InterruptedException,
             ExecutionException {
 
         op.run(context);
@@ -251,7 +251,7 @@ public class ExportWebOpTest extends AbstractWebOpTest {
         assertEquals(expectedFeatures, actualFeatures);
     }
 
-    static class TestOutputFormat extends ExportWebOp.OutputFormat {
+    static class TestOutputFormat extends Export.OutputFormat {
 
         private Supplier<DataStore> ds;
 

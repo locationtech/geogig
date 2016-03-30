@@ -26,7 +26,7 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.Status;
-import org.locationtech.geogig.rest.geotools.ImportWebOp;
+import org.locationtech.geogig.rest.geotools.Import;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandBuilder;
@@ -69,7 +69,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
 
     @Override
     protected Class<? extends AbstractWebAPICommand> getCommandClass() {
-        return ImportWebOp.class;
+        return Import.class;
     }
 
     @Test()
@@ -78,7 +78,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
-        ImportWebOp op = buildCommand(TestParams.of());
+        Import op = buildCommand(TestParams.of());
         op.asyncContext = testAsyncContext;
         ex.expect(IllegalArgumentException.class);
         ex.expectMessage("missing required 'format' parameter");
@@ -91,7 +91,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
-        ImportWebOp op = buildCommand("format", "gpkg");
+        Import op = buildCommand("format", "gpkg");
         op.asyncContext = testAsyncContext;
 
         AsyncContext.AsyncCommand<?> result = run(op);
@@ -106,7 +106,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
-        ImportWebOp op = buildCommand("format", "gpkg", "mockFileUpload", "blah");
+        Import op = buildCommand("format", "gpkg", "mockFileUpload", "blah");
         op.asyncContext = testAsyncContext;
 
         AsyncContext.AsyncCommand<?> result = run(op);
@@ -128,7 +128,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         // verify there are no nodes in the repository
         verifyNoCommitedNodes();
 
-        ImportWebOp op = buildCommand(params);
+        Import op = buildCommand(params);
         op.asyncContext = testAsyncContext;
 
         AsyncContext.AsyncCommand<?> result = run(op);
@@ -154,7 +154,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         // verify there are no nodes in the repository
         verifyNoCommitedNodes();
 
-        ImportWebOp op = buildCommand(params);
+        Import op = buildCommand(params);
         op.asyncContext = testAsyncContext;
 
         AsyncContext.AsyncCommand<?> result = run(op);
@@ -180,7 +180,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         // verify there are no nodes in the repository
         verifyNoCommitedNodes();
 
-        ImportWebOp op = buildCommand(params);
+        Import op = buildCommand(params);
         op.asyncContext = testAsyncContext;
 
         AsyncContext.AsyncCommand<?> result = run(op);
@@ -209,7 +209,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         // verify there are no nodes in the repository
         verifyNoCommitedNodes();
 
-        ImportWebOp op = buildCommand(params);
+        Import op = buildCommand(params);
         op.asyncContext = testAsyncContext;
 
         AsyncContext.AsyncCommand<?> result = run(op);
@@ -261,7 +261,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         // now call import with the manual transaction
         ParameterSet params = TestParams.of("format", "gpkg", "transactionId", txnId);
         ((TestParams) params).setFileUpload(dbFile);
-        ImportWebOp op = buildCommand(params);
+        Import op = buildCommand(params);
         op.asyncContext = testAsyncContext;
 
         AsyncContext.AsyncCommand<?> result = run(op);
@@ -318,12 +318,12 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         Assert.assertFalse("Expected repo to be empty, but has nodes", nodeIterator.hasNext());
     }
 
-    private AsyncContext.AsyncCommand<?> run(ImportWebOp op)
+    private AsyncContext.AsyncCommand<?> run(Import op)
             throws JSONException, InterruptedException, ExecutionException {
         return run(op, "1");
     }
 
-    private AsyncContext.AsyncCommand<?> run(ImportWebOp op, String taskId)
+    private AsyncContext.AsyncCommand<?> run(Import op, String taskId)
             throws JSONException, InterruptedException, ExecutionException {
         op.run(context);
         JSONObject response = getJSONResponse();

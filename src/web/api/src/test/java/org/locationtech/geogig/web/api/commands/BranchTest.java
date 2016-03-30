@@ -34,7 +34,7 @@ import org.locationtech.geogig.web.api.WebAPICommand;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-public class BranchWebOpTest extends AbstractWebOpTest {
+public class BranchTest extends AbstractWebOpTest {
 
     @Override
     protected String getRoute() {
@@ -43,7 +43,7 @@ public class BranchWebOpTest extends AbstractWebOpTest {
 
     @Override
     protected Class<? extends AbstractWebAPICommand> getCommandClass() {
-        return BranchWebOp.class;
+        return Branch.class;
     }
 
     @Test
@@ -52,7 +52,7 @@ public class BranchWebOpTest extends AbstractWebOpTest {
                 "testbranch", "force", "true", "autoCheckout", "true", "orphan", "true", "source",
                 "COMMIT_X");
 
-        BranchWebOp op = (BranchWebOp) buildCommand(options);
+        Branch op = (Branch) buildCommand(options);
 
         assertTrue(op.list);
         assertTrue(op.remotes);
@@ -68,7 +68,7 @@ public class BranchWebOpTest extends AbstractWebOpTest {
     @Test
     public void createBranchEmptyHistory() {
         ParameterSet options = TestParams.of("branchName", "newBranch");
-        BranchWebOp cmd = (BranchWebOp) buildCommand(options);
+        Branch cmd = (Branch) buildCommand(options);
         ex.expect(IllegalArgumentException.class);
         ex.expectMessage("HEAD has no commits");
         cmd.run(testContext.get());

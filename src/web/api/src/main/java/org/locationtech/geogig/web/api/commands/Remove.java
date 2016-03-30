@@ -25,13 +25,13 @@ import org.locationtech.geogig.web.api.ResponseWriter;
  * Web interface for {@link RemoveOp}
  */
 
-public class RemoveWebOp extends AbstractWebAPICommand {
+public class Remove extends AbstractWebAPICommand {
 
     private String path;
 
     private boolean recursive;
 
-    public RemoveWebOp(ParameterSet options) {
+    public Remove(ParameterSet options) {
         super(options);
         setPath(options.getFirstValue("path", null));
         setRecursive(Boolean.valueOf(options.getFirstValue("recursive", "false")));

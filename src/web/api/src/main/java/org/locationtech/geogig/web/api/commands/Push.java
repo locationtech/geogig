@@ -24,14 +24,14 @@ import org.locationtech.geogig.web.api.ResponseWriter;
  * 
  * Web interface for {@link PushOp}
  */
-public class PushWebOp extends AbstractWebAPICommand {
+public class Push extends AbstractWebAPICommand {
     private String remoteName;
 
     private boolean pushAll;
 
     private String refSpec;
 
-    public PushWebOp(ParameterSet options) {
+    public Push(ParameterSet options) {
         super(options);
         setPushAll(Boolean.valueOf(options.getFirstValue("all", "false")));
         setRefSpec(options.getFirstValue("ref", null));

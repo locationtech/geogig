@@ -24,9 +24,9 @@ import org.locationtech.geogig.web.api.ResponseWriter;
  * Web interface for {@link VersionOp}, {@link VersionInfo}
  */
 
-public class VersionWebOp extends AbstractWebAPICommand {
+public class Version extends AbstractWebAPICommand {
 
-    public VersionWebOp(ParameterSet options) {
+    public Version(ParameterSet options) {
         super(options);
     }
 

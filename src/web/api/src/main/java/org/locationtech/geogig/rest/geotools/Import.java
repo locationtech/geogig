@@ -25,7 +25,6 @@ import org.locationtech.geogig.rest.Representations;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
-import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
@@ -102,7 +101,7 @@ import com.google.common.base.Preconditions;
  * </b>
  * <p>
  */
-public class ImportWebOp extends AbstractWebAPICommand {
+public class Import extends AbstractWebAPICommand {
 
     // Request Parameter keys.
     /**
@@ -165,7 +164,7 @@ public class ImportWebOp extends AbstractWebAPICommand {
     @VisibleForTesting
     public AsyncContext asyncContext;
 
-    public ImportWebOp(ParameterSet options) {
+    public Import(ParameterSet options) {
         super(options);
         this.options = options;
     }

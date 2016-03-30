@@ -63,15 +63,15 @@ import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
-import org.locationtech.geogig.web.api.commands.BranchWebOp;
+import org.locationtech.geogig.web.api.commands.Branch;
 import org.locationtech.geogig.web.api.commands.Commit;
 import org.locationtech.geogig.web.api.commands.Log.CommitWithChangeCounts;
 import org.locationtech.geogig.web.api.commands.LsTree;
-import org.locationtech.geogig.web.api.commands.RefParseWeb;
-import org.locationtech.geogig.web.api.commands.RemoteWebOp;
-import org.locationtech.geogig.web.api.commands.StatisticsWebOp;
-import org.locationtech.geogig.web.api.commands.TagWebOp;
-import org.locationtech.geogig.web.api.commands.UpdateRefWeb;
+import org.locationtech.geogig.web.api.commands.RefParse;
+import org.locationtech.geogig.web.api.commands.RemoteManagement;
+import org.locationtech.geogig.web.api.commands.Statistics;
+import org.locationtech.geogig.web.api.commands.Tag;
+import org.locationtech.geogig.web.api.commands.UpdateRef;
 import org.opengis.feature.type.GeometryType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.feature.type.PropertyType;
@@ -559,7 +559,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link UpdateRefWeb} command to the stream.
+     * Writes the response for the {@link UpdateRef} command to the stream.
      * 
      * @param ref the ref returned from the command
      * @throws XMLStreamException
@@ -575,7 +575,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link RefParseWeb} command to the stream.
+     * Writes the response for the {@link RefParse} command to the stream.
      * 
      * @param ref the ref returned from the command
      * @throws XMLStreamException
@@ -601,7 +601,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link BranchWebOp} command to the stream.
+     * Writes the response for the {@link Branch} command to the stream.
      * 
      * @param localBranches the local branches of the repository
      * @param remoteBranches the remote branches of the repository
@@ -639,7 +639,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link RemoteWebOp} command to the stream.
+     * Writes the response for the {@link RemoteManagement} command to the stream.
      * 
      * @param remotes the list of the {@link Remote}s of this repository
      * @throws XMLStreamException
@@ -660,7 +660,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link RemoteWebOp} command to the stream.
+     * Writes the response for the {@link RemoteManagement} command to the stream.
      * 
      * @param success whether or not the ping was successful
      * @throws XMLStreamException
@@ -672,7 +672,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link TagWebOp} command to the stream.
+     * Writes the response for the {@link Tag} command to the stream.
      * 
      * @param tags the list of {@link RevTag}s of this repository
      * @throws XMLStreamException
@@ -1173,7 +1173,7 @@ public class ResponseWriter {
         out.writeEndElement();
     }
 
-    public void writeStatistics(List<StatisticsWebOp.FeatureTypeStats> stats,
+    public void writeStatistics(List<Statistics.FeatureTypeStats> stats,
             RevCommit firstCommit, RevCommit lastCommit, int totalCommits, List<RevPerson> authors,
             int totalAdded, int totalModified, int totalRemoved) throws XMLStreamException {
         out.writeStartElement("Statistics");
@@ -1181,7 +1181,7 @@ public class ResponseWriter {
         int totalNumFeatures = 0;
         if (!stats.isEmpty()) {
             out.writeStartElement("FeatureTypes");
-            for (StatisticsWebOp.FeatureTypeStats stat : stats) {
+            for (Statistics.FeatureTypeStats stat : stats) {
                 numFeatureTypes++;
                 out.writeStartElement("FeatureType");
                 writeElement("name", stat.getName());

@@ -39,7 +39,7 @@ import com.google.common.collect.Lists;
  * List certain statistics of repository.
  */
 
-public class StatisticsWebOp extends AbstractWebAPICommand {
+public class Statistics extends AbstractWebAPICommand {
 
     String path;
 
@@ -47,7 +47,7 @@ public class StatisticsWebOp extends AbstractWebAPICommand {
 
     String until;
 
-    public StatisticsWebOp(ParameterSet options) {
+    public Statistics(ParameterSet options) {
         super(options);
         setPath(options.getFirstValue("path", null));
         setSince(options.getFirstValue("since", null));

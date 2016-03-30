@@ -52,7 +52,7 @@ import com.google.common.base.Strings;
  * </ul>
  *
  */
-public class OsmDownloadWebOp extends TransactionalResource {
+public class OSMDownload extends TransactionalResource {
 
     @Override
     public void init(org.restlet.Context context, Request request, Response response) {

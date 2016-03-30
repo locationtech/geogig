@@ -49,7 +49,7 @@ import com.google.common.collect.Lists;
  * Web interface for {@link AddOp}
  */
 
-public class RevertFeatureWebOp extends AbstractWebAPICommand {
+public class RevertFeature extends AbstractWebAPICommand {
 
     private String featurePath;
 
@@ -65,7 +65,7 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
 
     private Optional<String> mergeMessage = Optional.absent();
 
-    public RevertFeatureWebOp(ParameterSet options) {
+    public RevertFeature(ParameterSet options) {
         super(options);
         setAuthorName(options.getFirstValue("authorName", null));
         setAuthorEmail(options.getFirstValue("authorEmail", null));

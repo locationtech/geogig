@@ -36,7 +36,7 @@ import org.restlet.resource.Variant;
 
 import com.beust.jcommander.internal.Maps;
 
-public class PGImportWebOp extends TransactionalResource {
+public class PGImport extends TransactionalResource {
     @Override
     public void init(org.restlet.Context context, Request request, Response response) {
         super.init(context, request, response);

@@ -31,7 +31,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.base.Optional;
 
-public class ConfigWebOpTest extends AbstractWebOpTest {
+public class ConfigTest extends AbstractWebOpTest {
 
     @Override
     protected String getRoute() {
@@ -40,14 +40,14 @@ public class ConfigWebOpTest extends AbstractWebOpTest {
 
     @Override
     protected Class<? extends AbstractWebAPICommand> getCommandClass() {
-        return ConfigWebOp.class;
+        return Config.class;
     }
 
     @Test
     public void testBuildParameters() {
         ParameterSet options = TestParams.of("name", "config.key", "value", "myValue");
 
-        ConfigWebOp op = (ConfigWebOp) buildCommand(options);
+        Config op = (Config) buildCommand(options);
         assertEquals("config.key", op.name);
         assertEquals("myValue", op.value);
     }

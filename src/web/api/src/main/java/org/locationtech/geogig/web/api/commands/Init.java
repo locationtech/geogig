@@ -36,9 +36,9 @@ import com.google.common.base.Preconditions;
  * Web interface for {@link InitOp}
  */
 
-public class InitWebOp extends AbstractWebAPICommand {
+public class Init extends AbstractWebAPICommand {
 
-    public InitWebOp(ParameterSet options) {
+    public Init(ParameterSet options) {
         super(options);
     }
 

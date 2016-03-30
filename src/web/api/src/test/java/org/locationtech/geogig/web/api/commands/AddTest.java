@@ -22,7 +22,7 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
 
-public class AddWebOpTest extends AbstractWebOpTest {
+public class AddTest extends AbstractWebOpTest {
 
     @Override
     protected String getRoute() {
@@ -31,7 +31,7 @@ public class AddWebOpTest extends AbstractWebOpTest {
 
     @Override
     protected Class<? extends AbstractWebAPICommand> getCommandClass() {
-        return AddWebOp.class;
+        return Add.class;
     }
 
     @Test
@@ -39,7 +39,7 @@ public class AddWebOpTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("path", "points", "transactionId", UUID.randomUUID()
                 .toString());
 
-        AddWebOp op = (AddWebOp) buildCommand(options);
+        Add op = (Add) buildCommand(options);
         assertEquals("points", op.path);
     }
 

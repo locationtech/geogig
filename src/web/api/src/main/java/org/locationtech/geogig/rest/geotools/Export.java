@@ -77,7 +77,7 @@ import com.google.common.base.Supplier;
  * @see DataStoreExportOp
  * @see GeoPkgExportOutputFormat
  */
-public class ExportWebOp extends AbstractWebAPICommand {
+public class Export extends AbstractWebAPICommand {
 
     // Form parameters
     public static final String FORMAT_PARAM = "format";
@@ -98,7 +98,7 @@ public class ExportWebOp extends AbstractWebAPICommand {
     @VisibleForTesting
     public AsyncContext asyncContext;
 
-    public ExportWebOp(ParameterSet options) {
+    public Export(ParameterSet options) {
         super(options);
         this.options = options;
         setOutputFormat(options.getFirstValue(FORMAT_PARAM));

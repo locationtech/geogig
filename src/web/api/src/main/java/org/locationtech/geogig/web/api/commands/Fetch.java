@@ -26,14 +26,14 @@ import org.locationtech.geogig.web.api.ResponseWriter;
  * Web interface for {@link FetchOp}
  */
 
-public class FetchWebOp extends AbstractWebAPICommand {
+public class Fetch extends AbstractWebAPICommand {
     private boolean prune;
 
     private boolean fetchAll;
 
     private String remote;
 
-    public FetchWebOp(ParameterSet options) {
+    public Fetch(ParameterSet options) {
         super(options);
         setFetchAll(Boolean.valueOf(options.getFirstValue("all", "false")));
         setPrune(Boolean.valueOf(options.getFirstValue("prune", "false")));

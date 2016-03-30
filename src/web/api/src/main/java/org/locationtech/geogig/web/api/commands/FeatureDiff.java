@@ -23,7 +23,6 @@ import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.AttributeDiff;
-import org.locationtech.geogig.api.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.api.plumbing.diff.GenericAttributeDiffImpl;
 import org.locationtech.geogig.api.plumbing.diff.GeometryAttributeDiff;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
@@ -46,7 +45,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * Web interface for {@link FeatureDiff}
  */
 
-public class FeatureDiffWeb extends AbstractWebAPICommand {
+public class FeatureDiff extends AbstractWebAPICommand {
 
     private String path;
 
@@ -56,7 +55,7 @@ public class FeatureDiffWeb extends AbstractWebAPICommand {
 
     private boolean all;
 
-    public FeatureDiffWeb(ParameterSet options) {
+    public FeatureDiff(ParameterSet options) {
         super(options);
         setPath(options.getFirstValue("path", null));
         setOldTreeish(options.getFirstValue("oldTreeish", ObjectId.NULL.toString()));
@@ -243,7 +242,9 @@ public class FeatureDiffWeb extends AbstractWebAPICommand {
             }
             diffs = tempDiffs;
         } else {
-            FeatureDiff diff = new FeatureDiff(path, newFeature, oldFeature, newFeatureType,
+            org.locationtech.geogig.api.plumbing.diff.FeatureDiff diff = new org.locationtech.geogig.api.plumbing.diff.FeatureDiff(
+                    path,
+                    newFeature, oldFeature, newFeatureType,
                     oldFeatureType, all);
             diffs = diff.getDiffs();
         }

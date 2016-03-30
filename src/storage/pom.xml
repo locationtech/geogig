@@ -18,5 +18,6 @@
   <modules>
    <module>bdbje</module>
    <module>sqlite</module>
+   <module>postgres</module>
   </modules>
 </project>

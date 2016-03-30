@@ -141,8 +141,15 @@ public interface ObjectStore extends Closeable {
      * <p>
      * The {@link BulkOpListener#notFound(ObjectId) listener.notFound} method is to be called for
      * each object not found as the iterator is traversed.
+     * <p>
+     * Note, however, it's recommended the client code provides unique object ids in the {@code ids}
+     * argument, as if it were a {@code java.util.Set}. The behavior on what the {@link ObjectStore}
+     * implementation does if repeated ids are requested is undefined. Some implementations may
+     * ignore them and return less objects than requested, others return duplicated objects matching
+     * the argument id count. In any case the calls to {@code listener.found} and
+     * {@code listener.notFound} might be misleading.
      * 
-     * @param ids an iterable holding the list of ids to remove from the database
+     * @param ids an iterable holding the list of ids to fetch from the database
      * @param listener a listener that gets notified of {@link BulkOpListener#deleted(ObjectId)
      *        deleted} and {@link BulkOpListener#notFound(ObjectId) not found} items
      * @return an iterator with the objects <b>found</b> on the database, in no particular order

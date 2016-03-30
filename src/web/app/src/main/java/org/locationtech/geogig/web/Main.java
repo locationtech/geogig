@@ -23,7 +23,6 @@ import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.rest.TaskResultDownloadResource;
 import org.locationtech.geogig.rest.TaskStatusResource;
-import org.locationtech.geogig.rest.geopkg.GeoPkgRouter;
 import org.locationtech.geogig.rest.osm.OSMRouter;
 import org.locationtech.geogig.rest.postgis.PGRouter;
 import org.locationtech.geogig.rest.repository.CommandResource;
@@ -32,6 +31,7 @@ import org.locationtech.geogig.rest.repository.FixedEncoder;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.RepositoryRouter;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
+import org.locationtech.geogig.rest.repository.UploadCommandResource;
 import org.restlet.Application;
 import org.restlet.Component;
 import org.restlet.Restlet;
@@ -122,7 +122,6 @@ public class Main extends Application {
         Router repo = new RepositoryRouter();
         Router osm = new OSMRouter();
         Router postgis = new PGRouter();
-        Router geopackage = new GeoPkgRouter();
         singleRepoRouter.attach("", DeleteRepository.class);
 
         singleRepoRouter.attach("/tasks", TaskStatusResource.class);
@@ -132,8 +131,9 @@ public class Main extends Application {
 
         singleRepoRouter.attach("/osm", osm);
         singleRepoRouter.attach("/postgis", postgis);
-        singleRepoRouter.attach("/geopkg", geopackage);
         singleRepoRouter.attach("/repo", repo);
+        singleRepoRouter.attach("/import.{extension}", UploadCommandResource.class);
+        singleRepoRouter.attach("/import", UploadCommandResource.class);
         singleRepoRouter.attach("/{command}.{extension}", CommandResource.class);
         singleRepoRouter.attach("/{command}", CommandResource.class);
 

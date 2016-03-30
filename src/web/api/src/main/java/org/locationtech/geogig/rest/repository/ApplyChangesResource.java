@@ -29,7 +29,6 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.remote.BinaryPackedChanges;
 import org.locationtech.geogig.remote.HttpFilteredDiffIterator;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.ObjectReader;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.restlet.Context;

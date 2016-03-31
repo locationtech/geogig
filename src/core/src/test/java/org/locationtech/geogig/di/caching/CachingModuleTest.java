@@ -45,7 +45,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
-import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
+import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -94,7 +94,7 @@ public class CachingModuleTest {
                 DataStreamSerializationFactoryV1 sfac = DataStreamSerializationFactoryV1.INSTANCE;
                 bind(ObjectSerializingFactory.class).toInstance(sfac);
 
-                bind(ObjectDatabase.class).to(HeapObjectDatabse.class).in(Scopes.SINGLETON);
+                bind(ObjectDatabase.class).to(HeapObjectDatabase.class).in(Scopes.SINGLETON);
 
                 ConfigDatabase config = new IniFileConfigDatabase(platform);
                 bind(ConfigDatabase.class).toInstance(config);

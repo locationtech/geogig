@@ -26,7 +26,7 @@ import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
+import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -70,9 +70,9 @@ public class MutableTreeTest extends Assert {
     @Test
     @Ignore
     public void testBuild() {
-        ObjectDatabase origin = new HeapObjectDatabse();
+        ObjectDatabase origin = new HeapObjectDatabase();
         origin.open();
-        ObjectDatabase target = new HeapObjectDatabse();
+        ObjectDatabase target = new HeapObjectDatabase();
         target.open();
         RevTree tree = root.build(origin, target);
 

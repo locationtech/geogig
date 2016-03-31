@@ -26,7 +26,7 @@ import org.locationtech.geogig.storage.ObjectInserter;
  * 
  * @see AbstractObjectDatabase
  */
-public class HeapObjectDatabse extends ForwardingObjectStore implements ObjectDatabase {
+public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectDatabase {
 
     static HeapObjectDatabaseConnectionManager CONN_MANAGER = new HeapObjectDatabaseConnectionManager();
 
@@ -34,11 +34,11 @@ public class HeapObjectDatabse extends ForwardingObjectStore implements ObjectDa
 
     private HeapBlobStore blobs;
 
-    public HeapObjectDatabse() {
+    public HeapObjectDatabase() {
         super(new HeapObjectStore(), false);
     }
 
-    public HeapObjectDatabse(Platform platform, Hints hints) {
+    public HeapObjectDatabase(Platform platform, Hints hints) {
         super(connect(platform), readOnly(hints));
     }
 
@@ -114,8 +114,8 @@ public class HeapObjectDatabse extends ForwardingObjectStore implements ObjectDa
         return getClass().getSimpleName();
     }
 
-    private static class HeapObjectDatabaseConnectionManager extends
-            ConnectionManager<Path, HeapObjectStore> {
+    private static class HeapObjectDatabaseConnectionManager
+            extends ConnectionManager<Path, HeapObjectStore> {
 
         @Override
         protected HeapObjectStore connect(Path address) {

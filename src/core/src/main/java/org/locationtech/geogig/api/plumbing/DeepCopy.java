@@ -87,7 +87,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
      */
     @Override
     protected ObjectId _call() {
-        Preconditions.checkState(from != null, "No from databse specified");
+        Preconditions.checkState(from != null, "No from database specified");
         ObjectStore from = this.from;
         ObjectStore to = objectDatabase();
 

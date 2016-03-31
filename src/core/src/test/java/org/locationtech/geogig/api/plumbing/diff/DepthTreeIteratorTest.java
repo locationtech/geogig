@@ -26,7 +26,7 @@ import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
+import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
@@ -48,7 +48,7 @@ public class DepthTreeIteratorTest extends Assert {
 
     @Before
     public void setUp() {
-        source = new HeapObjectDatabse();
+        source = new HeapObjectDatabase();
         source.open();
 
         metadataId = ObjectId.forString("fake id");

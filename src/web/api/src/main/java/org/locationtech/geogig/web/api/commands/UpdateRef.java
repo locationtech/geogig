@@ -33,17 +33,17 @@ import com.google.common.base.Optional;
 
 public class UpdateRef extends AbstractWebAPICommand {
 
-    private String name;
+    String name;
 
-    private String newValue;
+    String newValue;
 
-    private boolean delete;
+    boolean delete;
 
     public UpdateRef(ParameterSet options) {
         super(options);
         setName(options.getFirstValue("name", null));
         setDelete(Boolean.valueOf(options.getFirstValue("delete", "false")));
-        setNewValue(options.getFirstValue("newValue", ObjectId.NULL.toString()));
+        setNewValue(options.getFirstValue("newValue", null));
     }
 
     /**
@@ -90,39 +90,39 @@ public class UpdateRef extends AbstractWebAPICommand {
         }
 
         final Context geogig = this.getCommandLocator(context);
-        Optional<Ref> ref;
+        Optional<Ref> ref = geogig.command(RefParse.class).setName(name).call();
 
-        try {
-            ref = geogig.command(RefParse.class).setName(name).call();
+        if (!ref.isPresent()) {
+            throw new CommandSpecException("Invalid name: " + name);
+        }
 
-            if (!ref.isPresent()) {
-                throw new CommandSpecException("Invalid name: " + name);
-            }
-
-            if (ref.get() instanceof SymRef) {
+        if (ref.get() instanceof SymRef) {
+            if (delete) {
+                ref = geogig.command(UpdateSymRef.class).setDelete(delete).setName(name).call();
+            } else {
                 Optional<Ref> target = geogig.command(RefParse.class).setName(newValue).call();
                 if (target.isPresent() && !(target.get() instanceof SymRef)) {
-                    ref = geogig.command(UpdateSymRef.class).setDelete(delete).setName(name)
+                    ref = geogig.command(UpdateSymRef.class).setName(name)
                             .setNewValue(target.get().getName()).call();
                 } else {
                     throw new CommandSpecException("Invalid new target: " + newValue);
                 }
+            }
 
+        } else {
+            if (delete) {
+                ref = geogig.command(org.locationtech.geogig.api.plumbing.UpdateRef.class)
+                        .setDelete(delete).setName(ref.get().getName()).call();
             } else {
                 Optional<ObjectId> target = geogig.command(RevParse.class).setRefSpec(newValue)
                         .call();
                 if (target.isPresent()) {
                     ref = geogig.command(org.locationtech.geogig.api.plumbing.UpdateRef.class)
-                            .setDelete(delete)
                             .setName(ref.get().getName()).setNewValue(target.get()).call();
                 } else {
                     throw new CommandSpecException("Invalid new value: " + newValue);
                 }
             }
-        } catch (Exception e) {
-            context.setResponseContent(CommandResponse.error("Aborting UpdateRef: "
-                    + e.getMessage()));
-            return;
         }
 
         if (ref.isPresent()) {

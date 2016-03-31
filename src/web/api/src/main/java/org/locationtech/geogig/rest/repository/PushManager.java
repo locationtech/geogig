@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.web.api.commands;
+package org.locationtech.geogig.rest.repository;
 
 import static com.google.common.base.Preconditions.checkState;
 

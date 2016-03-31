@@ -31,13 +31,13 @@ import com.google.common.base.Optional;
 
 public class Checkout extends AbstractWebAPICommand {
 
-    private String branchOrCommit;
+    String branchOrCommit;
 
-    private boolean ours;
+    boolean ours;
 
-    private boolean theirs;
+    boolean theirs;
 
-    private String path;
+    String path;
 
     public Checkout(ParameterSet options) {
         super(options);
@@ -101,7 +101,7 @@ public class Checkout extends AbstractWebAPICommand {
             Optional<Ref> head = geogig.command(RefParse.class).setName(Ref.HEAD).call();
 
             if (!head.isPresent()) {
-                throw new CommandSpecException("Repository has no HEAD, can't merge.");
+                throw new CommandSpecException("Repository has no HEAD, can't checkout.");
             }
 
             final String target = ((SymRef) head.get()).getTarget();

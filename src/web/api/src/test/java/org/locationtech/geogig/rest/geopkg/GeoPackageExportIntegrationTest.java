@@ -104,6 +104,11 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         return Export.class;
     }
 
+    @Override
+    protected boolean requiresTransaction() {
+        return false;
+    }
+
     @Test
     public void testExportDefaults() throws Exception {
         GeoGIG repo = context.getGeoGIG();

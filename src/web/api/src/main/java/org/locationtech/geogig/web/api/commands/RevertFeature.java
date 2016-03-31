@@ -51,19 +51,19 @@ import com.google.common.collect.Lists;
 
 public class RevertFeature extends AbstractWebAPICommand {
 
-    private String featurePath;
+    String featurePath;
 
-    private ObjectId oldCommitId;
+    ObjectId oldCommitId;
 
-    private ObjectId newCommitId;
+    ObjectId newCommitId;
 
-    private Optional<String> authorName = Optional.absent();
+    Optional<String> authorName = Optional.absent();
 
-    private Optional<String> authorEmail = Optional.absent();
+    Optional<String> authorEmail = Optional.absent();
 
-    private Optional<String> commitMessage = Optional.absent();
+    Optional<String> commitMessage = Optional.absent();
 
-    private Optional<String> mergeMessage = Optional.absent();
+    Optional<String> mergeMessage = Optional.absent();
 
     public RevertFeature(ParameterSet options) {
         super(options);
@@ -91,7 +91,11 @@ public class RevertFeature extends AbstractWebAPICommand {
      * @param oldCommitId - the commit that contains the version of the feature to revert to
      */
     public void setOldCommitId(String oldCommitId) {
-        this.oldCommitId = ObjectId.valueOf(oldCommitId);
+        if (oldCommitId == null) {
+            this.oldCommitId = null;
+        } else {
+            this.oldCommitId = ObjectId.valueOf(oldCommitId);
+        }
     }
 
     /**
@@ -100,7 +104,11 @@ public class RevertFeature extends AbstractWebAPICommand {
      * @param newCommitId - the commit that contains the version of the feature that we want to undo
      */
     public void setNewCommitId(String newCommitId) {
-        this.newCommitId = ObjectId.valueOf(newCommitId);
+        if (newCommitId == null) {
+            this.newCommitId = null;
+        } else {
+            this.newCommitId = ObjectId.valueOf(newCommitId);
+        }
     }
 
     /**
@@ -176,8 +184,9 @@ public class RevertFeature extends AbstractWebAPICommand {
             delete = true;
             node = geogig.command(FindTreeChild.class).setParent(newTree.get())
                     .setChildPath(featurePath).call();
-            Preconditions.checkState(node.isPresent(),
-                    "The feature was not found in either commit tree.");
+            if (!node.isPresent()) {
+                throw new CommandSpecException("The feature was not found in either commit tree.");
+            }
         }
 
         // get the new parent tree

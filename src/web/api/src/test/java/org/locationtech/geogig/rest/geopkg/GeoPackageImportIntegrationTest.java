@@ -72,6 +72,11 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         return Import.class;
     }
 
+    @Override
+    protected boolean requiresTransaction() {
+        return false;
+    }
+
     @Test()
     public void testFormatArgumentRquired() throws Exception {
         GeoGIG repo = context.getGeoGIG();
@@ -275,7 +280,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         // end the transaction and verify the import
         CommandBuilder.build("endTransaction", TestParams.of("transactionId", txnId)).run(context);
         JSONObject endResponse = getJSONResponse();
-        expected = "{'response':{'success':true,'Transaction':''}}";
+        expected = "{'response':{'success':true,'Transaction':{'ID':'" + txnId + "'}}}";
         JSONAssert.assertEquals(expected, endResponse.toString(), true);
         // verify data was imported
         verifyImport(Sets.newHashSet("Points", "Lines", "Polygons"));

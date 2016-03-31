@@ -34,7 +34,7 @@ import com.google.common.base.Preconditions;
 
 public class Cat extends AbstractWebAPICommand {
 
-    private ObjectId object;
+    ObjectId object;
 
     public Cat(ParameterSet options) {
         super(options);
@@ -62,7 +62,8 @@ public class Cat extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        Preconditions.checkArgument(object != null && !object.equals(ObjectId.NULL));
+        Preconditions.checkArgument(object != null && !object.equals(ObjectId.NULL),
+                "You must specify a non-null ObjectId.");
         final Context geogig = this.getCommandLocator(context);
 
         Preconditions.checkState(geogig.objectDatabase().exists(object));

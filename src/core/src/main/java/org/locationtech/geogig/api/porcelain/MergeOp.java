@@ -313,7 +313,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 if (commits.size() == 1) {
                     mergeScenario = Optional.of(command(ReportMergeScenarioOp.class)
                             .setMergeIntoCommit(headCommit).setToMergeCommit(targetCommit).call());
-                    if (ancestorCommit.get().equals(headCommit.getId())) {
+                    if (ancestorCommit.get().equals(headCommit.getId()) && !noFastForward) {
                         // Fast-forward
                         if (headRef instanceof SymRef) {
                             final String currentBranch = ((SymRef) headRef).getTarget();

@@ -16,6 +16,7 @@ import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
@@ -25,11 +26,11 @@ import org.locationtech.geogig.web.api.ResponseWriter;
  * Web interface for {@link PushOp}
  */
 public class Push extends AbstractWebAPICommand {
-    private String remoteName;
+    String remoteName;
 
-    private boolean pushAll;
+    boolean pushAll;
 
-    private String refSpec;
+    String refSpec;
 
     public Push(ParameterSet options) {
         super(options);
@@ -94,14 +95,12 @@ public class Push extends AbstractWebAPICommand {
         } catch (SynchronizationException e) {
             switch (e.statusCode) {
             case REMOTE_HAS_CHANGES:
-                context.setResponseContent(CommandResponse
-                        .error("Push failed: The remote repository has changes that would be lost in the event of a push."));
-                break;
+                throw new CommandSpecException(
+                        "Push failed: The remote repository has changes that would be lost in the event of a push.");
             case HISTORY_TOO_SHALLOW:
-                context.setResponseContent(CommandResponse
-                        .error("Push failed: There is not enough local history to complete the push."));
             default:
-                break;
+                throw new CommandSpecException(
+                        "Push failed: There is not enough local history to complete the push.");
             }
         }
     }

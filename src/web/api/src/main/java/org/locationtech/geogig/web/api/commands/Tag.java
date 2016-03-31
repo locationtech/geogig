@@ -17,6 +17,7 @@ import org.locationtech.geogig.api.porcelain.TagListOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
@@ -28,7 +29,7 @@ import org.locationtech.geogig.web.api.ResponseWriter;
 
 public class Tag extends AbstractWebAPICommand {
 
-    private boolean list;
+    boolean list;
 
     public Tag(ParameterSet options) {
         super(options);
@@ -63,6 +64,8 @@ public class Tag extends AbstractWebAPICommand {
                     out.finish();
                 }
             });
+        } else {
+            throw new CommandSpecException("Only listing tags is supported at this time.");
         }
     }
 

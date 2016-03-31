@@ -71,9 +71,9 @@ public class Log extends AbstractWebAPICommand {
 
     List<String> paths;
 
-    private int page;
+    int page;
 
-    private int elementsPerPage;
+    int elementsPerPage;
 
     boolean firstParentOnly;
 
@@ -265,10 +265,9 @@ public class Log extends AbstractWebAPICommand {
             Preconditions.checkArgument(until.isPresent(), "Object not found '%s'", this.until);
             op.setUntil(until.get());
         }
-        if (paths != null && !paths.isEmpty()) {
-            for (String path : paths) {
-                op.addPath(path);
-            }
+
+        for (String path : paths) {
+            op.addPath(path);
         }
 
         final Iterator<RevCommit> log = op.call();
@@ -277,7 +276,7 @@ public class Log extends AbstractWebAPICommand {
 
         if (countChanges) {
             final String pathFilter;
-            if (paths != null && !paths.isEmpty()) {
+            if (!paths.isEmpty()) {
                 pathFilter = paths.get(0);
             } else {
                 pathFilter = null;

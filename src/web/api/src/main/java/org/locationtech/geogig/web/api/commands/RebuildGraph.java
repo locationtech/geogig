@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableList;
 
 public class RebuildGraph extends AbstractWebAPICommand {
 
-    private boolean quiet = false;
+    boolean quiet = false;
 
     public RebuildGraph(ParameterSet options) {
         super(options);

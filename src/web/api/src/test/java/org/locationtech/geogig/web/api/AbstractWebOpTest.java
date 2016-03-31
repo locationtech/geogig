@@ -20,6 +20,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.rest.Variants;
 import org.restlet.data.MediaType;
 import org.restlet.resource.Representation;
@@ -37,6 +38,14 @@ public abstract class AbstractWebOpTest {
 
     protected abstract Class<? extends AbstractWebAPICommand> getCommandClass();
 
+    protected boolean requiresRepository() {
+        return true;
+    }
+
+    protected boolean requiresTransaction() {
+        return true;
+    }
+
     @Test
     public void testSPI() {
         ParameterSet options = TestParams.of();
@@ -50,6 +59,31 @@ public abstract class AbstractWebOpTest {
         ParameterSet options = TestParams.of("transactionId", txId.toString());
         AbstractWebAPICommand cmd = (AbstractWebAPICommand) buildCommand(options);
         assertEquals(txId, cmd.getTransactionId());
+    }
+
+    @Test
+    public void testRequireRepository() {
+        if (requiresRepository()) {
+            testContext.createUninitializedRepo();
+            ParameterSet options = TestParams.of();
+            WebAPICommand cmd = buildCommand(options);
+
+            ex.expect(RestletException.class);
+            ex.expectMessage("Repository not found.");
+            cmd.run(testContext.get());
+        }
+    }
+
+    @Test
+    public void testRequireTransaction() {
+        if (requiresTransaction()) {
+            ParameterSet options = TestParams.of();
+            WebAPICommand cmd = buildCommand(options);
+
+            ex.expect(CommandSpecException.class);
+            ex.expectMessage("No transaction was specified");
+            cmd.run(testContext.get());
+        }
     }
 
     protected <T extends WebAPICommand> T buildCommand(@Nullable String... optionsKvp) {

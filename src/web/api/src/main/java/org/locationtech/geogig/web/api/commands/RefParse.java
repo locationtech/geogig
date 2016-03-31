@@ -28,7 +28,7 @@ import com.google.common.base.Optional;
 
 public class RefParse extends AbstractWebAPICommand {
 
-    private String refSpec;
+    String refSpec;
 
     public RefParse(ParameterSet options) {
         super(options);
@@ -58,39 +58,23 @@ public class RefParse extends AbstractWebAPICommand {
         }
 
         final Context geogig = this.getCommandLocator(context);
-        Optional<Ref> ref;
-
-        try {
-            ref = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Optional<Ref> ref = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
                     .setName(refSpec).call();
-        } catch (Exception e) {
-            context.setResponseContent(CommandResponse.error("Aborting UpdateRef: "
-                    + e.getMessage()));
-            return;
+
+        if (!ref.isPresent()) {
+            throw new CommandSpecException("Unable to parse the provided name.");
         }
 
-        if (ref.isPresent()) {
-            final Ref newRef = ref.get();
-            context.setResponseContent(new CommandResponse() {
+        final Ref newRef = ref.get();
+        context.setResponseContent(new CommandResponse() {
 
-                @Override
-                public void write(ResponseWriter out) throws Exception {
-                    out.start();
-                    out.writeRefParseResponse(newRef);
-                    out.finish();
-                }
-            });
-        } else {
-            context.setResponseContent(new CommandResponse() {
-
-                @Override
-                public void write(ResponseWriter out) throws Exception {
-                    out.start();
-                    out.writeEmptyRefResponse();
-                    out.finish();
-                }
-            });
-        }
+            @Override
+            public void write(ResponseWriter out) throws Exception {
+                out.start();
+                out.writeRefParseResponse(newRef);
+                out.finish();
+            }
+        });
     }
 
 }

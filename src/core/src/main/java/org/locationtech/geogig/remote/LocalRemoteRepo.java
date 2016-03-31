@@ -173,7 +173,6 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
             Throwables.propagate(e);
         }
     }

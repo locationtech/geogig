@@ -19,7 +19,6 @@ import java.util.Map.Entry;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
@@ -41,6 +40,11 @@ public class ConfigTest extends AbstractWebOpTest {
     @Override
     protected Class<? extends AbstractWebAPICommand> getCommandClass() {
         return Config.class;
+    }
+
+    @Override
+    protected boolean requiresTransaction() {
+        return false;
     }
 
     @Test
@@ -150,17 +154,6 @@ public class ConfigTest extends AbstractWebOpTest {
 
         ex.expect(IllegalArgumentException.class);
         ex.expectMessage("You must specify the key when setting a config key.");
-        cmd.run(testContext.get());
-    }
-
-    @Test
-    public void testRequireRepository() {
-        testContext.createUninitializedRepo();
-        ParameterSet options = TestParams.of();
-        WebAPICommand cmd = buildCommand(options);
-
-        ex.expect(RestletException.class);
-        ex.expectMessage("Repository not found.");
         cmd.run(testContext.get());
     }
 }

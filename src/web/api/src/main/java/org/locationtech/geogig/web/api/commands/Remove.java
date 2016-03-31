@@ -27,9 +27,9 @@ import org.locationtech.geogig.web.api.ResponseWriter;
 
 public class Remove extends AbstractWebAPICommand {
 
-    private String path;
+    String path;
 
-    private boolean recursive;
+    boolean recursive;
 
     public Remove(ParameterSet options) {
         super(options);
@@ -72,10 +72,10 @@ public class Remove extends AbstractWebAPICommand {
             throw new CommandSpecException("No path was specified for removal.");
         }
 
+        NodeRef.checkValidPath(path);
+
         final Context geogig = this.getCommandLocator(context);
         RemoveOp command = geogig.command(RemoveOp.class).setRecursive(recursive);
-
-        NodeRef.checkValidPath(path);
 
         command.addPathToRemove(path).call();
         context.setResponseContent(new CommandResponse() {

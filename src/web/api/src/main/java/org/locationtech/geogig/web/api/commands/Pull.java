@@ -30,6 +30,7 @@ import org.locationtech.geogig.api.porcelain.SynchronizationException;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
@@ -43,15 +44,15 @@ import com.google.common.base.Optional;
 
 public class Pull extends AbstractWebAPICommand {
 
-    private String remoteName;
+    String remoteName;
 
-    private boolean fetchAll;
+    boolean fetchAll;
 
-    private String refSpec;
+    String refSpec;
 
-    private Optional<String> authorName = Optional.absent();
+    Optional<String> authorName = Optional.absent();
 
-    private Optional<String> authorEmail = Optional.absent();
+    Optional<String> authorEmail = Optional.absent();
 
     public Pull(ParameterSet options) {
         super(options);
@@ -118,8 +119,7 @@ public class Pull extends AbstractWebAPICommand {
         try {
             final PullResult result = command.call();
             final Iterator<DiffEntry> iter;
-            if (result.getOldRef() != null && result.getNewRef() != null
-                    && result.getOldRef().equals(result.getNewRef())) {
+            if (result.getOldRef() != null && result.getOldRef().equals(result.getNewRef())) {
                 iter = null;
             } else {
                 if (result.getOldRef() == null) {
@@ -145,8 +145,7 @@ public class Pull extends AbstractWebAPICommand {
             switch (e.statusCode) {
             case HISTORY_TOO_SHALLOW:
             default:
-                context.setResponseContent(CommandResponse
-                        .error("Unable to pull, the remote history is shallow."));
+                throw new CommandSpecException("Unable to pull, the remote history is shallow.");
             }
         } catch (MergeConflictsException e) {
             String[] refs = refSpec.split(":");
@@ -156,16 +155,8 @@ public class Pull extends AbstractWebAPICommand {
             if (refs.length == 2) {
                 destinationref = refs[1];
             } else {
-                final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.HEAD)
-                        .call();
-                if (!currHead.isPresent()) {
-                    context.setResponseContent(CommandResponse
-                            .error("Repository has no HEAD, can't pull."));
-                } else if (!(currHead.get() instanceof SymRef)) {
-                    context.setResponseContent(CommandResponse
-                            .error("Can't pull from detached HEAD"));
-                }
-                final SymRef headRef = (SymRef) currHead.get();
+                final SymRef headRef = (SymRef) geogig.command(RefParse.class).setName(Ref.HEAD)
+                        .call().get();
                 destinationref = headRef.getTarget();
             }
 

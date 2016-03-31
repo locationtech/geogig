@@ -18,6 +18,7 @@ import org.locationtech.geogig.api.porcelain.BranchListOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
@@ -181,6 +182,8 @@ public class Branch extends AbstractWebAPICommand {
                     out.finish();
                 }
             });
+        } else {
+            throw new CommandSpecException("Nothing to do.");
         }
     }
 

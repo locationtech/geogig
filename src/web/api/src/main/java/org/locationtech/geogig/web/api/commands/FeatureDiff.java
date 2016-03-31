@@ -9,33 +9,23 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.diff.AttributeDiff;
-import org.locationtech.geogig.api.plumbing.diff.GenericAttributeDiffImpl;
-import org.locationtech.geogig.api.plumbing.diff.GeometryAttributeDiff;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * This is the interface for the FeatureDiff command. It is used by passing a path to a feature, an
@@ -47,13 +37,13 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class FeatureDiff extends AbstractWebAPICommand {
 
-    private String path;
+    String path;
 
-    private String newTreeish;
+    String newTreeish;
 
-    private String oldTreeish;
+    String oldTreeish;
 
-    private boolean all;
+    boolean all;
 
     public FeatureDiff(ParameterSet options) {
         super(options);
@@ -110,14 +100,10 @@ public class FeatureDiff extends AbstractWebAPICommand {
      * @throws CommandSpecException - if the treeid couldn't be resolved
      */
     private Optional<NodeRef> parseID(ObjectId id, Context geogig) {
-        Optional<RevObject> object = geogig.command(RevObjectParse.class).setObjectId(id).call();
+        RevTree tree = geogig.command(RevObjectParse.class).setObjectId(id).call(RevTree.class)
+                .get();
 
-        if (object.isPresent()) {
-            RevTree tree = (RevTree) object.get();
-            return geogig.command(FindTreeChild.class).setParent(tree).setChildPath(path).call();
-        } else {
-            throw new CommandSpecException("Couldn't resolve treeId");
-        }
+        return geogig.command(FindTreeChild.class).setParent(tree).setChildPath(path).call();
     }
 
     /**
@@ -144,117 +130,33 @@ public class FeatureDiff extends AbstractWebAPICommand {
         RevFeature oldFeature = null;
         RevFeatureType oldFeatureType = null;
 
-        final Map<PropertyDescriptor, AttributeDiff> diffs;
-
         Optional<NodeRef> ref = parseID(newId, geogig);
 
-        Optional<RevObject> object;
+        if (ref.isPresent()) {
+            newFeatureType = geogig.command(RevObjectParse.class)
+                    .setObjectId(ref.get().getMetadataId()).call(RevFeatureType.class).get();
+            newFeature = geogig.command(RevObjectParse.class).setObjectId(ref.get().getObjectId())
+                    .call(RevFeature.class).get();
+        }
 
-        // need these to determine if the feature was added or removed so I can build the diffs
-        // myself until the FeatureDiff supports null values
-        boolean removed = false;
-        boolean added = false;
+        ref = parseID(oldId, geogig);
 
         if (ref.isPresent()) {
-            object = geogig.command(RevObjectParse.class).setObjectId(ref.get().getMetadataId())
-                    .call();
-            if (object.isPresent() && object.get() instanceof RevFeatureType) {
-                newFeatureType = (RevFeatureType) object.get();
-            } else {
-                throw new CommandSpecException("Couldn't resolve newCommit's featureType");
-            }
-            object = geogig.command(RevObjectParse.class).setObjectId(ref.get().getObjectId())
-                    .call();
-            if (object.isPresent() && object.get() instanceof RevFeature) {
-                newFeature = (RevFeature) object.get();
-            } else {
-                throw new CommandSpecException("Couldn't resolve newCommit's feature");
-            }
-        } else {
-            removed = true;
+            oldFeatureType = geogig.command(RevObjectParse.class)
+                    .setObjectId(ref.get().getMetadataId()).call(RevFeatureType.class).get();
+            oldFeature = geogig.command(RevObjectParse.class).setObjectId(ref.get().getObjectId())
+                    .call(RevFeature.class).get();
         }
 
-        if (!oldId.equals(ObjectId.NULL)) {
-            ref = parseID(oldId, geogig);
-
-            if (ref.isPresent()) {
-                object = geogig.command(RevObjectParse.class)
-                        .setObjectId(ref.get().getMetadataId()).call();
-                if (object.isPresent() && object.get() instanceof RevFeatureType) {
-                    oldFeatureType = (RevFeatureType) object.get();
-                } else {
-                    throw new CommandSpecException("Couldn't resolve oldCommit's featureType");
-                }
-                object = geogig.command(RevObjectParse.class).setObjectId(ref.get().getObjectId())
-                        .call();
-                if (object.isPresent() && object.get() instanceof RevFeature) {
-                    oldFeature = (RevFeature) object.get();
-                } else {
-                    throw new CommandSpecException("Couldn't resolve oldCommit's feature");
-                }
-            } else {
-                added = true;
-            }
-        } else {
-            added = true;
-        }
-
-        if (removed) {
-            Map<PropertyDescriptor, AttributeDiff> tempDiffs = new HashMap<PropertyDescriptor, AttributeDiff>();
-            ImmutableList<PropertyDescriptor> attributes = oldFeatureType.sortedDescriptors();
-            ImmutableList<Optional<Object>> values = oldFeature.getValues();
-            for (int index = 0; index < attributes.size(); index++) {
-                Optional<Object> value = values.get(index);
-                if (Geometry.class.isAssignableFrom(attributes.get(index).getType().getBinding())) {
-                    Optional<Geometry> temp = Optional.absent();
-                    if (value.isPresent() || all) {
-                        tempDiffs.put(
-                                attributes.get(index),
-                                new GeometryAttributeDiff(Optional.fromNullable((Geometry) value
-                                        .orNull()), temp));
-                    }
-                } else {
-                    if (value.isPresent() || all) {
-                        tempDiffs.put(attributes.get(index), new GenericAttributeDiffImpl(value,
-                                Optional.absent()));
-                    }
-                }
-            }
-            diffs = tempDiffs;
-        } else if (added) {
-            Map<PropertyDescriptor, AttributeDiff> tempDiffs = new HashMap<PropertyDescriptor, AttributeDiff>();
-            ImmutableList<PropertyDescriptor> attributes = newFeatureType.sortedDescriptors();
-            ImmutableList<Optional<Object>> values = newFeature.getValues();
-            for (int index = 0; index < attributes.size(); index++) {
-                Optional<Object> value = values.get(index);
-                if (Geometry.class.isAssignableFrom(attributes.get(index).getType().getBinding())) {
-                    Optional<Geometry> temp = Optional.absent();
-                    if (value.isPresent() || all) {
-                        tempDiffs.put(attributes.get(index), new GeometryAttributeDiff(temp,
-                                Optional.fromNullable((Geometry) value.orNull())));
-                    }
-                } else {
-                    if (value.isPresent() || all) {
-                        tempDiffs.put(attributes.get(index),
-                                new GenericAttributeDiffImpl(Optional.absent(), value));
-                    }
-                }
-            }
-            diffs = tempDiffs;
-        } else {
-            org.locationtech.geogig.api.plumbing.diff.FeatureDiff diff = new org.locationtech.geogig.api.plumbing.diff.FeatureDiff(
-                    path,
-                    newFeature, oldFeature, newFeatureType,
-                    oldFeatureType, all);
-            diffs = diff.getDiffs();
-        }
+        org.locationtech.geogig.api.plumbing.diff.FeatureDiff diff = new org.locationtech.geogig.api.plumbing.diff.FeatureDiff(
+                path, newFeature, oldFeature, newFeatureType, oldFeatureType, all);
 
         context.setResponseContent(new CommandResponse() {
 
             @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();
-                out.writeFeatureDiffResponse(diffs);
+                out.writeFeatureDiffResponse(diff.getDiffs());
                 out.finish();
             }
         });

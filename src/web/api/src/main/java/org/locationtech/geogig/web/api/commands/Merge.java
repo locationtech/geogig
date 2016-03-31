@@ -39,13 +39,13 @@ import com.google.common.base.Suppliers;
 
 public class Merge extends AbstractWebAPICommand {
 
-    private boolean noCommit;
+    boolean noCommit;
 
-    private String commit;
+    String commit;
 
-    private Optional<String> authorName = Optional.absent();
+    Optional<String> authorName = Optional.absent();
 
-    private Optional<String> authorEmail = Optional.absent();
+    Optional<String> authorEmail = Optional.absent();
 
     public Merge(ParameterSet options) {
         super(options);

@@ -27,17 +27,17 @@ import org.locationtech.geogig.web.api.ResponseWriter;
  */
 
 public class Fetch extends AbstractWebAPICommand {
-    private boolean prune;
+    boolean prune;
 
-    private boolean fetchAll;
+    boolean fetchAll;
 
-    private String remote;
+    String remote;
 
     public Fetch(ParameterSet options) {
         super(options);
         setFetchAll(Boolean.valueOf(options.getFirstValue("all", "false")));
         setPrune(Boolean.valueOf(options.getFirstValue("prune", "false")));
-        setRemote(options.getFirstValue("remote"));
+        setRemote(options.getFirstValue("remote", null));
     }
 
     /**
@@ -76,11 +76,16 @@ public class Fetch extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
+        if (remote == null && fetchAll == false) {
+            throw new CommandSpecException("Nothing specified to fetch from.");
+        }
         final Context geogig = this.getCommandLocator(context);
 
         FetchOp command = geogig.command(FetchOp.class);
 
-        command.addRemote(remote);
+        if (remote != null) {
+            command.addRemote(remote);
+        }
 
         try {
             final TransferSummary result = command.setAll(fetchAll).setPrune(prune).call();
@@ -96,8 +101,7 @@ public class Fetch extends AbstractWebAPICommand {
             switch (e.statusCode) {
             case HISTORY_TOO_SHALLOW:
             default:
-                context.setResponseContent(CommandResponse
-                        .error("Unable to fetch, the remote history is shallow."));
+                throw new CommandSpecException("Unable to fetch, the remote history is shallow.");
             }
         }
     }

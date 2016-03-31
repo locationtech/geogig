@@ -345,7 +345,7 @@ public class ResponseWriter {
         if (tree.trees().isPresent()) {
             ImmutableList<Node> trees = tree.trees().get();
             for (Node ref : trees) {
-                writeNode(ref, "tree");
+                writeNode(ref, "subtree");
             }
         }
         if (tree.features().isPresent()) {
@@ -709,7 +709,7 @@ public class ResponseWriter {
         if (result.getChangedRefs().entrySet().size() > 0) {
             for (Entry<String, Collection<ChangedRef>> entry : result.getChangedRefs().entrySet()) {
                 out.writeStartElement("Remote");
-                writeElement("remoteName", entry.getKey());
+                writeElement("remoteURL", entry.getKey());
                 for (ChangedRef ref : entry.getValue()) {
                     out.writeStartElement("Branch");
 

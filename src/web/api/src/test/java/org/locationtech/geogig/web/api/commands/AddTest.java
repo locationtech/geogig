@@ -10,17 +10,22 @@
 package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.rest.RestletException;
+import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.api.GeogigTransaction;
+import org.locationtech.geogig.api.NodeRef;
+import org.locationtech.geogig.api.plumbing.TransactionBegin;
+import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
-import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
+import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.locationtech.geogig.web.api.WebAPICommand;
 
 public class AddTest extends AbstractWebOpTest {
 
@@ -42,25 +47,48 @@ public class AddTest extends AbstractWebOpTest {
         Add op = (Add) buildCommand(options);
         assertEquals("points", op.path);
     }
-
-    @Test
-    public void testRequireTransaction() {
-        ParameterSet options = TestParams.of("path", "points");
-        WebAPICommand cmd = buildCommand(options);
-
-        ex.expect(CommandSpecException.class);
-        ex.expectMessage("No transaction was specified");
-        cmd.run(testContext.get());
-    }
     
     @Test
-    public void testRequireRepository() {
-        testContext.createUninitializedRepo();
-        ParameterSet options = TestParams.of("path", "points");
-        WebAPICommand cmd = buildCommand(options);
+    public void testAddAll() throws Exception {
+        GeoGIG geogig = testContext.get().getGeoGIG();
+        TestData testData = new TestData(geogig);
+        testData.init();
+        GeogigTransaction transaction = geogig
+                .command(TransactionBegin.class).call();
+        testData.setTransaction(transaction);
+        StagingArea staging = transaction.index();
+        testData.insert(TestData.point1);
+        assertEquals(0, staging.countStaged(null).featureCount());
+        ParameterSet options = TestParams.of("transactionId",
+                transaction.getTransactionId().toString());
 
-        ex.expect(RestletException.class);
-        ex.expectMessage("Repository not found.");
-        cmd.run(testContext.get());
+        buildCommand(options).run(testContext.get());
+
+        assertEquals(1, staging.countStaged(null).featureCount());
+    }
+
+    @Test
+    public void testAddPath() throws Exception{
+        GeoGIG geogig = testContext.get().getGeoGIG();
+        TestData testData = new TestData(geogig);
+        testData.init();
+        GeogigTransaction transaction = geogig
+                .command(TransactionBegin.class).call();
+        testData.setTransaction(transaction);
+        StagingArea staging = transaction.index();
+        testData.insert(TestData.point1);
+        testData.insert(TestData.point2);
+        assertEquals(0, staging.countStaged(null).featureCount());
+        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(), TestData.point1.getID());
+        ParameterSet options = TestParams.of("path", path, "transactionId",
+                transaction.getTransactionId().toString());
+
+        buildCommand(options).run(testContext.get());
+
+        assertEquals(1, staging.countStaged(null).featureCount());
+
+        JSONObject response = getJSONResponse().getJSONObject("response");
+        assertTrue(response.getBoolean("success"));
+        assertEquals("Success", response.getString("Add"));
     }
 }

@@ -41,6 +41,16 @@ public class InitTest extends AbstractWebOpTest {
         return Init.class;
     }
 
+    @Override
+    protected boolean requiresRepository() {
+        return false;
+    }
+
+    @Override
+    protected boolean requiresTransaction() {
+        return false;
+    }
+
     @Test
     public void testFailWithInitializedRepository() {
         ParameterSet options = TestParams.of();

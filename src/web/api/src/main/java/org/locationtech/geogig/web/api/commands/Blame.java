@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.plumbing.RevParse;
@@ -34,9 +32,9 @@ import com.google.common.base.Optional;
 
 public class Blame extends AbstractWebAPICommand {
 
-    private String path;
+    String path;
 
-    private String branchOrCommit;
+    String branchOrCommit;
 
     public Blame(ParameterSet options) {
         super(options);
@@ -78,6 +76,9 @@ public class Blame extends AbstractWebAPICommand {
                 throw new CommandSpecException("Could not resolve branch or commit");
             }
         }
+        if (path == null) {
+            throw new CommandSpecException("Blame requires the path of a feature.");
+        }
 
         try {
             final BlameReport report = geogig.command(BlameOp.class).setPath(path)
@@ -87,11 +88,7 @@ public class Blame extends AbstractWebAPICommand {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
-                    try {
-                        out.writeBlameReport(report);
-                    } catch (XMLStreamException e) {
-                        throw new CommandSpecException("Error writing stream.");
-                    }
+                    out.writeBlameReport(report);
                     out.finish();
                 }
             });

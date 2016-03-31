@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createFeaturesTree;
+import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.io.File;
 import java.io.IOException;
@@ -193,33 +194,34 @@ public abstract class ObjectStoreConformanceTest {
 
         checkClosed(() -> db.delete(ObjectId.NULL));
         checkClosed(() -> db.deleteAll(emptyIterator()));
-        checkClosed(() -> db.deleteAll(emptyIterator(), BulkOpListener.NOOP_LISTENER));
+        checkClosed(() -> db.deleteAll(emptyIterator(), NOOP_LISTENER));
         checkClosed(() -> db.exists(RevTree.EMPTY_TREE_ID));
         checkClosed(() -> db.get(RevTree.EMPTY_TREE_ID));
         checkClosed(() -> db.get(RevTree.EMPTY_TREE_ID, RevTree.class));
         checkClosed(() -> db.getAll(ImmutableList.of()));
-        checkClosed(() -> db.getAll(ImmutableList.of(), BulkOpListener.NOOP_LISTENER));
+        checkClosed(() -> db.getAll(ImmutableList.of(), NOOP_LISTENER));
+        checkClosed(() -> db.getAll(ImmutableList.of(), NOOP_LISTENER, RevTree.class));
         checkClosed(() -> db.getIfPresent(ObjectId.NULL));
         checkClosed(() -> db.getIfPresent(RevTree.EMPTY_TREE_ID, RevTree.class));
         checkClosed(() -> db.lookUp("abcd1234"));
         checkClosed(() -> db.put(RevTree.EMPTY));
         checkClosed(() -> db.putAll(emptyIterator()));
-        checkClosed(() -> db.putAll(emptyIterator(), BulkOpListener.NOOP_LISTENER));
+        checkClosed(() -> db.putAll(emptyIterator(), NOOP_LISTENER));
     }
 
     @Test
     public void testChecksNullArgs() {
         checkNullArgument(() -> db.delete(null));
         checkNullArgument(() -> db.deleteAll(null));
-        checkNullArgument(() -> db.deleteAll(null, BulkOpListener.NOOP_LISTENER));
+        checkNullArgument(() -> db.deleteAll(null, NOOP_LISTENER));
         checkNullArgument(() -> db.deleteAll(emptyIterator(), null));
         checkNullArgument(() -> db.exists(null));
         checkNullArgument(() -> db.get(null));
         checkNullArgument(() -> db.get(null, RevTree.class));
         checkNullArgument(() -> db.get(RevTree.EMPTY_TREE_ID, null));
         checkNullArgument(() -> db.getAll(null));
-        checkNullArgument(() -> db.getAll(null, BulkOpListener.NOOP_LISTENER));
-        checkNullArgument(() -> db.getAll(ImmutableList.of(), BulkOpListener.NOOP_LISTENER, null));
+        checkNullArgument(() -> db.getAll(null, NOOP_LISTENER));
+        checkNullArgument(() -> db.getAll(ImmutableList.of(), NOOP_LISTENER, null));
         checkNullArgument(() -> db.getAll(ImmutableList.of(), null));
         checkNullArgument(() -> db.getIfPresent(null));
         checkNullArgument(() -> db.getIfPresent(null, RevTree.class));
@@ -227,7 +229,7 @@ public abstract class ObjectStoreConformanceTest {
         checkNullArgument(() -> db.lookUp(null));
         checkNullArgument(() -> db.put(null));
         checkNullArgument(() -> db.putAll(null));
-        checkNullArgument(() -> db.putAll(null, BulkOpListener.NOOP_LISTENER));
+        checkNullArgument(() -> db.putAll(null, NOOP_LISTENER));
         checkNullArgument(() -> db.putAll(emptyIterator(), null));
     }
 

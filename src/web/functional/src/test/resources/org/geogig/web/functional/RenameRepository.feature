@@ -1,3 +1,4 @@
+@RepositoryManagement
 Feature: Rename repository
   Repositories being served throught the Web API are served through the "/<repository name>" entry point.
   The name of a repository is unique across a Web API instance.

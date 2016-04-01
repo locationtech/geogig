@@ -25,6 +25,7 @@ import cucumber.api.junit.Cucumber;
 // }, monochrome = true, format = {
 // "pretty", "html:target/cucumber-report" }, strict = true)
 @RunWith(Cucumber.class)
-@CucumberOptions(plugin = { "pretty", "html:cucumber-report", "json:cucumber-report/cucumber.json" })
+@CucumberOptions(strict = true, plugin = { "pretty", "html:cucumber-report",
+        "json:cucumber-report/cucumber.json" })
 public class RunFunctionalTest {
 }

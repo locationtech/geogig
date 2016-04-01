@@ -36,7 +36,38 @@ public class AsyncContext {
     public static final String CONTEXT_KEY = "GeoGigAsyncContext";
 
     public static enum Status {
-        WAITING, RUNNING, FINISHED, FAILED, CANCELLED
+        WAITING {
+            @Override
+            public boolean isTerminated() {
+                return false;
+            }
+        },
+        RUNNING {
+            @Override
+            public boolean isTerminated() {
+                return false;
+            }
+        },
+        FINISHED {
+            @Override
+            public boolean isTerminated() {
+                return true;
+            }
+        },
+        FAILED {
+            @Override
+            public boolean isTerminated() {
+                return true;
+            }
+        },
+        CANCELLED {
+            @Override
+            public boolean isTerminated() {
+                return true;
+            }
+        };
+
+        public abstract boolean isTerminated();
     }
 
     private static AsyncContext INSTANCE;

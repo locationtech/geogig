@@ -1,3 +1,4 @@
+@RepositoryManagement
 Feature: List repositories
     In order to find out which repsitories are being served,
     As a Geogig Web API User,

@@ -9,7 +9,7 @@
  */
 package org.geogig.web.functional;
 
-import static org.geogig.web.functional.WebAPICucumberHooks.replaceVariables;
+import static org.geogig.web.functional.FunctionalTestContext.replaceVariables;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;

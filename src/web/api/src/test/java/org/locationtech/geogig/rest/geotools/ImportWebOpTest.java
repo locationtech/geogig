@@ -16,11 +16,10 @@ import static org.locationtech.geogig.web.api.TestData.polysType;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -53,9 +52,12 @@ import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 
 /**
  *
@@ -101,46 +103,18 @@ public class ImportWebOpTest extends AbstractWebOpTest {
     }
 
     @Test
-    public void testImportMissingTableName() throws Exception {
+    public void testImportAllMissingFileUpload() throws Exception {
         GeoGIG repo = context.getGeoGIG();
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
         ImportWebOp op = buildCommand("format", "gpkg");
         op.asyncContext = testAsyncContext;
-        ex.expect(CommandSpecException.class);
-        ex.expectMessage(
-            "Request must specify a table name (table=name) or ALL (all=true)");
-        run(op);
-    }
-
-    @Test
-    public void testImportWithBothTableNameAndAll() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
-        TestData testData = new TestData(repo);
-        testData.init().loadDefaultData();
-
-        ImportWebOp op = buildCommand("format", "gpkg", "table", "Table1", "all", "true");
-        op.asyncContext = testAsyncContext;
-        ex.expect(CommandSpecException.class);
-        ex.expectMessage(
-            "Request must specify a table name (table=name) or ALL (all=true)");
-        run(op);
-    }
-
-    @Test
-    public void testImportAllMissingFileUpload() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
-        TestData testData = new TestData(repo);
-        testData.init().loadDefaultData();
-
-        ImportWebOp op = buildCommand("format", "gpkg", "all", "true");
-        op.asyncContext = testAsyncContext;
 
         AsyncContext.AsyncCommand<?> result = run(op);
         Assert.assertNotNull(result.getStatus());
         Status resultStatus = result.getStatus();
-        while (Status.RUNNING.equals(resultStatus)) {
+        while (Status.RUNNING.equals(resultStatus) || Status.WAITING.equals(resultStatus)) {
             Thread.yield();
             resultStatus = result.getStatus();
         }
@@ -153,13 +127,13 @@ public class ImportWebOpTest extends AbstractWebOpTest {
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
-        ImportWebOp op = buildCommand("format", "gpkg", "all", "true", "mockFileUpload", "blah");
+        ImportWebOp op = buildCommand("format", "gpkg", "mockFileUpload", "blah");
         op.asyncContext = testAsyncContext;
 
         AsyncContext.AsyncCommand<?> result = run(op);
         Assert.assertNotNull(result.getStatus());
         Status resultStatus = result.getStatus();
-        while (Status.RUNNING.equals(resultStatus)) {
+        while (Status.RUNNING.equals(resultStatus) || Status.WAITING.equals(resultStatus)) {
             Thread.yield();
             resultStatus = result.getStatus();
         }
@@ -168,13 +142,16 @@ public class ImportWebOpTest extends AbstractWebOpTest {
 
     @Test
     public void testImportAll() throws Throwable {
+        final File dbFile = generateDbFile();
         // parameter setup
-         ParameterSet params = TestParams.of("format", "gpkg", "all", "true");
-        ((TestParams)params).setFileUpload(generateDbFile());
+        ParameterSet params = TestParams.of("format", "gpkg");
+        ((TestParams) params).setFileUpload(dbFile);
         // setup and empty repo
         GeoGIG repo = context.getGeoGIG();
         TestData testData = new TestData(repo);
         testData.init();
+        // verify there are no nodes in the repository
+        verifyNoCommitedNodes();
 
         ImportWebOp op = buildCommand(params);
         op.asyncContext = testAsyncContext;
@@ -187,18 +164,134 @@ public class ImportWebOpTest extends AbstractWebOpTest {
             resultStatus = result.getStatus();
         }
         Assert.assertEquals(Status.FINISHED, resultStatus);
+        // verify the dbFile is gone
+        verifyDbFileDeleted(dbFile);
         // verify data was imported
-        verifyImport();
+        verifyImport(Sets.newHashSet("Points", "Lines", "Polygons"));
+    }
+
+    @Test
+    public void testImportTable() throws Throwable {
+        final File dbFile = generateDbFile();
+        // parameter setup
+        ParameterSet params = TestParams.of("format", "gpkg", "layer", "Lines");
+        ((TestParams) params).setFileUpload(dbFile);
+        // setup and empty repo
+        GeoGIG repo = context.getGeoGIG();
+        TestData testData = new TestData(repo);
+        testData.init();
+        // verify there are no nodes in the repository
+        verifyNoCommitedNodes();
+
+        ImportWebOp op = buildCommand(params);
+        op.asyncContext = testAsyncContext;
+
+        AsyncContext.AsyncCommand<?> result = run(op);
+        Assert.assertNotNull(result.getStatus());
+        Status resultStatus = result.getStatus();
+        while (Status.RUNNING.equals(resultStatus) || Status.WAITING.equals(resultStatus)) {
+            Thread.yield();
+            resultStatus = result.getStatus();
+        }
+        Assert.assertEquals(Status.FINISHED, resultStatus);
+        // verify the dbFile is gone
+        verifyDbFileDeleted(dbFile);
+        // verify data was imported
+        verifyImport(Sets.newHashSet("Lines"));
+    }
+
+    @Test
+    public void testImportTableWithDest() throws Throwable {
+        final File dbFile = generateDbFile();
+        // parameter setup
+        ParameterSet params = TestParams.of("format", "gpkg", "layer", "Lines", "dest", "newLines");
+        ((TestParams) params).setFileUpload(dbFile);
+        // setup and empty repo
+        GeoGIG repo = context.getGeoGIG();
+        TestData testData = new TestData(repo);
+        testData.init();
+        // verify there are no nodes in the repository
+        verifyNoCommitedNodes();
+
+        ImportWebOp op = buildCommand(params);
+        op.asyncContext = testAsyncContext;
+
+        AsyncContext.AsyncCommand<?> result = run(op);
+        Assert.assertNotNull(result.getStatus());
+        Status resultStatus = result.getStatus();
+        while (Status.RUNNING.equals(resultStatus) || Status.WAITING.equals(resultStatus)) {
+            Thread.yield();
+            resultStatus = result.getStatus();
+        }
+        Assert.assertEquals(Status.FINISHED, resultStatus);
+        // verify the dbFile is gone
+        verifyDbFileDeleted(dbFile);
+        // verify data was imported
+        verifyImport(Sets.newHashSet("newLines"));
+    }
+
+    @Test
+    public void testImportTableWithDestDuplicate() throws Throwable {
+        final File dbFile = generateDbFile();
+        // need to make a copy because the file will get deleted after import
+        final File dbFileCopy = File.createTempFile("geogig-test-clone", ".gpkg");
+        Files.copy(dbFile, dbFileCopy);
+        // parameter setup
+        ParameterSet params = TestParams.of("format", "gpkg", "layer", "Lines", "dest", "newLines");
+        ((TestParams) params).setFileUpload(dbFile);
+        // setup and empty repo
+        GeoGIG repo = context.getGeoGIG();
+        TestData testData = new TestData(repo);
+        testData.init();
+        // verify there are no nodes in the repository
+        verifyNoCommitedNodes();
+
+        ImportWebOp op = buildCommand(params);
+        op.asyncContext = testAsyncContext;
+
+        AsyncContext.AsyncCommand<?> result = run(op);
+        Assert.assertNotNull(result.getStatus());
+        Status resultStatus = result.getStatus();
+        while (Status.RUNNING.equals(resultStatus) || Status.WAITING.equals(resultStatus)) {
+            Thread.yield();
+            resultStatus = result.getStatus();
+        }
+        Assert.assertEquals(Status.FINISHED, resultStatus);
+        // verify the dbFile is gone
+        verifyDbFileDeleted(dbFile);
+        // verify data was imported
+        verifyImport(Sets.newHashSet("newLines"));
+        // do it again but with a different dest
+        params = TestParams.of("format", "gpkg", "layer", "Lines", "dest", "newLines2");
+        // set the DB file to the copy since the original should be gone
+        ((TestParams) params).setFileUpload(dbFileCopy);
+        op = buildCommand(params);
+        op.asyncContext = testAsyncContext;
+        // runing a second time, specify the expected task Id
+        result = run(op, "2");
+        Assert.assertNotNull(result.getStatus());
+        resultStatus = result.getStatus();
+        while (Status.RUNNING.equals(resultStatus) || Status.WAITING.equals(resultStatus)) {
+            Thread.yield();
+            resultStatus = result.getStatus();
+        }
+        Assert.assertEquals(Status.FINISHED, resultStatus);
+        // verify the dbFileCopy is gone
+        verifyDbFileDeleted(dbFileCopy);
+        // verify data was imported
+        verifyImport(Sets.newHashSet("newLines", "newLines2"));
     }
 
     @Test
     public void testImportAllWithManualTransaction() throws Throwable {
         // get a DB file to import
-        final File uploadFile = generateDbFile();
+        final File dbFile = generateDbFile();
         // setup and empty repo
         GeoGIG repo = context.getGeoGIG();
         TestData testData = new TestData(repo);
         testData.init();
+        // verify there are no nodes in the repository
+        verifyNoCommitedNodes();
 
         // Begin a Transaction manually
         CommandBuilder.build("beginTransaction", new TestParams()).run(context);
@@ -211,9 +304,8 @@ public class ImportWebOpTest extends AbstractWebOpTest {
         String txnId = txnResponse.getString("ID");
 
         // now call import with the manual transaction
-         ParameterSet params = TestParams.of("format", "gpkg", "all", "true",
-             "transactionId", txnId);
-        ((TestParams)params).setFileUpload(uploadFile);
+        ParameterSet params = TestParams.of("format", "gpkg", "transactionId", txnId);
+        ((TestParams) params).setFileUpload(dbFile);
         ImportWebOp op = buildCommand(params);
         op.asyncContext = testAsyncContext;
 
@@ -225,43 +317,64 @@ public class ImportWebOpTest extends AbstractWebOpTest {
             resultStatus = result.getStatus();
         }
         Assert.assertEquals(Status.FINISHED, resultStatus);
+        // verify the dbFile is gone
+        verifyDbFileDeleted(dbFile);
         // verify import hasn't been committed yet
-        verifyImportNotCommitted();
+        verifyNoCommitedNodes();
         // end the transaction and verify the import
         CommandBuilder.build("endTransaction", TestParams.of("transactionId", txnId)).run(context);
         JSONObject endResponse = getJSONResponse();
         expected = "{'response':{'success':true,'Transaction':''}}";
         JSONAssert.assertEquals(expected, endResponse.toString(), true);
         // verify data was imported
-        verifyImport();
+        verifyImport(Sets.newHashSet("Points", "Lines", "Polygons"));
     }
 
-    private void verifyImport() {
+    private void verifyDbFileDeleted(final File dbFile) {
+        Assert.assertNotNull("DB File should NOT be null", dbFile);
+        Assert.assertFalse("DB File should NOT still exist", dbFile.exists());
+    }
+
+    private void verifyImport(Set<String> layerNames) {
         // get the list
         Iterator<NodeRef> nodeIterator = context.getGeoGIG().command(LsTreeOp.class).call();
         Assert.assertTrue("Expected repo to have some nodes, but was empty",
             nodeIterator.hasNext());
-        List<NodeRef> nodeList = Lists.newArrayList(nodeIterator);
-        Assert.assertTrue("Expected repo to have 3 nodeRefs, but has " + nodeList.size(),
-            3 == nodeList.size());
+        List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
+            new Function<NodeRef, String>() {
+            @Override
+            public String apply(NodeRef input) {
+                return input.name();
+            }
+        });
+        for (String layerName : layerNames) {
+            Assert.assertTrue("Expected layer \"" + layerName + "\" to exist in repo", nodeList
+                .contains(layerName));
+        }
     }
 
-    private void verifyImportNotCommitted() {
+    private void verifyNoCommitedNodes() {
         Iterator<NodeRef> nodeIterator = context.getGeoGIG().command(LsTreeOp.class).call();
-        Assert.assertFalse("Expected repo to still be empty, but has nodes",
+        Assert.assertFalse("Expected repo to be empty, but has nodes",
             nodeIterator.hasNext());
     }
 
     private AsyncContext.AsyncCommand<?> run(ImportWebOp op) throws JSONException,
         InterruptedException, ExecutionException {
+        return run(op, "1");
+    }
+
+    private AsyncContext.AsyncCommand<?> run(ImportWebOp op, String taskId) throws JSONException,
+        InterruptedException, ExecutionException {
         op.run(context);
         JSONObject response = getJSONResponse();
-        JSONAssert.assertEquals(
-            "{'task':{'id':1,'description':'Importing Geopkg database file.','href':'/geogig/tasks/1.json'}}",
+        JSONAssert.assertEquals(String.format(
+            "{'task':{'id':%s,'description':'Importing Geopkg database file.','href':'/geogig/tasks/%s.json'}}",
+            taskId, taskId),
             response.toString(), false);
         Optional<AsyncContext.AsyncCommand<?>> asyncCommand = Optional.absent();
         while (!asyncCommand.isPresent()) {
-            asyncCommand = testAsyncContext.getAndPruneIfFinished("1");
+            asyncCommand = testAsyncContext.getAndPruneIfFinished(taskId);
         }
         Assert.assertNotNull(asyncCommand);
         Assert.assertNotNull(asyncCommand.get());
@@ -286,14 +399,6 @@ public class ImportWebOpTest extends AbstractWebOpTest {
         } catch (IOException ioe) {
             throw new RuntimeException("Unable to create GeoPkgDataStore", ioe);
         }
-        // get a connection to initialize the DataStore, then safely close it
-        Connection con;
-        try {
-            con = dataStore.getDataSource().getConnection();
-        } catch (SQLException sqle) {
-            throw new RuntimeException("Unable to get a connection to GeoPkgDataStore", sqle);
-        }
-        dataStore.closeSafe(con);
         GeopkgDataStoreExportOp op = repo.command(GeopkgDataStoreExportOp.class);
         op.setTarget(new Supplier<DataStore>() {
             @Override
@@ -322,8 +427,7 @@ public class ImportWebOpTest extends AbstractWebOpTest {
         Assert.assertTrue("Unstaged Count should be 0, but is " + status.getCountUnstaged(),
             status.getCountUnstaged() == 0);
         // verify repo is empty
-        Iterator<NodeRef> nodeList = repo.command(LsTreeOp.class).call();
-        Assert.assertFalse("Expected empty node list, but nodes still exist", nodeList.hasNext());
+        verifyNoCommitedNodes();
         return dbFile;
     }
 }

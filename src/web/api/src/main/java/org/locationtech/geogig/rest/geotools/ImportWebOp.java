@@ -11,14 +11,15 @@ package org.locationtech.geogig.rest.geotools;
 
 import java.util.function.Function;
 
-import org.geotools.data.DataStore;
 import org.locationtech.geogig.api.GeogigTransaction;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.plumbing.TransactionBegin;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
+import org.locationtech.geogig.geotools.plumbing.DataStoreSupplier;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Representations;
+import org.locationtech.geogig.rest.repository.UploadCommandResource;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -28,25 +29,107 @@ import org.restlet.data.Method;
 import org.restlet.resource.Representation;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Supplier;
 
 /**
- * Base class for Import Operations.
+ * Command for Geotools imports through the WEB API.
+ * <p>
+ * Concrete format options are handled by implementations of {@link DataStoreImportContextService},
+ * provided by the {@link DataStoreImportContextServiceFactory}. All
+ * {@link DataStoreImportContextService} implementations should be listed in <b>
+ * {@code META-INF.services/org.locationtech.geogig.rest.geotools.DataStoreImportContextService}.
+ * </b>
+ * <p>
+ * Request Parameters:
+ * <ul>
+ * <li><b>format</b>: Mandatory, input format for the imported data. Currently only {@code GPKG} is
+ * supported. Format argument value is case insensitive.
+ * <li><b>layer</b>: Optional. If present, only import the layer table from the provided DataStore
+ * where the table name matches the value provided. If not present, import all layer tables from the
+ * provided DataStore.
+ * <li><b>dest</b>: Optional. The name of the table in the repository into which the features should
+ * be imported. If not present, the table name will be derived from the features imported.
+ * <li><b>add</b>: Optional. If present and set to <i>true</i>, import features from the provided
+ * DataStore if they do not already exist in the repository. If not present, or set to <i>false</i>,
+ * import features from the provided DataStore, overwriting any pre-existing features in the
+ * repository that match on path and Id.
+ * <li><b>alter</b>: Optional. If present and set to <i>true</i>, set the default feature type of
+ * the repository path destination to match the feature type of the features being imported, and
+ * <i>alter</i> the feature type of all features in the destination to match the feature type of the
+ * features being imported. If not present, or set to <i>false</i>, do not alter the destination
+ * feature type.
+ * <li><b>forceFeatureType</b>: Optional. If present and set to <i>true</i>, use the feature type of
+ * the features being imported, even if it doesn't match the default feature type of the
+ * destination.
+ * <li><b>fidAttribute</b>: Optional. If present, use the Attribute indicated by this value when
+ * creating Feature Ids. If absent, use the default for creating Feature Ids.
+ * <li><b>authorName</b>: Optional, but highly recommended. Specifies the author name to use for the
+ * resulting commit.
+ * <li><b>authorEmail</b>: Optional, but highly recommended. Specifies the author email to use for
+ * the resulting commit.
+ * <li><b>message</b>: Optional, but highly recommended. Specifies the commit message to use for the
+ * resulting commit.
+ * </ul>
+ * <p>
+ * <b>NOTE 1</b>: {@link DataStoreImportContextService} implementations may add additional format
+ * specific request parameters.
+ * <p>
+ * <b>NOTE 2</b>: Currently, this operation is bound to the <i>import</i> command in the Web API.
+ * This means that {@link UploadCommandResource} is involved in executing this operation. The
+ * implementation of {@link UploadCommandResource} requires a file to be uploaded in the POST. The
+ * file uploaded is added into the {@link ParameterSet} that is passed to the constructor of
+ * instances of this operation. {@link DataStoreImportContextService} implementations may need to
+ * access this upload to perform format specific functions, so it is passed along.
+ * <p>
+ * Usage:
+ * <br><b>{@code POST <repository URL>/import[.xml|.json]?format=<format name>[&layer=<layer table name>][&dest=<destination path][&alter=<true|false>][&forceFeatureType=<true|false>][&fidAaaattribute=<attribute name>][&authorEmail=<email address>][&authorName=<author name>][&message=<commit message>]}</b>
+ * <p>
  */
 public class ImportWebOp extends AbstractWebAPICommand {
 
+    // Request Parameter keys.
     /**
-     * Request Parameter keys.
+     * Request parameter indicating the import format.
      */
-    public static final String TABLE_KEY = "table";
-    public static final String ALL_KEY = "all";
+    public static final String FORMAT_KEY = "format";
+    /**
+     * Request parameter indicating the name of the layer table to import.
+     */
+    public static final String LAYER_KEY = "layer";
+    /**
+     * Request parameter indicating if features should only be added if they do not already exist.
+     */
     public static final String ADD_KEY = "add";
+    /**
+     * Request parameter indicating if destination tables should be altered to match the feature
+     * type of the imported features or not.
+     */
     public static final String ALTER_KEY = "alter";
+    /**
+     * Request parameter indicating if the imported feature type should be used even if it does not
+     * match the default feature type of the destination.
+     */
     public static final String FORCE_FEAT_KEY = "forceFeatureType";
+    /**
+     * Request parameter indicating the destination path name if it should be different than the
+     * path of the features being imported.
+     */
     public static final String DEST_PATH_KEY = "dest";
+    /**
+     * Request parameter indicating the feature attribute to use when generating Feature Ids if the
+     * default Id creation should be overridden.
+     */
     public static final String FID_ATTR_KEY = "fidAttribute";
+    /**
+     * Request parameter indicating the author name to use for the resulting commit.
+     */
     public static final String AUTHOR_NAME_KEY = "authorName";
+    /**
+     * Request parameter indicating the author email to use for the resulting commit.
+     */
     public static final String AUTHOR_EMAIL_KEY = "authorEmail";
+    /**
+     * Request parameter indicating the message to use for the resulting commit.
+     */
     public static final String COMMIT_MSG_KEY = "message";
 
     private final ParameterSet options;
@@ -58,19 +141,20 @@ public class ImportWebOp extends AbstractWebAPICommand {
         super(options);
         this.options = options;
     }
-    
+
     @Override
     public void runInternal(CommandContext context) {
-        String requestFormat = options.getFirstValue("format");
+        String requestFormat = options.getFirstValue(FORMAT_KEY);
         if (null == requestFormat) {
             // no "format" parameter requested
             throw new CommandSpecException("missing required \"format\" parameter");
         }
         // get the import context from the requested parameters
-        ImportContextService ctxService = ImportContextServiceFactory.getContextService(
-            requestFormat);
+        DataStoreImportContextService ctxService = DataStoreImportContextServiceFactory
+            .getContextService(
+                requestFormat);
         // build DataStore from options
-        final Supplier<DataStore> datastore = ctxService.getDataStore(options);
+        final DataStoreSupplier datastore = ctxService.getDataStore(options);
         DataStoreImportOp command = buildImportOp(datastore, context);
         final String commandDescription = ctxService.getCommandDescription();
         if (asyncContext == null) {
@@ -99,11 +183,11 @@ public class ImportWebOp extends AbstractWebAPICommand {
         return Method.POST.equals(method);
     }
 
-    private DataStoreImportOp buildImportOp(final Supplier<DataStore> datastore,
-            CommandContext context) {
+    private DataStoreImportOp buildImportOp(final DataStoreSupplier dataStoreSupplier,
+        CommandContext context) {
         // collect Import parameters
-        final String table = options.getFirstValue(TABLE_KEY);
-        final boolean all = Boolean.valueOf(options.getFirstValue(ALL_KEY, "false"));
+        final String layerTableName = options.getFirstValue(LAYER_KEY);
+        final boolean all = layerTableName == null;
         final boolean add = Boolean.valueOf(options.getFirstValue(ADD_KEY, "false"));
         final boolean forceFeatureType = Boolean
             .valueOf(options.getFirstValue(FORCE_FEAT_KEY, "false"));
@@ -113,13 +197,6 @@ public class ImportWebOp extends AbstractWebAPICommand {
         final String authorName = options.getFirstValue(AUTHOR_NAME_KEY);
         final String authorEmail = options.getFirstValue(AUTHOR_EMAIL_KEY);
         final String commitMessage = options.getFirstValue(COMMIT_MSG_KEY);
-        // validate the request
-        // ImportOp must specify a TABLE or ALL, not both
-        if ((null == table && !all) || (null != table && all)) {
-            throw new CommandSpecException(
-                "Request must specify a table name (table=name) or ALL "
-                + "(all=true)");
-        }
         // regardless, we have to create the DataStoreImportOp
         DataStoreImportOp command;
         // Import will require a transaction. If there isn't a transaction already active, create
@@ -139,10 +216,10 @@ public class ImportWebOp extends AbstractWebAPICommand {
             command = transaction.command(DataStoreImportOp.class);
         }
         // set all the import op parameters
-        return command.setDataStore(datastore).setTable(table).setAll(all).setAdd(add)
-            .setForceFeatureType(forceFeatureType).setAlter(alter)
-            .setDest(dest).setFidAttribute(fidAttribute).setAuthorEmail(authorEmail).setAuthorName(
-            authorName).setCommitMessage(commitMessage);
+        return command.setDataStore(dataStoreSupplier).setTable(layerTableName).setAll(all).setAdd(
+            add).setForceFeatureType(forceFeatureType).setAlter(alter).setDest(dest)
+            .setFidAttribute(fidAttribute).setAuthorEmail(authorEmail).setAuthorName(authorName)
+            .setCommitMessage(commitMessage);
     }
 
     private static class TransactionWrappedDataStoreImportOp extends DataStoreImportOp {
@@ -151,7 +228,7 @@ public class ImportWebOp extends AbstractWebAPICommand {
         protected RevCommit _call() {
             // the context better be a GeogigTransaction
             GeogigTransaction txnContext = GeogigTransaction.class.cast(context);
-            RevCommit revCommit =  null;
+            RevCommit revCommit = null;
             try {
                 // call the import
                 revCommit = super._call();

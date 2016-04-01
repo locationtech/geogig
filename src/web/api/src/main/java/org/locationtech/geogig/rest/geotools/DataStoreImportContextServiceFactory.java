@@ -13,17 +13,16 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 
 /**
- * Factory for retreiving ImportContextService instances.
+ * Factory for retrieving {@link DataStoreImportContextService} instances.
  */
-public class ImportContextServiceFactory {
+public class DataStoreImportContextServiceFactory {
 
-    public static ImportContextService getContextService(String format) {
+    public static DataStoreImportContextService getContextService(String format) {
         // look up the context builder from the ServiceLoader
-        final ServiceLoader<ImportContextService> svcLoader = ServiceLoader.load(
-            ImportContextService.class);
-        final Iterator<ImportContextService> iterator = svcLoader.iterator();
+        final ServiceLoader<DataStoreImportContextService> svcLoader = ServiceLoader.load(DataStoreImportContextService.class);
+        final Iterator<DataStoreImportContextService> iterator = svcLoader.iterator();
         while (iterator.hasNext()) {
-            final ImportContextService context = iterator.next();
+            final DataStoreImportContextService context = iterator.next();
             if (context.accepts(format)) {
                 return context;
             }

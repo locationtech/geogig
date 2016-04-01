@@ -12,17 +12,17 @@ package org.locationtech.geogig.rest.repository;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.UUID;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.locationtech.geogig.rest.Variants;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
+import org.restlet.data.Status;
 import org.restlet.ext.fileupload.RepresentationContext;
 import org.restlet.ext.fileupload.RestletFileUpload;
 import org.restlet.resource.Representation;
@@ -30,9 +30,21 @@ import org.restlet.resource.Variant;
 import org.restlet.util.ByteUtils;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 
 /**
  * CommandResource extension that allows for POSTing file uploads.
+ *
+ * This class extends {@link CommandResource} to enable POST for resources. Currently, this resource
+ * requires one, and only one, file upload in the Request body. The name of the entity MUST be
+ * <b>fileUpload</b>.
+ * <p>
+ * This class overrides {@link CommandResource#buildParameterSet(org.restlet.data.Form)} to add the
+ * file upload to the {@link ParameterSet} so that
+ * {@link org.locationtech.geogig.rest.geotools.ImportWebOp ImportWebOp} can retrieve the uploaded
+ * file to pass on to
+ * {@link org.locationtech.geogig.rest.geotools.DataStoreImportContextService DataStoreImportContextService}
+ * implementations.
  */
 public class UploadCommandResource extends CommandResource {
 
@@ -50,6 +62,9 @@ public class UploadCommandResource extends CommandResource {
     private static final int UPLOAD_THRESHOLD = 0x1000 * 1000;
 
     private static final MediaType DEFAULT_OUTPUT_MEDIA_TYPE = Variants.XML.getMediaType();
+
+    private static final String FILE_UPLOAD_ERROR_TMPL
+        = "There must be one and only one <%s> specified in the request";
 
     @Override
     protected String getCommandName() {
@@ -126,8 +141,11 @@ public class UploadCommandResource extends CommandResource {
                 final FileItemStream fis = iterator.next();
                 // see if this is the data we are looking for
                 if (UPLOAD_FILE_KEY.equals(fis.getFieldName())) {
+                    // if we've already ingested a fileUpload, then the request had more than one.
+                    Preconditions.checkState(uploadedFile == null, FILE_UPLOAD_ERROR_TMPL,
+                        UPLOAD_FILE_KEY);
                     // found it, create a temp file
-                    uploadedFile = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
+                    uploadedFile = File.createTempFile("geogig-" + UPLOAD_FILE_KEY + "-", ".tmp");
                     uploadedFile.deleteOnExit();
                     // consume the streamed contetn into the temp file
                     try (FileOutputStream fos = new FileOutputStream(uploadedFile)) {
@@ -135,12 +153,17 @@ public class UploadCommandResource extends CommandResource {
                         // flush the output stream
                         fos.flush();
                     }
-                    // we've processed the uploaded data
-                    break;
                 }
             }
-        } catch (FileUploadException | IOException ex) {
-            throw new RuntimeException("Failed to upload and process file", ex);
+            // if we don't have an uploaded file, we can't continue
+            Preconditions.checkNotNull(uploadedFile, FILE_UPLOAD_ERROR_TMPL, UPLOAD_FILE_KEY);
+        } catch (Exception ex) {
+            // delete the temp file if it exists
+            if (uploadedFile != null) {
+                uploadedFile.delete();
+            }
+            // null out the file
+            uploadedFile = null;
         }
         // return the uploaded entity data as a file
         return uploadedFile;

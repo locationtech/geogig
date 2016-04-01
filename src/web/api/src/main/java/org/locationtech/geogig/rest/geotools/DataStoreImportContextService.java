@@ -9,17 +9,15 @@
  */
 package org.locationtech.geogig.rest.geotools;
 
-import org.geotools.data.DataStore;
+import org.locationtech.geogig.geotools.plumbing.DataStoreSupplier;
 import org.locationtech.geogig.web.api.ParameterSet;
-
-import com.google.common.base.Supplier;
 
 /**
  * Interface for DataStore imports.
  *
- * @see org.locationtech.geogig.geotools.plumbing.ImportOp
+ * @see org.locationtech.geogig.geotools.plumbing.DataStoreImportOp
  */
-public interface ImportContextService {
+public interface DataStoreImportContextService {
 
     /**
      * Indicates if this ImportContext is applicable to the provided format.
@@ -37,7 +35,7 @@ public interface ImportContextService {
      *
      * @return A DataStore representation of the data for import.
      */
-    public Supplier<DataStore> getDataStore(ParameterSet options);
+    public DataStoreSupplier getDataStore(ParameterSet options);
 
     /**
      * Retrieves a custom command description.

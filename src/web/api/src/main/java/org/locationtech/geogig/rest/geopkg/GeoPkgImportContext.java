@@ -12,24 +12,21 @@ package org.locationtech.geogig.rest.geopkg;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.HashMap;
 
 import org.geotools.data.DataStore;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
-import org.locationtech.geogig.rest.geotools.ImportContextService;
+import org.locationtech.geogig.geotools.plumbing.DataStoreSupplier;
+import org.locationtech.geogig.rest.geotools.DataStoreImportContextService;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 
-import com.google.common.base.Supplier;
-
 /**
- * Geopackage specific implementation of ImportContextService.
+ * Geopackage specific implementation of {@link DataStoreImportContextService}.
  */
-public class GeoPkgImportContext implements ImportContextService {
+public class GeoPkgImportContext implements DataStoreImportContextService {
 
     private static final String SUPPORTED_FORMAT = "gpkg";
 
@@ -46,21 +43,23 @@ public class GeoPkgImportContext implements ImportContextService {
     }
 
     @Override
-    public Supplier<DataStore> getDataStore(ParameterSet options) {
+    public DataStoreSupplier getDataStore(ParameterSet options) {
         if (dataStoreSupplier == null) {
-            dataStoreSupplier = new DataStoreSupplier(options);
+            dataStoreSupplier = new GpkgDataStoreSupplier(options);
         }
         return dataStoreSupplier;
     }
 
-    private static class DataStoreSupplier implements Supplier<DataStore> {
+    private static class GpkgDataStoreSupplier implements DataStoreSupplier {
 
         private JDBCDataStore dataStore;
         private final ParameterSet options;
+        private final File uploadedFile;
 
-        DataStoreSupplier(ParameterSet options) {
+        GpkgDataStoreSupplier(ParameterSet options) {
             super();
             this.options = options;
+            this.uploadedFile = options.getUploadedFile();
         }
 
         @Override
@@ -75,9 +74,8 @@ public class GeoPkgImportContext implements ImportContextService {
         private void createDataStore() {
             final GeoPkgDataStoreFactory factory = new GeoPkgDataStoreFactory();
             final HashMap<String, Serializable> params = new HashMap<>(3);
-            final File uploadedFile = options.getUploadedFile();
             if (uploadedFile == null) {
-                throw new CommandSpecException("Request must specify "
+                throw new CommandSpecException("Request must specify one and only one "
                     + UploadCommandResource.UPLOAD_FILE_KEY + " in the request body");
             }
             // fill in DataStore parameters
@@ -88,21 +86,20 @@ public class GeoPkgImportContext implements ImportContextService {
             try {
                 dataStore = factory.createDataStore(params);
             } catch (IOException ioe) {
-                throw new RuntimeException("Unable to create GeoPkgDataStore", ioe);
+                throw new CommandSpecException("Unable to create GeoPkgDataStore: " + ioe
+                    .getMessage());
             }
             if (null == dataStore) {
                 throw new CommandSpecException(
                     "Unable to create GeoPkgDataStore from uploaded file.");
             }
-            // get a connection to initialize the DataStore, then safely close it
-            Connection con;
-            try {
-                con = dataStore.getDataSource().getConnection();
-            } catch (SQLException sqle) {
-                throw new RuntimeException("Unable to get a connection to GeoPkgDataStore", sqle);
-            }
-            dataStore.closeSafe(con);
         }
 
+        @Override
+        public void cleanupResources() {
+            if (uploadedFile != null) {
+                uploadedFile.delete();
+            }
+        }
     }
 }

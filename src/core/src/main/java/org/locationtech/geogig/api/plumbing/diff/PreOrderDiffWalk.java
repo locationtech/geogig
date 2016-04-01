@@ -22,6 +22,7 @@ import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -750,7 +751,7 @@ public class PreOrderDiffWalk {
                 List<Node> rightNodes = nodesByBucket.get(childIndex.lastIndex());
 
                 if (null == leftBucket) {
-                    tasks.add(leafLeaf(leftParent, rightParent, Iterators.<Node> emptyIterator(),
+                    tasks.add(leafLeaf(leftParent, rightParent, Collections.emptyIterator(),
                             rightNodes.iterator()));
                 } else if (rightNodes.isEmpty()) {
 
@@ -848,7 +849,7 @@ public class PreOrderDiffWalk {
                 List<Node> leftNodes = nodesByBucket.get(childIndex.lastIndex());
                 if (null == rightBucket) {
                     tasks.add(leafLeaf(leftParent, rightParent, leftNodes.iterator(),
-                            Iterators.<Node> emptyIterator()));
+                            Collections.emptyIterator()));
                 } else if (leftNodes.isEmpty()) {
                     RevTree rightTree = bucketTrees.get(rightBucket.getObjectId());
                     if (consumer.bucket(leftParent, rightParent, childIndex, null, rightBucket)) {

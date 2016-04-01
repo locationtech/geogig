@@ -791,7 +791,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
             this.filter = filter;
             this.unsortedIds = Iterators.partition(objectIds, getBulkPartitionSize());
-            this.sortedIds = Iterators.emptyIterator();
+            this.sortedIds = Collections.emptyIterator();
 
             this.listener = listener;
             CursorConfig cursorConfig = new CursorConfig();

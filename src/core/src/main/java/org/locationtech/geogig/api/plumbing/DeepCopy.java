@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.api.plumbing;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -165,16 +166,16 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
         }
     }
 
-    private void copyTree(final ObjectId treeId, final ObjectStore from,
-            final ObjectStore to, final Set<ObjectId> metadataIds) {
+    private void copyTree(final ObjectId treeId, final ObjectStore from, final ObjectStore to,
+            final Set<ObjectId> metadataIds) {
         if (to.exists(treeId)) {
             return;
         }
         Supplier<Iterator<NodeRef>> refs = command(LsTreeOp.class).setReference(treeId.toString())
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES);
 
-        Supplier<Iterator<Node>> nodes = Suppliers.compose(
-                new Function<Iterator<NodeRef>, Iterator<Node>>() {
+        Supplier<Iterator<Node>> nodes = Suppliers
+                .compose(new Function<Iterator<NodeRef>, Iterator<Node>>() {
 
                     @Override
                     public Iterator<Node> apply(Iterator<NodeRef> input) {
@@ -211,15 +212,15 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
         public AllTrees(ObjectId id, ObjectStore from) {
             this.from = from;
             this.tree = from.getTree(id);
-            this.trees = Iterators.emptyIterator();
+            this.trees = Collections.emptyIterator();
             if (tree.trees().isPresent()) {
                 trees = tree.trees().get().iterator();
             }
-            buckets = Iterators.emptyIterator();
+            buckets = Collections.emptyIterator();
             if (tree.buckets().isPresent()) {
                 buckets = tree.buckets().get().values().iterator();
             }
-            bucketTrees = Iterators.emptyIterator();
+            bucketTrees = Collections.emptyIterator();
         }
 
         @Override
@@ -249,8 +250,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
         to.put(object);
     }
 
-    private void copyObject(final ObjectId objectId, final ObjectStore from,
-            final ObjectStore to) {
+    private void copyObject(final ObjectId objectId, final ObjectStore from, final ObjectStore to) {
 
         RevObject object = from.get(objectId);
 

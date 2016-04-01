@@ -12,6 +12,7 @@ package org.locationtech.geogig.osm.cli.commands;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -134,7 +135,7 @@ public class OSMExport extends AbstractCommand implements CLICommand {
     private Iterator<EntityContainer> getFeatures(String ref) {
         Optional<ObjectId> id = geogig.command(RevParse.class).setRefSpec(ref).call();
         if (!id.isPresent()) {
-            return Iterators.emptyIterator();
+            return Collections.emptyIterator();
         }
         LsTreeOp op = geogig.command(LsTreeOp.class).setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES)
                 .setReference(ref);

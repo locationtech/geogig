@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -143,7 +144,7 @@ public class Diff extends AbstractCommand implements CLICommand {
         if (paths.isEmpty()) {
             entries = diff.setProgressListener(cli.getProgressListener()).call();
         } else {
-            entries = Iterators.emptyIterator();
+            entries = Collections.emptyIterator();
             for (String path : paths) {
                 Iterator<DiffEntry> moreEntries = diff.setFilter(path)
                         .setProgressListener(cli.getProgressListener()).call();

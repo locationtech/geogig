@@ -40,7 +40,7 @@ import com.google.common.base.Supplier;
 /**
  * Command for Geotools exports through the WEB API.
  * <p>
- * Concrete format options are handles by specializations of {@link OutputFormat}.
+ * Concrete format options are handled by specializations of {@link OutputFormat}.
  * <p>
  * Arguments:
  * <ul>
@@ -57,8 +57,8 @@ import com.google.common.base.Supplier;
  * {@code minx,miny,maxx,maxy,<SRS>}, where SRS is the EPSG code for the coordinates (e.g.
  * {@code EPSG:4326}, {@code EPSG:26986}, etc), always using <b>"longitude first"</b> axis order.
  * </ul>
- * 
- * <b>NOTE</b>: export format specializations may add additional, format specific arguments.
+ * <p>
+ * <b>NOTE</b>: export format specializations may add additional format specific arguments.
  * 
  * <p>
  * Usage:

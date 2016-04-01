@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.web.api;
 
+import java.io.File;
+
 import org.eclipse.jdt.annotation.Nullable;
 
 
@@ -47,5 +49,13 @@ public interface ParameterSet {
      */
     @Nullable
     public String[] getValuesArray(String key);
+
+    /**
+     * Returns binary uploaded data as a File, or {@code null}.
+     *
+     * @return A File representation of uploaded binary data, or {@code null}.
+     */
+    @Nullable
+    public File getUploadedFile();
 
 }

@@ -9,9 +9,17 @@
  */
 package org.locationtech.geogig.web.api;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.restlet.util.ByteUtils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
@@ -19,6 +27,8 @@ import com.google.common.collect.ArrayListMultimap;
 public class TestParams implements ParameterSet {
 
     private ArrayListMultimap<String, String> params = ArrayListMultimap.create();
+
+    private File fileUpload;
 
     @Override
     @Nullable
@@ -46,7 +56,36 @@ public class TestParams implements ParameterSet {
         for (int i = 0; kvp != null && i < kvp.length; i += 2) {
             params.params.put(kvp[i], kvp[i + 1]);
         }
+        params.setFileUpload();
         return params;
     }
 
+    private void setFileUpload() {
+        String fileUploadContents = getFirstValue("mockFileUpload");
+        if (fileUploadContents != null) {
+            // build a temp file with the mockFileUpload contents
+            try {
+                File tempFile = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
+                tempFile.deleteOnExit();
+                try (FileOutputStream fos = new FileOutputStream(tempFile);
+                    InputStream bais = new ByteArrayInputStream(fileUploadContents.getBytes(
+                        StandardCharsets.UTF_8))) {
+                    ByteUtils.write(bais, fos);
+                    fos.flush();
+                }
+                fileUpload = tempFile;
+            } catch (IOException ioe) {
+                // eat it
+            }
+        }
+    }
+
+    @Override
+    public File getUploadedFile() {
+        return this.fileUpload;
+    }
+
+    public void setFileUpload(File upload) {
+        this.fileUpload = upload;
+    }
 }

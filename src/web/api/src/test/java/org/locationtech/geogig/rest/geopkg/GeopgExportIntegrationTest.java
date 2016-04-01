@@ -271,9 +271,9 @@ public class GeopgExportIntegrationTest extends AbstractWebOpTest {
 
         final String expected;
         if (Boolean.parseBoolean(op.options.getFirstValue("interchange"))) {
-            expected = "{'task':{'id':1,'status':'RUNNING','description':'Export to Geopackage database with geogig interchange format extension','href':'/geogig/tasks/1.json'}}";
+            expected = "{'task':{'id':1,'description':'Export to Geopackage database with geogig interchange format extension','href':'/geogig/tasks/1.json'}}";
         } else {
-            expected = "{'task':{'id':1,'status':'RUNNING','description':'Export to Geopackage database','href':'/geogig/tasks/1.json'}}";
+            expected = "{'task':{'id':1,'description':'Export to Geopackage database','href':'/geogig/tasks/1.json'}}";
         }
 
         JSONObject response = getJSONResponse();

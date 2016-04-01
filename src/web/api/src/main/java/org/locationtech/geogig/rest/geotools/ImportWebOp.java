@@ -9,81 +9,237 @@
  */
 package org.locationtech.geogig.rest.geotools;
 
-import java.net.URI;
+import java.util.function.Function;
 
-import org.geotools.data.DataStore;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.geotools.plumbing.ImportOp;
+import org.locationtech.geogig.api.GeogigTransaction;
+import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.api.plumbing.TransactionBegin;
+import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
+import org.locationtech.geogig.geotools.plumbing.DataStoreSupplier;
+import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
-import org.locationtech.geogig.rest.TransactionalResource;
-import org.locationtech.geogig.rest.Variants;
-import org.restlet.data.Form;
+import org.locationtech.geogig.rest.Representations;
+import org.locationtech.geogig.rest.repository.UploadCommandResource;
+import org.locationtech.geogig.web.api.AbstractWebAPICommand;
+import org.locationtech.geogig.web.api.CommandContext;
+import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.restlet.data.MediaType;
-import org.restlet.data.Request;
-import org.restlet.data.Response;
+import org.restlet.data.Method;
 import org.restlet.resource.Representation;
-import org.restlet.resource.Variant;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
- * Base class for Import Operations.
+ * Command for Geotools imports through the WEB API.
+ * <p>
+ * Concrete format options are handled by implementations of {@link DataStoreImportContextService},
+ * provided by the {@link DataStoreImportContextServiceFactory}. All
+ * {@link DataStoreImportContextService} implementations should be listed in <b>
+ * {@code META-INF.services/org.locationtech.geogig.rest.geotools.DataStoreImportContextService}.
+ * </b>
+ * <p>
+ * Request Parameters:
+ * <ul>
+ * <li><b>format</b>: Mandatory, input format for the imported data. Currently only {@code GPKG} is
+ * supported. Format argument value is case insensitive.
+ * <li><b>layer</b>: Optional. If present, only import the layer table from the provided DataStore
+ * where the table name matches the value provided. If not present, import all layer tables from the
+ * provided DataStore.
+ * <li><b>dest</b>: Optional. The name of the table in the repository into which the features should
+ * be imported. If not present, the table name will be derived from the features imported.
+ * <li><b>add</b>: Optional. If present and set to <i>true</i>, import features from the provided
+ * DataStore if they do not already exist in the repository. If not present, or set to <i>false</i>,
+ * import features from the provided DataStore, overwriting any pre-existing features in the
+ * repository that match on path and Id.
+ * <li><b>alter</b>: Optional. If present and set to <i>true</i>, set the default feature type of
+ * the repository path destination to match the feature type of the features being imported, and
+ * <i>alter</i> the feature type of all features in the destination to match the feature type of the
+ * features being imported. If not present, or set to <i>false</i>, do not alter the destination
+ * feature type.
+ * <li><b>forceFeatureType</b>: Optional. If present and set to <i>true</i>, use the feature type of
+ * the features being imported, even if it doesn't match the default feature type of the
+ * destination.
+ * <li><b>fidAttribute</b>: Optional. If present, use the Attribute indicated by this value when
+ * creating Feature Ids. If absent, use the default for creating Feature Ids.
+ * <li><b>authorName</b>: Optional, but highly recommended. Specifies the author name to use for the
+ * resulting commit.
+ * <li><b>authorEmail</b>: Optional, but highly recommended. Specifies the author email to use for
+ * the resulting commit.
+ * <li><b>message</b>: Optional, but highly recommended. Specifies the commit message to use for the
+ * resulting commit.
+ * </ul>
+ * <p>
+ * <b>NOTE 1</b>: {@link DataStoreImportContextService} implementations may add additional format
+ * specific request parameters.
+ * <p>
+ * <b>NOTE 2</b>: Currently, this operation is bound to the <i>import</i> command in the Web API.
+ * This means that {@link UploadCommandResource} is involved in executing this operation. The
+ * implementation of {@link UploadCommandResource} requires a file to be uploaded in the POST. The
+ * file uploaded is added into the {@link ParameterSet} that is passed to the constructor of
+ * instances of this operation. {@link DataStoreImportContextService} implementations may need to
+ * access this upload to perform format specific functions, so it is passed along.
+ * <p>
+ * Usage:
+ * <br><b>{@code POST <repository URL>/import[.xml|.json]?format=<format name>[&layer=<layer table name>][&dest=<destination path][&alter=<true|false>][&forceFeatureType=<true|false>][&fidAaaattribute=<attribute name>][&authorEmail=<email address>][&authorName=<author name>][&message=<commit message>]}</b>
+ * <p>
  */
-public abstract class ImportWebOp extends TransactionalResource {
+public class ImportWebOp extends AbstractWebAPICommand {
 
-    @Override
-    public void init(org.restlet.Context context, Request request, Response response) {
-        super.init(context, request, response);
-        getVariants().add(Variants.XML);
-        getVariants().add(Variants.JSON);
+    // Request Parameter keys.
+    /**
+     * Request parameter indicating the import format.
+     */
+    public static final String FORMAT_KEY = "format";
+    /**
+     * Request parameter indicating the name of the layer table to import.
+     */
+    public static final String LAYER_KEY = "layer";
+    /**
+     * Request parameter indicating if features should only be added if they do not already exist.
+     */
+    public static final String ADD_KEY = "add";
+    /**
+     * Request parameter indicating if destination tables should be altered to match the feature
+     * type of the imported features or not.
+     */
+    public static final String ALTER_KEY = "alter";
+    /**
+     * Request parameter indicating if the imported feature type should be used even if it does not
+     * match the default feature type of the destination.
+     */
+    public static final String FORCE_FEAT_KEY = "forceFeatureType";
+    /**
+     * Request parameter indicating the destination path name if it should be different than the
+     * path of the features being imported.
+     */
+    public static final String DEST_PATH_KEY = "dest";
+    /**
+     * Request parameter indicating the feature attribute to use when generating Feature Ids if the
+     * default Id creation should be overridden.
+     */
+    public static final String FID_ATTR_KEY = "fidAttribute";
+    /**
+     * Request parameter indicating the author name to use for the resulting commit.
+     */
+    public static final String AUTHOR_NAME_KEY = "authorName";
+    /**
+     * Request parameter indicating the author email to use for the resulting commit.
+     */
+    public static final String AUTHOR_EMAIL_KEY = "authorEmail";
+    /**
+     * Request parameter indicating the message to use for the resulting commit.
+     */
+    public static final String COMMIT_MSG_KEY = "message";
+
+    private final ParameterSet options;
+
+    @VisibleForTesting
+    public AsyncContext asyncContext;
+
+    public ImportWebOp(ParameterSet options) {
+        super(options);
+        this.options = options;
     }
 
     @Override
-    public Representation getRepresentation(final Variant variant) {
-        final Request request = getRequest();
-        final Context context = super.getContext(request);
+    public void runInternal(CommandContext context) {
+        String requestFormat = options.getFirstValue(FORMAT_KEY);
+        if (null == requestFormat) {
+            // no "format" parameter requested
+            throw new CommandSpecException("missing required \"format\" parameter");
+        }
+        // get the import context from the requested parameters
+        DataStoreImportContextService ctxService = DataStoreImportContextServiceFactory
+            .getContextService(
+                requestFormat);
+        // build DataStore from options
+        final DataStoreSupplier datastore = ctxService.getDataStore(options);
+        DataStoreImportOp command = buildImportOp(datastore, context);
+        final String commandDescription = ctxService.getCommandDescription();
+        if (asyncContext == null) {
+            asyncContext = AsyncContext.get();
+        }
+        final AsyncContext.AsyncCommand<?> asyncCommand = asyncContext.run(command,
+            commandDescription);
 
-        Form options = getRequest().getResourceRef().getQueryAsForm();
+        Function<MediaType, Representation> rep = new Function<MediaType, Representation>() {
 
-        DataStore dataStore = getDataStore(options);
+            private final String baseUrl = context.getBaseURL();
 
-        final String table = options.getFirstValue("table");
-        final boolean all = Boolean.valueOf(options.getFirstValue("all", "false"));
-        final boolean add = Boolean.valueOf(options.getFirstValue("add", "false"));
+            @Override
+            public Representation apply(MediaType mediaType) {
+                AsyncCommandRepresentation<?> repr;
+                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl);
+                return repr;
+            }
+        };
+
+        context.setResponse(rep);
+    }
+
+    @Override
+    public boolean supports(Method method) {
+        return Method.POST.equals(method);
+    }
+
+    private DataStoreImportOp buildImportOp(final DataStoreSupplier dataStoreSupplier,
+        CommandContext context) {
+        // collect Import parameters
+        final String layerTableName = options.getFirstValue(LAYER_KEY);
+        final boolean all = layerTableName == null;
+        final boolean add = Boolean.valueOf(options.getFirstValue(ADD_KEY, "false"));
         final boolean forceFeatureType = Boolean
-            .valueOf(options.getFirstValue("forceFeatureType", "false"));
-        final boolean alter = Boolean.valueOf(options.getFirstValue("alter", "false"));
-        final String dest = options.getFirstValue("dest");
-        final String fidAttrib = options.getFirstValue("fidAttrib");
-        ImportOp command = context.command(ImportOp.class);
-        command.setDataStore(dataStore).setTable(table).setAll(all).setOverwrite(!add)
-            .setAdaptToDefaultFeatureType(!forceFeatureType).setAlter(alter)
-            .setDestinationPath(dest).setFidAttribute(fidAttrib);
-
-        AsyncContext.AsyncCommand<RevTree> asyncCommand;
-
-        URI repo = context.repository().getLocation();
-        asyncCommand = AsyncContext.get().run(command, getCommandDescription(table, all, repo));
-
-        final String rootPath = request.getRootRef().toString();
-        MediaType mediaType = variant.getMediaType();
-        return new RevTreeRepresentation(mediaType, asyncCommand, rootPath);
+            .valueOf(options.getFirstValue(FORCE_FEAT_KEY, "false"));
+        final boolean alter = Boolean.valueOf(options.getFirstValue(ALTER_KEY, "false"));
+        final String dest = options.getFirstValue(DEST_PATH_KEY);
+        final String fidAttribute = options.getFirstValue(FID_ATTR_KEY);
+        final String authorName = options.getFirstValue(AUTHOR_NAME_KEY);
+        final String authorEmail = options.getFirstValue(AUTHOR_EMAIL_KEY);
+        final String commitMessage = options.getFirstValue(COMMIT_MSG_KEY);
+        // regardless, we have to create the DataStoreImportOp
+        DataStoreImportOp command;
+        // Import will require a transaction. If there isn't a transaction already active, create
+        // one and wrape the Import command with transaction management.
+        GeogigTransaction transaction;
+        // if we are creating a transaction, we need the operation to start/end it automatically
+        final boolean handleTxn = this.getTransactionId() == null;
+        if (handleTxn) {
+            // we must create a transaction
+            transaction = this.getCommandLocator(context).command(TransactionBegin.class).call();
+            // build the transaction wrapped command
+            command = transaction.command(TransactionWrappedDataStoreImportOp.class);
+        } else {
+            // we already have a transaction
+            transaction = GeogigTransaction.class.cast(this.getCommandLocator(context));
+            // build the normal command
+            command = transaction.command(DataStoreImportOp.class);
+        }
+        // set all the import op parameters
+        return command.setDataStore(dataStoreSupplier).setTable(layerTableName).setAll(all).setAdd(
+            add).setForceFeatureType(forceFeatureType).setAlter(alter).setDest(dest)
+            .setFidAttribute(fidAttribute).setAuthorEmail(authorEmail).setAuthorName(authorName)
+            .setCommitMessage(commitMessage);
     }
 
-    /**
-     * Create a DataStore from Form options.
-     *
-     * @param options Form parameters with which to configure the DataStore.
-     * @return A DataStore based on supplied options.
-     */
-    public abstract DataStore getDataStore(final Form options);
+    private static class TransactionWrappedDataStoreImportOp extends DataStoreImportOp {
 
-    /**
-     * Returns a String representation for this ImportOp command.
-     *
-     * @param table Table name to be imported.
-     * @param all - true if all tables should be imported
-     * @param repo - URI representation of the repo into which the data should be imported.
-     * @return A String representation of the command.
-     */
-    public abstract String getCommandDescription(String table, boolean all, URI repo);
+        @Override
+        protected RevCommit _call() {
+            // the context better be a GeogigTransaction
+            GeogigTransaction txnContext = GeogigTransaction.class.cast(context);
+            RevCommit revCommit = null;
+            try {
+                // call the import
+                revCommit = super._call();
+                // end the transaction
+                txnContext.commit();
+            } catch (Exception ex) {
+                // abort the transaction
+                txnContext.abort();
+                throw ex;
+            }
+            return revCommit;
+        }
+    }
 }

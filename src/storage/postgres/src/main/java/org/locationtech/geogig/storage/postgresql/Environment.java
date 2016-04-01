@@ -120,7 +120,7 @@ public class Environment {
 
     final ConnectionConfig connectionConfig;
 
-    final String repositoryId;
+    private final String repositoryId;
 
     private final TableNames tables;
 
@@ -189,6 +189,7 @@ public class Environment {
         return new EnvironmentBuilder(repoURI).build();
     }
 
+    
     public String getDatabaseName() {
         return connectionConfig.getDatabaseName();
     }
@@ -211,5 +212,10 @@ public class Environment {
 
     public String getServer() {
         return connectionConfig.getServer();
+    }
+
+    @Nullable
+    public String getRepositoryId() {
+        return repositoryId;
     }
 }

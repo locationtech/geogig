@@ -119,7 +119,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     public String getRepoURL() {
         Environment env = getEnvironment();
-        String url = props.buildRepoURL(env.repositoryId, env.getTables().getPrefix());
+        String url = props.buildRepoURL(env.getRepositoryId(), env.getTables().getPrefix());
         return url;
     }
 

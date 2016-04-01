@@ -18,14 +18,14 @@ import org.locationtech.geogig.di.PluginDefaults;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryInitializer;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
-public class PGRepositoryInitializer extends RepositoryInitializer {
+public class PGRepositoryResolver extends RepositoryResolver {
 
     @Override
     public boolean canHandle(URI repoURI) {
@@ -50,7 +50,7 @@ public class PGRepositoryInitializer extends RepositoryInitializer {
     public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext) {
         Environment config = parseConfig(repoURI);
         PGConfigDatabase configDb = new PGConfigDatabase(config);
-        if (config.repositoryId != null) {
+        if (config.getRepositoryId() != null) {
             Optional<String> refsFormat = configDb.getGlobal("storage.refs");
             if (!refsFormat.isPresent()) {
                 configDb.putGlobal(PGStorageProvider.FORMAT_NAME + ".version",
@@ -76,7 +76,7 @@ public class PGRepositoryInitializer extends RepositoryInitializer {
             Throwables.propagateIfInstanceOf(e, IllegalArgumentException.class);
             throw new IllegalArgumentException("Error parsing URI " + repoURI, e);
         }
-        Preconditions.checkArgument(config.repositoryId != null,
+        Preconditions.checkArgument(config.getRepositoryId() != null,
                 "No repository id provided in repo URI: '" + repoURI + "'");
         return config;
     }
@@ -91,6 +91,19 @@ public class PGRepositoryInitializer extends RepositoryInitializer {
         Repository repository = new GeoGIG(context).getRepository();
         repository.open();
         return repository;
+    }
+
+    @Override
+    public String getName(URI repoURI) {
+        Environment env = parseConfig(repoURI);
+        String repositoryId = env.getRepositoryId();
+        return repositoryId;
+    }
+
+    @Override
+    public boolean delete(URI repositoryLocation) throws Exception {
+        Environment env = parseConfig(repositoryLocation);
+        return PGStorage.deleteRepository(env);
     }
 
 }

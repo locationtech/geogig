@@ -143,7 +143,7 @@ public class PGObjectDatabase implements ObjectDatabase {
             final boolean readOnly) {
         Preconditions.checkNotNull(configdb);
         Preconditions.checkNotNull(config);
-        Preconditions.checkNotNull(config.repositoryId, "Repository id not provided");
+        Preconditions.checkNotNull(config.getRepositoryId(), "Repository id not provided");
         this.configdb = configdb;
         this.config = config;
         this.serializer = SUPPORTED_FORMATS[SUPPORTED_FORMATS.length - 1];
@@ -194,7 +194,7 @@ public class PGObjectDatabase implements ObjectDatabase {
             this.threadPoolSize = poolSize;
         }
 
-        final String repositoryId = config.repositoryId;
+        final String repositoryId = config.getRepositoryId();
         final String conflictsTable = config.getTables().conflicts();
         final String blobsTable = config.getTables().blobs();
 

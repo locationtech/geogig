@@ -32,7 +32,7 @@ public class PGBlobStoreTest extends TransactionBlobStoreTest {
 
         dataSource = PGStorage.newDataSource(config);
         String blobsTable = config.getTables().blobs();
-        String repositoryId = config.repositoryId;
+        String repositoryId = config.getRepositoryId();
 
         PGBlobStore pgBlobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
         return pgBlobStore;

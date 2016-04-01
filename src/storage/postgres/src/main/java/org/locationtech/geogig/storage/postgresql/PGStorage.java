@@ -99,7 +99,7 @@ public class PGStorage {
 
     public static boolean repoExists(final Environment config) throws IllegalArgumentException {
         Preconditions.checkNotNull(config);
-        Preconditions.checkArgument(config.repositoryId != null, "no repository id provided");
+        Preconditions.checkArgument(config.getRepositoryId() != null, "no repository id provided");
         DataSource ds = PGStorage.newDataSource(config);
         try {
             Boolean exists = new DbOp<Boolean>() {
@@ -119,7 +119,7 @@ public class PGStorage {
                             "SELECT TRUE WHERE EXISTS(SELECT 1 FROM %s WHERE repository = ?)",
                             reposTable);
                     try (PreparedStatement st = cx.prepareStatement(sql)) {
-                        String repositoryId = config.repositoryId;
+                        String repositoryId = config.getRepositoryId();
                         st.setString(1, repositoryId);
                         try (ResultSet rs = st.executeQuery()) {
                             return rs.next();
@@ -144,8 +144,8 @@ public class PGStorage {
      */
     public static boolean createNewRepo(final Environment config) throws IllegalArgumentException {
         Preconditions.checkNotNull(config);
-        Preconditions.checkArgument(config.repositoryId != null, "no repository id provided");
-        checkArgument(!PGConfigDatabase.GLOBAL_KEY.equals(config.repositoryId),
+        Preconditions.checkArgument(config.getRepositoryId() != null, "no repository id provided");
+        checkArgument(!PGConfigDatabase.GLOBAL_KEY.equals(config.getRepositoryId()),
                 "%s is a reserved key. No repo can be named like that.",
                 PGConfigDatabase.GLOBAL_KEY);
         createTables(config);
@@ -161,7 +161,7 @@ public class PGStorage {
                             "SELECT TRUE WHERE EXISTS(SELECT 1 FROM %s WHERE repository = ?)",
                             reposTable);
 
-                    final String repositoryId = config.repositoryId;
+                    final String repositoryId = config.getRepositoryId();
                     final boolean exists;
                     cx.setAutoCommit(false);
                     try {
@@ -224,10 +224,9 @@ public class PGStorage {
                         try {
                             PGStorage.run(cx, sql);
                         } catch (SQLException e) {
-                            LOG.warn(
-                                    String.format(
-                                            "Unable to run '%s'. User may need more priviledges. This is not fatal, but recommended.",
-                                            sql), e);
+                            LOG.warn(String.format(
+                                    "Unable to run '%s'. User may need more priviledges. This is not fatal, but recommended.",
+                                    sql), e);
                         }
                         PGStorage.run(cx, "SELECT pg_advisory_unlock(-1)");
 
@@ -306,8 +305,8 @@ public class PGStorage {
         String sql = format(
                 "CREATE TABLE %s (repository TEXT PRIMARY KEY, created TIMESTAMP, lock_id SERIAL);"
                         + "INSERT INTO %s (repository, created) VALUES ( '"
-                        + PGConfigDatabase.GLOBAL_KEY + "', NOW())", tables.repositories(),
-                tables.repositories());
+                        + PGConfigDatabase.GLOBAL_KEY + "', NOW())",
+                tables.repositories(), tables.repositories());
         run(cx, sql);
     }
 
@@ -332,10 +331,10 @@ public class PGStorage {
     }
 
     private static void createRefsTable(Connection cx, TableNames tables) throws SQLException {
-        final String TABLE_STMT = format("CREATE TABLE %s ("
-                + "repository TEXT, path TEXT, name TEXT, value TEXT, "
-                + "PRIMARY KEY(repository, path, name), "
-                + "FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
+        final String TABLE_STMT = format(
+                "CREATE TABLE %s (" + "repository TEXT, path TEXT, name TEXT, value TEXT, "
+                        + "PRIMARY KEY(repository, path, name), "
+                        + "FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
                 tables.refs(), tables.repositories());
         run(cx, TABLE_STMT);
     }
@@ -425,10 +424,10 @@ public class PGStorage {
         run(cx, rule);
     }
 
-    private static void createObjectTableIndex(Connection cx, String tableName) throws SQLException {
+    private static void createObjectTableIndex(Connection cx, String tableName)
+            throws SQLException {
 
-        String index = String.format(
-                "CREATE INDEX %s_objectid_h1_hash ON %s USING HASH(((id).h1))",
+        String index = String.format("CREATE INDEX %s_objectid_h1_hash ON %s USING HASH(((id).h1))",
                 stripSchema(tableName), tableName);
         run(cx, index);
         // index = String.format("CREATE INDEX %s_hash2 ON %s USING HASH(hash2)",
@@ -443,10 +442,10 @@ public class PGStorage {
         final int numTables = 16;
         final int step = (int) (((long) max - (long) min) / numTables);
 
-        final String triggerFunction = stripSchema(String.format("%s_partitioning_insert_trigger",
-                parentTable));
-        StringBuilder funcSql = new StringBuilder(String.format(
-                "CREATE OR REPLACE FUNCTION %s()\n", triggerFunction));
+        final String triggerFunction = stripSchema(
+                String.format("%s_partitioning_insert_trigger", parentTable));
+        StringBuilder funcSql = new StringBuilder(
+                String.format("CREATE OR REPLACE FUNCTION %s()\n", triggerFunction));
         funcSql.append("RETURNS TRIGGER AS $$\n");
         funcSql.append("DECLARE\n\n");
         funcSql.append("id objectid;\n");
@@ -486,9 +485,9 @@ public class PGStorage {
         String sql = funcSql.toString();
         run(cx, sql);
 
-        sql = String.format("CREATE TRIGGER %s BEFORE INSERT ON "
-                + "%s FOR EACH ROW EXECUTE PROCEDURE %s()", triggerFunction, parentTable,
-                triggerFunction);
+        sql = String.format(
+                "CREATE TRIGGER %s BEFORE INSERT ON " + "%s FOR EACH ROW EXECUTE PROCEDURE %s()",
+                triggerFunction, parentTable, triggerFunction);
         run(cx, sql);
     }
 
@@ -537,5 +536,36 @@ public class PGStorage {
 
         sql = format("CREATE INDEX %s_nid_index ON %s(nid)", stripSchema(mappings), mappings);
         run(cx, sql);
+    }
+
+    public static boolean deleteRepository(Environment env) {
+        Preconditions.checkArgument(env.getRepositoryId() != null, "No repository id provided");
+
+        final String repositoryId = env.getRepositoryId();
+        final TableNames tables = env.getTables();
+        final String reposTable = tables.repositories();
+        boolean deleted = false;
+
+        final String sql = String.format("DELETE FROM %s WHERE repository = ?", reposTable);
+        final DataSource ds = PGStorage.newDataSource(env);
+
+        try (Connection cx = ds.getConnection()) {
+            cx.setAutoCommit(false);
+            try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repositoryId))) {
+                st.setString(1, repositoryId);
+                int rowCount = st.executeUpdate();
+                deleted = rowCount > 0;
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            }
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        } finally {
+            PGStorage.closeDataSource(ds);
+        }
+
+        return Boolean.valueOf(deleted);
     }
 }

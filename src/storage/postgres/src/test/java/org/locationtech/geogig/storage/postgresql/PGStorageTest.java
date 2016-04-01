@@ -59,18 +59,39 @@ public class PGStorageTest {
                 protected Void doRun(Connection cx) throws IOException, SQLException {
                     String repositories = tables.repositories();
                     String sql = format("SELECT * from %s WHERE repository = ?", repositories);
-                    String repositoryId = config.repositoryId;
+                    String repositoryId = config.getRepositoryId();
                     try (PreparedStatement st = cx.prepareStatement(sql)) {
                         st.setString(1, repositoryId);
                         try (ResultSet rs = st.executeQuery()) {
-                            assertTrue(
-                                    format("repository '%s' not found in table '%s'", repositoryId,
-                                            repositories), rs.next());
+                            assertTrue(format("repository '%s' not found in table '%s'",
+                                    repositoryId, repositories), rs.next());
                         }
                     }
                     return null;
                 }
             }.run(ds);
+        } finally {
+            PGStorage.closeDataSource(ds);
+        }
+    }
+
+    @Test
+    public void testDeleteRepo() {
+        final TableNames tables = config.getTables();
+        final List<String> tableNames = tables.all();
+
+        PGStorage.createNewRepo(config);
+
+        final DataSource ds = PGStorage.newDataSource(config);
+        try {
+
+            assertTrue(PGStorage.deleteRepository(config));
+            assertFalse(PGStorage.deleteRepository(config));
+
+            // the tables should still exist though
+            for (String table : tableNames) {
+                assertTableExist(ds, table);
+            }
         } finally {
             PGStorage.closeDataSource(ds);
         }
@@ -86,9 +107,10 @@ public class PGStorageTest {
             assertTrue(PGStorage.repoExists(config));
 
             ConnectionConfig connConfig = config.connectionConfig;
-            Environment anotherConfig = new Environment(connConfig.getServer(), connConfig.getPortNumber(),
-                    connConfig.getDatabaseName(), connConfig.getSchema(), connConfig.getUser(),
-                    connConfig.getPassword(), "nonExistentRepoId", null);
+            Environment anotherConfig = new Environment(connConfig.getServer(),
+                    connConfig.getPortNumber(), connConfig.getDatabaseName(),
+                    connConfig.getSchema(), connConfig.getUser(), connConfig.getPassword(),
+                    "nonExistentRepoId", null);
             assertFalse(PGStorage.repoExists(anotherConfig));
         } finally {
             PGStorage.closeDataSource(ds);

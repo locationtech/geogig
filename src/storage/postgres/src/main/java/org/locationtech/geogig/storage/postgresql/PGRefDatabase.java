@@ -113,7 +113,7 @@ public class PGRefDatabase implements RefDatabase {
 
     @VisibleForTesting
     void lockWithTimeout(int timeout) throws TimeoutException {
-        final String repo = PGRefDatabase.this.config.repositoryId;
+        final String repo = PGRefDatabase.this.config.getRepositoryId();
         Connection c = LockConnection.get();
         if (c == null) {
             c = newConnection(dataSource);
@@ -144,7 +144,7 @@ public class PGRefDatabase implements RefDatabase {
 
     @Override
     public void unlock() {
-        final String repo = PGRefDatabase.this.config.repositoryId;
+        final String repo = PGRefDatabase.this.config.getRepositoryId();
         Connection c = LockConnection.get();
         if (c != null) {
             final String repoTable = PGRefDatabase.this.config.getTables().repositories();
@@ -209,7 +209,7 @@ public class PGRefDatabase implements RefDatabase {
     }
 
     private String doGet(final String refPath, final Connection cx) throws SQLException {
-        final String repo = PGRefDatabase.this.config.repositoryId;
+        final String repo = PGRefDatabase.this.config.getRepositoryId();
         final String path = Ref.parentPath(refPath) + "/";
         final String localName = Ref.simpleName(refPath);
         final String refsTable = PGRefDatabase.this.refsTableName;
@@ -249,7 +249,7 @@ public class PGRefDatabase implements RefDatabase {
 
             @Override
             protected Void doRun(Connection cx) throws IOException, SQLException {
-                final String repo = PGRefDatabase.this.config.repositoryId;
+                final String repo = PGRefDatabase.this.config.getRepositoryId();
                 final String path = Ref.parentPath(name) + "/";
                 final String localName = Ref.simpleName(name);
                 final String refsTable = PGRefDatabase.this.refsTableName;
@@ -304,7 +304,7 @@ public class PGRefDatabase implements RefDatabase {
                         if (oldval.startsWith("ref: ")) {
                             oldval = oldval.substring("ref: ".length());
                         }
-                        final String repo = PGRefDatabase.this.config.repositoryId;
+                        final String repo = PGRefDatabase.this.config.getRepositoryId();
                         final String path = Ref.parentPath(refName) + "/";
                         final String localName = Ref.simpleName(refName);
                         final String refsTable = PGRefDatabase.this.refsTableName;
@@ -352,7 +352,7 @@ public class PGRefDatabase implements RefDatabase {
 
     private Map<String, String> doGetall(Connection cx, final String... prefixes)
             throws SQLException {
-        final String repo = PGRefDatabase.this.config.repositoryId;
+        final String repo = PGRefDatabase.this.config.getRepositoryId();
         final String refsTable = PGRefDatabase.this.refsTableName;
 
         StringBuilder sql = new StringBuilder("SELECT path, name, value FROM ")//
@@ -397,7 +397,7 @@ public class PGRefDatabase implements RefDatabase {
                     if (oldvalues.isEmpty()) {
                         cx.rollback();
                     } else {
-                        final String repo = PGRefDatabase.this.config.repositoryId;
+                        final String repo = PGRefDatabase.this.config.getRepositoryId();
                         final String refsTable = PGRefDatabase.this.refsTableName;
                         String sql = "DELETE FROM " + refsTable
                                 + " WHERE repository = ? AND path LIKE '" + prefix + "%'";

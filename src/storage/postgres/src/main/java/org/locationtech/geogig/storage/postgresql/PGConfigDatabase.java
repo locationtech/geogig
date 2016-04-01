@@ -78,7 +78,7 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     public PGConfigDatabase(Environment environment) {
         this.config = environment;
-        checkArgument(!GLOBAL_KEY.equals(config.repositoryId),
+        checkArgument(!GLOBAL_KEY.equals(config.getRepositoryId()),
                 "%s is a reserved key. No repo can be named like that.", GLOBAL_KEY);
     }
 
@@ -162,10 +162,10 @@ public class PGConfigDatabase implements ConfigDatabase {
     }
 
     private String local() {
-        if (null == config.repositoryId) {
+        if (null == config.getRepositoryId()) {
             throw new ConfigException(ConfigException.StatusCode.INVALID_LOCATION);
         }
-        return config.repositoryId;
+        return config.getRepositoryId();
     }
 
     private String global() {

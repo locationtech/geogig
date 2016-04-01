@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.geotools.data;
 
+import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.notNull;
@@ -44,6 +45,7 @@ import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
+import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -73,8 +75,8 @@ import com.vividsolutions.jts.geom.Envelope;
 /**
  *
  */
-class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements FeatureReader<T, F>,
-        Iterator<F> {
+class GeogigFeatureReader<T extends FeatureType, F extends Feature>
+        implements FeatureReader<T, F>, Iterator<F> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeogigFeatureReader.class);
 
@@ -151,7 +153,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         diffOp.setPathFilter(pathFilters);
 
         if (screenMap != null) {
-            LOGGER.trace("Created GeogigFeatureReader with screenMap, assuming it's renderer query");
+            LOGGER.trace(
+                    "Created GeogigFeatureReader with screenMap, assuming it's renderer query");
             this.screenMapFilter = new ScreenMapFilter(screenMap);
             diffOp.setCustomFilter(screenMapFilter);
         } else {
@@ -224,8 +227,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
                 if (e.isDelete()) {
                     return e.getOldObject();
                 }
-                return ChangeType.CHANGED_OLD.equals(diffType) ? e.getOldObject() : e
-                        .getNewObject();
+                return ChangeType.CHANGED_OLD.equals(diffType) ? e.getOldObject()
+                        : e.getNewObject();
             }
         });
     }
@@ -234,8 +237,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         List<String> pathFilters;
         if (filter instanceof Id) {
             final Set<Identifier> identifiers = ((Id) filter).getIdentifiers();
-            Iterator<FeatureId> featureIds = filter(
-                    filter(identifiers.iterator(), FeatureId.class), notNull());
+            Iterator<FeatureId> featureIds = filter(filter(identifiers.iterator(), FeatureId.class),
+                    notNull());
             Preconditions.checkArgument(featureIds.hasNext(), "Empty Id filter");
             pathFilters = new ArrayList<>();
             while (featureIds.hasNext()) {
@@ -358,7 +361,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
                 fidIndex.put(ref.getObjectId(), ref.name());
             }
             Iterable<ObjectId> ids = fidIndex.keySet();
-            Iterator<RevObject> all = source.getAll(ids);
+            Iterator<RevFeature> all = source.getAll(ids, NOOP_LISTENER, RevFeature.class);
 
             AsFeature asFeature = new AsFeature(featureBuilder, fidIndex);
             Iterator<SimpleFeature> features = Iterators.transform(all, asFeature);
@@ -409,8 +412,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         }
         ReferencedEnvelope queryBounds = new ReferencedEnvelope(crs);
         @SuppressWarnings("unchecked")
-        List<ReferencedEnvelope> bounds = (List<ReferencedEnvelope>) filterInNativeCrs.accept(
-                new ExtractBounds(crs), null);
+        List<ReferencedEnvelope> bounds = (List<ReferencedEnvelope>) filterInNativeCrs
+                .accept(new ExtractBounds(crs), null);
         if (bounds != null && !bounds.isEmpty()) {
             expandToInclude(queryBounds, bounds);
 
@@ -444,7 +447,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature> implements F
         if (hasSpatialFilter(filter)) {
             CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
             if (crs == null) {
-                LOGGER.trace("Not reprojecting filter to native CRS because feature type does not declare a CRS");
+                LOGGER.trace(
+                        "Not reprojecting filter to native CRS because feature type does not declare a CRS");
 
             } else {
 

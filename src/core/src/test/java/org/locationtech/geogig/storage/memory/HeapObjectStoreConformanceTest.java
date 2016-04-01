@@ -18,9 +18,9 @@ public class HeapObjectStoreConformanceTest extends ObjectStoreConformanceTest {
 
     @Override
     protected ObjectStore createOpen(Platform platform, Hints hints) {
-        HeapObjectDatabse heapObjectDatabse = new HeapObjectDatabse(platform, hints);
-        heapObjectDatabse.open();
-        return heapObjectDatabse;
+        HeapObjectDatabase heapObjectDatabase = new HeapObjectDatabase(platform, hints);
+        heapObjectDatabase.open();
+        return heapObjectDatabase;
     }
 
 }

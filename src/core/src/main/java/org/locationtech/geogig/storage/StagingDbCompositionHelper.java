@@ -10,6 +10,7 @@
 package org.locationtech.geogig.storage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -17,7 +18,6 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject;
 
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 public class StagingDbCompositionHelper {
@@ -41,7 +41,7 @@ public class StagingDbCompositionHelper {
 
         Iterator<RevObject> compositeIterator = new AbstractIterator<RevObject>() {
 
-            Iterator<RevObject> forwardedToObjectDb = Iterators.emptyIterator();
+            Iterator<RevObject> forwardedToObjectDb = Collections.emptyIterator();
 
             @Override
             protected RevObject computeNext() {

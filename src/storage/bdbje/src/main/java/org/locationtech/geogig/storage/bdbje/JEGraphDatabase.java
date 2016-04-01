@@ -508,8 +508,16 @@ abstract class JEGraphDatabase extends SynchronizedGraphDatabase {
 
         @Override
         public void truncate() {
-            // TODO Auto-generated method stub
-
+            try {
+                final Environment env = this.env;
+                graphDb.close();
+                env.truncateDatabase(null, databaseName, false);
+                this.env = null;
+                this.graphDb = null;
+                open();
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
         }
     }
 }

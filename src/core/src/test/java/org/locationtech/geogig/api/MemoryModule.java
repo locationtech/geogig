@@ -13,14 +13,14 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.memory.HeapGraphDatabase;
-import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
+import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapRefDatabase;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 
 /**
- * @see HeapObjectDatabse
+ * @see HeapObjectDatabase
  * @see HeapRefDatabase
  * @see HeapGraphDatabase
  */
@@ -40,7 +40,7 @@ public class MemoryModule extends AbstractModule {
         if (testPlatform != null) {
             bind(Platform.class).toInstance(testPlatform);
         }
-        bind(ObjectDatabase.class).to(HeapObjectDatabse.class).in(Scopes.SINGLETON);
+        bind(ObjectDatabase.class).to(HeapObjectDatabase.class).in(Scopes.SINGLETON);
         bind(RefDatabase.class).to(HeapRefDatabase.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).to(HeapGraphDatabase.class).in(Scopes.SINGLETON);
     }

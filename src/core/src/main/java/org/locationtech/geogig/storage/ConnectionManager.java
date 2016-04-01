@@ -35,6 +35,12 @@ public abstract class ConnectionManager<A, C> {
         public PoolEntry(C connection) {
             this.connection = connection;
         }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[clients:" + clients + ", connection: "
+                    + connection + "]";
+        }
     }
 
     private Map<A, PoolEntry<C>> pool = new ConcurrentHashMap<>();

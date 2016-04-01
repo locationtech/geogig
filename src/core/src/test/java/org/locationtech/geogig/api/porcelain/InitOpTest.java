@@ -46,7 +46,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
+import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -116,7 +116,7 @@ public class InitOpTest {
         init.setContext(injector);
 
         mockRepo = mock(Repository.class);
-        objectDatabase = new HeapObjectDatabse();
+        objectDatabase = new HeapObjectDatabase();
         when(mockRepo.objectDatabase()).thenReturn(objectDatabase);
 
         Mockito.doAnswer(new Answer<Void>() {

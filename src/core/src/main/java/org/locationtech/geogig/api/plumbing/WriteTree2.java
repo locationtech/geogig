@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.api.plumbing;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -446,7 +447,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         final Supplier<Iterator<NodeRef>> leftTreeRefs;
         final Supplier<Iterator<NodeRef>> rightTreeRefs;
         if (rootTreeId.isNull()) {
-            Iterator<NodeRef> empty = Iterators.emptyIterator();
+            Iterator<NodeRef> empty = Collections.emptyIterator();
             leftTreeRefs = Suppliers.ofInstance(empty);
         } else {
             leftTreeRefs = command(LsTreeOp.class).setReference(rootTreeId.toString()).setStrategy(

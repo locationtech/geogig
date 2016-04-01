@@ -11,6 +11,7 @@ package org.locationtech.geogig.api.plumbing;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,7 +47,6 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 /**
@@ -194,7 +194,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         final RevTree newTree = resolveTree(newRefSpec, this.newTreeId, rightSource);
 
         if (oldTree.equals(newTree)) {
-            return Iterators.emptyIterator();
+            return Collections.emptyIterator();
         }
 
         final PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource,

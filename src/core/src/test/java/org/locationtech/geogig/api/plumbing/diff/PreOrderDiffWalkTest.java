@@ -47,7 +47,7 @@ import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.MaxFeatureDiff
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
+import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.mockito.ArgumentCaptor;
 
 import com.google.common.base.Stopwatch;
@@ -63,8 +63,8 @@ public class PreOrderDiffWalkTest {
 
     @Before
     public void beforeTest() {
-        leftSource = new HeapObjectDatabse();
-        rightSource = new HeapObjectDatabse();
+        leftSource = new HeapObjectDatabase();
+        rightSource = new HeapObjectDatabase();
 
         leftSource.open();
         rightSource.open();

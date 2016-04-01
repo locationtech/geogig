@@ -12,6 +12,7 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class FormatPatch extends AbstractCommand implements CLICommand {
     @Parameter(description = "[<commit> [<commit>]] [-- <path>...]", arity = 2)
     private List<String> refSpec = Lists.newArrayList();
 
-    @Parameter(names = {"--path", "-p"}, hidden = true, variableArity = true)
+    @Parameter(names = { "--path", "-p" }, hidden = true, variableArity = true)
     private List<String> paths = Lists.newArrayList();
 
     @Parameter(names = { "-f", "--file" }, description = "The patch file")
@@ -76,7 +77,7 @@ public class FormatPatch extends AbstractCommand implements CLICommand {
         if (paths.isEmpty()) {
             entries = diff.setProgressListener(cli.getProgressListener()).call();
         } else {
-            entries = Iterators.emptyIterator();
+            entries = Collections.emptyIterator();
             for (String path : paths) {
                 Iterator<DiffEntry> moreEntries = diff.setFilter(path)
                         .setProgressListener(cli.getProgressListener()).call();

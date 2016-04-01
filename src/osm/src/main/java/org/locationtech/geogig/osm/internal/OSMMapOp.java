@@ -11,6 +11,7 @@ package org.locationtech.geogig.osm.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -96,13 +97,13 @@ public class OSMMapOp extends AbstractGeoGigOp<RevTree> {
         if (mapping.canUseNodes()) {
             nodes = getFeatures("WORK_HEAD:node");
         } else {
-            nodes = Iterators.emptyIterator();
+            nodes = Collections.emptyIterator();
         }
         Iterator<Feature> ways;
         if (mapping.canUseWays()) {
             ways = getFeatures("WORK_HEAD:way");
         } else {
-            ways = Iterators.emptyIterator();
+            ways = Collections.emptyIterator();
         }
         Iterator<Feature> iterator = Iterators.concat(nodes, ways);
 
@@ -138,7 +139,7 @@ public class OSMMapOp extends AbstractGeoGigOp<RevTree> {
     private Iterator<Feature> getFeatures(String ref) {
         Optional<ObjectId> id = command(RevParse.class).setRefSpec(ref).call();
         if (!id.isPresent()) {
-            return Iterators.emptyIterator();
+            return Collections.emptyIterator();
         }
         LsTreeOp op = command(LsTreeOp.class).setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES)
                 .setReference(ref);
@@ -148,11 +149,11 @@ public class OSMMapOp extends AbstractGeoGigOp<RevTree> {
         Function<NodeRef, Feature> nodeRefToFeature = new Function<NodeRef, Feature>() {
 
             private final Map<String, FeatureBuilder> builders = //
-            ImmutableMap.<String, FeatureBuilder> of(//
-                    OSMUtils.NODE_TYPE_NAME, //
-                    new FeatureBuilder(RevFeatureTypeImpl.build(OSMUtils.nodeType())), //
-                    OSMUtils.WAY_TYPE_NAME,//
-                    new FeatureBuilder(RevFeatureTypeImpl.build(OSMUtils.wayType())));
+                    ImmutableMap.<String, FeatureBuilder> of(//
+                            OSMUtils.NODE_TYPE_NAME, //
+                            new FeatureBuilder(RevFeatureTypeImpl.build(OSMUtils.nodeType())), //
+                            OSMUtils.WAY_TYPE_NAME, //
+                            new FeatureBuilder(RevFeatureTypeImpl.build(OSMUtils.wayType())));
 
             private final RevObjectParse parseCommand = command(RevObjectParse.class);
 

@@ -267,7 +267,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             // the diff against each parent is not working. For some reason some buckets that are
             // equal between the two ends of the comparison never get transferred (at some point
             // they shouldn't be equal and so the Consumer notified of it/them). Yet with the target
-            // databse exists check for each tree the performance is good enough.
+            // database exists check for each tree the performance is good enough.
             // for (ObjectId parentId : parentIds) {
             // if (!parentId.isNull()) {
             // RevCommit parent = fromDb.getCommit(parentId);
@@ -276,7 +276,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             copyNewObjects(oldTree, newTree, fromDb, toDb, progress);
             // }
             Preconditions.checkState(toDb.exists(newTree.getId()),
-                    "tree %s wasn't copied to the target databse", newTree.getId());
+                    "tree %s wasn't copied to the target database", newTree.getId());
 
             toDb.put(commit);
         }

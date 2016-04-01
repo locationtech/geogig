@@ -50,7 +50,7 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     public boolean isOpen() {
         return subject.get().isOpen();
     }
-    
+
     @Override
     public boolean isReadOnly() {
         return subject.get().isReadOnly();
@@ -149,6 +149,12 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     }
 
     @Override
+    public <T extends RevObject> Iterator<T> getAll(Iterable<ObjectId> ids, BulkOpListener listener,
+            Class<T> type) {
+        return subject.get().getAll(ids, listener, type);
+    }
+
+    @Override
     public void putAll(Iterator<? extends RevObject> objects) {
         subject.get().putAll(objects);
     }
@@ -177,4 +183,5 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     public BlobStore getBlobStore() {
         return subject.get().getBlobStore();
     }
+
 }

@@ -12,7 +12,7 @@ In all cases, communication with the GeoGig community and team is crucial, so ma
 
 Discussion takes place on our `GeoGig-devel mailing list <https://locationtech.org/mailman/listinfo/geogig-dev>`_. Please join and introduce yourself, we'd love to help, and to figure out ways for you to get involved.
 
-There is also a GeoGig IRC channel on `freenode <http://freenode.net/>`_ (`#geogig <irc://irc.freenode.net/geogig>`_). GeoGig developers can usually be found there.
+There is also a GeoGig devel discussion channel on `gitter <https://gitter.im/locationtech/geogig>`_. GeoGig developers can usually be found there.
 
 You can (and should) use the above for all GeoGig-related subjects, so other people are aware of your work with GeoGig and can help you and eventually handle your contributions to the project efficiently.
 

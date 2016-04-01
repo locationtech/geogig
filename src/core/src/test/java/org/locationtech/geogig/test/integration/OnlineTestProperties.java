@@ -94,6 +94,8 @@ public class OnlineTestProperties {
 
             if (int.class.equals(c) || Integer.class.equals(c)) {
                 return Optional.of((T) Integer.valueOf(value));
+            } else if (Boolean.class.equals(c)) {
+                return Optional.of((T) Boolean.valueOf(value));
             } else {
                 return Optional.of(c.cast(value));
             }

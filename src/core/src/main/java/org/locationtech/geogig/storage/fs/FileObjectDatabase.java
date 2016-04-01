@@ -319,4 +319,10 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
     public BlobStore getBlobStore() {
         return blobStore;
     }
+
+    @Override
+    public <T extends RevObject> Iterator<T> getAll(Iterable<ObjectId> ids, BulkOpListener listener,
+            Class<T> type) {
+        throw new UnsupportedOperationException();
+    }
 }

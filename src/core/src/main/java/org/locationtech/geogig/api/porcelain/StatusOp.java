@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -26,7 +27,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 
 @CanRunDuringConflict
 public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
@@ -37,7 +37,7 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
 
         private static final Supplier<Iterable<Conflict>> no_conflicts;
         static {
-            Iterator<DiffEntry> e = Iterators.<DiffEntry> emptyIterator();
+            Iterator<DiffEntry> e = Collections.emptyIterator();
             empty = Suppliers.ofInstance(e);
             Iterable<Conflict> c = ImmutableList.of();
             no_conflicts = Suppliers.ofInstance(c);
@@ -98,8 +98,8 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
                 summary.staged = command(DiffIndex.class).setMaxDiffs(limit).setReportTrees(true);
             }
             if (summary.countUnstaged > 0) {
-                summary.unstaged = command(DiffWorkTree.class).setMaxDiffs(limit).setReportTrees(
-                        true);
+                summary.unstaged = command(DiffWorkTree.class).setMaxDiffs(limit)
+                        .setReportTrees(true);
             }
             if (summary.countConflicted > 0) {
                 summary.conflicts = command(ConflictsReadOp.class);

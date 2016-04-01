@@ -37,7 +37,6 @@ import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
@@ -120,7 +119,7 @@ public class MutableTree implements Cloneable {
 
     public static MutableTree createFromRefs(final ObjectId rootId,
             @Nullable final NodeRef... treeRefs) {
-        Iterator<NodeRef> refs = Iterators.emptyIterator();
+        Iterator<NodeRef> refs = Collections.emptyIterator();
         if (treeRefs != null) {
             refs = Lists.newArrayList(treeRefs).iterator();
         }

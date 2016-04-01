@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -31,12 +32,15 @@ import org.locationtech.geogig.storage.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
+import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.inject.Provider;
 import com.google.inject.util.Providers;
@@ -137,7 +141,13 @@ class ObjectDatabaseCacheInterceptor {
 
         @Override
         public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, BulkOpListener listener) {
-            return cache.getAll(ids, listener, super.subject.get());
+            return getAll(ids, listener, RevObject.class);
+        }
+
+        @Override
+        public <T extends RevObject> Iterator<T> getAll(final Iterable<ObjectId> ids,
+                BulkOpListener listener, Class<T> type) {
+            return cache.getAll(ids, listener, type, super.subject.get());
         }
 
         @Override
@@ -185,8 +195,7 @@ class ObjectDatabaseCacheInterceptor {
         }
 
         @Nullable
-        public RevObject getIfPresent(ObjectId id, ObjectStore db)
-                throws IllegalArgumentException {
+        public RevObject getIfPresent(ObjectId id, ObjectStore db) throws IllegalArgumentException {
             final Cache<ObjectId, RevObject> cache = cacheProvider.get().get();
             RevObject obj = cache.getIfPresent(id);
             if (obj == null) {
@@ -219,40 +228,46 @@ class ObjectDatabaseCacheInterceptor {
             return type.cast(object);
         }
 
-        public Iterator<RevObject> getAll(final Iterable<ObjectId> ids,
-                final BulkOpListener listener, final ObjectStore db) {
+        public <T extends RevObject> Iterator<T> getAll(final Iterable<ObjectId> ids,
+                final BulkOpListener listener, final Class<T> type, final ObjectStore db) {
 
             final int partitionSize = 10_000;
             Iterable<List<ObjectId>> partition = Iterables.partition(ids, partitionSize);
 
             final Cache<ObjectId, RevObject> cache = cacheProvider.get().get();
 
-            List<Iterator<RevObject>> iterators = new LinkedList<>();
+            List<Iterator<T>> iterators = new LinkedList<>();
 
-            final Set<ObjectId> miss = new HashSet<>();
-            ImmutableMap<ObjectId, RevObject> present;
+            final Set<ObjectId> missing = new HashSet<>();
 
             for (List<ObjectId> p : partition) {
-                Set<ObjectId> set = new HashSet<>(p);
-                present = cache.getAllPresent(set);
-                if (!present.isEmpty()) {
-                    for (ObjectId id : present.keySet()) {
-                        listener.found(id, null);
-                        set.remove(id);
-                    }
-                    iterators.add(present.values().iterator());
-                }
-                miss.addAll(set);
-            }
-            if (!miss.isEmpty()) {
-                Iterator<RevObject> iterator = new AbstractIterator<RevObject>() {
+                final ImmutableSet<ObjectId> partitionIds = ImmutableSet.copyOf(p);
+                Map<ObjectId, RevObject> present = Maps.filterValues(
+                        cache.getAllPresent(partitionIds),
+                        (o) -> type.isAssignableFrom(o.getClass()));
 
-                    private Iterator<RevObject> delegate = db.getAll(miss, listener);
+                if (present.isEmpty()) {
+                    missing.addAll(partitionIds);
+                } else {
+                    missing.addAll(Sets.difference(partitionIds, present.keySet()));
+                    Function<RevObject, T> function = (o) -> {
+                        listener.found(o.getId(), null);
+                        return type.cast(o);
+                    };
+                    Iterator<T> notifyingIterator = Iterators.transform(present.values().iterator(),
+                            function);
+                    iterators.add(notifyingIterator);
+                }
+            }
+            if (!missing.isEmpty()) {
+                Iterator<T> iterator = new AbstractIterator<T>() {
+
+                    private Iterator<T> delegate = db.getAll(missing, listener, type);
 
                     @Override
-                    protected RevObject computeNext() {
+                    protected T computeNext() {
                         if (delegate.hasNext()) {
-                            RevObject next = delegate.next();
+                            T next = delegate.next();
                             if (isCacheable(next, cacheFeatures)) {
                                 cache.put(next.getId(), next);
                             }

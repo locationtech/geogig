@@ -174,16 +174,24 @@ public class HeapObjectStore extends AbstractObjectStore {
 
     @Override
     public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final BulkOpListener listener) {
+        return getAll(ids, listener, RevObject.class);
+    }
+
+    @Override
+    public <T extends RevObject> Iterator<T> getAll(Iterable<ObjectId> ids, BulkOpListener listener,
+            Class<T> type) {
         checkNotNull(ids, "ids is null");
         checkNotNull(listener, "listener is null");
+        checkNotNull(type, "type is null");
         checkState(isOpen(), "db is closed");
 
-        final Iterator<ObjectId> iterator = Lists.newArrayList(ids).iterator();
-        return new AbstractIterator<RevObject>() {
+        return new AbstractIterator<T>() {
+
+            final Iterator<ObjectId> iterator = Lists.newArrayList(ids).iterator();
 
             @Override
-            protected RevObject computeNext() {
-                RevObject found = null;
+            protected T computeNext() {
+                T found = null;
                 ObjectId id;
                 byte[] raw;
                 while (iterator.hasNext() && found == null) {
@@ -191,16 +199,22 @@ public class HeapObjectStore extends AbstractObjectStore {
                     raw = objects.get(id);
                     if (raw != null) {
                         try {
-                            found = serializer.read(id, new LZFInputStream(
-                                    new ByteArrayInputStream(raw)));
+                            RevObject obj = serializer.read(id,
+                                    new LZFInputStream(new ByteArrayInputStream(raw)));
+                            found = type.isAssignableFrom(obj.getClass()) ? type.cast(obj) : null;
                         } catch (IOException e) {
                             throw Throwables.propagate(e);
                         }
-                        listener.found(found.getId(), raw.length);
+                        if (found == null) {
+                            listener.notFound(id);
+                        } else {
+                            listener.found(found.getId(), raw.length);
+                        }
                     } else {
                         listener.notFound(id);
                     }
                 }
+
                 return found == null ? endOfData() : found;
             }
         };
@@ -210,4 +224,5 @@ public class HeapObjectStore extends AbstractObjectStore {
     public String toString() {
         return getClass().getSimpleName();
     }
+
 }

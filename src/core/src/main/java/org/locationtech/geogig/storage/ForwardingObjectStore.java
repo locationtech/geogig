@@ -142,6 +142,12 @@ public class ForwardingObjectStore implements ObjectStore {
     }
 
     @Override
+    public <T extends RevObject> Iterator<T> getAll(Iterable<ObjectId> ids, BulkOpListener listener,
+            Class<T> type) {
+        return subject.get().getAll(ids, listener, type);
+    }
+
+    @Override
     public void putAll(Iterator<? extends RevObject> objects) {
         checkWritable();
         subject.get().putAll(objects);

@@ -28,9 +28,9 @@ import org.restlet.data.MediaType;
  * {@code org.locationtech.geogig.rest.postgis.RevTreeRepresentation$Factory}
  *
  */
-public class RevTreeRepresentation extends AsyncCommandRepresentation<RevTree> {
+public class ImportRepresentation extends AsyncCommandRepresentation<RevTree> {
 
-    public RevTreeRepresentation(MediaType mediaType, AsyncCommand<RevTree> cmd,
+    public ImportRepresentation(MediaType mediaType, AsyncCommand<RevTree> cmd,
             String baseURL) {
         super(mediaType, cmd, baseURL);
     }
@@ -56,7 +56,7 @@ public class RevTreeRepresentation extends AsyncCommandRepresentation<RevTree> {
         public AsyncCommandRepresentation<RevTree> newRepresentation(AsyncCommand<RevTree> cmd,
                 MediaType mediaType, String baseURL) {
 
-            return new RevTreeRepresentation(mediaType, cmd, baseURL);
+            return new ImportRepresentation(mediaType, cmd, baseURL);
         }
 
     }

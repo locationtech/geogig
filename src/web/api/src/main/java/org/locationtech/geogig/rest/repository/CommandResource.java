@@ -64,12 +64,16 @@ public class CommandResource extends Resource {
         variants.add(JSON);
         variants.add(CSV);
 
-        final String commandName = (String) getRequest().getAttributes().get("command");
+        final String commandName = getCommandName();
 
         options = getRequest().getResourceRef().getQueryAsForm();
-        ParameterSet params = new FormParams(options);
+        ParameterSet params = buildParameterSet(options);
         command = CommandBuilder.build(commandName, params);
         assert command != null;
+    }
+
+    protected String getCommandName() {
+        return (String) getRequest().getAttributes().get("command");
     }
 
     @Override
@@ -141,6 +145,7 @@ public class CommandResource extends Resource {
 
     /**
      * Handles GET requests, called by {@link #handleGet()}
+     * @return a Representation of this CommandResource request.
      */
     @Override
     public Representation getRepresentation(Variant variant) {
@@ -149,30 +154,22 @@ public class CommandResource extends Resource {
         return representation;
     }
 
-    private Representation runCommand(Variant variant, Request request) {
+    protected ParameterSet buildParameterSet(final Form options) {
+        return new FormParams(options);
+    }
+
+    protected Representation runCommand(Variant variant, Request request) {
 
         final Optional<GeoGIG> geogig = getGeogig(request);
         Preconditions.checkState(geogig.isPresent());
 
-        Representation rep = null;
-        // WebAPICommand command = null;
-        // String commandName = (String) getRequest().getAttributes().get("command");
+        Representation rep;
         MediaType format = resolveFormat(options, variant);
-        // try {
-        // ParameterSet params = new FormParams(options);
-        // command = CommandBuilder.build(commandName, params);
-        // assert command != null;
-        // } catch (CommandSpecException ex) {
-        // getResponse().setStatus(ex.getStatus());
-        // rep = formatException(ex, format);
-        // }
         try {
-            // if (command != null) {
             RestletContext ctx = new RestletContext(geogig.get(), request);
             command.run(ctx);
             rep = ctx.getRepresentation(format, getJSONPCallback());
             getResponse().setStatus(command.getStatus());
-            // }
         } catch (CommandSpecException ex) {
             rep = formatException(ex, format);
             getResponse().setStatus(ex.getStatus());
@@ -228,7 +225,7 @@ public class CommandResource extends Resource {
         return form.getFirstValue("callback", null);
     }
 
-    private MediaType resolveFormat(Form options, Variant variant) {
+    protected MediaType resolveFormat(Form options, Variant variant) {
         MediaType retval = variant.getMediaType();
         String requested = options.getFirstValue("output_format");
         if (requested != null) {
@@ -254,7 +251,7 @@ public class CommandResource extends Resource {
 
         final GeoGIG geogig;
 
-        private Request request;
+        private final Request request;
 
         private Function<MediaType, Representation> representation;
 

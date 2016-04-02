@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.locationtech.geogig.rest.geotools.ExportWebOp;
+import org.locationtech.geogig.rest.geotools.ImportWebOp;
 import org.locationtech.geogig.web.api.commands.AddWebOp;
 import org.locationtech.geogig.web.api.commands.BeginTransaction;
 import org.locationtech.geogig.web.api.commands.BlameWebOp;
@@ -53,7 +54,8 @@ import org.locationtech.geogig.web.api.commands.VersionWebOp;
  */
 public class CommandBuilder {
 
-    private static Map<String, Function<ParameterSet, WebAPICommand>> MAPPINGS = new HashMap<>();
+    private final static Map<String, Function<ParameterSet, WebAPICommand>> MAPPINGS =
+            new HashMap<>(30);
     static {
         MAPPINGS.put("init", InitWebOp::new);
         MAPPINGS.put("delete", RequestDeleteRepositoryToken::new);
@@ -88,6 +90,7 @@ public class CommandBuilder {
         MAPPINGS.put("cat", CatWebOp::new);
         MAPPINGS.put("statistics", StatisticsWebOp::new);
         MAPPINGS.put("export", ExportWebOp::new);
+        MAPPINGS.put("import", ImportWebOp::new);
     }
 
     /**

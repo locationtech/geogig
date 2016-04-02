@@ -39,6 +39,11 @@
       <artifactId>jettison</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.restlet</groupId>
+      <artifactId>org.restlet.ext.fileupload</artifactId>
+      <version>${restlet.version}</version>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -53,13 +58,6 @@
     <dependency>
         <groupId>org.locationtech.geogig</groupId>
         <artifactId>geogig-cli</artifactId>
-        <version>${project.version}</version>
-        <classifier>tests</classifier>
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.locationtech.geogig</groupId>
-        <artifactId>geogig-core</artifactId>
         <version>${project.version}</version>
         <classifier>tests</classifier>
         <scope>test</scope>

@@ -120,8 +120,10 @@ public class GeoPackageTestSupport {
             gpkg.createSchema(source.getSchema());
             SimpleFeatureStore store;
             store = (SimpleFeatureStore) gpkg.getFeatureSource(source.getName().getLocalPart());
+            Preconditions.checkState(store.getQueryCapabilities().isUseProvidedFIDSupported());
             store.setTransaction(gttx);
             SimpleFeatureCollection features = source.getFeatures();
+            
             store.addFeatures(features);
             gttx.commit();
         } finally {

@@ -50,12 +50,15 @@ import org.xmlunit.matchers.HasXPathMatcher;
 import org.xmlunit.xpath.JAXPXPathEngine;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
+import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -99,6 +102,43 @@ public class WebAPICucumberHooks {
         String urlSpec = "/" + name + "/init";
         Response response = context.callDontSaveResponse(Method.PUT, urlSpec);
         assertStatusCode(response, Status.SUCCESS_CREATED.getCode());
+    }
+
+    /**
+     * Checks that the repository named {@code repositoryName}, at it's commit {@code headRef}, has
+     * the expected features as given by the {@code expectedFeatures} {@link DataTable}.
+     * <p>
+     * The {@code DataTable} top cells represent feature tree paths, and their cells beneath each
+     * feature tree path, the feature ids expected for each layer.
+     * <p>
+     * Example:
+     * 
+     * <pre>
+     * <code>
+     *     |  Points   |  Lines   |  Polygons   | 
+     *     |  Points.1 |  Lines.1 |  Polygons.1 | 
+     *     |  Points.2 |  Lines.2 |  Polygons.2 | 
+     *</code>
+     * </pre>
+     * 
+     * @param repositoryName
+     * @param headRef
+     * @param expectedFeatures
+     * @throws Throwable
+     */
+    @Then("^the ([^\"]*) repository's ([^\"]*) should have the following features:$")
+    public void verifyRepositoryContents(String repositoryName, String headRef,
+            DataTable expectedFeatures) throws Throwable {
+
+        SetMultimap<String, String> expected = HashMultimap.create();
+        {
+            List<Map<String, String>> asMaps = expectedFeatures.asMaps(String.class, String.class);
+            asMaps.forEach((m) -> m.forEach((k, v) -> expected.put(k, v)));
+        }
+
+        SetMultimap<String, String> actual = context.listRepo(repositoryName, headRef);
+
+        assertEquals(expected, actual);
     }
 
     /**

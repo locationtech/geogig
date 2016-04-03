@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.junit.rules.ExternalResource;
@@ -20,6 +21,9 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.GlobalContextBuilder;
+import org.locationtech.geogig.api.NodeRef;
+import org.locationtech.geogig.api.plumbing.LsTreeOp;
+import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.repository.Hints;
@@ -38,6 +42,8 @@ import org.w3c.dom.Document;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 
 public class FunctionalTestContext extends ExternalResource {
 
@@ -85,6 +91,23 @@ public class FunctionalTestContext extends ExternalResource {
 
     public File getTempFolder() {
         return tempFolder.getRoot();
+    }
+
+    public GeoGIG getRepo(String name) {
+        return repoProvider.getGeogig(name);
+    }
+
+    public SetMultimap<String, String> listRepo(final String repoName, final String headRef) {
+        GeoGIG repo = getRepo(repoName);
+        Iterator<NodeRef> featureRefs = repo.command(LsTreeOp.class).setReference(headRef)
+                .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
+
+        SetMultimap<String, String> features = HashMultimap.create();
+        while (featureRefs.hasNext()) {
+            NodeRef ref = featureRefs.next();
+            features.put(ref.getParentPath(), ref.name());
+        }
+        return features;
     }
 
     public void setUpDefaultMultiRepoServer() throws Exception {

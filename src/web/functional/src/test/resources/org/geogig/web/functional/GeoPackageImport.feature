@@ -52,5 +52,10 @@ Feature: Import GeoPackage
      Then the task @taskId status is FINISHED
       And the xml response should contain "/task/result/RevCommit/id"
       And the xml response should contain "/task/result/RevCommit/treeId"
+      And the targetRepo repository's HEAD should have the following features:
+          | Points | Lines | Polygons | 
+          |    1   |   1   |    1     | 
+          |    2   |   2   |    2     | 
+          |    3   |   3   |    3     | 
 
 #<task><id>1</id><status>FINISHED</status><transactionId>c4da5a9b-5b09-4cb6-9055-e340d02b57ac</transactionId><description>Importing GeoPackage database file.</description><atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="/tasks/1.xml" type="application/xml"/><result><RevCommit><id>a1cde458d0658e096998b740b2eaa7b10796e624</id><treeId>37987a1d4afbf60be906d55576392965654d5d9c</treeId></RevCommit></result></task>

@@ -42,6 +42,7 @@ import org.restlet.data.Response;
 import org.restlet.data.Status;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xmlunit.matchers.CompareMatcher;
 import org.xmlunit.matchers.EvaluateXPathMatcher;
 import org.xmlunit.matchers.HasXPathMatcher;
 import org.xmlunit.xpath.JAXPXPathEngine;
@@ -52,7 +53,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -190,6 +190,14 @@ public class WebAPICucumberHooks {
 
     private void assertXpathPresent(final String xpathExpression, final String xml) {
         assertThat(xml, HasXPathMatcher.hasXPath(xpathExpression).withNamespaceContext(NSCONTEXT));
+    }
+
+    @Then("^the response xml matches$")
+    public void checkXmlResponseMatches(final String domString) throws Throwable {
+
+        final String xml = context.getLastResponseText();
+        assertThat(xml, CompareMatcher.isIdenticalTo(domString).ignoreComments().ignoreWhitespace()
+                .withNamespaceContext(NSCONTEXT));
     }
 
     /**
@@ -383,4 +391,5 @@ public class WebAPICucumberHooks {
             gpkg.close();
         }
     }
+
 }

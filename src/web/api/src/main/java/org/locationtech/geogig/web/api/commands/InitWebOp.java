@@ -40,7 +40,7 @@ public class InitWebOp extends AbstractWebAPICommand {
     public InitWebOp(ParameterSet options) {
         super(options);
     }
-    
+
     @Override
     public boolean supports(final Method method) {
         return Method.PUT.equals(method);
@@ -91,6 +91,7 @@ public class InitWebOp extends AbstractWebAPICommand {
                     out.finish();
                 }
             });
+            setStatus(Status.SUCCESS_CREATED);
         } catch (RepositoryConnectionException e) {
             throw new CommandSpecException(
                     "Repository was created, but was unable to connect to it immediately.");

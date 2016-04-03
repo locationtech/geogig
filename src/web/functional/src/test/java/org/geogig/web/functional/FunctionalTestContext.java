@@ -33,6 +33,7 @@ import org.restlet.data.Method;
 import org.restlet.data.Reference;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.resource.Representation;
 import org.w3c.dom.Document;
 
 import com.google.common.base.Preconditions;
@@ -82,6 +83,10 @@ public class FunctionalTestContext extends ExternalResource {
         }
     }
 
+    public File getTempFolder() {
+        return tempFolder.getRoot();
+    }
+
     public void setUpDefaultMultiRepoServer() throws Exception {
         createRepo("repo1")//
                 .init("geogigUser", "repo1_Owner@geogig.org")//
@@ -116,9 +121,28 @@ public class FunctionalTestContext extends ExternalResource {
         return callInternal(method, resourceUri);
     }
 
+    public Response postFile(final String url, final String formFieldName, final File file)
+            throws IOException {
+
+        String resourceUri = replaceVariables(url);
+
+        Representation webForm = new MultiPartFileRepresentation(file, formFieldName);
+        //
+        // FileRepresentation fileEntity = new FileRepresentation(file,
+        // MediaType.MULTIPART_FORM_DATA,
+        // 30);
+        //
+        Request request = new Request(Method.POST, resourceUri, webForm);
+        request.setRootRef(new Reference(""));
+
+        Response response = app.handle(request);
+        this.lastResponse = response;
+        return response;
+    }
+
     private Response callInternal(final Method method, String resourceUri) {
 
-        resourceUri = replaceVariables(resourceUri, this.variables);
+        resourceUri = replaceVariables(resourceUri);
 
         Request request = new Request(method, resourceUri);
         request.setRootRef(new Reference(""));
@@ -168,7 +192,7 @@ public class FunctionalTestContext extends ExternalResource {
     }
 
     public Response getLastResponse() {
-        Preconditions.checkState(lastResponse != null);
+        Preconditions.checkState(lastResponse != null, "there is no last reponse");
         return lastResponse;
     }
 

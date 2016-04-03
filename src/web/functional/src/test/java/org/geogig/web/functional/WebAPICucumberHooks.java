@@ -11,6 +11,7 @@ package org.geogig.web.functional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -36,6 +37,7 @@ import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Variants;
+import org.locationtech.geogig.rest.geopkg.GeoPackageTestSupport;
 import org.mortbay.log.Log;
 import org.restlet.data.Method;
 import org.restlet.data.Response;
@@ -80,6 +82,8 @@ public class WebAPICucumberHooks {
         context.after();
     }
 
+    ///////////////// repository initialization steps ////////////////////
+
     @Given("^There is an empty multirepo server$")
     public void setUpEmptyMultiRepo() {
     }
@@ -88,6 +92,13 @@ public class WebAPICucumberHooks {
     public void setUpDefaultMultiRepo() throws Exception {
         setUpEmptyMultiRepo();
         context.setUpDefaultMultiRepoServer();
+    }
+
+    @Given("^There is an empty repository named ([^\"]*)$")
+    public void setUpEmptyRepo(String name) throws Throwable {
+        String urlSpec = "/" + name + "/init";
+        Response response = context.callDontSaveResponse(Method.PUT, urlSpec);
+        assertStatusCode(response, Status.SUCCESS_CREATED.getCode());
     }
 
     /**
@@ -145,6 +156,10 @@ public class WebAPICucumberHooks {
     @Then("^the response status should be '(\\d+)'$")
     public void checkStatusCode(final int statusCode) {
         Response response = context.getLastResponse();
+        assertStatusCode(response, statusCode);
+    }
+
+    private void assertStatusCode(Response response, final int statusCode) {
         Status status = response.getStatus();
         Status expected = Status.valueOf(statusCode);
         assertEquals(format("Expected status code %s, but got %s", expected, status), statusCode,
@@ -154,7 +169,7 @@ public class WebAPICucumberHooks {
     @Then("^the response ContentType should be \"([^\"]*)\"$")
     public void checkContentType(final String expectedContentType) {
         String actualContentType = context.getLastResponseContentType();
-        assertEquals(expectedContentType, actualContentType);
+        assertEquals(context.getLastResponseText(), expectedContentType, actualContentType);
     }
 
     /**
@@ -251,7 +266,7 @@ public class WebAPICucumberHooks {
     }
 
     private void assertXpathContains(final String xpath, final String substring, final String xml) {
-        assertThat(xml, EvaluateXPathMatcher.hasXPath(xpath, containsString(substring))
+        assertThat(xml, xml, EvaluateXPathMatcher.hasXPath(xpath, containsString(substring))
                 .withNamespaceContext(NSCONTEXT));
     }
 
@@ -370,10 +385,10 @@ public class WebAPICucumberHooks {
     ////////////////////// GeoPackage step definitions //////////////////////////
 
     @Then("^the result is a valid GeoPackage file$")
-    public void the_result_is_a_valid_GeoPackage_file() throws Throwable {
+    public void gpkg_CheckResponseIsGeoPackage() throws Throwable {
         checkContentType(Variants.GEOPKG_MEDIA_TYPE.getName());
 
-        File tmp = File.createTempFile("gpkg_functional_test", ".gpkg");
+        File tmp = File.createTempFile("gpkg_functional_test", ".gpkg", context.getTempFolder());
         tmp.deleteOnExit();
 
         try (InputStream stream = context.getLastResponse().getEntity().getStream()) {
@@ -390,6 +405,31 @@ public class WebAPICucumberHooks {
         } finally {
             gpkg.close();
         }
+    }
+
+    /**
+     * Creates a GPKG file with default test contents and saves it's path as variable
+     * {@code fileVariableName}
+     */
+    @Given("^I have a geopackage file (@[^\"]*)$")
+    public void gpkg_CreateSampleGeopackage(final String fileVariableName) throws Throwable {
+        GeoPackageTestSupport support = new GeoPackageTestSupport(context.getTempFolder());
+        File dbfile = support.createDefaultTestData();
+        context.setVariable(fileVariableName, dbfile.getAbsolutePath());
+    }
+
+    /**
+     * Sends a POST request with the file in the {@code fileVariableName} variable as the
+     * {@code formFieldName} form field to the {@code targetURI}
+     */
+    @When("^I post (@[^\"]*) as \"([^\"]*)\" to \"([^\"]*)\"$")
+    public void gpkg_UploadFile(String fileVariableName, String formFieldName, String targetURI)
+            throws Throwable {
+
+        File file = new File(context.getVariable(fileVariableName));
+        checkState(file.exists() && file.isFile());
+
+        context.postFile(targetURI, formFieldName, file);
     }
 
 }

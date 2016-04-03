@@ -39,7 +39,7 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
 
     @Override
     public String getCommandDescription() {
-        return "Importing Geopkg database file.";
+        return "Importing GeoPackage database file.";
     }
 
     @Override

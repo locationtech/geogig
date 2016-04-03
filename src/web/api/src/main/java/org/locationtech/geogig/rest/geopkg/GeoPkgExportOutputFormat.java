@@ -18,6 +18,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.geotools.data.DataStore;
+import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.geotools.geopkg.GeopkgDataStoreExportOp;
@@ -84,6 +85,12 @@ public class GeoPkgExportOutputFormat extends ExportWebOp.OutputFormat {
                 try {
                     targetFile = File.createTempFile("GeoGigGeoPkgExport", ".gpkg");
                     targetFile.deleteOnExit();
+                    GeoPackage gpkg = new GeoPackage(targetFile);
+                    try {
+                        gpkg.init();
+                    } finally {
+                        gpkg.close();
+                    }
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }

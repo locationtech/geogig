@@ -28,6 +28,6 @@ public class DataStoreImportContextServiceFactory {
             }
         }
         // didn't find an ImportContect for the specified format
-        throw new RuntimeException("No ImportContext builder for format \"" + format + "\"");
+        throw new IllegalArgumentException("Unsupported input format: '" + format + "'");
     }
 }

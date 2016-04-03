@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.rest.geopkg;
 
+import static com.google.common.base.Preconditions.*;
 import static org.locationtech.geogig.web.api.TestData.line1;
 import static org.locationtech.geogig.web.api.TestData.line2;
 import static org.locationtech.geogig.web.api.TestData.line3;
@@ -38,6 +39,7 @@ import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.locationtech.geogig.web.api.TestData;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -45,8 +47,20 @@ import com.google.common.collect.ImmutableList;
  */
 public class GeoPackageTestSupport {
 
+    private File tmpFolder;
+
+    public GeoPackageTestSupport() {
+        this(new File(System.getProperty("java.io.tmpdir")));
+    }
+
+    public GeoPackageTestSupport(final File tmpFolder) {
+        checkNotNull(tmpFolder);
+        checkArgument(tmpFolder.exists() && tmpFolder.isDirectory() && tmpFolder.canWrite());
+        this.tmpFolder = tmpFolder;
+    }
+
     private File newFile() throws IOException {
-        File dbFile = File.createTempFile("geogig_geopackage_test", ".gpkg");
+        File dbFile = File.createTempFile("geogig_geopackage_test", ".gpkg", tmpFolder);
         dbFile.deleteOnExit();
         return dbFile;
     }

@@ -32,6 +32,7 @@ import org.restlet.data.Method;
 import org.restlet.resource.Representation;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 /**
  * Command for Geotools imports through the WEB API.
@@ -171,11 +172,9 @@ public class ImportWebOp extends AbstractWebAPICommand {
 
     @Override
     public void runInternal(CommandContext context) {
-        String requestFormat = options.getFirstValue(FORMAT_KEY);
-        if (null == requestFormat) {
-            // no "format" parameter requested
-            throw new CommandSpecException("missing required \"format\" parameter");
-        }
+        final String requestFormat = options.getFirstValue(FORMAT_KEY);
+        Preconditions.checkArgument(requestFormat != null, "missing required 'format' parameter");
+
         // get the import context from the requested parameters
         DataStoreImportContextService ctxService = DataStoreImportContextServiceFactory
                 .getContextService(requestFormat);

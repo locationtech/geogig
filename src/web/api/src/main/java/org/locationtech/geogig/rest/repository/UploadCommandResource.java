@@ -38,9 +38,8 @@ import com.google.common.base.Preconditions;
  * This class overrides {@link CommandResource#buildParameterSet(org.restlet.data.Form)} to add the
  * file upload to the {@link ParameterSet} so that
  * {@link org.locationtech.geogig.rest.geotools.ImportWebOp ImportWebOp} can retrieve the uploaded
- * file to pass on to
- * {@link org.locationtech.geogig.rest.geotools.DataStoreImportContextService DataStoreImportContextService}
- * implementations.
+ * file to pass on to {@link org.locationtech.geogig.rest.geotools.DataStoreImportContextService
+ * DataStoreImportContextService} implementations.
  */
 public class UploadCommandResource extends CommandResource {
 
@@ -59,8 +58,7 @@ public class UploadCommandResource extends CommandResource {
 
     private static final MediaType DEFAULT_OUTPUT_MEDIA_TYPE = Variants.XML.getMediaType();
 
-    private static final String FILE_UPLOAD_ERROR_TMPL
-        = "There must be one and only one <%s> specified in the request";
+    private static final String FILE_UPLOAD_ERROR_TMPL = "There must be one and only one <%s> specified in the request";
 
     @Override
     protected String getCommandName() {
@@ -139,7 +137,7 @@ public class UploadCommandResource extends CommandResource {
                 if (UPLOAD_FILE_KEY.equals(fis.getFieldName())) {
                     // if we've already ingested a fileUpload, then the request had more than one.
                     Preconditions.checkState(uploadedFile == null, FILE_UPLOAD_ERROR_TMPL,
-                        UPLOAD_FILE_KEY);
+                            UPLOAD_FILE_KEY);
                     // found it, create a temp file
                     uploadedFile = File.createTempFile("geogig-" + UPLOAD_FILE_KEY + "-", ".tmp");
                     uploadedFile.deleteOnExit();

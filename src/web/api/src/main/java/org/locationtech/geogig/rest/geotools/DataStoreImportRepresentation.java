@@ -28,8 +28,8 @@ import org.restlet.data.MediaType;
  */
 public class DataStoreImportRepresentation extends AsyncCommandRepresentation<RevCommit> {
 
-    public DataStoreImportRepresentation(MediaType mediaType, AsyncContext.AsyncCommand<RevCommit> cmd,
-        String baseURL) {
+    public DataStoreImportRepresentation(MediaType mediaType,
+            AsyncContext.AsyncCommand<RevCommit> cmd, String baseURL) {
         super(mediaType, cmd, baseURL);
     }
 
@@ -37,6 +37,7 @@ public class DataStoreImportRepresentation extends AsyncCommandRepresentation<Re
     protected void writeResultBody(XMLStreamWriter w, RevCommit result) throws XMLStreamException {
         if (result != null) {
             w.writeStartElement("RevCommit");
+            element(w, "id", result.getId());
             element(w, "treeId", result.getTreeId().toString());
             w.writeEndElement();
         }
@@ -51,7 +52,7 @@ public class DataStoreImportRepresentation extends AsyncCommandRepresentation<Re
 
         @Override
         public AsyncCommandRepresentation<RevCommit> newRepresentation(
-            AsyncContext.AsyncCommand<RevCommit> cmd, MediaType mediaType, String baseURL) {
+                AsyncContext.AsyncCommand<RevCommit> cmd, MediaType mediaType, String baseURL) {
             return new DataStoreImportRepresentation(mediaType, cmd, baseURL);
         }
 

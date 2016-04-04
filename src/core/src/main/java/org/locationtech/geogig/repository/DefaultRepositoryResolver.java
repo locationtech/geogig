@@ -26,6 +26,7 @@ import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.io.Resources;
 
 public class DefaultRepositoryResolver extends RepositoryResolver {
@@ -64,8 +65,13 @@ public class DefaultRepositoryResolver extends RepositoryResolver {
     @Override
     public String getName(URI repoURI) {
         File file = toFile(repoURI);
-        if (file.getName().equals(".geogig")) {
-            file = file.getParentFile();
+        try {
+            file = file.getCanonicalFile();
+            if (file.getName().equals(".geogig")) {
+                file = file.getParentFile();
+            }
+        } catch (IOException e) {
+            Throwables.propagate(e);
         }
         return file.getName();
     }

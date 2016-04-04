@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.locationtech.geogig.api.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.rest.repository.RESTUtils;
+import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -62,7 +63,8 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
 
         assertEquals("newRepoName", repoName);
 
-        String expectedURL = RESTUtils.buildHref(testContext.get().getBaseURL(), "newRepoName",
+        String expectedURL = RESTUtils.buildHref(testContext.get().getBaseURL(),
+                RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + "newRepoName",
                 MediaType.APPLICATION_JSON);
 
         JSONObject response = getJSONResponse().getJSONObject("response");

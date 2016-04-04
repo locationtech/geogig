@@ -99,7 +99,7 @@ public class WebAPICucumberHooks {
 
     @Given("^There is an empty repository named ([^\"]*)$")
     public void setUpEmptyRepo(String name) throws Throwable {
-        String urlSpec = "/" + name + "/init";
+        String urlSpec = "/repos/" + name + "/init";
         Response response = context.callDontSaveResponse(Method.PUT, urlSpec);
         assertStatusCode(response, Status.SUCCESS_CREATED.getCode());
     }
@@ -363,8 +363,7 @@ public class WebAPICucumberHooks {
     }
 
     private String getAsyncTaskAsXML(final Integer taskId) throws IOException {
-        // TODO: this must be changed to /tasks/%d once we fix the top level routing
-        String url = String.format("/repo1/tasks/%d", taskId);
+        String url = String.format("/tasks/%d", taskId);
         Response taskResponse = context.callDontSaveResponse(Method.GET, url);
         String text = taskResponse.getEntity().getText();
         // System.err.println(text);

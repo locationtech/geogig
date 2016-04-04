@@ -5,17 +5,17 @@ Feature: Import GeoPackage
   The GeoPackage file is sent as a POST form arument named "fileUpload". 
   Other URL arguments can be used to control some aspects of the import.
   
-  API Spec: POST /<repo>/import?format=gpkg[&add=<true|false>][&alter=<true|false>]
+  API Spec: POST /repos/<repo>/import?format=gpkg[&add=<true|false>][&alter=<true|false>]
   
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty multirepo server
-     When I call "GET /repo1/import?format=gpkg"
+     When I call "GET /repos/repo1/import?format=gpkg"
      Then the response status should be '405'
       And the response allowed methods should be "POST"
       
   Scenario: Verify missing "format=gpkg" argument issues 400 "Bad request"
     Given There is a default multirepo server
-     When I call "POST /repo1/import"
+     When I call "POST /repos/repo1/import"
      Then the response status should be '400'
       And the response ContentType should be "application/xml"
       And the response xml matches
@@ -25,7 +25,7 @@ Feature: Import GeoPackage
 
   Scenario: Verify unsupported output format argument issues 400 "Bad request"
     Given There is a default multirepo server
-     When I call "POST /repo1/import?format=badFormat"
+     When I call "POST /repos/repo1/import?format=badFormat"
      Then the response status should be '400'
       And the response ContentType should be "application/xml"
       And the response xml matches
@@ -36,7 +36,7 @@ Feature: Import GeoPackage
   Scenario: Verify import to a non existent repository issues 404 "Not found"
     Given There is an empty multirepo server
       And I have a geopackage file @gpkgFile
-     When I post @gpkgFile as "fileUpload" to "/badRepo/import?format=gpkg"
+     When I post @gpkgFile as "fileUpload" to "/repos/badRepo/import?format=gpkg"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
@@ -44,7 +44,7 @@ Feature: Import GeoPackage
   Scenario: Import to an empty repository
     Given There is an empty repository named targetRepo
       And I have a geopackage file @gpkgFile
-     When I post @gpkgFile as "fileUpload" to "/targetRepo/import?format=gpkg"
+     When I post @gpkgFile as "fileUpload" to "/repos/targetRepo/import?format=gpkg"
      Then the response status should be '200'
       And the response is an XML async task @taskId
       And the task @taskId description contains "Importing GeoPackage database file."

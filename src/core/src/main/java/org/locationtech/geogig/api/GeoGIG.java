@@ -82,9 +82,10 @@ public class GeoGIG {
     public GeoGIG(final Context injector, @Nullable final File workingDir) {
         Preconditions.checkNotNull(injector, "injector");
         this.context = injector;
+        Platform platform = injector.platform();
+        File target = workingDir == null ? platform.pwd() : workingDir;
         if (workingDir != null) {
-            Platform instance = injector.platform();
-            instance.setWorkingDir(workingDir);
+            platform.setWorkingDir(workingDir);
         }
     }
 

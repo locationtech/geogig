@@ -62,8 +62,6 @@ public class InitOpTest {
 
     private Context injector;
 
-    private PluginDefaults defaults;
-
     private InitOp init;
 
     @Rule
@@ -108,11 +106,15 @@ public class InitOpTest {
         when(injector.command(eq(RefParse.class))).thenReturn(mockRefParse);
         when(injector.command(eq(UpdateRef.class))).thenReturn(mockUpdateRef);
         when(injector.command(eq(UpdateSymRef.class))).thenReturn(mockUpdateSymRef);
+        when(injector.pluginDefaults()).thenReturn(PluginDefaults.NO_PLUGINS);
 
         platform = mock(Platform.class);
         when(injector.platform()).thenReturn(platform);
-        defaults = PluginDefaults.NO_PLUGINS;
-        init = new InitOp(defaults, new Hints());
+
+        workingDir = tempFolder.getRoot();
+        Hints hints = new Hints();
+        hints.set(Hints.REPOSITORY_URL, workingDir.getAbsoluteFile().toURI());
+        init = new InitOp(hints);
         init.setContext(injector);
 
         mockRepo = mock(Repository.class);
@@ -126,8 +128,6 @@ public class InitOpTest {
                 return null;
             }
         }).when(mockRepo).open();
-
-        workingDir = tempFolder.getRoot();
 
         when(platform.pwd()).thenReturn(workingDir);
 
@@ -153,7 +153,6 @@ public class InitOpTest {
         assertTrue(new File(workingDir, ".geogig").isDirectory());
 
         verify(injector, times(1)).repository();
-        verify(platform, atLeastOnce()).pwd();
 
         verify(mockUpdateRef, times(1)).setName(eq(Ref.MASTER));
         verify(mockUpdateRef, times(1)).setName(eq(Ref.WORK_HEAD));
@@ -166,7 +165,7 @@ public class InitOpTest {
         verify(mockUpdateSymRef, times(1)).setName(eq(Ref.HEAD));
         verify(mockUpdateSymRef, times(1)).setNewValue(eq(Ref.MASTER));
         verify(mockUpdateSymRef, times(1)).call();
-        
+
         assertEquals(RevTree.EMPTY, objectDatabase.get(RevTree.EMPTY_TREE_ID));
     }
 

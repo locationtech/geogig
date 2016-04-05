@@ -21,6 +21,7 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
@@ -57,10 +58,10 @@ public class OSMHookTest extends RepositoryTestCase {
         // set the hook that will trigger an unmapping when something is imported to the busstops
         // tree
         CharSequence commitPreHookCode = "var diffs = geogig.getFeaturesToCommit(\"busstops\", false);\n"
-                + "if (diffs.length > 0){\n"
-                + "\tvar params = {\"path\" : \"busstops\"};\n"
+                + "if (diffs.length > 0){\n" + "\tvar params = {\"path\" : \"busstops\"};\n"
                 + "\tgeogig.run(\"org.locationtech.geogig.osm.internal.OSMUnmapOp\", params)\n}";
-        File hooksFolder = new File(geogig.getPlatform().pwd(), ".geogig/hooks");
+        File hooksFolder = new File(new ResolveGeogigDir(geogig.getPlatform()).getFile().get(),
+                "hooks");
         File commitPreHookFile = new File(hooksFolder, "pre_commit.js");
 
         Files.write(commitPreHookCode, commitPreHookFile, Charsets.UTF_8);
@@ -98,8 +99,8 @@ public class OSMHookTest extends RepositoryTestCase {
 
         // Modify a node
         GeometryFactory gf = new GeometryFactory();
-        SimpleFeatureBuilder fb = new SimpleFeatureBuilder((SimpleFeatureType) featureType.get()
-                .type());
+        SimpleFeatureBuilder fb = new SimpleFeatureBuilder(
+                (SimpleFeatureType) featureType.get().type());
         fb.set("geom", gf.createPoint(new Coordinate(0, 1)));
         fb.set("name", "newname");
         fb.set("id", 507464799l);

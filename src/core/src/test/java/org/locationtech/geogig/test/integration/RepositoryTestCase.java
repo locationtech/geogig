@@ -44,6 +44,7 @@ import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
@@ -223,7 +224,9 @@ public abstract class RepositoryTestCase extends Assert {
     protected Context createInjector() {
         Platform testPlatform = createPlatform();
         GlobalContextBuilder.builder = new TestContextBuilder(testPlatform);
-        return GlobalContextBuilder.builder.build();
+        Hints hints = new Hints();
+        hints.set(Hints.REPOSITORY_URL, repositoryDirectory.getAbsoluteFile().toURI());
+        return GlobalContextBuilder.builder.build(hints);
     }
 
     protected Platform createPlatform() {

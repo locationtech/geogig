@@ -48,7 +48,7 @@ copyright = u'2013, GeoGig Contributors'
 # built documents.
 #
 # The short X.Y version.
-version = '2.0-SNAPSHOT'
+version = '1.0-SNAPSHOT'
 # The full version, including alpha/beta/rc tags.
 release = '1.0'
 

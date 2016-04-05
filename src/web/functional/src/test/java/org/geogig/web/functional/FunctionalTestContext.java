@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.junit.rules.ExternalResource;
@@ -20,6 +21,9 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.GlobalContextBuilder;
+import org.locationtech.geogig.api.NodeRef;
+import org.locationtech.geogig.api.plumbing.LsTreeOp;
+import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.repository.Hints;
@@ -33,10 +37,13 @@ import org.restlet.data.Method;
 import org.restlet.data.Reference;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.resource.Representation;
 import org.w3c.dom.Document;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 
 public class FunctionalTestContext extends ExternalResource {
 
@@ -82,6 +89,27 @@ public class FunctionalTestContext extends ExternalResource {
         }
     }
 
+    public File getTempFolder() {
+        return tempFolder.getRoot();
+    }
+
+    public GeoGIG getRepo(String name) {
+        return repoProvider.getGeogig(name);
+    }
+
+    public SetMultimap<String, String> listRepo(final String repoName, final String headRef) {
+        GeoGIG repo = getRepo(repoName);
+        Iterator<NodeRef> featureRefs = repo.command(LsTreeOp.class).setReference(headRef)
+                .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
+
+        SetMultimap<String, String> features = HashMultimap.create();
+        while (featureRefs.hasNext()) {
+            NodeRef ref = featureRefs.next();
+            features.put(ref.getParentPath(), ref.name());
+        }
+        return features;
+    }
+
     public void setUpDefaultMultiRepoServer() throws Exception {
         createRepo("repo1")//
                 .init("geogigUser", "repo1_Owner@geogig.org")//
@@ -116,9 +144,28 @@ public class FunctionalTestContext extends ExternalResource {
         return callInternal(method, resourceUri);
     }
 
+    public Response postFile(final String url, final String formFieldName, final File file)
+            throws IOException {
+
+        String resourceUri = replaceVariables(url);
+
+        Representation webForm = new MultiPartFileRepresentation(file, formFieldName);
+        //
+        // FileRepresentation fileEntity = new FileRepresentation(file,
+        // MediaType.MULTIPART_FORM_DATA,
+        // 30);
+        //
+        Request request = new Request(Method.POST, resourceUri, webForm);
+        request.setRootRef(new Reference(""));
+
+        Response response = app.handle(request);
+        this.lastResponse = response;
+        return response;
+    }
+
     private Response callInternal(final Method method, String resourceUri) {
 
-        resourceUri = replaceVariables(resourceUri, this.variables);
+        resourceUri = replaceVariables(resourceUri);
 
         Request request = new Request(method, resourceUri);
         request.setRootRef(new Reference(""));
@@ -168,7 +215,7 @@ public class FunctionalTestContext extends ExternalResource {
     }
 
     public Response getLastResponse() {
-        Preconditions.checkState(lastResponse != null);
+        Preconditions.checkState(lastResponse != null, "there is no last reponse");
         return lastResponse;
     }
 

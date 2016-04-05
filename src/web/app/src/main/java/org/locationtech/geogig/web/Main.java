@@ -109,25 +109,23 @@ public class Main extends Application {
                 request.getAttributes().put(RepositoryProvider.KEY, repoProvider);
             }
         };
-        final Router singleRepoRouter;
 
-        if (multiRepo) {
-            singleRepoRouter = new Router();
-            router.attach("/", new RepositoryFinder(repoProvider));
-            router.attach("/{repository}", singleRepoRouter);
-        } else {
-            singleRepoRouter = router;
-        }
+        router.attach("/tasks", TaskStatusResource.class);
+        router.attach("/tasks/{taskId}.{extension}", TaskStatusResource.class);
+        router.attach("/tasks/{taskId}", TaskStatusResource.class);
+        router.attach("/tasks/{taskId}/download", TaskResultDownloadResource.class);
+
+        router.attach("/" + RepositoryProvider.BASE_REPOSITORY_ROUTE,
+                new RepositoryFinder(repoProvider));
+
+        final Router singleRepoRouter = new Router();
+        router.attach("/" + RepositoryProvider.BASE_REPOSITORY_ROUTE + "/{repository}",
+                singleRepoRouter);
 
         Router repo = new RepositoryRouter();
         Router osm = new OSMRouter();
         Router postgis = new PGRouter();
         singleRepoRouter.attach("", DeleteRepository.class);
-
-        singleRepoRouter.attach("/tasks", TaskStatusResource.class);
-        singleRepoRouter.attach("/tasks/{taskId}.{extension}", TaskStatusResource.class);
-        singleRepoRouter.attach("/tasks/{taskId}", TaskStatusResource.class);
-        singleRepoRouter.attach("/tasks/{taskId}/download", TaskResultDownloadResource.class);
 
         singleRepoRouter.attach("/osm", osm);
         singleRepoRouter.attach("/postgis", postgis);

@@ -31,7 +31,6 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;
-import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
@@ -81,8 +80,8 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
 
         ImportWebOp op = buildCommand(TestParams.of());
         op.asyncContext = testAsyncContext;
-        ex.expect(CommandSpecException.class);
-        ex.expectMessage("missing required \"format\" parameter");
+        ex.expect(IllegalArgumentException.class);
+        ex.expectMessage("missing required 'format' parameter");
         run(op);
     }
 
@@ -329,7 +328,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         op.run(context);
         JSONObject response = getJSONResponse();
         JSONAssert.assertEquals(String.format(
-                "{'task':{'id':%s,'description':'Importing Geopkg database file.','href':'/geogig/tasks/%s.json'}}",
+                "{'task':{'id':%s,'description':'Importing GeoPackage database file.','href':'/geogig/tasks/%s.json'}}",
                 taskId, taskId), response.toString(), false);
         Optional<AsyncContext.AsyncCommand<?>> asyncCommand = Optional.absent();
         while (!asyncCommand.isPresent()) {

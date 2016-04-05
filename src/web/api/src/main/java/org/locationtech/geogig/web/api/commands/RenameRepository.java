@@ -18,6 +18,7 @@ import org.locationtech.geogig.api.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.api.porcelain.ConfigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigScope;
+import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -90,7 +91,8 @@ public class RenameRepository extends AbstractWebAPICommand {
                 out.start();
                 out.getWriter().writeStartElement("repo");
                 out.writeElement("name", repositoryName);
-                out.encodeAlternateAtomLink(out.getWriter(), context.getBaseURL(), repositoryName);
+                out.encodeAlternateAtomLink(out.getWriter(), context.getBaseURL(),
+                        RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + repositoryName);
                 out.getWriter().writeEndElement();
                 out.finish();
             }

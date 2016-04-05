@@ -11,6 +11,7 @@ package org.geogig.web.functional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -36,24 +37,28 @@ import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Variants;
+import org.locationtech.geogig.rest.geopkg.GeoPackageTestSupport;
 import org.mortbay.log.Log;
 import org.restlet.data.Method;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xmlunit.matchers.CompareMatcher;
 import org.xmlunit.matchers.EvaluateXPathMatcher;
 import org.xmlunit.matchers.HasXPathMatcher;
 import org.xmlunit.xpath.JAXPXPathEngine;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 
+import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -80,6 +85,8 @@ public class WebAPICucumberHooks {
         context.after();
     }
 
+    ///////////////// repository initialization steps ////////////////////
+
     @Given("^There is an empty multirepo server$")
     public void setUpEmptyMultiRepo() {
     }
@@ -88,6 +95,50 @@ public class WebAPICucumberHooks {
     public void setUpDefaultMultiRepo() throws Exception {
         setUpEmptyMultiRepo();
         context.setUpDefaultMultiRepoServer();
+    }
+
+    @Given("^There is an empty repository named ([^\"]*)$")
+    public void setUpEmptyRepo(String name) throws Throwable {
+        String urlSpec = "/repos/" + name + "/init";
+        Response response = context.callDontSaveResponse(Method.PUT, urlSpec);
+        assertStatusCode(response, Status.SUCCESS_CREATED.getCode());
+    }
+
+    /**
+     * Checks that the repository named {@code repositoryName}, at it's commit {@code headRef}, has
+     * the expected features as given by the {@code expectedFeatures} {@link DataTable}.
+     * <p>
+     * The {@code DataTable} top cells represent feature tree paths, and their cells beneath each
+     * feature tree path, the feature ids expected for each layer.
+     * <p>
+     * Example:
+     * 
+     * <pre>
+     * <code>
+     *     |  Points   |  Lines   |  Polygons   | 
+     *     |  Points.1 |  Lines.1 |  Polygons.1 | 
+     *     |  Points.2 |  Lines.2 |  Polygons.2 | 
+     *</code>
+     * </pre>
+     * 
+     * @param repositoryName
+     * @param headRef
+     * @param expectedFeatures
+     * @throws Throwable
+     */
+    @Then("^the ([^\"]*) repository's ([^\"]*) should have the following features:$")
+    public void verifyRepositoryContents(String repositoryName, String headRef,
+            DataTable expectedFeatures) throws Throwable {
+
+        SetMultimap<String, String> expected = HashMultimap.create();
+        {
+            List<Map<String, String>> asMaps = expectedFeatures.asMaps(String.class, String.class);
+            asMaps.forEach((m) -> m.forEach((k, v) -> expected.put(k, v)));
+        }
+
+        SetMultimap<String, String> actual = context.listRepo(repositoryName, headRef);
+
+        assertEquals(expected, actual);
     }
 
     /**
@@ -145,6 +196,10 @@ public class WebAPICucumberHooks {
     @Then("^the response status should be '(\\d+)'$")
     public void checkStatusCode(final int statusCode) {
         Response response = context.getLastResponse();
+        assertStatusCode(response, statusCode);
+    }
+
+    private void assertStatusCode(Response response, final int statusCode) {
         Status status = response.getStatus();
         Status expected = Status.valueOf(statusCode);
         assertEquals(format("Expected status code %s, but got %s", expected, status), statusCode,
@@ -154,7 +209,7 @@ public class WebAPICucumberHooks {
     @Then("^the response ContentType should be \"([^\"]*)\"$")
     public void checkContentType(final String expectedContentType) {
         String actualContentType = context.getLastResponseContentType();
-        assertEquals(expectedContentType, actualContentType);
+        assertEquals(context.getLastResponseText(), expectedContentType, actualContentType);
     }
 
     /**
@@ -190,6 +245,14 @@ public class WebAPICucumberHooks {
 
     private void assertXpathPresent(final String xpathExpression, final String xml) {
         assertThat(xml, HasXPathMatcher.hasXPath(xpathExpression).withNamespaceContext(NSCONTEXT));
+    }
+
+    @Then("^the response xml matches$")
+    public void checkXmlResponseMatches(final String domString) throws Throwable {
+
+        final String xml = context.getLastResponseText();
+        assertThat(xml, CompareMatcher.isIdenticalTo(domString).ignoreComments().ignoreWhitespace()
+                .withNamespaceContext(NSCONTEXT));
     }
 
     /**
@@ -243,7 +306,7 @@ public class WebAPICucumberHooks {
     }
 
     private void assertXpathContains(final String xpath, final String substring, final String xml) {
-        assertThat(xml, EvaluateXPathMatcher.hasXPath(xpath, containsString(substring))
+        assertThat(xml, xml, EvaluateXPathMatcher.hasXPath(xpath, containsString(substring))
                 .withNamespaceContext(NSCONTEXT));
     }
 
@@ -300,8 +363,7 @@ public class WebAPICucumberHooks {
     }
 
     private String getAsyncTaskAsXML(final Integer taskId) throws IOException {
-        // TODO: this must be changed to /tasks/%d once we fix the top level routing
-        String url = String.format("/repo1/tasks/%d", taskId);
+        String url = String.format("/tasks/%d", taskId);
         Response taskResponse = context.callDontSaveResponse(Method.GET, url);
         String text = taskResponse.getEntity().getText();
         // System.err.println(text);
@@ -362,10 +424,10 @@ public class WebAPICucumberHooks {
     ////////////////////// GeoPackage step definitions //////////////////////////
 
     @Then("^the result is a valid GeoPackage file$")
-    public void the_result_is_a_valid_GeoPackage_file() throws Throwable {
+    public void gpkg_CheckResponseIsGeoPackage() throws Throwable {
         checkContentType(Variants.GEOPKG_MEDIA_TYPE.getName());
 
-        File tmp = File.createTempFile("gpkg_functional_test", ".gpkg");
+        File tmp = File.createTempFile("gpkg_functional_test", ".gpkg", context.getTempFolder());
         tmp.deleteOnExit();
 
         try (InputStream stream = context.getLastResponse().getEntity().getStream()) {
@@ -383,4 +445,30 @@ public class WebAPICucumberHooks {
             gpkg.close();
         }
     }
+
+    /**
+     * Creates a GPKG file with default test contents and saves it's path as variable
+     * {@code fileVariableName}
+     */
+    @Given("^I have a geopackage file (@[^\"]*)$")
+    public void gpkg_CreateSampleGeopackage(final String fileVariableName) throws Throwable {
+        GeoPackageTestSupport support = new GeoPackageTestSupport(context.getTempFolder());
+        File dbfile = support.createDefaultTestData();
+        context.setVariable(fileVariableName, dbfile.getAbsolutePath());
+    }
+
+    /**
+     * Sends a POST request with the file in the {@code fileVariableName} variable as the
+     * {@code formFieldName} form field to the {@code targetURI}
+     */
+    @When("^I post (@[^\"]*) as \"([^\"]*)\" to \"([^\"]*)\"$")
+    public void gpkg_UploadFile(String fileVariableName, String formFieldName, String targetURI)
+            throws Throwable {
+
+        File file = new File(context.getVariable(fileVariableName));
+        checkState(file.exists() && file.isFile());
+
+        context.postFile(targetURI, formFieldName, file);
+    }
+
 }

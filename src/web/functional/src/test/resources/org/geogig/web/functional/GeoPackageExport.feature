@@ -7,17 +7,17 @@ Feature: Export GeoPackage
   extension, allowing to transparently log every change to a tracked layer in an audit table that can later be
   replyed on top of the repository.  
   
-  API Spec: GET /<repo>/export[.xml|.json]?format=gpkg[&root=<refspec>][&path=<layerName>[,<layerName>]+][&bbox=<boundingBox>][&interchange=<true|false>]
+  API Spec: GET /repos/<repo>/export[.xml|.json]?format=gpkg[&root=<refspec>][&path=<layerName>[,<layerName>]+][&bbox=<boundingBox>][&interchange=<true|false>]
   
   Scenario: Verify wrong HTTP method issues 405 "Method not allowed"
     Given There is an empty multirepo server
-     When I call "POST /repo1/export?format=gpkg"
+     When I call "POST /repos/repo1/export?format=gpkg"
      Then the response status should be '405'
       And the response allowed methods should be "GET"
       
   Scenario: Verify missing "format=gpkg" argument issues 400 "Bad request"
     Given There is a default multirepo server
-     When I call "GET /repo1/export"
+     When I call "GET /repos/repo1/export"
      Then the response status should be '400'
       And the response ContentType should be "application/xml"
       And the xpath "/response/success/text()" equals "false"
@@ -25,7 +25,7 @@ Feature: Export GeoPackage
 
   Scenario: Verify unsupported output format argument issues 400 "Bad request"
     Given There is a default multirepo server
-     When I call "GET /repo1/export?format=badFormat"
+     When I call "GET /repos/repo1/export?format=badFormat"
      Then the response status should be '400'
       And the response ContentType should be "application/xml"
       And the xpath "/response/success/text()" equals "false"
@@ -33,19 +33,29 @@ Feature: Export GeoPackage
 
   Scenario: Verify export on a non existent repository issues 404 "Not found"
     Given There is an empty multirepo server
-     When I call "GET /badRepo/export?format=gpkg"
+     When I call "GET /repos/badRepo/export?format=gpkg"
      Then the response status should be '404'
       And the response ContentType should be "text/plain"
       And the response body should contain "Repository not found"
 
   Scenario: Export defaults: all layers from current head
     Given There is a default multirepo server
-     When I call "GET /repo1/export?format=gpkg"
+     When I call "GET /repos/repo1/export?format=gpkg"
      Then the response is an XML async task @taskId
       And the task @taskId description contains "Export to Geopackage database"
       And when the task @taskId finishes
      Then the task @taskId status is FINISHED
       And the task @taskId result contains "atom:link/@href" with value "/tasks/{@taskId}/download"
-      #change to /tasks/{@taskId}/download once we fix the top level routes
-     When I call "GET /repo1/tasks/{@taskId}/download"
+     When I call "GET /tasks/{@taskId}/download"
+     Then the result is a valid GeoPackage file
+     
+  Scenario: Export from an empty HEAD produces a valid empty geopackage
+    Given There is an empty repository named emptyRepo
+     When I call "GET /repos/emptyRepo/export?format=gpkg"
+     Then the response is an XML async task @taskId
+      And the task @taskId description contains "Export to Geopackage database"
+      And when the task @taskId finishes
+     Then the task @taskId status is FINISHED
+      And the task @taskId result contains "atom:link/@href" with value "/tasks/{@taskId}/download"
+     When I call "GET /tasks/{@taskId}/download"
      Then the result is a valid GeoPackage file

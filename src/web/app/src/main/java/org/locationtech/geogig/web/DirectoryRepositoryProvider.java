@@ -141,6 +141,7 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
         }
     }
 
+    @Override
     public Iterator<String> findRepositories() {
         try {
             loadRepositories();

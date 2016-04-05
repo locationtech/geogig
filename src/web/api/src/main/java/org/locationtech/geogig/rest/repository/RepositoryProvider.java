@@ -18,6 +18,8 @@ import com.google.common.base.Optional;
 
 public interface RepositoryProvider {
 
+    static final String BASE_REPOSITORY_ROUTE = "repos";
+
     /**
      * Key used too lookup the {@link RepositoryProvider} instance in the
      * {@link Request#getAttributes() request attributes}

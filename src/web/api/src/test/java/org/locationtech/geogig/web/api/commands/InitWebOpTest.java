@@ -17,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.locationtech.geogig.rest.repository.RESTUtils;
+import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -64,7 +65,7 @@ public class InitWebOpTest extends AbstractWebOpTest {
         cmd.run(testContext.get());
 
         String expectedURL = RESTUtils.buildHref(testContext.get().getBaseURL(),
-                TestRepository.REPO_NAME,
+                RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + TestRepository.REPO_NAME,
                 MediaType.APPLICATION_JSON);
 
         assertNotNull(testContext.get().getGeoGIG().getRepository());

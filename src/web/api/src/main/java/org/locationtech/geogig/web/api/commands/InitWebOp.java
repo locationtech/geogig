@@ -17,6 +17,7 @@ import org.locationtech.geogig.api.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -86,7 +87,7 @@ public class InitWebOp extends AbstractWebAPICommand {
                     out.getWriter().writeStartElement("repo");
                     out.writeElement("name", repositoryName);
                     out.encodeAlternateAtomLink(out.getWriter(), context.getBaseURL(),
-                            repositoryName);
+                            RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + repositoryName);
                     out.getWriter().writeEndElement();
                     out.finish();
                 }

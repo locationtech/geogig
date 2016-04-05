@@ -91,15 +91,15 @@ public class RepositoryFinder extends Finder {
             @Override
             protected void write(XMLStreamWriter w) throws XMLStreamException {
                 w.writeStartElement("repos");
-                Iterator<String> repos = ((DirectoryRepositoryProvider) repoProvider)
-                        .findRepositories();
+                Iterator<String> repos = repoProvider.findRepositories();
                 while (repos.hasNext()) {
                     String repoName = repos.next();
                     w.writeStartElement("repo");
                     w.writeStartElement("name");
                     w.writeCharacters(repoName);
                     w.writeEndElement();
-                    encodeAlternateAtomLink(w, repoName);
+                    encodeAlternateAtomLink(w,
+                            RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + repoName);
                     w.writeEndElement();
                 }
                 w.writeEndElement();

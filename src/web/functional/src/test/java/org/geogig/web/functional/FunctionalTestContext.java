@@ -24,11 +24,8 @@ import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.web.DirectoryRepositoryProvider;
 import org.locationtech.geogig.web.Main;
 import org.locationtech.geogig.web.api.TestData;
@@ -127,10 +124,7 @@ public class FunctionalTestContext extends ExternalResource {
         Hints hints = new Hints();
         hints.set(Hints.REPOSITORY_URL, repoURI);
         Context repoContext = GlobalContextBuilder.builder.build(hints);
-        Repository repo = repoContext.command(InitOp.class).call();
-        repo.close();
-        repo = RepositoryResolver.load(repoURI);
-        GeoGIG geogig = new GeoGIG(repo);
+        GeoGIG geogig = new GeoGIG(repoContext);
         TestData testData = new TestData(geogig);
         return testData;
     }

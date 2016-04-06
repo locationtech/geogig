@@ -99,9 +99,13 @@ public class WebAPICucumberHooks {
 
     @Given("^There is an empty repository named ([^\"]*)$")
     public void setUpEmptyRepo(String name) throws Throwable {
-        String urlSpec = "/repos/" + name + "/init";
+        String repoUri = "/repos/" + name;
+        String urlSpec = repoUri + "/init";
         Response response = context.callDontSaveResponse(Method.PUT, urlSpec);
         assertStatusCode(response, Status.SUCCESS_CREATED.getCode());
+        
+        context.callDontSaveResponse(Method.POST, repoUri + "/config?name=user.name&value=webuser");
+        context.callDontSaveResponse(Method.POST, repoUri + "/config?name=user.email&value=webuser@test.com");
     }
 
     /**

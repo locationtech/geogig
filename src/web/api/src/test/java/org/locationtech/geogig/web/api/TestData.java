@@ -50,6 +50,7 @@ import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.IllegalAttributeException;
 import org.opengis.feature.simple.SimpleFeature;
@@ -164,11 +165,14 @@ public class TestData {
     }
 
     public TestData init(final String userName, final String userEmail) {
-        repo.command(InitOp.class);
-        repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
-                .setValue(userName).call();
-        repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
-                .setValue(userEmail).call();
+        Repository repository = repo.command(InitOp.class).call();
+        config("user.name", userName).config("user.email", userEmail);
+        return this;
+    }
+
+    public TestData config(String key, String value) {
+        repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName(key).setValue(value)
+                .call();
         return this;
     }
 

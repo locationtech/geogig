@@ -282,7 +282,7 @@ public class WebAPICucumberHooks {
     public void responseDoesNotContainXPath(final String xpathExpression) {
 
         final String xml = context.getLastResponseText();
-        assertThat(xml,
+        assertThat(xml, xml,
                 not(HasXPathMatcher.hasXPath(xpathExpression).withNamespaceContext(NSCONTEXT)));
     }
 
@@ -294,7 +294,7 @@ public class WebAPICucumberHooks {
     }
 
     private void assertXpathEquals(String xpath, String expectedValue, final String xml) {
-        assertThat(xml, EvaluateXPathMatcher.hasXPath(xpath, equalTo(expectedValue))
+        assertThat(xml, xml, EvaluateXPathMatcher.hasXPath(xpath, equalTo(expectedValue))
                 .withNamespaceContext(NSCONTEXT));
     }
 

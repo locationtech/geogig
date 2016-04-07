@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>OpenStreetMap Web-Api Documentation &mdash; GeoGig 1.0-RC1 User Manual</title>
+  <title>OpenStreetMap Web-Api Documentation &mdash; GeoGig 1.0-RC2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,14 +20,15 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC1',
+        VERSION:     '1.0-RC2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.0-RC2 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
-      <link rel="prev" title="Web-Api Documentation" href="web-api.html" />
+      <link rel="next" title="GeoPackage import and export Web-API" href="geopackage-import-export.html" />
+      <link rel="prev" title="Web-API Asynchronous tasks" href="async-tasks.html" />
 </head>
 <body class="interaction/osm-web-api">
     <div id="blacktop"></div>
@@ -80,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0-RC2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>OpenStreetMap Web-Api Documentation</li>
 </ul>
@@ -89,7 +90,10 @@
     <a href="../genindex.html" title="General Index"
        accesskey="I">index</a></li>
   <li>
-    <a href="web-api.html" title="Web-Api Documentation"
+    <a href="geopackage-import-export.html" title="GeoPackage import and export Web-API"
+       accesskey="N">next</a>|</li>
+  <li>
+    <a href="async-tasks.html" title="Web-API Asynchronous tasks"
        accesskey="P">previous</a>|</li>
 </ul>
         
@@ -123,121 +127,6 @@ GET /&lt;repo&gt;/endTransaction?transactionId=7accffe5-d506-4273-96f2-7b2581b71
 whilst when using the GeoServer plugin, its under <tt class="docutils literal"><span class="pre">&lt;geoserver</span> <span class="pre">context&gt;/geogig/&lt;repository</span> <span class="pre">id&gt;</span></tt> (e.g. <tt class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/1f563a96-bd5c-4d59-84ec-e02e158eba78/</span></tt>).
 You can check the list of repository ids and names by accessing <tt class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/</span></tt>.</p>
 </div>
-<div class="section" id="asynchronous-tasks">
-<h2>Asynchronous tasks<a class="headerlink" href="#asynchronous-tasks" title="Permalink to this headline">¶</a></h2>
-<p>The <tt class="docutils literal"><span class="pre">import</span></tt> and <tt class="docutils literal"><span class="pre">download</span></tt> operations can run for a long time depending on how much data they&#8217;re importing, and hence
-are executed asynchronously. Meaning that once invoked, they start the job in a background thread and return immediately.</p>
-<p>The response contains a unique identifier for the asynchronous task and information on the task&#8217;s running status.
-This task identifier can then be used to poll the status of the task by querying the <tt class="docutils literal"><span class="pre">/tasks/&lt;task</span> <span class="pre">id&gt;</span></tt> API end point.</p>
-<p>If no task is is given (e.g. by querying the <tt class="docutils literal"><span class="pre">/tasks</span></tt> endpoint), a list of all available tasks will be returned.</p>
-<p>A running task can be canceled with the <tt class="docutils literal"><span class="pre">cancel=true</span></tt> argument. For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>http://localhost:8182/tasks/3?cancel=true
-</pre></div>
-</div>
-<p>This request will ask the operation to cancel and return immediately. Note however that the task may take a while until the running task
-is actually canceled, as it may be blocking on I/O or being temporarily in a non cancelable state. Polling the task repeteadly with the
-<tt class="docutils literal"><span class="pre">cancel=true</span></tt> parameter is not a problem though.</p>
-<p>Finished tasks, whether they finished successfully, an error occurred, or were canceled, will be kept in memory for 10 minutes to be queried.
-Finished tasks can be explicitly pruned with the <tt class="docutils literal"><span class="pre">prune=true</span></tt> parameter. For example:</p>
-<div class="highlight-python"><div class="highlight"><pre>http://localhost:8182/tasks/3?prune=true
-</pre></div>
-</div>
-<p>Prune has no effect on non finished tasks.</p>
-<div class="section" id="examples">
-<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
-<p>When the command is invoked, it returns a result like the following:</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
-   &lt;id&gt;5&lt;/id&gt;
-   &lt;status&gt;RUNNING&lt;/status&gt;
-   &lt;description&gt;{command description}&lt;/description&gt;
-   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/5.xml&quot; type=&quot;application/xml&quot;/&gt;
-   &lt;progress&gt;
-      &lt;task&gt;Connecting to http://overpass-api.de/api/interpreter...&lt;/task&gt;
-      &lt;amount&gt;0.0&lt;/amount&gt;
-   &lt;/progress&gt;
-&lt;/task&gt;
-</pre></div>
-</div>
-<p>Or in JSON format:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&quot;task&quot;</span><span class="p">:</span>
-   <span class="p">{</span>
-      <span class="s">&quot;id&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span>
-      <span class="s">&quot;status&quot;</span><span class="p">:</span><span class="s">&quot;RUNNING&quot;</span><span class="p">,</span>
-      <span class="s">&quot;description&quot;</span><span class="p">:</span><span class="s">&quot;osm download filter: null, bbox: -32.9621,-60.6309,-32.9541,-60.6154&quot;</span><span class="p">,</span>
-      <span class="s">&quot;href&quot;</span><span class="p">:</span><span class="s">&quot;http:\/\/localhost:8182\/tasks\/5.json&quot;</span>
-   <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Note the <tt class="docutils literal"><span class="pre">atom:link</span></tt> in the XML response, and the <tt class="docutils literal"><span class="pre">href</span></tt> property in the JSON response, represent the URL where to poll
-the status of the task at.</p>
-<p>The <tt class="docutils literal"><span class="pre">status</span></tt> attribute assumes one of the following values: <tt class="docutils literal"><span class="pre">WAITING</span></tt>, <tt class="docutils literal"><span class="pre">RUNNING</span></tt>, <tt class="docutils literal"><span class="pre">FINISHED</span></tt>, <tt class="docutils literal"><span class="pre">FAILED</span></tt>, <tt class="docutils literal"><span class="pre">CANCELLED</span></tt>.</p>
-<p><tt class="docutils literal"><span class="pre">WAITING</span></tt> means that there are other tasks being run in the thread pool and hence this one has been scheduled to be run as soon
-as the thread pool gets a free spot. The other ones are quite self explanatory.</p>
-<p>The content of the task query response varies slightly depending on the task status.</p>
-<p>Running tasks may contain a progress indicator:</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
-   &lt;id&gt;4&lt;/id&gt;
-   &lt;status&gt;RUNNING&lt;/status&gt;
-   &lt;description&gt; osm import /data/osm/geofabrik/argentina-latest.osm.pbf&lt;/description&gt;
-   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/4.xml&quot; type=&quot;application/xml&quot;/&gt;
-   &lt;progress&gt;
-      &lt;task&gt;Importing into GeoGig repo...&lt;/task&gt;
-      &lt;amount&gt;1397120.0&lt;/amount&gt;
-   &lt;/progress&gt;
-&lt;/task&gt;
-</pre></div>
-</div>
-<p>Successfully finished tasks may contain a result summary:</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
-   &lt;id&gt;5&lt;/id&gt;
-   &lt;status&gt;FINISHED&lt;/status&gt;
-   &lt;description&gt;osm import /data/osm/geofabrik/albania-latest.osm.pbf&lt;/description&gt;
-   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/5.xml&quot; type=&quot;application/xml&quot;/&gt;
-   &lt;result&gt;
-      &lt;OSMReport&gt;
-         &lt;latestChangeset&gt;17218621&lt;/latestChangeset&gt;
-         &lt;latestTimestamp&gt;1412698140574&lt;/latestTimestamp&gt;
-         &lt;processedEntities&gt;901852&lt;/processedEntities&gt;
-         &lt;nodeCount&gt;865542&lt;/nodeCount&gt;
-         &lt;wayCount&gt;35778&lt;/wayCount&gt;
-         &lt;unpprocessedCount&gt;4&lt;/unpprocessedCount&gt;
-      &lt;/OSMReport&gt;
-   &lt;/result&gt;
-&lt;/task&gt;
-</pre></div>
-</div>
-<p>And failed tasks an exception report:</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;task&gt;
-   &lt;id&gt;7&lt;/id&gt;
-   &lt;status&gt;FAILED&lt;/status&gt;
-   &lt;description&gt;osm download filter: null, bbox: -32.9621,-60.6309,-32.9541,-60.6154&lt;/description&gt;
-   &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8182/tasks/7.xml&quot; type=&quot;application/xml&quot;/&gt;
-   &lt;error&gt;
-      &lt;message&gt;Nothing to commit after bea73023a9452a9d64f64264d2911ce1ec2b47f2&lt;/message&gt;
-      &lt;stackTrace&gt;
-      &lt;![CDATA[
-         org.locationtech.geogig.api.porcelain.NothingToCommitException: Nothing to commit after bea73023a9452a9d64f64264d2911ce1ec2b47f2
-         at org.locationtech.geogig.api.porcelain.CommitOp._call(CommitOp.java:320)
-         at org.locationtech.geogig.api.porcelain.CommitOp._call(CommitOp.java:57)
-         at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133)
-         at org.locationtech.geogig.osm.internal.OSMImportOp._call(OSMImportOp.java:234)
-         at org.locationtech.geogig.osm.internal.OSMImportOp._call(OSMImportOp.java:75)
-         at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133)
-         at org.locationtech.geogig.osm.internal.OSMDownloadOp._call(OSMDownloadOp.java:155)
-         at org.locationtech.geogig.osm.internal.OSMDownloadOp._call(OSMDownloadOp.java:28)
-         at org.locationtech.geogig.api.AbstractGeoGigOp.call(AbstractGeoGigOp.java:133)
-         at org.locationtech.geogig.rest.AsyncContext$CommandCall.call(AsyncContext.java:192)
-         at java.util.concurrent.FutureTask.run(FutureTask.java:262)
-         ...
-      ]]&gt;
-      &lt;/stackTrace&gt;
-   &lt;/error&gt;
-&lt;/task&gt;
-</pre></div>
-</div>
-</div>
-</div>
 <div class="section" id="osm-download">
 <h2>OSM Download<a class="headerlink" href="#osm-download" title="Permalink to this headline">¶</a></h2>
 <p>Downloads data from OSM and commits it to the repository.</p>
@@ -260,8 +149,8 @@ Boolean. Default: <tt class="docutils literal"><span class="pre">false</span></t
 <p><strong>mapping:</strong>
 The file that contains the data mapping to use.</p>
 </div>
-<div class="section" id="id1">
-<h3>Examples<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
 <p>A bad argument:</p>
 <div class="highlight-python"><div class="highlight"><pre>$curl -v &quot;localhost:8182/osm/download?bbox=-32.9621,-60.6309,-32.9541,-60.6154&amp;mapping=nonExistentMappingFile&quot;
 &lt; HTTP/1.1 400 Bad Request
@@ -369,8 +258,8 @@ the <tt class="docutils literal"><span class="pre">osm_roads</span></tt> and <tt
 <div class="highlight-python"><div class="highlight"><pre>GET /&lt;repo&gt;/osm/import[.xml|.json]?&lt;uri=&lt;file path&gt;&gt;[&amp;add=true|false][&amp;noRaw=true|false][&amp;mapping=&lt;mapping file&gt;][&amp;message=&lt;commit message&gt;][&amp;transactionId=&lt;transaction id&gt;]
 </pre></div>
 </div>
-<div class="section" id="id2">
-<h3>Parameters<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p><strong>uri:</strong>
 Mandatory. The path to the <tt class="docutils literal"><span class="pre">.pbf</span></tt> or <tt class="docutils literal"><span class="pre">.xml</span></tt> OSM data file to import.</p>
 <p><strong>add:</strong>
@@ -382,8 +271,8 @@ Boolean. Default: <tt class="docutils literal"><span class="pre">false</span></t
 <p><strong>message:</strong>
 Optional. Message for the commit to create. Only has effect if using a mapping file.</p>
 </div>
-<div class="section" id="id3">
-<h3>Examples<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>Examples<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="a-bad-argument">
 <h4>A bad argument:<a class="headerlink" href="#a-bad-argument" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/osm/import?uri=/data/osm/geofabrik/nonexistent.osm.pbf&quot;
@@ -552,7 +441,8 @@ $ curl -v &quot;http://localhost:8182/commit?transactionId=e0007ea2-96f7-4e5b-be
 
 
       <div class="selfclear pagination-nav">
-          <div class="leftwise"><strong>Previous</strong>: <a href="web-api.html" title="previous chapter">Web-Api Documentation</a></div>
+          <div class="leftwise"><strong>Previous</strong>: <a href="async-tasks.html" title="previous chapter">Web-API Asynchronous tasks</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="geopackage-import-export.html" title="next chapter">GeoPackage import and export Web-API</a></div>
       </div>
       <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
       </div><!-- /#content> -->
@@ -577,18 +467,14 @@ $ curl -v &quot;http://localhost:8182/commit?transactionId=e0007ea2-96f7-4e5b-be
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
 <li><a class="reference internal" href="#">OpenStreetMap Web-Api Documentation</a><ul>
-<li><a class="reference internal" href="#asynchronous-tasks">Asynchronous tasks</a><ul>
+<li><a class="reference internal" href="#osm-download">OSM Download</a><ul>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
 <li><a class="reference internal" href="#examples">Examples</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#osm-download">OSM Download</a><ul>
-<li><a class="reference internal" href="#parameters">Parameters</a></li>
-<li><a class="reference internal" href="#id1">Examples</a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#osm-import">OSM Import</a><ul>
-<li><a class="reference internal" href="#id2">Parameters</a></li>
-<li><a class="reference internal" href="#id3">Examples</a><ul>
+<li><a class="reference internal" href="#id1">Parameters</a></li>
+<li><a class="reference internal" href="#id2">Examples</a><ul>
 <li><a class="reference internal" href="#a-bad-argument">A bad argument:</a></li>
 <li><a class="reference internal" href="#missing-uri-argument">Missing uri argument:</a></li>
 <li><a class="reference internal" href="#proper-sequence-using-a-transaction">Proper sequence, using a transaction:</a></li>
@@ -605,7 +491,8 @@ $ curl -v &quot;http://localhost:8182/commit?transactionId=e0007ea2-96f7-4e5b-be
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
           <ul>
-            <li>Previous: <a href="web-api.html" title="previous chapter">Web-Api Documentation</a></li>
+            <li>Previous: <a href="async-tasks.html" title="previous chapter">Web-API Asynchronous tasks</a></li>
+            <li>Next: <a href="geopackage-import-export.html" title="next chapter">GeoPackage import and export Web-API</a></li>
           </ul>
         </div>
         <div class="section">

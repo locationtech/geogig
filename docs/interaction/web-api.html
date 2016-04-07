@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Web-Api Documentation &mdash; GeoGig 1.0-RC1 User Manual</title>
+  <title>Web-Api Documentation &mdash; GeoGig 1.0-RC2 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,14 +20,14 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC1',
+        VERSION:     '1.0-RC2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC1 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.0-RC2 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
-      <link rel="next" title="OpenStreetMap Web-Api Documentation" href="osm-web-api.html" />
+      <link rel="next" title="Web-API Asynchronous tasks" href="async-tasks.html" />
       <link rel="prev" title="Using GeoGig with OpenStreetMap data" href="osm.html" />
 </head>
 <body class="interaction/web-api">
@@ -81,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC1 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0-RC2 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>Web-Api Documentation</li>
 </ul>
@@ -90,7 +90,7 @@
     <a href="../genindex.html" title="General Index"
        accesskey="I">index</a></li>
   <li>
-    <a href="osm-web-api.html" title="OpenStreetMap Web-Api Documentation"
+    <a href="async-tasks.html" title="Web-API Asynchronous tasks"
        accesskey="N">next</a>|</li>
   <li>
     <a href="osm.html" title="Using GeoGig with OpenStreetMap data"
@@ -100,7 +100,7 @@
   <div class="section" id="web-api-documentation">
 <h1>Web-Api Documentation<a class="headerlink" href="#web-api-documentation" title="Permalink to this headline">¶</a></h1>
 <p>This will walk you through GeoGig&#8217;s web-api and all of its currently supported functionality. This doc also assumes that you already know what any given command does, this is strictly how to use these commands. First I will explain an easy way to get the web-api up and running.</p>
-<p>If you don&#8217;t already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web-api up and running after you have built the latest GeoGig go into your repository and run <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></tt>. This will set up a jetty server with your repository and give you access to the web-api. Now you just need to open up a web browser and go to localhost:8182/log to make sure it comes up. After you have gotten it up and running now you can test any of the commands listed here.</p>
+<p>If you don&#8217;t already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web-api up and running after you have built the latest GeoGig go into your repository and run <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></tt>. This will set up a jetty server with your repository and give you access to the web-api. Now you just need to open up a web browser and go to localhost:8182/repos/&lt;repo name&gt;/log to make sure it comes up. After you have gotten it up and running now you can test any of the commands listed here.</p>
 <p>All web-api commands have transaction support, which means you can run the web-api commands beginTransaction to start a transaction and then use the id that is returned to do other commands on that transaction instead of the actual repository. After you are done with everything on the transaction you just have call endTransaction through the web-api and pass it the transaction id. Some commands require a transaction to preserve the stability of the repository, those that require it will have <tt class="docutils literal"><span class="pre">(-T)</span></tt> next to the name of the command in this doc. To pass the transaction id you just need to use the transactionId option and set it equal to the id that beginTransaction returns. Some commands also have other options that are required for that command to work they will have a <tt class="docutils literal"><span class="pre">(-R)</span></tt> next to them. Any options that have notes associated with them have and asterisk next to them.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -127,7 +127,7 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/add?path=tree/fid&amp;transactionId=id
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/add?path=tree/fid&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -156,7 +156,7 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/blame?path=pathToFeature&amp;commit=commitId
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/blame?path=pathToFeature&amp;commit=commitId
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -185,7 +185,7 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/branch?list=true&amp;remote=true
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/branch?list=true&amp;remote=true
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -226,7 +226,7 @@
 </ol>
 </div></blockquote>
 <p><strong>Examples:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/checkout?branch=master&amp;transactionId=id
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/checkout?branch=master&amp;transactionId=id
        localhost:8182/checkout?path=tree/fid&amp;ours=true&amp;transactionId=id
 </pre></div>
 </div>
@@ -276,7 +276,7 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/commit?authorName=John&amp;authorEmail=john@example.com&amp;message=something&amp;all=true&amp;transactionId=id
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/commit?authorName=John&amp;authorEmail=john@example.com&amp;message=something&amp;all=true&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -329,7 +329,7 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/diff?oldRefSpec=commitId1&amp;newRefSpec=commitId2&amp;showGeometryChanges=true&amp;show=100
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/diff?oldRefSpec=commitId1&amp;newRefSpec=commitId2&amp;showGeometryChanges=true&amp;show=100
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -364,7 +364,7 @@
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/fetch?prune=true&amp;remote=origin
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/fetch?prune=true&amp;remote=origin
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -467,8 +467,8 @@
 </ol>
 </div></blockquote>
 <p><strong>Examples:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/log?path=treeName&amp;firstParentOnly=true
-localhost:8182/log?summary=true&amp;path=treeName&amp;output_format=csv
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/log?path=treeName&amp;firstParentOnly=true
+localhost:8182/repos/&lt;repo name&gt;/log?summary=true&amp;path=treeName&amp;output_format=csv
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -517,7 +517,7 @@ localhost:8182/log?summary=true&amp;path=treeName&amp;output_format=csv
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/merge?commit=branch1&amp;noCommit=true&amp;transactionId=id
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/merge?commit=branch1&amp;noCommit=true&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -572,7 +572,7 @@ localhost:8182/log?summary=true&amp;path=treeName&amp;output_format=csv
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/pull?remoteName=origin&amp;all=true&amp;ref=master:master
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/pull?remoteName=origin&amp;all=true&amp;ref=master:master
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -615,7 +615,7 @@ localhost:8182/log?summary=true&amp;path=treeName&amp;output_format=csv
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/push?ref=master:master&amp;remoteName=origin
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/push?ref=master:master&amp;remoteName=origin
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -700,11 +700,11 @@ localhost:8182/log?summary=true&amp;path=treeName&amp;output_format=csv
 </ol>
 </div></blockquote>
 <p><strong>Examples:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/remote?list=true&amp;verbose=true
-localhost:8182/remote?remove=true&amp;remoteName=origin
-localhost:8182/remote?remoteName=origin&amp;remoteURL=urlToRepo.com
-localhost:8182/remote?ping=true&amp;remoteName=origin
-localhost:8182/remote?update=true&amp;newName=origin&amp;remoteName=remote1&amp;remoteURL=urlToRepo.com
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/remote?list=true&amp;verbose=true
+localhost:8182/repos/&lt;repo name&gt;/remote?remove=true&amp;remoteName=origin
+localhost:8182/repos/&lt;repo name&gt;/remote?remoteName=origin&amp;remoteURL=urlToRepo.com
+localhost:8182/repos/&lt;repo name&gt;/remote?ping=true&amp;remoteName=origin
+localhost:8182/repos/&lt;repo name&gt;/remote?update=true&amp;newName=origin&amp;remoteName=remote1&amp;remoteURL=urlToRepo.com
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -733,8 +733,8 @@ localhost:8182/remote?update=true&amp;newName=origin&amp;remoteName=remote1&amp;
 </ol>
 </div></blockquote>
 <p><strong>Examples:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/remove?path=treeName/fid&amp;transactionId=id
-localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName/fid&amp;transactionId=id
+localhost:8182/repos/&lt;repo name&gt;/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -763,7 +763,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/status?limit=100
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/status?limit=100
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -786,7 +786,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/tag?list=true
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/tag?list=true
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -802,7 +802,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 <div><p>none</p>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/version
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/version
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -823,7 +823,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 <div><p>none</p>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/beginTransaction
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/beginTransaction
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -846,7 +846,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/endTransaction?cancel=true&amp;transactionId=id
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/endTransaction?cancel=true&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -887,7 +887,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/featurediff?path=treeName/fid&amp;newTreeish=commitId1&amp;oldTreeish=commitId2
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/featurediff?path=treeName/fid&amp;newTreeish=commitId1&amp;oldTreeish=commitId2
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -942,7 +942,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/ls-tree?showTree=true&amp;recursive=true&amp;verbose=true
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/ls-tree?showTree=true&amp;recursive=true&amp;verbose=true
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -973,7 +973,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/rebuildgraph?quiet=true
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/rebuildgraph?quiet=true
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -996,7 +996,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/refparse?name=master
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/refparse?name=master
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -1031,7 +1031,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/updateref?name=master&amp;newValue=branch1
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/updateref?name=master&amp;newValue=branch1
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -1085,7 +1085,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/getCommitGraph?show=100
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/getCommitGraph?show=100
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -1117,7 +1117,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/resolveconflict?path=pathToFeature&amp;objectid=featureObjectId
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/resolveconflict?path=pathToFeature&amp;objectid=featureObjectId
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -1179,7 +1179,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </ol>
 </div></blockquote>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/revertfeature?authorName=John&amp;authorEmail=John@example.com&amp;commitMessage=&quot;Reverted Feature&quot;&amp;mergeMessage=&quot;Merge of reverted feature&quot;&amp;newCommitId=commitId1&amp;oldCommitId=commitId2&amp;path=pathToFeature
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/revertfeature?authorName=John&amp;authorEmail=John@example.com&amp;commitMessage=&quot;Reverted Feature&quot;&amp;mergeMessage=&quot;Merge of reverted feature&quot;&amp;newCommitId=commitId1&amp;oldCommitId=commitId2&amp;path=pathToFeature
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -1193,7 +1193,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </div>
 <div class="section" id="repo-commands">
 <h2>Repo Commands<a class="headerlink" href="#repo-commands" title="Permalink to this headline">¶</a></h2>
-<p>These commands can be used by using the <tt class="docutils literal"><span class="pre">repo/</span></tt> endpoint, instead of the standard <tt class="docutils literal"><span class="pre">/</span></tt> endpoint.</p>
+<p>These commands can be used by using the <tt class="docutils literal"><span class="pre">repos/&lt;repo</span> <span class="pre">name&gt;/repo/</span></tt> endpoint, instead of the standard <tt class="docutils literal"><span class="pre">repos/&lt;repo</span> <span class="pre">name&gt;/</span></tt> endpoint.</p>
 <blockquote>
 <div><div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1223,7 +1223,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </pre></div>
 </div>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repo/mergefeature
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/repo/mergefeature
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -1236,7 +1236,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 <blockquote>
 <div><p>This endpoint can be used to get a list of all refs in the repository and what they point to.  Similar to the Branch command with the list option from above.</p>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repo/manifest
+<div class="highlight-python"><div class="highlight"><pre>localhost:8182/repos/&lt;repo name&gt;/repo/manifest
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -1247,17 +1247,17 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 </li>
 </ul>
 </div>
-</div>
 <div class="section" id="issues">
-<h1>Issues<a class="headerlink" href="#issues" title="Permalink to this headline">¶</a></h1>
+<h2>Issues<a class="headerlink" href="#issues" title="Permalink to this headline">¶</a></h2>
 <p>The main concern with the web-api currently is that it doesn&#8217;t have any kind of authentication on it, which means that anyone with the url can potentially destroy your repo or steal you data with commands like updateref and pull.</p>
 <p>There is also a lot of room for improvement and optimization. There are also several commands that still need to be exposed through the web-api.</p>
+</div>
 </div>
 
 
       <div class="selfclear pagination-nav">
           <div class="leftwise"><strong>Previous</strong>: <a href="osm.html" title="previous chapter">Using GeoGig with OpenStreetMap data</a></div>
-          <div class="rightwise"><strong>Next</strong>: <a href="osm-web-api.html" title="next chapter">OpenStreetMap Web-Api Documentation</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="async-tasks.html" title="next chapter">Web-API Asynchronous tasks</a></div>
       </div>
       <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
       </div><!-- /#content> -->
@@ -1286,9 +1286,9 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
 <li><a class="reference internal" href="#plumbing-commands-supported">Plumbing Commands Supported</a></li>
 <li><a class="reference internal" href="#web-api-specific">Web-Api Specific</a></li>
 <li><a class="reference internal" href="#repo-commands">Repo Commands</a></li>
+<li><a class="reference internal" href="#issues">Issues</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#issues">Issues</a></li>
 </ul>
 
         <div class="section-footer"></div>
@@ -1297,7 +1297,7 @@ localhost:8182/remove?path=treeName&amp;recursive=true&amp;transactionId=id
           <h3>Continue Reading</h3>
           <ul>
             <li>Previous: <a href="osm.html" title="previous chapter">Using GeoGig with OpenStreetMap data</a></li>
-            <li>Next: <a href="osm-web-api.html" title="next chapter">OpenStreetMap Web-Api Documentation</a></li>
+            <li>Next: <a href="async-tasks.html" title="next chapter">Web-API Asynchronous tasks</a></li>
           </ul>
         </div>
         <div class="section">

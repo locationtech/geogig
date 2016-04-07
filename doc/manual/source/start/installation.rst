@@ -29,7 +29,7 @@ To build GeoGig and have an executable binary that you can run:
 
 #. Clone the GeoGig source code repository. To do so, create a new folder where you want the GeoGig source code to be kept, open a terminal and move to that folder. Now type the following::
 
-	   git clone http://github.com/boundlessgeo/GeoGig.git
+	   git clone https://github.com/locationtech/geogig.git
 
 #. If not already on your system, install a `Java JDK <http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html>`_. A Java JRE is not sufficient to build GeoGig.
 

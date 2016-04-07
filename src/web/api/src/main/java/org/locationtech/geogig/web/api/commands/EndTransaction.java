@@ -23,6 +23,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -36,7 +37,11 @@ import com.google.common.base.Optional;
 public class EndTransaction extends AbstractWebAPICommand {
 
     private boolean cancel;
-
+    
+    public EndTransaction (ParameterSet options) {
+        super(options);
+        setCancel(Boolean.valueOf(options.getFirstValue("cancel", "false")));
+    }
     /**
      * Mutator for the cancel variable
      * 
@@ -54,7 +59,7 @@ public class EndTransaction extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (this.getTransactionId() == null) {
             throw new CommandSpecException("There isn't a transaction to end.");
         }

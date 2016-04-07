@@ -28,7 +28,7 @@ import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryInitializer;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,7 +135,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             }
 
             try {
-                RepositoryInitializer.lookup(repository);
+                RepositoryResolver.lookup(repository);
             } catch (IllegalArgumentException e) {
                 return false;
             }
@@ -190,9 +190,9 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
 
         final URI repositoryDirectory = resolver.resolve(repositoryLocation);
 
-        final RepositoryInitializer initializer;
+        final RepositoryResolver initializer;
         try {
-            initializer = RepositoryInitializer.lookup(repositoryDirectory);
+            initializer = RepositoryResolver.lookup(repositoryDirectory);
         } catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage(), e);
         }
@@ -254,7 +254,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         String defaultNamespace = (String) DEFAULT_NAMESPACE.lookUp(params);
 
         URI repositoryRoot = URI.create((String) REPOSITORY.lookUp(params));
-        RepositoryInitializer initializer = RepositoryInitializer.lookup(repositoryRoot);
+        RepositoryResolver initializer = RepositoryResolver.lookup(repositoryRoot);
         if (initializer.repoExists(repositoryRoot)) {
             throw new IOException("Repository already exists " + repositoryRoot);
         }

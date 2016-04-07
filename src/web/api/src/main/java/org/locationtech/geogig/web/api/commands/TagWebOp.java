@@ -17,6 +17,7 @@ import org.locationtech.geogig.api.porcelain.TagListOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 /**
@@ -28,6 +29,11 @@ import org.locationtech.geogig.web.api.ResponseWriter;
 public class TagWebOp extends AbstractWebAPICommand {
 
     private boolean list;
+
+    public TagWebOp(ParameterSet options) {
+        super(options);
+        setList(Boolean.valueOf(options.getFirstValue("list", "false")));
+    }
 
     /**
      * Mutator for the list variable
@@ -44,7 +50,7 @@ public class TagWebOp extends AbstractWebAPICommand {
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (list) {
             final Context geogig = this.getCommandLocator(context);
             final List<RevTag> tags = geogig.command(TagListOp.class).call();

@@ -15,6 +15,7 @@ import org.locationtech.geogig.api.plumbing.RebuildGraphOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.collect.ImmutableList;
@@ -28,6 +29,11 @@ import com.google.common.collect.ImmutableList;
 public class RebuildGraphWebOp extends AbstractWebAPICommand {
 
     private boolean quiet = false;
+
+    public RebuildGraphWebOp(ParameterSet options) {
+        super(options);
+        setQuiet(Boolean.valueOf(options.getFirstValue("quiet", "false")));
+    }
 
     /**
      * Mutator for the quiet variable
@@ -44,7 +50,7 @@ public class RebuildGraphWebOp extends AbstractWebAPICommand {
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         final Context geogig = this.getCommandLocator(context);
 
         final ImmutableList<ObjectId> updatedObjects = geogig.command(RebuildGraphOp.class).call();

@@ -15,6 +15,7 @@ import org.locationtech.geogig.api.porcelain.VersionOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 /**
@@ -25,13 +26,17 @@ import org.locationtech.geogig.web.api.ResponseWriter;
 
 public class VersionWebOp extends AbstractWebAPICommand {
 
+    public VersionWebOp(ParameterSet options) {
+        super(options);
+    }
+
     /**
      * Runs the command and builds the appropriate response.
      * 
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         final Context geogig = this.getCommandLocator(context);
 
         final VersionInfo info = geogig.command(VersionOp.class).call();

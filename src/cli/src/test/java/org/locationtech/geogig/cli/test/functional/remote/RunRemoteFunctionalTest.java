@@ -22,7 +22,7 @@ import cucumber.api.junit.Cucumber;
 @RunWith(Cucumber.class)
 @CucumberOptions(//
 // features = { "src/test/resources/org/locationtech/geogig/cli/test/remote/Fetch.feature" },//
-monochrome = true, format = { "pretty", "html:target/cucumber-report" }, strict = true,//
+monochrome = true, plugin = { "pretty", "html:cucumber-report-remote" }, strict = true,//
 // the glue option tells cucumber where else to look for step definitions
 glue = { "org.locationtech.geogig.cli.test.functional.general" })
 public class RunRemoteFunctionalTest {

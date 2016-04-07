@@ -218,8 +218,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
         }
         this.conflicts.open();
         this.blobStore.open();
-        LOGGER.debug("Object database opened at {}. Transactional: {}", env.getHome(), objectDb
-                .getConfig().getTransactional());
+        LOGGER.debug("Object database opened at {}. Transactional: {}", env.getHome(),
+                objectDb.getConfig().getTransactional());
 
     }
 
@@ -419,7 +419,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
             int count = 0;
             List<Future<Void>> pendingWrites = new ArrayList<Future<Void>>();
             try {
-                InternalByteArrayOutputStream out = new InternalByteArrayOutputStream(this.buffSize);
+                InternalByteArrayOutputStream out = new InternalByteArrayOutputStream(
+                        this.buffSize);
                 TreeMap<ObjectId, int[]> offsets = Maps.newTreeMap(ObjectId.NATURAL_ORDER);
 
                 int objectsInBuffer = 0;
@@ -450,8 +451,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
                 if (!offsets.isEmpty()) {
                     Future<Void> future = insertSortedObjects(offsets, out);
                     pendingWrites.add(future);
-                    LOGGER.debug("Inserted {} objects with a byte buffer of {} KB",
-                            objectsInBuffer, (out.size() / 1024));
+                    LOGGER.debug("Inserted {} objects with a byte buffer of {} KB", objectsInBuffer,
+                            (out.size() / 1024));
                 }
                 waitForWrites(pendingWrites);
             } catch (Exception e) {
@@ -464,8 +465,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
             return count;
         }
 
-        private void waitForWrites(List<Future<Void>> pendingWrites) throws InterruptedException,
-                ExecutionException {
+        private void waitForWrites(List<Future<Void>> pendingWrites)
+                throws InterruptedException, ExecutionException {
             if (pendingWrites.isEmpty()) {
                 return;
             }
@@ -551,8 +552,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
                 final boolean transactional = objectDb.getConfig().getTransactional();
                 if (transactional) {
                     commit(transaction);
-                    LOGGER.trace("Committed {} inserts to {}", numObjects, objectDb
-                            .getEnvironment().getHome());
+                    LOGGER.trace("Committed {} inserts to {}", numObjects,
+                            objectDb.getEnvironment().getHome());
                 } else {
                     int totalWritten;
                     synchronized (bytesWritten) {
@@ -747,11 +748,21 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final BulkOpListener listener) {
+        return getAll(ids, listener, RevObject.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends RevObject> Iterator<T> getAll(final Iterable<ObjectId> ids,
+            final BulkOpListener listener, final Class<T> type) {
+
         Preconditions.checkNotNull(ids, "ids is null");
         Preconditions.checkNotNull(listener, "listener is null");
+        Preconditions.checkNotNull(type, "type is null");
         checkOpen();
 
-        return new CursorRevObjectIterator(ids.iterator(), listener);
+        return (Iterator<T>) new CursorRevObjectIterator(ids.iterator(), listener, type);
+
     }
 
     private class CursorRevObjectIterator extends AbstractIterator<RevObject> implements Closeable {
@@ -769,15 +780,18 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
         private Iterator<ObjectId> sortedIds;
 
+        private final Class<?> filter;
+
         /**
          * Uses a transaction to open a read only cursor for it to work when called from a different
          * threads than the one it was created at. The transaction is aborted at {@link #close()}
          */
         public CursorRevObjectIterator(final Iterator<ObjectId> objectIds,
-                final BulkOpListener listener) {
+                final BulkOpListener listener, final Class<?> filter) {
 
+            this.filter = filter;
             this.unsortedIds = Iterators.partition(objectIds, getBulkPartitionSize());
-            this.sortedIds = Iterators.emptyIterator();
+            this.sortedIds = Collections.emptyIterator();
 
             this.listener = listener;
             CursorConfig cursorConfig = new CursorConfig();
@@ -828,7 +842,12 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
                         InputStream rawData;
                         rawData = new LZFInputStream(new ByteArrayInputStream(data.getData()));
                         found = reader.read(id, rawData);
-                        listener.found(found.getId(), data.getSize());
+                        if (filter.isAssignableFrom(found.getClass())) {
+                            listener.found(found.getId(), data.getSize());
+                        } else {
+                            found = null;
+                            listener.notFound(id);
+                        }
                     } else {
                         listener.notFound(id);
                     }
@@ -862,8 +881,8 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     private int getBulkPartitionSize() {
-        Optional<Integer> configuredSize = configDB
-                .get(BULK_PARTITIONING_CONFIG_KEY, Integer.class);
+        Optional<Integer> configuredSize = configDB.get(BULK_PARTITIONING_CONFIG_KEY,
+                Integer.class);
         return configuredSize.or(DEFAULT_BULK_PARTITIONING).intValue();
     }
 

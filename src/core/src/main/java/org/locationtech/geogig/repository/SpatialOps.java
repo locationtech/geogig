@@ -9,16 +9,22 @@
  */
 package org.locationtech.geogig.repository;
 
+import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevTree;
 import org.opengis.geometry.BoundingBox;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -109,4 +115,52 @@ public class SpatialOps {
         }
         return env;
     }
+
+    /**
+     * Parses a bounding box in the format {@code <minx,miny,maxx,maxy,SRS>} where SRS is an EPSG
+     * code like {@code EPSG:4325} etc.
+     * <p>
+     * The oridinates must be given in "longitude first" format, and the SRS will be decoded the
+     * same way.
+     * 
+     * @throws IllegalArgumentException if the argument doesn't match the expected format, or the
+     *         SRS can't be parsed.
+     */
+    @Nullable
+    public static ReferencedEnvelope parseBBOX(final @Nullable String bboxArg) {
+        if (bboxArg == null) {
+            return null;
+        }
+        List<String> split = Splitter.on(',').omitEmptyStrings().splitToList(bboxArg);
+        if (split.size() != 5) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid bbox parameter: '%s'. Expected format: <minx,miny,maxx,maxy,CRS>",
+                    bboxArg));
+        }
+        double minx;
+        double miny;
+        double maxx;
+        double maxy;
+        try {
+            minx = Double.parseDouble(split.get(0));
+            miny = Double.parseDouble(split.get(1));
+            maxx = Double.parseDouble(split.get(2));
+            maxy = Double.parseDouble(split.get(3));
+        } catch (NumberFormatException nfe) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid bbox parameter: '%s'. Expected format: <minx,miny,maxx,maxy,CRS>",
+                    bboxArg));
+        }
+        final String srs = split.get(4);
+        final CoordinateReferenceSystem crs;
+        try {
+            crs = CRS.decode(srs, true);
+        } catch (FactoryException e) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid bbox parameter: '%s'. Can't parse CRS '%s'", bboxArg, srs));
+        }
+        ReferencedEnvelope env = new ReferencedEnvelope(minx, maxx, miny, maxy, crs);
+        return env;
+    }
+
 }

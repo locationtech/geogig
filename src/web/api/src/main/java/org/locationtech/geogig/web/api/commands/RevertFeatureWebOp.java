@@ -35,6 +35,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -63,6 +64,17 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
     private Optional<String> commitMessage = Optional.absent();
 
     private Optional<String> mergeMessage = Optional.absent();
+
+    public RevertFeatureWebOp(ParameterSet options) {
+        super(options);
+        setAuthorName(options.getFirstValue("authorName", null));
+        setAuthorEmail(options.getFirstValue("authorEmail", null));
+        setCommitMessage(options.getFirstValue("commitMessage", null));
+        setMergeMessage(options.getFirstValue("mergeMessage", null));
+        setNewCommitId(options.getFirstValue("newCommitId", null));
+        setOldCommitId(options.getFirstValue("oldCommitId", null));
+        setPath(options.getFirstValue("path", null));
+    }
 
     /**
      * Mutator for the featurePath variable
@@ -127,7 +139,7 @@ public class RevertFeatureWebOp extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (this.getTransactionId() == null) {
             throw new CommandSpecException(
                     "No transaction was specified, revert feature requires a transaction to preserve the stability of the repository.");

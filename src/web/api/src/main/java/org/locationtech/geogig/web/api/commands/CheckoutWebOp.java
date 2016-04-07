@@ -18,6 +18,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -37,6 +38,14 @@ public class CheckoutWebOp extends AbstractWebAPICommand {
     private boolean theirs;
 
     private String path;
+
+    public CheckoutWebOp(ParameterSet options) {
+        super(options);
+        setName(options.getFirstValue("branch", null));
+        setOurs(Boolean.valueOf(options.getFirstValue("ours", "false")));
+        setTheirs(Boolean.valueOf(options.getFirstValue("theirs", "false")));
+        setPath(options.getFirstValue("path", null));
+    }
 
     /**
      * Mutator for the branchOrCommit variable
@@ -80,7 +89,7 @@ public class CheckoutWebOp extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (this.getTransactionId() == null) {
             throw new CommandSpecException(
                     "No transaction was specified, checkout requires a transaction to preserve the stability of the repository.");

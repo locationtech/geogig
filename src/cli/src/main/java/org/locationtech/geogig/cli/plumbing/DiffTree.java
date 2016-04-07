@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -97,7 +98,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
         if (paths.isEmpty()) {
             diffEntries = diff.setProgressListener(cli.getProgressListener()).call();
         } else {
-            diffEntries = Iterators.emptyIterator();
+            diffEntries = Collections.emptyIterator();
             for (String path : paths) {
                 Iterator<DiffEntry> moreEntries = diff.setPathFilter(path)
                         .setProgressListener(cli.getProgressListener()).call();

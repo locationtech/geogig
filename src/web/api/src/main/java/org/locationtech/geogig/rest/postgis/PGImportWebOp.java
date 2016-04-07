@@ -24,9 +24,9 @@ import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import org.locationtech.geogig.rest.AsyncContext;
-import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.TransactionalResource;
 import org.locationtech.geogig.rest.Variants;
+import org.locationtech.geogig.rest.geotools.ImportRepresentation;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
@@ -37,7 +37,6 @@ import org.restlet.resource.Variant;
 import com.beust.jcommander.internal.Maps;
 
 public class PGImportWebOp extends TransactionalResource {
-
     @Override
     public void init(org.restlet.Context context, Request request, Response response) {
         super.init(context, request, response);
@@ -58,25 +57,23 @@ public class PGImportWebOp extends TransactionalResource {
         final boolean all = Boolean.valueOf(options.getFirstValue("all", "false"));
         final boolean add = Boolean.valueOf(options.getFirstValue("add", "false"));
         final boolean forceFeatureType = Boolean
-                .valueOf(options.getFirstValue("forceFeatureType", "false"));
+            .valueOf(options.getFirstValue("forceFeatureType", "false"));
         final boolean alter = Boolean.valueOf(options.getFirstValue("alter", "false"));
         final String dest = options.getFirstValue("dest");
         final String fidAttrib = options.getFirstValue("fidAttrib");
         ImportOp command = context.command(ImportOp.class);
         command.setDataStore(dataStore).setTable(table).setAll(all).setOverwrite(!add)
-                .setAdaptToDefaultFeatureType(!forceFeatureType).setAlter(alter)
-                .setDestinationPath(dest).setFidAttribute(fidAttrib);
+            .setAdaptToDefaultFeatureType(!forceFeatureType).setAlter(alter)
+            .setDestinationPath(dest).setFidAttribute(fidAttrib);
 
-        AsyncCommand<RevTree> asyncCommand;
+        AsyncContext.AsyncCommand<RevTree> asyncCommand;
 
         URI repo = context.repository().getLocation();
-        String description = String.format("postgis import table %s into repository: %s", table,
-                repo);
-        asyncCommand = AsyncContext.get().run(command, description);
+        asyncCommand = AsyncContext.get().run(command, getCommandDescription(table, all, repo));
 
         final String rootPath = request.getRootRef().toString();
         MediaType mediaType = variant.getMediaType();
-        return new RevTreeRepresentation(mediaType, asyncCommand, rootPath);
+        return new ImportRepresentation(mediaType, asyncCommand, rootPath);
     }
 
     private DataStore getDataStore(Form options) {
@@ -121,5 +118,10 @@ public class PGImportWebOp extends TransactionalResource {
         }
 
         return dataStore;
+    }
+
+    private String getCommandDescription(String table, boolean all, URI repo) {
+        return String.format("postgis import table %s into repository: %s", table,
+                repo);
     }
 }

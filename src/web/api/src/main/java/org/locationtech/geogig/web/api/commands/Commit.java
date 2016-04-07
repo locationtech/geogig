@@ -23,6 +23,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -41,6 +42,14 @@ public class Commit extends AbstractWebAPICommand {
     private Optional<String> authorName = Optional.absent();
 
     private Optional<String> authorEmail = Optional.absent();
+
+    public Commit(ParameterSet options) {
+        super(options);
+        setAll(Boolean.valueOf(options.getFirstValue("all", "false")));
+        setMessage(options.getFirstValue("message", null));
+        setAuthorName(options.getFirstValue("authorName", null));
+        setAuthorEmail(options.getFirstValue("authorEmail", null));
+    }
 
     /**
      * Mutator for the message variable
@@ -81,7 +90,7 @@ public class Commit extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (this.getTransactionId() == null) {
             throw new CommandSpecException(
                     "No transaction was specified, commit requires a transaction to preserve the stability of the repository.");

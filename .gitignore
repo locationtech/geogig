@@ -2,7 +2,9 @@ target
 .classpath
 .project
 .settings
+*~
 bin/
+cucumber-report
 git.properties
 # Netbeans project files
 nb-configuration.xml

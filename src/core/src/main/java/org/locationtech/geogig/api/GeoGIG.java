@@ -19,6 +19,7 @@ import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -81,9 +82,10 @@ public class GeoGIG {
     public GeoGIG(final Context injector, @Nullable final File workingDir) {
         Preconditions.checkNotNull(injector, "injector");
         this.context = injector;
+        Platform platform = injector.platform();
+        File target = workingDir == null ? platform.pwd() : workingDir;
         if (workingDir != null) {
-            Platform instance = injector.platform();
-            instance.setWorkingDir(workingDir);
+            platform.setWorkingDir(workingDir);
         }
     }
 
@@ -150,8 +152,10 @@ public class GeoGIG {
         final Optional<URI> repoLocation = command(ResolveGeogigURI.class).call();
         if (repoLocation.isPresent()) {
             try {
-                repository = context.repository();
-                repository.open();
+                if (RepositoryResolver.lookup(repoLocation.get()).repoExists(repoLocation.get())) {
+                    repository = context.repository();
+                    repository.open();
+                }
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
@@ -183,5 +187,18 @@ public class GeoGIG {
 
     public boolean isOpen() {
         return repository != null;
+    }
+
+    /**
+     * Calls on {@link ResolveGeogigURI} to get the repository's URI, looks up the proper
+     * {@link RepsitoryResolver} through the provided SPI mechanism, and calls
+     * {@link RepositoryResolver#delete(URI)} to delete the repo.
+     * <p>
+     * Precondition: {#link #isOpen()} must return {code false}
+     */
+    public static void delete(URI repoURI) throws Exception {
+        RepositoryResolver resolver = RepositoryResolver.lookup(repoURI);
+        resolver.delete(repoURI);
+
     }
 }

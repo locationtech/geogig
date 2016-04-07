@@ -25,6 +25,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -45,6 +46,14 @@ public class MergeWebOp extends AbstractWebAPICommand {
     private Optional<String> authorName = Optional.absent();
 
     private Optional<String> authorEmail = Optional.absent();
+
+    public MergeWebOp(ParameterSet options) {
+        super(options);
+        setNoCommit(Boolean.valueOf(options.getFirstValue("noCommit", "false")));
+        setCommit(options.getFirstValue("commit", null));
+        setAuthorName(options.getFirstValue("authorName", null));
+        setAuthorEmail(options.getFirstValue("authorEmail", null));
+    }
 
     /**
      * Mutator for the noCommit variable
@@ -86,7 +95,7 @@ public class MergeWebOp extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (this.getTransactionId() == null) {
             throw new CommandSpecException(
                     "No transaction was specified, merge requires a transaction to preserve the stability of the repository.");

@@ -16,6 +16,7 @@ import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 /**
@@ -29,6 +30,13 @@ public class PushWebOp extends AbstractWebAPICommand {
     private boolean pushAll;
 
     private String refSpec;
+
+    public PushWebOp(ParameterSet options) {
+        super(options);
+        setPushAll(Boolean.valueOf(options.getFirstValue("all", "false")));
+        setRefSpec(options.getFirstValue("ref", null));
+        setRemoteName(options.getFirstValue("remoteName", null));
+    }
 
     /**
      * Mutator for the remoteName variable
@@ -63,7 +71,7 @@ public class PushWebOp extends AbstractWebAPICommand {
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         final Context geogig = this.getCommandLocator(context);
 
         PushOp command = geogig.command(PushOp.class);

@@ -9,12 +9,16 @@
  */
 package org.locationtech.geogig.rest.repository;
 
+import java.util.Iterator;
+
 import org.locationtech.geogig.api.GeoGIG;
 import org.restlet.data.Request;
 
 import com.google.common.base.Optional;
 
 public interface RepositoryProvider {
+
+    static final String BASE_REPOSITORY_ROUTE = "repos";
 
     /**
      * Key used too lookup the {@link RepositoryProvider} instance in the
@@ -23,5 +27,22 @@ public interface RepositoryProvider {
     String KEY = "__REPOSITORY_PROVIDER_KEY__";
 
     public Optional<GeoGIG> getGeogig(Request request);
+
+    /**
+     * Deletes the repository that resolved from the request argument.
+     * <p>
+     * Implementation detail: the repository instance is removed from the provider's cache.
+     */
+    void delete(Request request);
+
+    /**
+     * Signals to the repository provider that a repository may no longer be valid.
+     */
+    void invalidate(String repoName);
+
+    /**
+     * @return an Iterator that walks through the names of all the repositories provided.
+     */
+    public Iterator<String> findRepositories();
 
 }

@@ -23,11 +23,11 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.repository.RevTreeBuilder2;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.util.concurrent.FakeTimeLimiter;
 import com.google.common.util.concurrent.MoreExecutors;
 
 public class RevObjectTestSupport {
@@ -49,25 +49,27 @@ public class RevObjectTestSupport {
             RevTree subtree = createFeaturesTreeBuilder(source, "subtree" + treeN,
                     featuresPerSubtre).build();
             source.put(subtree);
-            builder.put(Node.create("subtree" + treeN, subtree.getId(), metadataId, TYPE.TREE, null));
+            builder.put(
+                    Node.create("subtree" + treeN, subtree.getId(), metadataId, TYPE.TREE, null));
         }
         return builder;
     }
 
-    public static RevTreeBuilder createFeaturesTreeBuilder(ObjectDatabase source,
+    public static RevTreeBuilder createFeaturesTreeBuilder(ObjectStore source,
             final String namePrefix, final int numEntries) {
         return createFeaturesTreeBuilder(source, namePrefix, numEntries, 0, false);
     }
 
-    public static RevTree createFeaturesTree(ObjectDatabase source, final String namePrefix,
+    public static RevTree createFeaturesTree(ObjectStore source, final String namePrefix,
             final int numEntries) {
         RevTree tree = createFeaturesTreeBuilder(source, namePrefix, numEntries).build();
         source.put(tree);
         return tree;
     }
 
-    public static RevTreeBuilder createFeaturesTreeBuilder(ObjectDatabase source,
-            final String namePrefix, final int numEntries, final int startIndex, boolean randomIds) {
+    public static RevTreeBuilder createFeaturesTreeBuilder(ObjectStore source,
+            final String namePrefix, final int numEntries, final int startIndex,
+            boolean randomIds) {
 
         RevTreeBuilder tree = new RevTreeBuilder(source);
         for (int i = startIndex; i < startIndex + numEntries; i++) {
@@ -86,7 +88,8 @@ public class RevObjectTestSupport {
     }
 
     public static RevTreeBuilder2 createLargeFeaturesTreeBuilder(ObjectDatabase source,
-            final String namePrefix, final int numEntries, final int startIndex, boolean randomIds) {
+            final String namePrefix, final int numEntries, final int startIndex,
+            boolean randomIds) {
 
         Platform platform = new DefaultPlatform();// for tmp directory lookup
         ExecutorService executorService = MoreExecutors.sameThreadExecutor();
@@ -113,11 +116,15 @@ public class RevObjectTestSupport {
         return featureNode(namePrefix, index, false);
     }
 
+    private static Random RND = new Random();
+
     public static Node featureNode(String namePrefix, int index, boolean randomIds) {
         String name = namePrefix + String.valueOf(index);
         ObjectId oid;
         if (randomIds) {
-            oid = ObjectId.forString(name + index + String.valueOf(new Random(index).nextInt()));
+            byte[] raw = new byte[ObjectId.NUM_BYTES];
+            RND.nextBytes(raw);
+            oid = ObjectId.createNoClone(raw);
         } else {// predictable id
             oid = ObjectId.forString(name);
         }

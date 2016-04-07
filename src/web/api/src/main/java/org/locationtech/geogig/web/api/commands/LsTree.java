@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 /**
@@ -36,6 +38,15 @@ public class LsTree extends AbstractWebAPICommand {
     boolean verbose;
 
     List<String> refList;
+
+    public LsTree(ParameterSet options) {
+        super(options);
+        setIncludeTrees(Boolean.valueOf(options.getFirstValue("showTree", "false")));
+        setOnlyTrees(Boolean.valueOf(options.getFirstValue("onlyTree", "false")));
+        setRecursive(Boolean.valueOf(options.getFirstValue("recursive", "false")));
+        setVerbose(Boolean.valueOf(options.getFirstValue("verbose", "false")));
+        setRefList(Arrays.asList(options.getValuesArray("path")));
+    }
 
     /**
      * Mutator for the includeTrees variable
@@ -88,7 +99,7 @@ public class LsTree extends AbstractWebAPICommand {
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         String ref = null;
         if (refList != null && !refList.isEmpty()) {
             ref = refList.get(0);

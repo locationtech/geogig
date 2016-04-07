@@ -3,7 +3,7 @@ Web-Api Documentation
 
 This will walk you through GeoGig's web-api and all of its currently supported functionality. This doc also assumes that you already know what any given command does, this is strictly how to use these commands. First I will explain an easy way to get the web-api up and running.
 
-If you don't already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web-api up and running after you have built the latest GeoGig go into your repository and run ``geogig serve``. This will set up a jetty server with your repository and give you access to the web-api. Now you just need to open up a web browser and go to localhost:8182/log to make sure it comes up. After you have gotten it up and running now you can test any of the commands listed here.
+If you don't already have the GeoGig source from GitHub and a GeoGig repository set up do that first. Next, to get the web-api up and running after you have built the latest GeoGig go into your repository and run ``geogig serve``. This will set up a jetty server with your repository and give you access to the web-api. Now you just need to open up a web browser and go to localhost:8182/repos/<repo name>/log to make sure it comes up. After you have gotten it up and running now you can test any of the commands listed here.
 
 All web-api commands have transaction support, which means you can run the web-api commands beginTransaction to start a transaction and then use the id that is returned to do other commands on that transaction instead of the actual repository. After you are done with everything on the transaction you just have call endTransaction through the web-api and pass it the transaction id. Some commands require a transaction to preserve the stability of the repository, those that require it will have ``(-T)`` next to the name of the command in this doc. To pass the transaction id you just need to use the transactionId option and set it equal to the id that beginTransaction returns. Some commands also have other options that are required for that command to work they will have a ``(-R)`` next to them. Any options that have notes associated with them have and asterisk next to them.
 
@@ -28,7 +28,7 @@ Porcelain Commands Supported
  	 
  	 ::
 
-	   localhost:8182/add?path=tree/fid&transactionId=id
+	   localhost:8182/repos/<repo name>/add?path=tree/fid&transactionId=id
 	   
 	 **Output:**
 	
@@ -56,7 +56,7 @@ Porcelain Commands Supported
 		
  	::
  
- 	  localhost:8182/blame?path=pathToFeature&commit=commitId
+ 	  localhost:8182/repos/<repo name>/blame?path=pathToFeature&commit=commitId
 	
 	**Output:**
 	
@@ -84,7 +84,7 @@ Porcelain Commands Supported
 		
  	 ::
 
-	   localhost:8182/branch?list=true&remote=true
+	   localhost:8182/repos/<repo name>/branch?list=true&remote=true
 	
 	 **Output:**
 	
@@ -124,7 +124,7 @@ Porcelain Commands Supported
 		
  	 ::
 
-	   localhost:8182/checkout?branch=master&transactionId=id
+	   localhost:8182/repos/<repo name>/checkout?branch=master&transactionId=id
 	       	  localhost:8182/checkout?path=tree/fid&ours=true&transactionId=id
 	
 	 **Output:**
@@ -167,7 +167,7 @@ Porcelain Commands Supported
 		
  	::
 
-	 localhost:8182/commit?authorName=John&authorEmail=john@example.com&message=something&all=true&transactionId=id
+	 localhost:8182/repos/<repo name>/commit?authorName=John&authorEmail=john@example.com&message=something&all=true&transactionId=id
 	
 	**Output:**
 	
@@ -219,7 +219,7 @@ Porcelain Commands Supported
 		
  	::
 
-	  localhost:8182/diff?oldRefSpec=commitId1&newRefSpec=commitId2&showGeometryChanges=true&show=100
+	  localhost:8182/repos/<repo name>/diff?oldRefSpec=commitId1&newRefSpec=commitId2&showGeometryChanges=true&show=100
 	
 	**Output:**
 	
@@ -253,7 +253,7 @@ Porcelain Commands Supported
 		
  	::
  	
-	  localhost:8182/fetch?prune=true&remote=origin
+	  localhost:8182/repos/<repo name>/fetch?prune=true&remote=origin
 	
 	**Output:**
 	
@@ -349,8 +349,8 @@ Porcelain Commands Supported
 		
  	::
 
-	  localhost:8182/log?path=treeName&firstParentOnly=true
-	  localhost:8182/log?summary=true&path=treeName&output_format=csv
+	  localhost:8182/repos/<repo name>/log?path=treeName&firstParentOnly=true
+	  localhost:8182/repos/<repo name>/log?summary=true&path=treeName&output_format=csv
 	
 	**Output:**
 	
@@ -392,7 +392,7 @@ Porcelain Commands Supported
 		
  	::
 
-	  localhost:8182/merge?commit=branch1&noCommit=true&transactionId=id
+	  localhost:8182/repos/<repo name>/merge?commit=branch1&noCommit=true&transactionId=id
 	
 	**Output:**
 	
@@ -440,7 +440,7 @@ Porcelain Commands Supported
 		
  	::
 
-	  localhost:8182/pull?remoteName=origin&all=true&ref=master:master
+	  localhost:8182/repos/<repo name>/pull?remoteName=origin&all=true&ref=master:master
 	
 	**Output:**
 	
@@ -476,7 +476,7 @@ Porcelain Commands Supported
 		
  	::
 
-	  localhost:8182/push?ref=master:master&remoteName=origin
+	  localhost:8182/repos/<repo name>/push?ref=master:master&remoteName=origin
 	  
 	
 	**Output:**
@@ -555,11 +555,11 @@ Porcelain Commands Supported
 		
  	::
 
-	  localhost:8182/remote?list=true&verbose=true
-	  localhost:8182/remote?remove=true&remoteName=origin
-	  localhost:8182/remote?remoteName=origin&remoteURL=urlToRepo.com
-	  localhost:8182/remote?ping=true&remoteName=origin
-	  localhost:8182/remote?update=true&newName=origin&remoteName=remote1&remoteURL=urlToRepo.com
+	  localhost:8182/repos/<repo name>/remote?list=true&verbose=true
+	  localhost:8182/repos/<repo name>/remote?remove=true&remoteName=origin
+	  localhost:8182/repos/<repo name>/remote?remoteName=origin&remoteURL=urlToRepo.com
+	  localhost:8182/repos/<repo name>/remote?ping=true&remoteName=origin
+	  localhost:8182/repos/<repo name>/remote?update=true&newName=origin&remoteName=remote1&remoteURL=urlToRepo.com
 	
 	**Output:**
 	
@@ -587,8 +587,8 @@ Porcelain Commands Supported
 		
  	::
 
-	  localhost:8182/remove?path=treeName/fid&transactionId=id
-	  localhost:8182/remove?path=treeName&recursive=true&transactionId=id
+	  localhost:8182/repos/<repo name>/remove?path=treeName/fid&transactionId=id
+	  localhost:8182/repos/<repo name>/remove?path=treeName&recursive=true&transactionId=id
 	
 	**Output:**
 	
@@ -617,7 +617,7 @@ Porcelain Commands Supported
 		
  	::
 
-	  localhost:8182/status?limit=100
+	  localhost:8182/repos/<repo name>/status?limit=100
 	
 	**Output:**
 	
@@ -639,7 +639,7 @@ Porcelain Commands Supported
 		
  	::
 
-	  localhost:8182/tag?list=true
+	  localhost:8182/repos/<repo name>/tag?list=true
 	
 	**Output:**
 	
@@ -657,7 +657,7 @@ Porcelain Commands Supported
 		
  	::
 
-	  localhost:8182/version
+	  localhost:8182/repos/<repo name>/version
 	
 	**Output:**
 	
@@ -678,7 +678,7 @@ Plumbing Commands Supported
 		
  	::
 
-	  localhost:8182/beginTransaction
+	  localhost:8182/repos/<repo name>/beginTransaction
 	
 	**Output:**
 	
@@ -700,7 +700,7 @@ Plumbing Commands Supported
 		
  	::
 
-	  localhost:8182/endTransaction?cancel=true&transactionId=id
+	  localhost:8182/repos/<repo name>/endTransaction?cancel=true&transactionId=id
 	
 	**Output:**
 	
@@ -740,7 +740,7 @@ Plumbing Commands Supported
 		
  	::
 	 
-	  localhost:8182/featurediff?path=treeName/fid&newTreeish=commitId1&oldTreeish=commitId2
+	  localhost:8182/repos/<repo name>/featurediff?path=treeName/fid&newTreeish=commitId1&oldTreeish=commitId2
 	
 	**Output:**
 	
@@ -788,7 +788,7 @@ Plumbing Commands Supported
 		
  	::
 
-	  localhost:8182/ls-tree?showTree=true&recursive=true&verbose=true
+	  localhost:8182/repos/<repo name>/ls-tree?showTree=true&recursive=true&verbose=true
 	
 	**Output:**
 	
@@ -812,7 +812,7 @@ Plumbing Commands Supported
 		
  	::
  
- 	  localhost:8182/rebuildgraph?quiet=true
+ 	  localhost:8182/repos/<repo name>/rebuildgraph?quiet=true
 	
 	**Output:**
 	
@@ -834,7 +834,7 @@ Plumbing Commands Supported
 		
  	::
 
-	  localhost:8182/refparse?name=master
+	  localhost:8182/repos/<repo name>/refparse?name=master
 	
 	**Output:**
 	
@@ -868,7 +868,7 @@ Plumbing Commands Supported
 		
  	::
 
-	  localhost:8182/updateref?name=master&newValue=branch1
+	  localhost:8182/repos/<repo name>/updateref?name=master&newValue=branch1
 	
 	**Output:**
 	
@@ -915,7 +915,7 @@ Web-Api Specific
 		
  	::
 
-	  localhost:8182/getCommitGraph?show=100
+	  localhost:8182/repos/<repo name>/getCommitGraph?show=100
 	
 	**Output:**
 	
@@ -945,7 +945,7 @@ Web-Api Specific
 		
  	::
  			
-	  localhost:8182/resolveconflict?path=pathToFeature&objectid=featureObjectId
+	  localhost:8182/repos/<repo name>/resolveconflict?path=pathToFeature&objectid=featureObjectId
 	
 	**Output:**
 	
@@ -1005,7 +1005,7 @@ Web-Api Specific
 		
  	::
  
- 	    localhost:8182/revertfeature?authorName=John&authorEmail=John@example.com&commitMessage="Reverted Feature"&mergeMessage="Merge of reverted feature"&newCommitId=commitId1&oldCommitId=commitId2&path=pathToFeature
+ 	    localhost:8182/repos/<repo name>/revertfeature?authorName=John&authorEmail=John@example.com&commitMessage="Reverted Feature"&mergeMessage="Merge of reverted feature"&newCommitId=commitId1&oldCommitId=commitId2&path=pathToFeature
 	
 	**Output:**
 	
@@ -1016,7 +1016,7 @@ Web-Api Specific
 Repo Commands
 -----------------------------
 
-These commands can be used by using the ``repo/`` endpoint, instead of the standard ``/`` endpoint.
+These commands can be used by using the ``repos/<repo name>/repo/`` endpoint, instead of the standard ``repos/<repo name>/`` endpoint.
 
  .. note:: The output format for all repo commands is plain text.
 
@@ -1048,7 +1048,7 @@ These commands can be used by using the ``repo/`` endpoint, instead of the stand
 		
     ::
 
-      localhost:8182/repo/mergefeature
+      localhost:8182/repos/<repo name>/repo/mergefeature
 	
     **Output:**
 	
@@ -1064,7 +1064,7 @@ These commands can be used by using the ``repo/`` endpoint, instead of the stand
 		
     ::
 
-      localhost:8182/repo/manifest
+      localhost:8182/repos/<repo name>/repo/manifest
 	
     **Output:**
 	
@@ -1073,7 +1073,7 @@ These commands can be used by using the ``repo/`` endpoint, instead of the stand
       Returns the list of refs and the ids they point to. 
 	   		  
 Issues
-=======
+------
 
 The main concern with the web-api currently is that it doesn't have any kind of authentication on it, which means that anyone with the url can potentially destroy your repo or steal you data with commands like updateref and pull.
 

@@ -16,35 +16,30 @@ import static org.locationtech.geogig.rest.Variants.XML;
 import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
 import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.codehaus.jettison.mapped.MappedNamespaceConvention;
-import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.rest.RestletException;
-import org.locationtech.geogig.rest.WriterRepresentation;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.CommandResponseJettisonRepresentation;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
-import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamResponse;
+import org.locationtech.geogig.web.api.StreamWriterRepresentation;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
+import org.restlet.data.Method;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.data.Status;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
@@ -57,6 +52,10 @@ import com.google.common.base.Preconditions;
  */
 public class CommandResource extends Resource {
 
+    private Form options;
+
+    private WebAPICommand command;
+
     @Override
     public void init(Context context, Request request, Response response) {
         super.init(context, request, response);
@@ -64,6 +63,17 @@ public class CommandResource extends Resource {
         variants.add(XML);
         variants.add(JSON);
         variants.add(CSV);
+
+        final String commandName = getCommandName();
+
+        options = getRequest().getResourceRef().getQueryAsForm();
+        ParameterSet params = buildParameterSet(options);
+        command = CommandBuilder.build(commandName, params);
+        assert command != null;
+    }
+
+    protected String getCommandName() {
+        return (String) getRequest().getAttributes().get("command");
     }
 
     @Override
@@ -72,40 +82,108 @@ public class CommandResource extends Resource {
     }
 
     @Override
+    public boolean allowPost() {
+        return command.supports(Method.POST);
+    }
+
+    @Override
+    public boolean allowPut() {
+        return command.supports(Method.PUT);
+    }
+
+    @Override
+    public boolean allowGet() {
+        return command.supports(Method.GET);
+    }
+
+    @Override
+    public boolean allowDelete() {
+        return command.supports(Method.DELETE);
+    }
+
+    private boolean checkMethod(boolean allowed, MediaType format) {
+        if (!allowed) {
+            getResponse().setStatus(Status.CLIENT_ERROR_METHOD_NOT_ALLOWED);
+            formatException(new CommandSpecException(
+                    "The request method is unsupported for this operation."), format);
+        }
+        return allowed;
+    }
+
+    @Override
+    public void put(Representation entity) {
+        Variant variant = getPreferredVariant();
+        MediaType format = resolveFormat(options, variant);
+        if (!checkMethod(allowPut(), format)) {
+            return;
+        }
+        Representation representation = runCommand(variant, getRequest());
+        getResponse().setEntity(representation);
+    }
+
+    @Override
+    public void post(Representation entity) {
+        Variant variant = getPreferredVariant();
+        MediaType format = resolveFormat(options, variant);
+        if (!checkMethod(allowPost(), format)) {
+            return;
+        }
+        Representation representation = runCommand(variant, getRequest());
+        getResponse().setEntity(representation);
+    }
+
+    @Override
+    public void delete() {
+        Variant variant = getPreferredVariant();
+        MediaType format = resolveFormat(options, variant);
+        if (!checkMethod(allowDelete(), format)) {
+            return;
+        }
+        Representation representation = runCommand(variant, getRequest());
+        getResponse().setEntity(representation);
+    }
+
+    /**
+     * Handles GET requests, called by {@link #handleGet()}
+     * @return a Representation of this CommandResource request.
+     */
+    @Override
     public Representation getRepresentation(Variant variant) {
         Request request = getRequest();
         Representation representation = runCommand(variant, request);
         return representation;
     }
 
-    private Representation runCommand(Variant variant, Request request) {
+    protected ParameterSet buildParameterSet(final Form options) {
+        return new FormParams(options);
+    }
+
+    protected Representation runCommand(Variant variant, Request request) {
 
         final Optional<GeoGIG> geogig = getGeogig(request);
         Preconditions.checkState(geogig.isPresent());
 
-        Representation rep = null;
-        WebAPICommand command = null;
-        Form options = getRequest().getResourceRef().getQueryAsForm();
-        String commandName = (String) getRequest().getAttributes().get("command");
+        Representation rep;
         MediaType format = resolveFormat(options, variant);
         try {
-            ParameterSet params = new FormParams(options);
-            command = CommandBuilder.build(commandName, params);
-            assert command != null;
+            RestletContext ctx = new RestletContext(geogig.get(), request);
+            command.run(ctx);
+            rep = ctx.getRepresentation(format, getJSONPCallback());
+            getResponse().setStatus(command.getStatus());
         } catch (CommandSpecException ex) {
             rep = formatException(ex, format);
-        }
-        try {
-            if (command != null) {
-                RestletContext ctx = new RestletContext(geogig.get());
-                command.run(ctx);
-                rep = ctx.getRepresentation(format, getJSONPCallback());
-            }
+            getResponse().setStatus(ex.getStatus());
+        } catch (RestletException ex) {
+            rep = ex.getRepresentation();
+            getResponse().setStatus(ex.getStatus());
         } catch (IllegalArgumentException ex) {
             rep = formatException(ex, format);
+            getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         } catch (Exception ex) {
             rep = formatUnexpectedException(ex, format);
+            getResponse().setStatus(Status.SERVER_ERROR_INTERNAL);
         }
+
         return rep;
     }
 
@@ -117,8 +195,8 @@ public class CommandResource extends Resource {
         if (format == CSV_MEDIA_TYPE) {
             return new StreamWriterRepresentation(format, StreamResponse.error(ex.getMessage()));
         }
-        return new JettisonRepresentation(format, CommandResponse.error(ex.getMessage()),
-                getJSONPCallback());
+        return new CommandResponseJettisonRepresentation(format,
+                CommandResponse.error(ex.getMessage()), getJSONPCallback());
 
     }
 
@@ -138,7 +216,8 @@ public class CommandResource extends Resource {
         if (format == CSV_MEDIA_TYPE) {
             return new StreamWriterRepresentation(format, StreamResponse.error(stack));
         }
-        return new JettisonRepresentation(format, CommandResponse.error(stack), getJSONPCallback());
+        return new CommandResponseJettisonRepresentation(format, CommandResponse.error(stack),
+                getJSONPCallback());
     }
 
     private String getJSONPCallback() {
@@ -146,7 +225,7 @@ public class CommandResource extends Resource {
         return form.getFirstValue("callback", null);
     }
 
-    private MediaType resolveFormat(Form options, Variant variant) {
+    protected MediaType resolveFormat(Form options, Variant variant) {
         MediaType retval = variant.getMediaType();
         String requested = options.getFirstValue("output_format");
         if (requested != null) {
@@ -172,8 +251,13 @@ public class CommandResource extends Resource {
 
         final GeoGIG geogig;
 
-        RestletContext(GeoGIG geogig) {
+        private final Request request;
+
+        private Function<MediaType, Representation> representation;
+
+        RestletContext(GeoGIG geogig, Request request) {
             this.geogig = geogig;
+            this.request = request;
         }
 
         @Override
@@ -181,7 +265,15 @@ public class CommandResource extends Resource {
             return geogig;
         }
 
-        Representation getRepresentation(MediaType format, String callback) {
+        @Override
+        public Method getMethod() {
+            return request.getMethod();
+        }
+
+        public Representation getRepresentation(MediaType format, String callback) {
+            if (representation != null) {
+                return representation.apply(format);
+            }
             if (streamContent != null) {
                 if (format != CSV_MEDIA_TYPE) {
                     throw new CommandSpecException(
@@ -193,7 +285,12 @@ public class CommandResource extends Resource {
                 throw new CommandSpecException(
                         "Unsupported Media Type: This response is only compatible with application/json and application/xml.");
             }
-            return new JettisonRepresentation(format, responseContent, callback);
+            return new CommandResponseJettisonRepresentation(format, responseContent, callback);
+        }
+
+        @Override
+        public void setResponse(Function<MediaType, Representation> representation) {
+            this.representation = representation;
         }
 
         @Override
@@ -205,75 +302,16 @@ public class CommandResource extends Resource {
         public void setResponseContent(StreamResponse responseContent) {
             this.streamContent = responseContent;
         }
-    }
 
-    public static class JettisonRepresentation extends WriterRepresentation {
-
-        final CommandResponse impl;
-
-        String callback;
-
-        public JettisonRepresentation(MediaType mediaType, CommandResponse impl, String callback) {
-            super(mediaType);
-            this.impl = impl;
-            this.callback = callback;
-        }
-
-        private XMLStreamWriter createWriter(Writer writer) {
-            final MediaType mediaType = getMediaType();
-            XMLStreamWriter xml;
-            if (mediaType.getSubType().equalsIgnoreCase("xml")) {
-                try {
-                    xml = XMLOutputFactory.newFactory().createXMLStreamWriter(writer);
-                } catch (XMLStreamException ex) {
-                    throw new RuntimeException(ex);
-                }
-                callback = null; // this doesn't make sense
-            } else if (mediaType == MediaType.APPLICATION_JSON) {
-                xml = new MappedXMLStreamWriter(new MappedNamespaceConvention(), writer);
-            } else {
-                throw new RuntimeException("mediatype not handled " + mediaType);
-            }
-            return xml;
+        @Override
+        public String getBaseURL() {
+            return request.getRootRef().toString();
         }
 
         @Override
-        public void write(Writer writer) throws IOException {
-            XMLStreamWriter stax = null;
-            if (callback != null) {
-                writer.write(callback);
-                writer.write('(');
-            }
-            try {
-                stax = createWriter(writer);
-                impl.write(new ResponseWriter(stax));
-                stax.flush();
-                stax.close();
-            } catch (Exception ex) {
-                throw new IOException(ex);
-            }
-            if (callback != null) {
-                writer.write(");");
-            }
-        }
-    }
-
-    static class StreamWriterRepresentation extends WriterRepresentation {
-
-        final StreamResponse impl;
-
-        public StreamWriterRepresentation(MediaType mediaType, StreamResponse impl) {
-            super(mediaType);
-            this.impl = impl;
+        public RepositoryProvider getRepositoryProvider() {
+            return RESTUtils.repositoryProvider(request);
         }
 
-        @Override
-        public void write(Writer writer) throws IOException {
-            try {
-                impl.write(writer);
-            } catch (Exception e) {
-                throw new IOException(e);
-            }
-        }
     }
 }

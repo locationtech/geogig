@@ -11,6 +11,7 @@ package org.locationtech.geogig.api.plumbing.diff;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -177,7 +178,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             } else {
                 this.myEntries = new Children(tree);
             }
-            currEntryIterator = Iterators.emptyIterator();
+            currEntryIterator = Collections.emptyIterator();
         }
 
         @Override
@@ -197,7 +198,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
                 if (features) {
                     return Iterators.singletonIterator(functor.apply(next));
                 }
-                return Iterators.emptyIterator();
+                return Collections.emptyIterator();
             }
             Preconditions.checkArgument(TYPE.TREE.equals(next.getType()));
 
@@ -205,8 +206,8 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             RevTree childTree = source.getTree(treeId);
 
             String childTreePath = NodeRef.appendChild(this.functor.treePath, next.getName());
-            Iterator<NodeRef> children = new Recursive(childTreePath, next.getMetadataId().or(
-                    functor.metadataId), childTree, features, trees);
+            Iterator<NodeRef> children = new Recursive(childTreePath,
+                    next.getMetadataId().or(functor.metadataId), childTree, features, trees);
             if (trees) {
                 children = Iterators.concat(Iterators.singletonIterator(functor.apply(next)),
                         children);
@@ -246,7 +247,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             } else if (tree.buckets().isPresent()) {
                 this.features = new FeatureBuckets(tree);
             } else {
-                this.features = Iterators.emptyIterator();
+                this.features = Collections.emptyIterator();
             }
         }
 
@@ -265,13 +266,13 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
 
         public Trees(RevTree tree) {
             if (tree.numTrees() == 0) {
-                this.trees = Iterators.emptyIterator();
+                this.trees = Collections.emptyIterator();
             } else if (tree.trees().isPresent()) {
                 this.trees = Iterators.filter(tree.trees().get().iterator(), boundsFilter);
             } else if (tree.buckets().isPresent()) {
                 this.trees = new TreeBuckets(tree);
             } else {
-                this.trees = Iterators.emptyIterator();
+                this.trees = Collections.emptyIterator();
             }
         }
 
@@ -296,7 +297,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         public Buckets(RevTree tree) {
             Preconditions.checkArgument(tree.buckets().isPresent());
             buckets = Iterators.filter(tree.buckets().get().values().iterator(), boundsFilter);
-            bucketEntries = Iterators.emptyIterator();
+            bucketEntries = Collections.emptyIterator();
         }
 
         @Override
@@ -338,7 +339,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         protected Iterator<Node> resolveBucketEntries(ObjectId bucketId) {
             RevTree bucketTree = source.getTree(bucketId);
             if (bucketTree.numTrees() == 0) {
-                return Iterators.emptyIterator();
+                return Collections.emptyIterator();
             }
             if (bucketTree.trees().isPresent()) {
                 return new Trees(bucketTree);
@@ -346,7 +347,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             if (bucketTree.buckets().isPresent()) {
                 return new TreeBuckets(bucketTree);
             }
-            return Iterators.emptyIterator();
+            return Collections.emptyIterator();
         }
     }
 
@@ -368,7 +369,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             if (bucketTree.features().isPresent()) {
                 return new Features(bucketTree);
             }
-            return Iterators.emptyIterator();
+            return Collections.emptyIterator();
         }
     }
 }

@@ -28,6 +28,7 @@ import org.locationtech.geogig.api.porcelain.LogOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -45,6 +46,13 @@ public class StatisticsWebOp extends AbstractWebAPICommand {
     String since;
 
     String until;
+
+    public StatisticsWebOp(ParameterSet options) {
+        super(options);
+        setPath(options.getFirstValue("path", null));
+        setSince(options.getFirstValue("since", null));
+        setUntil(options.getFirstValue("branch", null));
+    }
 
     public void setPath(String path) {
         this.path = path;
@@ -64,7 +72,7 @@ public class StatisticsWebOp extends AbstractWebAPICommand {
      * @param context - the context to use for this command
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         final Context geogig = this.getCommandLocator(context);
         final List<FeatureTypeStats> stats = Lists.newArrayList();
         LogOp logOp = geogig.command(LogOp.class).setFirstParentOnly(true);

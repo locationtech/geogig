@@ -15,9 +15,9 @@ import javax.xml.stream.XMLStreamWriter;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.restlet.data.MediaType;
 
-class SimpleAsyncCommandRepresentation<T> extends AsyncCommandRepresentation<T> {
+public class SimpleAsyncCommandRepresentation<T> extends AsyncCommandRepresentation<T> {
 
-    SimpleAsyncCommandRepresentation(MediaType mediaType, AsyncCommand<T> c, String baseURL) {
+    public SimpleAsyncCommandRepresentation(MediaType mediaType, AsyncCommand<T> c, String baseURL) {
         super(mediaType, c, baseURL);
     }
 

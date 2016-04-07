@@ -112,8 +112,8 @@
     <cucumber-java.version>1.2.4</cucumber-java.version>
     <gson.version>2.4</gson.version>
     <gt.version>14.1</gt.version>
-    <guava.version>17.0</guava.version>
-    <guice.version>3.0</guice.version>
+    <guava.version>18.0</guava.version>
+    <guice.version>4.0</guice.version>
     <jcommander.version>1.48</jcommander.version>
     <jettison.version>1.0.1</jettison.version> <!-- matches version used in geoserver -->
     <jdt-annotation.version>1.1.0</jdt-annotation.version>
@@ -125,6 +125,7 @@
     <slf4j.version>1.7.5</slf4j.version>
     <sqljdbc4.version>3.0</sqljdbc4.version>
     <osmosis.version>0.43.1</osmosis.version>
+    <hikaricp.version>2.4.2</hikaricp.version>    
 
     <test.maxHeapSize>512M</test.maxHeapSize>
     <test.tmpDir>${project.build.directory}</test.tmpDir> <!-- use the provided tmp dir for tests, defaults to project's target/ directory -->
@@ -133,6 +134,7 @@
     <online.skip.pattern>**/*OnlineTest.java</online.skip.pattern>
     <sqlServerOnline.skip.pattern>**/*SQLServerFunctionalTest.java</sqlServerOnline.skip.pattern>
     <allow.test.skip>true</allow.test.skip>
+    <argLine>-Xms256m -Xmx512m</argLine>
   </properties>
 
   <dependencyManagement>
@@ -317,6 +319,12 @@
         <artifactId>com.noelios.restlet.ext.servlet</artifactId>
         <version>${restlet.version}</version>
       </dependency>
+      <dependency>
+        <!-- JDBC connection pool -->
+        <groupId>com.zaxxer</groupId>
+        <artifactId>HikariCP</artifactId>
+        <version>${hikaricp.version}</version>
+      </dependency>
 
       <!-- Test scope dependencies -->
       <dependency>
@@ -427,7 +435,6 @@
           </excludes>
           <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
           <reuseForks>true</reuseForks>
-          <argLine>-Xms256m -Xmx512m</argLine>
           <workingDirectory>${project.build.directory}</workingDirectory>
           <systemPropertyVariables>
             <java.io.tmpdir>${test.tmpDir}</java.io.tmpdir>
@@ -514,6 +521,40 @@
           <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.6.201602180812</version>
+        <configuration>
+          <excludes>
+            <exclude>**/*Exception.class</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>pre-unit-test</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <!-- 
+              uncomment this to enable automatic coverage reports during test phase 
+              To generate reports manually, specify the jacoco:report goal at the end
+              of the mavne command. Example:
+              
+              mvn clean insatll jacoco:report
+          -->
+          <!--
+          <execution>
+            <id>post-unit-test</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+          -->
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <profiles>
@@ -547,21 +588,6 @@
         <version>2.16</version>
         <configuration>
           <aggregate>true</aggregate>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-        <version>2.6</version>
-        <configuration>
-          <aggregate>true</aggregate>
-          <instrumentation>
-            <!-- ignores> <ignore>**/*Exception.class</ignore> </ignores -->
-            <excludes>
-              <exclude>**/*Exception.class</exclude>
-            </excludes>
-            <!-- includes> <include>**/*Test.class</include> </includes -->
-          </instrumentation>
         </configuration>
       </plugin>
     </plugins>

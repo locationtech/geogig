@@ -18,9 +18,12 @@ import static com.google.common.collect.Sets.newTreeSet;
 import static com.google.common.collect.Sets.union;
 import static org.locationtech.geogig.api.RevTree.EMPTY;
 import static org.locationtech.geogig.api.RevTree.EMPTY_TREE_ID;
+import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +45,6 @@ import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.repository.SpatialOps;
@@ -57,7 +59,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.PeekingIterator;
 import com.google.common.collect.Sets;
@@ -253,13 +254,13 @@ public class PreOrderDiffWalk {
 
         protected final NodeRef rightParent;
 
-        WalkAction(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs,
-                NodeRef leftParent, NodeRef rightParent) {
+        WalkAction(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs, NodeRef leftParent,
+                NodeRef rightParent) {
             this(consumer, ls, rs, leftParent, rightParent, BucketIndex.ROOT);
         }
 
-        WalkAction(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs,
-                NodeRef leftParent, NodeRef rightParent, final BucketIndex bucketIndex) {
+        WalkAction(CancellableConsumer consumer, ObjectStore ls, ObjectStore rs, NodeRef leftParent,
+                NodeRef rightParent, final BucketIndex bucketIndex) {
             checkNotNull(consumer, "consumer");
             checkNotNull(ls, "left source database");
             checkNotNull(rs, "right soourda datbaase");
@@ -321,7 +322,8 @@ public class PreOrderDiffWalk {
          * and {@link Consumer#tree} returned null.
          */
         @Nullable
-        protected final WalkAction node(@Nullable final NodeRef left, @Nullable final NodeRef right) {
+        protected final WalkAction node(@Nullable final NodeRef left,
+                @Nullable final NodeRef right) {
             if (consumer.isCancelled()) {
                 return null;
             }
@@ -343,8 +345,8 @@ public class PreOrderDiffWalk {
          * Split the given nodes into lists keyed by the bucket indes they would belong if they were
          * part of a tree bucket at the given {@code bucketDepth}
          */
-        protected final ListMultimap<Integer, Node> splitNodesToBucketsAtDepth(
-                Iterator<Node> nodes, final BucketIndex parentIndex) {
+        protected final ListMultimap<Integer, Node> splitNodesToBucketsAtDepth(Iterator<Node> nodes,
+                final BucketIndex parentIndex) {
 
             Function<Node, Integer> keyFunction = new Function<Node, Integer>() {
                 @Override
@@ -402,7 +404,8 @@ public class PreOrderDiffWalk {
                         : rightSource.getTree(rightNode.getObjectId());
 
                 TraverseTreeContents traverseTreeContents = new TraverseTreeContents(consumer,
-                        leftSource, rightSource, leftNode, rightNode, left, right, BucketIndex.ROOT);
+                        leftSource, rightSource, leftNode, rightNode, left, right,
+                        BucketIndex.ROOT);
 
                 traverseTreeContents.compute();
 
@@ -612,11 +615,11 @@ public class PreOrderDiffWalk {
             final TreeSet<BucketIndex> availableIndexes;
             {
                 Iterable<BucketIndex> indexes = Iterables.transform(//
-                        union(lb.keySet(), rb.keySet()),//
+                        union(lb.keySet(), rb.keySet()), //
                         (i) -> this.bucketIndex.append(i));
                 availableIndexes = newTreeSet(indexes);
             }
-            final Map<ObjectId, RevObject> trees = loadTrees(lb, rb);
+            final Map<ObjectId, RevTree> trees = loadTrees(lb, rb);
 
             @Nullable
             Bucket lbucket, rbucket;
@@ -634,11 +637,11 @@ public class PreOrderDiffWalk {
 
                 if (consumer.bucket(leftParent, rightParent, index, lbucket, rbucket)) {
 
-                    ltree = lbucket == null ? EMPTY : (RevTree) trees.get(lbucket.getObjectId());
-                    rtree = rbucket == null ? EMPTY : (RevTree) trees.get(rbucket.getObjectId());
+                    ltree = lbucket == null ? EMPTY : trees.get(lbucket.getObjectId());
+                    rtree = rbucket == null ? EMPTY : trees.get(rbucket.getObjectId());
 
-                    TraverseTreeContents task = traverseTreeContents(leftParent, rightParent,
-                            ltree, rtree, index);
+                    TraverseTreeContents task = traverseTreeContents(leftParent, rightParent, ltree,
+                            rtree, index);
                     tasks.add(task);
                 }
             }
@@ -656,24 +659,31 @@ public class PreOrderDiffWalk {
             }
         }
 
-        private Map<ObjectId, RevObject> loadTrees(final ImmutableSortedMap<Integer, Bucket> lb,
+        private Map<ObjectId, RevTree> loadTrees(final ImmutableSortedMap<Integer, Bucket> lb,
                 final ImmutableSortedMap<Integer, Bucket> rb) {
-            final Map<ObjectId, RevObject> trees;
-            final Set<ObjectId> lbucketIds = Sets.newHashSet(transform(lb.values(), BUCKET_ID));
-            final Set<ObjectId> rbucketIds = Sets.newHashSet(transform(rb.values(), BUCKET_ID));
+            final Map<ObjectId, RevTree> trees;
+            final Set<ObjectId> lbucketIds = Sets
+                    .newHashSet(transform(lb.values(), (b) -> b.getObjectId()));
+            final Set<ObjectId> rbucketIds = Sets
+                    .newHashSet(transform(rb.values(), (b) -> b.getObjectId()));
 
             // get all buckets at once, to leverage ObjectStore optimizations
             if (leftSource == rightSource) {
-                trees = uniqueIndex(leftSource.getAll(Sets.union(lbucketIds, rbucketIds)),
-                        OBJECT_ID);
+                Set<ObjectId> ids = Sets.union(lbucketIds, rbucketIds);
+                Iterator<RevTree> titer = leftSource.getAll(ids, NOOP_LISTENER, RevTree.class);
+                trees = uniqueIndex(titer, (t) -> t.getId());
             } else {
-                trees = Maps.newHashMap(uniqueIndex(
-                        leftSource.getAll(transform(lb.values(), BUCKET_ID)), OBJECT_ID));
+                trees = new HashMap<>();
+                trees.putAll(uniqueIndex(
+                        leftSource.getAll(transform(lb.values(), (b) -> b.getObjectId()),
+                                NOOP_LISTENER, RevTree.class),
+                        (t) -> t.getId()));
 
-                final Map<ObjectId, RevObject> rightBucketTrees;
-                rightBucketTrees = uniqueIndex(
-                        rightSource.getAll(transform(rb.values(), BUCKET_ID)), OBJECT_ID);
-                trees.putAll(rightBucketTrees);
+                trees.putAll(uniqueIndex(
+                        rightSource.getAll(transform(rb.values(), (b) -> b.getObjectId()),
+                                NOOP_LISTENER, RevTree.class),
+                        (t) -> t.getId()));
+
             }
             return trees;
         }
@@ -718,17 +728,19 @@ public class PreOrderDiffWalk {
 
             final SortedSet<BucketIndex> bucketIndexes;
             {
-                Set<Integer> childIndexes = Sets
-                        .union(leftBuckets.keySet(), nodesByBucket.keySet());
+                Set<Integer> childIndexes = Sets.union(leftBuckets.keySet(),
+                        nodesByBucket.keySet());
                 Iterable<BucketIndex> childPaths = Iterables.transform(childIndexes,
                         (i) -> this.bucketIndex.append(i));
                 bucketIndexes = Sets.newTreeSet(childPaths);
             }
             // get all buckets at once, to leverage ObjectStore optimizations
-            final Map<ObjectId, RevObject> bucketTrees;
-            bucketTrees = uniqueIndex(
-                    leftSource.getAll(transform(leftBuckets.values(), BUCKET_ID)), OBJECT_ID);
-
+            final Map<ObjectId, RevTree> bucketTrees;
+            {
+                Iterable<ObjectId> ids = transform(leftBuckets.values(), (b) -> b.getObjectId());
+                bucketTrees = uniqueIndex(leftSource.getAll(ids, NOOP_LISTENER, RevTree.class),
+                        (t) -> t.getId());
+            }
             List<WalkAction> tasks = new ArrayList<>();
 
             Map<BucketIndex, Bucket> pendingEndBucketNotifications = new TreeMap<>();
@@ -739,11 +751,11 @@ public class PreOrderDiffWalk {
                 List<Node> rightNodes = nodesByBucket.get(childIndex.lastIndex());
 
                 if (null == leftBucket) {
-                    tasks.add(leafLeaf(leftParent, rightParent, Iterators.<Node> emptyIterator(),
+                    tasks.add(leafLeaf(leftParent, rightParent, Collections.emptyIterator(),
                             rightNodes.iterator()));
                 } else if (rightNodes.isEmpty()) {
 
-                    RevTree leftTree = (RevTree) bucketTrees.get(leftBucket.getObjectId());
+                    RevTree leftTree = bucketTrees.get(leftBucket.getObjectId());
                     if (consumer.bucket(leftParent, rightParent, childIndex, leftBucket, null)) {
 
                         TraverseTreeContents task = traverseTreeContents(leftParent, rightParent,
@@ -752,7 +764,7 @@ public class PreOrderDiffWalk {
                         pendingEndBucketNotifications.put(childIndex, leftBucket);
                     }
                 } else {
-                    RevTree leftTree = (RevTree) bucketTrees.get(leftBucket.getObjectId());
+                    RevTree leftTree = bucketTrees.get(leftBucket.getObjectId());
                     if (leftTree.buckets().isPresent()) {
                         tasks.add(bucketLeaf(leftTree, rightNodes.iterator(), childIndex));
                     } else {
@@ -819,10 +831,13 @@ public class PreOrderDiffWalk {
             }
 
             // get all buckets at once, to leverage ObjectStore optimizations
-            final Map<ObjectId, RevObject> bucketTrees;
-            bucketTrees = uniqueIndex(
-                    rightSource.getAll(transform(rightBuckets.values(), BUCKET_ID)), OBJECT_ID);
+            final Map<ObjectId, RevTree> bucketTrees;
+            {
 
+                Iterable<ObjectId> ids = transform(rightBuckets.values(), (b) -> b.getObjectId());
+                bucketTrees = uniqueIndex(rightSource.getAll(ids, NOOP_LISTENER, RevTree.class),
+                        (t) -> t.getId());
+            }
             List<WalkAction> tasks = new ArrayList<>();
 
             Map<BucketIndex, Bucket> pendingEndBucketNotifications = new TreeMap<>();
@@ -834,9 +849,9 @@ public class PreOrderDiffWalk {
                 List<Node> leftNodes = nodesByBucket.get(childIndex.lastIndex());
                 if (null == rightBucket) {
                     tasks.add(leafLeaf(leftParent, rightParent, leftNodes.iterator(),
-                            Iterators.<Node> emptyIterator()));
+                            Collections.emptyIterator()));
                 } else if (leftNodes.isEmpty()) {
-                    RevTree rightTree = (RevTree) bucketTrees.get(rightBucket.getObjectId());
+                    RevTree rightTree = bucketTrees.get(rightBucket.getObjectId());
                     if (consumer.bucket(leftParent, rightParent, childIndex, null, rightBucket)) {
 
                         TraverseTreeContents task = traverseTreeContents(leftParent, rightParent,
@@ -846,7 +861,7 @@ public class PreOrderDiffWalk {
 
                     }
                 } else {
-                    RevTree rightTree = (RevTree) bucketTrees.get(rightBucket.getObjectId());
+                    RevTree rightTree = bucketTrees.get(rightBucket.getObjectId());
                     if (rightTree.buckets().isPresent()) {
                         tasks.add(leafBucket(leftNodes.iterator(), rightTree, childIndex));
                     } else {
@@ -865,20 +880,6 @@ public class PreOrderDiffWalk {
             }
         }
     }
-
-    private static final Function<Bucket, ObjectId> BUCKET_ID = new Function<Bucket, ObjectId>() {
-        @Override
-        public ObjectId apply(Bucket b) {
-            return b.getObjectId();
-        }
-    };
-
-    private static final Function<RevObject, ObjectId> OBJECT_ID = new Function<RevObject, ObjectId>() {
-        @Override
-        public ObjectId apply(RevObject o) {
-            return o.getId();
-        }
-    };
 
     /**
      * Defines an interface to consume the events emitted by a diff-tree "depth first" traversal,
@@ -917,7 +918,8 @@ public class PreOrderDiffWalk {
          * @precondition {@code left != null || right != null}
          * @precondition {@code if(left != null && right != null) then left.name() == right.name()}
          */
-        public abstract boolean feature(@Nullable final NodeRef left, @Nullable final NodeRef right);
+        public abstract boolean feature(@Nullable final NodeRef left,
+                @Nullable final NodeRef right);
 
         /**
          * Called when the traversal finds a tree node at both sides of the traversal with the same

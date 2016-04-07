@@ -37,8 +37,7 @@ public class CLITestContextBuilder extends ContextBuilder {
         Context context = Guice.createInjector(
                 Modules.override(new GeogigModule(), new CachingModule(), new HintsModule(hints))
                         .with(new PluginsModule(), new CLIContextBuilder.DefaultPlugins(),
-                                functionalTestModule)).getInstance(
-                Context.class);
+                                functionalTestModule)).getInstance(Context.class);
         return context;
     }
 

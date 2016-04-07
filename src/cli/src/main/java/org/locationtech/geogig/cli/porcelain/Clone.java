@@ -28,7 +28,7 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryInitializer;
+import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -116,7 +116,7 @@ public class Clone extends AbstractCommand implements CLICommand {
             targetArg = cloneURI.getPath();
         }
 
-        RepositoryInitializer cloneInitializer = RepositoryInitializer.lookup(cloneURI);
+        RepositoryResolver cloneInitializer = RepositoryResolver.lookup(cloneURI);
         checkParameter(!cloneInitializer.repoExists(cloneURI),
                 "Destination path already exists and is not an empty directory.");
 

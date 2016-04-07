@@ -12,7 +12,11 @@ package org.locationtech.geogig.rest.repository;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.locationtech.geogig.api.GeoGIG;
+import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 
 import com.google.common.base.Optional;
@@ -49,5 +53,39 @@ public class RESTUtils {
         } catch (UnsupportedEncodingException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    public static void encodeAlternateAtomLink(MediaType format, XMLStreamWriter w, String href)
+            throws XMLStreamException {
+        if (MediaType.TEXT_XML.equals(format) || MediaType.APPLICATION_XML.equals(format)) {
+            w.writeStartElement("atom:link");
+            w.writeAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
+            w.writeAttribute("rel", "alternate");
+            w.writeAttribute("href", href);
+            if (format != null) {
+                w.writeAttribute("type", format.toString());
+            }
+            w.writeEndElement();
+        } else if (MediaType.APPLICATION_JSON.equals(format)) {
+            w.writeStartElement("href");
+            w.writeCharacters(href);
+            w.writeEndElement();
+        }
+    }
+
+    public static String buildHref(String baseURL, String link, MediaType format) {
+        link = baseURL + "/" + link;
+
+        // try to figure out extension
+        String ext = null;
+        if (format != null) {
+            ext = format.getSubType();
+        }
+
+        if (ext != null && ext.length() > 0) {
+            link = link + "." + ext;
+        }
+
+        return link;
     }
 }

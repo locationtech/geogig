@@ -37,7 +37,7 @@ import com.google.common.collect.Maps;
 
 public abstract class RefDatabaseTest {
 
-    private RefDatabase refDb;
+    protected RefDatabase refDb;
 
     @Rule
     public ExpectedException expected = ExpectedException.none();

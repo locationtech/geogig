@@ -21,7 +21,7 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.memory.HeapObjectDatabse;
+import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 
 /**
  *
@@ -58,7 +58,7 @@ public class DiffCountConsumerTest extends Assert {
 
     @Before
     public void setUp() {
-        odb = new HeapObjectDatabse();
+        odb = new HeapObjectDatabase();
         odb.open();
         {
             RevTreeBuilder builder = createFeaturesTree("", 10);

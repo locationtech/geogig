@@ -16,6 +16,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
@@ -29,6 +30,11 @@ import com.google.common.base.Optional;
 public class RefParseWeb extends AbstractWebAPICommand {
 
     private String refSpec;
+
+    public RefParseWeb(ParameterSet options) {
+        super(options);
+        setName(options.getFirstValue("name", null));
+    }
 
     /**
      * Mutator for the refSpec variable
@@ -47,7 +53,7 @@ public class RefParseWeb extends AbstractWebAPICommand {
      * @throws CommandSpecException
      */
     @Override
-    public void run(CommandContext context) {
+    protected void runInternal(CommandContext context) {
         if (refSpec == null) {
             throw new CommandSpecException("No name was given.");
         }

@@ -43,7 +43,7 @@ public class RestletException extends RuntimeException {
      * @param cause the cause of the exception
      */
     public RestletException(String message, Status status, @Nullable Throwable cause) {
-        super(cause);
+        super(message, cause);
         this.outputRepresentation = new StringRepresentation(message
                 + (cause == null ? "" : (":" + cause.getMessage())), MediaType.TEXT_PLAIN);
         this.status = status;

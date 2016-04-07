@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Boundless and others.
+/* Copyright (c) 2013-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -59,6 +59,7 @@ import org.locationtech.geogig.api.porcelain.PullResult;
 import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef;
 import org.locationtech.geogig.api.porcelain.ValueAndCommit;
+import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
@@ -76,6 +77,7 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.feature.type.PropertyType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.restlet.data.MediaType;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -91,6 +93,8 @@ public class ResponseWriter {
 
     protected final XMLStreamWriter out;
 
+    private final MediaType format;
+
     /**
      * Constructs a new {code ResponseWriter} with the given {@link XMLStreamWriter}.
      * 
@@ -100,10 +104,19 @@ public class ResponseWriter {
         this.out = out;
         if (out instanceof AbstractXMLStreamWriter) {
             configureJSONOutput((AbstractXMLStreamWriter) out);
+            format = MediaType.APPLICATION_JSON;
+        } else {
+            format = MediaType.APPLICATION_XML;
         }
     }
 
     private void configureJSONOutput(AbstractXMLStreamWriter out) {
+    }
+
+    public void encodeAlternateAtomLink(XMLStreamWriter w, String baseURL, String link)
+            throws XMLStreamException {
+        String href = RESTUtils.buildHref(baseURL, link, format);
+        RESTUtils.encodeAlternateAtomLink(format, w, href);
     }
 
     /**
@@ -616,6 +629,13 @@ public class ResponseWriter {
         }
         out.writeEndElement();
 
+    }
+
+    public void writeBranchCreateResponse(Ref createdBranch) throws XMLStreamException {
+        out.writeStartElement("BranchCreated");
+        writeElement("name", createdBranch.localName());
+        writeElement("source", createdBranch.getObjectId().toString());
+        out.writeEndElement(); // End BranchCreated
     }
 
     /**

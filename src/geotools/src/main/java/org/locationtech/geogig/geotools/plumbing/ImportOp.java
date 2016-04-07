@@ -153,8 +153,8 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         RevFeatureType destPathFeatureType = null;
         final boolean destPathProvided = destPath != null;
         if (destPathProvided) {
-            destPathFeatureType = this.command(ResolveFeatureType.class).setRefSpec(destPath)
-                    .call().orNull();
+            destPathFeatureType = this.command(ResolveFeatureType.class).setRefSpec(destPath).call()
+                    .orNull();
             // we delete the previous tree to honor the overwrite setting, but then turn it
             // to false. Otherwise, each table imported will overwrite the previous ones and
             // only the last one will be imported.
@@ -532,11 +532,10 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
     }
 
     /**
-     * 
-     * @param overwrite If this is true, existing features will be overwritten in case they exist
-     *        and have the same path and Id than the features to import. If this is false, existing
-     *        features will not be overwritten, and a safe import is performed, where only those
-     *        features that do not already exists are added
+     * @param overwrite If this is true, the features being imported will fully overrite the
+     *        destination feature tree (i.e. the feature tree will be truncated and finally contain
+     *        only the features being imported). If {@code false}, the features being imported are
+     *        added to the existing feature tree.
      * @return {@code this}
      */
     public ImportOp setOverwrite(boolean overwrite) {

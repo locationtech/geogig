@@ -11,6 +11,7 @@ package org.locationtech.geogig.api.plumbing;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,7 +32,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 /**
@@ -43,8 +43,8 @@ import com.google.common.collect.Lists;
  * specified, the root of the current working tree is assumed.
  */
 @CanRunDuringConflict
-public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>> implements
-        Supplier<Iterator<NodeRef>> {
+public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
+        implements Supplier<Iterator<NodeRef>> {
 
     /**
      * Enumeration of the possible results of the {@link LsTreeOp} operation, indicating whether to
@@ -129,11 +129,11 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>> implements
         final String path = ref.lastIndexOf(':') != -1 ? ref.substring(ref.lastIndexOf(':') + 1)
                 : "";
         if (!path.isEmpty()) {
-            final String providedRefName = ref.lastIndexOf(':') != -1 ? ref.substring(0,
-                    ref.lastIndexOf(':')) : null;
+            final String providedRefName = ref.lastIndexOf(':') != -1
+                    ? ref.substring(0, ref.lastIndexOf(':')) : null;
             if (providedRefName != null) {
-                Optional<ObjectId> rootTreeId = command(ResolveTreeish.class).setTreeish(
-                        providedRefName).call();
+                Optional<ObjectId> rootTreeId = command(ResolveTreeish.class)
+                        .setTreeish(providedRefName).call();
                 if (rootTreeId.isPresent()) {
                     RevTree rootTree = command(RevObjectParse.class).setObjectId(rootTreeId.get())
                             .call(RevTree.class).get();
@@ -150,18 +150,18 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>> implements
         Optional<Ref> reference = command(RefParse.class).setName(ref).call();
         if (reference.isPresent()) {
             if (reference.get().getObjectId().isNull()) {
-                return Iterators.emptyIterator();
+                return Collections.emptyIterator();
             }
         }
-        Optional<RevObject> revObject = command(RevObjectParse.class).setRefSpec(ref).call(
-                RevObject.class);
+        Optional<RevObject> revObject = command(RevObjectParse.class).setRefSpec(ref)
+                .call(RevObject.class);
 
         Optional<NodeRef> treeRef = Optional.absent();
 
         if (!revObject.isPresent()) {
             if (Ref.WORK_HEAD.equals(ref)) { // we are requesting a listing of the whole working
                                              // tree but it is empty
-                return Iterators.emptyIterator();
+                return Collections.emptyIterator();
             }
             // let's try to see if it is a feature type or feature in the working tree
             NodeRef.checkValidPath(ref);

@@ -9,16 +9,13 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
@@ -34,7 +31,7 @@ import org.locationtech.geogig.di.VersionedFormat;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryInitializer;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -66,12 +63,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
 
     private Map<String, String> config;
 
-    private PluginDefaults defaults;
-
     private String filterFile;
-
-    @Nullable
-    private File targetDir;
 
     private Hints hints;
 
@@ -83,9 +75,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
      *        {@link Hints#REPOSITORY_URL} argument)
      */
     @Inject
-    public InitOp(PluginDefaults defaults, Hints hints) {
-        checkNotNull(defaults);
-        this.defaults = defaults;
+    public InitOp(Hints hints) {
         this.config = Maps.newTreeMap();
         this.hints = hints;
     }
@@ -95,8 +85,11 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         return this;
     }
 
+    /**
+     * @deprecated must provide repository URI in {@link Hints} instead
+     */
+    @Deprecated
     public InitOp setTarget(File targetRepoDirectory) {
-        this.targetDir = targetRepoDirectory;
         return this;
     }
 
@@ -116,39 +109,22 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
     @Override
     protected Repository _call() {
         final Platform platform = platform();
-        final File workingDirectory = platform.pwd();
-        checkState(workingDirectory != null, "working directory is null");
-
-        final File targetDir = this.targetDir == null ? workingDirectory : this.targetDir;
-        Repository repository;
-        try {
-            repository = callInternal(targetDir);
-        } finally {
-            // restore current directory
-            platform.setWorkingDir(workingDirectory);
+        Optional<URI> resolvedURI = new ResolveGeogigURI(platform, hints).call();
+        if (!resolvedURI.isPresent()) {
+            resolvedURI = Optional.of(platform.pwd().getAbsoluteFile().toURI());
         }
-        return repository;
-    }
 
-    private Repository callInternal(File targetDir) {
-        final Platform platform = platform();
-        final Optional<URI> resolvedURI = new ResolveGeogigURI(platform, hints).call();
+        URI repoURI = resolvedURI.get();
 
-        URI repoURI;
-        if (resolvedURI.isPresent()) {
-            repoURI = resolvedURI.get();
-        } else {
-            repoURI = targetDir.toURI();
-        }
-        RepositoryInitializer repoInitializer = RepositoryInitializer.lookup(repoURI);
+        RepositoryResolver repoInitializer = RepositoryResolver.lookup(repoURI);
         final boolean repoExisted = repoInitializer.repoExists(repoURI);
 
         repoInitializer.initialize(repoURI, context());
 
         Map<String, String> effectiveConfigBuilder = Maps.newTreeMap();
-        addDefaults(defaults, effectiveConfigBuilder);
-        if (config != null) {
-            effectiveConfigBuilder.putAll(config);
+        Optional<Serializable> repoName = hints.get(Hints.REPOSITORY_NAME);
+        if (repoName.isPresent()) {
+            effectiveConfigBuilder.put("repo.name", String.valueOf(repoName.get()));
         }
 
         if (filterFile != null) {
@@ -193,6 +169,11 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         try {
             if (!repoExisted) {
                 ConfigDatabase configDB = context.configDatabase();
+                PluginDefaults defaults = context.pluginDefaults();
+                addDefaults(defaults, effectiveConfigBuilder);
+                if (config != null) {
+                    effectiveConfigBuilder.putAll(config);
+                }
                 try {
                     for (Entry<String, String> pair : effectiveConfigBuilder.entrySet()) {
                         String key = pair.getKey();
@@ -215,8 +196,8 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                 ObjectStore objectDatabase = repository.objectDatabase();
                 objectDatabase.put(RevTree.EMPTY);
             } catch (RepositoryConnectionException e) {
-                throw new IllegalStateException("Error opening repository databases: "
-                        + e.getMessage(), e);
+                throw new IllegalStateException(
+                        "Error opening repository databases: " + e.getMessage(), e);
             }
         } catch (ConfigException e) {
             throw e;
@@ -265,14 +246,14 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                 .setReason("Repository initialization").call();
 
         Optional<Ref> workhead = command(RefParse.class).setName(Ref.WORK_HEAD).call();
-        Preconditions
-                .checkState(!workhead.isPresent(), Ref.WORK_HEAD + " was already initialized.");
+        Preconditions.checkState(!workhead.isPresent(),
+                Ref.WORK_HEAD + " was already initialized.");
         command(UpdateRef.class).setName(Ref.WORK_HEAD).setNewValue(RevTree.EMPTY.getId())
                 .setReason("Repository initialization").call();
 
         Optional<Ref> stagehead = command(RefParse.class).setName(Ref.STAGE_HEAD).call();
-        Preconditions.checkState(!stagehead.isPresent(), Ref.STAGE_HEAD
-                + " was already initialized.");
+        Preconditions.checkState(!stagehead.isPresent(),
+                Ref.STAGE_HEAD + " was already initialized.");
         command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(RevTree.EMPTY.getId())
                 .setReason("Repository initialization").call();
 

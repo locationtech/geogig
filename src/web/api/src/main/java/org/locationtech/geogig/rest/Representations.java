@@ -15,7 +15,7 @@ import java.util.ServiceLoader;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.restlet.data.MediaType;
 
-class Representations {
+public class Representations {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static <T> AsyncCommandRepresentation<T> newRepresentation(AsyncCommand<T> cmd,

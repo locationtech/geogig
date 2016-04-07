@@ -59,8 +59,9 @@
           <!-- set alternative assemble directory -->
           <assembleDirectory>${project.build.directory}/geogig-build</assembleDirectory>
           <repositoryLayout>flat</repositoryLayout>
+          <repositoryName>lib</repositoryName>
           <useWildcardClassPath>true</useWildcardClassPath>
-         <useAsterikClassPath>true</useAsterikClassPath>
+          <useAsterikClassPath>true</useAsterikClassPath>
           <platforms>
             <platform>windows</platform>
             <platform>unix</platform>

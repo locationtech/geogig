@@ -42,7 +42,7 @@
         </file>
         <file>
             <source>target/geogig-build/dependency-tree.txt</source>
-            <outputDirectory>repo</outputDirectory>
+            <outputDirectory>lib</outputDirectory>
         </file>
         <file>
             <source>../../LICENSE.txt</source>
@@ -51,8 +51,8 @@
     
     <fileSets>
         <fileSet>
-            <directory>target/geogig-build/repo</directory>
-            <outputDirectory>/repo</outputDirectory>
+            <directory>target/geogig-build/lib</directory>
+            <outputDirectory>/lib</outputDirectory>
             <includes>
                 <include>*</include>
             </includes>

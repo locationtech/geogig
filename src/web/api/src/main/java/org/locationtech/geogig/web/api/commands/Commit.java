@@ -18,7 +18,6 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.api.porcelain.DiffOp;
-import org.locationtech.geogig.api.porcelain.NothingToCommitException;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -39,9 +38,9 @@ public class Commit extends AbstractWebAPICommand {
 
     boolean all;
 
-    private Optional<String> authorName = Optional.absent();
+    Optional<String> authorName = Optional.absent();
 
-    private Optional<String> authorEmail = Optional.absent();
+    Optional<String> authorEmail = Optional.absent();
 
     public Commit(ParameterSet options) {
         super(options);
@@ -97,32 +96,21 @@ public class Commit extends AbstractWebAPICommand {
         }
         final Context geogig = this.getCommandLocator(context);
         RevCommit commit;
-        try {
-            commit = geogig.command(CommitOp.class)
-                    .setAuthor(authorName.orNull(), authorEmail.orNull()).setMessage(message)
-                    .setAllowEmpty(true).setAll(all).call();
-            assert commit != null;
-        } catch (NothingToCommitException noChanges) {
-            context.setResponseContent(CommandResponse.warning("Nothing to commit"));
-            commit = null;
-        } catch (IllegalStateException e) {
-            context.setResponseContent(CommandResponse.warning(e.getMessage()));
-            commit = null;
-        }
-        if (commit != null) {
-            final RevCommit commitToWrite = commit;
-            final ObjectId parentId = commit.parentN(0).or(ObjectId.NULL);
-            final Iterator<DiffEntry> diff = geogig.command(DiffOp.class).setOldVersion(parentId)
-                    .setNewVersion(commit.getId()).call();
+        commit = geogig.command(CommitOp.class).setAuthor(authorName.orNull(), authorEmail.orNull())
+                .setMessage(message).setAllowEmpty(true).setAll(all).call();
 
-            context.setResponseContent(new CommandResponse() {
-                @Override
-                public void write(ResponseWriter out) throws Exception {
-                    out.start();
-                    out.writeCommitResponse(commitToWrite, diff);
-                    out.finish();
-                }
-            });
-        }
+        final RevCommit commitToWrite = commit;
+        final ObjectId parentId = commit.parentN(0).or(ObjectId.NULL);
+        final Iterator<DiffEntry> diff = geogig.command(DiffOp.class).setOldVersion(parentId)
+                .setNewVersion(commit.getId()).call();
+
+        context.setResponseContent(new CommandResponse() {
+            @Override
+            public void write(ResponseWriter out) throws Exception {
+                out.start();
+                out.writeCommitResponse(commitToWrite, diff);
+                out.finish();
+            }
+        });
     }
 }

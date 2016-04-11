@@ -32,13 +32,13 @@ import com.google.common.collect.Lists;
 
 public class GetCommitGraph extends AbstractWebAPICommand {
 
-    private String commitId;
+    String commitId;
 
-    private int depth;
+    int depth;
 
-    private int page;
+    int page;
 
-    private int elementsPerPage;
+    int elementsPerPage;
 
     public GetCommitGraph(ParameterSet options) {
         super(options);

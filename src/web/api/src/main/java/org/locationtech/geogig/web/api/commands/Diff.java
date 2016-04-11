@@ -28,17 +28,17 @@ import org.locationtech.geogig.web.api.ResponseWriter;
  */
 
 public class Diff extends AbstractWebAPICommand {
-    private String oldRefSpec;
+    String oldRefSpec;
 
-    private String newRefSpec;
+    String newRefSpec;
 
-    private String pathFilter;
+    String pathFilter;
 
-    private boolean showGeometryChanges = false;
+    boolean showGeometryChanges = false;
 
-    private int page;
+    int page;
 
-    private int elementsPerPage;
+    int elementsPerPage;
 
     public Diff(ParameterSet options) {
         super(options);

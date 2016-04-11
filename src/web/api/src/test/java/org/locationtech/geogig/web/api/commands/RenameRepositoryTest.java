@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.locationtech.geogig.api.plumbing.ResolveRepositoryName;
-import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
@@ -37,6 +36,11 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
     @Override
     protected Class<? extends AbstractWebAPICommand> getCommandClass() {
         return RenameRepository.class;
+    }
+
+    @Override
+    protected boolean requiresTransaction() {
+        return false;
     }
 
     @Test
@@ -81,17 +85,6 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
 
         ex.expect(IllegalArgumentException.class);
         ex.expectMessage("You must specify a new name for the repository.");
-        cmd.run(testContext.get());
-    }
-
-    @Test
-    public void testRequireRepository() {
-        testContext.createUninitializedRepo();
-        ParameterSet options = TestParams.of();
-        WebAPICommand cmd = buildCommand(options);
-
-        ex.expect(RestletException.class);
-        ex.expectMessage("Repository not found.");
         cmd.run(testContext.get());
     }
 }

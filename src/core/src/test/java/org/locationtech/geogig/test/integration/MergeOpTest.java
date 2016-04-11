@@ -25,7 +25,11 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.*;
+import org.locationtech.geogig.api.plumbing.FindTreeChild;
+import org.locationtech.geogig.api.plumbing.RefParse;
+import org.locationtech.geogig.api.plumbing.RevObjectParse;
+import org.locationtech.geogig.api.plumbing.UpdateRef;
+import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.plumbing.merge.ReadMergeCommitMessageOp;
@@ -606,16 +610,13 @@ public class MergeOpTest extends RepositoryTestCase {
         // Create the following revision graph
         // o
         // |
-        // o - Point 1 added
-        // |\
-        // | o - TestBranch - Point 2 added
+        // o - Master - Point 1 added
         // |
-        // o - master - HEAD - Point 3 added
+        // o - TestBranch - Point 2 added
+
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).call();
-        geogig.command(BranchCreateOp.class).setName("TestBranch").call();
-        insertAndAdd(points3);
         RevCommit masterCommit = geogig.command(CommitOp.class).call();
+        geogig.command(BranchCreateOp.class).setName("TestBranch").call();
         geogig.command(CheckoutOp.class).setSource("TestBranch").call();
         insertAndAdd(points2);
         RevCommit branchCommit = geogig.command(CommitOp.class).call();

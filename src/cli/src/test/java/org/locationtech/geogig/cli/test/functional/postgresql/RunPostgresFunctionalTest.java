@@ -20,7 +20,6 @@ package org.locationtech.geogig.cli.test.functional.postgresql;
 //// features = {
 //// "src/test/resources/org/locationtech/geogig/cli/test/functional/porcelain/Add.feature" }//
 //features = { "src/test/resources/org/locationtech/geogig/cli/test/functional/porcelain/" }//
-//, monochrome = true//
 //, format = { "pretty", "html:target/cucumber-report" }//
 //, strict = true//
 //, glue = { "org.locationtech.geogig.cli.test.functional.postgresql",

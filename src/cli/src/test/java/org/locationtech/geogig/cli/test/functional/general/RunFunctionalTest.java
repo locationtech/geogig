@@ -20,10 +20,11 @@ import cucumber.api.junit.Cucumber;
  * 
  */
 // use features=... to specify one or more specific features to execute
-// @Cucumber.Options(features = { "src/test/resources/org/locationtech/geogig/cli/test/functional/Branch.feature"
-// }, monochrome = true, format = {
+// @Cucumber.Options(features = {
+// "src/test/resources/org/locationtech/geogig/cli/test/functional/Branch.feature"
+// }, format = {
 // "pretty", "html:target/cucumber-report" }, strict = true)
-@CucumberOptions(monochrome = true, plugin = { "pretty", "html:cucumber-report-general" }, strict = true)
+@CucumberOptions(plugin = { "pretty", "html:cucumber-report-general" }, strict = true)
 @RunWith(Cucumber.class)
 public class RunFunctionalTest {
 }

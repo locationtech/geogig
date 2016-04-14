@@ -35,17 +35,47 @@ public class DiffCount extends AbstractGeoGigOp<DiffObjectCount> {
 
     private final List<String> pathFilters = Lists.newLinkedList();
 
+    /**
+     * either one of oldRefSpec or oldTreeId must be set. Setting one nulls out the other.
+     */
     private String oldRefSpec;
 
+    /**
+     * either one of oldRefSpec or oldTreeId must be set. Setting one nulls out the other.
+     */
+    private ObjectId oldTreeId;
+
+    /**
+     * either one of newRefSpec or newTreeId must be set. Setting one nulls out the other.
+     */
     private String newRefSpec;
 
-    public DiffCount setOldVersion(@Nullable String refSpec) {
+    /**
+     * either one of newRefSpec or newTreeId must be set. Setting one nulls out the other.
+     */
+    private ObjectId newTreeId;
+
+    public DiffCount setOldVersion(String refSpec) {
         this.oldRefSpec = refSpec;
+        this.oldTreeId = null;
         return this;
     }
 
-    public DiffCount setNewVersion(@Nullable String refSpec) {
+    public DiffCount setNewVersion(String refSpec) {
         this.newRefSpec = refSpec;
+        this.newTreeId = null;
+        return this;
+    }
+
+    public DiffCount setOldTree(ObjectId oldTreeId) {
+        this.oldRefSpec = null;
+        this.oldTreeId = oldTreeId;
+        return this;
+    }
+
+    public DiffCount setNewTree(ObjectId newTreeId) {
+        this.newRefSpec = null;
+        this.newTreeId = newTreeId;
         return this;
     }
 
@@ -74,11 +104,11 @@ public class DiffCount extends AbstractGeoGigOp<DiffObjectCount> {
 
     @Override
     protected DiffObjectCount _call() {
-        checkState(oldRefSpec != null, "old ref spec not provided");
-        checkState(newRefSpec != null, "new ref spec not provided");
+        checkState(oldRefSpec != null || oldTreeId != null, "old ref spec not provided");
+        checkState(newRefSpec != null || newTreeId != null, "new ref spec not provided");
 
-        final RevTree oldTree = getTree(oldRefSpec);
-        final RevTree newTree = getTree(newRefSpec);
+        final RevTree oldTree = getTree(oldRefSpec, oldTreeId);
+        final RevTree newTree = getTree(newRefSpec, newTreeId);
 
         DiffObjectCount diffCount;
         ObjectDatabase index = objectDatabase();
@@ -98,14 +128,15 @@ public class DiffCount extends AbstractGeoGigOp<DiffObjectCount> {
     /**
      * @return the tree referenced by the old ref, or the head of the index.
      */
-    private RevTree getTree(String refSpec) {
+    private RevTree getTree(@Nullable String refSpec, @Nullable ObjectId treeId) {
+        checkState(refSpec == null || treeId == null);
 
         final RevTree headTree;
-        Optional<ObjectId> resolved = command(ResolveTreeish.class).setTreeish(refSpec).call();
+        Optional<ObjectId> resolved = refSpec == null ? Optional.of(treeId)
+                : command(ResolveTreeish.class).setTreeish(refSpec).call();
         if (resolved.isPresent()) {
             ObjectId headTreeId = resolved.get();
-            headTree = command(RevObjectParse.class).setObjectId(headTreeId).call(RevTree.class)
-                    .get();
+            headTree = objectDatabase().getTree(headTreeId);
         } else {
             headTree = RevTree.EMPTY;
         }

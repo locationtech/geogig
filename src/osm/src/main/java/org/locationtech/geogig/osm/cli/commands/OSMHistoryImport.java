@@ -219,8 +219,8 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
             }
         } else {
             if (!args.saveFolder.exists() && !args.saveFolder.mkdirs()) {
-                throw new IllegalArgumentException("Unable to create directory "
-                        + args.saveFolder.getAbsolutePath());
+                throw new IllegalArgumentException(
+                        "Unable to create directory " + args.saveFolder.getAbsolutePath());
             }
             targetDir = args.saveFolder;
         }
@@ -274,13 +274,12 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
             console.flush();
             ObjectId afterTreeId = workingTree.getTree().getId();
 
-            DiffObjectCount diffCount = geogig.command(DiffCount.class)
-                    .setOldVersion(workTreeId.toString()).setNewVersion(afterTreeId.toString())
-                    .call();
+            DiffObjectCount diffCount = geogig.command(DiffCount.class).setOldTree(workTreeId)
+                    .setNewTree(afterTreeId).call();
 
             geogig.command(AddOp.class).call();
-            console.println(String.format("done. %,d changes actually applied.",
-                    diffCount.featureCount()));
+            console.println(
+                    String.format("done. %,d changes actually applied.", diffCount.featureCount()));
             console.flush();
 
             commit(cli, changeset);

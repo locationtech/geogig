@@ -94,8 +94,8 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
             String treePath = e.getKey();
 
             if (!recursive) {
-                throw new IllegalArgumentException(String.format(
-                        "Cannot remove tree %s if -r is not specified", treePath));
+                throw new IllegalArgumentException(
+                        String.format("Cannot remove tree %s if -r is not specified", treePath));
             }
 
             ObjectId newWorkHead = workingTree.delete(treePath);
@@ -131,8 +131,8 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
         List<String> paths = new ArrayList<String>(deleteTrees.keySet());
         paths.addAll(deleteFeatures);
         final DiffObjectCount stageCount = command(DiffCount.class)
-                .setOldVersion(initialWorkTree.getId().toString())//
-                .setNewVersion(finalWorkTree.getId().toString())//
+                .setOldTree(initialWorkTree.getId())//
+                .setNewTree(finalWorkTree.getId())//
                 .setFilter(paths)//
                 .call();
 
@@ -197,8 +197,8 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
                     }
                 });
 
-        Set<String> requestedTrees = Sets.intersection(treesByPath.keySet(), new HashSet<>(
-                pathsToRemove));
+        Set<String> requestedTrees = Sets.intersection(treesByPath.keySet(),
+                new HashSet<>(pathsToRemove));
         Predicate<String> keyPredicate = Predicates.in(requestedTrees);
         Map<String, NodeRef> requestedTreesMap = Maps.filterKeys(treesByPath, keyPredicate);
         return requestedTreesMap;

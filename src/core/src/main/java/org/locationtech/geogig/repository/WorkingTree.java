@@ -192,7 +192,8 @@ public class WorkingTree {
 
         RevTreeBuilder parentTree = new RevTreeBuilder(indexDatabase,
                 context.command(FindOrCreateSubtree.class)
-                .setParent(Suppliers.ofInstance(Optional.of(getTree()))).setChildPath(path).call());
+                        .setParent(Suppliers.ofInstance(Optional.of(getTree()))).setChildPath(path)
+                        .call());
 
         String featurePath = NodeRef.appendChild(path, featureId);
         Optional<Node> node = findUnstaged(featurePath);
@@ -282,8 +283,8 @@ public class WorkingTree {
 
         RevTreeBuilder parentTree = new RevTreeBuilder(indexDatabase,
                 context.command(FindOrCreateSubtree.class)
-                .setParent(Suppliers.ofInstance(Optional.of(getTree())))
-                .setChildPath(typeName.getLocalPart()).call());
+                        .setParent(Suppliers.ofInstance(Optional.of(getTree())))
+                        .setChildPath(typeName.getLocalPart()).call());
 
         String fid;
         String featurePath;
@@ -335,9 +336,8 @@ public class WorkingTree {
 
     public void delete(Iterator<String> features, ProgressListener progress) {
 
-        final ExecutorService treeBuildingService = Executors
-                .newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(
-                        "WorkingTree-tree-builder-%d").build());
+        final ExecutorService treeBuildingService = Executors.newSingleThreadExecutor(
+                new ThreadFactoryBuilder().setNameFormat("WorkingTree-tree-builder-%d").build());
 
         try {
             final WorkingTreeInsertHelper insertHelper;
@@ -363,7 +363,8 @@ public class WorkingTree {
                     return;
                 }
                 NodeRef treeRef = treeEntry.getKey();
-                Preconditions.checkState(indexDatabase.exists(treeRef.getObjectId()));
+                assert indexDatabase.exists(treeRef.getObjectId());
+
                 RevTree newFeatureTree = treeEntry.getValue();
 
                 String treePath = treeRef.path();
@@ -383,7 +384,8 @@ public class WorkingTree {
         }
     }
 
-    public synchronized NodeRef createTypeTree(final String treePath, final FeatureType featureType) {
+    public synchronized NodeRef createTypeTree(final String treePath,
+            final FeatureType featureType) {
 
         final RevTree workHead = getTree();
         Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(workHead)
@@ -440,8 +442,8 @@ public class WorkingTree {
 
         RevTreeBuilder parentTree = new RevTreeBuilder(indexDatabase,
                 context.command(FindOrCreateSubtree.class)
-                .setParent(Suppliers.ofInstance(Optional.of(getTree())))
-                .setChildPath(parentTreePath).call());
+                        .setParent(Suppliers.ofInstance(Optional.of(getTree())))
+                        .setChildPath(parentTreePath).call());
 
         parentTree.put(node);
         final ObjectId treeMetadataId = treeRef.getMetadataId();
@@ -511,8 +513,8 @@ public class WorkingTree {
                 insertedCount += f.get().longValue();
             }
             sw.stop();
-            listener.setDescription(String.format("%,d distinct features inserted in %s",
-                    insertedCount, sw));
+            listener.setDescription(
+                    String.format("%,d distinct features inserted in %s", insertedCount, sw));
 
             listener.setDescription("Building final tree...");
 
@@ -587,8 +589,8 @@ public class WorkingTree {
                 limit = null;// let the last task take any remaining
                              // feature
             }
-            results.add(executorService.submit(new BlobInsertTask(source, offset, limit,
-                    bulkOpListener, builder)));
+            results.add(executorService
+                    .submit(new BlobInsertTask(source, offset, limit, bulkOpListener, builder)));
         }
         return results;
     }
@@ -761,8 +763,8 @@ public class WorkingTree {
             if (listener.isCanceled()) {
                 return;
             }
-            listener.setDescription("Building trees for "
-                    + new TreeSet<String>(insertHelper.getTreeNames()));
+            listener.setDescription(
+                    "Building trees for " + new TreeSet<String>(insertHelper.getTreeNames()));
             Stopwatch sw = Stopwatch.createStarted();
 
             Map<NodeRef, RevTree> trees = insertHelper.buildTrees();

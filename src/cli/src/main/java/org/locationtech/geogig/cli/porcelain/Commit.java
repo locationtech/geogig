@@ -47,7 +47,7 @@ import com.google.common.collect.Lists;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig commit -m <msg>}
+ * <li>{@code geogig commit -m <msg>}
  * </ul>
  * 
  * @see CommitOp
@@ -67,7 +67,8 @@ public class Commit extends AbstractCommand implements CLICommand {
     @Parameter(names = "--amend", description = "Amends last commit")
     private boolean amend;
 
-    @Parameter(names = { "--quiet", "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
+    @Parameter(names = { "--quiet",
+            "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
     private boolean quiet;
 
     @Parameter(description = "<pathFilter>  [<paths_to_commit]...")
@@ -132,7 +133,7 @@ public class Commit extends AbstractCommand implements CLICommand {
             console.print("Committed, counting objects...");
             console.flush();
             final DiffObjectCount diffCount = geogig.command(DiffCount.class)
-                    .setOldVersion(parentId.toString()).setNewVersion(commit.getId().toString())
+                    .setOldVersion(parentId.toString()).setNewTree(commit.getTreeId())
                     .setProgressListener(progress).call();
 
             if (progress.isCanceled()) {

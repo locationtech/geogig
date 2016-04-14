@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import javax.management.relation.Relation;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.fusesource.jansi.Ansi.Color;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.FeatureBuilder;
@@ -265,12 +266,12 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
                 continue;
             }
             Iterator<Change> changes = opchanges.get();
-            console.print("applying...");
+            console.print(" inserting...");
             console.flush();
 
             ObjectId workTreeId = workingTree.getTree().getId();
             long changeCount = insertChanges(cli, changes, featureFilter);
-            console.print(String.format("Applied %,d changes, staging...", changeCount));
+            console.print(String.format(" Applied %,d changes, staging...", changeCount));
             console.flush();
             ObjectId afterTreeId = workingTree.getTree().getId();
 
@@ -278,8 +279,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
                     .setNewTree(afterTreeId).call();
 
             geogig.command(AddOp.class).call();
-            console.println(
-                    String.format("done. %,d changes actually applied.", diffCount.featureCount()));
+            console.print(String.format(" %,d actual changes.", diffCount.featureCount()));
             console.flush();
 
             commit(cli, changeset);
@@ -294,7 +294,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
     private void commit(GeogigCLI cli, Changeset changeset) throws IOException {
         Preconditions.checkArgument(!changeset.isOpen());
         Console console = cli.getConsole();
-        console.print("Committing changeset " + changeset.getId() + "...");
+        console.print(" Committing...");
         console.flush();
 
         GeoGIG geogig = cli.getGeogig();
@@ -318,17 +318,15 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         command.setCommitterTimestamp(changeset.getClosed().get());
         command.setCommitterTimeZoneOffset(0);// osm timestamps are in GMT
 
-        ProgressListener listener = cli.getProgressListener();
-        listener.setProgress(0f);
-        listener.started();
-        command.setProgressListener(listener);
         try {
             RevCommit commit = command.call();
             Ref head = geogig.command(RefParse.class).setName(Ref.HEAD).call().get();
             Preconditions.checkState(commit.getId().equals(head.getObjectId()));
             updateBranchChangeset(geogig, changeset.getId());
-            listener.complete();
-            console.println("Commit " + commit.getId().toString());
+            String commitStr = newAnsi(console).fg(Color.YELLOW)
+                    .a(commit.getId().toString().substring(0, 8)).reset().toString();
+            console.print(" Commit ");
+            console.println(commitStr);
             console.flush();
         } catch (Exception e) {
             throw Throwables.propagate(e);

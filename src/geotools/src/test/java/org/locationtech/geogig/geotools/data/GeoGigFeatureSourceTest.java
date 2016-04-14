@@ -21,10 +21,13 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.factory.Hints;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.operation.transform.IdentityTransform;
+import org.geotools.renderer.ScreenMap;
 import org.junit.Test;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
@@ -348,6 +351,28 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
             assertNotNull(ref);
             assertEquals(ref.getObjectId().toString(), id.getFeatureVersion());
         }
+    }
+
+    @Test
+    public void testScreenMap() throws Exception {
+        // Test a single point to make sure the feature tree itself (with the same bounds as the
+        // point it contains) doesn't write to the ScreenMap
+        deleteAndAdd(points2);
+        deleteAndAdd(points3);
+        geogig.command(CommitOp.class).setMessage("drop to 1 point").call();
+        Query query = new Query(pointsName);
+        ScreenMap screenMap = new ScreenMap(-180, -90, 360, 180);
+        screenMap.setSpans(1.0, 1.0);
+        screenMap.setTransform(IdentityTransform.create(2));
+
+        query.getHints().put(Hints.SCREENMAP, screenMap);
+
+        SimpleFeatureIterator iter = pointsSource.getFeatures(query).features();
+
+        assertTrue(iter.hasNext());
+        assertEquals(points1.getIdentifier().getID(), iter.next().getID());
+
+        assertTrue(screenMap.get(boundsOf(points1)));
     }
 
     private List<SimpleFeature> toList(SimpleFeatureCollection collection) {

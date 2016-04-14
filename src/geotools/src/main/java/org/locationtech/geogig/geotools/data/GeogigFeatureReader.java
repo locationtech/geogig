@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.geotools.data;
 
-import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.notNull;
 import static com.google.common.collect.Iterators.filter;
+import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,7 +45,6 @@ import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
-import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -538,7 +537,11 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             }
             boolean skip;
             try {
-                skip = screenMap.checkAndSet(envelope);
+                if (b instanceof NodeRef && ((NodeRef) b).getType() == TYPE.FEATURE) {
+                    skip = screenMap.checkAndSet(envelope);
+                } else {
+                    skip = screenMap.get(envelope);
+                }
             } catch (TransformException e) {
                 e.printStackTrace();
                 return true;

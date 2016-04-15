@@ -30,7 +30,7 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
+import org.locationtech.geogig.cli.test.functional.CLITestContextBuilder;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 

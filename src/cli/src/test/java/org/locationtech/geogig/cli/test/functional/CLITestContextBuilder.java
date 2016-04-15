@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli.test.functional.general;
+package org.locationtech.geogig.cli.test.functional;
 
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.ContextBuilder;
@@ -37,7 +37,8 @@ public class CLITestContextBuilder extends ContextBuilder {
         Context context = Guice.createInjector(
                 Modules.override(new GeogigModule(), new CachingModule(), new HintsModule(hints))
                         .with(new PluginsModule(), new CLIContextBuilder.DefaultPlugins(),
-                                functionalTestModule)).getInstance(Context.class);
+                                functionalTestModule))
+                .getInstance(Context.class);
         return context;
     }
 

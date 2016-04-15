@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli.test.functional.remote;
+package org.locationtech.geogig.cli.test.functional;
 
 import org.junit.runner.RunWith;
 
@@ -21,10 +21,8 @@ import cucumber.api.junit.Cucumber;
  */
 @RunWith(Cucumber.class)
 @CucumberOptions(//
-        // features = { "src/test/resources/org/locationtech/geogig/cli/test/remote/Fetch.feature"
-        // },//
-        plugin = { "pretty", "html:cucumber-report-remote" }, strict = true, //
-        // the glue option tells cucumber where else to look for step definitions
-        glue = { "org.locationtech.geogig.cli.test.functional.general" })
-public class RunRemoteFunctionalTest {
+        plugin = { "pretty", "html:cucumber-report-general" }//
+        , strict = true//
+        , features = { "../src/test/resources/features/plumbing" })
+public class RunPlumbingFunctionalTest {
 }

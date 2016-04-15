@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli.test.functional.general;
+package org.locationtech.geogig.cli.test.functional;
 
 import org.junit.runner.RunWith;
 
@@ -19,12 +19,10 @@ import cucumber.api.junit.Cucumber;
  * definitions and hooks are defined in their own classes so they can be reused across features.
  * 
  */
-// use features=... to specify one or more specific features to execute
-// @Cucumber.Options(features = {
-// "src/test/resources/org/locationtech/geogig/cli/test/functional/Branch.feature"
-// }, format = {
-// "pretty", "html:target/cucumber-report" }, strict = true)
-@CucumberOptions(plugin = { "pretty", "html:cucumber-report-general" }, strict = true)
+@CucumberOptions(//
+        plugin = { "pretty", "html:cucumber-report-general" }//
+        , strict = true//
+        , features = { "../src/test/resources/features/general" })
 @RunWith(Cucumber.class)
-public class RunFunctionalTest {
+public class RunGenralFunctionalTest {
 }

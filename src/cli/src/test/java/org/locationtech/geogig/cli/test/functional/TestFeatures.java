@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli.test.functional.general;
+package org.locationtech.geogig.cli.test.functional;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.NameImpl;
@@ -74,7 +74,12 @@ public final class TestFeatures {
 
     public static Feature lines3;
 
-    public static void setupFeatures() throws Exception {
+    private static boolean created;
+
+    public synchronized static void setupFeatures() throws Exception {
+        if (created) {
+            return;
+        }
         pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
         modifiedPointsType = DataUtilities.createType(pointsNs, pointsName, modifiedPointsTypeSpec);
 
@@ -94,6 +99,7 @@ public final class TestFeatures {
                 "LINESTRING (3 3, 4 4)");
         lines3 = feature(linesType, idL3, "StringProp2_3", new Integer(3000),
                 "LINESTRING (5 5, 6 6)");
+        created = true;
     }
 
     public static Feature feature(SimpleFeatureType type, String id, Object... values)

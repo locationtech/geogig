@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli.test.functional.general;
+package org.locationtech.geogig.cli.test.functional;
 
 import org.locationtech.geogig.api.Platform;
 

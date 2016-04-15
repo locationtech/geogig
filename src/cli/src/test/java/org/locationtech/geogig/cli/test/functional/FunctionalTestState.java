@@ -7,16 +7,16 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli.test.functional.general;
+package org.locationtech.geogig.cli.test.functional;
 
 import static org.junit.Assert.assertNotNull;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.lines1;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.lines2;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.lines3;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points1;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points1_FTmodified;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points2;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points3;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines1;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines2;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines3;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points1;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points1_FTmodified;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points2;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,16 +48,25 @@ import com.google.common.collect.Lists;
 import com.google.common.io.CharSource;
 
 /**
+ * A global state that allows to set up repositories for cucumber functional tests.
+ * <p>
+ * Cucumber tests (annotated with <code>@RunWith(Cucumber.class)</code>) can share a single instance
+ * of this class for each test scenario acquiring it through {@link FunctionalTestState#get()},
+ * which uses a {@link ThreadLocal} variable to hold on the thread singleton. (Note: coulnd't make
+ * {@code cucumber-picocontainer} nor {@code cucumnber-guice} as expected, hence this solution).
+ * <p>
+ * The acquired instance shall be initialized and disposed through {@link #before()} and
+ * {@link #after()}, respectively, which are both idempotent.
  */
-public class GlobalState {
+public class FunctionalTestState {
 
-    public static TemporaryFolder tempFolder;
+    public TemporaryFolder tempFolder;
 
     /**
-     * {@link GeogigCLI#execute(String...)} exit code, upadted every time a {@link #runCommand
+     * {@link GeogigCLI#execute(String...)} exit code, updated every time a {@link #runCommand
      * command is ran}
      */
-    public static int exitCode;
+    public int exitCode;
 
     /**
      * A platform to set the current working directory and the user home directory.
@@ -69,25 +78,69 @@ public class GlobalState {
      * changed, setupGeogig() should be called for a new GeogigCLI to be created on the current
      * working dir, if need be.
      */
-    public static TestPlatform platform;
+    public TestPlatform platform;
 
-    public static File remoteRepo;
+    public File remoteRepo;
 
-    public static ByteArrayInputStream stdIn;
+    public ByteArrayInputStream stdIn;
 
-    public static ByteArrayOutputStream stdOut;
+    public ByteArrayOutputStream stdOut;
 
-    public static GeogigCLI geogigCLI;
+    public GeogigCLI geogigCLI;
 
-    public static Console consoleReader;
+    public Console consoleReader;
+
+    private FunctionalTestState() {
+        // force usage through #get()
+    }
+
+    private static ThreadLocal<FunctionalTestState> threadLocal = new ThreadLocal<FunctionalTestState>() {
+        @Override
+        protected FunctionalTestState initialValue() {
+            return new FunctionalTestState();
+        }
+    };
+
+    public static FunctionalTestState get() {
+        return threadLocal.get();
+    }
 
     /**
      * If non null, {@link #setupGeogig()} will use it as the repository URI, otherwise it'll use
      * the platform's current directory
      */
-    public static String repositoryURI;
+    public String repositoryURI;
 
-    public static void setUpDirectories() throws IOException {
+    public synchronized void before() throws Exception {
+        if (tempFolder == null) {
+            tempFolder = new TemporaryFolder();
+            tempFolder.create();
+            TestFeatures.setupFeatures();
+        }
+    }
+
+    public synchronized void after() {
+        try {
+            if (geogigCLI != null) {
+                geogigCLI.close();
+                geogigCLI = null;
+            }
+            if (consoleReader != null) {
+                consoleReader = null;
+            }
+        } finally {
+            if (tempFolder != null) {
+                try {
+                    tempFolder.delete();
+                } finally {
+                    tempFolder = null;
+                    threadLocal.remove();
+                }
+            }
+        }
+    }
+
+    public void setUpDirectories() throws IOException {
         File homeDirectory = new File(tempFolder.getRoot(), "fakeHomeDir");
         File currentDirectory = new File(tempFolder.getRoot(), "testrepo");
         if (!homeDirectory.exists()) {
@@ -96,27 +149,27 @@ public class GlobalState {
         if (!currentDirectory.exists()) {
             currentDirectory.mkdir();
         }
-        if (GlobalState.platform == null) {
-            GlobalState.platform = new TestPlatform(currentDirectory, homeDirectory);
+        if (platform == null) {
+            platform = new TestPlatform(currentDirectory, homeDirectory);
         } else {
-            GlobalState.platform.setWorkingDir(currentDirectory);
-            GlobalState.platform.setUserHome(homeDirectory);
+            platform.setWorkingDir(currentDirectory);
+            platform.setUserHome(homeDirectory);
         }
     }
 
-    public static void setupGeogig() throws Exception {
+    public void setupGeogig() throws Exception {
         assertNotNull(platform);
 
         stdIn = new ByteArrayInputStream(new byte[0]);
         stdOut = new ByteArrayOutputStream();
 
-        GlobalState.consoleReader = new Console(stdIn, stdOut).disableAnsi();
+        consoleReader = new Console(stdIn, stdOut).disableAnsi();
 
         if (geogigCLI != null) {
             geogigCLI.close();
         }
 
-        geogigCLI = new GeogigCLI(GlobalState.consoleReader);
+        geogigCLI = new GeogigCLI(consoleReader);
 
         ContextBuilder injectorBuilder = new CLITestContextBuilder(platform);
         GlobalContextBuilder.builder = injectorBuilder;
@@ -127,7 +180,7 @@ public class GlobalState {
         geogigCLI.setPlatform(platform);
         geogigCLI.tryConfigureLogging();
 
-        String uri = GlobalState.repositoryURI;
+        String uri = repositoryURI;
         if (uri != null) {
             geogigCLI.setRepositoryURI(uri);
         }
@@ -137,12 +190,11 @@ public class GlobalState {
      * Runs the given command with its arguments and returns the command output as a list of
      * strings, one per line.
      */
-    public static List<String> runAndParseCommand(String... command) throws Exception {
+    public List<String> runAndParseCommand(String... command) throws Exception {
         return runAndParseCommand(false, command);
     }
 
-    public static List<String> runAndParseCommand(boolean failFast, String... command)
-            throws Exception {
+    public List<String> runAndParseCommand(boolean failFast, String... command) throws Exception {
         runCommand(failFast, command);
         CharSource reader = CharSource.wrap(stdOut.toString(Charsets.UTF_8.name()));
         ImmutableList<String> lines = reader.readLines();
@@ -153,23 +205,23 @@ public class GlobalState {
      * @param commandAndArgs the command and its arguments. This method is dumb, be careful of not
      *        using arguments that shouldn't be split on a space (like "commit -m 'separate words')
      */
-    public static void runCommand(String commandAndArgs) throws Exception {
+    public void runCommand(String commandAndArgs) throws Exception {
         runCommand(false, commandAndArgs);
     }
 
-    public static void runCommand(boolean failFast, String commandAndArgs) throws Exception {
+    public void runCommand(boolean failFast, String commandAndArgs) throws Exception {
         runCommand(failFast, commandAndArgs.split(" "));
     }
 
     /**
-     * runs the command, does not fail fast, check {@link GlobalState#exitCode} for the exit code
-     * and {@link GeogigCLI#exception} for any caught exception
+     * runs the command, does not fail fast, check {@link FunctionalTestState#exitCode} for the exit
+     * code and {@link GeogigCLI#exception} for any caught exception
      */
-    public static void runCommand(String... command) throws Exception {
+    public void runCommand(String... command) throws Exception {
         runCommand(false, command);
     }
 
-    public static void runCommand(boolean failFast, String... command) throws Exception {
+    public void runCommand(boolean failFast, String... command) throws Exception {
         assertNotNull(geogigCLI);
         stdOut.reset();
         exitCode = geogigCLI.execute(command);
@@ -179,7 +231,7 @@ public class GlobalState {
         }
     }
 
-    public static void insertFeatures() throws Exception {
+    public void insertFeatures() throws Exception {
         insert(points1);
         insert(points2);
         insert(points3);
@@ -188,7 +240,7 @@ public class GlobalState {
         insert(lines3);
     }
 
-    public static void insertAndAddFeatures() throws Exception {
+    public void insertAndAddFeatures() throws Exception {
         insertAndAdd(points1);
         insertAndAdd(points2);
         insertAndAdd(points3);
@@ -197,7 +249,7 @@ public class GlobalState {
         insertAndAdd(lines3);
     }
 
-    public static void deleteAndReplaceFeatureType() throws Exception {
+    public void deleteAndReplaceFeatureType() throws Exception {
 
         GeoGIG geogig = geogigCLI.newGeoGIG();
         try {
@@ -214,7 +266,7 @@ public class GlobalState {
     /**
      * Inserts the Feature to the index and stages it to be committed.
      */
-    public static ObjectId insertAndAdd(Feature f) throws Exception {
+    public ObjectId insertAndAdd(Feature f) throws Exception {
         ObjectId objectId = insert(f);
 
         runCommand(true, "add");
@@ -224,17 +276,17 @@ public class GlobalState {
     /**
      * Inserts the feature to the index but does not stages it to be committed
      */
-    public static ObjectId insert(Feature f) throws Exception {
+    public ObjectId insert(Feature f) throws Exception {
         return insert(new Feature[] { f }).get(0);
     }
 
-    public static List<ObjectId> insertAndAdd(Feature... features) throws Exception {
+    public List<ObjectId> insertAndAdd(Feature... features) throws Exception {
         List<ObjectId> ids = insert(features);
         geogigCLI.execute("add");
         return ids;
     }
 
-    public static List<ObjectId> insert(Feature... features) throws Exception {
+    public List<ObjectId> insert(Feature... features) throws Exception {
         geogigCLI.close();
         GeoGIG geogig = geogigCLI.newGeoGIG(Hints.readWrite());
         Preconditions.checkNotNull(geogig);
@@ -262,7 +314,7 @@ public class GlobalState {
      * @return
      * @throws Exception
      */
-    public static boolean deleteAndAdd(Feature f) throws Exception {
+    public boolean deleteAndAdd(Feature f) throws Exception {
         boolean existed = delete(f);
         if (existed) {
             runCommand(true, "add");
@@ -271,7 +323,7 @@ public class GlobalState {
         return existed;
     }
 
-    public static boolean delete(Feature f) throws Exception {
+    public boolean delete(Feature f) throws Exception {
         GeoGIG geogig = geogigCLI.newGeoGIG();
         try {
             final WorkingTree workTree = geogig.getRepository().workingTree();

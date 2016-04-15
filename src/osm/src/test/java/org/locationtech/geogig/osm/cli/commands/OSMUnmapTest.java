@@ -25,7 +25,7 @@ import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
+import org.locationtech.geogig.cli.test.functional.CLITestContextBuilder;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 

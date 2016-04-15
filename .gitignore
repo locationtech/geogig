@@ -4,7 +4,7 @@ target
 .settings
 *~
 bin/
-cucumber-report
+cucumber-report*
 git.properties
 # Netbeans project files
 nb-configuration.xml

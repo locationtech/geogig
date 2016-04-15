@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli.test.functional.porcelain;
+package org.locationtech.geogig.cli.test.functional;
 
 import org.junit.runner.RunWith;
 
@@ -21,12 +21,8 @@ import cucumber.api.junit.Cucumber;
  */
 @RunWith(Cucumber.class)
 @CucumberOptions(//
-        plugin = { "pretty", "html:cucumber-report-porcelain" }//
+        plugin = { "pretty", "html:cucumber-report-general" }//
         , strict = true//
-        , glue = { "org.locationtech.geogig.cli.test.functional.general" }// where step definitions
-                                                                          // are
-// , features = {
-// "src/test/resources/org/locationtech/geogig/cli/test/functional/porcelain/Clean.feature" }//
-)
+        , features = { "../src/test/resources/features/porcelain" })
 public class RunPorcelainFunctionalTest {
 }

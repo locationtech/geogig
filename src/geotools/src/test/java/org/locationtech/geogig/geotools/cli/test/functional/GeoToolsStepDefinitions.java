@@ -9,14 +9,15 @@
  */
 package org.locationtech.geogig.geotools.cli.test.functional;
 
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.insertAndAdd;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.runCommand;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.lines1;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.lines2;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.lines3;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points1_FTmodified;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points2;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points3;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines1;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines2;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines3;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points1_FTmodified;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points2;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
+
+import org.locationtech.geogig.cli.test.functional.FunctionalTestState;
+
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.When;
 import cucumber.runtime.java.StepDefAnnotation;
@@ -27,6 +28,19 @@ import cucumber.runtime.java.StepDefAnnotation;
  */
 @StepDefAnnotation
 public class GeoToolsStepDefinitions {
+
+    private FunctionalTestState state;
+
+    @cucumber.api.java.Before
+    public void before() throws Exception {
+        state = FunctionalTestState.get();
+        state.before();
+    }
+
+    @cucumber.api.java.After
+    public void after() {
+        state.after();
+    }
 
     private String getPGDatabaseParameters() throws Exception {
         IniPGProperties properties = new IniPGProperties();
@@ -56,7 +70,7 @@ public class GeoToolsStepDefinitions {
     public void I_run_the_command_on_the_PostGIS_database(String commandSpec) throws Throwable {
         commandSpec += getPGDatabaseParameters();
         String[] args = commandSpec.split(" ");
-        runCommand(args);
+        state.runCommand(args);
     }
 
     @When("^I run the command \"([^\"]*)\" on the SpatiaLite database$")
@@ -64,20 +78,20 @@ public class GeoToolsStepDefinitions {
         commandSpec += " --database ";
         commandSpec += getClass().getResource("testdb.sqlite").getPath();
         String[] args = commandSpec.split(" ");
-        runCommand(args);
+        state.runCommand(args);
     }
 
     @Given("^I have several feature types in a path$")
     public void I_have_several_feature_types_in_a_path() throws Throwable {
-        insertAndAdd(points2);
-        runCommand(true, "commit -m Commit1");
-        insertAndAdd(points1_FTmodified);
-        runCommand(true, "commit -m Commit2");
-        insertAndAdd(points3);
-        insertAndAdd(lines1);
-        runCommand(true, "commit -m Commit3");
-        insertAndAdd(lines2, lines3);
-        runCommand(true, "commit -m Commit4");
+        state.insertAndAdd(points2);
+        state.runCommand(true, "commit -m Commit1");
+        state.insertAndAdd(points1_FTmodified);
+        state.runCommand(true, "commit -m Commit2");
+        state.insertAndAdd(points3);
+        state.insertAndAdd(lines1);
+        state.runCommand(true, "commit -m Commit3");
+        state.insertAndAdd(lines2, lines3);
+        state.runCommand(true, "commit -m Commit4");
     }
 
 }

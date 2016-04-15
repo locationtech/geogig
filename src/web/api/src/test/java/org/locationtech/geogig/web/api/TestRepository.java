@@ -19,7 +19,7 @@ import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.porcelain.InitOp;
-import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
+import org.locationtech.geogig.cli.test.functional.CLITestContextBuilder;
 
 import com.google.common.base.Preconditions;
 

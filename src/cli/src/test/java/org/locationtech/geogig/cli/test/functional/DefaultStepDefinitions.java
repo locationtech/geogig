@@ -7,39 +7,25 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli.test.functional.general;
+package org.locationtech.geogig.cli.test.functional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.deleteAndReplaceFeatureType;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.exitCode;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.geogigCLI;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.insert;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.insertAndAdd;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.insertAndAddFeatures;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.insertFeatures;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.platform;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.runAndParseCommand;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.runCommand;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.setUpDirectories;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.setupGeogig;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.stdOut;
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.tempFolder;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.feature;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.idP1;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.lines1;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.lines2;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.lines3;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points1;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points1_modified;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points2;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.points3;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.pointsName;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.pointsType;
-import static org.locationtech.geogig.cli.test.functional.general.TestFeatures.setupFeatures;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.feature;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.idP1;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines1;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines2;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines3;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points1;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points1_modified;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points2;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.pointsName;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.pointsType;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.setupFeatures;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -47,7 +33,6 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
@@ -88,72 +73,64 @@ public class DefaultStepDefinitions {
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
+    private FunctionalTestState state;
+
     @cucumber.api.java.Before
     public void before() throws Exception {
-        tempFolder = new TemporaryFolder();
-        tempFolder.create();
-        setupFeatures();
+        state = FunctionalTestState.get();
+        state.before();
     }
 
     @cucumber.api.java.After
     public void after() {
-        if (GlobalState.geogigCLI != null) {
-            GlobalState.geogigCLI.close();
-            GlobalState.geogigCLI = null;
-        }
-        if (GlobalState.consoleReader != null) {
-            GlobalState.consoleReader = null;
-        }
+        state.after();
         System.gc();
         System.runFinalization();
-        tempFolder.delete();
-        // assertFalse(
-        // "this test is messing up with the config, make sure it uses CLITestInjectorBuilder",
-        // new File("/home/groldan/.geogigconfig").exists());
     }
 
     @Given("^I am in an empty directory$")
     public void I_am_in_an_empty_directory() throws Throwable {
-        setUpDirectories();
-        assertEquals(0, platform.pwd().list().length);
-        GlobalState.repositoryURI = null;
-        setupGeogig();
+        state.setUpDirectories();
+        assertEquals(0, state.platform.pwd().list().length);
+        state.repositoryURI = null;
+        state.setupGeogig();
     }
 
     @When("^I run the command \"(.*?)\"$")
     public void I_run_the_command_X(String commandSpec) throws Throwable {
         String[] args = ArgumentTokenizer.tokenize(commandSpec);
-        File pwd = platform.pwd();
+        File pwd = state.platform.pwd();
         for (int i = 0; i < args.length; i++) {
             args[i] = args[i].replace("${currentdir}", pwd.getAbsolutePath());
             args[i] = args[i].replace("\"", "");
         }
-        runCommand(args);
+        state.runCommand(args);
     }
 
     @Then("^it should exit with non-zero exit code$")
     public void it_should_exit_with_non_zero_exit_code() throws Throwable {
-        assertFalse("exited with exit code " + exitCode, exitCode == 0);
+        assertFalse("exited with exit code " + state.exitCode, state.exitCode == 0);
     }
 
     @Then("^it should exit with zero exit code$")
     public void it_should_exit_with_zero_exit_code() throws Throwable {
-        assertEquals(0, exitCode);
+        assertEquals(0, state.exitCode);
     }
 
     @Then("^it should answer \"([^\"]*)\"$")
     public void it_should_answer_exactly(String expected) throws Throwable {
-        File pwd = platform.pwd();
+        File pwd = state.platform.pwd();
         expected = expected.replace("${currentdir}", pwd.getAbsolutePath()).toLowerCase()
                 .replaceAll("\\\\", "/");
-        String actual = stdOut.toString().replaceAll(LINE_SEPARATOR, "").replaceAll("\\\\", "/")
-                .trim().toLowerCase();
+        String actual = state.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
+                .replaceAll("\\\\", "/").trim().toLowerCase();
         assertEquals(expected, actual);
     }
 
     @Then("^the response should contain \"([^\"]*)\"$")
     public void the_response_should_contain(String expected) throws Throwable {
-        String actual = stdOut.toString().replaceAll(LINE_SEPARATOR, "").replaceAll("\\\\", "/");
+        String actual = state.stdOut.toString().replaceAll(LINE_SEPARATOR, "").replaceAll("\\\\",
+                "/");
         if (!actual.contains(expected))
             System.err.println(actual);
         assertTrue("'" + actual + "' does not contain '" + expected + "'",
@@ -162,47 +139,49 @@ public class DefaultStepDefinitions {
 
     @Then("^the response should not contain \"([^\"]*)\"$")
     public void the_response_should_not_contain(String expected) throws Throwable {
-        String actual = stdOut.toString().replaceAll(LINE_SEPARATOR, "").replaceAll("\\\\", "/");
+        String actual = state.stdOut.toString().replaceAll(LINE_SEPARATOR, "").replaceAll("\\\\",
+                "/");
         assertFalse(actual, actual.contains(expected));
     }
 
     @Then("^the response should contain ([^\"]*) lines$")
     public void the_response_should_contain_x_lines(int lines) throws Throwable {
-        String output = stdOut.toString();
+        String output = state.stdOut.toString();
         String[] lineStrings = output.split(LINE_SEPARATOR);
         assertEquals(output, lines, lineStrings.length);
     }
 
     @Then("^the response should start with \"([^\"]*)\"$")
     public void the_response_should_start_with(String expected) throws Throwable {
-        String actual = stdOut.toString().replaceAll(LINE_SEPARATOR, "");
+        String actual = state.stdOut.toString().replaceAll(LINE_SEPARATOR, "");
         assertTrue(actual, actual.startsWith(expected));
     }
 
     @Then("^the repository directory shall exist$")
     public void the_repository_directory_shall_exist() throws Throwable {
-        List<String> output = runAndParseCommand(true, "rev-parse", "--resolve-geogig-uri");
+        List<String> output = state.runAndParseCommand(true, "rev-parse", "--resolve-geogig-uri");
         assertEquals(output.toString(), 1, output.size());
         String location = output.get(0);
         assertNotNull(location);
         File repoDir = new File(location);
-        assertTrue("Repository directory not found: " + repoDir.getAbsolutePath(), repoDir.exists());
+        assertTrue("Repository directory not found: " + repoDir.getAbsolutePath(),
+                repoDir.exists());
     }
 
     @Given("^I have a remote ref called \"([^\"]*)\"$")
     public void i_have_a_remote_ref_called(String expected) throws Throwable {
         String ref = "refs/remotes/origin/" + expected;
-        geogigCLI.getGeogig(Hints.readWrite()).command(UpdateRef.class).setName(ref)
+        state.geogigCLI.getGeogig(Hints.readWrite()).command(UpdateRef.class).setName(ref)
                 .setNewValue(ObjectId.NULL).call();
-        Optional<Ref> refValue = geogigCLI.getGeogig(Hints.readWrite()).command(RefParse.class)
-                .setName(ref).call();
+        Optional<Ref> refValue = state.geogigCLI.getGeogig(Hints.readWrite())
+                .command(RefParse.class).setName(ref).call();
         assertTrue(refValue.isPresent());
         assertEquals(refValue.get().getObjectId(), ObjectId.NULL);
     }
 
     @Given("^I have a remote tag called \"([^\"]*)\"$")
     public void i_have_a_remote_tag_called(String expected) throws Throwable {
-        geogigCLI.getGeogig(Hints.readWrite()) //
+        state.geogigCLI.getGeogig(Hints.readWrite()) //
                 .command(TagCreateOp.class) //
                 .setName(expected) //
                 .setMessage("Tagged " + expected) //
@@ -212,10 +191,10 @@ public class DefaultStepDefinitions {
 
     @Given("^I have an unconfigured repository$")
     public void I_have_an_unconfigured_repository() throws Throwable {
-        setUpDirectories();
-        setupGeogig();
+        state.setUpDirectories();
+        state.setupGeogig();
 
-        List<String> output = runAndParseCommand(true, "init");
+        List<String> output = state.runAndParseCommand(true, "init");
         assertEquals(output.toString(), 1, output.size());
         assertNotNull(output.get(0));
         assertTrue(output.get(0), output.get(0).startsWith("Initialized"));
@@ -224,10 +203,10 @@ public class DefaultStepDefinitions {
     @Given("^I have a merge conflict state$")
     public void I_have_a_merge_conflict_state() throws Throwable {
         I_have_conflicting_branches();
-        Ref branch = geogigCLI.getGeogig(Hints.readOnly()).command(RefParse.class)
+        Ref branch = state.geogigCLI.getGeogig(Hints.readOnly()).command(RefParse.class)
                 .setName("branch1").call().get();
         try {
-            geogigCLI.getGeogig(Hints.readWrite()).command(MergeOp.class)
+            state.geogigCLI.getGeogig(Hints.readWrite()).command(MergeOp.class)
                     .addCommit(Suppliers.ofInstance(branch.getObjectId())).call();
             fail();
         } catch (MergeConflictsException e) {
@@ -251,31 +230,30 @@ public class DefaultStepDefinitions {
                 "POINT(1 1)");
         Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
                 "POINT(1 1)");
-        insertAndAdd(points1);
-        runCommand(true, "commit -m Commit1");
-        runCommand(true, "branch branch1");
-        runCommand(true, "branch branch2");
-        insertAndAdd(points1Modified);
-        runCommand(true, "commit -m Commit2");
-        insertAndAdd(lines1);
-        runCommand(true, "commit -m Commit3");
-        runCommand(true, "checkout branch1");
-        insertAndAdd(points1ModifiedB);
-        insertAndAdd(points2);
-        runCommand(true, "commit -m Commit4");
-        runCommand(true, "checkout branch2");
-        insertAndAdd(points3);
-        runCommand(true, "commit -m Commit5");
-        runCommand(true, "checkout master");
+        state.insertAndAdd(points1);
+        state.runCommand(true, "commit -m Commit1");
+        state.runCommand(true, "branch branch1");
+        state.runCommand(true, "branch branch2");
+        state.insertAndAdd(points1Modified);
+        state.runCommand(true, "commit -m Commit2");
+        state.insertAndAdd(lines1);
+        state.runCommand(true, "commit -m Commit3");
+        state.runCommand(true, "checkout branch1");
+        state.insertAndAdd(points1ModifiedB);
+        state.insertAndAdd(points2);
+        state.runCommand(true, "commit -m Commit4");
+        state.runCommand(true, "checkout branch2");
+        state.insertAndAdd(points3);
+        state.runCommand(true, "commit -m Commit5");
+        state.runCommand(true, "checkout master");
     }
 
     @Given("^I set up a hook$")
     public void I_set_up_a_hook() throws Throwable {
-        File hooksDir = new File(platform.pwd(), ".geogig/hooks");
+        File hooksDir = new File(state.platform.pwd(), ".geogig/hooks");
         File hook = new File(hooksDir, "pre_commit.js");
         String script = "exception = Packages.org.locationtech.geogig.api.hooks.CannotRunGeogigOperationException;\n"
-                + "msg = params.get(\"message\");\n"
-                + "if (msg.length() < 5){\n"
+                + "msg = params.get(\"message\");\n" + "if (msg.length() < 5){\n"
                 + "\tthrow new exception(\"Commit messages must have at least 5 letters\");\n"
                 + "}\n" + "params.put(\"message\", msg.toLowerCase());";
         Files.write(script, hook, Charset.forName("UTF-8"));
@@ -294,120 +272,120 @@ public class DefaultStepDefinitions {
     private void createRemote(String name) throws Throwable {
         I_am_in_an_empty_directory();
 
-        final File currDir = platform.pwd();
+        final File currDir = state.platform.pwd();
 
-        List<String> output = runAndParseCommand(true, "init", name);
+        List<String> output = state.runAndParseCommand(true, "init", name);
 
         assertEquals(output.toString(), 1, output.size());
         assertNotNull(output.get(0));
         assertTrue(output.get(0), output.get(0).startsWith("Initialized"));
 
         final File remoteRepo = new File(currDir, name);
-        GlobalState.remoteRepo = remoteRepo;
-        platform.setWorkingDir(remoteRepo);
-        setupGeogig();
-        runCommand(true, "config", "--global", "user.name", "John Doe");
-        runCommand(true, "config", "--global", "user.email", "JohnDoe@example.com");
-        insertAndAdd(points1);
-        runCommand(true, "commit -m Commit1");
-        runCommand(true, "branch -c branch1");
-        insertAndAdd(points2);
-        runCommand(true, "commit -m Commit2");
-        insertAndAdd(points3);
-        runCommand(true, "commit -m Commit3");
-        runCommand(true, "checkout master");
-        insertAndAdd(lines1);
-        runCommand(true, "commit -m Commit4");
-        insertAndAdd(lines2);
-        runCommand(true, "commit -m Commit5");
+        state.remoteRepo = remoteRepo;
+        state.platform.setWorkingDir(remoteRepo);
+        state.setupGeogig();
+        state.runCommand(true, "config", "--global", "user.name", "John Doe");
+        state.runCommand(true, "config", "--global", "user.email", "JohnDoe@example.com");
+        state.insertAndAdd(points1);
+        state.runCommand(true, "commit -m Commit1");
+        state.runCommand(true, "branch -c branch1");
+        state.insertAndAdd(points2);
+        state.runCommand(true, "commit -m Commit2");
+        state.insertAndAdd(points3);
+        state.runCommand(true, "commit -m Commit3");
+        state.runCommand(true, "checkout master");
+        state.insertAndAdd(lines1);
+        state.runCommand(true, "commit -m Commit4");
+        state.insertAndAdd(lines2);
+        state.runCommand(true, "commit -m Commit5");
 
-        platform.setWorkingDir(currDir);
-        setupGeogig();
+        state.platform.setWorkingDir(currDir);
+        state.setupGeogig();
     }
 
     @Given("^there is a remote repository with a tag named \"([^\"]*)\"$")
     public void there_is_a_remote_repository_with_a_tag_named(String tagName) throws Throwable {
         I_am_in_an_empty_directory();
 
-        final File currDir = platform.pwd();
+        final File currDir = state.platform.pwd();
 
-        List<String> output = runAndParseCommand(true, "init", "remoterepo");
+        List<String> output = state.runAndParseCommand(true, "init", "remoterepo");
 
         assertEquals(output.toString(), 1, output.size());
         assertNotNull(output.get(0));
         assertTrue(output.get(0), output.get(0).startsWith("Initialized"));
 
         final File remoteRepo = new File(currDir, "remoterepo");
-        GlobalState.remoteRepo = remoteRepo;
-        platform.setWorkingDir(remoteRepo);
-        setupGeogig();
-        runCommand(true, "config", "--global", "user.name", "John Doe");
-        runCommand(true, "config", "--global", "user.email", "JohnDoe@example.com");
-        insertAndAdd(points1);
-        runCommand(true, "commit -m Commit1");
-        runCommand(true, "branch -c branch1");
-        insertAndAdd(points2);
-        runCommand(true, "commit -m Commit2");
-        insertAndAdd(points3);
-        runCommand(true, "commit -m Commit3");
-        runCommand(true, "checkout master");
-        insertAndAdd(lines1);
-        runCommand(true, "commit -m Commit4");
-        insertAndAdd(lines2);
-        runCommand(true, "commit -m Commit5");
-        runCommand(true, "tag " + tagName + " -m Created_" + tagName + "");
+        state.remoteRepo = remoteRepo;
+        state.platform.setWorkingDir(remoteRepo);
+        state.setupGeogig();
+        state.runCommand(true, "config", "--global", "user.name", "John Doe");
+        state.runCommand(true, "config", "--global", "user.email", "JohnDoe@example.com");
+        state.insertAndAdd(points1);
+        state.runCommand(true, "commit -m Commit1");
+        state.runCommand(true, "branch -c branch1");
+        state.insertAndAdd(points2);
+        state.runCommand(true, "commit -m Commit2");
+        state.insertAndAdd(points3);
+        state.runCommand(true, "commit -m Commit3");
+        state.runCommand(true, "checkout master");
+        state.insertAndAdd(lines1);
+        state.runCommand(true, "commit -m Commit4");
+        state.insertAndAdd(lines2);
+        state.runCommand(true, "commit -m Commit5");
+        state.runCommand(true, "tag " + tagName + " -m Created_" + tagName + "");
 
-        String actual = stdOut.toString().replaceAll(LINE_SEPARATOR, "").replaceAll("\\\\", "/")
-                .trim().toLowerCase();
+        String actual = state.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
+                .replaceAll("\\\\", "/").trim().toLowerCase();
         assertTrue(actual, actual.startsWith("created tag " + tagName));
 
-        platform.setWorkingDir(currDir);
-        setupGeogig();
+        state.platform.setWorkingDir(currDir);
+        state.setupGeogig();
     }
 
     @Given("^I have a repository$")
     public void I_have_a_repository() throws Throwable {
         I_have_an_unconfigured_repository();
-        runCommand(true, "config", "--global", "user.name", "John Doe");
-        runCommand(true, "config", "--global", "user.email", "JohnDoe@example.com");
+        state.runCommand(true, "config", "--global", "user.name", "John Doe");
+        state.runCommand(true, "config", "--global", "user.email", "JohnDoe@example.com");
     }
 
     @Given("^I have a repository with a remote$")
     public void I_have_a_repository_with_a_remote() throws Throwable {
         there_is_a_remote_repository();
 
-        List<String> output = runAndParseCommand("init", "localrepo");
+        List<String> output = state.runAndParseCommand("init", "localrepo");
         assertEquals(output.toString(), 1, output.size());
         assertNotNull(output.get(0));
         assertTrue(output.get(0), output.get(0).startsWith("Initialized"));
 
-        platform.setWorkingDir(new File(platform.pwd(), "localrepo"));
-        setupGeogig();
+        state.platform.setWorkingDir(new File(state.platform.pwd(), "localrepo"));
+        state.setupGeogig();
 
-        runCommand(true, "config", "--global", "user.name", "John Doe");
-        runCommand(true, "config", "--global", "user.email", "JohnDoe@example.com");
+        state.runCommand(true, "config", "--global", "user.name", "John Doe");
+        state.runCommand(true, "config", "--global", "user.email", "JohnDoe@example.com");
 
-        File remoteRepo = GlobalState.remoteRepo;
+        File remoteRepo = state.remoteRepo;
         String remotePath = remoteRepo.getAbsolutePath();
-        runCommand(true, "remote", "add", "origin", remotePath);
+        state.runCommand(true, "remote", "add", "origin", remotePath);
     }
 
     @Given("^I have staged \"([^\"]*)\"$")
     public void I_have_staged(String feature) throws Throwable {
         if (feature.equals("points1")) {
-            insertAndAdd(points1);
+            state.insertAndAdd(points1);
         } else if (feature.equals("points2")) {
-            insertAndAdd(points2);
+            state.insertAndAdd(points2);
         } else if (feature.equals("points3")) {
-            insertAndAdd(points3);
+            state.insertAndAdd(points3);
         } else if (feature.equals("points1_modified")) {
-            insertAndAdd(points1_modified);
+            state.insertAndAdd(points1_modified);
         } else if (feature.equals("lines1")) {
-            insertAndAdd(lines1);
+            state.insertAndAdd(lines1);
         } else if (feature.equals("lines2")) {
-            insertAndAdd(lines2);
+            state.insertAndAdd(lines2);
         } else if (feature.equals("lines3")) {
-            insertAndAdd(lines3);
+            state.insertAndAdd(lines3);
         } else {
             throw new Exception("Unknown Feature");
         }
@@ -415,25 +393,25 @@ public class DefaultStepDefinitions {
 
     @Given("^I have 6 unstaged features$")
     public void I_have_6_unstaged_features() throws Throwable {
-        insertFeatures();
+        state.insertFeatures();
     }
 
     @Given("^I have unstaged \"([^\"]*)\"$")
     public void I_have_unstaged(String feature) throws Throwable {
         if (feature.equals("points1")) {
-            insert(points1);
+            state.insert(points1);
         } else if (feature.equals("points2")) {
-            insert(points2);
+            state.insert(points2);
         } else if (feature.equals("points3")) {
-            insert(points3);
+            state.insert(points3);
         } else if (feature.equals("points1_modified")) {
-            insert(points1_modified);
+            state.insert(points1_modified);
         } else if (feature.equals("lines1")) {
-            insert(lines1);
+            state.insert(lines1);
         } else if (feature.equals("lines2")) {
-            insert(lines2);
+            state.insert(lines2);
         } else if (feature.equals("lines3")) {
-            insert(lines3);
+            state.insert(lines3);
         } else {
             throw new Exception("Unknown Feature");
         }
@@ -441,8 +419,8 @@ public class DefaultStepDefinitions {
 
     @Given("^I have unstaged an empty feature type$")
     public void I_have_unstaged_an_empty_feature_type() throws Throwable {
-        insert(points1);
-        GeoGIG geogig = geogigCLI.newGeoGIG();
+        state.insert(points1);
+        GeoGIG geogig = state.geogigCLI.newGeoGIG();
         final WorkingTree workTree = geogig.getRepository().workingTree();
         workTree.delete(pointsName, idP1);
         geogig.close();
@@ -450,63 +428,63 @@ public class DefaultStepDefinitions {
 
     @Given("^I stage 6 features$")
     public void I_stage_6_features() throws Throwable {
-        insertAndAddFeatures();
+        state.insertAndAddFeatures();
     }
 
     @Given("^I have several commits$")
     public void I_have_several_commits() throws Throwable {
-        insertAndAdd(points1, points2);
-        runCommand(true, "commit -m Commit1");
-        insertAndAdd(points3, lines1);
-        runCommand(true, "commit -m Commit2");
-        insertAndAdd(lines2, lines3);
-        runCommand(true, "commit -m Commit3");
-        insertAndAdd(points1_modified);
-        runCommand(true, "commit -m Commit4");
+        state.insertAndAdd(points1, points2);
+        state.runCommand(true, "commit -m Commit1");
+        state.insertAndAdd(points3, lines1);
+        state.runCommand(true, "commit -m Commit2");
+        state.insertAndAdd(lines2, lines3);
+        state.runCommand(true, "commit -m Commit3");
+        state.insertAndAdd(points1_modified);
+        state.runCommand(true, "commit -m Commit4");
     }
 
     @Given("^I have several branches")
     public void I_have_several_branches() throws Throwable {
-        insertAndAdd(points1);
-        runCommand(true, "commit -m Commit1");
-        runCommand(true, "branch -c branch1");
-        insertAndAdd(points2);
-        runCommand(true, "commit -m Commit2");
-        insertAndAdd(points3);
-        runCommand(true, "commit -m Commit3");
-        runCommand(true, "branch -c branch2");
-        insertAndAdd(lines1);
-        runCommand(true, "commit -m Commit4");
-        runCommand(true, "checkout master");
-        insertAndAdd(lines2);
-        runCommand(true, "commit -m Commit5");
+        state.insertAndAdd(points1);
+        state.runCommand(true, "commit -m Commit1");
+        state.runCommand(true, "branch -c branch1");
+        state.insertAndAdd(points2);
+        state.runCommand(true, "commit -m Commit2");
+        state.insertAndAdd(points3);
+        state.runCommand(true, "commit -m Commit3");
+        state.runCommand(true, "branch -c branch2");
+        state.insertAndAdd(lines1);
+        state.runCommand(true, "commit -m Commit4");
+        state.runCommand(true, "checkout master");
+        state.insertAndAdd(lines2);
+        state.runCommand(true, "commit -m Commit5");
     }
 
     @Given("I modify and add a feature")
     public void I_modify_and_add_a_feature() throws Throwable {
-        insertAndAdd(points1_modified);
+        state.insertAndAdd(points1_modified);
     }
 
     @Given("I modify a feature")
     public void I_modify_a_feature() throws Throwable {
-        insert(points1_modified);
+        state.insert(points1_modified);
     }
 
     @Given("^I a featuretype is modified$")
     public void I_modify_a_feature_type() throws Throwable {
-        deleteAndReplaceFeatureType();
+        state.deleteAndReplaceFeatureType();
     }
 
     @Then("^if I change to the respository subdirectory \"([^\"]*)\"$")
     public void if_I_change_to_the_respository_subdirectory(String subdirSpec) throws Throwable {
         String[] subdirs = subdirSpec.split("/");
-        File dir = platform.pwd();
+        File dir = state.platform.pwd();
         for (String subdir : subdirs) {
             dir = new File(dir, subdir);
         }
         assertTrue(dir.exists());
-        platform.setWorkingDir(dir);
-        setupGeogig();
+        state.platform.setWorkingDir(dir);
+        state.setupGeogig();
     }
 
     @Given("^I have a patch file$")
@@ -520,7 +498,7 @@ public class DefaultStepDefinitions {
         FeatureDiff feaureDiff = new FeatureDiff(path, map, RevFeatureTypeImpl.build(pointsType),
                 RevFeatureTypeImpl.build(pointsType));
         patch.addModifiedFeature(feaureDiff);
-        File file = new File(platform.pwd(), "test.patch");
+        File file = new File(state.platform.pwd(), "test.patch");
         BufferedWriter writer = Files.newWriter(file, Charsets.UTF_8);
         PatchSerializer.write(writer, patch);
         writer.flush();
@@ -529,7 +507,7 @@ public class DefaultStepDefinitions {
 
     @Given("^I have an insert file$")
     public void I_have_an_insert_file() throws Throwable {
-        File file = new File(platform.pwd(), "insert");
+        File file = new File(state.platform.pwd(), "insert");
         BufferedWriter writer = Files.newWriter(file, Charsets.UTF_8);
         writer.write("Points/Points.1\n");
         writer.write("sp\tNew_String\n");
@@ -542,11 +520,11 @@ public class DefaultStepDefinitions {
     @Given("^I am inside a repository subdirectory \"([^\"]*)\"$")
     public void I_am_inside_a_repository_subdirectory(String subdirSpec) throws Throwable {
         String[] subdirs = subdirSpec.split("/");
-        File dir = platform.pwd();
+        File dir = state.platform.pwd();
         for (String subdir : subdirs) {
             dir = new File(dir, subdir);
         }
         assertTrue(dir.mkdirs());
-        platform.setWorkingDir(dir);
+        state.platform.setWorkingDir(dir);
     }
 }

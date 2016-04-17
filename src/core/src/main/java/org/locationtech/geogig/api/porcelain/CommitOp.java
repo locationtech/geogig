@@ -56,8 +56,16 @@ import com.google.common.collect.Lists;
 @Hookable(name = "commit")
 public class CommitOp extends AbstractGeoGigOp<RevCommit> {
 
+    /**
+     * {@code null} == unset, non null = explicitly set, even if resolves to {@code null}
+     */
+    @Nullable
     private Optional<String> authorName;
 
+    /**
+     * {@code null} == unset, non null = explicitly set, even if resolves to {@code null}
+     */
+    @Nullable
     private Optional<String> authorEmail;
 
     private String message;
@@ -77,9 +85,14 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
 
     private boolean allowEmpty;
 
+    @Nullable
     private String committerName;
 
-    private String committerEmail;
+    /**
+     * {@code null} == unset, non null = explicitly set, even if resolves to {@code null}
+     */
+    @Nullable
+    private Optional<String> committerEmail;
 
     private RevCommit commit;
 
@@ -106,7 +119,8 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
      * @param authorEmail the author's email
      * @return {@code this}
      */
-    public CommitOp setAuthor(final @Nullable String authorName, @Nullable final String authorEmail) {
+    public CommitOp setAuthor(final @Nullable String authorName,
+            @Nullable final String authorEmail) {
         this.authorName = Optional.fromNullable(authorName);
         this.authorEmail = Optional.fromNullable(authorEmail);
         return this;
@@ -121,7 +135,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
     public CommitOp setCommitter(String committerName, @Nullable String committerEmail) {
         checkNotNull(committerName);
         this.committerName = committerName;
-        this.committerEmail = committerEmail;
+        this.committerEmail = Optional.fromNullable(committerEmail);
         return this;
     }
 
@@ -260,7 +274,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
         checkState(currHead.isPresent(), "Repository has no HEAD, can't commit");
         final Ref headRef = currHead.get();
-        checkState(headRef instanceof SymRef,//
+        checkState(headRef instanceof SymRef, //
                 "HEAD is in a dettached state, cannot commit. Create a branch from it before committing");
 
         final String currentBranch = ((SymRef) headRef).getTarget();
@@ -362,8 +376,8 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
 
         checkState(currentBranch.equals(((SymRef) newHead.get()).getTarget()));
 
-        Optional<ObjectId> treeId = command(ResolveTreeish.class).setTreeish(
-                branchHead.get().getObjectId()).call();
+        Optional<ObjectId> treeId = command(ResolveTreeish.class)
+                .setTreeish(branchHead.get().getObjectId()).call();
         checkState(treeId.isPresent());
         checkState(newTreeId.equals(treeId.get()));
 
@@ -445,8 +459,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         final String key = "user.name";
         Optional<String> name = command(ConfigGet.class).setName(key).call();
 
-        checkState(
-                name.isPresent(),
+        checkState(name.isPresent(),
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
                 key, key);
 
@@ -454,16 +467,16 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
 
     }
 
+    @Nullable
     private String resolveCommitterEmail() {
         if (committerEmail != null) {
-            return committerEmail;
+            return committerEmail.orNull();
         }
 
         final String key = "user.email";
         Optional<String> email = command(ConfigGet.class).setName(key).call();
 
-        checkState(
-                email.isPresent(),
+        checkState(email.isPresent(),
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",
                 key, key);
 
@@ -474,6 +487,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         return authorName == null ? resolveCommitter() : authorName.orNull();
     }
 
+    @Nullable
     private String resolveAuthorEmail() {
         // only use provided authorEmail if authorName was provided
         return authorName == null ? resolveCommitterEmail() : authorEmail.orNull();

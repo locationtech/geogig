@@ -19,8 +19,9 @@ public class GeopkgCommonArgs {
     /**
      * The database to connect to. Default: database
      */
-    @Parameter(names = { "--database", "-D" }, description = "The database to connect to.  Default: database.geopkg")
-    public String database = "database.geopkg";
+    @Parameter(names = { "--database",
+            "-D" }, description = "The database to connect to.  Default: database.gpkg")
+    public String database = "database.gpkg";
 
     /**
      * User name. Default: user

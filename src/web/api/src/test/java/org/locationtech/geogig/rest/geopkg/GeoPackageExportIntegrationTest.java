@@ -44,7 +44,6 @@ import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.data.store.FeatureIteratorIterator;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.json.JSONException;
@@ -328,17 +327,19 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
             List<SimpleFeature> list = Lists.newArrayList(expected);
             expectedFeatures = Maps.uniqueIndex(list, (f) -> f.getID());
         }
-        Map<String, SimpleFeature> actualFeatures;
+        Set<String> actualFeatureIDs = new HashSet<String>();
         {
             try (SimpleFeatureIterator fiter = features.features()) {
-                List<SimpleFeature> list = Lists
-                        .newArrayList(new FeatureIteratorIterator<SimpleFeature>(fiter));
-                actualFeatures = Maps.uniqueIndex(list, (f) -> f.getID());
+                while (fiter.hasNext()) {
+                    SimpleFeature feature = fiter.next();
+                    actualFeatureIDs.add(feature.getID().split("\\.")[1]);
+                }
             }
         }
 
-        assertEquals(expectedFeatures.keySet(), actualFeatures.keySet());
-        // assertEquals(expectedFeatures, actualFeatures);
+        Set<String> expectedFeatureIDs = expectedFeatures.keySet();
+
+        assertEquals(expectedFeatureIDs, actualFeatureIDs);
     }
 
     private Set<String> getAuditTableNames(File gpkg) throws IOException, SQLException {
@@ -354,7 +355,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
                             String table = rs.getString("table_name");
                             String treePath = rs.getString("mapped_path");
                             String auditTable = rs.getString("audit_table");
-                            String rootTreeId = rs.getString("root_tree_id");
+                            String rootTreeId = rs.getString("commit_id");
                             auditTables.add(auditTable);
                         }
                     }

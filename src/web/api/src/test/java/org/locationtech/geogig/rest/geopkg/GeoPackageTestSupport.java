@@ -9,7 +9,8 @@
  */
 package org.locationtech.geogig.rest.geopkg;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.web.api.TestData.line1;
 import static org.locationtech.geogig.web.api.TestData.line2;
 import static org.locationtech.geogig.web.api.TestData.line3;
@@ -59,7 +60,7 @@ public class GeoPackageTestSupport {
         this.tmpFolder = tmpFolder;
     }
 
-    private File newFile() throws IOException {
+    public File newFile() throws IOException {
         File dbFile = File.createTempFile("geogig_geopackage_test", ".gpkg", tmpFolder);
         dbFile.deleteOnExit();
         return dbFile;
@@ -113,7 +114,7 @@ public class GeoPackageTestSupport {
         return file;
     }
 
-    private void export(SimpleFeatureSource source, DataStore gpkg) throws IOException {
+    public void export(SimpleFeatureSource source, DataStore gpkg) throws IOException {
 
         Transaction gttx = new DefaultTransaction();
         try {

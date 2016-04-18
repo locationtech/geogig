@@ -57,7 +57,7 @@ public class GeopkgExport extends DataStoreExport implements CLICommand {
         super.runInternal(cli);
 
         if (interchangeFormat) {
-            final String sourceTreeIsh = args.get(0);
+            final String sourcePathspec = args.get(0);
             final String targetTableName = args.get(1);
             File file = new File(commonArgs.database);
 
@@ -65,7 +65,7 @@ public class GeopkgExport extends DataStoreExport implements CLICommand {
             try {
 
                 repo.command(GeopkgAuditExport.class).setDatabase(file)
-                        .setSourceTreeish(sourceTreeIsh).setTargetTableName(targetTableName)
+                        .setSourcePathspec(sourcePathspec).setTargetTableName(targetTableName)
                         .setProgressListener(cli.getProgressListener()).call();
 
             } catch (Exception e) {

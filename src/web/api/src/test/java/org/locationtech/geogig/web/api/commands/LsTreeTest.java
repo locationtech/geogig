@@ -66,9 +66,9 @@ public class LsTreeTest extends AbstractWebOpTest {
         JSONObject response = getJSONResponse().getJSONObject("response");
         assertTrue(response.getBoolean("success"));
         JSONArray nodes = response.getJSONArray("node");
-        String expected = "[{'path':'Points'},{'path':'Points/Points.1'},{'path':'Points/Points.2'},{'path':'Points/Points.3'},"
-                + "{'path':'Lines'},{'path':'Lines/Lines.1'},{'path':'Lines/Lines.2'},{'path':'Lines/Lines.3'},"
-                + "{'path':'Polygons'},{'path':'Polygons/Polygons.1'},{'path':'Polygons/Polygons.2'},{'path':'Polygons/Polygons.3'}]";
+        String expected = "[{'path':'Points'},{'path':'Points/1'},{'path':'Points/2'},{'path':'Points/3'},"
+                + "{'path':'Lines'},{'path':'Lines/1'},{'path':'Lines/2'},{'path':'Lines/3'},"
+                + "{'path':'Polygons'},{'path':'Polygons/1'},{'path':'Polygons/2'},{'path':'Polygons/3'}]";
         JSONAssert.assertEquals(expected, nodes.toString(), false);
     }
 
@@ -101,9 +101,9 @@ public class LsTreeTest extends AbstractWebOpTest {
         JSONObject response = getJSONResponse().getJSONObject("response");
         assertTrue(response.getBoolean("success"));
         JSONArray nodes = response.getJSONArray("node");
-        String expected = "[{'path':'Points/Points.1'},{'path':'Points/Points.2'},{'path':'Points/Points.3'},"
-                + "{'path':'Lines/Lines.1'},{'path':'Lines/Lines.2'},{'path':'Lines/Lines.3'},"
-                + "{'path':'Polygons/Polygons.1'},{'path':'Polygons/Polygons.2'},{'path':'Polygons/Polygons.3'}]";
+        String expected = "[{'path':'Points/1'},{'path':'Points/2'},{'path':'Points/3'},"
+                + "{'path':'Lines/1'},{'path':'Lines/2'},{'path':'Lines/3'},"
+                + "{'path':'Polygons/1'},{'path':'Polygons/2'},{'path':'Polygons/3'}]";
         JSONAssert.assertEquals(expected, nodes.toString(), false);
     }
 
@@ -155,7 +155,7 @@ public class LsTreeTest extends AbstractWebOpTest {
         JSONObject response = getJSONResponse().getJSONObject("response");
         assertTrue(response.getBoolean("success"));
         JSONArray nodes = response.getJSONArray("node");
-        String expected = "[{'path':'Points.1'},{'path':'Points.2'},{'path':'Points.3'}]";
+        String expected = "[{'path':1},{'path':2},{'path':3}]";
         JSONAssert.assertEquals(expected, nodes.toString(), false);
     }
 }

@@ -11,13 +11,11 @@ package org.locationtech.geogig.rest.geotools;
 
 import java.util.function.Function;
 
-import org.locationtech.geogig.api.GeogigTransaction;
+import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
-import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp.DataStoreSupplier;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
@@ -25,6 +23,7 @@ import org.locationtech.geogig.rest.Representations;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
@@ -171,20 +170,25 @@ public class Import extends AbstractWebAPICommand {
 
     @Override
     public void runInternal(CommandContext context) {
+        if (this.getTransactionId() == null) {
+            throw new CommandSpecException(
+                    "No transaction was specified, import requires a transaction to preserve the stability of the repository.");
+        }
         final String requestFormat = options.getFirstValue(FORMAT_KEY);
         Preconditions.checkArgument(requestFormat != null, "missing required 'format' parameter");
+
+        final Context transaction = this.getCommandLocator(context);
 
         // get the import context from the requested parameters
         DataStoreImportContextService ctxService = DataStoreImportContextServiceFactory
                 .getContextService(requestFormat);
         // build DataStore from options
-        final DataStoreSupplier datastore = ctxService.getDataStore(options);
-        DataStoreImportOp command = buildImportOp(datastore, context);
+        DataStoreImportOp<RevCommit> command = buildImportOp(ctxService, transaction);
         final String commandDescription = ctxService.getCommandDescription();
         if (asyncContext == null) {
             asyncContext = AsyncContext.get();
         }
-        final AsyncContext.AsyncCommand<?> asyncCommand = asyncContext.run(command,
+        final AsyncContext.AsyncCommand<RevCommit> asyncCommand = asyncContext.run(command,
                 commandDescription);
 
         Function<MediaType, Representation> rep = new Function<MediaType, Representation>() {
@@ -196,6 +200,7 @@ public class Import extends AbstractWebAPICommand {
                 AsyncCommandRepresentation<?> repr;
                 repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl);
                 return repr;
+
             }
         };
 
@@ -207,8 +212,8 @@ public class Import extends AbstractWebAPICommand {
         return Method.POST.equals(method);
     }
 
-    private DataStoreImportOp buildImportOp(final DataStoreSupplier dataStoreSupplier,
-            CommandContext context) {
+    private DataStoreImportOp<RevCommit> buildImportOp(
+            final DataStoreImportContextService ctxService, Context context) {
         // collect Import parameters
         final String layerTableName = options.getFirstValue(LAYER_KEY);
         final boolean all = layerTableName == null;
@@ -222,48 +227,11 @@ public class Import extends AbstractWebAPICommand {
         final String authorEmail = options.getFirstValue(AUTHOR_EMAIL_KEY);
         final String commitMessage = options.getFirstValue(COMMIT_MSG_KEY);
         // regardless, we have to create the DataStoreImportOp
-        DataStoreImportOp command;
-        // Import will require a transaction. If there isn't a transaction already active, create
-        // one and wrape the Import command with transaction management.
-        GeogigTransaction transaction;
-        // if we are creating a transaction, we need the operation to start/end it automatically
-        final boolean handleTxn = this.getTransactionId() == null;
-        if (handleTxn) {
-            // we must create a transaction
-            transaction = this.getCommandLocator(context).command(TransactionBegin.class).call();
-            // build the transaction wrapped command
-            command = transaction.command(TransactionWrappedDataStoreImportOp.class);
-        } else {
-            // we already have a transaction
-            transaction = GeogigTransaction.class.cast(this.getCommandLocator(context));
-            // build the normal command
-            command = transaction.command(DataStoreImportOp.class);
-        }
+        DataStoreImportOp<RevCommit> command = ctxService.createCommand(context, options);
         // set all the import op parameters
-        return command.setDataStore(dataStoreSupplier).setTable(layerTableName).setAll(all)
-                .setAdd(add).setForceFeatureType(forceFeatureType).setAlter(alter).setDest(dest)
-                .setFidAttribute(fidAttribute).setAuthorEmail(authorEmail).setAuthorName(authorName)
-                .setCommitMessage(commitMessage);
-    }
-
-    private static class TransactionWrappedDataStoreImportOp extends DataStoreImportOp {
-
-        @Override
-        protected RevCommit _call() {
-            // the context better be a GeogigTransaction
-            GeogigTransaction txnContext = GeogigTransaction.class.cast(context);
-            RevCommit revCommit = null;
-            try {
-                // call the import
-                revCommit = super._call();
-                // end the transaction
-                txnContext.commit();
-            } catch (Exception ex) {
-                // abort the transaction
-                txnContext.abort();
-                throw ex;
-            }
-            return revCommit;
-        }
+        return command.setDataStore(ctxService.getDataStore(options)).setTable(layerTableName)
+                .setAll(all).setAdd(add).setForceFeatureType(forceFeatureType).setAlter(alter)
+                .setDest(dest).setFidAttribute(fidAttribute).setAuthorEmail(authorEmail)
+                .setAuthorName(authorName).setCommitMessage(commitMessage);
     }
 }

@@ -27,18 +27,32 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 
+import org.geotools.data.DataStore;
+import org.geotools.data.DataUtilities;
+import org.geotools.data.DefaultTransaction;
+import org.geotools.data.Transaction;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
+import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.api.GeogigTransaction;
+import org.locationtech.geogig.api.plumbing.TransactionBegin;
+import org.locationtech.geogig.api.plumbing.TransactionEnd;
+import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.geopkg.GeoPackageTestSupport;
+import org.locationtech.geogig.web.api.TestData;
 import org.mortbay.log.Log;
+import org.opengis.filter.Filter;
 import org.restlet.data.Method;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
@@ -49,6 +63,7 @@ import org.xmlunit.matchers.EvaluateXPathMatcher;
 import org.xmlunit.matchers.HasXPathMatcher;
 import org.xmlunit.xpath.JAXPXPathEngine;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -137,7 +152,13 @@ public class WebAPICucumberHooks {
         SetMultimap<String, String> expected = HashMultimap.create();
         {
             List<Map<String, String>> asMaps = expectedFeatures.asMaps(String.class, String.class);
-            asMaps.forEach((m) -> m.forEach((k, v) -> expected.put(k, v)));
+            for (Map<String, String> featureMap : asMaps) {
+                for (Entry<String, String> entry : featureMap.entrySet()) {
+                    if (entry.getValue().length() > 0) {
+                        expected.put(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
         }
 
         SetMultimap<String, String> actual = context.listRepo(repositoryName, headRef);
@@ -166,6 +187,49 @@ public class WebAPICucumberHooks {
         Method method = Method.valueOf(httpMethod);
         // System.err.println(methodAndURL);
         context.call(method, resourceUri);
+    }
+
+    /**
+     * Creates a transaction on the given repository and stores the transaction id in the given
+     * variable for later use.
+     * 
+     * @param variableName the variable name to store the transaction id.
+     * @param repoName the repository on which to create the transaction.
+     */
+    @Given("^I have a transaction as \"([^\"]*)\" on the \"([^\"]*)\" repo$")
+    public void beginTransactionAsVariable(final String variableName, final String repoName) {
+        GeogigTransaction transaction = context.getRepo(repoName).command(TransactionBegin.class)
+                .call();
+
+        context.setVariable(variableName, transaction.getTransactionId().toString());
+    }
+
+    /**
+     * Ends the given transaction on the given repository.
+     * 
+     * @param variableName the variable where the transaction id is stored.
+     * @param repoName the repository on which the transaction was created.
+     */
+    @When("^I end the transaction with id \"([^\"]*)\" on the \"([^\"]*)\" repo$")
+    public void endTransaction(final String variableName, final String repoName) {
+        GeoGIG repo = context.getRepo(repoName);
+        GeogigTransaction transaction = new GeogigTransaction(repo.getContext(),
+                UUID.fromString(context.getVariable(variableName)));
+        repo.command(TransactionEnd.class).setTransaction(transaction).call();
+    }
+
+    /**
+     * Removes Points/1 from the repository.
+     * 
+     * @param repoName the repository to remove the feature from.
+     */
+    @When("^I remove Points/1 from \"([^\"]*)\"$")
+    public void removeFeature(final String repoName) throws Exception {
+        GeoGIG repo = context.getRepo(repoName);
+        TestData data = new TestData(repo);
+        data.remove(TestData.point1);
+        data.add();
+        data.commit("Removed point1");
     }
 
     /**
@@ -459,6 +523,71 @@ public class WebAPICucumberHooks {
         GeoPackageTestSupport support = new GeoPackageTestSupport(context.getTempFolder());
         File dbfile = support.createDefaultTestData();
         context.setVariable(fileVariableName, dbfile.getAbsolutePath());
+    }
+
+    /**
+     * Exports the Points feature type to a geopackage from the given repository and stores the file
+     * name in the given variable.
+     * 
+     * @param repoName the repository to export from.
+     * @param fileVariableName the variable to store the geopackage file name in.
+     */
+    @Given("^I export Points from \"([^\"]*)\" to a geopackage file with audit logs as (@[^\"]*)$")
+    public void gpkg_ExportAuditLogs(final String repoName, final String fileVariableName)
+            throws Throwable {
+        GeoPackageTestSupport support = new GeoPackageTestSupport(context.getTempFolder());
+        GeoGIG geogig = context.getRepo(repoName);
+        File file = support.createDefaultTestData();
+        geogig.command(GeopkgAuditExport.class).setDatabase(file).setTargetTableName("Points")
+                .setSourcePathspec("Points").call();
+        context.setVariable(fileVariableName, file.getAbsolutePath());
+    }
+
+    /**
+     * Adds Points/4 feature to the geopackage file referred to by the provided variable name.
+     * 
+     * @param fileVariableName the variable which stores the location of the geopackage file.
+     */
+    @When("^I add Points/4 to the geopackage file (@[^\"]*)$")
+    public void gpkg_AddFeature(final String fileVariableName) throws Throwable {
+        GeoPackageTestSupport support = new GeoPackageTestSupport();
+        File file = new File(context.getVariable(fileVariableName));
+        DataStore gpkgStore = support.createDataStore(file);
+        Transaction gttx = new DefaultTransaction();
+        try {
+            SimpleFeatureStore store = (SimpleFeatureStore) gpkgStore.getFeatureSource("Points");
+            Preconditions.checkState(store.getQueryCapabilities().isUseProvidedFIDSupported());
+            store.setTransaction(gttx);
+            store.addFeatures(DataUtilities.collection(TestData.point4));
+            gttx.commit();
+        } finally {
+            gttx.close();
+            gpkgStore.dispose();
+        }
+    }
+
+    /**
+     * Modifies all the Point features in the geopackage file referred to by the provided variable
+     * name.
+     * 
+     * @param fileVariableName the variable which stores the location of the geopackage file.
+     */
+    @When("^I modify the Point features in the geopackage file (@[^\"]*)$")
+    public void gpkg_ModifyFeature(final String fileVariableName) throws Throwable {
+        GeoPackageTestSupport support = new GeoPackageTestSupport();
+        File file = new File(context.getVariable(fileVariableName));
+        DataStore gpkgStore = support.createDataStore(file);
+        Transaction gttx = new DefaultTransaction();
+        try {
+            SimpleFeatureStore store = (SimpleFeatureStore) gpkgStore.getFeatureSource("Points");
+            Preconditions.checkState(store.getQueryCapabilities().isUseProvidedFIDSupported());
+            store.setTransaction(gttx);
+            store.modifyFeatures("ip", TestData.point1_modified.getAttribute("ip"), Filter.INCLUDE);
+            gttx.commit();
+        } finally {
+            gttx.close();
+            gpkgStore.dispose();
+        }
     }
 
     /**

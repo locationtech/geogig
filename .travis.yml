@@ -8,7 +8,11 @@ install: mvn -B install -DskipTests=true -Ptravis
 before_script:
   - psql -c 'create database geogig_tests;' -U postgres
   - echo '[postgres]' > ~/.geogig-pg-backend-tests.properties
+  - echo 'enabled = true' >> ~/.geogig-pg-backend-tests.properties
+  - echo 'server = localhost' >> ~/.geogig-pg-backend-tests.properties
   - echo 'database = geogig_tests' >> ~/.geogig-pg-backend-tests.properties
+  - echo 'user = postgres' >> ~/.geogig-pg-backend-tests.properties
+  - echo 'password = ' >> ~/.geogig-pg-backend-tests.properties
 script:
   - mvn -B test -Ptravis
 services: postgresql

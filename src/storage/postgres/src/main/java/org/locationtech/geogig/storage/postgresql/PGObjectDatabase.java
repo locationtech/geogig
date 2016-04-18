@@ -275,11 +275,12 @@ public class PGObjectDatabase implements ObjectDatabase {
             @Override
             protected Boolean doRun(Connection cx) throws SQLException {
                 String sql = format(
-                        "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID) )",
+                        "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE ((id).h1) = ? AND id = CAST(ROW(?,?,?) AS OBJECTID) )",
                         config.getTables().objects());
                 final PGId pgid = PGId.valueOf(id);
                 try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
-                    pgid.setArgs(ps, 1);
+                    ps.setInt(1, pgid.hash1());
+                    pgid.setArgs(ps, 2);
                     try (ResultSet rs = ps.executeQuery()) {
                         boolean exists = rs.next();
                         return exists;

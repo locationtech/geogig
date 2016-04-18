@@ -253,18 +253,13 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         ObjectId head = squashedId;
         for (RevCommit commit : commits) {
             CommitBuilder builder = new CommitBuilder(commit);
-            Collection<ObjectId> parents = Collections2.transform(commit.getParentIds(),
-                    new Function<ObjectId, ObjectId>() {
-                        @Override
-                        @Nullable
-                        public ObjectId apply(@Nullable ObjectId id) {
-                            if (replacedCommits.containsKey(id)) {
-                                return replacedCommits.get(id);
-                            } else {
-                                return id;
-                            }
-                        }
-                    });
+            Collection<ObjectId> parents = Collections2.transform(commit.getParentIds(), (id) -> {
+                if (replacedCommits.containsKey(id)) {
+                    return replacedCommits.get(id);
+                } else {
+                    return id;
+                }
+            });
             builder.setParentIds(Lists.newArrayList(parents));
             builder.setTreeId(commit.getTreeId());
             long timestamp = platform.currentTimeMillis();

@@ -306,12 +306,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         Assert.assertTrue("Expected repo to have some nodes, but was empty",
                 nodeIterator.hasNext());
         List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
-                new Function<NodeRef, String>() {
-                    @Override
-                    public String apply(NodeRef input) {
-                        return input.name();
-                    }
-                });
+                (nr) -> nr.name());
         for (String layerName : layerNames) {
             Assert.assertTrue("Expected layer \"" + layerName + "\" to exist in repo",
                     nodeList.contains(layerName));

@@ -214,21 +214,14 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
     private Iterator<NodeRef> toFeatureRefs(final Iterator<DiffEntry> diffs,
             final ChangeType changeType) {
 
-        return Iterators.transform(diffs, new Function<DiffEntry, NodeRef>() {
-
-            private final ChangeType diffType = changeType;
-
-            @Override
-            public NodeRef apply(DiffEntry e) {
-                if (e.isAdd()) {
-                    return e.getNewObject();
-                }
-                if (e.isDelete()) {
-                    return e.getOldObject();
-                }
-                return ChangeType.CHANGED_OLD.equals(diffType) ? e.getOldObject()
-                        : e.getNewObject();
+        return Iterators.transform(diffs, (e) -> {
+            if (e.isAdd()) {
+                return e.getNewObject();
             }
+            if (e.isDelete()) {
+                return e.getOldObject();
+            }
+            return ChangeType.CHANGED_OLD.equals(changeType) ? e.getOldObject() : e.getNewObject();
         });
     }
 

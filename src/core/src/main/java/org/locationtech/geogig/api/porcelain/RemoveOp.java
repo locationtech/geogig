@@ -28,16 +28,14 @@ import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.api.plumbing.RefParse;
+import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -143,24 +141,15 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
         final StagingArea index = index();
 
         Iterator<DiffEntry> treeDeletes = Iterators.transform(trees,
-                new Function<NodeRef, DiffEntry>() {
-                    @Override
-                    public DiffEntry apply(NodeRef treeRef) {
-                        return new DiffEntry(treeRef, null);
-                    }
-                });
+                (treeRef) -> new DiffEntry(treeRef, null));
 
-        Iterator<DiffEntry> featureDeletes = Iterators.transform(features,
-                new Function<String, DiffEntry>() {
-                    @Override
-                    public DiffEntry apply(String featurePath) {
-                        Node node = Node.create(NodeRef.nodeFromPath(featurePath), ObjectId.NULL,
-                                ObjectId.NULL, TYPE.FEATURE, null);
-                        String parentPath = NodeRef.parentPath(featurePath);
-                        NodeRef oldFeature = new NodeRef(node, parentPath, ObjectId.NULL);
-                        return new DiffEntry(oldFeature, null);
-                    }
-                });
+        Iterator<DiffEntry> featureDeletes = Iterators.transform(features, (featurePath) -> {
+            Node node = Node.create(NodeRef.nodeFromPath(featurePath), ObjectId.NULL, ObjectId.NULL,
+                    TYPE.FEATURE, null);
+            String parentPath = NodeRef.parentPath(featurePath);
+            NodeRef oldFeature = new NodeRef(node, parentPath, ObjectId.NULL);
+            return new DiffEntry(oldFeature, null);
+        });
 
         ProgressListener progress = DefaultProgressListener.NULL;
         index.stage(progress, Iterators.concat(treeDeletes, featureDeletes), -1);
@@ -190,12 +179,7 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
                 .setReference(workTree.getId().toString()).call();
 
         ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(childTrees,
-                new Function<NodeRef, String>() {
-                    @Override
-                    public String apply(NodeRef input) {
-                        return input.path();
-                    }
-                });
+                (ref) -> ref.path());
 
         Set<String> requestedTrees = Sets.intersection(treesByPath.keySet(),
                 new HashSet<>(pathsToRemove));

@@ -34,7 +34,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -555,14 +554,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertEquals(4, difflist.size());
         Set<String> expected = ImmutableSet.of(linesName, pointsName,
                 NodeRef.appendChild(linesName, idL1), NodeRef.appendChild(pointsName, idP1));
-        Set<String> actual = Sets.newHashSet(Collections2.transform(difflist,
-                new Function<DiffEntry, String>() {
-
-                    @Override
-                    public String apply(DiffEntry input) {
-                        return input.newPath();
-                    }
-                }));
+        Set<String> actual = Sets.newHashSet(Collections2.transform(difflist, (e) -> e.newPath()));
         assertEquals(expected, actual);
     }
 

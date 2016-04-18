@@ -520,17 +520,15 @@ public class PGObjectDatabase implements ObjectDatabase {
                 Future<List<RevObject>> objects = db.getAll(idList, dataSource, listener, type);
                 list.add(objects);
             }
-            Function<Future<List<RevObject>>, List<RevObject>> function = new Function<Future<List<RevObject>>, List<RevObject>>() {
-                @Override
-                public List<RevObject> apply(Future<List<RevObject>> input) {
-                    try {
-                        return input.get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
-                        throw Throwables.propagate(e);
-                    }
+            final Function<Future<List<RevObject>>, List<RevObject>> function = (objs) -> {
+                try {
+                    return objs.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                    throw Throwables.propagate(e);
                 }
             };
+
             Iterable<List<RevObject>> lists = Iterables.transform(list, function);
             Iterable<RevObject> concat = Iterables.concat(lists);
             return concat.iterator();

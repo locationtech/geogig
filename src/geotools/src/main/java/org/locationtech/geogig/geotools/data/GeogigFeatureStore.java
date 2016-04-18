@@ -395,15 +395,9 @@ class GeogigFeatureStore extends ContentFeatureStore {
         }
 
         Iterator<SimpleFeature> featureIterator = featureIterator(filter);
-        Iterator<String> affectedFeaturePaths = Iterators.transform(featureIterator,
-                new Function<SimpleFeature, String>() {
 
-                    @Override
-                    public String apply(SimpleFeature input) {
-                        String fid = input.getID();
-                        return NodeRef.appendChild(typeTreePath, fid);
-                    }
-                });
+        Iterator<String> affectedFeaturePaths = Iterators.transform(featureIterator,
+                (f) -> NodeRef.appendChild(typeTreePath, f.getID()));
         workingTree.delete(affectedFeaturePaths);
     }
 

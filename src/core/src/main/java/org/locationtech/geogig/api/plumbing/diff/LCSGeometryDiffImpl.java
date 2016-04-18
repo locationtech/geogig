@@ -159,14 +159,8 @@ public class LCSGeometryDiffImpl {
         if (!opt.isPresent()) {
             return "";
         }
-        Function<Coordinate, String> printCoords = new Function<Coordinate, String>() {
-            @Override
-            @Nullable
-            public String apply(@Nullable Coordinate coord) {
-                return Double.toString(coord.x) + "," + Double.toString(coord.y);
-            }
-
-        };
+        final Function<Coordinate, String> printCoords = (c) -> Double.toString(c.x) + ","
+                + Double.toString(c.y);
 
         StringBuilder sb = new StringBuilder();
         Geometry geom = opt.get();

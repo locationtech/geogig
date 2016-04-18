@@ -64,15 +64,8 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
     public static final String CHANGE_TYPE_NAME = "changetype";
 
-    private static final Function<Feature, Optional<Feature>> IDENTITY = new Function<Feature, Optional<Feature>>() {
-
-        @Override
-        @Nullable
-        public Optional<Feature> apply(@Nullable Feature feature) {
-            return Optional.fromNullable(feature);
-        }
-
-    };
+    private static final Function<Feature, Optional<Feature>> IDENTITY = (feature) -> Optional
+            .fromNullable(feature);
 
     private String path;
 
@@ -122,13 +115,10 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                 Iterator<Optional<Feature>> transformed = Iterators.transform(plainFeatures,
                         ExportDiffOp.this.function);
 
-                Iterator<SimpleFeature> filtered = Iterators.filter(Iterators.transform(
-                        transformed, new Function<Optional<Feature>, SimpleFeature>() {
-                            @Override
-                            public SimpleFeature apply(Optional<Feature> input) {
-                                return (SimpleFeature) (input.isPresent() ? input.get() : null);
-                            }
-                        }), Predicates.notNull());
+                Iterator<SimpleFeature> filtered = Iterators.filter(
+                        Iterators.transform(transformed,
+                                (f) -> (SimpleFeature) (f.isPresent() ? f.get() : null)),
+                        Predicates.notNull());
 
                 return new DelegateFeatureIterator<SimpleFeature>(filtered);
             }
@@ -174,36 +164,30 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         final RevFeatureType revFeatureType = RevFeatureTypeImpl.build(featureType);
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(featureType);
 
-        Function<DiffEntry, SimpleFeature> asFeature = new Function<DiffEntry, SimpleFeature>() {
-
-            @Override
-            @Nullable
-            public SimpleFeature apply(final DiffEntry input) {
-                NodeRef nodeRef = old ? input.getOldObject() : input.getNewObject();
-                if (nodeRef == null) {
-                    return null;
-                }
-                final RevFeature revFeature = database.getFeature(nodeRef.getObjectId());
-                ImmutableList<Optional<Object>> values = revFeature.getValues();
-                for (int i = 0; i < values.size(); i++) {
-                    String name = featureType.getDescriptor(i + 1).getLocalName();
-                    Object value = values.get(i).orNull();
-                    featureBuilder.set(name, value);
-                }
-                featureBuilder.set(CHANGE_TYPE_NAME, input.changeType().name().charAt(0));
-                Feature feature = featureBuilder.buildFeature(nodeRef.name());
-                feature.getUserData().put(Hints.USE_PROVIDED_FID, true);
-                feature.getUserData().put(RevFeature.class, revFeature);
-                feature.getUserData().put(RevFeatureType.class, revFeatureType);
-
-                if (feature instanceof SimpleFeature) {
-                    return (SimpleFeature) feature;
-                }
+        final Function<DiffEntry, SimpleFeature> asFeature = (de) -> {
+            NodeRef nodeRef = old ? de.getOldObject() : de.getNewObject();
+            if (nodeRef == null) {
                 return null;
             }
+            final RevFeature revFeature = database.getFeature(nodeRef.getObjectId());
+            ImmutableList<Optional<Object>> values = revFeature.getValues();
+            for (int i = 0; i < values.size(); i++) {
+                String name = featureType.getDescriptor(i + 1).getLocalName();
+                Object value = values.get(i).orNull();
+                featureBuilder.set(name, value);
+            }
+            featureBuilder.set(CHANGE_TYPE_NAME, de.changeType().name().charAt(0));
+            Feature feature = featureBuilder.buildFeature(nodeRef.name());
+            feature.getUserData().put(Hints.USE_PROVIDED_FID, true);
+            feature.getUserData().put(RevFeature.class, revFeature);
+            feature.getUserData().put(RevFeatureType.class, revFeatureType);
 
+            if (feature instanceof SimpleFeature) {
+                return (SimpleFeature) feature;
+            }
+            return null;
         };
-
+        
         Iterator<SimpleFeature> asFeatures = Iterators.transform(diffs, asFeature);
 
         UnmodifiableIterator<SimpleFeature> filterNulls = Iterators.filter(asFeatures,

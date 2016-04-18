@@ -38,12 +38,7 @@ import com.google.inject.Inject;
  */
 public class HeapGraphDatabase implements GraphDatabase {
 
-    static final Function<Node, ObjectId> NODE_TO_ID = new Function<Node, ObjectId>() {
-        @Override
-        public ObjectId apply(Node n) {
-            return n.id;
-        }
-    };
+    static final Function<Node, ObjectId> NODE_TO_ID = (n) -> n.id;
 
     static final Map<URI, Ref> graphs = Maps.newConcurrentMap();
 

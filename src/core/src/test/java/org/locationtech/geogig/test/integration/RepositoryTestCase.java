@@ -298,13 +298,8 @@ public abstract class RepositoryTestCase extends Assert {
         }
 
         if (!oneCommitPerFeature) {
-            String msg = Joiner.on(',').join(
-                    Lists.transform(features, new Function<Feature, String>() {
-                        @Override
-                        public String apply(Feature input) {
-                            return input.getIdentifier().getID();
-                        }
-                    }));
+            String msg = Joiner.on(',')
+                    .join(Lists.transform(features, (f) -> f.getIdentifier().getID()));
             commits.add(commit(msg));
         }
 

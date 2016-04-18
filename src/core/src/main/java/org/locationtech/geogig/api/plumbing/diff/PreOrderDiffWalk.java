@@ -348,12 +348,9 @@ public class PreOrderDiffWalk {
         protected final ListMultimap<Integer, Node> splitNodesToBucketsAtDepth(Iterator<Node> nodes,
                 final BucketIndex parentIndex) {
 
-            Function<Node, Integer> keyFunction = new Function<Node, Integer>() {
-                @Override
-                public Integer apply(Node node) {
-                    return ORDER.bucket(node, parentIndex.depthIndex() + 1);
-                }
-            };
+            Function<Node, Integer> keyFunction = (node) -> ORDER.bucket(node,
+                    parentIndex.depthIndex() + 1);
+
             ListMultimap<Integer, Node> nodesByBucket = Multimaps.index(nodes, keyFunction);
 
             return nodesByBucket;

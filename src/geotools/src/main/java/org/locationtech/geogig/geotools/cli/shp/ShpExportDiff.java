@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureSource;
@@ -152,24 +151,19 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
 
     private Function<Feature, Optional<Feature>> getTransformingFunction(
             final SimpleFeatureType featureType) {
-        Function<Feature, Optional<Feature>> function = new Function<Feature, Optional<Feature>>() {
 
-            @Override
-            @Nullable
-            public Optional<Feature> apply(@Nullable Feature feature) {
-                SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-                for (Property property : feature.getProperties()) {
-                    if (property instanceof GeometryAttribute) {
-                        builder.set(featureType.getGeometryDescriptor().getName(),
-                                property.getValue());
-                    } else {
-                        builder.set(property.getName(), property.getValue());
-                    }
+        Function<Feature, Optional<Feature>> function = (feature) -> {
+            
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+            for (Property property : feature.getProperties()) {
+                if (property instanceof GeometryAttribute) {
+                    builder.set(featureType.getGeometryDescriptor().getName(), property.getValue());
+                } else {
+                    builder.set(property.getName(), property.getValue());
                 }
-                Feature modifiedFeature = builder.buildFeature(feature.getIdentifier().getID());
-                return Optional.fromNullable(modifiedFeature);
             }
-
+            Feature modifiedFeature = builder.buildFeature(feature.getIdentifier().getID());
+            return Optional.fromNullable(modifiedFeature);
         };
 
         return function;

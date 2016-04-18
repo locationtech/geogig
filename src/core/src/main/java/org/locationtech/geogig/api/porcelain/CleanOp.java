@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
+import static com.google.common.collect.Iterators.filter;
+import static com.google.common.collect.Iterators.transform;
+
 import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -22,11 +25,9 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.repository.WorkingTree;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterators;
 
 /**
  * Removes untracked features from the working tree
@@ -56,22 +57,15 @@ public class CleanOp extends AbstractGeoGigOp<WorkingTree> {
         }
 
         final Iterator<DiffEntry> unstaged = command(DiffWorkTree.class).setFilter(path).call();
-        final Iterator<DiffEntry> added = Iterators.filter(unstaged, new Predicate<DiffEntry>() {
+        final Iterator<DiffEntry> added = filter(unstaged, new Predicate<DiffEntry>() {
 
             @Override
             public boolean apply(@Nullable DiffEntry input) {
                 return input.changeType().equals(ChangeType.ADDED);
             }
         });
-        Iterator<String> addedPaths = Iterators.transform(added, new Function<DiffEntry, String>() {
 
-            @Override
-            public String apply(DiffEntry input) {
-                return input.newPath();
-            }
-        });
-
-        workingTree().delete(addedPaths, getProgressListener());
+        workingTree().delete(transform(added, (de) -> de.newPath()), getProgressListener());
 
         return workingTree();
 

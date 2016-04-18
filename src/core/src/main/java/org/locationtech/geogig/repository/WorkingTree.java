@@ -635,22 +635,18 @@ public class WorkingTree {
             FeatureIterator features = collection.features();
             Iterator<Feature> fiterator = new FeatureIteratorIterator<Feature>(features);
 
-            Iterator<RevObject> objects = Iterators.transform(fiterator,
-                    new Function<Feature, RevObject>() {
-                        @Override
-                        public RevFeature apply(final Feature feature) {
-                            final RevFeature revFeature = RevFeatureBuilder.build(feature);
+            Iterator<RevObject> objects = Iterators.transform(fiterator, (feature) -> {
+                final RevFeature revFeature = RevFeatureBuilder.build(feature);
 
-                            ObjectId id = revFeature.getId();
-                            String name = feature.getIdentifier().getID();
-                            BoundingBox bounds = feature.getBounds();
-                            FeatureType type = feature.getType();
+                ObjectId id = revFeature.getId();
+                String name = feature.getIdentifier().getID();
+                BoundingBox bounds = feature.getBounds();
+                FeatureType type = feature.getType();
 
-                            builder.putFeature(id, name, bounds, type);
-                            return revFeature;
-                        }
+                builder.putFeature(id, name, bounds, type);
+                return revFeature;
 
-                    });
+            });
 
             CountingListener countingListener = BulkOpListener.newCountingListener();
             try {
@@ -676,12 +672,7 @@ public class WorkingTree {
             final ProgressListener listener, @Nullable final List<Node> insertedTarget,
             @Nullable final Integer collectionSize) {
 
-        final Function<Feature, String> providedPath = new Function<Feature, String>() {
-            @Override
-            public String apply(Feature input) {
-                return treePath;
-            }
-        };
+        final Function<Feature, String> providedPath = (f) -> treePath;
 
         insert(providedPath, features, listener, insertedTarget, collectionSize);
     }

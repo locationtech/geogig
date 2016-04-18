@@ -45,7 +45,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -218,15 +217,12 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     public ImmutableList<String> getAvailableBranches() {
         ImmutableSet<Ref> heads = getCommandLocator(null).command(ForEachRef.class)
                 .setPrefixFilter(Ref.HEADS_PREFIX).call();
-        List<String> list = Lists.newArrayList(Collections2.transform(heads,
-                new Function<Ref, String>() {
+        List<String> list = Lists.newArrayList(Collections2.transform(heads, (ref) -> {
 
-                    @Override
-                    public String apply(Ref ref) {
-                        String branchName = ref.getName().substring(Ref.HEADS_PREFIX.length());
-                        return branchName;
-                    }
-                }));
+            String branchName = ref.getName().substring(Ref.HEADS_PREFIX.length());
+            return branchName;
+
+        }));
         Collections.sort(list);
         return ImmutableList.copyOf(list);
     }
@@ -289,13 +285,8 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     @Override
     protected ImmutableList<Name> createTypeNames() throws IOException {
         List<NodeRef> typeTrees = findTypeRefs(Transaction.AUTO_COMMIT);
-        Function<NodeRef, Name> function = new Function<NodeRef, Name>() {
-            @Override
-            public Name apply(NodeRef treeRef) {
-                return getDescriptorName(treeRef);
-            }
-        };
-        return ImmutableList.copyOf(Collections2.transform(typeTrees, function));
+        return ImmutableList
+                .copyOf(Collections2.transform(typeTrees, (ref) -> getDescriptorName(ref)));
     }
 
     private List<NodeRef> findTypeRefs(@Nullable Transaction tx) {

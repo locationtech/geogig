@@ -156,13 +156,8 @@ public final class BinaryPackedObjects {
 
     private ImmutableList<ObjectId> reachableContentIds(ImmutableList<ObjectId> needsPrevisit,
             Deduplicator deduplicator) {
-        Function<RevObject, ObjectId> getIdTransformer = new Function<RevObject, ObjectId>() {
-            @Override
-            @Nullable
-            public ObjectId apply(@Nullable RevObject input) {
-                return input == null ? null : input.getId();
-            }
-        };
+
+        Function<RevObject, ObjectId> getIdTransformer = (obj) -> obj == null ? null : obj.getId();
 
         Iterator<ObjectId> reachable = Iterators.transform( //
                 PostOrderIterator.contentsOf(needsPrevisit, database, deduplicator), //

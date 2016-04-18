@@ -177,30 +177,24 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
 
     private Function<Feature, Optional<Feature>> getTransformingFunction(
             final SimpleFeatureType featureType) {
-        Function<Feature, Optional<Feature>> function = new Function<Feature, Optional<Feature>>() {
 
-            @Override
-            @Nullable
-            public Optional<Feature> apply(@Nullable Feature feature) {
-                SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-                for (Property property : feature.getProperties()) {
-                    if (property instanceof GeometryAttribute) {
-                        builder.set(featureType.getGeometryDescriptor().getName(),
-                                property.getValue());
-                    } else {
-                        String name = property.getName().getLocalPart();
-                        if (name.length() > 10) {
-                            name = name.substring(0, 10);
-                        }
-                        builder.set(name, property.getValue());
+        Function<Feature, Optional<Feature>> function = (feature) -> {
+        
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+            for (Property property : feature.getProperties()) {
+                if (property instanceof GeometryAttribute) {
+                    builder.set(featureType.getGeometryDescriptor().getName(), property.getValue());
+                } else {
+                    String name = property.getName().getLocalPart();
+                    if (name.length() > 10) {
+                        name = name.substring(0, 10);
                     }
+                    builder.set(name, property.getValue());
                 }
-                Feature modifiedFeature = builder.buildFeature(feature.getIdentifier().getID());
-                return Optional.fromNullable(modifiedFeature);
             }
-
+            Feature modifiedFeature = builder.buildFeature(feature.getIdentifier().getID());
+            return Optional.fromNullable(modifiedFeature);
         };
-
         return function;
     }
 

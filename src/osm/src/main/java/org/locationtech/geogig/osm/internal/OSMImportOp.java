@@ -326,14 +326,11 @@ public class OSMImportOp extends AbstractGeoGigOp<Optional<OSMReport>> {
         Thread readerThread = new Thread(reader, "osm-import-reader-thread");
         readerThread.start();
 
-        Function<Feature, String> parentTreePathResolver = new Function<Feature, String>() {
-            @Override
-            public String apply(Feature input) {
-                if (input instanceof MappedFeature) {
-                    return ((MappedFeature) input).getPath();
-                }
-                return input.getType().getName().getLocalPart();
+        final Function<Feature, String> parentTreePathResolver = (f) -> {
+            if (f instanceof MappedFeature) {
+                return ((MappedFeature) f).getPath();
             }
+            return f.getType().getName().getLocalPart();
         };
 
         // used to set the task status name, but report no progress so it does not interfere
@@ -374,12 +371,8 @@ public class OSMImportOp extends AbstractGeoGigOp<Optional<OSMReport>> {
      */
     static class ConvertAndImportSink implements Sink {
 
-        private static final Function<WayNode, Long> NODELIST_TO_ID_LIST = new Function<WayNode, Long>() {
-            @Override
-            public Long apply(WayNode input) {
-                return Long.valueOf(input.getNodeId());
-            }
-        };
+        private static final Function<WayNode, Long> NODELIST_TO_ID_LIST = (wn) -> Long
+                .valueOf(wn.getNodeId());
 
         private int count = 0;
 

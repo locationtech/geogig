@@ -32,7 +32,6 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -128,13 +127,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     public List<String> getRemoteNames() {
-        return Lists.transform(this.remotes, new Function<Remote, String>() {
-
-            @Override
-            public String apply(Remote remote) {
-                return remote.getName();
-            }
-        });
+        return Lists.transform(this.remotes, (remote) -> remote.getName());
     }
 
     /**

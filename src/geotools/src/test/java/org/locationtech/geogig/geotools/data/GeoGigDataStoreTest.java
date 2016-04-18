@@ -69,16 +69,12 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
     }
 
     private List<String> getTypeNames(String head) {
+
         Iterator<NodeRef> typeTrees = geogig.command(LsTreeOp.class)
                 .setStrategy(Strategy.TREES_ONLY).setReference(head).call();
-        List<String> typeNames = Lists.newArrayList(Iterators.transform(typeTrees,
-                new Function<NodeRef, String>() {
-
-                    @Override
-                    public String apply(NodeRef input) {
-                        return input.name();
-                    }
-                }));
+        
+        List<String> typeNames = Lists
+                .newArrayList(Iterators.transform(typeTrees, (ref) -> ref.name()));
         return typeNames;
     }
 
@@ -425,13 +421,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
     private List<String> toIdList(SimpleFeatureCollection features) {
         List<SimpleFeature> list = toList(features);
-        return Lists.transform(list, new Function<SimpleFeature, String>() {
-
-            @Override
-            public String apply(SimpleFeature f) {
-                return f.getID();
-            }
-        });
+        return Lists.transform(list, (f) -> f.getID());
     }
 
     private List<SimpleFeature> toList(SimpleFeatureCollection features) {

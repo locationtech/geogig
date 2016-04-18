@@ -58,7 +58,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.identity.FeatureId;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -466,13 +465,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             final RevFeatureType newFeatureType) {
 
         Iterator<Feature> iterator = Iterators.transform(nodeIterator,
-                new Function<NodeRef, Feature>() {
-                    @Override
-                    public Feature apply(NodeRef node) {
-                        return alter(node, newFeatureType);
-                    }
-
-                });
+                (node) -> alter(node, newFeatureType));
 
         return iterator;
 

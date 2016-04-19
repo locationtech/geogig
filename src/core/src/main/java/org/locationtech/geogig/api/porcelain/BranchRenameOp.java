@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkState;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.CheckRefFormat;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
@@ -77,6 +78,8 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
     protected  Ref _call() {
         checkState(newBranchName != null, "New branch name not specified");
         checkState(!newBranchName.equals(oldBranchName), "Done");
+        command(CheckRefFormat.class).setThrowsException(true).setRef(newBranchName)
+                .setAllowOneLevel(true).call();
         Optional<Ref> branch = Optional.absent();
 
         boolean headBranch = false;

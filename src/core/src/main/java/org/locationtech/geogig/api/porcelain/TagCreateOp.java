@@ -20,6 +20,7 @@ import org.locationtech.geogig.api.RevPerson;
 import org.locationtech.geogig.api.RevPersonImpl;
 import org.locationtech.geogig.api.RevTag;
 import org.locationtech.geogig.api.RevTagImpl;
+import org.locationtech.geogig.api.plumbing.CheckRefFormat;
 import org.locationtech.geogig.api.plumbing.HashObject;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
@@ -51,6 +52,8 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
         final String tagRefPath = Ref.TAGS_PREFIX + name;
         checkArgument(!command(RefParse.class).setName(tagRefPath).call().isPresent(),
                 "A tag named '" + name + "' already exists.");
+        command(CheckRefFormat.class).setThrowsException(true).setRef(tagRefPath).call();
+
         if (commitId == null) {
             final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
             Preconditions.checkState(currHead.isPresent(),

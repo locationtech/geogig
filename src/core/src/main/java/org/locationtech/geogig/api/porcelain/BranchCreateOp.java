@@ -17,6 +17,7 @@ import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevObject.TYPE;
+import org.locationtech.geogig.api.plumbing.CheckRefFormat;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.ResolveObjectType;
 import org.locationtech.geogig.api.plumbing.RevParse;
@@ -96,6 +97,8 @@ public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
         final String branchRefPath = Ref.append(Ref.HEADS_PREFIX, branchName);
         checkArgument(force || !command(RefParse.class).setName(branchRefPath).call().isPresent(),
                 "A branch named '" + branchName + "' already exists.");
+
+        command(CheckRefFormat.class).setThrowsException(true).setRef(branchRefPath).call();
 
         Optional<Ref> branchRef;
         if (orphan) {

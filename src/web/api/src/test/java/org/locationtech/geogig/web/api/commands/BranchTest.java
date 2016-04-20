@@ -160,7 +160,9 @@ public class BranchTest extends AbstractWebOpTest {
         assertEquals(3, localBranches.length());
         String expected = "[{'name':'branch1'},{'name':'branch2'},{'name':'master'}]";
         JSONAssert.assertEquals(expected, localBranches.toString(), true);
-        JSONArray remoteBranches = obj.getJSONObject("Local").getJSONArray("Branch");
+
+        expected = "[{'remoteName':'origin','name':'branch1'},{'remoteName':'origin','name':'branch2'},{'remoteName':'origin','name':'master'}]";
+        JSONArray remoteBranches = obj.getJSONObject("Remote").getJSONArray("Branch");
         assertEquals(3, remoteBranches.length());
         JSONAssert.assertEquals(expected, remoteBranches.toString(), true);
     }

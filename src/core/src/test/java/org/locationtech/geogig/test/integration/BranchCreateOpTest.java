@@ -54,6 +54,13 @@ public class BranchCreateOpTest extends RepositoryTestCase {
     }
 
     @Test
+    public void testInvalidNameForBranch() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
+        geogig.command(BranchCreateOp.class).setName("ma..er").call();
+    }
+
+    @Test
     public void testCreateBranchWithTheSameNameAsExistingBranch() throws Exception {
         insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("Commit1").call();

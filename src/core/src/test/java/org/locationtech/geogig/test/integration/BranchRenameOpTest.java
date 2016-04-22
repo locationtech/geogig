@@ -40,6 +40,13 @@ public class BranchRenameOpTest extends RepositoryTestCase {
     }
 
     @Test
+    public void InvalidBranchNameTest() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
+        geogig.command(BranchRenameOp.class).setNewName("ma..er").call();
+    }
+
+    @Test
     public void SameNameTest() {
         exception.expect(IllegalStateException.class);
         geogig.command(BranchRenameOp.class).setNewName("master").setOldName("master").call();

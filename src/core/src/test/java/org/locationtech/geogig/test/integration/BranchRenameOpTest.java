@@ -35,7 +35,7 @@ public class BranchRenameOpTest extends RepositoryTestCase {
 
     @Test
     public void NoBranchNameTest() {
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(BranchRenameOp.class).call();
     }
 
@@ -48,7 +48,7 @@ public class BranchRenameOpTest extends RepositoryTestCase {
 
     @Test
     public void SameNameTest() {
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(BranchRenameOp.class).setNewName("master").setOldName("master").call();
     }
 
@@ -122,7 +122,7 @@ public class BranchRenameOpTest extends RepositoryTestCase {
 
         assertEquals(TestBranch1.getObjectId(), SuperTestBranch.getObjectId());
 
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(BranchRenameOp.class).setNewName("master").call();
     }
 }

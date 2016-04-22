@@ -31,8 +31,8 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
-import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -76,11 +76,11 @@ public class DiffTree extends AbstractCommand implements CLICommand {
     @Override
     protected void runInternal(GeogigCLI cli) throws IOException {
         if (refSpec.size() > 2) {
-            throw new CommandFailedException("Tree refspecs list is too long :" + refSpec);
+            throw new InvalidParameterException("Tree refspecs list is too long :" + refSpec);
         }
 
         if (treeStats && describe) {
-            throw new CommandFailedException(
+            throw new InvalidParameterException(
                     "Cannot use --describe and --tree-stats simultaneously");
         }
 

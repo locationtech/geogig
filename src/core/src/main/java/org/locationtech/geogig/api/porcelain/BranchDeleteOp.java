@@ -61,7 +61,7 @@ public class BranchDeleteOp extends AbstractGeoGigOp<Optional<? extends Ref>> {
             checkState(!(ref instanceof SymRef));
 
             final Optional<Ref> head = command(RefParse.class).setName(Ref.HEAD).call();
-            checkState(!(head.isPresent() && head.get() instanceof SymRef && ((SymRef) head.get())
+            checkArgument(!(head.isPresent() && head.get() instanceof SymRef && ((SymRef) head.get())
                     .getTarget().equals(ref.getName())), "Cannot delete the branch you are on");
 
             UpdateRef updateRef = command(UpdateRef.class).setName(ref.getName()).setDelete(true)

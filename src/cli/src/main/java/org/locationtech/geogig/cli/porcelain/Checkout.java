@@ -96,7 +96,7 @@ public class Checkout extends AbstractCommand implements CLICommand {
                 break;
             case DETACHED_HEAD:
                 console.println("You are in 'detached HEAD' state. HEAD is now at "
-                        + result.getOid().toString().substring(0, 7) + "...");
+                        + result.getOid().toString().substring(0, 8) + "...");
                 break;
             default:
                 break;
@@ -106,9 +106,9 @@ public class Checkout extends AbstractCommand implements CLICommand {
             case LOCAL_CHANGES_NOT_COMMITTED:
                 throw new CommandFailedException(
                         "Working tree and index are not clean. To overwrite local changes, use the --force option",
-                        e);
+                        true);
             case UNMERGED_PATHS:
-                throw new CommandFailedException(e.getMessage(), e);
+                throw new CommandFailedException(e.getMessage(), true);
             }
         }
     }

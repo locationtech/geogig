@@ -30,6 +30,7 @@ import org.locationtech.geogig.api.porcelain.CherryPickOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.api.porcelain.ConflictsException;
 import org.locationtech.geogig.api.porcelain.LogOp;
 import org.locationtech.geogig.api.porcelain.NothingToCommitException;
 import org.opengis.feature.Feature;
@@ -178,9 +179,10 @@ public class CherryPickOpTest extends RepositoryTestCase {
         geogig.command(AddOp.class).call();
         geogig.command(CommitOp.class).call();
         try {
-            geogig.command(CherryPickOp.class)
-                    .setCommit(Suppliers.ofInstance(branchCommit.getId())).call();
-        } catch (IllegalStateException e) {
+            geogig.command(CherryPickOp.class).setCommit(Suppliers.ofInstance(branchCommit.getId()))
+                    .call();
+            fail("Expected ConflictsException");
+        } catch (ConflictsException e) {
             assertTrue(e.getMessage().contains("conflict in Points/Points.1"));
         }
         Optional<Ref> cherrypickHead = geogig.command(RefParse.class).setName(Ref.CHERRY_PICK_HEAD)

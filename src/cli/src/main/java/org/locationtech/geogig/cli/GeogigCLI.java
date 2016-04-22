@@ -391,7 +391,6 @@ public class GeogigCLI {
         } catch (IllegalArgumentException | InvalidParameterException paramValidationError) {
             exception = paramValidationError;
             consoleMessage = paramValidationError.getMessage();
-
         } catch (CannotRunGeogigOperationException cannotRun) {
 
             consoleMessage = cannotRun.getMessage();
@@ -402,8 +401,11 @@ public class GeogigCLI {
                 // this is intentional, see the javadoc for CommandFailedException
                 printError = false;
             } else {
-                LOGGER.error(consoleMessage, Throwables.getRootCause(cmdFailed));
                 consoleMessage = cmdFailed.getMessage();
+                if (!(cmdFailed instanceof CommandFailedException)
+                        || !((CommandFailedException) cmdFailed).reportOnly) {
+                    LOGGER.error(consoleMessage, Throwables.getRootCause(cmdFailed));
+                }
             }
         } catch (RuntimeException e) {
             exception = e;
@@ -468,7 +470,7 @@ public class GeogigCLI {
                 commandName = args[0];
                 commandParser = mainCommander.getCommands().get(commandName);
             }
-            
+
             if (commandParser == null) {
                 consoleReader.println(args[0] + " is not a geogig command. See geogig --help.");
                 // check for similar commands
@@ -484,8 +486,8 @@ public class GeogigCLI {
                     }
                 }
                 consoleReader.flush();
-                throw new CommandFailedException(String.format("'%s' is not a command.",
-                        commandName));
+                throw new InvalidParameterException(
+                        String.format("'%s' is not a command.", commandName));
             }
 
             Object object = commandParser.getObjects().get(0);
@@ -536,7 +538,8 @@ public class GeogigCLI {
                     workingDir = platform.pwd().getAbsolutePath();
                 }
                 if (getGeogig() == null) {
-                    throw new CommandFailedException("Not in a geogig repository: " + workingDir);
+                    throw new InvalidParameterException(
+                            "Not in a geogig repository: " + workingDir);
                 }
             }
 

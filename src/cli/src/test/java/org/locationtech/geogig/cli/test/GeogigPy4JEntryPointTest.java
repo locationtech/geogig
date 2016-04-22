@@ -15,42 +15,53 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.points1_m
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.points2;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
 
-import java.io.File;
-
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.cli.GeogigPy4JEntryPoint;
-import org.locationtech.geogig.cli.test.functional.CLITestContextBuilder;
-import org.locationtech.geogig.cli.test.functional.FunctionalTestState;
+import org.locationtech.geogig.cli.test.functional.CLIContext;
+import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
 
 import py4j.GatewayServer;
 
 public class GeogigPy4JEntryPointTest {
 
-    private FunctionalTestState state;
+    private CLIContextProvider cliContextProvider;
+
+    private CLIContext state;
+
+    private GatewayServer gatewayServer;
+
+    private GeogigPy4JEntryPoint py4j;
 
     @Before
-    public void setUpDirectories() throws Exception {
-        state = FunctionalTestState.get();
-        state.before();
+    public void setUpDirectories() throws Throwable {
+        cliContextProvider = CLIContextProvider.get();
+        cliContextProvider.before();
 
-        File homeDirectory = state.tempFolder.newFolder("fakeHomeDir").getCanonicalFile();
-        File currentDirectory = state.tempFolder.newFolder("testrepo").getCanonicalFile();
-        state.platform = new TestPlatform(currentDirectory, homeDirectory);
-        GlobalContextBuilder.builder = new CLITestContextBuilder(state.platform);
+        state = cliContextProvider.newRepositoryContext("testrepo");
+
+        py4j = new GeogigPy4JEntryPoint(true);
+        gatewayServer = new GatewayServer(py4j);
+        gatewayServer.start();
+    }
+
+    @After
+    public void after() {
+        try {
+            cliContextProvider.after();
+        } finally {
+            if (gatewayServer != null) {
+                gatewayServer.shutdown();
+            }
+        }
     }
 
     @Test
     public void testPy4JentryPoint() throws Exception {
-        state.setupGeogig();
         String repoFolder = state.platform.pwd().getAbsolutePath();
-        GeogigPy4JEntryPoint py4j = new GeogigPy4JEntryPoint(true);
-        GatewayServer gatewayServer = new GatewayServer(py4j);
-        gatewayServer.start();
         py4j.runCommand(repoFolder, new String[] { "init" });
         py4j.runCommand(repoFolder, "config user.name name".split(" "));
         py4j.runCommand(repoFolder, "config user.email email@email.com".split(" "));
@@ -71,7 +82,5 @@ public class GeogigPy4JEntryPointTest {
         output = py4j.nextOutputPage();
         System.out.println(output);
         assertTrue(output.contains("a commit message"));
-
-        gatewayServer.shutdown();
     }
 }

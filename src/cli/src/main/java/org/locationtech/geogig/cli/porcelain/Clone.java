@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.porcelain.CloneOp;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -25,6 +26,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.Repository;
@@ -117,8 +119,15 @@ public class Clone extends AbstractCommand implements CLICommand {
         }
 
         RepositoryResolver cloneInitializer = RepositoryResolver.lookup(cloneURI);
-        checkParameter(!cloneInitializer.repoExists(cloneURI),
-                "Destination path already exists and is not an empty directory.");
+
+        if (cloneInitializer.repoExists(cloneURI)) {
+            URI resolvedURI = cloneURI;
+            if ("file".equals(cloneURI.getScheme())) {
+                resolvedURI = ResolveGeogigURI.lookup(new File(cloneURI)).or(cloneURI);
+            }
+            String msg = "Destination repository already exists: " + resolvedURI;
+            throw new InvalidParameterException(msg);
+        }
 
         cli.setRepositoryURI(cloneURI.toString());
         Context cloneContext = cli.getGeogigInjector();

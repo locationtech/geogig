@@ -10,6 +10,7 @@
 package org.locationtech.geogig.repository;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,6 +83,12 @@ public class Hints implements Serializable {
         Hints hints = new Hints();
         hints.set(Hints.OBJECTS_READ_ONLY, Boolean.FALSE);
         hints.set(Hints.REMOTES_READ_ONLY, Boolean.FALSE);
+        return hints;
+    }
+
+    public static Hints uri(URI repoURI) {
+        Hints hints = new Hints();
+        hints.set(REPOSITORY_URL, repoURI);
         return hints;
     }
 }

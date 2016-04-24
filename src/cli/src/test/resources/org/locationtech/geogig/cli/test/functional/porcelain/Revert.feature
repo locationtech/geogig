@@ -70,6 +70,7 @@ Feature: "revert" command
      And I have several commits     
     When I run the command "revert HEAD~3"
     Then the response should contain "could not apply" 
+     And the response should contain "CONFLICT: conflict in Points/Points.1"
      And it should exit with non-zero exit code    
     When I run the command "revert --abort"
     Then the response should contain "aborted"

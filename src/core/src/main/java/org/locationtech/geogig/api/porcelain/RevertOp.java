@@ -321,7 +321,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                 } else {
                     // do not mark as conflict if reverting to the same feature currently in HEAD
                     if (!nodeId.equals(diff.newObjectId())) {
-                        conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(), node.get()
+                        conflicts.add(new Conflict(diff.oldPath(), diff.oldObjectId(), node.get()
                                 .getObjectId(), diff.newObjectId()));
                     }
                 }

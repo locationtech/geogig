@@ -40,7 +40,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Geometry;
@@ -52,7 +51,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        dataStore = new GeoGigDataStore(geogig);
+        dataStore = new GeoGigDataStore(geogig.getRepository());
     }
 
     @Override

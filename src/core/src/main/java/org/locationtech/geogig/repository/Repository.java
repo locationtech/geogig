@@ -82,6 +82,8 @@ public class Repository {
 
     private ExecutorService executor;
 
+    private volatile boolean open;
+    
     @Inject
     public Repository(Context context, ExecutorService executor) {
         this.context = context;
@@ -100,6 +102,10 @@ public class Repository {
         context.graphDatabase().configure();
     }
 
+    public boolean isOpen(){
+        return open;
+    }
+    
     public void open() throws RepositoryConnectionException {
 
         Optional<URI> repoUrl = command(ResolveGeogigURI.class).call();
@@ -115,12 +121,14 @@ public class Repository {
         for (RepositoryListener l : listeners) {
             l.opened(this);
         }
+        open = true;
     }
 
     /**
      * Closes the repository.
      */
     public synchronized void close() {
+        open = false;
         close(context.refDatabase());
         close(context.objectDatabase());
         close(context.graphDatabase());

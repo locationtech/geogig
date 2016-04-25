@@ -45,7 +45,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        dataStore = new GeoGigDataStore(geogig);
+        dataStore = new GeoGigDataStore(geogig.getRepository());
         dataStore.createSchema(super.pointsType);
         dataStore.createSchema(super.linesType);
 
@@ -257,8 +257,8 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             assertEquals("modified", modified.getAttribute("sp"));
 
             // unmodified value before commit on another store instance (tx isolation)
-            assertEquals("StringProp1_1", dataStore.getFeatureSource(pointsName)
-                    .getFeatures(filter).features().next().getAttribute("sp"));
+            assertEquals("StringProp1_1", dataStore.getFeatureSource(pointsName).getFeatures(filter)
+                    .features().next().getAttribute("sp"));
 
             tx.commit();
 

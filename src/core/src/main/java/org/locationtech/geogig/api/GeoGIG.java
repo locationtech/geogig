@@ -186,7 +186,7 @@ public class GeoGIG {
     }
 
     public boolean isOpen() {
-        return repository != null;
+        return repository != null && repository.isOpen();
     }
 
     /**

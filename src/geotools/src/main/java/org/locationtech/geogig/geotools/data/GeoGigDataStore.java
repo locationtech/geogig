@@ -40,6 +40,7 @@ import org.locationtech.geogig.api.plumbing.TransactionBegin;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CheckoutOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -82,7 +83,7 @@ import com.google.common.collect.Lists;
  */
 public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
-    private final GeoGIG geogig;
+    private final Repository geogig;
 
     /** @see #setHead(String) */
     private String refspec;
@@ -90,11 +91,9 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     /** When the configured head is not a branch, we disallow transactions */
     private boolean allowTransactions = true;
 
-    public GeoGigDataStore(GeoGIG geogig) {
+    public GeoGigDataStore(Repository geogig) {
         super();
         Preconditions.checkNotNull(geogig);
-        Preconditions.checkNotNull(geogig.getRepository(), "No repository exists at %s", geogig
-                .getPlatform().pwd());
 
         this.geogig = geogig;
     }
@@ -163,7 +162,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         return getCheckedOutBranch();
     }
 
-    public GeoGIG getGeogig() {
+    public Repository getGeogig() {
         return geogig;
     }
 
@@ -240,7 +239,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         }
 
         if (commandLocator == null) {
-            commandLocator = geogig.getContext();
+            commandLocator = geogig.context();
         }
         return commandLocator;
     }
@@ -267,13 +266,13 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         });
         switch (matches.size()) {
         case 0:
-            throw new NoSuchElementException(String.format("No tree ref matched the name: %s",
-                    localName));
+            throw new NoSuchElementException(
+                    String.format("No tree ref matched the name: %s", localName));
         case 1:
             return matches.iterator().next();
         default:
-            throw new IllegalArgumentException(String.format(
-                    "More than one tree ref matches the name %s: %s", localName, matches));
+            throw new IllegalArgumentException(String
+                    .format("More than one tree ref matches the name %s: %s", localName, matches));
         }
     }
 
@@ -394,8 +393,8 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
      *        {@link #getOrFigureOutHead() HEAD}
      * @param oldRoot a tree-ish string that resolves to the ROOT tree to be used as the left side
      *        of the diff
-     * @param changeType the type of change between {@code oldRoot} and
-     *        {@link #getOrFigureOutHead() head} to pick as the features to return.
+     * @param changeType the type of change between {@code oldRoot} and {@link #getOrFigureOutHead()
+     *        head} to pick as the features to return.
      * @return a feature source whose features are computed out of the diff between the feature type
      *         diffs between the given {@code oldRoot} and the datastore's
      *         {@link #getOrFigureOutHead() HEAD}.

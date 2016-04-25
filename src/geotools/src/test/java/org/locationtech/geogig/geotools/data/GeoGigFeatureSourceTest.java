@@ -60,7 +60,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-        dataStore = new GeoGigDataStore(geogig);
+        dataStore = new GeoGigDataStore(geogig.getRepository());
         dataStore.createSchema(super.pointsType);
         dataStore.createSchema(super.linesType);
         insertAndAdd(points1, points2, points3, lines1, lines2, lines3);

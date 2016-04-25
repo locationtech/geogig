@@ -64,9 +64,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         }
     }
 
-    public static final Param RESOLVER_CLASS_NAME = new Param(
-            "resolver",
-            String.class,
+    public static final Param RESOLVER_CLASS_NAME = new Param("resolver", String.class,
             "Fully qualified class name for the RepositoryLookup that resolves the REPOSITORY parameter to an actual path",
             false, DefaultRepositoryLookup.class.getName(), new KVP(Param.LEVEL, "advanced"));
 
@@ -76,23 +74,19 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         @Override
         public String lookUp(Map<String, ?> map) throws IOException {
             if (null == map.get(key)) {
-                throw new IOException(String.format("Parameter %s is required: %s", key,
-                        description));
+                throw new IOException(
+                        String.format("Parameter %s is required: %s", key, description));
             }
             String value = String.valueOf(map.get(key));
             return value;
         }
     };
 
-    public static final Param BRANCH = new Param(
-            "branch",
-            String.class,
+    public static final Param BRANCH = new Param("branch", String.class,
             "Optional branch name the DataStore operates against, defaults to the currently checked out branch",
             false);
 
-    public static final Param HEAD = new Param(
-            "head",
-            String.class,
+    public static final Param HEAD = new Param("head", String.class,
             "Optional refspec (branch name, commit id, etc.) the DataStore operates against, defaults to the currently checked out branch",
             false);
 
@@ -202,24 +196,14 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             }
         }
 
-        GeoGIG geogig;
+        Repository repo;
         try {
-            Repository repo = initializer.open(repositoryDirectory);
-            geogig = new GeoGIG(repo);
+            repo = initializer.open(repositoryDirectory);
         } catch (RepositoryConnectionException | RuntimeException e) {
             throw new IOException(e.getMessage(), e);
         }
-        Repository repository = geogig.getRepository();
-        if (null == repository) {
-            if (create != null && create.booleanValue()) {
-                return createNewDataStore(params);
-            }
 
-            throw new IOException(String.format("Directory is not a geogig repository: '%s'",
-                    repositoryDirectory));
-        }
-
-        GeoGigDataStore store = new GeoGigDataStore(geogig);
+        GeoGigDataStore store = new GeoGigDataStore(repo);
         if (defaultNamespace != null) {
             store.setNamespaceURI(defaultNamespace);
         }
@@ -264,14 +248,15 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         Context context = GlobalContextBuilder.builder.build(hints);
         GeoGIG geogig = new GeoGIG(context);
 
+        Repository repository;
         try {
-            Repository repository = geogig.getOrCreateRepository();
+            repository = geogig.getOrCreateRepository();
             Preconditions.checkState(repository != null);
         } catch (RuntimeException e) {
             throw new IOException(e);
         }
 
-        GeoGigDataStore store = new GeoGigDataStore(geogig);
+        GeoGigDataStore store = new GeoGigDataStore(repository);
         if (defaultNamespace != null) {
             store.setNamespaceURI(defaultNamespace);
         }

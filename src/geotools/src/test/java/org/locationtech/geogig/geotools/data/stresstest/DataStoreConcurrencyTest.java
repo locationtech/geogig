@@ -92,7 +92,7 @@ public class DataStoreConcurrencyTest {
         geogig.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
                 .setValue("gabriel@roldan.example.com").call();
 
-        store = new GeoGigDataStore(geogig);
+        store = new GeoGigDataStore(geogig.getRepository());
 
         store.createSchema(pointType);
 

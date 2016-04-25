@@ -20,7 +20,7 @@ public class FileRefDatabaseTest extends RefDatabaseTest {
     protected RefDatabase createDatabase(Platform platform) throws Exception {
         ConfigDatabase configDB = new IniFileConfigDatabase(platform);
 
-        return new FileRefDatabase(platform, configDB);
+        return new FileRefDatabase(platform, configDB, null);
     }
 
 }

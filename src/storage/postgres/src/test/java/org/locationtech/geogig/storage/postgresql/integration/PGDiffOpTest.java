@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.test.integration.postgresql;
+package org.locationtech.geogig.storage.postgresql.integration;
 
 import org.junit.Rule;
 import org.locationtech.geogig.api.Context;
@@ -16,12 +16,12 @@ import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.postgresql.PGStorageModule;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.test.integration.DiffOpTest;
 
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
-public class PGCheckSparsePathTest extends
-        org.locationtech.geogig.test.integration.CheckSparsePathTest {
+public class PGDiffOpTest extends DiffOpTest {
 
     @Rule
     public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());

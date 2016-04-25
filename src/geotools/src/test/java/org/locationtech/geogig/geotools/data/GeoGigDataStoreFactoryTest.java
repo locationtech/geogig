@@ -15,13 +15,19 @@ import static org.locationtech.geogig.geotools.data.GeoGigDataStoreFactory.REPOS
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.junit.Test;
+import org.locationtech.geogig.api.Context;
+import org.locationtech.geogig.api.GlobalContextBuilder;
+import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.geogig.test.integration.TestContextBuilder;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
@@ -33,6 +39,15 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
     private File repoDirectory;
 
     @Override
+    protected Context createInjector() {
+        Platform platform = createPlatform();
+        GlobalContextBuilder.builder(new TestContextBuilder(platform));
+        URI uri = repositoryDirectory.getAbsoluteFile().toURI();
+        Hints hints = new Hints().uri(uri).platform(platform);
+        return GlobalContextBuilder.builder().build(hints);
+    }
+
+    @Override
     protected void setUpInternal() throws Exception {
         factory = new GeoGigDataStoreFactory();
         repoDirectory = super.repositoryDirectory;
@@ -40,8 +55,8 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
 
     @Test
     public void testFactorySpi() {
-        Iterator<GeoGigDataStoreFactory> filtered = Iterators.filter(
-                DataStoreFinder.getAvailableDataStores(), GeoGigDataStoreFactory.class);
+        Iterator<GeoGigDataStoreFactory> filtered = Iterators
+                .filter(DataStoreFinder.getAvailableDataStores(), GeoGigDataStoreFactory.class);
         assertTrue(filtered.hasNext());
         assertTrue(filtered.next() instanceof GeoGigDataStoreFactory);
     }

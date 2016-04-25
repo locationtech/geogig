@@ -20,7 +20,7 @@ Feature: "fetch" command
   Scenario: Try to fetch the full history for a shallow clone
     Given I am in an empty directory
       And there is a remote repository
-     When I run the command "clone --depth 1 remoterepo localrepo"
+     When I run the command "clone --depth 1 ${remoterepo} ${localrepo}"
       And I run the command "log"
      Then the response should not contain "Commit4"
      When I run the command "fetch --fulldepth"
@@ -34,7 +34,7 @@ Feature: "fetch" command
   Scenario: Try to deepen the history of a shallow clone
     Given I am in an empty directory
       And there is a remote repository
-     When I run the command "clone --depth 1 remoterepo localrepo"
+     When I run the command "clone --depth 1 ${remoterepo} ${localrepo}"
       And I run the command "log"
      Then the response should not contain "Commit4"
      When I run the command "fetch --depth 2"
@@ -72,6 +72,6 @@ Feature: "fetch" command
   Scenario: Try to fetch a tag
     Given I am in an empty directory
       And there is a remote repository with a tag named "example"
-     When I run the command "clone remoterepo localrepo"
+     When I run the command "clone ${remoterepo} ${localrepo}"
       And I run the command "tag"
      Then the response should contain "example"

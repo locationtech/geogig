@@ -100,7 +100,7 @@ public class Merge extends AbstractCommand implements CLICommand {
         if (abort) {
             Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
             if (!ref.isPresent()) {
-                throw new CommandFailedException("There is no merge to abort <ORIG_HEAD missing>.");
+                throw new CommandFailedException("There is no merge to abort <ORIG_HEAD missing>.", true);
             }
 
             geogig.command(ResetOp.class).setMode(ResetMode.HARD)

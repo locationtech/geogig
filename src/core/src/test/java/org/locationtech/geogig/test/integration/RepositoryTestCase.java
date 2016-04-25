@@ -11,6 +11,7 @@ package org.locationtech.geogig.test.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,7 +55,6 @@ import org.opengis.feature.type.Name;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
@@ -178,7 +178,7 @@ public abstract class RepositoryTestCase extends Assert {
 
         injector = createInjector();
 
-        geogig = new GeoGIG(injector, repositoryDirectory);
+        geogig = new GeoGIG(injector);
         repo = geogig.getOrCreateRepository();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("Gabriel Roldan").call();
@@ -222,11 +222,10 @@ public abstract class RepositoryTestCase extends Assert {
     }
 
     protected Context createInjector() {
-        Platform testPlatform = createPlatform();
-        GlobalContextBuilder.builder = new TestContextBuilder(testPlatform);
-        Hints hints = new Hints();
-        hints.set(Hints.REPOSITORY_URL, repositoryDirectory.getAbsoluteFile().toURI());
-        return GlobalContextBuilder.builder.build(hints);
+        Platform platform = createPlatform();
+        URI uri = repositoryDirectory.getAbsoluteFile().toURI();
+        Hints hints = new Hints().uri(uri).platform(platform);
+        return new TestContextBuilder().build(hints);
     }
 
     protected Platform createPlatform() {
@@ -343,8 +342,8 @@ public abstract class RepositoryTestCase extends Assert {
      * Inserts the feature to the index but does not stages it to be committed
      */
     public ObjectId insert(GeogigTransaction transaction, Feature f) throws Exception {
-        final WorkingTree workTree = (transaction != null ? transaction.workingTree() : repo
-                .workingTree());
+        final WorkingTree workTree = (transaction != null ? transaction.workingTree()
+                : repo.workingTree());
         Name name = f.getType().getName();
         String parentPath = name.getLocalPart();
         Node ref = workTree.insert(parentPath, f);
@@ -407,8 +406,8 @@ public abstract class RepositoryTestCase extends Assert {
     }
 
     public boolean delete(GeogigTransaction transaction, Feature f) throws Exception {
-        final WorkingTree workTree = (transaction != null ? transaction.workingTree() : repo
-                .workingTree());
+        final WorkingTree workTree = (transaction != null ? transaction.workingTree()
+                : repo.workingTree());
         Name name = f.getType().getName();
         String localPart = name.getLocalPart();
         String id = f.getIdentifier().getID();

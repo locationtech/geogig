@@ -25,7 +25,7 @@ import cucumber.api.junit.Cucumber;
         // the glue option tells cucumber where to look for step definitions
         , glue = { "org.locationtech.geogig.cli.test.functional",
                 "org.locationtech.geogig.geotools.cli.test.functional" }//
-        , features = { "../src/test/resources/features" }//
+        , features = { "src/test/resources/features" }//
 )
 public class RunGeoToolsFunctionalOnlineTest {
 }

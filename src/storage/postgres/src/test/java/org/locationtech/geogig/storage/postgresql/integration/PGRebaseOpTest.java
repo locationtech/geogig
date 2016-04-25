@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.test.integration.postgresql;
+package org.locationtech.geogig.storage.postgresql.integration;
 
 import org.junit.Rule;
 import org.locationtech.geogig.api.Context;
@@ -16,12 +16,12 @@ import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.postgresql.PGStorageModule;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.test.integration.RebaseOpTest;
 
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
-public class PGFindCommonAncestorTest extends
-        org.locationtech.geogig.test.integration.FindCommonAncestorTest {
+public class PGRebaseOpTest extends RebaseOpTest {
 
     @Rule
     public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
@@ -33,8 +33,9 @@ public class PGFindCommonAncestorTest extends
 
         Hints hints = new Hints();
         hints.set(Hints.REPOSITORY_URL, repoUrl);
-        return Guice.createInjector(
+        Context context = Guice.createInjector(
                 Modules.override(new GeogigModule()).with(new HintsModule(hints),
                         new PGStorageModule())).getInstance(Context.class);
+        return context;
     }
 }

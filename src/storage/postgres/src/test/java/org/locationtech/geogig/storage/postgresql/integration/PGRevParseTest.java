@@ -7,21 +7,21 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.test.integration.postgresql;
+package org.locationtech.geogig.storage.postgresql.integration;
 
 import org.junit.Rule;
 import org.locationtech.geogig.api.Context;
+import org.locationtech.geogig.api.plumbing.RevParseTest;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.postgresql.PGStorageModule;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.test.integration.RevertOpTest;
 
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
-public class PGRevertOpTest extends RevertOpTest {
+public class PGRevParseTest extends RevParseTest {
 
     @Rule
     public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
@@ -33,9 +33,8 @@ public class PGRevertOpTest extends RevertOpTest {
 
         Hints hints = new Hints();
         hints.set(Hints.REPOSITORY_URL, repoUrl);
-        Context context = Guice.createInjector(
+        return Guice.createInjector(
                 Modules.override(new GeogigModule()).with(new HintsModule(hints),
                         new PGStorageModule())).getInstance(Context.class);
-        return context;
     }
 }

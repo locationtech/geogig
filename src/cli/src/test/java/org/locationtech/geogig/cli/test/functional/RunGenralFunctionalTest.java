@@ -22,7 +22,7 @@ import cucumber.api.junit.Cucumber;
 @CucumberOptions(//
         plugin = { "pretty", "html:cucumber-report-general" }//
         , strict = true//
-        , features = { "../src/test/resources/features/general" })
+        , features = { "src/test/resources/features/general" })
 @RunWith(Cucumber.class)
 public class RunGenralFunctionalTest {
 }

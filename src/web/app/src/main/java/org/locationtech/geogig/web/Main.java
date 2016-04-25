@@ -21,6 +21,7 @@ import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.cli.CLIContextBuilder;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.rest.TaskResultDownloadResource;
 import org.locationtech.geogig.rest.TaskStatusResource;
 import org.locationtech.geogig.rest.osm.OSMRouter;
@@ -158,8 +159,8 @@ public class Main extends Application {
     static GeoGIG loadGeoGIG(String repo) {
         Platform platform = new DefaultPlatform();
         platform.setWorkingDir(new File(repo));
-        Context inj = GlobalContextBuilder.builder.build();
-        GeoGIG geogig = new GeoGIG(inj, platform.pwd());
+        Context inj = GlobalContextBuilder.builder().build(new Hints().platform(platform));
+        GeoGIG geogig = new GeoGIG(inj);
 
         if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
             geogig.getRepository();
@@ -192,7 +193,7 @@ public class Main extends Application {
     }
 
     static void setup() {
-        GlobalContextBuilder.builder = new CLIContextBuilder();
+        GlobalContextBuilder.builder(new CLIContextBuilder());
     }
 
     public static void main(String[] args) throws Exception {

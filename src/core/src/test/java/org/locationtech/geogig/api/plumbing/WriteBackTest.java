@@ -42,9 +42,9 @@ public class WriteBackTest extends Assert {
 
     @Before
     public void setUp() {
-        Context injector = Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new MemoryModule(null))).getInstance(
-                Context.class);
+        Context injector = Guice
+                .createInjector(Modules.override(new GeogigModule()).with(new MemoryModule()))
+                .getInstance(Context.class);
 
         odb = injector.objectDatabase();
         odb.open();

@@ -78,7 +78,7 @@ Feature: "commit" command
     Given I have a repository
       And I have a merge conflict state
      When I run the command "commit -m Message"
-     Then the response should contain "Cannot run operation while merge conflicts exist"
+     Then the response should contain "Cannot run operation while merge or rebase conflicts exist"
       And it should exit with non-zero exit code
      
   Scenario: Try to amend last commit

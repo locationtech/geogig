@@ -23,6 +23,6 @@ import cucumber.api.junit.Cucumber;
 @CucumberOptions(//
         plugin = { "pretty", "html:cucumber-report-general" }//
         , strict = true//
-        , features = { "../src/test/resources/features/plumbing" })
+        , features = { "src/test/resources/features/plumbing" })
 public class RunPlumbingFunctionalTest {
 }

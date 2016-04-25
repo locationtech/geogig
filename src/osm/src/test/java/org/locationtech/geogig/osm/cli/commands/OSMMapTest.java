@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
@@ -31,7 +30,6 @@ import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.test.functional.CLITestContextBuilder;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
 
 import com.google.common.base.Optional;
@@ -52,7 +50,6 @@ public class OSMMapTest extends Assert {
         cli = new GeogigCLI(consoleReader);
         File workingDirectory = tempFolder.getRoot();
         TestPlatform platform = new TestPlatform(workingDirectory);
-        GlobalContextBuilder.builder = new CLITestContextBuilder(platform);
 
         cli.setPlatform(platform);
         cli.execute("init");
@@ -143,8 +140,8 @@ public class OSMMapTest extends Assert {
 
         cli.execute("osm", "map", "awrongpath/awroongfile.json");
         assertNotNull(cli.exception);
-        assertTrue(cli.exception.getMessage().startsWith(
-                "The specified mapping file does not exist"));
+        assertTrue(
+                cli.exception.getMessage().startsWith("The specified mapping file does not exist"));
 
     }
 

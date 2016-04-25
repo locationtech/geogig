@@ -11,10 +11,8 @@ package org.locationtech.geogig.api;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.File;
 import java.net.URI;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.porcelain.InitOp;
@@ -39,26 +37,9 @@ public class GeoGIG {
 
     private Repository repository;
 
-    /**
-     * Constructs a new instance of the GeoGig facade.
-     */
-    public GeoGIG() {
-        context = GlobalContextBuilder.builder.build();
-    }
-
     public GeoGIG(Repository repo) {
         this.repository = repo;
         this.context = repo.context();
-    }
-
-    /**
-     * Constructs a new instance of the GeoGig facade with the given working directory.
-     * 
-     * @param workingDir the working directory for this instance of GeoGig
-     */
-    public GeoGIG(File workingDir) {
-        this();
-        context.platform().setWorkingDir(workingDir);
     }
 
     /**
@@ -68,25 +49,8 @@ public class GeoGIG {
      * @see Context
      */
     public GeoGIG(final Context injector) {
-        this(injector, null);
-    }
-
-    /**
-     * Constructs a new instance of the GeoGig facade with the given Guice injector and working
-     * directory.
-     * 
-     * @param injector the injector to use
-     * @param workingDir the working directory for this instance of GeoGig
-     * @see Context
-     */
-    public GeoGIG(final Context injector, @Nullable final File workingDir) {
         Preconditions.checkNotNull(injector, "injector");
         this.context = injector;
-        Platform platform = injector.platform();
-        File target = workingDir == null ? platform.pwd() : workingDir;
-        if (workingDir != null) {
-            platform.setWorkingDir(workingDir);
-        }
     }
 
     /**

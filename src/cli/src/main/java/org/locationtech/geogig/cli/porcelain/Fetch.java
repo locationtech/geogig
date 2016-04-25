@@ -92,10 +92,10 @@ public class Fetch extends AbstractCommand implements CLICommand {
             case HISTORY_TOO_SHALLOW:
             default:
                 throw new CommandFailedException("Unable to fetch, the remote history is shallow.",
-                        e);
+                        true);
             }
         } catch (IllegalArgumentException iae) {
-            throw new CommandFailedException(iae.getMessage(), iae);
+            throw new CommandFailedException(iae.getMessage(), true);
         } catch (IllegalStateException ise) {
             throw new CommandFailedException(ise.getMessage(), ise);
         }

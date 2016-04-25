@@ -22,9 +22,9 @@ import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.NodeRef;
+import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.web.DirectoryRepositoryProvider;
 import org.locationtech.geogig.web.Main;
@@ -60,12 +60,15 @@ public class FunctionalTestContext extends ExternalResource {
     @Override
     public synchronized void before() throws Exception {
         if (app == null) {
-            GlobalContextBuilder.builder = new CLIContextBuilder();
             this.tempFolder = new TemporaryFolder();
             this.tempFolder.create();
 
             File rootFolder = tempFolder.getRoot();
             repoProvider = new DirectoryRepositoryProvider(rootFolder);
+
+            TestPlatform platform = new TestPlatform(rootFolder);
+            GlobalContextBuilder.builder(new FunctionalRepoContextBuilder(platform));
+
             this.app = new Main(repoProvider, true);
             this.app.start();
         }
@@ -121,9 +124,8 @@ public class FunctionalTestContext extends ExternalResource {
 
     private TestData createRepo(final String name) throws Exception {
         URI repoURI = new File(tempFolder.getRoot(), name).toURI();
-        Hints hints = new Hints();
-        hints.set(Hints.REPOSITORY_URL, repoURI);
-        Context repoContext = GlobalContextBuilder.builder.build(hints);
+        Hints hints = new Hints().uri(repoURI);
+        Context repoContext = GlobalContextBuilder.builder().build(hints);
         GeoGIG geogig = new GeoGIG(repoContext);
         TestData testData = new TestData(geogig);
         return testData;

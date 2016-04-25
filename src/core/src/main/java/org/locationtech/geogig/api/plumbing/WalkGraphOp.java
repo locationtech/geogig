@@ -71,7 +71,7 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
         final ObjectDatabase odb = objectDatabase();
 
         Optional<ObjectId> oid = command(RevParse.class).setRefSpec(reference).call();
-        Preconditions.checkArgument(oid.isPresent(), "Can't resolve reference '%s'", reference);
+        Preconditions.checkArgument(oid.isPresent(), "Can't resolve reference '%s' at %s", reference, repository().getLocation());
 
         RevTree left = RevTree.EMPTY;
         RevTree right;

@@ -166,7 +166,7 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
             case MIXED_FEATURE_TYPES:
                 throw new CommandFailedException(
                         "The selected tree contains mixed feature types. Use --defaulttype or --featuretype <feature_type_ref> to export.",
-                        e);
+                        true);
             default:
                 throw new CommandFailedException("Could not export. Error:" + e.statusCode.name(),
                         e);

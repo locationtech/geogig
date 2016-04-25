@@ -23,6 +23,7 @@ import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.cli.GeogigPy4JEntryPoint;
 import org.locationtech.geogig.cli.test.functional.CLIContext;
 import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
+import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
 
 import py4j.GatewayServer;
 
@@ -39,9 +40,10 @@ public class GeogigPy4JEntryPointTest {
     @Before
     public void setUpDirectories() throws Throwable {
         cliContextProvider = CLIContextProvider.get();
+        cliContextProvider.setURIBuilder(TestRepoURIBuilder.createDefault());
         cliContextProvider.before();
 
-        state = cliContextProvider.newRepositoryContext("testrepo");
+        state = cliContextProvider.getOrCreateRepositoryContext("testrepo");
 
         py4j = new GeogigPy4JEntryPoint(true);
         gatewayServer = new GatewayServer(py4j);

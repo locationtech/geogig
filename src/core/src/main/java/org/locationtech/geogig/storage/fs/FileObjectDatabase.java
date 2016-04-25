@@ -27,6 +27,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.AbstractObjectDatabase;
 import org.locationtech.geogig.storage.BlobStore;
@@ -65,14 +66,18 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
 
     private FileBlobStore blobStore;
 
+    private Hints hints;
+
     /**
      * Constructs a new {@code FileObjectDatabase} using the given platform.
      * 
      * @param platform the platform to use.
      */
     @Inject
-    public FileObjectDatabase(final Platform platform, final ConfigDatabase configDB) {
+    public FileObjectDatabase(final Platform platform, final ConfigDatabase configDB,
+            final Hints hints) {
         this(platform, "objects", configDB);
+        this.hints = hints;
     }
 
     protected FileObjectDatabase(final Platform platform, final String databaseName,
@@ -83,7 +88,6 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
         this.platform = platform;
         this.databaseName = databaseName;
         this.configDB = configDB;
-        this.conflicts = new FileConflictsDatabase(platform);
         this.blobStore = new FileBlobStore(platform);
     }
 
@@ -116,22 +120,25 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
         if (isOpen()) {
             return;
         }
-        final Optional<URI> repoUrl = new ResolveGeogigURI(platform, null).call();
+        final Optional<URI> repoUrl = new ResolveGeogigURI(platform, hints).call();
         checkState(repoUrl.isPresent(), "Can't find geogig repository home");
 
-        dataRoot = new File(new File(repoUrl.get()), databaseName);
+        final File repoDir = new File(repoUrl.get());
+        this.conflicts = new FileConflictsDatabase(repoDir);
+
+        dataRoot = new File(repoDir, databaseName);
 
         if (!dataRoot.exists() && !dataRoot.mkdirs()) {
-            throw new IllegalStateException("Can't create environment: "
-                    + dataRoot.getAbsolutePath());
+            throw new IllegalStateException(
+                    "Can't create environment: " + dataRoot.getAbsolutePath());
         }
         if (!dataRoot.isDirectory()) {
-            throw new IllegalStateException("Environment but is not a directory: "
-                    + dataRoot.getAbsolutePath());
+            throw new IllegalStateException(
+                    "Environment but is not a directory: " + dataRoot.getAbsolutePath());
         }
         if (!dataRoot.canWrite()) {
-            throw new IllegalStateException("Environment is not writable: "
-                    + dataRoot.getAbsolutePath());
+            throw new IllegalStateException(
+                    "Environment is not writable: " + dataRoot.getAbsolutePath());
         }
         dataRootPath = dataRoot.getAbsolutePath();
         try {
@@ -154,7 +161,9 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
         dataRoot = null;
         dataRootPath = null;
         try {
-            conflicts.close();
+            if (conflicts != null) {
+                conflicts.close();
+            }
         } finally {
             blobStore.close();
         }

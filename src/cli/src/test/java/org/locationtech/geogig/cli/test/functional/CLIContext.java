@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.cli.test.functional;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.junit.Assert.assertNotNull;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines1;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines2;
@@ -20,18 +21,12 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 
-import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ContextBuilder;
 import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -48,19 +43,20 @@ import com.google.common.collect.Lists;
 import com.google.common.io.CharSource;
 
 /**
- * A global state that allows to set up repositories for cucumber functional tests.
+ * The "context" for a specific repository when running the CLI functional tests.
  * <p>
- * Cucumber tests (annotated with <code>@RunWith(Cucumber.class)</code>) can share a single instance
- * of this class for each test scenario acquiring it through {@link FunctionalTestState#get()},
- * which uses a {@link ThreadLocal} variable to hold on the thread singleton. (Note: coulnd't make
- * {@code cucumber-picocontainer} nor {@code cucumnber-guice} as expected, hence this solution).
- * <p>
- * The acquired instance shall be initialized and disposed through {@link #before()} and
- * {@link #after()}, respectively, which are both idempotent.
+ * The repository context includes the reposiroty URI, a {@link GeogigCLI} for that repositry URI,
+ * and a pair of input/output streams to be used as stdin and stdout.
  */
-public class FunctionalTestState {
+public class CLIContext {
 
-    public TemporaryFolder tempFolder;
+    /**
+     * If non null, {@link #configureRepository()} will use it as the repository URI, otherwise
+     * it'll use the platform's current directory
+     */
+    public final URI repositoryURI;
+
+    public final TestPlatform platform;
 
     /**
      * {@link GeogigCLI#execute(String...)} exit code, updated every time a {@link #runCommand
@@ -68,122 +64,45 @@ public class FunctionalTestState {
      */
     public int exitCode;
 
-    /**
-     * A platform to set the current working directory and the user home directory.
-     * <p>
-     * Note this platform is NOT the same than used by the created GeoGIG instances. They'll instead
-     * use a copy of it (as per CLITestInjectorBuilder.build()), in order for the platform not to be
-     * shared by multiple geogig instances open (like when working with remotes) and get them
-     * confused on what their respective working dir is. So whenever this platform's working dir is
-     * changed, setupGeogig() should be called for a new GeogigCLI to be created on the current
-     * working dir, if need be.
-     */
-    public TestPlatform platform;
-
-    public File remoteRepo;
+    public GeogigCLI geogigCLI;
 
     public ByteArrayInputStream stdIn;
 
     public ByteArrayOutputStream stdOut;
 
-    public GeogigCLI geogigCLI;
-
     public Console consoleReader;
 
-    private FunctionalTestState() {
-        // force usage through #get()
-    }
-
-    private static ThreadLocal<FunctionalTestState> threadLocal = new ThreadLocal<FunctionalTestState>() {
-        @Override
-        protected FunctionalTestState initialValue() {
-            return new FunctionalTestState();
-        }
-    };
-
-    public static FunctionalTestState get() {
-        return threadLocal.get();
-    }
-
-    /**
-     * If non null, {@link #setupGeogig()} will use it as the repository URI, otherwise it'll use
-     * the platform's current directory
-     */
-    public String repositoryURI;
-
-    public synchronized void before() throws Exception {
-        if (tempFolder == null) {
-            tempFolder = new TemporaryFolder();
-            tempFolder.create();
-            TestFeatures.setupFeatures();
-        }
-    }
-
-    public synchronized void after() {
-        try {
-            if (geogigCLI != null) {
-                geogigCLI.close();
-                geogigCLI = null;
-            }
-            if (consoleReader != null) {
-                consoleReader = null;
-            }
-        } finally {
-            if (tempFolder != null) {
-                try {
-                    tempFolder.delete();
-                } finally {
-                    tempFolder = null;
-                    threadLocal.remove();
-                }
-            }
-        }
-    }
-
-    public void setUpDirectories() throws IOException {
-        File homeDirectory = new File(tempFolder.getRoot(), "fakeHomeDir");
-        File currentDirectory = new File(tempFolder.getRoot(), "testrepo");
-        if (!homeDirectory.exists()) {
-            homeDirectory.mkdir();
-        }
-        if (!currentDirectory.exists()) {
-            currentDirectory.mkdir();
-        }
-        if (platform == null) {
-            platform = new TestPlatform(currentDirectory, homeDirectory);
-        } else {
-            platform.setWorkingDir(currentDirectory);
-            platform.setUserHome(homeDirectory);
-        }
-    }
-
-    public void setupGeogig() throws Exception {
-        assertNotNull(platform);
+    public CLIContext(URI repoURI, TestPlatform platform) {
+        checkNotNull(repoURI);
+        checkNotNull(platform);
+        this.repositoryURI = repoURI;
+        this.platform = platform;
 
         stdIn = new ByteArrayInputStream(new byte[0]);
         stdOut = new ByteArrayOutputStream();
-
         consoleReader = new Console(stdIn, stdOut).disableAnsi();
+        geogigCLI = new GeogigCLI(consoleReader);
+        geogigCLI.setPlatform(platform);
+    }
 
+    public synchronized void dispose() {
         if (geogigCLI != null) {
             geogigCLI.close();
+            geogigCLI = null;
         }
+        if (consoleReader != null) {
+            consoleReader = null;
+        }
+    }
 
-        geogigCLI = new GeogigCLI(consoleReader);
-
-        ContextBuilder injectorBuilder = new CLITestContextBuilder(platform);
-        GlobalContextBuilder.builder = injectorBuilder;
-
-        Context context = injectorBuilder.build();
-        Platform platform = context.platform();
+    public void configureRepository() throws Exception {
+        geogigCLI.close();
+        URI uri = repositoryURI;
+        Preconditions.checkState(uri != null, "repository URI not set");
 
         geogigCLI.setPlatform(platform);
+        geogigCLI.setRepositoryURI(uri.toString());
         geogigCLI.tryConfigureLogging();
-
-        String uri = repositoryURI;
-        if (uri != null) {
-            geogigCLI.setRepositoryURI(uri);
-        }
     }
 
     /**
@@ -214,8 +133,8 @@ public class FunctionalTestState {
     }
 
     /**
-     * runs the command, does not fail fast, check {@link FunctionalTestState#exitCode} for the exit
-     * code and {@link GeogigCLI#exception} for any caught exception
+     * runs the command, does not fail fast, check {@link CLIContext#exitCode} for the exit code and
+     * {@link GeogigCLI#exception} for any caught exception
      */
     public void runCommand(String... command) throws Exception {
         runCommand(false, command);

@@ -23,6 +23,7 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
@@ -30,8 +31,8 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.beust.jcommander.Strings;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
 /**
@@ -91,8 +92,9 @@ public class Init extends AbstractCommand implements CLICommand {
                 }
                 uri = f.toURI();
             }
-            if (Strings.isStringEmpty(uri.getScheme()) || "file".equals(uri.getScheme())) {
-                File file = new File(providedUri);
+            if (Strings.isNullOrEmpty(uri.getScheme()) || "file".equals(uri.getScheme())) {
+                File file = Strings.isNullOrEmpty(uri.getScheme()) ? new File(providedUri)
+                        : new File(uri);
                 if (!file.isAbsolute()) {
                     File currDir = cli.getPlatform().pwd();
                     file = new File(currDir, providedUri).getCanonicalFile();
@@ -117,7 +119,7 @@ public class Init extends AbstractCommand implements CLICommand {
                 repository = geogig.command(InitOp.class).setConfig(suppliedConfiguration).call();
                 repository.close();
             } catch (IllegalArgumentException e) {
-                throw new CommandFailedException(e.getMessage(), e);
+                throw new InvalidParameterException(e.getMessage(), e);
             } finally {
                 geogig.close();
             }

@@ -115,7 +115,7 @@ public class Reset extends AbstractCommand implements CLICommand {
 
             reset.call();
         } catch (IllegalArgumentException iae) {
-            throw new CommandFailedException(iae.getMessage(), iae);
+            throw new InvalidParameterException(iae.getMessage(), iae);
         } catch (IllegalStateException ise) {
             throw new CommandFailedException(ise.getMessage(), ise);
         }

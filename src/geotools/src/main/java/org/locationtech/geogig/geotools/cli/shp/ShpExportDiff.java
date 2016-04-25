@@ -139,7 +139,7 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
             switch (e.statusCode) {
             case MIXED_FEATURE_TYPES:
                 throw new CommandFailedException(
-                        "Error: The selected tree contains mixed feature types.", e);
+                        "Error: The selected tree contains mixed feature types.", true);
             default:
                 throw new CommandFailedException("Could not export. Error:" + e.statusCode.name(),
                         e);

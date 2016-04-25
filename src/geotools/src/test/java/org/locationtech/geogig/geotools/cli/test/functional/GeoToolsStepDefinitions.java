@@ -16,7 +16,8 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.points1_F
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.points2;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
 
-import org.locationtech.geogig.cli.test.functional.FunctionalTestState;
+import org.locationtech.geogig.cli.test.functional.CLIContext;
+import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
 
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.When;
@@ -29,17 +30,19 @@ import cucumber.runtime.java.StepDefAnnotation;
 @StepDefAnnotation
 public class GeoToolsStepDefinitions {
 
-    private FunctionalTestState state;
+    private CLIContext localRepo;
+    private CLIContextProvider contextProvider;
 
     @cucumber.api.java.Before
-    public void before() throws Exception {
-        state = FunctionalTestState.get();
-        state.before();
+    public void before() throws Throwable {
+        contextProvider = CLIContextProvider.get();
+        contextProvider.before();
+        this.localRepo = contextProvider.getOrCreateRepositoryContext("localrepo");
     }
 
     @cucumber.api.java.After
     public void after() {
-        state.after();
+        contextProvider.after();
     }
 
     private String getPGDatabaseParameters() throws Exception {
@@ -70,7 +73,7 @@ public class GeoToolsStepDefinitions {
     public void I_run_the_command_on_the_PostGIS_database(String commandSpec) throws Throwable {
         commandSpec += getPGDatabaseParameters();
         String[] args = commandSpec.split(" ");
-        state.runCommand(args);
+        localRepo.runCommand(args);
     }
 
     @When("^I run the command \"([^\"]*)\" on the SpatiaLite database$")
@@ -78,20 +81,20 @@ public class GeoToolsStepDefinitions {
         commandSpec += " --database ";
         commandSpec += getClass().getResource("testdb.sqlite").getPath();
         String[] args = commandSpec.split(" ");
-        state.runCommand(args);
+        localRepo.runCommand(args);
     }
 
     @Given("^I have several feature types in a path$")
     public void I_have_several_feature_types_in_a_path() throws Throwable {
-        state.insertAndAdd(points2);
-        state.runCommand(true, "commit -m Commit1");
-        state.insertAndAdd(points1_FTmodified);
-        state.runCommand(true, "commit -m Commit2");
-        state.insertAndAdd(points3);
-        state.insertAndAdd(lines1);
-        state.runCommand(true, "commit -m Commit3");
-        state.insertAndAdd(lines2, lines3);
-        state.runCommand(true, "commit -m Commit4");
+        localRepo.insertAndAdd(points2);
+        localRepo.runCommand(true, "commit -m Commit1");
+        localRepo.insertAndAdd(points1_FTmodified);
+        localRepo.runCommand(true, "commit -m Commit2");
+        localRepo.insertAndAdd(points3);
+        localRepo.insertAndAdd(lines1);
+        localRepo.runCommand(true, "commit -m Commit3");
+        localRepo.insertAndAdd(lines2, lines3);
+        localRepo.runCommand(true, "commit -m Commit4");
     }
 
 }

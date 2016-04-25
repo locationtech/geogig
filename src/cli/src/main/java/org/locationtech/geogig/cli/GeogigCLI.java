@@ -43,6 +43,7 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,10 +79,6 @@ import com.google.inject.Module;
 public class GeogigCLI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeogigCLI.class);
-
-    static {
-        GlobalContextBuilder.builder = new CLIContextBuilder();
-    }
 
     private static final com.google.inject.Injector commandsInjector;
     static {
@@ -242,8 +239,10 @@ public class GeogigCLI {
         GeoGIG geogig = newGeoGIG(hints);
 
         if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
-            geogig.getRepository();
-            return geogig;
+            Repository repository = geogig.getRepository();
+            if (repository != null) {
+                return geogig;
+            }
         }
         geogig.close();
 
@@ -263,7 +262,7 @@ public class GeogigCLI {
     public GeoGIG newGeoGIG(Hints hints) {
         Context inj = newGeogigInjector(hints);
 
-        GeoGIG geogig = new GeoGIG(inj, platform.pwd());
+        GeoGIG geogig = new GeoGIG(inj);
         try {
             geogig.getRepository();
         } catch (Exception e) {
@@ -290,10 +289,13 @@ public class GeogigCLI {
 
     private Context newGeogigInjector(Hints hints) {
         if (repositoryURI != null) {
-            LOGGER.info("using REPO_URL '{}'", repositoryURI);
+            LOGGER.debug("using REPO_URL '{}'", repositoryURI);
             hints.set(Hints.REPOSITORY_URL, repositoryURI);
         }
-        Context geogigInjector = GlobalContextBuilder.builder.build(hints);
+        if (!hints.get(Hints.PLATFORM).isPresent()) {
+            hints.set(Hints.PLATFORM, this.platform);
+        }
+        Context geogigInjector = GlobalContextBuilder.builder().build(hints);
         return geogigInjector;
     }
 
@@ -332,6 +334,7 @@ public class GeogigCLI {
      * @param args
      */
     public static void main(String[] args) {
+        GlobalContextBuilder.builder(new CLIContextBuilder());
         Logging.tryConfigureLogging();
         Console consoleReader = new Console();
 
@@ -873,7 +876,7 @@ public class GeogigCLI {
 
     @VisibleForTesting
     public void tryConfigureLogging() {
-        Logging.tryConfigureLogging(getPlatform());
+        Logging.tryConfigureLogging(getPlatform(), this.repositoryURI);
     }
 
 }

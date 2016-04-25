@@ -13,6 +13,8 @@ import java.io.File;
 
 public class TestPlatform extends DefaultPlatform implements Platform, Cloneable {
 
+    private static final long serialVersionUID = 1L;
+
     private File userHomeDirectory;
 
     public TestPlatform(final File workingDirectory) {
@@ -43,5 +45,11 @@ public class TestPlatform extends DefaultPlatform implements Platform, Cloneable
     @Override
     public TestPlatform clone() {
         return new TestPlatform(pwd(), getUserHome());
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[home=" + this.userHomeDirectory + ", pwd="
+                + super.workingDir + "]";
     }
 }

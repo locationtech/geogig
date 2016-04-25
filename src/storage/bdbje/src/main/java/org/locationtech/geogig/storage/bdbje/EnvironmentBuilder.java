@@ -66,6 +66,17 @@ public class EnvironmentBuilder implements Provider<Environment> {
         return this;
     }
 
+    public File getGeoGigDirectory() {
+        final Optional<URI> repoUrl = new ResolveGeogigURI(platform, hints).call();
+        if (!repoUrl.isPresent()) {
+            throw new IllegalStateException("Can't find geogig repository home");
+        }
+        URI uri = repoUrl.get();
+        Preconditions.checkState("file".equals(uri.getScheme()),
+                "Can't create BDB JE Environment on a non file repository URI: %s", uri);
+        return new File(uri);
+    }
+
     /**
      * @return
      * @see com.google.inject.Provider#get()

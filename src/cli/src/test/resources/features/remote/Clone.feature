@@ -18,8 +18,8 @@ Feature: "clone" command
   Scenario: Try to clone a remote repository
     Given I am in an empty directory
       And there is a remote repository
-     When I run the command "clone remoterepo localrepo"
-     Then the response should contain "Cloning into 'localrepo'..."
+     When I run the command "clone ${remoterepo} ${repoURI}"
+     Then the response should contain "Cloning into '${repoURI}'..."
       And the response should contain "Done."
      When I run the command "log"
      Then the response should contain "Commit5"
@@ -27,7 +27,9 @@ Feature: "clone" command
       And the response should not contain "Commit3"
       And the response should not contain "Commit2"
       And the response should contain "Commit1"
-      
+  
+  #annotate with FileSystemReposOnly because other URI providers don't allow spaces
+  @FileSystemReposOnly
   Scenario: Try to clone a remote repository with blank spaces
     Given I am in an empty directory
   	  And there is a remote repository with blank spaces
@@ -44,8 +46,8 @@ Feature: "clone" command
   Scenario: Try to make a shallow clone of a remote repository
     Given I am in an empty directory
       And there is a remote repository
-     When I run the command "clone --depth 2 remoterepo localrepo"
-     Then the response should contain "Cloning into 'localrepo'..."
+     When I run the command "clone --depth 2 ${remoterepo} ${repoURI}"
+     Then the response should contain "Cloning into '${repoURI}'..."
       And the response should contain "Done."
      When I run the command "log"
      Then the response should contain "Commit5"
@@ -57,8 +59,8 @@ Feature: "clone" command
   Scenario: Try to clone a remote repository with a branch specified
     Given I am in an empty directory
       And there is a remote repository
-     When I run the command "clone -b branch1 remoterepo localrepo"
-     Then the response should contain "Cloning into 'localrepo'..."
+     When I run the command "clone -b branch1 ${remoterepo} ${repoURI}"
+     Then the response should contain "Cloning into '${repoURI}'..."
       And the response should contain "Done."
      When I run the command "log"
      Then the response should not contain "Commit5"

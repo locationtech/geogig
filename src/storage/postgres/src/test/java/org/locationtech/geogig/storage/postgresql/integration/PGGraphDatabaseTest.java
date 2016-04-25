@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.test.integration.postgresql;
+package org.locationtech.geogig.storage.postgresql.integration;
 
 import java.io.IOException;
 

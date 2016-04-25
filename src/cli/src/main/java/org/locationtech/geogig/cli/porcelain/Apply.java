@@ -89,7 +89,7 @@ public class Apply extends AbstractCommand {
         try {
             stream = new FileInputStream(patchFile);
         } catch (FileNotFoundException e1) {
-            throw new CommandFailedException("Can't open patch file " + patchFile, e1);
+            throw new CommandFailedException("Can't open patch file " + patchFile, true);
         }
         BufferedReader reader = null;
         try {

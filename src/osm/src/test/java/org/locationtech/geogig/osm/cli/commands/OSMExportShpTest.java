@@ -16,13 +16,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.test.functional.CLITestContextBuilder;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
 
 import com.google.common.base.Optional;
@@ -40,7 +38,6 @@ public class OSMExportShpTest extends Assert {
         cli = new GeogigCLI(consoleReader);
         File workingDirectory = tempFolder.getRoot();
         TestPlatform platform = new TestPlatform(workingDirectory);
-        GlobalContextBuilder.builder = new CLITestContextBuilder(platform);
         cli.setPlatform(platform);
         cli.execute("init");
         cli.execute("config", "user.name", "Gabriel Roldan");
@@ -98,8 +95,8 @@ public class OSMExportShpTest extends Assert {
         cli.execute("osm", "export-shp", exportFile.getAbsolutePath(), "--mapping",
                 mappingFile.getAbsolutePath());
         assertNotNull(cli.exception);
-        assertTrue(cli.exception.getMessage().startsWith(
-                "The mapping rule does not define a geometry field"));
+        assertTrue(cli.exception.getMessage()
+                .startsWith("The mapping rule does not define a geometry field"));
     }
 
 }

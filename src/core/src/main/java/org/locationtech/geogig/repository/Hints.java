@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.locationtech.geogig.api.ContextBuilder;
+import org.locationtech.geogig.api.Platform;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
@@ -37,6 +38,8 @@ public class Hints implements Serializable {
     public static final String REPOSITORY_URL = "REPOSITORY_URL";
 
     public static final String REPOSITORY_NAME = "REPOSITORY_NAME";
+
+    public static final String PLATFORM = "PLATFORM";
 
     private Map<String, Serializable> hintsMap = Maps.newHashMap();
 
@@ -86,9 +89,13 @@ public class Hints implements Serializable {
         return hints;
     }
 
-    public static Hints uri(URI repoURI) {
-        Hints hints = new Hints();
-        hints.set(REPOSITORY_URL, repoURI);
-        return hints;
+    public Hints uri(URI repoURI) {
+        set(REPOSITORY_URL, repoURI);
+        return this;
+    }
+
+    public Hints platform(Platform platform) {
+        set(PLATFORM, platform);
+        return this;
     }
 }

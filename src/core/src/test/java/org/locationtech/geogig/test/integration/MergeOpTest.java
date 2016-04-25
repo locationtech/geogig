@@ -39,6 +39,7 @@ import org.locationtech.geogig.api.porcelain.CheckoutOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.api.porcelain.ConflictsException;
 import org.locationtech.geogig.api.porcelain.LogOp;
 import org.locationtech.geogig.api.porcelain.MergeConflictsException;
 import org.locationtech.geogig.api.porcelain.MergeOp;
@@ -703,8 +704,8 @@ public class MergeOpTest extends RepositoryTestCase {
         try {
             geogig.command(CommitOp.class).call();
             fail();
-        } catch (IllegalStateException e) {
-            assertEquals(e.getMessage(), "Cannot run operation while merge conflicts exist.");
+        } catch (ConflictsException e) {
+            assertEquals(e.getMessage(), "Cannot run operation while merge or rebase conflicts exist.");
         }
 
         // solve, and commit
@@ -976,8 +977,8 @@ public class MergeOpTest extends RepositoryTestCase {
         try {
             geogig.command(PullOp.class).call();
             fail();
-        } catch (IllegalStateException e) {
-            assertEquals(e.getMessage(), "Cannot run operation while merge conflicts exist.");
+        } catch (ConflictsException e) {
+            assertEquals(e.getMessage(), "Cannot run operation while merge or rebase conflicts exist.");
         }
 
     }

@@ -9,7 +9,8 @@
  */
 package org.locationtech.geogig.geotools.cli.test.sqlserver.functional;
 
-import org.locationtech.geogig.cli.test.functional.FunctionalTestState;
+import org.locationtech.geogig.cli.test.functional.CLIContext;
+import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
 
 import cucumber.api.java.en.When;
 import cucumber.runtime.java.StepDefAnnotation;
@@ -17,17 +18,19 @@ import cucumber.runtime.java.StepDefAnnotation;
 @StepDefAnnotation
 public class SQLServerInitSteps {
 
-    private FunctionalTestState state;
+    private CLIContext state;
+
+    private CLIContextProvider contextProvider;
 
     @cucumber.api.java.Before
-    public void before() throws Exception {
-        state = FunctionalTestState.get();
-        state.before();
+    public void before() throws Throwable {
+        contextProvider = CLIContextProvider.get();
+        contextProvider.before();
     }
 
     @cucumber.api.java.After
     public void after() {
-        state.after();
+        contextProvider.after();
     }
 
     protected String getSQLServerDatabaseParameters() throws Exception {

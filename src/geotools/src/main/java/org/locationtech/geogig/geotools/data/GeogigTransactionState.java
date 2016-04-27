@@ -18,9 +18,12 @@ import org.geotools.data.Transaction.State;
 import org.geotools.data.store.ContentEntry;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeogigTransaction;
+import org.locationtech.geogig.api.Ref;
+import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.DiffIndex;
 import org.locationtech.geogig.api.plumbing.TransactionBegin;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CheckoutOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
@@ -86,7 +89,7 @@ class GeogigTransactionState implements State {
             Context commandLocator = dataStore.getCommandLocator(this.tx);
             this.geogigTx = commandLocator.command(TransactionBegin.class).call();
             // checkout the working branch
-            final String workingBranch = dataStore.getOrFigureOutBranch();
+            final String workingBranch = dataStore.getOrFigureOutHead();
             this.geogigTx.command(CheckoutOp.class).setForce(true).setSource(workingBranch).call();
         }
     }
@@ -144,28 +147,23 @@ class GeogigTransactionState implements State {
     }
 
     private String composeDefaultCommitMessage() {
-        Iterator<DiffEntry> indexDiffs = this.geogigTx.command(DiffIndex.class).call();
-        int added = 0, removed = 0, modified = 0;
+        final DiffObjectCount diffCount = this.geogigTx.command(DiffCount.class)
+                .setOldVersion(Ref.HEAD).setNewVersion(Ref.STAGE_HEAD).call();
+
+        final long count = diffCount.featureCount();
+        final long added = diffCount.getFeaturesAdded(), removed = diffCount.getFeaturesRemoved(),
+                modified = diffCount.getFeaturesChanged();
+
         StringBuilder msg = new StringBuilder();
-        while (indexDiffs.hasNext()) {
-            DiffEntry entry = indexDiffs.next();
-            switch (entry.changeType()) {
-            case ADDED:
-                added++;
-                break;
-            case MODIFIED:
-                modified++;
-                break;
-            case REMOVED:
-                removed++;
-                break;
-            }
-            if ((added + removed + modified) < 10) {
+        if (count > 0) {
+            Iterator<DiffEntry> indexDiffs = this.geogigTx.command(DiffIndex.class).setMaxDiffs(10L)
+                    .call();
+            while (indexDiffs.hasNext()) {
+                DiffEntry entry = indexDiffs.next();
                 msg.append("\n ").append(entry.changeType().toString().toLowerCase()).append(' ')
                         .append(entry.newPath() == null ? entry.oldName() : entry.newPath());
             }
         }
-        int count = added + removed + modified;
         if (count > 10) {
             msg.append("\n And ").append(count - 10).append(" more changes.");
         }

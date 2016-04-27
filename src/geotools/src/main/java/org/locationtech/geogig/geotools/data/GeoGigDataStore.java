@@ -24,7 +24,6 @@ import org.geotools.data.store.ContentEntry;
 import org.geotools.data.store.ContentState;
 import org.geotools.feature.NameImpl;
 import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.GeogigTransaction;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
@@ -105,14 +104,6 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     }
 
     /**
-     * @deprecated Use {@link setHead(String)} instead
-     */
-    @Deprecated
-    public void setBranch(@Nullable final String branchName) throws IllegalArgumentException {
-        setHead(branchName);
-    }
-
-    /**
      * Instructs the datastore to operate against the specified refspec, or against the checked out
      * branch, whatever it is, if the argument is {@code null}.
      * 
@@ -121,37 +112,38 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
      * @param refspec the name of the branch to work against, or {@code null} to default to the
      *        currently checked out branch
      * @see #getConfiguredBranch()
-     * @see #getOrFigureOutBranch()
+     * @see #getOrFigureOutHead()
      * @throws IllegalArgumentException if {@code refspec} is not null and no such commit exists in
      *         the repository
      */
     public void setHead(@Nullable final String refspec) throws IllegalArgumentException {
-        if (refspec != null) {
-            Optional<ObjectId> rev = getCommandLocator(null).command(RevParse.class)
-                    .setRefSpec(refspec).call();
+        if (refspec == null) {
+            allowTransactions = true; // when no branch name is set we assume we should make
+            // transactions against the current HEAD
+        } else {
+            final Context context = getCommandLocator(null);
+            Optional<ObjectId> rev = context.command(RevParse.class).setRefSpec(refspec).call();
             if (!rev.isPresent()) {
                 throw new IllegalArgumentException("Bad ref spec: " + refspec);
             }
-            Optional<Ref> branchRef = getCommandLocator(null).command(RefParse.class)
-                    .setName(refspec).call();
-            if (branchRef.isPresent() && branchRef.get().getName().startsWith(Ref.HEADS_PREFIX)) {
-                allowTransactions = true;
+            Optional<Ref> branchRef = context.command(RefParse.class).setName(refspec).call();
+            if (branchRef.isPresent()) {
+                Ref ref = branchRef.get();
+                if (ref instanceof SymRef) {
+                    ref = context.command(RefParse.class).setName(((SymRef) ref).getTarget()).call()
+                            .orNull();
+                }
+                Preconditions.checkArgument(ref != null, "refSpec is a dead symref: " + refspec);
+                if (ref.getName().startsWith(Ref.HEADS_PREFIX)) {
+                    allowTransactions = true;
+                } else {
+                    allowTransactions = false;
+                }
             } else {
                 allowTransactions = false;
             }
-        } else {
-            allowTransactions = true; // when no branch name is set we assume we should make
-                                      // transactions against the current HEAD
         }
         this.refspec = refspec;
-    }
-
-    /**
-     * @deprecated Use getOrFigureOutHead instead.
-     */
-    @Deprecated
-    public String getOrFigureOutBranch() {
-        return getOrFigureOutHead();
     }
 
     public String getOrFigureOutHead() {
@@ -164,14 +156,6 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
     public Repository getGeogig() {
         return geogig;
-    }
-
-    /**
-     * @deprecated Use getConfiguredHead instead.
-     */
-    @Deprecated
-    public String getConfiguredBranch() {
-        return getConfiguredHead();
     }
 
     /**
@@ -300,7 +284,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     String getRootRef(@Nullable Transaction tx) {
         final String rootRef;
         if (null == tx || Transaction.AUTO_COMMIT.equals(tx)) {
-            rootRef = getOrFigureOutBranch();
+            rootRef = getOrFigureOutHead();
         } else {
             rootRef = Ref.WORK_HEAD;
         }
@@ -313,7 +297,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     }
 
     /**
-     * Creates a new feature type tree on the {@link #getOrFigureOutBranch() current branch}.
+     * Creates a new feature type tree on the {@link #getOrFigureOutHead() current branch}.
      * <p>
      * Implementation detail: the operation is the homologous to starting a transaction, checking
      * out the current/configured branch, creating the type tree inside the transaction, issueing a
@@ -331,7 +315,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         try {
             String treePath = featureType.getName().getLocalPart();
             // check out the datastore branch on the transaction space
-            final String branch = getOrFigureOutBranch();
+            final String branch = getOrFigureOutHead();
             tx.command(CheckoutOp.class).setForce(true).setSource(branch).call();
             // now we can use the transaction working tree with the correct branch checked out
             WorkingTree workingTree = tx.workingTree();

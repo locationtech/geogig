@@ -113,7 +113,11 @@ public class PGObjectDatabase implements ObjectDatabase {
 
     private PGBlobStore blobStore;
 
-    private ExecutorService executor;
+    private static ExecutorService executor = null;
+
+    private static int executorReferences = 0;
+
+    private static int threadPoolSize = 2;
 
     private int getAllBatchSize = DEFAULT_GET_ALL_PARTITION_SIZE;
 
@@ -185,25 +189,14 @@ public class PGObjectDatabase implements ObjectDatabase {
             this.putAllBatchSize = batchSize;
         }
 
-        Optional<Integer> tpoolSize = configdb.get(KEY_THREADPOOL_SIZE, Integer.class)
-                .or(configdb.getGlobal(KEY_THREADPOOL_SIZE, Integer.class));
-        if (tpoolSize.isPresent()) {
-            Integer poolSize = tpoolSize.get();
-            Preconditions.checkState(poolSize.intValue() > 0,
-                    "postgres.threadPoolSize must be a positive integer: %s. Check your config.",
-                    poolSize);
-            this.threadPoolSize = poolSize;
-        }
-
         final String repositoryId = config.getRepositoryId();
         final String conflictsTable = config.getTables().conflicts();
         final String blobsTable = config.getTables().blobs();
 
         conflicts = new PGConflictsDatabase(dataSource, conflictsTable, repositoryId);
         blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
-        executor = Executors.newFixedThreadPool(threadPoolSize, new ThreadFactoryBuilder()
-                .setNameFormat("pg-geogig-pool-%d").setDaemon(true).build());
 
+        initializeExecutor(configdb);
     }
 
     @Override
@@ -228,9 +221,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         }
         printStats("get()", getCount, getTimeNanos, getObjectCount);
         printStats("getAll()", getAllCount, getAllTimeNanos, getAllObjectCount);
-        if (executor != null) {
-            executor.shutdownNow();
-        }
+        shutdownExecutor();
     }
 
     @Override
@@ -250,6 +241,36 @@ public class PGObjectDatabase implements ObjectDatabase {
     @VisibleForTesting
     void setPutAllBatchSize(int size) {
         this.putAllBatchSize = size;
+    }
+
+    private static synchronized void initializeExecutor(ConfigDatabase configdb) {
+        if (executor == null) {
+            Optional<Integer> tpoolSize = configdb.get(KEY_THREADPOOL_SIZE, Integer.class)
+                    .or(configdb.getGlobal(KEY_THREADPOOL_SIZE, Integer.class));
+            if (tpoolSize.isPresent()) {
+                Integer poolSize = tpoolSize.get();
+                Preconditions.checkState(poolSize.intValue() > 0,
+                        "postgres.threadPoolSize must be a positive integer: %s. Check your config.",
+                        poolSize);
+                threadPoolSize = poolSize;
+            } else {
+                threadPoolSize = Math.max(Runtime.getRuntime().availableProcessors(), 2);
+            }
+
+            executor = Executors.newFixedThreadPool(threadPoolSize, new ThreadFactoryBuilder()
+                    .setNameFormat("pg-geogig-pool-%d").setDaemon(true).build());
+        }
+        executorReferences++;
+    }
+
+    private static synchronized void shutdownExecutor() {
+        if (executor != null) {
+            executorReferences--;
+            if (executorReferences == 0) {
+                executor.shutdownNow();
+                executor = null;
+            }
+        }
     }
 
     private void printStats(String methodName, AtomicLong callCount, AtomicLong totalTimeNanos,
@@ -368,8 +389,6 @@ public class PGObjectDatabase implements ObjectDatabase {
     private AtomicLong getAllObjectCount = new AtomicLong();
 
     private AtomicLong getAllTimeNanos = new AtomicLong();
-
-    public int threadPoolSize = 10;
 
     @Override
     public RevObject getIfPresent(ObjectId id) {
@@ -513,7 +532,7 @@ public class PGObjectDatabase implements ObjectDatabase {
             Iterator<ObjectId> ids = this.ids;
             final int getAllPartitionSize = db.getAllBatchSize;
 
-            for (int j = 0; j < db.threadPoolSize && ids.hasNext(); j++) {
+            for (int j = 0; j < threadPoolSize && ids.hasNext(); j++) {
                 List<ObjectId> idList = new ArrayList<>(getAllPartitionSize);
                 for (int i = 0; i < getAllPartitionSize && ids.hasNext(); i++) {
                     idList.add(ids.next());
@@ -1048,7 +1067,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         config.checkRepositoryExists();
 
         final int maxTasks = Math.max(1,
-                Math.min(Runtime.getRuntime().availableProcessors(), this.threadPoolSize) / 2);
+                Math.min(Runtime.getRuntime().availableProcessors(), threadPoolSize) / 2);
 
         final Iterator<List<EncodedObject>> encoded = Iterators
                 .partition(Iterators.transform(objects, new Encoder(serializer)), putAllBatchSize);

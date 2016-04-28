@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -113,11 +115,9 @@ public class PGObjectDatabase implements ObjectDatabase {
 
     private PGBlobStore blobStore;
 
-    private static ExecutorService executor = null;
+    private ExecutorService executor = null;
 
-    private static int executorReferences = 0;
-
-    private static int threadPoolSize = 2;
+    private int threadPoolSize = 2;
 
     private int getAllBatchSize = DEFAULT_GET_ALL_PARTITION_SIZE;
 
@@ -196,7 +196,8 @@ public class PGObjectDatabase implements ObjectDatabase {
         conflicts = new PGConflictsDatabase(dataSource, conflictsTable, repositoryId);
         blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
 
-        initializeExecutor(configdb);
+        executor = ObjectDatabaseExecutors.retainExecutor(configdb, config.connectionConfig);
+        threadPoolSize = ObjectDatabaseExecutors.threadPoolSize(config.connectionConfig);
     }
 
     @Override
@@ -221,7 +222,8 @@ public class PGObjectDatabase implements ObjectDatabase {
         }
         printStats("get()", getCount, getTimeNanos, getObjectCount);
         printStats("getAll()", getAllCount, getAllTimeNanos, getAllObjectCount);
-        shutdownExecutor();
+        ObjectDatabaseExecutors.releaseExecutor(config.connectionConfig);
+        executor = null;
     }
 
     @Override
@@ -241,36 +243,6 @@ public class PGObjectDatabase implements ObjectDatabase {
     @VisibleForTesting
     void setPutAllBatchSize(int size) {
         this.putAllBatchSize = size;
-    }
-
-    private static synchronized void initializeExecutor(ConfigDatabase configdb) {
-        if (executor == null) {
-            Optional<Integer> tpoolSize = configdb.get(KEY_THREADPOOL_SIZE, Integer.class)
-                    .or(configdb.getGlobal(KEY_THREADPOOL_SIZE, Integer.class));
-            if (tpoolSize.isPresent()) {
-                Integer poolSize = tpoolSize.get();
-                Preconditions.checkState(poolSize.intValue() > 0,
-                        "postgres.threadPoolSize must be a positive integer: %s. Check your config.",
-                        poolSize);
-                threadPoolSize = poolSize;
-            } else {
-                threadPoolSize = Math.max(Runtime.getRuntime().availableProcessors(), 2);
-            }
-
-            executor = Executors.newFixedThreadPool(threadPoolSize, new ThreadFactoryBuilder()
-                    .setNameFormat("pg-geogig-pool-%d").setDaemon(true).build());
-        }
-        executorReferences++;
-    }
-
-    private static synchronized void shutdownExecutor() {
-        if (executor != null) {
-            executorReferences--;
-            if (executorReferences == 0) {
-                executor.shutdownNow();
-                executor = null;
-            }
-        }
     }
 
     private void printStats(String methodName, AtomicLong callCount, AtomicLong totalTimeNanos,
@@ -532,7 +504,7 @@ public class PGObjectDatabase implements ObjectDatabase {
             Iterator<ObjectId> ids = this.ids;
             final int getAllPartitionSize = db.getAllBatchSize;
 
-            for (int j = 0; j < threadPoolSize && ids.hasNext(); j++) {
+            for (int j = 0; j < db.threadPoolSize && ids.hasNext(); j++) {
                 List<ObjectId> idList = new ArrayList<>(getAllPartitionSize);
                 for (int i = 0; i < getAllPartitionSize && ids.hasNext(); i++) {
                     idList.add(ids.next());
@@ -1224,6 +1196,74 @@ public class PGObjectDatabase implements ObjectDatabase {
         if (readOnly) {
             throw new IllegalStateException("db is read only.");
         }
+    }
+
+    /**
+     * Class for managing executors for each database.
+     */
+    private static class ObjectDatabaseExecutors {
+        private static final ConcurrentMap<Environment.ConnectionConfig, ExecutorReference> executors = new ConcurrentHashMap<Environment.ConnectionConfig, ExecutorReference>();
+
+        /**
+         * Keeps track of the number of object databases using the {@link ExecutorService} so it can
+         * be removed when no longer needed.
+         */
+        private static class ExecutorReference {
+            final ExecutorService executor;
+
+            final int threadPoolSize;
+
+            int refCount = 1;
+
+            ExecutorReference(ExecutorService executor, int threadPoolSize) {
+                this.executor = executor;
+                this.threadPoolSize = threadPoolSize;
+            }
+        }
+
+        public synchronized static ExecutorService retainExecutor(ConfigDatabase configdb,
+                Environment.ConnectionConfig config) {
+            ExecutorReference ref = executors.get(config);
+            if (ref == null) {
+                int threadPoolSize;
+                Optional<Integer> tpoolSize = configdb.get(KEY_THREADPOOL_SIZE, Integer.class)
+                        .or(configdb.getGlobal(KEY_THREADPOOL_SIZE, Integer.class));
+                if (tpoolSize.isPresent()) {
+                    Integer poolSize = tpoolSize.get();
+                    Preconditions.checkState(poolSize.intValue() > 0,
+                            "postgres.threadPoolSize must be a positive integer: %s. Check your config.",
+                            poolSize);
+                    threadPoolSize = poolSize;
+                } else {
+                    threadPoolSize = Math.max(Runtime.getRuntime().availableProcessors(), 2);
+                }
+
+                ExecutorService databaseExecutor = Executors.newFixedThreadPool(threadPoolSize,
+                        new ThreadFactoryBuilder().setNameFormat("pg-geogig-pool-%d")
+                                .setDaemon(true).build());
+                ref = new ExecutorReference(databaseExecutor, threadPoolSize);
+                executors.put(config, ref);
+            } else {
+                ref.refCount++;
+            }
+            return ref.executor;
+        }
+
+        public synchronized static void releaseExecutor(Environment.ConnectionConfig config) {
+            ExecutorReference ref = executors.get(config);
+            if (ref != null) {
+                ref.refCount--;
+                if (ref.refCount == 0) {
+                    ref.executor.shutdownNow();
+                    executors.remove(config);
+                }
+            }
+        }
+
+        public static int threadPoolSize(Environment.ConnectionConfig config) {
+            return executors.get(config).threadPoolSize;
+        }
+
     }
 
 }

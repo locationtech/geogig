@@ -21,10 +21,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.util.KVP;
 import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ContextBuilder;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.cli.CLIContextBuilder;
+//import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
@@ -41,13 +40,6 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
 
     /** GEO_GIG */
     public static final String DISPLAY_NAME = "GeoGIG";
-
-    static {
-        if (GlobalContextBuilder.builder() == null
-                || GlobalContextBuilder.builder().getClass().equals(ContextBuilder.class)) {
-            GlobalContextBuilder.builder(new CLIContextBuilder());
-        }
-    }
 
     public static interface RepositoryLookup {
         public URI resolve(String repository);

@@ -137,7 +137,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     public FetchOp addRemote(Supplier<Optional<Remote>> remoteSupplier) {
         Preconditions.checkNotNull(remoteSupplier);
         Optional<Remote> remote = remoteSupplier.get();
-        Preconditions.checkState(remote.isPresent(), "Remote could not be resolved.");
+        Preconditions.checkArgument(remote.isPresent(), "Remote could not be resolved.");
         remotes.add(remote.get());
 
         return this;

@@ -66,7 +66,7 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
             cli.getGeogig().command(WalkGraphOp.class).setReference(ref).setListener(listener)
                     .call();
         } catch (IllegalArgumentException | IllegalStateException e) {
-            throw new CommandFailedException(e.getMessage(), e);
+            throw new CommandFailedException(e.getMessage(), true);
         } finally {
             console.flush();
         }

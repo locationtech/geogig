@@ -120,7 +120,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
 
             StringBuilder msg = new StringBuilder();
             msg.append("error: could not apply ");
-            msg.append(commitToApply.getId().toString().substring(0, 7));
+            msg.append(commitToApply.getId().toString().substring(0, 8));
             msg.append(" " + commitToApply.getMessage());
             for (Conflict conflict : report.getConflicts()) {
                 msg.append("\t" + conflict.getPath() + "\n");
@@ -131,8 +131,8 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                 sb.append("CONFLICT: conflict in " + conflict.getPath() + "\n");
             }
             sb.append("Fix conflicts and then commit the result using 'geogig commit -c "
-                    + commitToApply.getId().toString().substring(0, 7) + "\n");
-            throw new IllegalStateException(sb.toString());
+                    + commitToApply.getId().toString().substring(0, 8) + "\n");
+            throw new ConflictsException(sb.toString());
         }
     }
 }

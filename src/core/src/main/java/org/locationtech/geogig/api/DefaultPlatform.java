@@ -25,6 +25,8 @@ import com.google.common.base.Preconditions;
  */
 public class DefaultPlatform implements Platform {
 
+    private static final long serialVersionUID = 1L;
+
     protected File workingDir;
 
     /**

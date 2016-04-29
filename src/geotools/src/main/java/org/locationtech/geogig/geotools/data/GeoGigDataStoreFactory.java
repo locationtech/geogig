@@ -43,9 +43,9 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
     public static final String DISPLAY_NAME = "GeoGIG";
 
     static {
-        if (GlobalContextBuilder.builder == null
-                || GlobalContextBuilder.builder.getClass().equals(ContextBuilder.class)) {
-            GlobalContextBuilder.builder = new CLIContextBuilder();
+        if (GlobalContextBuilder.builder() == null
+                || GlobalContextBuilder.builder().getClass().equals(ContextBuilder.class)) {
+            GlobalContextBuilder.builder(new CLIContextBuilder());
         }
     }
 
@@ -243,9 +243,8 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             throw new IOException("Repository already exists " + repositoryRoot);
         }
 
-        Hints hints = new Hints();
-        hints.set(Hints.REPOSITORY_URL, repositoryRoot.toString());
-        Context context = GlobalContextBuilder.builder.build(hints);
+        Hints hints = new Hints().uri(repositoryRoot);
+        Context context = GlobalContextBuilder.builder().build(hints);
         GeoGIG geogig = new GeoGIG(context);
 
         Repository repository;

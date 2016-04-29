@@ -252,9 +252,8 @@ public class ResetOpTest extends RepositoryTestCase {
         assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
                 .getObjectId());
 
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(ResetOp.class).addPattern(pointsName).setMode(ResetMode.SOFT).call();
-
     }
 
     @Test
@@ -307,9 +306,8 @@ public class ResetOpTest extends RepositoryTestCase {
 
     @Test
     public void testResetNoCommits() throws Exception {
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(ResetOp.class).call();
-
     }
 
     @Test

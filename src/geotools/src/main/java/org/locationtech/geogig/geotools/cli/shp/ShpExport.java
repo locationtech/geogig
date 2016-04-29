@@ -67,13 +67,16 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
     @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output file")
     public boolean overwrite;
 
-    @Parameter(names = { "--defaulttype" }, description = "Export only features with the tree default feature type if several types are found")
+    @Parameter(names = {
+            "--defaulttype" }, description = "Export only features with the tree default feature type if several types are found")
     public boolean defaultType;
 
-    @Parameter(names = { "--alter" }, description = "Export all features if several types are found, altering them to adapt to the output feature type")
+    @Parameter(names = {
+            "--alter" }, description = "Export all features if several types are found, altering them to adapt to the output feature type")
     public boolean alter;
 
-    @Parameter(names = { "--featuretype" }, description = "Export only features with the specified feature type if several types are found")
+    @Parameter(names = {
+            "--featuretype" }, description = "Export only features with the specified feature type if several types are found")
     @Nullable
     public String sFeatureTypeId;
 
@@ -143,8 +146,8 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
             throw new CommandFailedException("Could not create feature store.");
         }
 
-        Function<Feature, Optional<Feature>> function = getTransformingFunction(dataStore
-                .getSchema());
+        Function<Feature, Optional<Feature>> function = getTransformingFunction(
+                dataStore.getSchema());
 
         final SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         ExportOp op = cli.getGeogig().command(ExportOp.class).setFeatureStore(featureStore)
@@ -165,7 +168,7 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
             case MIXED_FEATURE_TYPES:
                 throw new CommandFailedException(
                         "Error: The selected tree contains mixed feature types. Use --defaulttype or --featuretype <feature_type_ref> to export.",
-                        e);
+                        true);
             default:
                 throw new CommandFailedException("Could not export. Error:" + e.statusCode.name(),
                         e);
@@ -179,7 +182,7 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
             final SimpleFeatureType featureType) {
 
         Function<Feature, Optional<Feature>> function = (feature) -> {
-        
+
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
             for (Property property : feature.getProperties()) {
                 if (property instanceof GeometryAttribute) {
@@ -216,15 +219,15 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
         Optional<ObjectId> rootTreeId = geogig.command(ResolveTreeish.class)
                 .setTreeish(refspec.split(":")[0]).call();
 
-        checkParameter(rootTreeId.isPresent(), "Couldn't resolve '" + refspec
-                + "' to a treeish object");
+        checkParameter(rootTreeId.isPresent(),
+                "Couldn't resolve '" + refspec + "' to a treeish object");
 
         RevTree rootTree = geogig.getRepository().getTree(rootTreeId.get());
         Optional<NodeRef> featureTypeTree = geogig.command(FindTreeChild.class)
                 .setChildPath(refspec.split(":")[1]).setParent(rootTree).call();
 
-        checkParameter(featureTypeTree.isPresent(), "pathspec '" + refspec.split(":")[1]
-                + "' did not match any valid path");
+        checkParameter(featureTypeTree.isPresent(),
+                "pathspec '" + refspec.split(":")[1] + "' did not match any valid path");
 
         Optional<RevObject> revObject = cli.getGeogig().command(RevObjectParse.class)
                 .setObjectId(featureTypeTree.get().getMetadataId()).call();

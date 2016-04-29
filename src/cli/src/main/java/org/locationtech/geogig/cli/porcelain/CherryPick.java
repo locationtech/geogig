@@ -15,8 +15,10 @@ import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.porcelain.CherryPickOp;
+import org.locationtech.geogig.api.porcelain.ConflictsException;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 
 import com.beust.jcommander.Parameter;
@@ -33,7 +35,7 @@ import com.google.common.collect.Lists;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig cherry-pick <commitish>}
+ * <li>{@code geogig cherry-pick <commitish>}
  * </ul>
  * 
  * @see CherryPickOp
@@ -57,7 +59,10 @@ public class CherryPick extends AbstractCommand implements CLICommand {
         checkParameter(commitId.isPresent(), "Commit not found '%s'", commits.get(0));
         cherryPick.setCommit(Suppliers.ofInstance(commitId.get()));
 
-        cherryPick.call();
-
+        try {
+            cherryPick.call();
+        } catch (ConflictsException e) {
+            throw new CommandFailedException(e.getMessage(), true);
+        }
     }
 }

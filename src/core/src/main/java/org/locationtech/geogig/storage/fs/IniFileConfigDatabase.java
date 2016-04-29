@@ -16,13 +16,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
 public class IniFileConfigDatabase implements ConfigDatabase {
@@ -31,18 +34,34 @@ public class IniFileConfigDatabase implements ConfigDatabase {
 
     private INIFile global;
 
-    @Inject
+    @Nullable
+    private final File repoDirectory;
+
     public IniFileConfigDatabase(final Platform platform) {
+        this(platform, null);
+    }
+
+    @Inject
+    public IniFileConfigDatabase(final Platform platform, final Hints hints) {
+        {
+            final Optional<URI> repoURI = new ResolveGeogigURI(platform, hints).call();
+            if (repoURI.isPresent()) {
+                URI uri = repoURI.get();
+                Preconditions.checkState("file".equals(uri.getScheme()));
+                repoDirectory = new File(uri);
+            } else {
+                repoDirectory = null;
+            }
+        }
+
         this.local = new INIFile() {
             @Override
             public File iniFile() {
-                final Optional<URI> url = new ResolveGeogigURI(platform, null).call();
-
-                if (!url.isPresent()) {
+                if (repoDirectory == null) {
                     throw new ConfigException(StatusCode.INVALID_LOCATION);
                 }
 
-                File localConfigFile = new File(new File(url.get()), "config");
+                File localConfigFile = new File(repoDirectory, "config");
 
                 return localConfigFile;
             }
@@ -51,7 +70,6 @@ public class IniFileConfigDatabase implements ConfigDatabase {
             @Override
             public File iniFile() {
                 File home = platform.getUserHome();
-
                 if (home == null) {
                     throw new ConfigException(StatusCode.USERHOME_NOT_SET);
                 }

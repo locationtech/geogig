@@ -18,6 +18,7 @@ import java.net.URL;
 
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.hooks.Hookables;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
@@ -84,12 +85,12 @@ public class DefaultRepositoryResolver extends RepositoryResolver {
         final File targetDir = toFile(repoURI);
 
         if (!targetDir.exists() && !targetDir.mkdirs()) {
-            throw new IllegalArgumentException("Can't create directory "
-                    + targetDir.getAbsolutePath());
+            throw new IllegalArgumentException(
+                    "Can't create directory " + targetDir.getAbsolutePath());
         }
 
         Platform platform = repoContext.platform();
-        platform.setWorkingDir(targetDir);
+        ///platform.setWorkingDir(targetDir);
 
         final File envHome;
         if (repoExisted) {
@@ -111,7 +112,9 @@ public class DefaultRepositoryResolver extends RepositoryResolver {
 
     @Override
     public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext) {
-        return new IniFileConfigDatabase(repoContext.platform());
+        Hints hints = new Hints().uri(repoURI);
+        Platform platform = repoContext.platform();
+        return new IniFileConfigDatabase(platform, hints);
     }
 
     private void createSampleHooks(File envHome) {
@@ -141,12 +144,13 @@ public class DefaultRepositoryResolver extends RepositoryResolver {
                 repositoryLocation);
 
         if (!repoExists(repositoryLocation)) {
-            throw new RepositoryConnectionException(repositoryLocation
-                    + " is not a geogig repository");
+            throw new RepositoryConnectionException(
+                    repositoryLocation + " is not a geogig repository");
         }
 
-        File workingDir = toFile(repositoryLocation);
-        GeoGIG geoGIG = new GeoGIG(workingDir);
+        Context context = GlobalContextBuilder.builder().build(new Hints().uri(repositoryLocation));
+        GeoGIG geoGIG = new GeoGIG(context);
+
         Repository repository = geoGIG.getRepository();
         repository.open();
 

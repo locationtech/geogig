@@ -69,7 +69,7 @@ public abstract class DataStoreDescribe extends AbstractCommand implements CLICo
         } catch (GeoToolsOpException e) {
             switch (e.statusCode) {
             case TABLE_NOT_DEFINED:
-                throw new CommandFailedException("No table supplied.", e);
+                throw new CommandFailedException("No table supplied.", true);
             case UNABLE_TO_GET_FEATURES:
                 throw new CommandFailedException("Unable to read the feature source.", e);
             case UNABLE_TO_GET_NAMES:

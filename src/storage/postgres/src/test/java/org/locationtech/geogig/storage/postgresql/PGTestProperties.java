@@ -14,9 +14,9 @@ import org.locationtech.geogig.test.integration.OnlineTestProperties;
 
 public class PGTestProperties extends OnlineTestProperties {
 
-    static final String CONFIG_FILE = ".geogig-pg-backend-tests.properties";
+    public static final String CONFIG_FILE = ".geogig-pg-backend-tests.properties";
 
-    static final String TESTS_ENABLED_KEY = "postgres.enabled";
+    public static final String TESTS_ENABLED_KEY = "postgres.enabled";
 
     private static final String[] DEFAULTS = { //
             TESTS_ENABLED_KEY, "false", //
@@ -30,6 +30,13 @@ public class PGTestProperties extends OnlineTestProperties {
 
     public PGTestProperties() {
         super(CONFIG_FILE, DEFAULTS);
+    }
+
+    public static boolean isTestsEnabled() {
+        PGTestProperties props = new PGTestProperties();
+        final boolean enabled = props.get(PGTestProperties.TESTS_ENABLED_KEY, Boolean.class)
+                .or(Boolean.FALSE).booleanValue();
+        return enabled;
     }
 
     public Environment getConfig(@Nullable String repositoryId) {

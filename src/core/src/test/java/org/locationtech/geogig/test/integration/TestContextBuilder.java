@@ -22,7 +22,11 @@ import com.google.inject.util.Modules;
 
 public class TestContextBuilder extends ContextBuilder {
 
-    Platform platform;
+    private Platform platform;
+
+    public TestContextBuilder() {
+        super();
+    }
 
     public TestContextBuilder(Platform platform) {
         this.platform = platform;
@@ -30,9 +34,11 @@ public class TestContextBuilder extends ContextBuilder {
 
     @Override
     public Context build(Hints hints) {
-        return Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new MemoryModule(platform),
-                        new HintsModule(hints))).getInstance(Context.class);
+        if (!hints.get(Hints.PLATFORM).isPresent() && this.platform != null) {
+            hints = hints.platform(platform);
+        }
+        return Guice.createInjector(Modules.override(new GeogigModule()).with(new MemoryModule(),
+                new HintsModule(hints))).getInstance(Context.class);
     }
 
 }

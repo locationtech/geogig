@@ -475,7 +475,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 // created exception message
                 StringBuilder msg = new StringBuilder();
                 msg.append("error: could not apply ");
-                msg.append(commitToApply.getId().toString().substring(0, 7));
+                msg.append(commitToApply.getId().toString().substring(0, 8));
                 msg.append(" " + commitToApply.getMessage() + "\n");
 
                 for (Conflict conflict : report.getConflicts()) {

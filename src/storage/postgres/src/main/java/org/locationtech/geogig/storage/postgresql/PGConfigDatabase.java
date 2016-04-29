@@ -158,7 +158,7 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     @Override
     public void removeSection(String key) {
-        removeAll(key, local());
+        removeSection(key, local());
     }
 
     private String local() {
@@ -174,7 +174,7 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     @Override
     public void removeSectionGlobal(String key) {
-        removeAll(key, global());
+        removeSection(key, global());
     }
 
     <T> Optional<T> get(Entry entry, Class<T> clazz, final String repositoryId) {
@@ -226,7 +226,8 @@ public class PGConfigDatabase implements ConfigDatabase {
                 String s = entry.section;
                 String k = entry.key;
 
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, s, k))) {
+                try (PreparedStatement ps = cx
+                        .prepareStatement(log(sql, LOG, repositoryId, s, k))) {
                     ps.setString(1, repositoryId);
                     ps.setString(2, s);
                     ps.setString(3, k);
@@ -243,8 +244,8 @@ public class PGConfigDatabase implements ConfigDatabase {
         return new DbOp<Map<String, String>>() {
             @Override
             protected Map<String, String> doRun(Connection cx) throws IOException, SQLException {
-                String sql = format("SELECT section,key,value FROM %s WHERE repository = ?", config
-                        .getTables().config());
+                String sql = format("SELECT section,key,value FROM %s WHERE repository = ?",
+                        config.getTables().config());
                 try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId))) {
                     ps.setString(1, repositoryId);
                     Map<String, String> all = new LinkedHashMap<>();
@@ -264,17 +265,14 @@ public class PGConfigDatabase implements ConfigDatabase {
         return new DbOp<Map<String, String>>() {
             @Override
             protected Map<String, String> doRun(Connection cx) throws IOException, SQLException {
-                String sql = format(
-                        "SELECT key,value FROM %s WHERE repository = ? AND section = ?", config
-                                .getTables().config());
+                String sql = format("SELECT key,value FROM %s WHERE repository = ? AND section = ?",
+                        config.getTables().config());
 
                 try (PreparedStatement ps = cx
                         .prepareStatement(log(sql, LOG, repositoryId, section))) {
                     ps.setString(1, repositoryId);
                     ps.setString(2, section);
                     Map<String, String> all = Maps.newLinkedHashMap();
-
-                    final String sectionPrefix = section + ".";
 
                     try (ResultSet rs = ps.executeQuery()) {
                         while (rs.next()) {
@@ -295,8 +293,8 @@ public class PGConfigDatabase implements ConfigDatabase {
             @Override
             protected List<String> doRun(Connection cx) throws IOException, SQLException {
                 String sql = format(
-                        "SELECT section FROM %s WHERE repository = ? AND section LIKE ?", config
-                                .getTables().config());
+                        "SELECT DISTINCT section FROM %s WHERE repository = ? AND section LIKE ?",
+                        config.getTables().config());
 
                 List<String> all = new ArrayList<>(1);
 
@@ -339,8 +337,8 @@ public class PGConfigDatabase implements ConfigDatabase {
                 String s = entry.section;
                 String k = entry.key;
 
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, s, k,
-                        value))) {
+                try (PreparedStatement ps = cx
+                        .prepareStatement(log(sql, LOG, repositoryId, s, k, value))) {
                     ps.setString(1, repositoryId);
                     ps.setString(2, s);
                     ps.setString(3, k);
@@ -385,22 +383,27 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     }
 
-    protected void removeAll(final String section, final String repositoryId) {
-        new DbOp<Void>() {
+    protected void removeSection(final String section, final String repositoryId) {
+        Integer removeCount = new DbOp<Integer>() {
             @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                String sql = format("DELETE FROM %s WHERE repository = ? AND section = ?", config
-                        .getTables().config());
+            protected Integer doRun(Connection cx) throws IOException, SQLException {
+                String sql = format("DELETE FROM %s WHERE repository = ? AND section = ?",
+                        config.getTables().config());
 
                 try (PreparedStatement ps = cx
                         .prepareStatement(log(sql, LOG, repositoryId, section))) {
                     ps.setString(1, repositoryId);
                     ps.setString(2, section);
-                    ps.executeUpdate();
+                    int updateCount = ps.executeUpdate();
+                    return Integer.valueOf(updateCount);
                 }
-                return null;
             }
         }.run(connect(config));
+
+        if (0 == removeCount.intValue()) {
+            throw new ConfigException(StatusCode.MISSING_SECTION);
+        }
+
     }
 
     synchronized DataSource connect(final Environment config) {

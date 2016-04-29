@@ -256,7 +256,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                     // created exception message
                     StringBuilder msg = new StringBuilder();
                     msg.append("error: could not apply ");
-                    msg.append(commit.getId().toString().substring(0, 7));
+                    msg.append(commit.getId().toString().substring(0, 8));
                     msg.append(" " + commit.getMessage() + "\n");
 
                     for (Conflict conflict : conflicts) {

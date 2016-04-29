@@ -109,7 +109,7 @@ public class Rebase extends AbstractCommand implements CLICommand {
                 try {
                     geogig.command(CheckoutOp.class).setSource(arguments.get(1)).call();
                 } catch (CheckoutException e) {
-                    throw new CommandFailedException(e.getMessage(), e);
+                    throw new CommandFailedException(e.getMessage(), true);
                 }
 
             }
@@ -134,7 +134,9 @@ public class Rebase extends AbstractCommand implements CLICommand {
             sb.append("When you have fixed this conflicts, run 'geogig rebase --continue' to continue rebasing.\n");
             sb.append("If you would prefer to skip this commit, instead run 'geogig rebase --skip.\n");
             sb.append("To check out the original branch and stop rebasing, run 'geogig rebase --abort'\n");
-            throw new CommandFailedException(sb.toString());
+            throw new CommandFailedException(sb.toString(), true);
+        }catch(IllegalStateException e){
+            throw new CommandFailedException(e.getMessage(), true);
         }
 
         if (abort) {

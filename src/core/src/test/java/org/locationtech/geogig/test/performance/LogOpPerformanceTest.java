@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
@@ -34,7 +33,6 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
     protected void setUpInternal() throws Exception {
     }
 
-    @Ignore
     @Test
     public void testCommits() throws Exception {
         System.err.println("############### Warming up....");
@@ -47,10 +45,9 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
         // createAndLogMultipleCommits(1000 * 1000);
     }
 
-    @Ignore
     @Test
     public void testBranches() throws Exception {
-        createAndLogMultipleBranches(200, 200);
+        createAndLogMultipleBranches(50, 100);
     }
 
     private void createAndLogMultipleBranches(int numBranches, int numCommits) throws Exception {
@@ -115,8 +112,8 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
     }
 
     private RevCommit createCommits(int numCommits, String branchName) {
-        int largeStep = numCommits / 10;
-        int smallStep = numCommits / 100;
+        int largeStep = numCommits / Math.min(numCommits, 10);
+        int smallStep = numCommits / Math.min(numCommits, 100);
 
         RevCommit commit = null;
         for (int i = 1; i <= numCommits; i++) {

@@ -169,7 +169,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                     // remove the node.
                     command(RemoveOp.class).setRecursive(true).addPathToRemove(st).call();
                 } else {
-                    checkState(node.isPresent(), "pathspec '" + st
+                    checkArgument(node.isPresent(), "pathspec '" + st
                             + "' didn't match a feature in the tree");
 
                     if (node.get().getType() == TYPE.TREE) {
@@ -191,7 +191,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                             metadataId = parentNode.get().getMetadataId();
                             Optional<RevTree> parsed = command(RevObjectParse.class).setObjectId(
                                     parentNode.get().getNode().getObjectId()).call(RevTree.class);
-                            checkState(parsed.isPresent(),
+                            checkArgument(parsed.isPresent(),
                                     "Parent tree couldn't be found in the repository.");
                             treeBuilder = new RevTreeBuilder(objectDatabase(), parsed.get());
                             treeBuilder.remove(node.get().getNode().getName());

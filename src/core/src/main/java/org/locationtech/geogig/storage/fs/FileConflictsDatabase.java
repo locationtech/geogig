@@ -14,12 +14,9 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
@@ -36,22 +33,16 @@ import com.google.common.io.LineProcessor;
  */
 public class FileConflictsDatabase implements ConflictsDatabase {
 
-    private Platform platform;
-
     private File repositoryDirectory;
 
-    public FileConflictsDatabase(final Platform platform) {
-        this.platform = platform;
+    public FileConflictsDatabase(final File repositoryDirectory) {
+        this.repositoryDirectory = repositoryDirectory;
     }
 
     public synchronized void open() {
         if (isOpen()) {
             return;
         }
-        Optional<URI> repoPath = new ResolveGeogigURI(platform, null).call();
-
-        File repoLocation = new File(repoPath.get());
-        this.repositoryDirectory = repoLocation;
     }
 
     public void close() {
@@ -88,7 +79,8 @@ public class FileConflictsDatabase implements ConflictsDatabase {
      * @return the list of conflicts
      */
     @Override
-    public List<Conflict> getConflicts(@Nullable String namespace, @Nullable final String pathFilter) {
+    public List<Conflict> getConflicts(@Nullable String namespace,
+            @Nullable final String pathFilter) {
         final Object monitor = resolveConflictsMonitor(namespace);
         if (null == monitor) {
             return ImmutableList.of();

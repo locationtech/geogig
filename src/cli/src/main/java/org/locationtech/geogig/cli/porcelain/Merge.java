@@ -22,6 +22,7 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.api.porcelain.ConflictsException;
 import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
@@ -33,6 +34,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.cli.InvalidParameterException;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -98,7 +100,7 @@ public class Merge extends AbstractCommand implements CLICommand {
         if (abort) {
             Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
             if (!ref.isPresent()) {
-                throw new CommandFailedException("There is no merge to abort <ORIG_HEAD missing>.");
+                throw new CommandFailedException("There is no merge to abort <ORIG_HEAD missing>.", true);
             }
 
             geogig.command(ResetOp.class).setMode(ResetMode.HARD)
@@ -123,8 +125,8 @@ public class Merge extends AbstractCommand implements CLICommand {
             commit = report.getMergeCommit();
         } catch (RuntimeException e) {
             if (e instanceof NothingToCommitException || e instanceof IllegalArgumentException
-                    || e instanceof IllegalStateException) {
-                throw new CommandFailedException(e.getMessage(), e);
+                    || e instanceof IllegalStateException || e instanceof ConflictsException) {
+                throw new InvalidParameterException(e.getMessage(), e);
             }
             throw e;
         }

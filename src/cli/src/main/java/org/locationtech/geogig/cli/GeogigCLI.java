@@ -43,6 +43,7 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,10 +79,6 @@ import com.google.inject.Module;
 public class GeogigCLI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeogigCLI.class);
-
-    static {
-        GlobalContextBuilder.builder = new CLIContextBuilder();
-    }
 
     private static final com.google.inject.Injector commandsInjector;
     static {
@@ -242,8 +239,10 @@ public class GeogigCLI {
         GeoGIG geogig = newGeoGIG(hints);
 
         if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
-            geogig.getRepository();
-            return geogig;
+            Repository repository = geogig.getRepository();
+            if (repository != null) {
+                return geogig;
+            }
         }
         geogig.close();
 
@@ -263,7 +262,7 @@ public class GeogigCLI {
     public GeoGIG newGeoGIG(Hints hints) {
         Context inj = newGeogigInjector(hints);
 
-        GeoGIG geogig = new GeoGIG(inj, platform.pwd());
+        GeoGIG geogig = new GeoGIG(inj);
         try {
             geogig.getRepository();
         } catch (Exception e) {
@@ -290,10 +289,13 @@ public class GeogigCLI {
 
     private Context newGeogigInjector(Hints hints) {
         if (repositoryURI != null) {
-            LOGGER.info("using REPO_URL '{}'", repositoryURI);
+            LOGGER.debug("using REPO_URL '{}'", repositoryURI);
             hints.set(Hints.REPOSITORY_URL, repositoryURI);
         }
-        Context geogigInjector = GlobalContextBuilder.builder.build(hints);
+        if (!hints.get(Hints.PLATFORM).isPresent()) {
+            hints.set(Hints.PLATFORM, this.platform);
+        }
+        Context geogigInjector = GlobalContextBuilder.builder().build(hints);
         return geogigInjector;
     }
 
@@ -332,6 +334,7 @@ public class GeogigCLI {
      * @param args
      */
     public static void main(String[] args) {
+        GlobalContextBuilder.builder(new CLIContextBuilder());
         Logging.tryConfigureLogging();
         Console consoleReader = new Console();
 
@@ -391,7 +394,6 @@ public class GeogigCLI {
         } catch (IllegalArgumentException | InvalidParameterException paramValidationError) {
             exception = paramValidationError;
             consoleMessage = paramValidationError.getMessage();
-
         } catch (CannotRunGeogigOperationException cannotRun) {
 
             consoleMessage = cannotRun.getMessage();
@@ -402,8 +404,11 @@ public class GeogigCLI {
                 // this is intentional, see the javadoc for CommandFailedException
                 printError = false;
             } else {
-                LOGGER.error(consoleMessage, Throwables.getRootCause(cmdFailed));
                 consoleMessage = cmdFailed.getMessage();
+                if (!(cmdFailed instanceof CommandFailedException)
+                        || !((CommandFailedException) cmdFailed).reportOnly) {
+                    LOGGER.error(consoleMessage, Throwables.getRootCause(cmdFailed));
+                }
             }
         } catch (RuntimeException e) {
             exception = e;
@@ -468,7 +473,7 @@ public class GeogigCLI {
                 commandName = args[0];
                 commandParser = mainCommander.getCommands().get(commandName);
             }
-            
+
             if (commandParser == null) {
                 consoleReader.println(args[0] + " is not a geogig command. See geogig --help.");
                 // check for similar commands
@@ -484,8 +489,8 @@ public class GeogigCLI {
                     }
                 }
                 consoleReader.flush();
-                throw new CommandFailedException(String.format("'%s' is not a command.",
-                        commandName));
+                throw new InvalidParameterException(
+                        String.format("'%s' is not a command.", commandName));
             }
 
             Object object = commandParser.getObjects().get(0);
@@ -536,7 +541,8 @@ public class GeogigCLI {
                     workingDir = platform.pwd().getAbsolutePath();
                 }
                 if (getGeogig() == null) {
-                    throw new CommandFailedException("Not in a geogig repository: " + workingDir);
+                    throw new InvalidParameterException(
+                            "Not in a geogig repository: " + workingDir);
                 }
             }
 
@@ -870,7 +876,7 @@ public class GeogigCLI {
 
     @VisibleForTesting
     public void tryConfigureLogging() {
-        Logging.tryConfigureLogging(getPlatform());
+        Logging.tryConfigureLogging(getPlatform(), this.repositoryURI);
     }
 
 }

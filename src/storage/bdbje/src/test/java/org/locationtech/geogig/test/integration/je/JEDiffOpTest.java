@@ -10,16 +10,12 @@
 package org.locationtech.geogig.test.integration.je;
 
 import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.di.GeogigModule;
-
-import com.google.inject.Guice;
-import com.google.inject.util.Modules;
+import org.locationtech.geogig.repository.Hints;
 
 public class JEDiffOpTest extends org.locationtech.geogig.test.integration.DiffOpTest {
     @Override
     protected Context createInjector() {
-        return Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new JETestStorageModule())).getInstance(
-                Context.class);
+        Hints hints = new Hints().uri(repositoryDirectory.toURI()).platform(createPlatform());
+        return new JETestContextBuilder().build(hints);
     }
 }

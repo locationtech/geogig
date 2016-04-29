@@ -27,6 +27,8 @@ import org.locationtech.geogig.api.MemoryModule;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.di.GeogigModule;
+import org.locationtech.geogig.di.HintsModule;
+import org.locationtech.geogig.repository.Hints;
 
 import com.google.common.base.Throwables;
 import com.google.inject.Guice;
@@ -68,11 +70,13 @@ public class ParseTimestampTest extends Assert {
                 return REFERENCE_DATE.getTime();
             }
         };
-        Context injector = Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new MemoryModule(testPlatform)))
+
+        Context injector = Guice
+                .createInjector(Modules.override(new GeogigModule()).with(new MemoryModule(),
+                        new HintsModule(new Hints().platform(testPlatform))))
                 .getInstance(Context.class);
 
-        fakeGeogig = new GeoGIG(injector, workingDirectory);
+        fakeGeogig = new GeoGIG(injector);
         assertNotNull(fakeGeogig.getOrCreateRepository());
         command = fakeGeogig.command(ParseTimestamp.class);
     }

@@ -87,7 +87,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
                 repositoryLocation);
         Hints hints = new Hints();
         hints.set(Hints.REPOSITORY_URL, repositoryLocation.toString());
-        Context context = GlobalContextBuilder.builder.build(hints);
+        Context context = GlobalContextBuilder.builder().build(hints);
         Repository repository = new GeoGIG(context).getRepository();
         repository.open();
         return repository;

@@ -130,8 +130,9 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
         this.envProvider = envProvider;
         this.readOnly = readOnly;
         this.envName = envName;
-        this.conflicts = new FileConflictsDatabase(envProvider.getPlatform());
-        this.blobStore = new FileBlobStore(envProvider.getPlatform());
+        File geoGigDirectory = envProvider.getGeoGigDirectory();
+        this.conflicts = new FileConflictsDatabase(geoGigDirectory);
+        this.blobStore = new FileBlobStore(geoGigDirectory);
     }
 
     /**

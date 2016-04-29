@@ -413,7 +413,8 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testFetchNoRemotes() throws Exception {
         FetchOp fetch = fetch();
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Remote could not be resolved");
         fetch.call();
     }
 

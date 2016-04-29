@@ -23,6 +23,7 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.locationtech.geogig.web.DirectoryRepositoryProvider;
@@ -39,7 +40,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig serve [-p <port>] [<directory>]}
+ * <li>{@code geogig serve [-p <port>] [<directory>]}
  * </ul>
  * </p>
  * 
@@ -60,8 +61,8 @@ public class Serve extends AbstractCommand {
     private int port = 8182;
 
     @Override
-    protected void runInternal(GeogigCLI cli) throws InvalidParameterException,
-            CommandFailedException, IOException {
+    protected void runInternal(GeogigCLI cli)
+            throws InvalidParameterException, CommandFailedException, IOException {
 
         String loc = repo != null && repo.size() > 0 ? repo.get(0) : ".";
 
@@ -78,8 +79,8 @@ public class Serve extends AbstractCommand {
         comp.getDefaultHost().attach(application);
         comp.getServers().add(Protocol.HTTP, port);
 
-        cli.getConsole().println(
-                String.format("Starting server on port %d, use CTRL+C to exit.", port));
+        cli.getConsole()
+                .println(String.format("Starting server on port %d, use CTRL+C to exit.", port));
 
         try {
             comp.start();
@@ -88,7 +89,7 @@ public class Serve extends AbstractCommand {
             String msg = String.format(
                     "Port %d already in use, use the --port parameter to specify a different port",
                     port);
-            throw new CommandFailedException(msg, e);
+            throw new CommandFailedException(msg, true);
         } catch (Exception e) {
             throw new CommandFailedException("Unable to start server", e);
         }
@@ -98,7 +99,7 @@ public class Serve extends AbstractCommand {
         Platform platform = new DefaultPlatform();
         platform.setWorkingDir(new File(repo));
 
-        GeoGIG geogig = new GeoGIG(cli.getGeogigInjector(), platform.pwd());
+        GeoGIG geogig = cli.newGeoGIG(new Hints().platform(platform));
         if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
             geogig.getRepository();
         }

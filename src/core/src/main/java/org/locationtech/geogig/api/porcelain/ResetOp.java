@@ -93,11 +93,11 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
      */
     @Override
     protected Boolean _call() {
-        Preconditions.checkState(!(patterns.size() > 0 && mode != ResetMode.NONE),
+        Preconditions.checkArgument(!(patterns.size() > 0 && mode != ResetMode.NONE),
                 "Ambiguous call, cannot specify paths and reset mode.");
 
         final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
-        Preconditions.checkState(currHead.isPresent(), "Repository has no HEAD, can't reset.");
+        Preconditions.checkArgument(currHead.isPresent(), "Repository has no HEAD, can't reset.");
         Preconditions
                 .checkState(currHead.get() instanceof SymRef, "Can't reset from detached HEAD");
         final SymRef headRef = (SymRef) currHead.get();
@@ -108,7 +108,7 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
             commit = Suppliers.ofInstance(currHead.get().getObjectId());
         }
 
-        Preconditions.checkState(!ObjectId.NULL.equals(commit.get()),
+        Preconditions.checkArgument(!ObjectId.NULL.equals(commit.get()),
                 "Commit could not be resolved.");
 
         Repository repository = repository();

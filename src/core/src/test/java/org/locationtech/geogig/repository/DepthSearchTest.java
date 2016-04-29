@@ -40,6 +40,7 @@ import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.WriteBack;
 import org.locationtech.geogig.di.GeogigModule;
+import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Optional;
@@ -68,8 +69,10 @@ public class DepthSearchTest {
     public void setUp() throws IOException {
         File envHome = tempFolder.getRoot();
         Platform testPlatform = new TestPlatform(envHome);
-        Context injector = Guice.createInjector(Modules.override(new GeogigModule()).with(
-                new MemoryModule(testPlatform))).getInstance(Context.class);
+        Context injector = Guice
+                .createInjector(Modules.override(new GeogigModule()).with(new MemoryModule(),
+                        new HintsModule(new Hints().platform(testPlatform))))
+                .getInstance(Context.class);
 
         fakeGeogig = new GeoGIG(injector);
         Repository fakeRepo = fakeGeogig.getOrCreateRepository();
@@ -91,7 +94,7 @@ public class DepthSearchTest {
         Context mockInjector = mock(Context.class);
         when(mockInjector.objectDatabase()).thenReturn(odb);
         RevTreeBuilder subTreeBuilder = new RevTreeBuilder(mockInjector.objectDatabase());
-        
+
         if (singleNodeNames != null) {
             for (String singleNodeName : singleNodeNames) {
                 String nodePath = NodeRef.appendChild(treePath, singleNodeName);
@@ -107,9 +110,8 @@ public class DepthSearchTest {
                 .setChildPath(treePath).setTree(subtree).setMetadataId(fakeTreeMetadataId);
         ObjectId newRootId = writeBack.call();
 
-        return new RevTreeBuilder(odb,
-                fakeGeogig.command(RevObjectParse.class).setObjectId(newRootId).call(RevTree.class)
-                .get());
+        return new RevTreeBuilder(odb, fakeGeogig.command(RevObjectParse.class)
+                .setObjectId(newRootId).call(RevTree.class).get());
     }
 
     @Test

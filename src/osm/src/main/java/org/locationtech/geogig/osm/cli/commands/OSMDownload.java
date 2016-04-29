@@ -117,7 +117,7 @@ public class OSMDownload extends AbstractCommand implements CLICommand {
         } catch (RuntimeException e) {
             tx.abort();
             if (e instanceof NothingToCommitException) {
-                throw new CommandFailedException(e.getMessage(), e);
+                throw new CommandFailedException(e.getMessage(), true);
             }
             throw e;
         }

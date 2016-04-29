@@ -10,11 +10,12 @@
 package org.locationtech.geogig.api;
 
 import java.io.File;
+import java.io.Serializable;
 
 /**
  * Interface for a GeoGig platform.
  */
-public interface Platform {
+public interface Platform extends Serializable{
 
     /**
      * @return the working directory

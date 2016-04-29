@@ -43,8 +43,9 @@ import org.locationtech.geogig.api.porcelain.ConfigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
+import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
+import org.locationtech.geogig.repository.Hints;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -84,7 +85,7 @@ public class DataStoreConcurrencyTest {
         File userHomeDirectory = tmp.newFolder("home");
         TestPlatform platform = new TestPlatform(workingDirectory);
         platform.setUserHome(userHomeDirectory);
-        Context injector = new CLITestContextBuilder(platform).build();
+        Context injector = new CLIContextBuilder().build(new Hints().platform(platform));
         GeoGIG geogig = new GeoGIG(injector);
         geogig.command(InitOp.class).call();
         geogig.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")

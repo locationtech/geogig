@@ -12,12 +12,14 @@ package org.locationtech.geogig.cli;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.DefaultPlatform;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.repository.Hints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -46,13 +48,22 @@ class Logging {
     private static File geogigDirLoggingConfiguration;
 
     static void tryConfigureLogging() {
-        tryConfigureLogging(new DefaultPlatform());
+        tryConfigureLogging(new DefaultPlatform(), null);
     }
 
-    static void tryConfigureLogging(Platform platform) {
+    static void tryConfigureLogging(Platform platform, @Nullable final String repoURI) {
         // instantiate and call ResolveGeogigDir directly to avoid calling getGeogig() and hence get
         // some logging events before having configured logging
-        final Optional<URI> geogigDirUrl = new ResolveGeogigURI(platform, null).call();
+        Hints hints = new Hints();
+        try {
+            if (repoURI != null) {
+                URI uri = new URI(repoURI);
+                hints.set(Hints.REPOSITORY_URL, uri);
+            }
+        } catch (URISyntaxException ignore) {
+            // not our call to do anything with a wrong URI here
+        }
+        final Optional<URI> geogigDirUrl = new ResolveGeogigURI(platform, hints).call();
         if (!geogigDirUrl.isPresent() || !"file".equalsIgnoreCase(geogigDirUrl.get().getScheme())) {
             // redirect java.util.logging to SLF4J anyways
             SLF4JBridgeHandler.removeHandlersForRootLogger();
@@ -62,7 +73,7 @@ class Logging {
 
         final File geogigDir = new File(geogigDirUrl.get());
 
-        if (geogigDir.equals(geogigDirLoggingConfiguration)) {
+        if (repoURI == null && geogigDir.equals(geogigDirLoggingConfiguration)) {
             return;
         }
 

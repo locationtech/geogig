@@ -13,6 +13,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.api.Ref.TRANSACTIONS_PREFIX;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.storage.AbstractRefDatabase;
@@ -29,7 +31,7 @@ import com.google.common.collect.Maps;
  */
 public class HeapRefDatabase extends AbstractRefDatabase {
 
-    private Map<String, String> refs;
+    private ConcurrentMap<String, String> refs;
 
     /**
      * Creates the reference database.
@@ -37,7 +39,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
     @Override
     public void create() {
         if (refs == null) {
-            refs = Maps.newTreeMap();
+            refs = new ConcurrentHashMap<>();
         }
     }
 

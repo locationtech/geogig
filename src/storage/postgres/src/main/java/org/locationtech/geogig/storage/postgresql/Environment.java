@@ -51,6 +51,14 @@ public class Environment {
 
     public static final String KEY_PUTALL_BATCH_SIZE = "postgres.putAllBatchSize";
 
+    public static final String KEY_ODB_BYTE_CACHE_MAX_SIZE = "postgres.bytecache.maxSize";
+
+    public static final String KEY_ODB_BYTE_CACHE_CONCURRENCY_LEVEL = "postgres.bytecache.concurrencyLevel";
+
+    public static final String KEY_ODB_BYTE_CACHE_EXPIRE_SECONDS = "postgres.bytecache.expireSeconds";
+
+    public static final String KEY_ODB_BYTE_CACHE_INITIAL_CAPACITY = "postgres.bytecache.initialCapacity";
+
     static class ConnectionConfig {
         
         private final String user;

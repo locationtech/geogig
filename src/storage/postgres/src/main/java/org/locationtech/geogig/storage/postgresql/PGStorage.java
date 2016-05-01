@@ -335,7 +335,7 @@ public class PGStorage {
     private static void createConflictsTable(Connection cx, TableNames tables) throws SQLException {
         String conflictsTable = tables.conflicts();
         String sql = format(
-                "CREATE TABLE %s (repository TEXT, namespace TEXT, path TEXT, conflict TEXT"
+                "CREATE TABLE %s (repository TEXT, namespace TEXT, path TEXT, ancestor bytea, ours bytea, theirs bytea"
                         + ", PRIMARY KEY(repository, namespace, path)"
                         + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
                 conflictsTable, tables.repositories());

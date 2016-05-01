@@ -23,6 +23,8 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.api.GeogigTransaction;
+import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.slf4j.Logger;
@@ -33,6 +35,28 @@ import com.google.common.base.Preconditions;
 
 /**
  * {@link ConflictsDatabase} implementation for PostgreSQL.
+ * <p>
+ * Stores {@link Conflict conflicts} on the following table structure:
+ * 
+ * <pre>
+ * CREATE TABLE geogig_conflict (
+ *         repository TEXT, namespace TEXT, path TEXT, ancestor bytea, ours bytea, theirs bytea,
+ *         PRIMARY KEY(repository, namespace, path),
+ *         FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE
+ *         )
+ * </pre>
+ * <p>
+ * Where table fields map to Conflict as:
+ * <ul>
+ * <li>{@link Conflict#getPath()} -> {@code path}
+ * <li>{@link Conflict#getAncestor()} -> {@code ancestor}
+ * <li>{@link Conflict#getOurs()} -> {@code ours}
+ * <li>{@link Conflict#getTheirs()} -> {@code theirs}
+ * </ul>
+ * The {@code repository} columns matches the repository identifier, the {@code namespace} column
+ * identifies the geogig {@link GeogigTransaction#getTransactionId() transaction id} on which the
+ * conflicts are encountered, and default to the empty string if the conflicts are on the
+ * repository's head instead of inside a transaction.
  */
 class PGConflictsDatabase implements ConflictsDatabase {
 
@@ -61,7 +85,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
 
         final String namespace = namespace(ns);
         final String sql = format(
-                "INSERT INTO %s (repository, namespace, path, conflict) VALUES (?,?,?,?)",
+                "INSERT INTO %s (repository, namespace, path, ancestor, ours, theirs) VALUES (?,?,?,?,?,?)",
                 conflictsTable);
 
         try (Connection cx = dataSource.getConnection()) {
@@ -71,8 +95,9 @@ class PGConflictsDatabase implements ConflictsDatabase {
                 ps.setString(1, repositoryId);
                 ps.setString(2, namespace);
                 ps.setString(3, path);
-                String conflictStr = conflict.toString();
-                ps.setString(4, conflictStr);
+                ps.setBytes(4, conflict.getAncestor().getRawValue());
+                ps.setBytes(5, conflict.getOurs().getRawValue());
+                ps.setBytes(6, conflict.getTheirs().getRawValue());
 
                 ps.executeUpdate();
                 cx.commit();
@@ -110,11 +135,12 @@ class PGConflictsDatabase implements ConflictsDatabase {
 
         final String sql;
         if (pathFilter == null) {
-            sql = format("SELECT conflict FROM %s WHERE repository = ? AND namespace = ?",
+            sql = format(
+                    "SELECT path,ancestor,ours,theirs FROM %s WHERE repository = ? AND namespace = ?",
                     conflictsTable);
         } else {
             sql = format(
-                    "SELECT conflict FROM %s WHERE repository = ? AND namespace = ? AND path LIKE ?",
+                    "SELECT path,ancestor,ours,theirs FROM %s WHERE repository = ? AND namespace = ? AND path LIKE ?",
                     conflictsTable);
         }
         List<Conflict> conflicts = new ArrayList<>();
@@ -128,8 +154,11 @@ class PGConflictsDatabase implements ConflictsDatabase {
                 log(sql, LOG, repositoryId, namespace);
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        String conflictStr = rs.getString(1);
-                        conflicts.add(Conflict.valueOf(conflictStr));
+                        String path = rs.getString(1);
+                        ObjectId ancestor = ObjectId.createNoClone(rs.getBytes(2));
+                        ObjectId ours = ObjectId.createNoClone(rs.getBytes(3));
+                        ObjectId theirs = ObjectId.createNoClone(rs.getBytes(4));
+                        conflicts.add(new Conflict(path, ancestor, ours, theirs));
                     }
                 }
             }

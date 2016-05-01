@@ -1335,9 +1335,12 @@ public class PGObjectDatabase implements ObjectDatabase {
             CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
             cacheBuilder = cacheBuilder.maximumWeight(maxSize.or(defaultCacheSize()));
             cacheBuilder.weigher(new Weigher<ObjectId, byte[]>() {
+
+                private final int ESTIMATED_OBJECTID_SIZE = 8 + ObjectId.NUM_BYTES;
+
                 @Override
-                public int weigh(ObjectId arg0, byte[] arg1) {
-                    return arg1.length;
+                public int weigh(ObjectId key, byte[] value) {
+                    return ESTIMATED_OBJECTID_SIZE + value.length;
                 }
 
             });

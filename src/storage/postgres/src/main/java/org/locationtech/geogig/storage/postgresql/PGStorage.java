@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 Boundless.
+/* Copyright (c) 2015-2016 Boundless.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -10,9 +10,9 @@
 package org.locationtech.geogig.storage.postgresql;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -100,37 +100,37 @@ public class PGStorage {
     public static boolean repoExists(final Environment config) throws IllegalArgumentException {
         Preconditions.checkNotNull(config);
         Preconditions.checkArgument(config.getRepositoryId() != null, "no repository id provided");
-        DataSource ds = PGStorage.newDataSource(config);
-        try {
-            Boolean exists = new DbOp<Boolean>() {
-                @Override
-                protected Boolean doRun(Connection cx) throws IOException, SQLException {
-                    final String reposTable = config.getTables().repositories();
-                    DatabaseMetaData md = cx.getMetaData();
 
-                    final String schema = schema(reposTable);
-                    final String table = stripSchema(reposTable);
-                    try (ResultSet rs = md.getTables(null, schema, table, null)) {
-                        if (!rs.next()) {
-                            return false;
-                        }
-                    }
-                    String sql = String.format(
-                            "SELECT TRUE WHERE EXISTS(SELECT 1 FROM %s WHERE repository = ?)",
-                            reposTable);
-                    try (PreparedStatement st = cx.prepareStatement(sql)) {
-                        String repositoryId = config.getRepositoryId();
-                        st.setString(1, repositoryId);
-                        try (ResultSet rs = st.executeQuery()) {
-                            return rs.next();
-                        }
-                    }
+        final DataSource dataSource = PGStorage.newDataSource(config);
+
+        final boolean exists;
+
+        try (Connection cx = dataSource.getConnection()) {
+            final String reposTable = config.getTables().repositories();
+            DatabaseMetaData md = cx.getMetaData();
+
+            final String schema = schema(reposTable);
+            final String table = stripSchema(reposTable);
+            try (ResultSet rs = md.getTables(null, schema, table, null)) {
+                if (!rs.next()) {
+                    return false;
                 }
-            }.run(ds);
-            return exists;
+            }
+            String sql = String.format(
+                    "SELECT TRUE WHERE EXISTS(SELECT 1 FROM %s WHERE repository = ?)", reposTable);
+            try (PreparedStatement st = cx.prepareStatement(sql)) {
+                String repositoryId = config.getRepositoryId();
+                st.setString(1, repositoryId);
+                try (ResultSet rs = st.executeQuery()) {
+                    exists = rs.next();
+                }
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
         } finally {
-            PGStorage.closeDataSource(ds);
+            PGStorage.closeDataSource(dataSource);
         }
+        return exists;
     }
 
     /**
@@ -150,112 +150,105 @@ public class PGStorage {
                 PGConfigDatabase.GLOBAL_KEY);
         createTables(config);
 
-        DataSource ds = PGStorage.newDataSource(config);
-        try {
-            Boolean created = new DbOp<Boolean>() {
-                @Override
-                protected Boolean doRun(Connection cx) throws IOException, SQLException {
+        final boolean created;
 
-                    final String reposTable = config.getTables().repositories();
-                    String sql = String.format(
-                            "SELECT TRUE WHERE EXISTS(SELECT 1 FROM %s WHERE repository = ?)",
-                            reposTable);
+        final DataSource dataSource = PGStorage.newDataSource(config);
+        try (Connection cx = dataSource.getConnection()) {
+            final String reposTable = config.getTables().repositories();
+            String sql = String.format(
+                    "SELECT TRUE WHERE EXISTS(SELECT 1 FROM %s WHERE repository = ?)", reposTable);
 
-                    final String repositoryId = config.getRepositoryId();
-                    final boolean exists;
-                    cx.setAutoCommit(false);
-                    try {
-                        try (PreparedStatement st = cx.prepareStatement(sql)) {
-                            st.setString(1, repositoryId);
-                            try (ResultSet rs = st.executeQuery()) {
-                                exists = rs.next();
-                            }
-                        }
-                        if (!exists) {
-                            sql = format("INSERT INTO %s (repository, created) VALUES (?, NOW())",
-                                    reposTable);
-                            try (PreparedStatement st = cx.prepareStatement(sql)) {
-                                st.setString(1, repositoryId);
-                                int updCnt = st.executeUpdate();
-                                Preconditions.checkState(updCnt == 1);
-                            }
-                        }
-                        cx.commit();
-                    } catch (SQLException | RuntimeException e) {
-                        cx.rollback();
-                        Throwables.propagateIfInstanceOf(e, SQLException.class);
-                        throw Throwables.propagate(e);
+            final String repositoryId = config.getRepositoryId();
+            final boolean exists;
+            cx.setAutoCommit(false);
+            try {
+                try (PreparedStatement st = cx.prepareStatement(sql)) {
+                    st.setString(1, repositoryId);
+                    try (ResultSet rs = st.executeQuery()) {
+                        exists = rs.next();
                     }
-                    return !exists;
                 }
-            }.run(ds);
-            return created;
+                if (!exists) {
+                    sql = format("INSERT INTO %s (repository, created) VALUES (?, NOW())",
+                            reposTable);
+                    try (PreparedStatement st = cx.prepareStatement(sql)) {
+                        st.setString(1, repositoryId);
+                        int updCnt = st.executeUpdate();
+                        Preconditions.checkState(updCnt == 1);
+                    }
+                }
+                cx.commit();
+            } catch (SQLException | RuntimeException e) {
+                throw rollbackAndRethrow(cx, e);
+            } finally {
+                cx.setAutoCommit(true);
+            }
+            created = !exists;
+        } catch (SQLException e) {
+            throw propagate(e);
         } finally {
-            PGStorage.closeDataSource(ds);
+            PGStorage.closeDataSource(dataSource);
         }
+        return created;
     }
 
     public static void createTables(final Environment config) {
 
-        DataSource ds = PGStorage.newDataSource(config);
-        try {
-            new DbOp<Void>() {
+        final TableNames tables = config.getTables();
+        final String reposTable = tables.repositories();
+        final String schema = PGStorage.schema(reposTable);
+        final String table = PGStorage.stripSchema(reposTable);
 
-                @Override
-                protected Void doRun(final Connection cx) throws SQLException {
-                    DatabaseMetaData md = cx.getMetaData();
-                    final TableNames tables = config.getTables();
-                    final String reposTable = tables.repositories();
-                    final String schema = PGStorage.schema(reposTable);
-                    final String table = PGStorage.stripSchema(reposTable);
-                    try (ResultSet rs = md.getTables(null, schema, table, null)) {
-                        if (rs.next()) {
-                            return null;
-                        }
-                    }
-                    try {
-                        // tell postgres to send bytea fields in a more compact format than hex
-                        // encoding
-                        cx.setAutoCommit(true);
-                        PGStorage.run(cx, "SELECT pg_advisory_lock(-1)");
-                        String sql = String.format(
-                                "ALTER DATABASE \"%s\" SET bytea_output = 'escape'",
-                                config.getDatabaseName());
-                        try {
-                            PGStorage.run(cx, sql);
-                        } catch (SQLException e) {
-                            LOG.warn(String.format(
-                                    "Unable to run '%s'. User may need more priviledges. This is not fatal, but recommended.",
-                                    sql), e);
-                        }
-                        PGStorage.run(cx, "SELECT pg_advisory_unlock(-1)");
-
-                        cx.setAutoCommit(false);
-
-                        PGStorage.createObjectIdCompositeType(cx);
-                        PGStorage.run(cx, "SET constraint_exclusion=ON");
-
-                        createConfigTable(cx, tables);
-                        cx.commit();
-                        cx.setAutoCommit(false);
-                        createRefsTable(cx, tables);
-                        createConflictsTable(cx, tables);
-                        createBlobsTable(cx, tables);
-                        createObjectsTables(cx, tables);
-                        createGraphTables(cx, tables);
-                        cx.commit();
-                    } catch (SQLException | RuntimeException e) {
-                        e.printStackTrace();
-                        cx.rollback();
-                        Throwables.propagateIfInstanceOf(e, SQLException.class);
-                        throw Throwables.propagate(e);
-                    }
-                    return null;
+        final DataSource dataSource = PGStorage.newDataSource(config);
+        try (Connection cx = dataSource.getConnection()) {
+            DatabaseMetaData md = cx.getMetaData();
+            try (ResultSet rs = md.getTables(null, schema, table, null)) {
+                if (rs.next()) {
+                    return;
                 }
+            }
+            try {
+                // tell postgres to send bytea fields in a more compact format than hex
+                // encoding
+                cx.setAutoCommit(true);
+                PGStorage.run(cx, "SELECT pg_advisory_lock(-1)");
+                String sql = String.format("ALTER DATABASE \"%s\" SET bytea_output = 'escape'",
+                        config.getDatabaseName());
+                try {
+                    PGStorage.run(cx, sql);
+                } catch (SQLException e) {
+                    LOG.warn(String.format(
+                            "Unable to run '%s'. User may need more priviledges. This is not fatal, but recommended.",
+                            sql), e);
+                }
+                PGStorage.run(cx, "SELECT pg_advisory_unlock(-1)");
 
-            }.run(ds);
+                cx.setAutoCommit(false);
+
+                PGStorage.createObjectIdCompositeType(cx);
+                PGStorage.run(cx, "SET constraint_exclusion=ON");
+
+                createConfigTable(cx, tables);
+                cx.commit();
+                cx.setAutoCommit(false);
+                createRefsTable(cx, tables);
+                createConflictsTable(cx, tables);
+                createBlobsTable(cx, tables);
+                createObjectsTables(cx, tables);
+                createGraphTables(cx, tables);
+                cx.commit();
+            } catch (SQLException | RuntimeException e) {
+                e.printStackTrace();
+                cx.rollback();
+                Throwables.propagateIfInstanceOf(e, SQLException.class);
+                throw Throwables.propagate(e);
+            } finally {
+                cx.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
         } finally {
-            PGStorage.closeDataSource(ds);
+            PGStorage.closeDataSource(dataSource);
         }
 
     }
@@ -559,6 +552,8 @@ public class PGStorage {
             } catch (SQLException e) {
                 cx.rollback();
                 throw e;
+            } finally {
+                cx.setAutoCommit(true);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

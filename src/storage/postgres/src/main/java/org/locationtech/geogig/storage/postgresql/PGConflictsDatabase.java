@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 Boundless.
+/* Copyright (c) 2015-2016 Boundless.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
+import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -60,34 +60,31 @@ class PGConflictsDatabase implements ConflictsDatabase {
         Preconditions.checkNotNull(path);
 
         final String namespace = namespace(ns);
+        final String sql = format(
+                "INSERT INTO %s (repository, namespace, path, conflict) VALUES (?,?,?,?)",
+                conflictsTable);
 
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                String sql = format(
-                        "INSERT INTO %s (repository, namespace, path, conflict) VALUES (?,?,?,?)",
-                        conflictsTable);
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            log(sql, LOG, namespace, path, conflict);
+            try (PreparedStatement ps = cx.prepareStatement(sql)) {
+                ps.setString(1, repositoryId);
+                ps.setString(2, namespace);
+                ps.setString(3, path);
+                String conflictStr = conflict.toString();
+                ps.setString(4, conflictStr);
 
-                log(sql, LOG, namespace, path, conflict);
-
-                cx.setAutoCommit(false);
-                try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                    ps.setString(1, repositoryId);
-                    ps.setString(2, namespace);
-                    ps.setString(3, path);
-                    String conflictStr = conflict.toString();
-                    ps.setString(4, conflictStr);
-
-                    ps.executeUpdate();
-                    cx.commit();
-                } catch (SQLException e) {
-                    cx.rollback();
-                    throw e;
-                }
-                return null;
+                ps.executeUpdate();
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
             }
-        }.run(dataSource);
-
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     @Override
@@ -106,41 +103,40 @@ class PGConflictsDatabase implements ConflictsDatabase {
     }
 
     @Override
-    public List<Conflict> getConflicts(final @Nullable String ns, final @Nullable String pathFilter) {
+    public List<Conflict> getConflicts(final @Nullable String ns,
+            final @Nullable String pathFilter) {
 
         final String namespace = namespace(ns);
 
-        List<Conflict> rs = new DbOp<List<Conflict>>() {
-            @Override
-            protected List<Conflict> doRun(Connection cx) throws IOException, SQLException {
-                final String sql;
-                if (pathFilter == null) {
-                    sql = format("SELECT conflict FROM %s WHERE repository = ? AND namespace = ?",
-                            conflictsTable);
-                } else {
-                    sql = format(
-                            "SELECT conflict FROM %s WHERE repository = ? AND namespace = ? AND path LIKE ?",
-                            conflictsTable);
+        final String sql;
+        if (pathFilter == null) {
+            sql = format("SELECT conflict FROM %s WHERE repository = ? AND namespace = ?",
+                    conflictsTable);
+        } else {
+            sql = format(
+                    "SELECT conflict FROM %s WHERE repository = ? AND namespace = ? AND path LIKE ?",
+                    conflictsTable);
+        }
+        List<Conflict> conflicts = new ArrayList<>();
+        try (Connection cx = dataSource.getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(sql)) {
+                ps.setString(1, repositoryId);
+                ps.setString(2, namespace);
+                if (pathFilter != null) {
+                    ps.setString(3, "%" + pathFilter + "%");
                 }
-                List<Conflict> conflicts = new ArrayList<>();
-                try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                    ps.setString(1, repositoryId);
-                    ps.setString(2, namespace);
-                    if (pathFilter != null) {
-                        ps.setString(3, "%" + pathFilter + "%");
-                    }
-                    log(sql, LOG, repositoryId, namespace);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            String conflictStr = rs.getString(1);
-                            conflicts.add(Conflict.valueOf(conflictStr));
-                        }
+                log(sql, LOG, repositoryId, namespace);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String conflictStr = rs.getString(1);
+                        conflicts.add(Conflict.valueOf(conflictStr));
                     }
                 }
-                return conflicts;
             }
-        }.run(dataSource);
-        return rs;
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+        return conflicts;
     }
 
     private String namespace(String namespace) {
@@ -151,65 +147,60 @@ class PGConflictsDatabase implements ConflictsDatabase {
     public void removeConflict(final @Nullable String ns, final @Nullable String path) {
         final String namespace = namespace(ns);
 
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                final String sql;
-                if (path == null) {
-                    sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ?",
-                            conflictsTable);
-                    log(sql, LOG, namespace);
-                } else {
-                    sql = format(
-                            "DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
-                            conflictsTable);
-                    log(sql, LOG, namespace, path);
-                }
+        final String sql;
+        if (path == null) {
+            sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ?", conflictsTable);
+            log(sql, LOG, namespace);
+        } else {
+            sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
+                    conflictsTable);
+            log(sql, LOG, namespace, path);
+        }
 
-                cx.setAutoCommit(false);
-                try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                    ps.setString(1, repositoryId);
-                    ps.setString(2, namespace);
-                    if (path != null) {
-                        ps.setString(3, path);
-                    }
-                    ps.executeUpdate();
-                    cx.commit();
-                } catch (SQLException e) {
-                    cx.rollback();
-                    throw e;
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try (PreparedStatement ps = cx.prepareStatement(sql)) {
+                ps.setString(1, repositoryId);
+                ps.setString(2, namespace);
+                if (path != null) {
+                    ps.setString(3, path);
                 }
-
-                return null;
+                ps.executeUpdate();
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
             }
-        }.run(dataSource);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     @Override
-    public void removeConflicts(String ns) {
+    public void removeConflicts(final String ns) {
         final String namespace = namespace(ns);
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                final String sql;
-                sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ?",
-                        conflictsTable);
-                log(sql, LOG, namespace);
+        final String sql;
+        sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ?", conflictsTable);
+        log(sql, LOG, namespace);
 
-                cx.setAutoCommit(false);
-                try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                    ps.setString(1, repositoryId);
-                    ps.setString(2, namespace);
-                    ps.executeUpdate();
-                    cx.commit();
-                } catch (SQLException e) {
-                    cx.rollback();
-                    throw e;
-                }
-
-                return null;
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try (PreparedStatement ps = cx.prepareStatement(sql)) {
+                ps.setString(1, repositoryId);
+                ps.setString(2, namespace);
+                ps.executeUpdate();
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
             }
-        }.run(dataSource);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     /**
@@ -219,28 +210,23 @@ class PGConflictsDatabase implements ConflictsDatabase {
      * 
      */
     private int count(final String namespace) {
-        Integer count = new DbOp<Integer>() {
-            @Override
-            protected Integer doRun(Connection cx) throws IOException, SQLException {
-                String sql = format(
-                        "SELECT count(*) FROM %s WHERE repository = ? AND namespace = ?",
-                        conflictsTable);
+        final String sql = format("SELECT count(*) FROM %s WHERE repository = ? AND namespace = ?",
+                conflictsTable);
 
-                int count = 0;
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, namespace))) {
-                    ps.setString(1, repositoryId);
-                    ps.setString(2, namespace);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            count = rs.getInt(1);
-                        }
-                    }
+        int count;
+        try (Connection cx = dataSource.getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, namespace))) {
+                ps.setString(1, repositoryId);
+                ps.setString(2, namespace);
+                try (ResultSet rs = ps.executeQuery()) {
+                    Preconditions.checkState(rs.next());// count returns always a record
+                    count = rs.getInt(1);
                 }
-                return Integer.valueOf(count);
             }
-        }.run(dataSource);
-
-        return count.intValue();
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+        return count;
     }
 
 }

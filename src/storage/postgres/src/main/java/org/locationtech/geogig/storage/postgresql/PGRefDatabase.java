@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 Boundless.
+/* Copyright (c) 2015-2016 Boundless.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -11,13 +11,13 @@ package org.locationtech.geogig.storage.postgresql;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.newConnection;
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -113,13 +113,13 @@ public class PGRefDatabase implements RefDatabase {
 
     @VisibleForTesting
     void lockWithTimeout(int timeout) throws TimeoutException {
-        final String repo = PGRefDatabase.this.config.getRepositoryId();
+        final String repo = config.getRepositoryId();
         Connection c = LockConnection.get();
         if (c == null) {
             c = newConnection(dataSource);
             LockConnection.set(c);
         }
-        final String repoTable = PGRefDatabase.this.config.getTables().repositories();
+        final String repoTable = config.getTables().repositories();
         final String sql = format(
                 "SELECT pg_advisory_lock((SELECT lock_id FROM %s WHERE repository=?));", repoTable);
         try (PreparedStatement st = c.prepareStatement(log(sql, LOG, repo))) {
@@ -144,10 +144,10 @@ public class PGRefDatabase implements RefDatabase {
 
     @Override
     public void unlock() {
-        final String repo = PGRefDatabase.this.config.getRepositoryId();
+        final String repo = config.getRepositoryId();
         Connection c = LockConnection.get();
         if (c != null) {
-            final String repoTable = PGRefDatabase.this.config.getTables().repositories();
+            final String repoTable = config.getTables().repositories();
             final String sql = format(
                     "SELECT pg_advisory_unlock((SELECT lock_id FROM %s WHERE repository=?));",
                     repoTable);
@@ -198,21 +198,18 @@ public class PGRefDatabase implements RefDatabase {
     }
 
     private String getInternal(final String refPath) {
-        return new DbOp<String>() {
-
-            @Override
-            protected String doRun(Connection cx) throws IOException, SQLException {
-                return doGet(refPath, cx);
-            }
-
-        }.run(dataSource);
+        try (Connection cx = dataSource.getConnection()) {
+            return doGet(refPath, cx);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     private String doGet(final String refPath, final Connection cx) throws SQLException {
-        final String repo = PGRefDatabase.this.config.getRepositoryId();
+        final String repo = config.getRepositoryId();
         final String path = Ref.parentPath(refPath) + "/";
         final String localName = Ref.simpleName(refPath);
-        final String refsTable = PGRefDatabase.this.refsTableName;
+        final String refsTable = refsTableName;
         final String sql = format(
                 "SELECT value FROM %s WHERE repository = ? AND path = ? AND name = ?", refsTable);
         try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repo, path, localName))) {
@@ -245,87 +242,85 @@ public class PGRefDatabase implements RefDatabase {
     }
 
     private void putInternal(final String name, final String value) {
-        new DbOp<Void>() {
+        final String repo = config.getRepositoryId();
+        final String path = Ref.parentPath(name) + "/";
+        final String localName = Ref.simpleName(name);
+        final String refsTable = refsTableName;
 
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                final String repo = PGRefDatabase.this.config.getRepositoryId();
-                final String path = Ref.parentPath(name) + "/";
-                final String localName = Ref.simpleName(name);
-                final String refsTable = PGRefDatabase.this.refsTableName;
+        final String delete = format(
+                "DELETE FROM %s WHERE repository = ? AND path = ? AND name = ?", refsTable);
+        final String insert = format(
+                "INSERT INTO %s (repository, path, name, value) VALUES (?, ?, ?, ?)", refsTable);
 
-                final String delete = format(
-                        "DELETE FROM %s WHERE repository = ? AND path = ? AND name = ?", refsTable);
-                final String insert = format(
-                        "INSERT INTO %s (repository, path, name, value) VALUES (?, ?, ?, ?)",
-                        refsTable);
-
-                cx.setAutoCommit(false);
-                try {
-                    try (PreparedStatement ds = cx.prepareStatement(log(delete, LOG, repo, path,
-                            localName))) {
-                        ds.setString(1, repo);
-                        ds.setString(2, path);
-                        ds.setString(3, localName);
-                        ds.executeUpdate();
-                    }
-                    try (PreparedStatement is = cx.prepareStatement(log(insert, LOG, repo, path,
-                            localName, value))) {
-                        is.setString(1, repo);
-                        is.setString(2, path);
-                        is.setString(3, localName);
-                        is.setString(4, value);
-                        is.executeUpdate();
-                    }
-                    cx.commit();
-                } catch (SQLException e) {
-                    cx.rollback();
-                    throw e;
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try {
+                try (PreparedStatement ds = cx
+                        .prepareStatement(log(delete, LOG, repo, path, localName))) {
+                    ds.setString(1, repo);
+                    ds.setString(2, path);
+                    ds.setString(3, localName);
+                    ds.executeUpdate();
                 }
-                return null;
+                try (PreparedStatement is = cx
+                        .prepareStatement(log(insert, LOG, repo, path, localName, value))) {
+                    is.setString(1, repo);
+                    is.setString(2, path);
+                    is.setString(3, localName);
+                    is.setString(4, value);
+                    is.executeUpdate();
+                }
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
             }
-        }.run(dataSource);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     @Override
     public String remove(final String refName) {
-        return new DbOp<String>() {
-
-            @Override
-            protected String doRun(Connection cx) throws IOException, SQLException {
-                cx.setAutoCommit(false);
-                String oldval;
-                int updateCount = 0;
-                try {
-                    oldval = doGet(refName, cx);
-                    if (oldval == null) {
-                        cx.rollback();
-                    } else {
-                        if (oldval.startsWith("ref: ")) {
-                            oldval = oldval.substring("ref: ".length());
-                        }
-                        final String repo = PGRefDatabase.this.config.getRepositoryId();
-                        final String path = Ref.parentPath(refName) + "/";
-                        final String localName = Ref.simpleName(refName);
-                        final String refsTable = PGRefDatabase.this.refsTableName;
-                        final String sql = format(
-                                "DELETE FROM %s WHERE repository = ? AND path = ? AND name = ?",
-                                refsTable);
-                        try (PreparedStatement st = cx.prepareStatement(sql)) {
-                            st.setString(1, repo);
-                            st.setString(2, path);
-                            st.setString(3, localName);
-                            updateCount = st.executeUpdate();
-                        }
-                        cx.commit();
-                    }
-                } catch (SQLException e) {
+        final String repo = config.getRepositoryId();
+        final String path = Ref.parentPath(refName) + "/";
+        final String localName = Ref.simpleName(refName);
+        final String refsTable = refsTableName;
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            String oldval;
+            int updateCount = 0;
+            try {
+                oldval = doGet(refName, cx);
+                if (oldval == null) {
                     cx.rollback();
-                    throw e;
+                } else {
+                    if (oldval.startsWith("ref: ")) {
+                        oldval = oldval.substring("ref: ".length());
+                    }
+                    final String sql = format(
+                            "DELETE FROM %s WHERE repository = ? AND path = ? AND name = ?",
+                            refsTable);
+                    try (PreparedStatement st = cx.prepareStatement(sql)) {
+                        st.setString(1, repo);
+                        st.setString(2, path);
+                        st.setString(3, localName);
+                        updateCount = st.executeUpdate();
+                    }
+                    cx.commit();
                 }
-                return updateCount == 0 ? null : oldval;
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
             }
-        }.run(dataSource);
+            return updateCount == 0 ? null : oldval;
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     @Override
@@ -340,20 +335,17 @@ public class PGRefDatabase implements RefDatabase {
     }
 
     private Map<String, String> getAll(final String... prefixes) {
-
-        return new DbOp<Map<String, String>>() {
-            @Override
-            protected Map<String, String> doRun(Connection cx) throws IOException, SQLException {
-                return doGetall(cx, prefixes);
-            }
-
-        }.run(dataSource);
+        try (Connection cx = dataSource.getConnection()) {
+            return doGetall(cx, prefixes);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     private Map<String, String> doGetall(Connection cx, final String... prefixes)
             throws SQLException {
-        final String repo = PGRefDatabase.this.config.getRepositoryId();
-        final String refsTable = PGRefDatabase.this.refsTableName;
+        final String repo = config.getRepositoryId();
+        final String refsTable = refsTableName;
 
         StringBuilder sql = new StringBuilder("SELECT path, name, value FROM ")//
                 .append(refsTable)//
@@ -385,35 +377,34 @@ public class PGRefDatabase implements RefDatabase {
     @Override
     public Map<String, String> removeAll(final String namespace) {
         Preconditions.checkNotNull(namespace, "provided namespace is null");
-
-        return new DbOp<Map<String, String>>() {
-            @Override
-            protected Map<String, String> doRun(Connection cx) throws SQLException {
-                cx.setAutoCommit(false);
-                Map<String, String> oldvalues;
-                try {
-                    final String prefix = namespace.endsWith("/") ? namespace : namespace + "/";
-                    oldvalues = doGetall(cx, new String[] { prefix });
-                    if (oldvalues.isEmpty()) {
-                        cx.rollback();
-                    } else {
-                        final String repo = PGRefDatabase.this.config.getRepositoryId();
-                        final String refsTable = PGRefDatabase.this.refsTableName;
-                        String sql = "DELETE FROM " + refsTable
-                                + " WHERE repository = ? AND path LIKE '" + prefix + "%'";
-                        try (PreparedStatement st = cx
-                                .prepareStatement(log(sql, LOG, repo, prefix))) {
-                            st.setString(1, repo);
-                            st.executeUpdate();
-                        }
-                        cx.commit();
-                    }
-                } catch (SQLException e) {
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            Map<String, String> oldvalues;
+            try {
+                final String prefix = namespace.endsWith("/") ? namespace : namespace + "/";
+                oldvalues = doGetall(cx, new String[] { prefix });
+                if (oldvalues.isEmpty()) {
                     cx.rollback();
-                    throw e;
+                } else {
+                    final String repo = config.getRepositoryId();
+                    final String refsTable = refsTableName;
+                    String sql = "DELETE FROM " + refsTable
+                            + " WHERE repository = ? AND path LIKE '" + prefix + "%'";
+                    try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repo, prefix))) {
+                        st.setString(1, repo);
+                        st.executeUpdate();
+                    }
+                    cx.commit();
                 }
-                return oldvalues;
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
             }
-        }.run(dataSource);
+            return oldvalues;
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 }

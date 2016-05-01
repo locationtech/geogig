@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 Boundless.
+/* Copyright (c) 2015-2016 Boundless.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.postgresql;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.Environment.KEY_GETALL_BATCH_SIZE;
 import static org.locationtech.geogig.storage.postgresql.Environment.KEY_PUTALL_BATCH_SIZE;
@@ -49,7 +50,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.sql.DataSource;
 
@@ -80,7 +80,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.Weigher;
@@ -227,8 +226,6 @@ public class PGObjectDatabase implements ObjectDatabase {
                 dataSource = null;
             }
         }
-        printStats("get()", getCount, getTimeNanos, getObjectCount);
-        printStats("getAll()", getAllCount, getAllTimeNanos, getAllObjectCount);
         ObjectDatabaseSharedResources.release(config.connectionConfig);
         executor = null;
         byteCache = null;
@@ -253,20 +250,6 @@ public class PGObjectDatabase implements ObjectDatabase {
         this.putAllBatchSize = size;
     }
 
-    private void printStats(String methodName, AtomicLong callCount, AtomicLong totalTimeNanos,
-            AtomicLong objectCount) {
-        long callTimes = callCount.get();
-        if (callTimes == 0) {
-            return;
-        }
-        long totalMillis = TimeUnit.MILLISECONDS.convert(totalTimeNanos.get(),
-                TimeUnit.NANOSECONDS);
-        double avgMillis = (double) totalMillis / callTimes;
-        LOG.debug(String.format(
-                "%s call count: %,d, objects found: %,d, total time: %,dms, avg call time: %fms\n",
-                methodName, callTimes, objectCount.get(), totalMillis, avgMillis));
-    }
-
     @Override
     public boolean exists(final ObjectId id) {
         checkNotNull(id, "argument id is null");
@@ -275,24 +258,22 @@ public class PGObjectDatabase implements ObjectDatabase {
         if (byteCache.getIfPresent(id) != null) {
             return true;
         }
-        return new DbOp<Boolean>() {
-            @Override
-            protected Boolean doRun(Connection cx) throws SQLException {
-                String sql = format(
-                        "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE ((id).h1) = ? AND id = CAST(ROW(?,?,?) AS OBJECTID) )",
-                        config.getTables().objects());
-                final PGId pgid = PGId.valueOf(id);
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
-                    ps.setInt(1, pgid.hash1());
-                    pgid.setArgs(ps, 2);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        boolean exists = rs.next();
-                        return exists;
-                    }
+        final String sql = format(
+                "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE ((id).h1) = ? AND id = CAST(ROW(?,?,?) AS OBJECTID) )",
+                config.getTables().objects());
+        final PGId pgid = PGId.valueOf(id);
+        try (Connection cx = dataSource.getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
+                ps.setInt(1, pgid.hash1());
+                pgid.setArgs(ps, 2);
+                try (ResultSet rs = ps.executeQuery()) {
+                    boolean exists = rs.next();
+                    return exists;
                 }
-
             }
-        }.run(dataSource);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     @Override
@@ -304,33 +285,30 @@ public class PGObjectDatabase implements ObjectDatabase {
         config.checkRepositoryExists();
 
         final int hash1 = PGId.intHash(ObjectId.toRaw(partialId));
+        final String objects = config.getTables().objects();
+        final String sql = format(
+                "SELECT ((id).h2), ((id).h3) FROM %s WHERE ((id).h1) = ? LIMIT 1000", objects);
 
-        return new DbOp<List<ObjectId>>() {
-            @Override
-            protected List<ObjectId> doRun(Connection cx) throws IOException, SQLException {
-                final String objects = config.getTables().objects();
-                final String sql = format(
-                        "SELECT ((id).h2), ((id).h3) FROM %s WHERE ((id).h1) = ? LIMIT 1000",
-                        objects);
+        try (Connection cx = dataSource.getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(sql)) {
+                ps.setInt(1, hash1);
 
-                try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                    ps.setInt(1, hash1);
-
-                    List<ObjectId> matchList = new ArrayList<>();
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            ObjectId id = PGId.valueOf(hash1, rs.getLong(1), rs.getLong(2))
-                                    .toObjectId();
-                            final String idStr = id.toString();
-                            if (idStr.startsWith(partialId)) {
-                                matchList.add(id);
-                            }
+                List<ObjectId> matchList = new ArrayList<>();
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        ObjectId id = PGId.valueOf(hash1, rs.getLong(1), rs.getLong(2))
+                                .toObjectId();
+                        final String idStr = id.toString();
+                        if (idStr.startsWith(partialId)) {
+                            matchList.add(id);
                         }
                     }
-                    return matchList;
                 }
+                return matchList;
             }
-        }.run(dataSource);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     @Override
@@ -361,18 +339,6 @@ public class PGObjectDatabase implements ObjectDatabase {
         return type.cast(obj);
     }
 
-    private AtomicLong getCount = new AtomicLong();
-
-    private AtomicLong getObjectCount = new AtomicLong();
-
-    private AtomicLong getTimeNanos = new AtomicLong();
-
-    private AtomicLong getAllCount = new AtomicLong();
-
-    private AtomicLong getAllObjectCount = new AtomicLong();
-
-    private AtomicLong getAllTimeNanos = new AtomicLong();
-
     @Override
     public RevObject getIfPresent(ObjectId id) {
         checkNotNull(id, "argument id is null");
@@ -394,7 +360,6 @@ public class PGObjectDatabase implements ObjectDatabase {
         if (RevTree.EMPTY_TREE_ID.equals(id)) {
             obj = RevTree.EMPTY;
         } else {
-            getCount.incrementAndGet();
             TYPE objectType = null;
             if (type != null && !RevObject.class.equals(type)) {
                 objectType = RevObject.TYPE.valueOf(type);
@@ -404,8 +369,6 @@ public class PGObjectDatabase implements ObjectDatabase {
             if (obj == null) {
                 return null;
             }
-            getObjectCount.incrementAndGet();
-
         }
         if (!type.isAssignableFrom(obj.getClass())) {
             return null;
@@ -527,7 +490,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                     return objs.get();
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
-                    throw Throwables.propagate(e);
+                    throw propagate(e);
                 }
             };
 
@@ -543,33 +506,26 @@ public class PGObjectDatabase implements ObjectDatabase {
         checkArgument(!object.getId().isNull(), "ObjectId is NULL %s", object);
         checkWritable();
         config.checkRepositoryExists();
-        // CountingListener l = BulkOpListener.newCountingListener();
-        // putAll(Iterators.singletonIterator(object));
-        // return l.inserted() > 0;
 
         final ObjectId id = object.getId();
-        boolean inserted = new DbOp<Boolean>() {
-            @Override
-            protected Boolean doRun(Connection cx) throws SQLException, IOException {
-                final PGId pgid = PGId.valueOf(id);
-                final String tableName = tableName(config.getTables(), object.getType(),
-                        pgid.hash1());
+        final PGId pgid = PGId.valueOf(id);
+        final String tableName = tableName(config.getTables(), object.getType(), pgid.hash1());
+        final String sql = format("INSERT INTO %s (id, object) VALUES (ROW(?,?,?),?)", tableName);
 
-                String sql = format("INSERT INTO %s (id, object) VALUES (ROW(?,?,?),?)", tableName);
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(true);
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id, object))) {
+                pgid.setArgs(ps, 1);
+                byte[] blob = writeObject(object);
+                ps.setBytes(4, blob);
 
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id, object))) {
-                    pgid.setArgs(ps, 1);
-                    byte[] blob = writeObject(object);
-                    ps.setBytes(4, blob);
-
-                    final int updateCount = ps.executeUpdate();
-
-                    return Boolean.valueOf(updateCount == 1);
-                }
+                final int updateCount = ps.executeUpdate();
+                boolean inserted = updateCount == 1;
+                return inserted;
             }
-        }.run(dataSource).booleanValue();
-
-        return inserted;
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     @Override
@@ -625,7 +581,7 @@ public class PGObjectDatabase implements ObjectDatabase {
             serializer.write(object, cout);
             cout.close();
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw propagate(e);
         }
         byte[] bytes = bout.toByteArray();
         return bytes;
@@ -663,87 +619,84 @@ public class PGObjectDatabase implements ObjectDatabase {
                 InputStream inputStream = new LZFInputStream(new ByteArrayInputStream(cached));
                 return readObject(inputStream, id);
             } catch (IOException e) {
-                Throwables.propagate(e);
+                propagate(e);
             }
         }
-        return new DbOp<RevObject>() {
-            @Override
-            protected RevObject doRun(Connection cx) throws SQLException {
 
-                final PGId pgid = PGId.valueOf(id);
-                final String tableName;
-                final TableNames tables = config.getTables();
-                if (type == null) {
-                    tableName = tables.objects();
-                } else {
-                    switch (type) {
-                    case COMMIT:
-                        tableName = tables.commits();
-                        break;
-                    case FEATURE:
-                        tableName = tables.features(pgid.hash1());
-                        break;
-                    case FEATURETYPE:
-                        tableName = tables.featureTypes();
-                        break;
-                    case TAG:
-                        tableName = tables.tags();
-                        break;
-                    case TREE:
-                        tableName = tables.trees();
-                        break;
-                    default:
-                        throw new IllegalArgumentException();
-                    }
-                }
-
-                // NOTE: the AND clause is for the ((id).h1) = ? comparison to use the hash index
-                // and enable constraint exclusion
-                String sql = format(
-                        "SELECT object FROM %s WHERE ((id).h1) = ? AND id = CAST(ROW(?,?,?) AS OBJECTID)",
-                        tableName);
-
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
-                    ps.setInt(1, pgid.hash1());
-                    pgid.setArgs(ps, 2);
-
-                    RevObject obj = null;
-
-                    try (ResultSet rs = ps.executeQuery()) {
-                        if (rs.next()) {
-                            byte[] bytes = rs.getBytes(1);
-
-                            try {
-                                InputStream in = new LZFInputStream(
-                                        new ByteArrayInputStream(bytes));
-                                obj = readObject(in, id);
-                                // Only cache tree objects
-                                if (obj.getType().equals(TYPE.TREE)) {
-                                    byteCache.put(id, bytes);
-                                }
-                            } catch (IOException e) {
-                                throw Throwables.propagate(e);
-                            }
-                        }
-                        // Preconditions.checkState(!rs.next());
-                        return obj;
-                    }
-                }
-
+        final PGId pgid = PGId.valueOf(id);
+        final String tableName;
+        final TableNames tables = config.getTables();
+        if (type == null) {
+            tableName = tables.objects();
+        } else {
+            switch (type) {
+            case COMMIT:
+                tableName = tables.commits();
+                break;
+            case FEATURE:
+                tableName = tables.features(pgid.hash1());
+                break;
+            case FEATURETYPE:
+                tableName = tables.featureTypes();
+                break;
+            case TAG:
+                tableName = tables.tags();
+                break;
+            case TREE:
+                tableName = tables.trees();
+                break;
+            default:
+                throw new IllegalArgumentException();
             }
-        }.run(ds);
+        }
+
+        // NOTE: the AND clause is for the ((id).h1) = ? comparison to use the hash index
+        // and enable constraint exclusion
+        final String sql = format(
+                "SELECT object FROM %s WHERE ((id).h1) = ? AND id = CAST(ROW(?,?,?) AS OBJECTID)",
+                tableName);
+
+        byte[] bytes = null;
+
+        try (Connection cx = dataSource.getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
+                ps.setInt(1, pgid.hash1());
+                pgid.setArgs(ps, 2);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        bytes = rs.getBytes(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+
+        if (bytes == null) {
+            return null;
+        }
+
+        try (InputStream in = new LZFInputStream(new ByteArrayInputStream(bytes))) {
+            RevObject obj = readObject(in, id);
+            // Only cache tree objects
+            if (obj.getType().equals(TYPE.TREE)) {
+                byteCache.put(id, bytes);
+            }
+            return obj;
+        } catch (IOException e) {
+            throw propagate(e);
+        }
     }
 
     private Future<List<RevObject>> getAll(final List<ObjectId> ids, final DataSource ds,
             final BulkOpListener listener, final @Nullable TYPE type) {
 
-        GetAllOp getAllOp = new GetAllOp(ids, listener, this, type, byteCache);
+        GetAllOp getAllOp = new GetAllOp(ids, listener, this, type);
         Future<List<RevObject>> future = executor.submit(getAllOp);
         return future;
     }
 
-    private static class GetAllOp extends DbOp<List<RevObject>>
-            implements Callable<List<RevObject>> {
+    private static class GetAllOp implements Callable<List<RevObject>> {
 
         private final List<ObjectId> queryIds;
 
@@ -757,17 +710,16 @@ public class PGObjectDatabase implements ObjectDatabase {
         private final TYPE type;
 
         public GetAllOp(List<ObjectId> ids, BulkOpListener listener, PGObjectDatabase db,
-                @Nullable TYPE type, Cache<ObjectId, byte[]> byteCache) {
+                @Nullable TYPE type) {
             this.queryIds = ids;
             this.callback = listener;
             this.db = db;
             this.type = type;
-            this.byteCache = byteCache;
+            this.byteCache = db.byteCache;
         }
 
         @Override
-        protected List<RevObject> doRun(Connection cx) throws IOException, SQLException {
-
+        public List<RevObject> call() throws Exception {
             final TableNames tables = db.config.getTables();
             final String tableName;
             if (type == null) {
@@ -812,32 +764,35 @@ public class PGObjectDatabase implements ObjectDatabase {
                     "SELECT ((id).h1), ((id).h2),((id).h3), object FROM %s WHERE ((id).h1) = ANY(?)",
                     tableName);
 
-            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, queryIds))) {
+            try (Connection cx = db.dataSource.getConnection()) {
+                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, queryIds))) {
 
-                final Array array = toJDBCArray(cx, queryIds);
-                ps.setFetchSize(queryCount);
-                ps.setArray(1, array);
+                    final Array array = toJDBCArray(cx, queryIds);
+                    ps.setFetchSize(queryCount);
+                    ps.setArray(1, array);
 
-                Stopwatch sw = Stopwatch.createStarted();
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace(String.format("Executed getAll for %,d ids in %,dms\n",
-                                queryCount, sw.elapsed(TimeUnit.MILLISECONDS)));
-                    }
-                    while (rs.next()) {
-                        id = PGId.valueOf(rs, 1).toObjectId();
-                        // only add those that are in the query set. The resultset may contain
-                        // more due to hash1 clashes
-                        if (queryIds.remove(id)) {
-                            bytes = rs.getBytes(4);
-                            foundBytes(id, bytes, found, true);
+                    final Stopwatch sw = LOG.isTraceEnabled() ? Stopwatch.createStarted() : null;
+
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace(String.format("Executed getAll for %,d ids in %,dms\n",
+                                    queryCount, sw.elapsed(TimeUnit.MILLISECONDS)));
+                        }
+                        while (rs.next()) {
+                            id = PGId.valueOf(rs, 1).toObjectId();
+                            // only add those that are in the query set. The resultset may contain
+                            // more due to hash1 clashes
+                            if (queryIds.remove(id)) {
+                                bytes = rs.getBytes(4);
+                                foundBytes(id, bytes, found, true);
+                            }
                         }
                     }
-                }
-                sw.stop();
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace(String.format("Finished getAll for %,d out of %,d ids in %,dms\n",
-                            found.size(), queryCount, sw.elapsed(TimeUnit.MILLISECONDS)));
+                    if (LOG.isTraceEnabled()) {
+                        sw.stop();
+                        LOG.trace(String.format("Finished getAll for %,d out of %,d ids in %,dms\n",
+                                found.size(), queryCount, sw.elapsed(TimeUnit.MILLISECONDS)));
+                    }
                 }
             }
             for (ObjectId oid : queryIds) {
@@ -857,7 +812,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                     byteCache.put(oid, bytes);
                 }
             } catch (IOException e) {
-                Throwables.propagate(e);
+                propagate(e);
             }
         }
 
@@ -873,18 +828,6 @@ public class PGObjectDatabase implements ObjectDatabase {
             array = cx.createArrayOf("integer", arr);
             return array;
         }
-
-        @Override
-        public List<RevObject> call() throws Exception {
-
-            db.getAllCount.incrementAndGet();
-            Stopwatch sw = Stopwatch.createStarted();
-            List<RevObject> found = run(db.dataSource);
-            db.getAllTimeNanos.addAndGet(sw.stop().elapsed(TimeUnit.NANOSECONDS));
-            db.getAllObjectCount.addAndGet(found.size());
-            return found;
-
-        }
     }
 
     /**
@@ -894,20 +837,21 @@ public class PGObjectDatabase implements ObjectDatabase {
      */
 
     private boolean delete(final ObjectId id, DataSource ds) {
-        return new DbOp<Boolean>() {
-            @Override
-            protected Boolean doRun(Connection cx) throws SQLException {
-                String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
-                        config.getTables().objects());
+        String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
+                config.getTables().objects());
 
-                try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG, id))) {
-                    PGId.valueOf(id).setArgs(stmt, 1);
-                    int updateCount = stmt.executeUpdate();
-                    byteCache.invalidate(id);
-                    return Boolean.valueOf(updateCount > 0);
-                }
+        try (Connection cx = ds.getConnection()) {
+            cx.setAutoCommit(true);
+            try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG, id))) {
+                PGId.valueOf(id).setArgs(stmt, 1);
+                int updateCount = stmt.executeUpdate();
+                byteCache.invalidate(id);
+                boolean deleted = updateCount > 0;
+                return deleted;
             }
-        }.run(ds).booleanValue();
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     private static class EncodedObject {
@@ -924,7 +868,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         }
     }
 
-    private static class InsertDbOp extends DbOp<Void> implements Callable<Void> {
+    private static class InsertDbOp implements Callable<Void> {
 
         private final DataSource ds;
 
@@ -950,99 +894,82 @@ public class PGObjectDatabase implements ObjectDatabase {
         }
 
         @Override
-        public Void call() throws Exception {
-            return super.run(ds);
+        public Void call() {
+            try (Connection cx = ds.getConnection()) {
+                cx.setAutoCommit(false);
+                try {
+                    doInsert(cx);
+                    if (abortFlag.get()) {
+                        cx.rollback();
+                    } else {
+                        cx.commit();
+                    }
+                } catch (Exception executionEx) {
+                    rollbackAndRethrow(cx, executionEx);
+                }finally {
+                    cx.setAutoCommit(true);
+                }
+            } catch (Exception connectEx) {
+                abortFlag.set(true);
+            }
+            return null;
         }
 
-        @Override
-        protected boolean isAutoCommit() {
-            return false;
-        }
-
-        @Override
-        protected Void doRun(Connection cx) throws IOException, SQLException {
-
+        private void doInsert(Connection cx) throws Exception {
             Map<String, PreparedStatement> perTableStatements = new HashMap<>();
             ArrayListMultimap<String, ObjectId> perTableIds = ArrayListMultimap.create();
 
-            long insertedCount = 0;
-            long processedCount = 0;
-            try {
-                // Stopwatch sw = Stopwatch.createStarted();
-                while (true) {
-                    List<EncodedObject> partition = null;
-                    while (null == (partition = objects.poll(50, TimeUnit.MILLISECONDS))) {
-                        if (abortFlag.get() || eofFlag.get()) {
-                            break;
-                        }
-                    }
-                    if (abortFlag.get() || partition == null) {
+            while (true) {
+                List<EncodedObject> partition = null;
+                while (null == (partition = objects.poll(50, TimeUnit.MILLISECONDS))) {
+                    if (abortFlag.get() || eofFlag.get()) {
                         break;
                     }
-
-                    // partition the objects into chunks for batch processing
-                    for (EncodedObject obj : partition) {
-                        if (abortFlag.get()) {
-                            break;
-                        }
-                        processedCount++;
-                        final TYPE type = obj.type;
-                        final ObjectId id = obj.id;
-                        final PGId pgid = PGId.valueOf(id);
-                        final byte[] bytes = obj.serialized;
-                        {
-                            final String tableName = tableName(tables, type, pgid.hash1());
-                            perTableIds.put(tableName, id);
-
-                            PreparedStatement stmt = prepare(cx, tableName, perTableStatements);
-                            pgid.setArgs(stmt, 1);
-                            stmt.setBytes(4, bytes);
-                            stmt.addBatch();
-                        }
-                    }
-
-                    for (String tableName : new HashSet<String>(perTableIds.keySet())) {
-                        if (abortFlag.get()) {
-                            break;
-                        }
-                        PreparedStatement tableStatement;
-                        tableStatement = perTableStatements.get(tableName);
-                        List<ObjectId> ids = perTableIds.removeAll(tableName);
-                        // Stopwatch sw = Stopwatch.createStarted();
-                        int[] batchResults = tableStatement.executeBatch();
-                        // System.err.printf("%,d batch inserts to %s in %s\n", ids.size(),
-                        // tableName, sw.stop());
-                        tableStatement.clearParameters();
-                        tableStatement.clearBatch();
-
-                        int newObjects = notifyInserted(batchResults, ids, listener);
-                        insertedCount += newObjects;
-                    }
-
-                } // while
-
-                for (PreparedStatement tableStatement : perTableStatements.values()) {
-                    tableStatement.close();
+                    Thread.yield();
                 }
-                if (abortFlag.get()) {
-                    cx.rollback();
-                } else {
-                    cx.commit();
-                    // System.err.printf("Inserted %,d of %,d objects in %s\n", insertedCount,
-                    // processedCount, sw.stop());
+                if (abortFlag.get() || partition == null) {
+                    break;
                 }
 
-            } catch (SQLException e) {
-                abortFlag.set(true);
-                e.printStackTrace();
-                Throwables.getRootCause(e).printStackTrace();
-                rollbackAndRethrow(cx, e);
-            } catch (Exception e) {
-                abortFlag.set(true);
-                e.printStackTrace();
-                rollbackAndRethrow(cx, e);
+                // partition the objects into chunks for batch processing
+                for (EncodedObject obj : partition) {
+                    if (abortFlag.get()) {
+                        break;
+                    }
+                    final TYPE type = obj.type;
+                    final ObjectId id = obj.id;
+                    final PGId pgid = PGId.valueOf(id);
+                    final byte[] bytes = obj.serialized;
+                    {
+                        final String tableName = tableName(tables, type, pgid.hash1());
+                        perTableIds.put(tableName, id);
+
+                        PreparedStatement stmt = prepare(cx, tableName, perTableStatements);
+                        pgid.setArgs(stmt, 1);
+                        stmt.setBytes(4, bytes);
+                        stmt.addBatch();
+                    }
+                }
+
+                for (String tableName : new HashSet<String>(perTableIds.keySet())) {
+                    if (abortFlag.get()) {
+                        break;
+                    }
+                    PreparedStatement tableStatement;
+                    tableStatement = perTableStatements.get(tableName);
+                    List<ObjectId> ids = perTableIds.removeAll(tableName);
+                    int[] batchResults = tableStatement.executeBatch();
+                    tableStatement.clearParameters();
+                    tableStatement.clearBatch();
+
+                    notifyInserted(batchResults, ids, listener);
+                }
+
+            } // while
+
+            for (PreparedStatement tableStatement : perTableStatements.values()) {
+                tableStatement.close();
             }
-            return null;
         }
 
         private PreparedStatement prepare(final Connection cx, final String tableName,
@@ -1072,6 +999,7 @@ public class PGObjectDatabase implements ObjectDatabase {
             byte[] bytes = writeObject(obj, serializer);
             return new EncodedObject(obj.getId(), obj.getType(), bytes);
         }
+
     };
 
     /**
@@ -1138,7 +1066,7 @@ public class PGObjectDatabase implements ObjectDatabase {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw Throwables.propagate(e);
+            throw propagate(e);
         }
     }
 
@@ -1182,41 +1110,36 @@ public class PGObjectDatabase implements ObjectDatabase {
         checkNotNull(listener, "argument listener is null");
         checkWritable();
         config.checkRepositoryExists();
-        return new DbOp<Long>() {
-            @Override
-            protected boolean isAutoCommit() {
-                return false;
-            }
 
-            @Override
-            protected Long doRun(Connection cx) throws SQLException, IOException {
-                String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
-                        config.getTables().objects());
+        final String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
+                config.getTables().objects());
 
-                long count = 0;
-
-                try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG))) {
-                    // partition the objects into chunks for batch processing
-                    Iterator<List<ObjectId>> it = Iterators.partition(ids, putAllBatchSize);
-
-                    while (it.hasNext()) {
-                        List<ObjectId> l = it.next();
-                        for (ObjectId id : l) {
-                            PGId.valueOf(id).setArgs(stmt, 1);
-                            stmt.addBatch();
-                        }
-
-                        count += notifyDeleted(stmt.executeBatch(), l, listener);
-                        stmt.clearParameters();
-                        stmt.clearBatch();
+        long count = 0;
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG))) {
+                // partition the objects into chunks for batch processing
+                Iterator<List<ObjectId>> it = Iterators.partition(ids, putAllBatchSize);
+                while (it.hasNext()) {
+                    List<ObjectId> list = it.next();
+                    for (ObjectId id : list) {
+                        PGId.valueOf(id).setArgs(stmt, 1);
+                        stmt.addBatch();
                     }
-                    cx.commit();
-                } catch (SQLException e) {
-                    rollbackAndRethrow(cx, e);
+                    count += notifyDeleted(stmt.executeBatch(), list, listener);
+                    stmt.clearParameters();
+                    stmt.clearBatch();
                 }
-                return count;
+                cx.commit();
+            } catch (SQLException e) {
+                rollbackAndRethrow(cx, e);
+            } finally {
+                cx.setAutoCommit(true);
             }
-        }.run(dataSource);
+        } catch (SQLException connectEx) {
+            throw propagate(connectEx);
+        }
+        return count;
     }
 
     long notifyDeleted(int[] deleted, List<ObjectId> ids, BulkOpListener listener) {

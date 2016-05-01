@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 Boundless.
+/* Copyright (c) 2015-2016 Boundless.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
+import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 
@@ -78,29 +79,27 @@ class PGBlobStore implements TransactionBlobStore {
     public Optional<byte[]> getBlob(final String namespace, final String path) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
 
-        byte[] bytes = new DbOp<byte[]>() {
-            @Override
-            protected byte[] doRun(Connection cx) throws SQLException {
-                String sql = format(
-                        "SELECT blob FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
-                        blobsTable);
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId,
-                        namespace, path))) {
-                    ps.setString(1, repositoryId);
-                    ps.setString(2, namespace);
-                    ps.setString(3, path);
+        final String sql = format(
+                "SELECT blob FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
+                blobsTable);
 
-                    byte[] bytes = null;
-                    try (ResultSet rs = ps.executeQuery()) {
-                        if (rs.next()) {
-                            bytes = rs.getBytes(1);
-                        }
+        byte[] bytes = null;
+        try (Connection cx = dataSource.getConnection()) {
+            try (PreparedStatement ps = cx
+                    .prepareStatement(log(sql, LOG, repositoryId, namespace, path))) {
+                ps.setString(1, repositoryId);
+                ps.setString(2, namespace);
+                ps.setString(3, path);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        bytes = rs.getBytes(1);
                     }
-                    return bytes;
                 }
             }
-
-        }.run(dataSource);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
 
         return Optional.fromNullable(bytes);
     }
@@ -120,38 +119,37 @@ class PGBlobStore implements TransactionBlobStore {
     public void putBlob(final String namespace, final String path, final byte[] blob) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
 
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                String delete = format(
-                        "DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
-                        blobsTable);
-                String insert = format(
-                        "INSERT INTO %s (repository, namespace, path, blob) VALUES (?, ?, ?, ?)",
-                        blobsTable);
-                cx.setAutoCommit(false);
-                try {
-                    try (PreparedStatement d = cx.prepareStatement(delete)) {
-                        d.setString(1, repositoryId);
-                        d.setString(2, namespace);
-                        d.setString(3, path);
-                        d.executeUpdate();
-                    }
-                    try (PreparedStatement i = cx.prepareStatement(insert)) {
-                        i.setString(1, repositoryId);
-                        i.setString(2, namespace);
-                        i.setString(3, path);
-                        i.setBytes(4, blob);
-                        i.executeUpdate();
-                    }
-                    cx.commit();
-                } catch (SQLException e) {
-                    cx.rollback();
-                    throw e;
+        String delete = format("DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
+                blobsTable);
+        String insert = format(
+                "INSERT INTO %s (repository, namespace, path, blob) VALUES (?, ?, ?, ?)",
+                blobsTable);
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try {
+                try (PreparedStatement d = cx.prepareStatement(delete)) {
+                    d.setString(1, repositoryId);
+                    d.setString(2, namespace);
+                    d.setString(3, path);
+                    d.executeUpdate();
                 }
-                return null;
+                try (PreparedStatement i = cx.prepareStatement(insert)) {
+                    i.setString(1, repositoryId);
+                    i.setString(2, namespace);
+                    i.setString(3, path);
+                    i.setBytes(4, blob);
+                    i.executeUpdate();
+                }
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
             }
-        }.run(dataSource);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     @Override
@@ -169,54 +167,56 @@ class PGBlobStore implements TransactionBlobStore {
     @Override
     public void removeBlob(final String namespace, final String path) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                String delete = format("LOCK TABLE %s IN SHARE ROW EXCLUSIVE MODE;"
+        final String delete = format(
+                "LOCK TABLE %s IN SHARE ROW EXCLUSIVE MODE;"
                         + "DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
-                        blobsTable, blobsTable);
-                cx.setAutoCommit(false);
-                try {
-                    try (PreparedStatement d = cx.prepareStatement(delete)) {
-                        d.setString(1, repositoryId);
-                        d.setString(2, namespace);
-                        d.setString(3, path);
-                        d.executeUpdate();
-                    }
-                    cx.commit();
-                } catch (SQLException e) {
-                    cx.rollback();
-                    throw e;
-                }
-                return null;
-            }
-        }.run(dataSource);
+                blobsTable, blobsTable);
 
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try {
+                try (PreparedStatement d = cx.prepareStatement(delete)) {
+                    d.setString(1, repositoryId);
+                    d.setString(2, namespace);
+                    d.setString(3, path);
+                    d.executeUpdate();
+                }
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     @Override
     public void removeBlobs(final String namespace) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                String delete = format("DELETE FROM %s WHERE repository = ? AND namespace = ?",
-                        blobsTable);
-                cx.setAutoCommit(false);
-                try {
-                    try (PreparedStatement d = cx.prepareStatement(delete)) {
-                        d.setString(1, repositoryId);
-                        d.setString(2, namespace);
-                        d.executeUpdate();
-                    }
-                    cx.commit();
-                } catch (SQLException e) {
-                    cx.rollback();
-                    throw e;
+        final String delete = format("DELETE FROM %s WHERE repository = ? AND namespace = ?",
+                blobsTable);
+
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try {
+                try (PreparedStatement d = cx.prepareStatement(delete)) {
+                    d.setString(1, repositoryId);
+                    d.setString(2, namespace);
+                    d.executeUpdate();
                 }
-                return null;
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
             }
-        }.run(dataSource);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
 }

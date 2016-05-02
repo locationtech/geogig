@@ -840,8 +840,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
                     OperationStatus status;
                     status = cursor.getSearchKey(key, data, LockMode.READ_UNCOMMITTED);
                     if (SUCCESS.equals(status)) {
-                        InputStream rawData;
-                        rawData = new LZFInputStream(new ByteArrayInputStream(data.getData()));
+                        InputStream rawData = new ByteArrayInputStream(data.getData());
                         found = reader.read(id, rawData);
                         if (filter.isAssignableFrom(found.getClass())) {
                             listener.found(found.getId(), data.getSize());

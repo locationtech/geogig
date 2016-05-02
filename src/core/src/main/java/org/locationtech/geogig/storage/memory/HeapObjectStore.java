@@ -25,13 +25,13 @@ import org.locationtech.geogig.storage.AbstractObjectDatabase;
 import org.locationtech.geogig.storage.AbstractObjectStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
+import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.ning.compress.lzf.LZFInputStream;
 
 /**
  * Provides an implementation of a GeoGig object database that utilizes the heap for the storage of
@@ -44,7 +44,7 @@ public class HeapObjectStore extends AbstractObjectStore {
     private ConcurrentMap<ObjectId, byte[]> objects;
 
     public HeapObjectStore() {
-        super(DataStreamSerializationFactoryV2.INSTANCE);
+        super(new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE));
     }
 
     /**
@@ -199,8 +199,7 @@ public class HeapObjectStore extends AbstractObjectStore {
                     raw = objects.get(id);
                     if (raw != null) {
                         try {
-                            RevObject obj = serializer.read(id,
-                                    new LZFInputStream(new ByteArrayInputStream(raw)));
+                            RevObject obj = serializer.read(id, new ByteArrayInputStream(raw));
                             found = type.isAssignableFrom(obj.getClass()) ? type.cast(obj) : null;
                         } catch (IOException e) {
                             throw Throwables.propagate(e);

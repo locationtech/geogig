@@ -78,6 +78,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+/**
+ * Class for augmenting a geopackage with additional tables to enable smooth import/export
+ * functionality with GeoGig. Extra tables keep track of which commit an export came from as well as
+ * which features have been modified since the export so that they can be properly merged on import.
+ */
 class InterchangeFormat {
 
     private Context context;
@@ -104,6 +109,9 @@ class InterchangeFormat {
     }
 
     /**
+     * Creates an audit table for a table in the geopackage. This function requires that the
+     * features have already been exported to the geopackage.
+     * 
      * @param sourcePathspec path from which features have been exported (supports format
      *        {@code <[<commit-ish>:]<treePath>>}. e.g. {@code buildings}, {@code HEAD~2:buildings},
      *        {@code abc123fg:buildings}, {@code origin/master:buildings} ). {@code buildings}
@@ -158,6 +166,15 @@ class InterchangeFormat {
         }
     }
 
+    /**
+     * Create the audit tables for the specified feature type.
+     * 
+     * @param geopackage the geopackage to add the tables to
+     * @param mappedPath the feature tree path
+     * @param fe the feature entry to add audit logs too
+     * @param commitId the commit that the exported features came from
+     * @throws SQLException
+     */
     private void createAuditLog(final GeoPackage geopackage, final String mappedPath,
             final FeatureEntry fe, final ObjectId commitId) throws SQLException {
 
@@ -176,6 +193,20 @@ class InterchangeFormat {
         }
     }
 
+    /**
+     * Imports the features from the geopackage based on the existing audit table onto the current
+     * branch. If the head commit of the current branch is different from the commit that the
+     * features were exported from, the features will be merged into the current branch. The calling
+     * function should anticipate the possibility of merge conflicts.
+     * 
+     * @param commitMessage commit message for the imported features
+     * @param authorName author name to use for the commit
+     * @param authorEmail author email to use for the commit
+     * @param tableNames a list of tables to import from the geopackage, if none are specified, all
+     *        tables will be imported
+     * @return the commit with the imported features, or the merge commit if it was not a
+     *         fast-forward merge
+     */
     public RevCommit importAuditLog(@Nullable String commitMessage, @Nullable String authorName,
             @Nullable String authorEmail, @Nullable String... tableNames) {
 
@@ -268,6 +299,16 @@ class InterchangeFormat {
         return newCommit;
     }
 
+    /**
+     * Import the specified table and update the tree builder with the updated features.
+     * 
+     * @param geopackage the geopackage to import from
+     * @param auditTable the audit table for the feature type
+     * @param baseTree the tree that the features were originally exported from
+     * @param newTreeBuilder the tree builder for the updated features
+     * @return the audit report for the table
+     * @throws SQLException
+     */
     private AuditReport importAuditLog(GeoPackage geopackage, AuditTable auditTable,
             RevTree baseTree, RevTreeBuilder newTreeBuilder)
             throws SQLException {
@@ -310,6 +351,15 @@ class InterchangeFormat {
         return tableReport;
     }
 
+    /**
+     * Builds a new feature type tree based on the changes in the audit logs.
+     * 
+     * @param store the object store
+     * @param currentFeatureTree the original feature tree
+     * @param changes all of the changes from the audit log
+     * @return the newly built tree
+     * @throws SQLException
+     */
     private RevTree importAuditLog(ObjectStore store, RevTree currentFeatureTree,
             Iterator<Change> changes) throws SQLException {
 
@@ -358,6 +408,15 @@ class InterchangeFormat {
         return newTree;
     }
 
+    /**
+     * Converts the audit log into an iterator for all of the changes and updates an audit report
+     * with a summary of the changes.
+     * 
+     * @param rs the rows from the audit log
+     * @param featureType the feature type for the features in the table
+     * @param report the audit report to update
+     * @return
+     */
     private Iterator<Change> asChanges(final ResultSet rs, RevFeatureType featureType,
             AuditReport report) {
 
@@ -415,6 +474,9 @@ class InterchangeFormat {
         };
     }
 
+    /**
+     * Helper function to convert a row from an audit log into a feature.
+     */
     private static class RecordToFeature implements Function<ResultSet, RevFeature> {
 
         private SimpleFeatureBuilder builder;
@@ -454,6 +516,9 @@ class InterchangeFormat {
         }
     }
 
+    /**
+     * Helper class for a change from an audit log.
+     */
     private static class Change {
 
         private final String featureId;

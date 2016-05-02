@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
@@ -40,9 +41,9 @@ import com.google.common.base.Preconditions;
  * 
  * <pre>
  * CREATE TABLE geogig_conflict (
- *         repository TEXT, namespace TEXT, path TEXT, ancestor bytea, ours bytea, theirs bytea,
+ *         repository TEXT, namespace TEXT, path TEXT, ancestor bytea, ours bytea NOT NULL, theirs bytea NOT NULL,
  *         PRIMARY KEY(repository, namespace, path),
- *         FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE
+ *         FOREIGN KEY (repository) REFERENCES geogig_repository(repository) ON DELETE CASCADE
  *         )
  * </pre>
  * <p>
@@ -78,7 +79,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
     }
 
     @Override
-    public void addConflict(String ns, final Conflict conflict) {
+    public void addConflict(@Nullable String ns, final Conflict conflict) {
         Preconditions.checkNotNull(conflict);
         final String path = conflict.getPath();
         Preconditions.checkNotNull(path);
@@ -95,7 +96,12 @@ class PGConflictsDatabase implements ConflictsDatabase {
                 ps.setString(1, repositoryId);
                 ps.setString(2, namespace);
                 ps.setString(3, path);
-                ps.setBytes(4, conflict.getAncestor().getRawValue());
+                ObjectId ancestor = conflict.getAncestor();
+                if (ancestor.isNull()) {
+                    ps.setNull(4, java.sql.Types.OTHER, "bytea");
+                } else {
+                    ps.setBytes(4, ancestor.getRawValue());
+                }
                 ps.setBytes(5, conflict.getOurs().getRawValue());
                 ps.setBytes(6, conflict.getTheirs().getRawValue());
 
@@ -122,7 +128,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
     }
 
     @Override
-    public boolean hasConflicts(String namespace) {
+    public boolean hasConflicts(@Nullable final String namespace) {
         int count = count(namespace(namespace));
         return count > 0;
     }
@@ -155,7 +161,14 @@ class PGConflictsDatabase implements ConflictsDatabase {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         String path = rs.getString(1);
-                        ObjectId ancestor = ObjectId.createNoClone(rs.getBytes(2));
+                        @Nullable
+                        byte[] ancestorb = rs.getBytes(2);
+                        ObjectId ancestor;
+                        if (ancestorb == null) {
+                            ancestor = ObjectId.NULL;
+                        } else {
+                            ancestor = ObjectId.createNoClone(ancestorb);
+                        }
                         ObjectId ours = ObjectId.createNoClone(rs.getBytes(3));
                         ObjectId theirs = ObjectId.createNoClone(rs.getBytes(4));
                         conflicts.add(new Conflict(path, ancestor, ours, theirs));
@@ -173,27 +186,21 @@ class PGConflictsDatabase implements ConflictsDatabase {
     }
 
     @Override
-    public void removeConflict(final @Nullable String ns, final @Nullable String path) {
+    public void removeConflict(final @Nullable String ns, final String path) {
+        checkNotNull(path, "path is null");
         final String namespace = namespace(ns);
 
-        final String sql;
-        if (path == null) {
-            sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ?", conflictsTable);
-            log(sql, LOG, namespace);
-        } else {
-            sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
-                    conflictsTable);
-            log(sql, LOG, namespace, path);
-        }
+        final String sql = format(
+                "DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
+                conflictsTable);
+        log(sql, LOG, namespace, path);
 
         try (Connection cx = dataSource.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 ps.setString(1, repositoryId);
                 ps.setString(2, namespace);
-                if (path != null) {
-                    ps.setString(3, path);
-                }
+                ps.setString(3, path);
                 ps.executeUpdate();
                 cx.commit();
             } catch (SQLException e) {
@@ -208,7 +215,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
     }
 
     @Override
-    public void removeConflicts(final String ns) {
+    public void removeConflicts(@Nullable final String ns) {
         final String namespace = namespace(ns);
         final String sql;
         sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ?", conflictsTable);

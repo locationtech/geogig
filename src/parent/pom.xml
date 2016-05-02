@@ -590,11 +590,12 @@
 
   <modules>
    <module>../core</module>
+   <module>../datastore</module>
    <module>../storage</module>
    <module>../osm</module>
    <module>../cli</module>
-   <module>../cli-app</module>
    <module>../geotools</module>
    <module>../web</module>
+   <module>../cli-app</module>
   </modules>
 </project>

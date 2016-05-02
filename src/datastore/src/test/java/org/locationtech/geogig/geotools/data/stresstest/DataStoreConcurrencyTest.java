@@ -37,15 +37,16 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.api.GlobalContextBuilder;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.porcelain.ConfigOp;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.test.integration.TestContextBuilder;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -85,23 +86,26 @@ public class DataStoreConcurrencyTest {
         File userHomeDirectory = tmp.newFolder("home");
         TestPlatform platform = new TestPlatform(workingDirectory);
         platform.setUserHome(userHomeDirectory);
-        Context injector = new CLIContextBuilder().build(new Hints().platform(platform));
-        GeoGIG geogig = new GeoGIG(injector);
-        geogig.command(InitOp.class).call();
-        geogig.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
+
+        GlobalContextBuilder.builder(new TestContextBuilder(platform));
+        Context context = GlobalContextBuilder.builder().build(new Hints().platform(platform));
+        
+        GeoGIG repo = new GeoGIG(context);
+        repo.command(InitOp.class).call();
+        repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("gabriel").call();
-        geogig.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
+        repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
                 .setValue("gabriel@roldan.example.com").call();
 
-        store = new GeoGigDataStore(geogig.getRepository());
+        store = new GeoGigDataStore(repo.getRepository());
 
         store.createSchema(pointType);
 
-        editThreads = Executors.newFixedThreadPool(writeThreadCount, new ThreadFactoryBuilder()
-                .setNameFormat("edit-thread-%d").build());
+        editThreads = Executors.newFixedThreadPool(writeThreadCount,
+                new ThreadFactoryBuilder().setNameFormat("edit-thread-%d").build());
 
-        readThreads = Executors.newFixedThreadPool(readThreadCount, new ThreadFactoryBuilder()
-                .setNameFormat("read-thread-%d").build());
+        readThreads = Executors.newFixedThreadPool(readThreadCount,
+                new ThreadFactoryBuilder().setNameFormat("read-thread-%d").build());
         initialCommitCount = copyOf(store.getGeogig().command(LogOp.class).call()).size();
     }
 
@@ -166,8 +170,8 @@ public class DataStoreConcurrencyTest {
         }
 
         List<RevCommit> commits = copyOf(store.getGeogig().command(LogOp.class).call());
-        final int expectedCommitCount = insertsPerTask + initialCommitCount + insertsPerTask
-                * writeThreadCount;
+        final int expectedCommitCount = insertsPerTask + initialCommitCount
+                + insertsPerTask * writeThreadCount;
         assertEquals(expectedCommitCount, commits.size());
     }
 

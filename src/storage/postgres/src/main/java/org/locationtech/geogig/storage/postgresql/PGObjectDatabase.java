@@ -22,10 +22,6 @@ import static org.locationtech.geogig.storage.postgresql.PGStorage.rollbackAndRe
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.sql.Array;
 import java.sql.Connection;
@@ -69,9 +65,6 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInserter;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,8 +82,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
-import com.ning.compress.lzf.LZFInputStream;
-import com.ning.compress.lzf.LZFOutputStream;
 
 /**
  * PostgreSQL implementation for {@link ObjectDatabase}.
@@ -109,7 +100,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
     private final ConfigDatabase configdb;
 
-    private ObjectSerializingFactory serializer;
+    private static final PGRevObjectEncoder encoder = new PGRevObjectEncoder();
 
     private DataSource dataSource;
 
@@ -129,15 +120,6 @@ public class PGObjectDatabase implements ObjectDatabase {
 
     private final boolean readOnly;
 
-    /**
-     * The serialized object is added a header that's one unsigned byte with the index of the
-     * corresponding factory in this array
-     */
-    private static final ObjectSerializingFactory[] SUPPORTED_FORMATS = { //
-            DataStreamSerializationFactoryV1.INSTANCE, //
-            DataStreamSerializationFactoryV2.INSTANCE //
-    };
-
     @Inject
     public PGObjectDatabase(final ConfigDatabase configdb, final Hints hints)
             throws URISyntaxException {
@@ -155,7 +137,6 @@ public class PGObjectDatabase implements ObjectDatabase {
         Preconditions.checkNotNull(config.getRepositoryId(), "Repository id not provided");
         this.configdb = configdb;
         this.config = config;
-        this.serializer = SUPPORTED_FORMATS[SUPPORTED_FORMATS.length - 1];
         this.readOnly = readOnly;
     }
 
@@ -358,18 +339,22 @@ public class PGObjectDatabase implements ObjectDatabase {
 
         final RevObject obj;
         if (RevTree.EMPTY_TREE_ID.equals(id)) {
-            obj = RevTree.EMPTY;
-        } else {
-            TYPE objectType = null;
-            if (type != null && !RevObject.class.equals(type)) {
-                objectType = RevObject.TYPE.valueOf(type);
-            }
-
-            obj = getIfPresent(id, objectType, dataSource);
-            if (obj == null) {
-                return null;
-            }
+            return type.isAssignableFrom(RevTree.class) ? type.cast(RevTree.EMPTY) : null;
         }
+
+        @Nullable
+        final TYPE objectType;
+        if (RevObject.class.equals(type)) {
+            objectType = null;
+        } else {
+            objectType = RevObject.TYPE.valueOf(type);
+        }
+
+        obj = getIfPresent(id, objectType, dataSource);
+        if (obj == null) {
+            return null;
+        }
+
         if (!type.isAssignableFrom(obj.getClass())) {
             return null;
         }
@@ -516,7 +501,7 @@ public class PGObjectDatabase implements ObjectDatabase {
             cx.setAutoCommit(true);
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id, object))) {
                 pgid.setArgs(ps, 1);
-                byte[] blob = writeObject(object);
+                byte[] blob = encoder.encode(object);
                 ps.setBytes(4, blob);
 
                 final int updateCount = ps.executeUpdate();
@@ -552,42 +537,6 @@ public class PGObjectDatabase implements ObjectDatabase {
     }
 
     /**
-     * Reads object from its binary representation as stored in the database.
-     */
-    protected RevObject readObject(InputStream bytes, ObjectId id) {
-        try {
-            final int serialVersionHeader = bytes.read();
-            assert serialVersionHeader >= 0 && serialVersionHeader < SUPPORTED_FORMATS.length;
-            final ObjectSerializingFactory serializer = SUPPORTED_FORMATS[serialVersionHeader];
-            return serializer.read(id, bytes);
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading object " + id, e);
-        }
-    }
-
-    /**
-     * Writes object to its binary representation as stored in the database.
-     */
-    protected byte[] writeObject(RevObject object) {
-        return writeObject(object, serializer);
-    }
-
-    private static final byte[] writeObject(RevObject object, ObjectSerializingFactory serializer) {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        LZFOutputStream cout = new LZFOutputStream(bout);
-        final int storageVersionHeader = SUPPORTED_FORMATS.length - 1;
-        try {
-            cout.write(storageVersionHeader);
-            serializer.write(object, cout);
-            cout.close();
-        } catch (Exception e) {
-            throw propagate(e);
-        }
-        byte[] bytes = bout.toByteArray();
-        return bytes;
-    }
-
-    /**
      * Opens a database connection, returning the object representing connection state.
      */
     protected DataSource connect() {
@@ -615,12 +564,7 @@ public class PGObjectDatabase implements ObjectDatabase {
             DataSource ds) {
         byte[] cached = byteCache.getIfPresent(id);
         if (cached != null) {
-            try {
-                InputStream inputStream = new LZFInputStream(new ByteArrayInputStream(cached));
-                return readObject(inputStream, id);
-            } catch (IOException e) {
-                propagate(e);
-            }
+            return encoder.decode(id, cached);
         }
 
         final PGId pgid = PGId.valueOf(id);
@@ -676,16 +620,12 @@ public class PGObjectDatabase implements ObjectDatabase {
             return null;
         }
 
-        try (InputStream in = new LZFInputStream(new ByteArrayInputStream(bytes))) {
-            RevObject obj = readObject(in, id);
-            // Only cache tree objects
-            if (obj.getType().equals(TYPE.TREE)) {
-                byteCache.put(id, bytes);
-            }
-            return obj;
-        } catch (IOException e) {
-            throw propagate(e);
+        RevObject obj = encoder.decode(id, bytes);
+        // Only cache tree objects
+        if (obj.getType().equals(TYPE.TREE)) {
+            byteCache.put(id, bytes);
         }
+        return obj;
     }
 
     private Future<List<RevObject>> getAll(final List<ObjectId> ids, final DataSource ds,
@@ -802,17 +742,12 @@ public class PGObjectDatabase implements ObjectDatabase {
         }
 
         private void foundBytes(ObjectId oid, byte[] bytes, List<RevObject> found, boolean cache) {
-            try {
-                InputStream in = new LZFInputStream(new ByteArrayInputStream(bytes));
-                RevObject obj = db.readObject(in, oid);
-                found.add(obj);
-                callback.found(oid, Integer.valueOf(bytes.length));
-                // Only cache tree objects.
-                if (cache && obj.getType().equals(TYPE.TREE)) {
-                    byteCache.put(oid, bytes);
-                }
-            } catch (IOException e) {
-                propagate(e);
+            RevObject obj = encoder.decode(oid, bytes);
+            found.add(obj);
+            callback.found(oid, Integer.valueOf(bytes.length));
+            // Only cache tree objects.
+            if (cache && obj.getType().equals(TYPE.TREE)) {
+                byteCache.put(oid, bytes);
             }
         }
 
@@ -906,7 +841,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                     }
                 } catch (Exception executionEx) {
                     rollbackAndRethrow(cx, executionEx);
-                }finally {
+                } finally {
                     cx.setAutoCommit(true);
                 }
             } catch (Exception connectEx) {
@@ -986,22 +921,6 @@ public class PGObjectDatabase implements ObjectDatabase {
 
     }
 
-    private static class Encoder implements Function<RevObject, EncodedObject> {
-
-        private final ObjectSerializingFactory serializer;
-
-        Encoder(ObjectSerializingFactory serializer) {
-            this.serializer = serializer;
-        }
-
-        @Override
-        public EncodedObject apply(RevObject obj) {
-            byte[] bytes = writeObject(obj, serializer);
-            return new EncodedObject(obj.getId(), obj.getType(), bytes);
-        }
-
-    };
-
     /**
      * Override to optimize batch insert.
      */
@@ -1015,8 +934,10 @@ public class PGObjectDatabase implements ObjectDatabase {
         final int maxTasks = Math.max(1,
                 Math.min(Runtime.getRuntime().availableProcessors(), threadPoolSize) / 2);
 
-        final Iterator<List<EncodedObject>> encoded = Iterators
-                .partition(Iterators.transform(objects, new Encoder(serializer)), putAllBatchSize);
+        final Iterator<List<EncodedObject>> encoded = Iterators.partition(Iterators.transform(
+                objects,
+                (obj) -> new EncodedObject(obj.getId(), obj.getType(), encoder.encode(obj))),
+                putAllBatchSize);
 
         final BlockingQueue<List<EncodedObject>> queue = new ArrayBlockingQueue<>(2 + maxTasks);
 

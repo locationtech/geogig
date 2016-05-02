@@ -32,8 +32,6 @@ import org.locationtech.geogig.api.RevTree;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.Closeables;
-import com.ning.compress.lzf.LZFInputStream;
-import com.ning.compress.lzf.LZFOutputStream;
 
 /**
  * Provides a base implementation for different representations of the {@link ObjectStore}.
@@ -126,9 +124,9 @@ public abstract class AbstractObjectStore implements ObjectStore {
             obj = get(id, true);
             return clazz.cast(obj);
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException(String.format(
-                    "object %s does not exist as a %s (%s)", id, clazz.getSimpleName(),
-                    obj.getType()));
+            throw new IllegalArgumentException(
+                    String.format("object %s does not exist as a %s (%s)", id,
+                            clazz.getSimpleName(), obj.getType()));
         }
     }
 
@@ -198,14 +196,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
     private InputStream getRaw(final ObjectId id, boolean failIfNotFound)
             throws IllegalArgumentException {
         InputStream in = getRawInternal(id, failIfNotFound);
-        if (null == in) {
-            return null;
-        }
-        try {
-            return new LZFInputStream(in);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        return in;
     }
 
     protected abstract InputStream getRawInternal(ObjectId id, boolean failIfNotFound)
@@ -254,22 +245,11 @@ public abstract class AbstractObjectStore implements ObjectStore {
     }
 
     protected void writeObject(RevObject object, OutputStream target) {
-
-        LZFOutputStream cOut = new LZFOutputStream(target);
         try {
-            serializer.write(object, cOut);
+            serializer.write(object, target);
         } catch (IOException e) {
             throw Throwables.propagate(e);
-        } finally {
-            try {
-                cOut.flush();
-                cOut.close();
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
-            }
         }
-        // int size = ((ByteArrayOutputStream) target).size();
-        // System.err.printf("%d,%s,%s\n", size, object.getId(), object.getType());
     }
 
     /**

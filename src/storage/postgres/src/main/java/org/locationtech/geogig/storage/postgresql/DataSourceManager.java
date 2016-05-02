@@ -33,7 +33,7 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
         hc.setConnectionInitSql("SELECT NOW()");
         hc.setConnectionTestQuery("SELECT NOW()");
         hc.setDriverClassName("org.postgresql.Driver");
-
+        
         final String jdbcUrl = getUrl(config);
         hc.setJdbcUrl(jdbcUrl);
 

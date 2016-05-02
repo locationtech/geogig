@@ -13,6 +13,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
+import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
 
 import com.google.inject.Inject;
 
@@ -26,7 +27,8 @@ public final class JEObjectDatabase_v0_2 extends JEObjectDatabase {
 
     public JEObjectDatabase_v0_2(final ConfigDatabase configDB,
             final EnvironmentBuilder envProvider, final boolean readOnly, final String envName) {
-        super(DataStreamSerializationFactoryV2.INSTANCE, configDB, envProvider, readOnly, envName);
+        super(new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE), configDB,
+                envProvider, readOnly, envName);
     }
 
     @Override

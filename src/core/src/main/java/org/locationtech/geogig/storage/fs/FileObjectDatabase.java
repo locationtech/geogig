@@ -36,6 +36,7 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -82,7 +83,7 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
 
     protected FileObjectDatabase(final Platform platform, final String databaseName,
             final ConfigDatabase configDB) {
-        super(DataStreamSerializationFactoryV1.INSTANCE);
+        super(new LZFSerializationFactory(DataStreamSerializationFactoryV1.INSTANCE));
         checkNotNull(platform);
         checkNotNull(databaseName);
         this.platform = platform;

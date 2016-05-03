@@ -215,5 +215,17 @@
         </dependency>
       </dependencies>
     </profile>
+    <profile>
+      <id>experimental</id>
+        <dependencies>
+        <dependency>
+          <groupId>org.locationtech.geogig</groupId>
+          <artifactId>geogig-ql</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
+
+
 </project>

@@ -232,11 +232,8 @@ class GeogigFeatureStore extends ContentFeatureStore {
             FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection)
             throws IOException {
 
-        if (Transaction.AUTO_COMMIT.equals(getTransaction())) {
-            throw new UnsupportedOperationException("GeoGIG does not support AUTO_COMMIT");
-        }
-        Preconditions.checkState(getDataStore().isAllowTransactions(),
-                "Transactions not supported; head is not a local branch");
+        // Preconditions.checkState(getDataStore().isAllowTransactions(),
+        // "Transactions not supported; head is not a local branch");
         final WorkingTree workingTree = delegate.getWorkingTree();
         final String path = delegate.getTypeTreePath();
 

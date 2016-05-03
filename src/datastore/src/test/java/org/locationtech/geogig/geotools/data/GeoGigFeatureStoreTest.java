@@ -44,7 +44,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
     @Rule
     public ExpectedException expected = ExpectedException.none();
-    
+
     private GeoGigDataStore dataStore;
 
     private GeogigFeatureStore points;
@@ -71,13 +71,6 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
         collection = DataUtilities.collection(Arrays.asList((SimpleFeature) points1,
                 (SimpleFeature) points2, (SimpleFeature) points3));
-
-        try {
-            points.addFeatures(collection);
-            fail("Expected UnsupportedOperationException on AUTO_COMMIT");
-        } catch (UnsupportedOperationException e) {
-            assertTrue(e.getMessage().contains("AUTO_COMMIT"));
-        }
 
         Transaction tx = new DefaultTransaction();
         points.setTransaction(tx);
@@ -288,7 +281,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         geogig.command(CommitOp.class).call();
 
         Id filter = ff.id(Collections.singleton(ff.featureId(idP1)));
-        
+
         expected.expect(IOException.class);
         expected.expectMessage("is not assignable to");
         points.modifyFeatures("pp", "LINESTRING(1 1, 2 2)", filter);
@@ -300,7 +293,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         geogig.command(CommitOp.class).call();
 
         Id filter = ff.id(Collections.singleton(ff.featureId(idP1)));
-        
+
         expected.expect(IOException.class);
         expected.expectMessage("Unable to convert");
         points.modifyFeatures("pp", "1200", filter);

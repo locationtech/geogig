@@ -333,6 +333,12 @@
         <artifactId>HikariCP</artifactId>
         <version>${hikaricp.version}</version>
       </dependency>
+      <dependency>
+        <!-- SQL parser library for geogig-ql -->
+        <groupId>com.github.jsqlparser</groupId>
+        <artifactId>jsqlparser</artifactId>
+        <version>0.9.5</version>
+      </dependency>
 
       <!-- Test scope dependencies -->
       <dependency>
@@ -616,6 +622,12 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+     <id>experimental</id>
+     <modules>
+       <module>../ql</module>
+     </modules>
+    </profile>
   </profiles>
 
   <reporting>
@@ -635,8 +647,8 @@
    <module>../core</module>
    <module>../datastore</module>
    <module>../storage</module>
-   <module>../osm</module>
    <module>../cli</module>
+   <module>../osm</module>
    <module>../geotools</module>
    <module>../web</module>
    <module>../cli-app</module>

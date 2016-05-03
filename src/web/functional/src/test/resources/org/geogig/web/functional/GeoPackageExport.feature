@@ -48,14 +48,3 @@ Feature: Export GeoPackage
       And the task @taskId result contains "atom:link/@href" with value "/tasks/{@taskId}/download"
      When I call "GET /tasks/{@taskId}/download"
      Then the result is a valid GeoPackage file
-     
-  Scenario: Export from an empty HEAD produces a valid empty geopackage
-    Given There is an empty repository named emptyRepo
-     When I call "GET /repos/emptyRepo/export?format=gpkg"
-     Then the response is an XML async task @taskId
-      And the task @taskId description contains "Export to Geopackage database"
-      And when the task @taskId finishes
-     Then the task @taskId status is FINISHED
-      And the task @taskId result contains "atom:link/@href" with value "/tasks/{@taskId}/download"
-     When I call "GET /tasks/{@taskId}/download"
-     Then the result is a valid GeoPackage file

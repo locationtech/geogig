@@ -14,14 +14,35 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.geotools.data.DataStore;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
+import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.api.Context;
+import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
+import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
+import org.locationtech.geogig.api.plumbing.merge.ReportMergeScenarioOp;
+import org.locationtech.geogig.api.porcelain.MergeConflictsException;
+import org.locationtech.geogig.geotools.geopkg.GeopkgDataStoreAuditImportOp;
+import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp.DataStoreSupplier;
+import org.locationtech.geogig.geotools.plumbing.DefaultDataStoreImportOp;
+import org.locationtech.geogig.rest.AsyncCommandRepresentation;
+import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
+import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.geotools.DataStoreImportContextService;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
+import org.locationtech.geogig.web.api.ResponseWriter;
+import org.restlet.data.MediaType;
+
+import com.google.common.base.Optional;
 
 /**
  * Geopackage specific implementation of {@link DataStoreImportContextService}.
@@ -48,6 +69,16 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             dataStoreSupplier = new GpkgDataStoreSupplier(options);
         }
         return dataStoreSupplier;
+    }
+
+    @Override
+    public DataStoreImportOp<RevCommit> createCommand(final Context context,
+            final ParameterSet options) {
+        if (Boolean.parseBoolean(options.getFirstValue("interchange", "false"))) {
+            return context.command(GeopkgDataStoreAuditImportOp.class)
+                    .setDatabaseFile(options.getUploadedFile());
+        }
+        return context.command(DefaultDataStoreImportOp.class);
     }
 
     private static class GpkgDataStoreSupplier implements DataStoreSupplier {
@@ -99,6 +130,60 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
         public void cleanupResources() {
             if (uploadedFile != null) {
                 uploadedFile.delete();
+            }
+        }
+    }
+
+    public static class RepresentationFactory implements CommandRepresentationFactory<RevCommit> {
+
+        @Override
+        public boolean supports(Class<? extends AbstractGeoGigOp<?>> cmdClass) {
+            return GeopkgDataStoreAuditImportOp.class.equals(cmdClass);
+        }
+
+        @Override
+        public AsyncCommandRepresentation<RevCommit> newRepresentation(AsyncCommand<RevCommit> cmd,
+                MediaType mediaType, String baseURL) {
+
+            return new GeopkgAuditImportRepresentation(mediaType, cmd, baseURL);
+        }
+    }
+
+    public static class GeopkgAuditImportRepresentation
+            extends AsyncCommandRepresentation<RevCommit> {
+
+        public GeopkgAuditImportRepresentation(MediaType mediaType, AsyncCommand<RevCommit> cmd,
+                String baseURL) {
+            super(mediaType, cmd, baseURL);
+        }
+
+        @Override
+        protected void writeResultBody(XMLStreamWriter w, RevCommit result)
+                throws XMLStreamException {
+            ResponseWriter out = new ResponseWriter(w);
+            out.writeCommit(result, "commit", null, null, null);
+        }
+
+        @Override
+        protected void writeError(XMLStreamWriter w, Throwable cause) throws XMLStreamException {
+            if (cause instanceof MergeConflictsException) {
+                Context context = cmd.getContext();
+                MergeConflictsException m = (MergeConflictsException) cause;
+                final RevCommit ours = context.repository().getCommit(m.getOurs());
+                final RevCommit theirs = context.repository().getCommit(m.getTheirs());
+                final Optional<ObjectId> ancestor = context.command(FindCommonAncestor.class)
+                        .setLeft(ours).setRight(theirs).call();
+                final MergeScenarioReport report = context.command(ReportMergeScenarioOp.class)
+                        .setMergeIntoCommit(ours)
+                        .setToMergeCommit(theirs).call();
+                ResponseWriter out = new ResponseWriter(w);
+                Optional<RevCommit> mergeCommit = Optional.absent();
+                w.writeStartElement("result");
+                out.writeMergeResponse(mergeCommit, report, context, ours.getId(), theirs.getId(),
+                        ancestor.get());
+                w.writeEndElement();
+            } else {
+                super.writeError(w, cause);
             }
         }
     }

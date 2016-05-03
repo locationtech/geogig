@@ -117,7 +117,7 @@ public class TestData {
 
     public static final SimpleFeatureType pointsType, linesType, polysType;
 
-    public static final SimpleFeature point1, point2, point3;
+    public static final SimpleFeature point1, point2, point3, point4;
 
     public static final SimpleFeature point1_modified, point2_modified, point3_modified;
 
@@ -134,23 +134,24 @@ public class TestData {
             throw Throwables.propagate(e);
         }
 
-        point1 = feature(pointsType, "Points.1", "StringProp1_1", 1000, "POINT(0 0)");
-        point2 = feature(pointsType, "Points.2", "StringProp1_2", 2000, "POINT(-10 -10)");
-        point3 = feature(pointsType, "Points.3", "StringProp1_3", 3000, "POINT(10 10)");
+        point1 = feature(pointsType, "1", "StringProp1_1", 1000, "POINT(0 0)");
+        point2 = feature(pointsType, "2", "StringProp1_2", 2000, "POINT(-10 -10)");
+        point3 = feature(pointsType, "3", "StringProp1_3", 3000, "POINT(10 10)");
+        point4 = feature(pointsType, "4", "StringProp1_4", 4000, "POINT(15 15)");
 
-        point1_modified = feature(pointsType, "Points.1", "StringProp1_1", 1500, "POINT(0 0)");
-        point2_modified = feature(pointsType, "Points.2", "StringProp1_2", 2000, "POINT(-15 -10)");
-        point3_modified = feature(pointsType, "Points.3", "StringProp1_3_M", 3000, "POINT(10 10)");
+        point1_modified = feature(pointsType, "1", "StringProp1_1", 1500, "POINT(0 0)");
+        point2_modified = feature(pointsType, "2", "StringProp1_2", 2000, "POINT(-15 -10)");
+        point3_modified = feature(pointsType, "3", "StringProp1_3_M", 3000, "POINT(10 10)");
 
-        line1 = feature(linesType, "Lines.1", "StringProp2_1", 1000, "LINESTRING (-1 -1, 1 1)");
-        line2 = feature(linesType, "Lines.2", "StringProp2_2", 2000, "LINESTRING (-11 -11, -9 -9)");
-        line3 = feature(linesType, "Lines.3", "StringProp2_3", 3000, "LINESTRING (9 9, 11 11)");
+        line1 = feature(linesType, "1", "StringProp2_1", 1000, "LINESTRING (-1 -1, 1 1)");
+        line2 = feature(linesType, "2", "StringProp2_2", 2000, "LINESTRING (-11 -11, -9 -9)");
+        line3 = feature(linesType, "3", "StringProp2_3", 3000, "LINESTRING (9 9, 11 11)");
 
-        poly1 = feature(polysType, "Polygons.1", "StringProp3_1", 1000,
+        poly1 = feature(polysType, "1", "StringProp3_1", 1000,
                 "POLYGON ((-1 -1, -1 1, 1 1, 1 -1, -1 -1))");
-        poly2 = feature(polysType, "Polygons.2", "StringProp3_2", 2000,
+        poly2 = feature(polysType, "2", "StringProp3_2", 2000,
                 "POLYGON ((-11 -11, -11 -9, -9 -9, -9 -11, -11 -11))");
-        poly3 = feature(polysType, "Polygons.3", "StringProp3_3", 3000,
+        poly3 = feature(polysType, "3", "StringProp3_3", 3000,
                 "POLYGON ((9 9, 9 11, 11 11, 11 9, 9 9))");
 
     }
@@ -206,17 +207,17 @@ public class TestData {
      * 
      * <pre>
      * <code>
-     *             (adds Points.2, Lines.2, Polygons.2)
+     *             (adds Points/2, Lines/2, Polygons/2)
      *    branch1 o-------------------------------------
      *           /                                      \
      *          /                                        \  no ff merge
      *  master o------------------------------------------o-----------------o
      *          \  (initial commit has                                     / no ff merge
-     *           \     Points.1, Lines.1, Polygons.1)                     /
+     *           \     Points/1, Lines/1, Polygons/1)                     /
      *            \                                                      /  
      *             \                                                    /
      *     branch2  o--------------------------------------------------
-     *             (adds Points.3, Lines.3, Polygons.3)
+     *             (adds Points/3, Lines/3, Polygons/3)
      *        
      * </code>
      * </pre>

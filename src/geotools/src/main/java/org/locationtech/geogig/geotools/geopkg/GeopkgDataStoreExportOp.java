@@ -49,13 +49,13 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
      * after the data has been exported for the given layer. {@inheritDoc}
      */
     @Override
-    protected void export(final String treeSpec, final DataStore targetStore,
+    protected void export(final String refSpec, final DataStore targetStore,
             final String targetTableName, final ProgressListener progress) {
 
-        super.export(treeSpec, targetStore, targetTableName, progress);
+        super.export(refSpec, targetStore, targetTableName, progress);
 
         if (enableInterchangeFormat) {
-            command(GeopkgAuditExport.class).setSourceTreeish(treeSpec)
+            command(GeopkgAuditExport.class).setSourcePathspec(refSpec)
                     .setTargetTableName(targetTableName).setDatabase(geopackage).call();
         }
     }

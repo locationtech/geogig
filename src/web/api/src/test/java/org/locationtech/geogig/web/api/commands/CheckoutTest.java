@@ -41,13 +41,13 @@ public class CheckoutTest extends AbstractWebOpTest {
     @Test
     public void testBuildParameters() {
         ParameterSet options = TestParams.of("branch", "branch1", "ours", "true", "theirs", "true",
-                "path", "Points/Points.1");
+                "path", "Points/1");
 
         Checkout op = (Checkout) buildCommand(options);
         assertEquals("branch1", op.branchOrCommit);
         assertTrue(op.ours);
         assertTrue(op.theirs);
-        assertEquals("Points/Points.1", op.path);
+        assertEquals("Points/1", op.path);
     }
 
     @Test

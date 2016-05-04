@@ -33,11 +33,15 @@ public class Remove extends AbstractCommand implements CLICommand {
 
     /**
      * True if the remove operation should delete the contents of a path in case it resolves to a
-     * tree. If a path resolving to a tree is used and this flag is set to false, the path will not
-     * be deleted
+     * tree, and tree itself. If a path resolving to a tree is used and this flag is set to false,
+     * the path will not be deleted, nor its contents
      */
-    @Parameter(names = { "-r" }, description = "Recursively remove tree contents")
+    @Parameter(names = { "-r",
+            "--recursive" }, description = "Recursively remove trees, including the tree nodes themselves")
     private boolean recursive;
+
+    @Parameter(names = { "-t", "--truncate" }, description = "Truncate trees, leaving them empty")
+    private boolean truncate;
 
     @Parameter(description = "<path_to_remove>  [<path_to_remove>]...")
     private List<String> pathsToRemove = new ArrayList<String>();
@@ -54,7 +58,8 @@ public class Remove extends AbstractCommand implements CLICommand {
         }
 
         /* Perform the remove operation */
-        RemoveOp op = cli.getGeogig().command(RemoveOp.class).setRecursive(recursive);
+        RemoveOp op = cli.getGeogig().command(RemoveOp.class).setRecursive(recursive)
+                .setTruncate(truncate);
 
         for (String pathToRemove : pathsToRemove) {
             op.addPathToRemove(pathToRemove);

@@ -54,6 +54,7 @@ import com.google.common.collect.Lists;
 /**
  *
  */
+@SuppressWarnings("unchecked")
 class GeogigFeatureStore extends ContentFeatureStore {
 
     /**
@@ -368,8 +369,8 @@ class GeogigFeatureStore extends ContentFeatureStore {
         Function<SimpleFeature, SimpleFeature> modifyingFunction = new ModifyingFunction(names,
                 values);
 
-        Iterator<SimpleFeature> modifyingIterator = Iterators
-                .transform(iterator, modifyingFunction);
+        Iterator<SimpleFeature> modifyingIterator = Iterators.transform(iterator,
+                modifyingFunction);
         return modifyingIterator;
     }
 
@@ -387,7 +388,7 @@ class GeogigFeatureStore extends ContentFeatureStore {
         final String typeTreePath = delegate.getTypeTreePath();
         filter = (Filter) filter.accept(new SimplifyingFilterVisitor(), null);
         if (Filter.INCLUDE.equals(filter)) {
-            workingTree.delete(typeTreePath);
+            workingTree.truncate(typeTreePath);
             return;
         }
         if (Filter.EXCLUDE.equals(filter)) {

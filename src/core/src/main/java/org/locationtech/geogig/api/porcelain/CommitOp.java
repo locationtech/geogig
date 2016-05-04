@@ -27,6 +27,7 @@ import org.locationtech.geogig.api.RevPerson;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.hooks.Hookable;
+import org.locationtech.geogig.api.plumbing.CleanRefsOp;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
@@ -384,17 +385,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         getProgressListener().setProgress(100f);
         getProgressListener().complete();
 
-        // TODO: maybe all this "heads cleaning" should be put in an independent operation
-        if (mergeHead.isPresent()) {
-            command(UpdateRef.class).setDelete(true).setName(Ref.MERGE_HEAD).call();
-            command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
-        }
-        final Optional<Ref> cherrypickHead = command(RefParse.class).setName(Ref.CHERRY_PICK_HEAD)
-                .call();
-        if (cherrypickHead.isPresent()) {
-            command(UpdateRef.class).setDelete(true).setName(Ref.CHERRY_PICK_HEAD).call();
-            command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
-        }
+        command(CleanRefsOp.class).call();
 
         return commit;
     }

@@ -31,7 +31,7 @@ public class GeopkgDataStoreAuditImportOp extends DataStoreImportOp<RevCommit> {
     }
 
     @Override
-    protected RevCommit _call() {
+    protected RevCommit callInternal() {
         RevCommit result;
         try {
             result = command(GeopkgAuditImport.class).setDatabase(geopackage)

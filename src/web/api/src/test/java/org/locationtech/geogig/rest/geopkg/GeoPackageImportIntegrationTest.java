@@ -39,6 +39,7 @@ import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.plumbing.TransactionBegin;
 import org.locationtech.geogig.api.plumbing.TransactionEnd;
+import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.Status;
@@ -205,6 +206,46 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
     }
 
     @Test
+    public void testImportToBranch() throws Throwable {
+        // setup and empty repo
+        GeoGIG repo = context.getGeoGIG();
+        final File dbFile = generateDbFile();
+
+        TestData testData = new TestData(repo);
+        testData.init();
+        repo.command(CommitOp.class).setAllowEmpty(true).setMessage("Initial Commit").call();
+        testData.branch("branch1");
+
+        verifyNoCommitedNodes();
+
+        GeogigTransaction transaction = repo.command(TransactionBegin.class).call();
+
+        // parameter setup
+        ParameterSet params = TestParams.of("format", "gpkg", "root", "branch1", "layer", "Lines",
+                "transactionId", transaction.getTransactionId().toString());
+        ((TestParams) params).setFileUpload(dbFile);
+
+        Import op = buildCommand(params);
+        op.asyncContext = testAsyncContext;
+
+        AsyncContext.AsyncCommand<?> result = run(op);
+        Assert.assertNotNull(result.getStatus());
+        Status resultStatus = waitForTask(result);
+        Assert.assertEquals(Status.FINISHED, resultStatus);
+
+        repo.command(TransactionEnd.class).setTransaction(transaction).call();
+        // verify the dbFile is gone
+        verifyDbFileDeleted(dbFile);
+
+        // verify that the main branch has no nodes
+        verifyNoCommitedNodes();
+
+        // verify data was imported on branch1
+        testData.checkout("branch1");
+        verifyImport(Sets.newHashSet("Lines"));
+    }
+
+    @Test
     public void testImportTableWithDestDuplicate() throws Throwable {
         // setup and empty repo
         GeoGIG repo = context.getGeoGIG();
@@ -363,6 +404,94 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         repo.command(TransactionEnd.class).setTransaction(transaction).call();
 
         // verify both points are in the repo.
+        Iterator<NodeRef> nodeIterator = context.getGeoGIG().command(LsTreeOp.class)
+                .setReference("Points").setStrategy(Strategy.FEATURES_ONLY).call();
+
+        List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
+                (nr) -> nr.name());
+        assertEquals(2, nodeList.size());
+        assertTrue(nodeList.contains("1"));
+        assertTrue(nodeList.contains("2"));
+    }
+
+    @Test
+    public void testImportInterchangeOnBranch() throws Throwable {
+        // get a DB file to import
+        GeoPackageTestSupport support = new GeoPackageTestSupport();
+        File file = support.createEmptyDatabase();
+
+        MemoryDataStore memStore = TestData.newMemoryDataStore();
+        memStore.addFeatures(ImmutableList.of(TestData.point1));
+
+        DataStore gpkgStore = support.createDataStore(file);
+        try {
+            support.export(memStore.getFeatureSource(pointsType.getName().getLocalPart()),
+                    gpkgStore);
+        } finally {
+            gpkgStore.dispose();
+        }
+
+        // setup and empty repo
+        GeoGIG repo = context.getGeoGIG();
+        TestData testData = new TestData(repo);
+        testData.init();
+        repo.command(CommitOp.class).setAllowEmpty(true).setMessage("Initial Commit").call();
+        testData.branchAndCheckout("branch1");
+        testData.addAndCommit("Point1", point1);
+
+        repo.command(GeopkgAuditExport.class).setDatabase(file).setSourcePathspec("Points")
+                .setTargetTableName("Points").call();
+
+        // modify point in the geopackage
+        gpkgStore = support.createDataStore(file);
+        Transaction gttx = new DefaultTransaction();
+        try {
+            SimpleFeatureStore store = (SimpleFeatureStore) gpkgStore.getFeatureSource("Points");
+            Preconditions.checkState(store.getQueryCapabilities().isUseProvidedFIDSupported());
+            store.setTransaction(gttx);
+            store.modifyFeatures("ip", TestData.point1_modified.getAttribute("ip"), Filter.INCLUDE);
+            gttx.commit();
+        } finally {
+            gttx.close();
+            gpkgStore.dispose();
+        }
+
+        testData.addAndCommit("Add point2", TestData.point2);
+
+        testData.checkout("master");
+
+        GeogigTransaction transaction = repo.command(TransactionBegin.class).call();
+
+        // now call import with the manual transaction
+        ParameterSet params = TestParams.of("interchange", "true", "root", "branch1", "authorName",
+                "Tester", "authorEmail", "tester@example.com", "format", "gpkg", "message",
+                "Imported geopackage.", "layer", "Points", "transactionId",
+                transaction.getTransactionId().toString());
+        ((TestParams) params).setFileUpload(file);
+        Import op = buildCommand(params);
+        op.asyncContext = testAsyncContext;
+
+        AsyncContext.AsyncCommand<?> result = run(op);
+        Assert.assertNotNull(result.getStatus());
+        Status resultStatus = waitForTask(result);
+        Assert.assertEquals(Status.FINISHED, resultStatus);
+
+        Object resultObject = result.get();
+        assertTrue(resultObject instanceof RevCommit);
+
+        RevCommit mergeCommit = (RevCommit) resultObject;
+        assertEquals("Merge: Imported geopackage.", mergeCommit.getMessage());
+        assertEquals(2, mergeCommit.getParentIds().size());
+        assertEquals("Tester", mergeCommit.getAuthor().getName().get());
+        assertEquals("tester@example.com", mergeCommit.getAuthor().getEmail().get());
+
+        repo.command(TransactionEnd.class).setTransaction(transaction).call();
+
+        // verify there are no features on the master (current) branch
+        verifyNoCommitedNodes();
+
+        // verify both points are in the repo under branch1.
+        testData.checkout("branch1");
         Iterator<NodeRef> nodeIterator = context.getGeoGIG().command(LsTreeOp.class)
                 .setReference("Points").setStrategy(Strategy.FEATURES_ONLY).call();
 

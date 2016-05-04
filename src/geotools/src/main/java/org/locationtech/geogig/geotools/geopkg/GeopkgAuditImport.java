@@ -97,7 +97,7 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<RevCommit> {
         } catch (MergeConflictsException e) {
             Throwables.propagate(e);
         } catch (Exception e) {
-            throw new IllegalStateException("Unable to export: " + e.getMessage(), e);
+            throw new IllegalStateException("Unable to import: " + e.getMessage(), e);
         } finally {
 
         }

@@ -213,8 +213,8 @@ public class GeogigSimpleFeature implements SimpleFeature {
         if (defaultGeometry == null) {
             GeometryDescriptor geometryDescriptor = featureType.getGeometryDescriptor();
             if (geometryDescriptor != null) {
-                Integer defaultGeomIndex = nameToRevTypeIndex.get(geometryDescriptor.getName()
-                        .getLocalPart());
+                Integer defaultGeomIndex = nameToRevTypeIndex
+                        .get(geometryDescriptor.getName().getLocalPart());
                 defaultGeometry = values.get(defaultGeomIndex.intValue()).get();
             }
         }
@@ -237,7 +237,14 @@ public class GeogigSimpleFeature implements SimpleFeature {
         // first do conversion
         Class<?> binding = getFeatureType().getDescriptor(index).getType().getBinding();
         Object converted = Converters.convert(value, binding);
-
+        if (converted == null && value != null) {
+            throw new IllegalArgumentException(
+                    String.format("Unable to convert value to %s: %s", binding.getName(), value));
+        }
+        if (converted != null && !binding.isAssignableFrom(converted.getClass())) {
+            throw new IllegalArgumentException(String.format("%s is not assignable to %s: %s",
+                    converted.getClass().getName(), binding.getName(), value));
+        }
         // finally set the value into the feature
         mutableValues().set(index, Optional.fromNullable(converted));
     }
@@ -309,7 +316,8 @@ public class GeogigSimpleFeature implements SimpleFeature {
         GeometryAttribute geometryAttribute = null;
         if (geometryDescriptor != null) {
             Object defaultGeometry = getDefaultGeometry();
-            geometryAttribute = new GeometryAttributeImpl(defaultGeometry, geometryDescriptor, null);
+            geometryAttribute = new GeometryAttributeImpl(defaultGeometry, geometryDescriptor,
+                    null);
         }
         return geometryAttribute;
     }
@@ -391,8 +399,8 @@ public class GeogigSimpleFeature implements SimpleFeature {
      */
     @Override
     public AttributeDescriptor getDescriptor() {
-        return new AttributeDescriptorImpl(featureType, featureType.getName(), 0,
-                Integer.MAX_VALUE, true, null);
+        return new AttributeDescriptorImpl(featureType, featureType.getName(), 0, Integer.MAX_VALUE,
+                true, null);
     }
 
     /**
@@ -607,8 +615,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
             StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append(": ");
             sb.append(getDescriptor().getName().getLocalPart());
             if (!getDescriptor().getName().getLocalPart()
-                    .equals(getDescriptor().getType().getName().getLocalPart())
-                    || id != null) {
+                    .equals(getDescriptor().getType().getName().getLocalPart()) || id != null) {
                 sb.append('<');
                 sb.append(getDescriptor().getType().getName().getLocalPart());
                 if (id != null) {
@@ -682,7 +689,8 @@ public class GeogigSimpleFeature implements SimpleFeature {
 
         final GeometryDescriptor defaultGeometry = ((SimpleFeatureType) revType.type())
                 .getGeometryDescriptor();
-        for (int revFeatureIndex = 0; revFeatureIndex < sortedDescriptors.size(); revFeatureIndex++) {
+        for (int revFeatureIndex = 0; revFeatureIndex < sortedDescriptors
+                .size(); revFeatureIndex++) {
             PropertyDescriptor prop = sortedDescriptors.get(revFeatureIndex);
             typeAttNameToRevTypeIndex.put(prop.getName().getLocalPart(),
                     Integer.valueOf(revFeatureIndex));

@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.geotools.data;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +20,9 @@ import org.geotools.data.Transaction;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.Hints;
 import org.geotools.feature.FeatureCollection;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
@@ -39,6 +42,9 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
     private static final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
 
+    @Rule
+    public ExpectedException expected = ExpectedException.none();
+    
     private GeoGigDataStore dataStore;
 
     private GeogigFeatureStore points;
@@ -274,6 +280,30 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         points.setTransaction(Transaction.AUTO_COMMIT);
         SimpleFeature modified = points.getFeatures(filter).features().next();
         assertEquals("modified", modified.getAttribute("sp"));
+    }
+
+    @Test
+    public void testModifyFeaturesIncompatibleGeometryType() throws Exception {
+        insertAndAdd(points1, points2, points3);
+        geogig.command(CommitOp.class).call();
+
+        Id filter = ff.id(Collections.singleton(ff.featureId(idP1)));
+        
+        expected.expect(IOException.class);
+        expected.expectMessage("is not assignable to");
+        points.modifyFeatures("pp", "LINESTRING(1 1, 2 2)", filter);
+    }
+
+    @Test
+    public void testModifyFeaturesIncompatibleValueType() throws Exception {
+        insertAndAdd(points1, points2, points3);
+        geogig.command(CommitOp.class).call();
+
+        Id filter = ff.id(Collections.singleton(ff.featureId(idP1)));
+        
+        expected.expect(IOException.class);
+        expected.expectMessage("Unable to convert");
+        points.modifyFeatures("pp", "1200", filter);
     }
 
     @Test

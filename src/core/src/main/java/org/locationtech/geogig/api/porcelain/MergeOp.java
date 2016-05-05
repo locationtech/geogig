@@ -49,6 +49,8 @@ import com.google.common.collect.Lists;
  */
 public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
+    public static final String MERGE_MSG = "MERGE_MSG";
+
     private List<ObjectId> commits = new ArrayList<ObjectId>();;
 
     private String message = null;

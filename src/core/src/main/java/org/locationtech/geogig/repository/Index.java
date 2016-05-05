@@ -88,7 +88,6 @@ public class Index implements StagingArea {
     @Override
     public void updateStageHead(ObjectId newTree) {
         context.command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(newTree).call();
-        conflictsDatabase().removeConflicts(null);
     }
 
     /**

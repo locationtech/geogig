@@ -336,7 +336,7 @@ public class ResetOpTest extends RepositoryTestCase {
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
             geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+                    .setMessage("Merge features.").call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
@@ -349,6 +349,10 @@ public class ResetOpTest extends RepositoryTestCase {
         assertTrue(conflicts.isEmpty());
         Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());
+        ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
+        assertFalse(ref.isPresent());
+        Optional<byte[]> mergemsg = geogig.getRepository().blobStore().getBlob(MergeOp.MERGE_MSG);
+        assertFalse(mergemsg.isPresent());
     }
 
     @Test

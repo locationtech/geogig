@@ -232,7 +232,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             }
             rebaseHead = currHead.get().getObjectId();
             command(ResetOp.class).setCommit(Suppliers.ofInstance(rebaseHead))
-                    .setMode(ResetMode.HARD).call();
+                    .setMode(ResetMode.HARD).setClean(false).call();
             if (squashCommit == null) {
                 skipCurrentCommit();
                 applyNextCommit(true);
@@ -306,7 +306,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             }
             rebaseHead = onto.get();
             command(ResetOp.class).setCommit(Suppliers.ofInstance(rebaseHead))
-                    .setMode(ResetMode.HARD).call();
+                    .setMode(ResetMode.HARD).setClean(false).call();
 
             if (squashMessage != null) {
                 CommitBuilder builder = new CommitBuilder(commitsToRebase.get(0));

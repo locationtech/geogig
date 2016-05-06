@@ -9,7 +9,7 @@ import org.locationtech.geogig.repository.WorkingTree;
 public class DefaultDataStoreImportOp extends DataStoreImportOp<RevCommit> {
 
     @Override
-    protected RevCommit _call() {
+    protected RevCommit callInternal() {
         final DataStore dataStore = dataStoreSupplier.get();
 
         RevCommit revCommit;

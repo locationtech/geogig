@@ -158,6 +158,11 @@ public class Import extends AbstractWebAPICommand {
      */
     public static final String COMMIT_MSG_KEY = "message";
 
+    /**
+     * Request parameter indicating the branch to import the features onto.
+     */
+    public static final String ROOT_KEY = "root";
+
     private final ParameterSet options;
 
     @VisibleForTesting
@@ -222,6 +227,7 @@ public class Import extends AbstractWebAPICommand {
                 .valueOf(options.getFirstValue(FORCE_FEAT_KEY, "false"));
         final boolean alter = Boolean.valueOf(options.getFirstValue(ALTER_KEY, "false"));
         final String dest = options.getFirstValue(DEST_PATH_KEY);
+        final String root = options.getFirstValue(ROOT_KEY);
         final String fidAttribute = options.getFirstValue(FID_ATTR_KEY);
         final String authorName = options.getFirstValue(AUTHOR_NAME_KEY);
         final String authorEmail = options.getFirstValue(AUTHOR_EMAIL_KEY);
@@ -230,8 +236,9 @@ public class Import extends AbstractWebAPICommand {
         DataStoreImportOp<RevCommit> command = ctxService.createCommand(context, options);
         // set all the import op parameters
         return command.setDataStore(ctxService.getDataStore(options)).setTable(layerTableName)
-                .setAll(all).setAdd(add).setForceFeatureType(forceFeatureType).setAlter(alter)
-                .setDest(dest).setFidAttribute(fidAttribute).setAuthorEmail(authorEmail)
-                .setAuthorName(authorName).setCommitMessage(commitMessage);
+                .setRoot(root).setAll(all).setAdd(add).setForceFeatureType(forceFeatureType)
+                .setAlter(alter).setDest(dest).setFidAttribute(fidAttribute)
+                .setAuthorEmail(authorEmail).setAuthorName(authorName)
+                .setCommitMessage(commitMessage);
     }
 }

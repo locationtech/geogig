@@ -12,10 +12,16 @@ package org.locationtech.geogig.geotools.plumbing;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.api.Ref;
+import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.porcelain.AddOp;
+import org.locationtech.geogig.api.porcelain.CheckoutOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.opengis.feature.Feature;
 
+import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 
 /**
@@ -50,6 +56,9 @@ public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
     @Nullable
     protected String commitMessage;
 
+    @Nullable
+    protected String root;
+
     // import options
     @Nullable // except if all == false
     protected String table;
@@ -79,9 +88,6 @@ public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
         this.dataStoreSupplier = dataStore;
         return this;
     }
-
-    @Override
-    protected abstract T _call();
 
     /**
      * Set the email address of the committer in the commit.
@@ -298,4 +304,46 @@ public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
         this.dest = dest;
         return this;
     }
+
+    /**
+     * Sets the root for the import.
+     * <p>
+     * If this value is set, the imported features will be applied to the specified branch. If not
+     * set, it will default to the HEAD branch.
+     * 
+     * @param root The branch to import the features on to.
+     * 
+     * @return A reference to this operation.
+     */
+    public DataStoreImportOp<T> setRoot(String root) {
+        this.root = root;
+        return this;
+    }
+
+    @Override
+    protected T _call() {
+        SymRef originalHead = null;
+        if (root != null) {
+            Preconditions.checkArgument(
+                    !root.startsWith(Ref.HEADS_PREFIX) && !root.startsWith(Ref.REMOTES_PREFIX));
+            Optional<Ref> head = command(RefParse.class).setName(Ref.HEAD).call();
+            Preconditions.checkState(head.isPresent(), "Could not find HEAD ref.");
+            Preconditions.checkState(head.get() instanceof SymRef,
+                    "Unable to import with detatched HEAD.");
+            originalHead = (SymRef) head.get();
+            Optional<Ref> rootBranch = command(RefParse.class).setName(root).call();
+            Preconditions.checkArgument(rootBranch.isPresent(),
+                    "Unable to resolve '" + root + "' branch.");
+            Preconditions.checkArgument(rootBranch.get().getName().startsWith(Ref.HEADS_PREFIX),
+                    "Root must be a local branch.");
+            command(CheckoutOp.class).setSource(rootBranch.get().getName()).call();
+        }
+        T result = callInternal();
+        if (originalHead != null) {
+            command(CheckoutOp.class).setSource(originalHead.getTarget()).call();
+        }
+        return result;
+    }
+
+    protected abstract T callInternal();
 }

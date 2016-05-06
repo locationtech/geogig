@@ -14,6 +14,7 @@ This section will discuss alternate ways of interacting with GeoGig, both local 
    geoserver_web-api
    osm
    web-api
+   web-repository-management
    async-tasks
    osm-web-api
    geopackage-import-export

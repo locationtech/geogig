@@ -32,37 +32,36 @@ public class PostgreSQLStepDefinitions {
     @cucumber.api.java.Before(order = 1)
     public void before() throws Throwable {
         contextProvider = CLIContextProvider.get();
-        contextProvider.setURIBuilder(new TestRepoURIBuilder() {
-
-            private PGTemporaryTestConfig testConfig;
-
-            @Override
-            public void before() throws Throwable {
-                // nothing to do
-            }
-
-            @Override
-            public void after() {
-                if (testConfig != null) {
-                    testConfig.after();
-                }
-            }
-
-            @Override
-            public URI newRepositoryURI(String name, Platform platform) throws URISyntaxException {
-                testConfig = new PGTemporaryTestConfig(name);
-                try {
-                    testConfig.before();
-                } catch (Throwable e) {
-                    throw Throwables.propagate(e);
-                }
-                String repoURI = testConfig.getRepoURL();
-                System.err.println("Using repoURI: " + repoURI);
-                return new URI(repoURI);
-            }
-        });
+        contextProvider.setURIBuilder(new PGTestRepoURIBuilder());
         // don't call before, let DfaultStepDefinitions do it
         // contextProvider.before();
     }
 
+    static final class PGTestRepoURIBuilder extends TestRepoURIBuilder {
+        private PGTemporaryTestConfig testConfig;
+
+        @Override
+        public void before() throws Throwable {
+            // nothing to do
+        }
+
+        @Override
+        public void after() {
+            if (testConfig != null) {
+                testConfig.after();
+            }
+        }
+
+        @Override
+        public URI newRepositoryURI(String name, Platform platform) throws URISyntaxException {
+            testConfig = new PGTemporaryTestConfig(name);
+            try {
+                testConfig.before();
+            } catch (Throwable e) {
+                throw Throwables.propagate(e);
+            }
+            String repoURI = testConfig.getRepoURL();
+            return new URI(repoURI);
+        }
+    }
 }

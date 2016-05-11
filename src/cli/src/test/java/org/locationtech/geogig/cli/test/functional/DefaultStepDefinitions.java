@@ -57,6 +57,8 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.PropertyDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
@@ -64,6 +66,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
+import cucumber.api.Scenario;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -74,6 +77,7 @@ import cucumber.runtime.java.StepDefAnnotation;
  */
 @StepDefAnnotation
 public class DefaultStepDefinitions {
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultStepDefinitions.class);
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
@@ -123,11 +127,13 @@ public class DefaultStepDefinitions {
 
     @cucumber.api.java.Before(order = 1000) // order = 1000 to make sure it runs the latest if the
                                             // @Before annotated methods
-    public void before() throws Throwable {
+    public void before(Scenario scenario) throws Throwable {
         contextProvider = CLIContextProvider.get();
         if (contextProvider.getURIBuilder() == null) {
             contextProvider.setURIBuilder(TestRepoURIBuilder.createDefault());
         }
+        LOG.info("'{}': Using URIBuilder {}", scenario.getName(),
+                contextProvider.getURIBuilder().getClass().getSimpleName());
         contextProvider.before();
         this.localRepo = contextProvider.getOrCreateRepositoryContext("localrepo");
     }

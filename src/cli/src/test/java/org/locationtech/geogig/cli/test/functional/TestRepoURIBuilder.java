@@ -46,26 +46,27 @@ public abstract class TestRepoURIBuilder {
 
     public static TestRepoURIBuilder createDefault() {
 
-        return new TestRepoURIBuilder() {
-
-            @Override
-            public void before() {
-
-            }
-
-            @Override
-            public void after() {
-
-            }
-
-            @Override
-            public URI newRepositoryURI(String name, Platform platform) {
-                final File dir = new File(platform.pwd(), name);
-                // dir.mkdir();
-                // platform.setWorkingDir(dir);
-                return dir.toURI();
-            }
-
-        };
+        return new DefaultTestRepoURIBuilder();
     }
+
+    private static final class DefaultTestRepoURIBuilder extends TestRepoURIBuilder {
+        @Override
+        public void before() {
+
+        }
+
+        @Override
+        public void after() {
+
+        }
+
+        @Override
+        public URI newRepositoryURI(String name, Platform platform) {
+            final File dir = new File(platform.pwd(), name);
+            // dir.mkdir();
+            // platform.setWorkingDir(dir);
+            return dir.toURI();
+        }
+    }
+
 }

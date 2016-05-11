@@ -130,7 +130,6 @@ public class WorkingTree {
      * @param newTree the tree to be set as the new WORK_HEAD
      */
     public synchronized void updateWorkHead(ObjectId newTree) {
-
         context.command(UpdateRef.class).setName(Ref.WORK_HEAD).setNewValue(newTree).call();
     }
 

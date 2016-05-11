@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -65,6 +66,7 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInserter;
+import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,10 +183,12 @@ public class PGObjectDatabase implements ObjectDatabase {
         conflicts = new PGConflictsDatabase(dataSource, conflictsTable, repositoryId);
         blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
 
-        ObjectDatabaseSharedResources.retain(configdb, config.connectionConfig);
-        executor = ObjectDatabaseSharedResources.getExecutor(config.connectionConfig);
-        byteCache = ObjectDatabaseSharedResources.getByteCache(config.connectionConfig);
-        threadPoolSize = ObjectDatabaseSharedResources.getThreadPoolSize(config.connectionConfig);
+        final String prefix = config.getTables().getPrefix();
+        final ConnectionConfig connectionConfig = config.connectionConfig;
+        ObjectDatabaseSharedResources.retain(configdb, connectionConfig, prefix);
+        executor = ObjectDatabaseSharedResources.getExecutor(connectionConfig, prefix);
+        byteCache = ObjectDatabaseSharedResources.getByteCache(connectionConfig, prefix);
+        threadPoolSize = ObjectDatabaseSharedResources.getThreadPoolSize(connectionConfig, prefix);
     }
 
     @Override
@@ -207,7 +211,9 @@ public class PGObjectDatabase implements ObjectDatabase {
                 dataSource = null;
             }
         }
-        ObjectDatabaseSharedResources.release(config.connectionConfig);
+        final String prefix = config.getTables().getPrefix();
+        final ConnectionConfig connectionConfig = config.connectionConfig;
+        ObjectDatabaseSharedResources.release(connectionConfig, prefix);
         executor = null;
         byteCache = null;
     }
@@ -1093,7 +1099,41 @@ public class PGObjectDatabase implements ObjectDatabase {
      * Class for managing the shared resources for each database.
      */
     private static class ObjectDatabaseSharedResources {
-        private static final ConcurrentMap<Environment.ConnectionConfig, SharedResourceReference> sharedResources = new ConcurrentHashMap<Environment.ConnectionConfig, SharedResourceReference>();
+
+        /**
+         * A Key to the cache hash table, composed of connection info plus table names prefix.
+         * <p>
+         * A single database generally contains all its repos in tables with the default
+         * {@code geogig_} prefix, but it's also possible that it contains separate sets of
+         * repositories when the table names prefix differ. This is the case for most test cases
+         * where a single database is used to exercise "disconnected" repositories (i.e. where they
+         * don't share the {@code ObjectDatabase} by using different table names prefixes like
+         * "geogig_XXX" and "geogig_YYY" where XXX and YYY are random numbers.
+         *
+         */
+        private static final class Key {
+            final ConnectionConfig config;
+
+            final String tableNamesPrefix;
+
+            public Key(ConnectionConfig config, String tableNamsPrefix) {
+                this.config = config;
+                this.tableNamesPrefix = tableNamsPrefix;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return o instanceof Key && config.equals(((Key) o).config)
+                        && tableNamesPrefix.equals(((Key) o).tableNamesPrefix);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(config, tableNamesPrefix);
+            }
+        }
+
+        private static final ConcurrentMap<Key, SharedResourceReference> sharedResources = new ConcurrentHashMap<>();
 
         /**
          * Keeps track of the number of object databases using the database resources so they can be
@@ -1117,8 +1157,9 @@ public class PGObjectDatabase implements ObjectDatabase {
         }
 
         public synchronized static void retain(ConfigDatabase configdb,
-                Environment.ConnectionConfig config) {
-            SharedResourceReference ref = sharedResources.get(config);
+                Environment.ConnectionConfig config, String tableNamesPrefix) {
+            final Key key = new Key(config, tableNamesPrefix);
+            SharedResourceReference ref = sharedResources.get(key);
             if (ref == null) {
                 int threadPoolSize;
                 Optional<Integer> tpoolSize = configdb.get(KEY_THREADPOOL_SIZE, Integer.class)
@@ -1136,34 +1177,42 @@ public class PGObjectDatabase implements ObjectDatabase {
                 ExecutorService databaseExecutor = createExecutorService(config, threadPoolSize);
                 Cache<ObjectId, byte[]> byteCache = createCache(configdb);
                 ref = new SharedResourceReference(byteCache, databaseExecutor, threadPoolSize);
-                sharedResources.put(config, ref);
+                sharedResources.put(key, ref);
             } else {
                 ref.refCount++;
             }
         }
 
-        public synchronized static void release(Environment.ConnectionConfig config) {
-            SharedResourceReference ref = sharedResources.get(config);
+        public synchronized static void release(Environment.ConnectionConfig config,
+                String tableNamesPrefix) {
+            final Key key = new Key(config, tableNamesPrefix);
+            SharedResourceReference ref = sharedResources.get(key);
             if (ref != null) {
                 ref.refCount--;
                 if (ref.refCount == 0) {
                     ref.executor.shutdownNow();
                     ref.byteCache.cleanUp();
-                    sharedResources.remove(config);
+                    sharedResources.remove(key);
                 }
             }
         }
 
-        public static ExecutorService getExecutor(Environment.ConnectionConfig config) {
-            return sharedResources.get(config).executor;
+        public static ExecutorService getExecutor(Environment.ConnectionConfig config,
+                String tableNamesPrefix) {
+            final Key key = new Key(config, tableNamesPrefix);
+            return sharedResources.get(key).executor;
         }
 
-        public static Cache<ObjectId, byte[]> getByteCache(Environment.ConnectionConfig config) {
-            return sharedResources.get(config).byteCache;
+        public static Cache<ObjectId, byte[]> getByteCache(
+                final Environment.ConnectionConfig config, final String tableNamesPrefix) {
+            final Key key = new Key(config, tableNamesPrefix);
+            return sharedResources.get(key).byteCache;
         }
 
-        public static int getThreadPoolSize(Environment.ConnectionConfig config) {
-            return sharedResources.get(config).threadPoolSize;
+        public static int getThreadPoolSize(Environment.ConnectionConfig config,
+                String tableNamesPrefix) {
+            final Key key = new Key(config, tableNamesPrefix);
+            return sharedResources.get(key).threadPoolSize;
         }
 
         private static Cache<ObjectId, byte[]> createCache(ConfigDatabase configdb) {

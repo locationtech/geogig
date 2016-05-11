@@ -9,13 +9,15 @@
  */
 package org.locationtech.geogig.api.plumbing;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.hooks.Hookable;
+import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 
 /**
  * Update the object name stored in a {@link Ref} safely.
@@ -96,31 +98,37 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
      */
     @Override
     protected Optional<Ref> _call() {
-        Preconditions.checkState(name != null, "name has not been set");
-        Preconditions.checkState(delete || newValue != null, "value has not been set");
+        checkState(name != null, "name has not been set");
+        checkState(delete || newValue != null, "value has not been set");
 
+        RefDatabase refDatabase = refDatabase();
         if (oldValue != null) {
             String storedValue;
             try {
-                storedValue = refDatabase().getRef(name);
+                storedValue = refDatabase.getRef(name);
             } catch (IllegalArgumentException e) {
                 // may be updating what used to be a symred to be a direct ref
-                storedValue = refDatabase().getSymRef(name);
+                storedValue = refDatabase.getSymRef(name);
             }
-            Preconditions.checkState(oldValue.toString().equals(storedValue), "Old value ("
-                    + storedValue + ") doesn't match expected value '" + oldValue + "'");
+            checkState(oldValue.equals(storedValue), "Old value (" + storedValue
+                    + ") doesn't match expected value '" + oldValue + "'");
         }
 
         if (delete) {
             Optional<Ref> oldRef = command(RefParse.class).setName(name).call();
             if (oldRef.isPresent()) {
-                refDatabase().remove(oldRef.get().getName());
+                refDatabase.remove(oldRef.get().getName());
             }
             return oldRef;
         }
 
-        refDatabase().putRef(name, newValue.toString());
-        return command(RefParse.class).setName(name).call();
+        checkState(newValue.isNull() || objectDatabase().exists(newValue),
+                "Tried to update Ref %s to an obect that doesn't exist: %s", name, newValue);
+
+        refDatabase.putRef(name, newValue.toString());
+        Optional<Ref> newRef = command(RefParse.class).setName(name).call();
+        checkState(newRef.isPresent());
+        return newRef;
     }
 
 }

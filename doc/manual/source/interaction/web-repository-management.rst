@@ -29,7 +29,7 @@ To serve repo1, repo2, and repo3 under a single endpoint, perform the following 
 	$ cd /repos
 	$ geogig serve --multirepo
 
-This will enable all three repositories to be accessed through the ``http://localhost:8182/`` endpoint.
+This will enable all three repositories to be accessed through the ``http://localhost:8182/repos`` endpoint.
 
 The rest of this document will use this repository configuration for demonstration purposes.
 

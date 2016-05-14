@@ -9,18 +9,47 @@
  */
 package org.locationtech.geogig.storage.fs;
 
+import org.junit.Assert;
+import org.junit.Test;
 import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigDatabaseTest;
+import org.locationtech.geogig.storage.ConfigException;
 
 public class IniFileConfigDatabaseTest extends ConfigDatabaseTest<IniFileConfigDatabase> {
 
+    private Platform platform;
+
     protected IniFileConfigDatabase createDatabase(final Platform platform) {
+        this.platform = platform;
         return new IniFileConfigDatabase(platform);
     }
 
     @Override
     protected void destroy(IniFileConfigDatabase config) {
         //
+    }
+
+    @Test
+    public void testGlobalOnly() {
+        ConfigDatabase globalOnly = IniFileConfigDatabase.globalOnly(platform);
+        testGlobalOnly(() -> globalOnly.get("section.key"));
+        testGlobalOnly(() -> globalOnly.getAll());
+        testGlobalOnly(() -> globalOnly.get("section.key", String.class));
+        testGlobalOnly(() -> globalOnly.getAllSection("section"));
+        testGlobalOnly(() -> globalOnly.getAllSubsections("section.sub"));
+        testGlobalOnly(() -> globalOnly.put("section.key", "val"));
+        testGlobalOnly(() -> globalOnly.remove("section.key"));
+        testGlobalOnly(() -> globalOnly.removeSection("section"));
+    }
+
+    private void testGlobalOnly(Runnable call) {
+        try {
+            call.run();
+            Assert.fail("Expected ConfigException");
+        } catch (ConfigException e) {
+            Assert.assertEquals(ConfigException.StatusCode.INVALID_LOCATION, e.statusCode);
+        }
     }
 
 }

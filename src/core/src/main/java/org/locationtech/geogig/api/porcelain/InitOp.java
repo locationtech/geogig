@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
+import static com.google.common.base.Optional.absent;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -116,7 +118,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
 
         URI repoURI = resolvedURI.get();
 
-        RepositoryResolver repoInitializer = RepositoryResolver.lookup(repoURI);
+        final RepositoryResolver repoInitializer = RepositoryResolver.lookup(repoURI);
         final boolean repoExisted = repoInitializer.repoExists(repoURI);
 
         repoInitializer.initialize(repoURI, context());
@@ -161,31 +163,32 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                         + " to the new repository.", e);
             }
         }
-        //
-        // Preconditions.checkState(envHome.toURI().equals(
-        // new ResolveGeogigDir(platform, hints).call().get()));
 
         Repository repository;
         try {
             if (!repoExisted) {
-                ConfigDatabase configDB = context.configDatabase();
-                PluginDefaults defaults = context.pluginDefaults();
-                addDefaults(defaults, effectiveConfigBuilder);
-                if (config != null) {
-                    effectiveConfigBuilder.putAll(config);
-                }
-                try {
-                    for (Entry<String, String> pair : effectiveConfigBuilder.entrySet()) {
-                        String key = pair.getKey();
-                        String value = pair.getValue();
-                        configDB.put(key, value);
+                // use a config database appropriate for the kind of repo URI
+                try (ConfigDatabase configDB = repoInitializer.getConfigDatabase(repoURI,
+                        context)) {
+                    PluginDefaults defaults = context.pluginDefaults();
+                    addDefaults(configDB, defaults, effectiveConfigBuilder);
+                    if (config != null) {
+                        effectiveConfigBuilder.putAll(config);
                     }
-                    repository = repository();
-                    repository.configure();
-                } catch (RepositoryConnectionException e) {
-                    throw new IllegalStateException(
-                            "Unable to initialize repository for the first time: " + e.getMessage(),
-                            e);
+                    try {
+                        for (Entry<String, String> pair : effectiveConfigBuilder.entrySet()) {
+                            String key = pair.getKey();
+                            String value = pair.getValue();
+                            configDB.put(key, value);
+                        }
+                        repository = repository();
+                        repository.configure();
+                    } catch (RepositoryConnectionException e) {
+                        throw new IllegalStateException(
+                                "Unable to initialize repository for the first time: "
+                                        + e.getMessage(),
+                                e);
+                    }
                 }
             } else {
                 repository = repository();
@@ -201,7 +204,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
             }
         } catch (ConfigException e) {
             throw e;
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             Throwables.propagateIfInstanceOf(e, IllegalStateException.class);
             throw new IllegalStateException("Can't access repository at '" + repoURI + "'", e);
         }
@@ -216,20 +219,33 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         return repository;
     }
 
-    private void addDefaults(PluginDefaults defaults, Map<String, String> configProps) {
-        Optional<VersionedFormat> refs = defaults.getRefs();
-        Optional<VersionedFormat> objects = defaults.getObjects();
-        Optional<VersionedFormat> graph = defaults.getGraph();
+    private void addDefaults(ConfigDatabase configDB, PluginDefaults defaults,
+            Map<String, String> configProps) {
+
+        final String refsKey = "storage.refs";
+        final String objectsKey = "storage.objects";
+        final String graphKey = "storage.graph";
+
+        final Map<String, String> providedConfig = configDB.getAll();
+
+        Optional<VersionedFormat> refs;
+        Optional<VersionedFormat> objects;
+        Optional<VersionedFormat> graph;
+
+        refs = providedConfig.containsKey(refsKey) ? absent() : defaults.getRefs();
+        objects = providedConfig.containsKey(objectsKey) ? absent() : defaults.getObjects();
+        graph = providedConfig.containsKey(graphKey) ? absent() : defaults.getGraph();
+
         if (refs.isPresent()) {
-            configProps.put("storage.refs", refs.get().getFormat());
+            configProps.put(refsKey, refs.get().getFormat());
             configProps.put(refs.get().getFormat() + ".version", refs.get().getVersion());
         }
         if (objects.isPresent()) {
-            configProps.put("storage.objects", objects.get().getFormat());
+            configProps.put(objectsKey, objects.get().getFormat());
             configProps.put(objects.get().getFormat() + ".version", objects.get().getVersion());
         }
         if (graph.isPresent()) {
-            configProps.put("storage.graph", graph.get().getFormat());
+            configProps.put(graphKey, graph.get().getFormat());
             configProps.put(graph.get().getFormat() + ".version", graph.get().getVersion());
         }
     }

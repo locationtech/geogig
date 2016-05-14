@@ -50,7 +50,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
         Environment config = parseConfig(repoURI);
         PGConfigDatabase configDb = new PGConfigDatabase(config);
         if (config.getRepositoryId() != null) {
-            Optional<String> refsFormat = configDb.getGlobal("storage.refs");
+            Optional<String> refsFormat = configDb.get("storage.refs");
             if (!refsFormat.isPresent()) {
                 configDb.put(PGStorageProvider.FORMAT_NAME + ".version", PGStorageProvider.VERSION);
                 configDb.put("storage.refs", PGStorageProvider.FORMAT_NAME);

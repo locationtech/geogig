@@ -14,6 +14,7 @@ import java.util.List;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.Remote;
 import org.locationtech.geogig.api.porcelain.RemoteAddOp;
+import org.locationtech.geogig.api.porcelain.RemoteException;
 import org.locationtech.geogig.api.porcelain.RemoteListOp;
 import org.locationtech.geogig.api.porcelain.RemoteRemoveOp;
 import org.locationtech.geogig.api.porcelain.RemoteResolve;
@@ -27,6 +28,7 @@ import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
+import org.restlet.data.Status;
 
 import com.google.common.base.Optional;
 
@@ -189,8 +191,14 @@ public class RemoteManagement extends AbstractWebAPICommand {
         } else if (remoteURL == null || remoteURL.trim().isEmpty()) {
             throw new CommandSpecException("No URL was specified.");
         }
-        final Remote remote = geogig.command(RemoteAddOp.class).setName(remoteName)
-                .setURL(remoteURL).setUserName(username).setPassword(password).call();
+        final Remote remote;
+        try {
+            remote = geogig.command(RemoteAddOp.class).setName(remoteName).setURL(remoteURL)
+                    .setUserName(username).setPassword(password).call();
+        } catch (RemoteException re) {
+            throw new CommandSpecException(re.statusCode.toString(),
+                    Status.CLIENT_ERROR_BAD_REQUEST);
+        }
         context.setResponseContent(new CommandResponse() {
             @Override
             public void write(ResponseWriter out) throws Exception {
@@ -231,7 +239,13 @@ public class RemoteManagement extends AbstractWebAPICommand {
         if (remoteName == null || remoteName.trim().isEmpty()) {
             throw new CommandSpecException("No remote was specified.");
         }
-        final Remote remote = geogig.command(RemoteRemoveOp.class).setName(remoteName).call();
+        final Remote remote;
+        try {
+            remote = geogig.command(RemoteRemoveOp.class).setName(remoteName).call();
+        } catch (RemoteException e) {
+            throw new CommandSpecException(e.statusCode.toString(),
+                    Status.CLIENT_ERROR_BAD_REQUEST);
+        }
         context.setResponseContent(new CommandResponse() {
             @Override
             public void write(ResponseWriter out) throws Exception {
@@ -243,8 +257,13 @@ public class RemoteManagement extends AbstractWebAPICommand {
     }
 
     private void remotePing(CommandContext context, final Context geogig) {
-        Optional<Remote> remote = geogig.command(RemoteResolve.class).setName(remoteName).call();
-
+        Optional<Remote> remote;
+        try {
+            remote = geogig.command(RemoteResolve.class).setName(remoteName).call();
+        } catch (RemoteException re) {
+            throw new CommandSpecException(re.statusCode.toString(),
+                    Status.CLIENT_ERROR_BAD_REQUEST);
+        }
         boolean remotePingResponse = false;
         if (remote.isPresent()) {
             Optional<IRemoteRepo> remoteRepo = RemoteUtils.newRemote(geogig.repository(),

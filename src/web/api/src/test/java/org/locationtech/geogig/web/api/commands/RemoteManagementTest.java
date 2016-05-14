@@ -23,6 +23,7 @@ import org.locationtech.geogig.api.Remote;
 import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.porcelain.CloneOp;
 import org.locationtech.geogig.api.porcelain.RemoteAddOp;
+import org.locationtech.geogig.api.porcelain.RemoteException;
 import org.locationtech.geogig.api.porcelain.RemoteResolve;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
@@ -191,6 +192,16 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("remove", "true", "remoteName", "");
         ex.expect(CommandSpecException.class);
         ex.expectMessage("No remote was specified.");
+        buildCommand(options).run(testContext.get());
+    }
+
+    @Test
+    public void removeNonExistentRemote() throws Exception {
+        setupRemotes(true, true);
+
+        ParameterSet options = TestParams.of("remove", "true", "remoteName", "nonexistent");
+        ex.expect(CommandSpecException.class);
+        ex.expectMessage(RemoteException.StatusCode.REMOTE_NOT_FOUND.toString());
         buildCommand(options).run(testContext.get());
     }
 
@@ -381,6 +392,25 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("add", "true", "remoteName", "remote2");
         ex.expect(CommandSpecException.class);
         ex.expectMessage("No URL was specified.");
+        buildCommand(options).run(testContext.get());
+    }
+
+    @Test
+    public void addRemoteDuplicate() throws Exception {
+        setupRemotes(true, false);
+
+        ParameterSet options = TestParams.of("add", "true", "remoteName", "remote2", "remoteURL",
+                remote2URI.toURL().toString());
+        buildCommand(options).run(testContext.get());
+
+        Remote remote = testContext.get().getGeoGIG().command(RemoteResolve.class)
+                .setName("remote2").call().get();
+        assertEquals("remote2", remote.getName());
+        assertEquals(remote2URI.toURL().toString(), remote.getFetchURL());
+
+        ex.expect(CommandSpecException.class);
+        ex.expectMessage(RemoteException.StatusCode.REMOTE_ALREADY_EXISTS.toString());
+
         buildCommand(options).run(testContext.get());
     }
 }

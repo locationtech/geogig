@@ -1,10 +1,13 @@
+cache:
+  directories:
+    - "$HOME/.m2"
 language: java
 jdk:
   - oraclejdk8
 before_install: 
   - cd src/parent
   - sudo apt-get install libspatialite-dev
-install: mvn -B install -DskipTests=true -Ptravis,postgres
+install: mvn -B -U install -DskipTests=true -Ptravis,postgres
 before_script:
   - psql -c 'create database geogig_tests;' -U postgres
   - echo '[postgres]' > ~/.geogig-pg-backend-tests.properties

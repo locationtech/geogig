@@ -58,7 +58,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.ning.compress.lzf.LZFInputStream;
 import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.CursorConfig;
@@ -265,9 +264,6 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
             environment = createEnvironment(readOnly);
         }
 
-        // System.err.println("Opened ObjectDatabase at " + env.getHome()
-        // + ". Environment read-only: " + environment.getConfig().getReadOnly()
-        // + " database read only: " + this.readOnly);
         Database database;
         try {
             LOGGER.debug("Opening ObjectDatabase at {}", environment.getHome());

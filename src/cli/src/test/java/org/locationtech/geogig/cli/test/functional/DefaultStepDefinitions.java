@@ -157,7 +157,6 @@ public class DefaultStepDefinitions {
             args[i] = replaceKnownVariables(args[i]);
         }
         localRepo.runCommand(args);
-        // System.err.println(localRepo.stdOut.toString());
     }
 
     @Then("^it should exit with non-zero exit code$")
@@ -188,9 +187,6 @@ public class DefaultStepDefinitions {
         expected = replaceKnownVariables(expected);
         String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
                 .replaceAll("\\\\", "/");
-        if (!actual.contains(expected)) {
-            System.err.println(actual);
-        }
         assertTrue("'" + actual + "' does not contain '" + expected + "'",
                 actual.contains(expected));
     }

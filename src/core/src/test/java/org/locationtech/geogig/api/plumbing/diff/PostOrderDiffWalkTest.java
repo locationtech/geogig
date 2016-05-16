@@ -59,18 +59,12 @@ public class PostOrderDiffWalkTest {
 
         @Override
         public void feature(NodeRef left, NodeRef right) {
-            // synchronized (System.err) {
-            // System.err.printf("feature: %s / %s\n", left, right);
-            // }
             orderedLeft.add(left);
             orderedRight.add(right);
         }
 
         @Override
         public void tree(NodeRef left, NodeRef right) {
-            // synchronized (System.err) {
-            // System.err.printf("tree: %s / %s\n", left, right);
-            // }
             orderedLeft.add(left);
             orderedRight.add(right);
         }
@@ -78,9 +72,6 @@ public class PostOrderDiffWalkTest {
         @Override
         public void bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
                 Bucket left, Bucket right) {
-            // synchronized (System.err) {
-            // System.err.printf("bucket: %s / %s\n", left, right);
-            // }
             orderedLeft.add(left);
             orderedRight.add(right);
         }
@@ -147,8 +138,6 @@ public class PostOrderDiffWalkTest {
         List<? extends Bounded> expectedRight = newArrayList(featureNodeRef("f", 1), nodeFor(right));
 
         visitor.walk(testConsumer);
-        // System.err.println(testConsumer.orderedLeft);
-        // System.err.println(testConsumer.orderedRight);
         assertEquals(expectedLeft, testConsumer.orderedLeft);
         assertEquals(expectedRight, testConsumer.orderedRight);
     }
@@ -198,9 +187,6 @@ public class PostOrderDiffWalkTest {
         List<Bounded> leftCalls = testConsumer.orderedLeft;
         List<Bounded> rightCalls = testConsumer.orderedRight;
 
-        System.err.println(leftCalls);
-        System.err.println(rightCalls);
-
         NodeRef lroot = nodeFor(left);
         NodeRef rroot = nodeFor(right);
 
@@ -234,9 +220,6 @@ public class PostOrderDiffWalkTest {
 
         List<Bounded> leftCalls = testConsumer.orderedLeft;
         List<Bounded> rightCalls = testConsumer.orderedRight;
-
-        // System.err.println(leftCalls);
-        // System.err.println(rightCalls);
 
         NodeRef lroot = nodeFor(left);
         NodeRef rroot = nodeFor(right);

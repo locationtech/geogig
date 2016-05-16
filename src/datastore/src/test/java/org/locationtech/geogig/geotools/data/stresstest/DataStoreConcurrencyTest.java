@@ -238,7 +238,7 @@ public class DataStoreConcurrencyTest {
                 e.printStackTrace();
                 throw Throwables.propagate(e);
             }
-            System.err.printf("Thread %s finished\n", Thread.currentThread().getName());
+            //System.err.printf("Thread %s finished\n", Thread.currentThread().getName());
             return insertCount;
         }
     }

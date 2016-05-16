@@ -180,10 +180,7 @@ public class DepthTreeIteratorTest extends Assert {
             builder.put(featureNode("f", i));
         }
         RevTree mixedBucketsTree = builder.build();
-        Stopwatch sw = Stopwatch.createStarted();
         assertEquals(numSubTrees, list(mixedBucketsTree, Strategy.RECURSIVE_TREES_ONLY).size());
-        sw.stop();
-        System.err.println(sw);
     }
 
     private List<NodeRef> list(RevTree tree, Strategy strategy) {

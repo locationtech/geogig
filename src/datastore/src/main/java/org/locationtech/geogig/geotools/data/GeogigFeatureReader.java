@@ -254,8 +254,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         if (screenMapFilter != null) {
             ScreenMapFilter.Stats stats = screenMapFilter.stats();
             Stopwatch stopwatch = stats.sw.stop();
-            System.err.printf("GeoGigFeatureReader.close(): ScreenMap filtering: %s, time: %s\n",
-                    screenMapFilter.stats(), stopwatch);
+            // System.err.printf("GeoGigFeatureReader.close(): ScreenMap filtering: %s, time: %s\n",
+            // screenMapFilter.stats(), stopwatch);
             LOGGER.debug("GeoGigFeatureReader.close(): ScreenMap filtering: {}, time: {}",
                     screenMapFilter.stats(), stopwatch);
         }

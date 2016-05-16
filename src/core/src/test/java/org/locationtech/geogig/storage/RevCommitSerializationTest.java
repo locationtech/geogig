@@ -100,8 +100,6 @@ public abstract class RevCommitSerializationTest extends Assert {
 
         serializer.write(commit, out);
 
-        // System.err.println(out);
-
         RevObject read = serializer.read(commit.getId(), new ByteArrayInputStream(out.toByteArray()));
         assertEquals(commit, read);
     }
@@ -156,7 +154,6 @@ public abstract class RevCommitSerializationTest extends Assert {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         serializer.write(cmtIn, bout);
 
-        // System.err.println(bout);
         byte[] bytes = bout.toByteArray();
         assertTrue(bytes.length > 0);
 

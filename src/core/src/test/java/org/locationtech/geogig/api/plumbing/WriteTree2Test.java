@@ -540,20 +540,6 @@ public class WriteTree2Test extends RepositoryTestCase {
         return refsByPath;
     }
 
-    private void print(ObjectId treeId) {
-        System.err.println(treeId);
-        Iterator<NodeRef> iterator = geogig.command(LsTreeOp.class).setReference(treeId.toString())
-                .setStrategy(Strategy.DEPTHFIRST).call();
-        while (iterator.hasNext()) {
-            print(iterator.next());
-        }
-    }
-
-    private void print(NodeRef ref) {
-        System.err.printf("\t%s '%s' -> %s (%s)\n", ref.getType().toString().charAt(0), ref.path(),
-                ref.getObjectId(), ref.getNode().getMetadataId());
-    }
-
     private void verifyRepositoryTree(String path, ObjectId repoTreeId) {
         ObjectStore objectDb = this.objectDb;
 

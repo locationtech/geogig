@@ -40,11 +40,8 @@ public class RevTreeBuilderPerformanceTest extends RepositoryTestCase {
 
     private static Iterable<Node> nodes;
 
-    // private static List<Node> sortedNodes;
-
     @BeforeClass
     public static void beforeClass() {
-        // nodes = createNodes(numNodes);
         nodes = new Iterable<Node>() {
             @Override
             public Iterator<Node> iterator() {
@@ -62,13 +59,6 @@ public class RevTreeBuilderPerformanceTest extends RepositoryTestCase {
                 };
             }
         };
-        // sortedNodes = new ArrayList<Node>(nodes);
-        //
-        // System.err.printf("Sorting %d nodes...", numNodes);
-        // Stopwatch s = new Stopwatch().start();
-        // Collections.sort(sortedNodes, new NodeStorageOrder());
-        // s.stop();
-        // System.err.printf("done in %s\n", s);
     }
 
     @Override
@@ -80,15 +70,7 @@ public class RevTreeBuilderPerformanceTest extends RepositoryTestCase {
     public void testInsertUnordered() {
         System.err.println("testInsertUnordered...");
         createTree(nodes, new RevTreeBuilder(odb), true);
-        // createTree(nodes, new RevTreeBuilder(odb), true);
     }
-
-    // @Test
-    // public void testInsertOrdered() {
-    // System.err.println("testInsertOrdered...");
-    // createTree(sortedNodes, new RevTreeBuilder(odb), true);
-    // // createTree(sortedNodes, new RevTreeBuilder(odb), true);
-    // }
 
     @Test
     public void testInsertOrderedPartitioned10K() {

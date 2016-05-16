@@ -85,55 +85,21 @@ public class RevTreeBuilderIntegrationTest extends RepositoryTestCase {
         final int numEntries = 1000 * 100;
         ObjectId treeId;
 
-        Stopwatch sw;
-        sw = Stopwatch.createStarted();
         treeId = createAndSaveTree(numEntries, true);
-        sw.stop();
-        System.err.println("Stored " + numEntries + " tree entries in " + sw + " ("
-                + Math.round(numEntries / (sw.elapsed(TimeUnit.MILLISECONDS) / 1000D)) + "/s)");
 
-        sw = Stopwatch.createStarted();
-        treeId = createAndSaveTree(numEntries, true);
-        sw.stop();
-        System.err.println("Stored " + numEntries + " tree entries in " + sw + " ("
-                + Math.round(numEntries / (sw.elapsed(TimeUnit.MILLISECONDS) / 1000D)) + "/s)");
-
-        sw.reset().start();
         final RevTree tree = odb.getTree(treeId);
-        sw.stop();
-        System.err.println("Retrieved tree in " + sw);
 
-        System.err.println("traversing with DepthTreeIterator...");
-        sw.reset().start();
         int counted = 0;
         for (DepthTreeIterator it = new DepthTreeIterator("", ObjectId.NULL, tree, odb,
                 Strategy.CHILDREN); it.hasNext(); counted++) {
             NodeRef ref = it.next();
-            if ((counted + 1) % (numEntries / 10) == 0) {
-                System.err.print("#" + (counted + 1));
-            } else if ((counted + 1) % (numEntries / 100) == 0) {
-                System.err.print('.');
-            }
         }
-        sw.stop();
-        System.err.println("\nTraversed " + counted + " in " + sw + " ("
-                + Math.round(counted / (sw.elapsed(TimeUnit.MILLISECONDS) / 1000D)) + "/s)\n");
 
-        System.err.println("traversing with DepthTreeIterator...");
-        sw.reset().start();
         counted = 0;
         for (DepthTreeIterator it = new DepthTreeIterator("", ObjectId.NULL, tree, odb,
                 Strategy.CHILDREN); it.hasNext(); counted++) {
             NodeRef ref = it.next();
-            if ((counted + 1) % (numEntries / 10) == 0) {
-                System.err.print("#" + (counted + 1));
-            } else if ((counted + 1) % (numEntries / 100) == 0) {
-                System.err.print('.');
-            }
         }
-        sw.stop();
-        System.err.println("\nTraversed " + counted + " in " + sw + " ("
-                + Math.round(counted / (sw.elapsed(TimeUnit.MILLISECONDS) / 1000D)) + "/s)\n");
         assertEquals(numEntries, counted);
     }
 
@@ -142,17 +108,9 @@ public class RevTreeBuilderIntegrationTest extends RepositoryTestCase {
         final int numEntries = 2 * NodePathStorageOrder.normalizedSizeLimit(0) + 1500;
         final ObjectId treeId;
 
-        Stopwatch sw;
-        sw = Stopwatch.createStarted();
         treeId = createAndSaveTree(numEntries, true);
-        sw.stop();
-        System.err.println("Stored " + numEntries + " tree entries in " + sw + " ("
-                + Math.round(numEntries / (sw.elapsed(TimeUnit.MILLISECONDS) / 1000D)) + "/s)");
 
-        sw.reset().start();
         final RevTree tree = odb.getTree(treeId);
-        sw.stop();
-        System.err.println("Retrieved tree in " + sw);
 
         {
             Map<Integer, Node> randomEdits = Maps.newHashMap();
@@ -168,13 +126,11 @@ public class RevTreeBuilderIntegrationTest extends RepositoryTestCase {
                 randomEdits.put(random, ref);
             }
             RevTreeBuilder mutable = new RevTreeBuilder(odb, tree);
-            sw.reset().start();
+
             for (Node ref : randomEdits.values()) {
                 mutable.put(ref);
             }
             mutable.build();
-            sw.stop();
-            System.err.println(randomEdits.size() + " random modifications in " + sw);
         }
 
         // CharSequence treeStr =
@@ -184,14 +140,7 @@ public class RevTreeBuilderIntegrationTest extends RepositoryTestCase {
 
         final FindTreeChild childFinder = repo.command(FindTreeChild.class).setParent(tree);
 
-        sw.reset().start();
-        System.err.println("Reading " + numEntries + " entries....");
         for (int i = 0; i < numEntries; i++) {
-            if ((i + 1) % (numEntries / 10) == 0) {
-                System.err.print("#" + (i + 1));
-            } else if ((i + 1) % (numEntries / 100) == 0) {
-                System.err.print('.');
-            }
             String key = "Feature." + i;
             // ObjectId oid = ObjectId.forString(key);
             Optional<NodeRef> ref = childFinder.setChildPath(key).call();
@@ -199,11 +148,6 @@ public class RevTreeBuilderIntegrationTest extends RepositoryTestCase {
             // assertEquals(key, ref.get().getPath());
             // assertEquals(key, oid, ref.get().getObjectId());
         }
-        sw.stop();
-        System.err.println("\nGot " + numEntries + " in " + sw.elapsed(TimeUnit.MILLISECONDS)
-                + "ms (" + Math.round(numEntries / (sw.elapsed(TimeUnit.MILLISECONDS) / 1000D))
-                + "/s)\n");
-
     }
 
     @Test
@@ -317,18 +261,9 @@ public class RevTreeBuilderIntegrationTest extends RepositoryTestCase {
         final int from = insertInAscendingKeyOrder ? 0 : numEntries - 1;
         final int breakAt = insertInAscendingKeyOrder ? numEntries : -1;
 
-        int c = 0;
-        for (int i = from; i != breakAt; i += increment, c++) {
+        for (int i = from; i != breakAt; i += increment) {
             addNode(tree, i);
-            if (numEntries > 100) {
-                if ((c + 1) % (numEntries / 10) == 0) {
-                    System.err.print("#" + (c + 1));
-                } else if ((c + 1) % (numEntries / 100) == 0) {
-                    System.err.print('.');
-                }
-            }
         }
-        System.err.print('\n');
         return tree;
     }
 

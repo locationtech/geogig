@@ -112,22 +112,11 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
     }
 
     private RevCommit createCommits(int numCommits, String branchName) {
-        int largeStep = numCommits / Math.min(numCommits, 10);
-        int smallStep = numCommits / Math.min(numCommits, 100);
-
         RevCommit commit = null;
         for (int i = 1; i <= numCommits; i++) {
-            if (i % largeStep == 0) {
-                System.err.print(i);
-                System.err.flush();
-            } else if (i % smallStep == 0) {
-                System.err.print('.');
-                System.err.flush();
-            }
             commit = geogig.command(CommitOp.class).setAllowEmpty(true)
                     .setMessage("Commit " + i + " in branch " + branchName).call();
         }
-        System.err.print('\n');
         return commit;
     }
 
@@ -146,7 +135,6 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
             RevCommit lastCommit = createCommits(numCommits / 2, branchName);
             geogig.command(CheckoutOp.class).setSource(Ref.MASTER).call();
             list.add(lastCommit.getId());
-            // System.err.println("branch " + Integer.toString(i));
         }
         return list;
     }

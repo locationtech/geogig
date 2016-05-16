@@ -185,7 +185,6 @@ public class WebAPICucumberHooks {
         final String httpMethod = methodAndURL.substring(0, idx);
         String resourceUri = methodAndURL.substring(idx + 1).trim();
         Method method = Method.valueOf(httpMethod);
-        // System.err.println(methodAndURL);
         context.call(method, resourceUri);
     }
 
@@ -434,7 +433,6 @@ public class WebAPICucumberHooks {
         String url = String.format("/tasks/%d", taskId);
         Response taskResponse = context.callDontSaveResponse(Method.GET, url);
         String text = taskResponse.getEntity().getText();
-        // System.err.println(text);
         return text;
     }
 

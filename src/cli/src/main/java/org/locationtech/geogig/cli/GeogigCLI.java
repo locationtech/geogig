@@ -155,8 +155,9 @@ public class GeogigCLI {
         return repositoryURI;
     }
 
-    public void disableProgressListener() {
+    public GeogigCLI disableProgressListener() {
         this.progressListenerDisabled = true;
+        return this;
     }
 
     /**
@@ -281,7 +282,6 @@ public class GeogigCLI {
 
     private Context getGeogigInjector(Hints hints) {
         if (this.geogigInjector == null || !Objects.equal(this.hints, hints)) {
-            // System.err.println("Injector hints: " + hints);
             geogigInjector = newGeogigInjector(hints);
         }
         return geogigInjector;

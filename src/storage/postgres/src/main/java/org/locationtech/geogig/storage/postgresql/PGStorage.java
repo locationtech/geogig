@@ -254,7 +254,6 @@ public class PGStorage {
     }
 
     private static void run(Connection cx, String sql) throws SQLException {
-        // System.err.println(sql + ";");
         try (Statement st = cx.createStatement()) {
             st.execute(log(sql, LOG));
         }

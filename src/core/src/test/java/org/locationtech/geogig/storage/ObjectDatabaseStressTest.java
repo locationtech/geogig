@@ -149,11 +149,7 @@ public abstract class ObjectDatabaseStressTest {
             Future<?> future = executor.submit(new Runnable() {
                 @Override
                 public void run() {
-                    // Stopwatch sw = Stopwatch.createStarted();
                     db.putAll(objects, listener);
-                    // sw.stop();
-                    // System.err.printf("\t%s inserted %,d in %s\n",
-                    // Thread.currentThread().getName(), myCount, sw);
                 }
             });
             futures.add(future);

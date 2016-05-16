@@ -35,7 +35,7 @@ public class OSMExportShpTest extends Assert {
     @Before
     public void setUp() throws Exception {
         Console consoleReader = new Console().disableAnsi();
-        cli = new GeogigCLI(consoleReader);
+        cli = new GeogigCLI(consoleReader).disableProgressListener();
         File workingDirectory = tempFolder.getRoot();
         TestPlatform platform = new TestPlatform(workingDirectory);
         cli.setPlatform(platform);

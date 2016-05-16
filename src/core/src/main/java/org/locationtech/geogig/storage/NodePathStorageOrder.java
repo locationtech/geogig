@@ -260,10 +260,6 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
             final long longValue = hash;
             final long bits = longValue ^ octet;
 
-            // System.err.println("hash : " + Long.toBinaryString(longValue));
-            // System.err.println("xor  : " + Long.toBinaryString(bits));
-            // System.err.println("octet: " + Integer.toBinaryString(octet));
-
             // convert back to unsigned long
             // hash = UnsignedLong.fromLongBits(bits);
             // multiply by prime

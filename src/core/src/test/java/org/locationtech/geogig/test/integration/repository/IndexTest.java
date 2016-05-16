@@ -217,9 +217,6 @@ public class IndexTest extends RepositoryTestCase {
         // insert and commit feature1_1
         final ObjectId oId1_1 = insertAndAdd(points1);
 
-        System.err.println("++++++++++++ stage 1:  ++++++++++++++++++++");
-        // staged1.accept(new PrintVisitor(index.getDatabase(), new PrintWriter(System.err)));
-
         // check feature1_1 is there
         assertEquals(oId1_1, index.findStaged(appendChild(pointsName, idP1)).get().getObjectId());
 
@@ -227,9 +224,6 @@ public class IndexTest extends RepositoryTestCase {
         final ObjectId oId1_2 = insertAndAdd(points2);
         final ObjectId oId1_3 = insertAndAdd(points3);
         final ObjectId oId2_1 = insertAndAdd(lines1);
-
-        System.err.println("++++++++++++ stage 2: ++++++++++++++++++++");
-        // staged2.accept(new PrintVisitor(index.getDatabase(), new PrintWriter(System.err)));
 
         // check feature1_2, feature1_3 and feature2_1
         Optional<Node> treeChild;
@@ -258,9 +252,6 @@ public class IndexTest extends RepositoryTestCase {
         // and insert feature2_2
         final ObjectId oId2_2 = insertAndAdd(lines2);
 
-        System.err.println("++++++++++++ stage 3: ++++++++++++++++++++");
-        // staged3.accept(new PrintVisitor(index.getDatabase(), new PrintWriter(System.err)));
-
         // and check only points2 and lines2 remain (i.e. its oids are set to NULL)
         assertFalse(index.findStaged(appendChild(pointsName, idP1)).isPresent());
         assertFalse(index.findStaged(appendChild(pointsName, idP3)).isPresent());
@@ -282,11 +273,8 @@ public class IndexTest extends RepositoryTestCase {
             newRepoTreeId1 = geogig.command(WriteTree2.class)
                     .setOldRoot(tree(repo.getHead().get().getObjectId())).call();
 
-            // assertEquals(index.getDatabase().getStagedRootRef().getObjectId(), newRepoTreeId1);
-
             RevTree newRepoTree = repo.getTree(newRepoTreeId1);
 
-            System.err.println("++++++++++ new repo tree 1: " + newRepoTreeId1 + " ++++++++++++");
             // check feature1_1 is there
             assertEquals(oId1_1, repo.getTreeChild(newRepoTree, appendChild(pointsName, idP1))
                     .get().getObjectId());
@@ -318,9 +306,6 @@ public class IndexTest extends RepositoryTestCase {
             newRepoTreeId2 = geogig.command(WriteTree2.class).setOldRoot(tree(newRepoTreeId1))
                     .call();
 
-            // assertEquals(index.getDatabase().getStagedRootRef().getObjectId(), newRepoTreeId2);
-
-            System.err.println("++++++++ new root 2:" + newRepoTreeId2 + " ++++++++++");
             RevTree newRepoTree = repo.getTree(newRepoTreeId2);
 
             // check feature1_2, feature1_2 and feature2_1
@@ -366,9 +351,6 @@ public class IndexTest extends RepositoryTestCase {
             newRepoTreeId3 = geogig.command(WriteTree2.class).setOldRoot(tree(newRepoTreeId2))
                     .call();
 
-            // assertEquals(index.getDatabase().getStagedRootRef().getObjectId(), newRepoTreeId3);
-
-            System.err.println("++++++++ new root 3:" + newRepoTreeId3 + " ++++++++++");
             RevTree newRepoTree = repo.getTree(newRepoTreeId3);
 
             // and check only feature1_2 and feature2_2 remain

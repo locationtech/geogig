@@ -50,7 +50,7 @@ public class OSMHistoryImportTest extends Assert {
     @Before
     public void setUp() throws Exception {
         Console consoleReader = new Console().disableAnsi();
-        cli = new GeogigCLI(consoleReader);
+        cli = new GeogigCLI(consoleReader).disableProgressListener();
         fakeOsmApiUrl = getClass().getResource("../../internal/history/01_10").toExternalForm();
 
         File workingDirectory = tempFolder.getRoot();

@@ -11,10 +11,27 @@
   </parent>
 
   <artifactId>geogig-cli-app</artifactId>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
   <name>GeoGig CLI App</name>
     
   <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli</artifactId>
@@ -50,7 +67,30 @@
       <artifactId>geogig-web-app</artifactId>
       <version>${project.version}</version>
     </dependency>
+    
+    <dependency>
+      <groupId>net.sf.py4j</groupId>
+      <artifactId>py4j</artifactId>
+    </dependency>
 
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-core</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+      <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-cli</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+      <classifier>tests</classifier>
+    </dependency>
   </dependencies>
 
   <build>
@@ -73,7 +113,7 @@
           </platforms>
           <programs>
             <program>
-              <mainClass>org.locationtech.geogig.cli.GeogigCLI</mainClass>
+              <mainClass>org.locationtech.geogig.cli.CLI</mainClass>
               <name>geogig</name>
             </program>
             <!--program>
@@ -100,7 +140,7 @@
             <configuration>
                 <archive>
                     <manifest>
-                        <mainClass>org.locationtech.geogig.cli.GeogigCLI</mainClass>
+                        <mainClass>org.locationtech.geogig.cli.CLI</mainClass>
                     </manifest>
                 </archive>
                 <descriptors>
@@ -115,7 +155,7 @@
                         <finalName>geogig</finalName>
                         <archive>
                             <manifest>
-                                <mainClass>org.locationtech.geogig.cli.GeogigCLI</mainClass>
+                                <mainClass>org.locationtech.geogig.cli.CLI</mainClass>
                             </manifest>
                         </archive>
                         <descriptors>

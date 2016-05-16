@@ -288,6 +288,13 @@
         <artifactId>jul-to-slf4j</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
+      <dependency>
+        <!-- Used only in test scope to avoid unnecessary warnings -->
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+        <scope>test</scope>
+      </dependency>
 
       <dependency>
         <groupId>org.mapdb</groupId>
@@ -365,6 +372,13 @@
         <artifactId>gson</artifactId>
         <version>${gson.version}</version>
       </dependency>
+
+      <dependency>
+        <groupId>net.sf.py4j</groupId>
+        <artifactId>py4j</artifactId>
+        <version>0.8.1</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 

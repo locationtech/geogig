@@ -28,20 +28,8 @@
     </dependency>
 
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jul-to-slf4j</artifactId>
     </dependency>
 
     <dependency>
@@ -74,12 +62,6 @@
       <classifier>no_aop</classifier>
     </dependency>
     
-	<dependency>
-  		<groupId>net.sf.py4j</groupId>
-  		<artifactId>py4j</artifactId>
-  		<version>0.8.1</version>
-	</dependency>
-
     <!-- Test scope dependencies -->
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
@@ -99,6 +81,11 @@
     <dependency>
       <groupId>info.cukes</groupId>
       <artifactId>cucumber-junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

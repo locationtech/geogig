@@ -102,7 +102,6 @@ public class CLIContext {
 
         geogigCLI.setPlatform(platform);
         geogigCLI.setRepositoryURI(uri.toString());
-        geogigCLI.tryConfigureLogging();
     }
 
     /**

@@ -329,27 +329,6 @@ public class GeogigCLI {
     }
 
     /**
-     * Entry point for the command line interface.
-     * 
-     * @param args
-     */
-    public static void main(String[] args) {
-        GlobalContextBuilder.builder(new CLIContextBuilder());
-        Logging.tryConfigureLogging();
-        Console consoleReader = new Console();
-
-        final GeogigCLI cli = new GeogigCLI(consoleReader);
-        addShutdownHook(cli);
-        int exitCode = cli.execute(args);
-
-        cli.close();
-
-        if (exitCode != 0 || cli.isExitOnFinish()) {
-            System.exit(exitCode);
-        }
-    }
-
-    /**
      * Finds all commands that are bound do the command injector.
      * 
      * @return a collection of keys, one for each command
@@ -853,30 +832,6 @@ public class GeogigCLI {
 
         }
         return this.progressListener;
-    }
-
-    static void addShutdownHook(final GeogigCLI cli) {
-        // try to grafefully shutdown upon CTRL+C
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-
-            private GeogigCLI geogig = cli;
-
-            @Override
-            public void run() {
-                if (cli.isRunning()) {
-                    System.err.println("Forced shut down, wait for geogig to be closed...");
-                    System.err.flush();
-                    geogig.close();
-                    System.err.println("geogig closed.");
-                    System.err.flush();
-                }
-            }
-        });
-    }
-
-    @VisibleForTesting
-    public void tryConfigureLogging() {
-        Logging.tryConfigureLogging(getPlatform(), this.repositoryURI);
     }
 
 }

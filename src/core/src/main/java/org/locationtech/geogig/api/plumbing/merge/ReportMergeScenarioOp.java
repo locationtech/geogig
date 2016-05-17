@@ -28,7 +28,6 @@ import org.locationtech.geogig.api.plumbing.DiffFeature;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.ResolveObjectType;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -72,7 +71,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
     @Override
     protected MergeScenarioReport _call() {
 
-        Optional<ObjectId> ancestor = command(FindCommonAncestor.class).setLeft(toMerge)
+        final Optional<ObjectId> ancestor = command(FindCommonAncestor.class).setLeft(toMerge)
                 .setRight(mergeInto).call();
         Preconditions.checkState(ancestor.isPresent(), "No ancestor commit could be found.");
 
@@ -87,6 +86,9 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
             mergeIntoDiffs.put(path, diff);
         }
 
+        final RevCommit ancestorCommit = objectDatabase().getCommit(ancestor.get());
+        final RevTree ancestorTree = objectDatabase().getTree(ancestorCommit.getTreeId());
+
         Iterator<DiffEntry> toMergeDiffs = command(DiffTree.class).setOldTree(ancestor.get())
                 .setReportTrees(true).setNewTree(toMerge.getId()).call();
         while (toMergeDiffs.hasNext()) {
@@ -94,10 +96,6 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
             String path = toMergeDiff.oldPath() == null ? toMergeDiff.newPath() : toMergeDiff
                     .oldPath();
             if (mergeIntoDiffs.containsKey(path)) {
-                RevCommit ancestorCommit = command(RevObjectParse.class)
-                        .setRefSpec(ancestor.get().toString()).call(RevCommit.class).get();
-                RevTree ancestorTree = command(RevObjectParse.class)
-                        .setObjectId(ancestorCommit.getTreeId()).call(RevTree.class).get();
                 Optional<NodeRef> ancestorVersion = command(FindTreeChild.class).setChildPath(path)
                         .setParent(ancestorTree).call();
                 ObjectId ancestorVersionId = ancestorVersion.isPresent() ? ancestorVersion.get()
@@ -116,8 +114,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                     if (toMergeDiff.getNewObject().equals(mergeIntoDiff.getNewObject())) {
                         // already added in current branch, no need to do anything
                     } else {
-                        TYPE type = command(ResolveObjectType.class).setObjectId(
-                                toMergeDiff.getNewObject().getObjectId()).call();
+                        final TYPE type = toMergeDiff.getNewObject().getType();
                         if (TYPE.TREE.equals(type)) {
                             boolean conflict = !toMergeDiff.getNewObject().getMetadataId()
                                     .equals(mergeIntoDiff.getNewObject().getMetadataId());
@@ -144,8 +141,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                     // removed by both histories => no conflict and no need to do anything
                     break;
                 case MODIFIED:
-                    TYPE type = command(ResolveObjectType.class).setObjectId(
-                            toMergeDiff.getNewObject().getObjectId()).call();
+                    final TYPE type = toMergeDiff.getNewObject().getType();
                     if (TYPE.TREE.equals(type)) {
                         boolean conflict = !toMergeDiff.getNewObject().getMetadataId()
                                 .equals(mergeIntoDiff.getNewObject().getMetadataId());
@@ -206,8 +202,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                 // If we are removing the tree, we have to make sure that there are no features
                 // modified in the other branch under it.
                 if (ChangeType.REMOVED.equals(toMergeDiff.changeType())) {
-                    TYPE type = command(ResolveObjectType.class).setObjectId(
-                            toMergeDiff.oldObjectId()).call();
+                    final TYPE type = toMergeDiff.getOldObject().getType();
                     if (TYPE.TREE.equals(type)) {
                         String parentPath = toMergeDiff.oldPath();
                         Set<Entry<String, DiffEntry>> entries = mergeIntoDiffs.entrySet();
@@ -215,12 +210,6 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                         for (Entry<String, DiffEntry> entry : entries) {
                             if (entry.getKey().startsWith(parentPath)) {
                                 if (!ChangeType.REMOVED.equals(entry.getValue().changeType())) {
-                                    RevCommit ancestorCommit = command(RevObjectParse.class)
-                                            .setRefSpec(ancestor.get().toString())
-                                            .call(RevCommit.class).get();
-                                    RevTree ancestorTree = command(RevObjectParse.class)
-                                            .setObjectId(ancestorCommit.getTreeId())
-                                            .call(RevTree.class).get();
                                     Optional<NodeRef> ancestorVersion = command(FindTreeChild.class)
                                             .setChildPath(path).setParent(ancestorTree).call();
                                     ObjectId ancestorVersionId = ancestorVersion.isPresent() ? ancestorVersion

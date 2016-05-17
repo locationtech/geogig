@@ -60,11 +60,11 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
      * @return RevCommit the new commit with the changes from the cherry-picked commit
      */
     @Override
-    protected  RevCommit _call() {
+    protected RevCommit _call() {
         final Repository repository = repository();
         final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
-        Preconditions
-                .checkState(currHead.isPresent(), "Repository has no HEAD, can't cherry pick.");
+        Preconditions.checkState(currHead.isPresent(),
+                "Repository has no HEAD, can't cherry pick.");
         Preconditions.checkState(currHead.get() instanceof SymRef,
                 "Can't cherry pick from detached HEAD");
         final SymRef headRef = (SymRef) currHead.get();
@@ -93,8 +93,8 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                 .setNewTree(commitToApply.getTreeId()).setReportTrees(true).call();
 
         // see if there are conflicts
-        MergeScenarioReport report = command(ReportCommitConflictsOp.class)
-                .setCommit(commitToApply).call();
+        MergeScenarioReport report = command(ReportCommitConflictsOp.class).setCommit(commitToApply)
+                .call();
         if (report.getConflicts().isEmpty()) {
             // stage changes
             index().stage(getProgressListener(), diff, 0);
@@ -108,31 +108,32 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
             getProgressListener().complete();
 
             return newCommit;
-        } else {
-            Iterator<DiffEntry> unconflicted = report.getUnconflicted().iterator();
-            // stage changes
-            index().stage(getProgressListener(), unconflicted, 0);
-            workingTree().updateWorkHead(index().getTree().getId());
-
-            command(UpdateRef.class).setName(Ref.CHERRY_PICK_HEAD).setNewValue(commit).call();
-            command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(headId).call();
-            command(ConflictsWriteOp.class).setConflicts(report.getConflicts()).call();
-
-            StringBuilder msg = new StringBuilder();
-            msg.append("error: could not apply ");
-            msg.append(commitToApply.getId().toString().substring(0, 8));
-            msg.append(" " + commitToApply.getMessage());
-            for (Conflict conflict : report.getConflicts()) {
-                msg.append("\t" + conflict.getPath() + "\n");
-            }
-
-            StringBuilder sb = new StringBuilder();
-            for (Conflict conflict : report.getConflicts()) {
-                sb.append("CONFLICT: conflict in " + conflict.getPath() + "\n");
-            }
-            sb.append("Fix conflicts and then commit the result using 'geogig commit -c "
-                    + commitToApply.getId().toString().substring(0, 8) + "\n");
-            throw new ConflictsException(sb.toString());
         }
+
+        Iterator<DiffEntry> unconflicted = report.getUnconflicted().iterator();
+        // stage changes
+        index().stage(getProgressListener(), unconflicted, 0);
+        workingTree().updateWorkHead(index().getTree().getId());
+
+        command(UpdateRef.class).setName(Ref.CHERRY_PICK_HEAD).setNewValue(commit).call();
+        command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(headId).call();
+        command(ConflictsWriteOp.class).setConflicts(report.getConflicts()).call();
+
+        StringBuilder msg = new StringBuilder();
+        msg.append("error: could not apply ");
+        msg.append(commitToApply.getId().toString().substring(0, 8));
+        msg.append(" " + commitToApply.getMessage());
+        for (Conflict conflict : report.getConflicts()) {
+            msg.append("\t" + conflict.getPath() + "\n");
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (Conflict conflict : report.getConflicts()) {
+            sb.append("CONFLICT: conflict in " + conflict.getPath() + "\n");
+        }
+        sb.append("Fix conflicts and then commit the result using 'geogig commit -c "
+                + commitToApply.getId().toString().substring(0, 8) + "\n");
+        throw new ConflictsException(sb.toString());
+
     }
 }

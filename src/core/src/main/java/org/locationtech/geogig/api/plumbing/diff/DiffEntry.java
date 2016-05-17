@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.api.plumbing.diff;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
@@ -78,8 +76,7 @@ public class DiffEntry {
      * @param oldObject the old node ref
      * @param newObject the new node ref
      */
-    public DiffEntry(@Nullable NodeRef oldObject,
-            @Nullable NodeRef newObject) {
+    public DiffEntry(@Nullable NodeRef oldObject, @Nullable NodeRef newObject) {
 
         Preconditions.checkArgument(oldObject != null || newObject != null,
                 "Either oldObject or newObject shall not be null");
@@ -90,9 +87,11 @@ public class DiffEntry {
                             + oldObject.toString());
         }
         if (oldObject != null && newObject != null) {
-            checkArgument(oldObject.getType().equals(newObject.getType()), String.format(
-                    "Types don't match: %s : %s", oldObject.getType().toString(), newObject
-                            .getType().toString()));
+            if (!oldObject.getType().equals(newObject.getType())) {
+                String msg = String.format("Types don't match: %s : %s", oldObject.getType(),
+                        newObject.getType());
+                throw new IllegalArgumentException(msg);
+            }
         }
 
         this.oldObject = oldObject;
@@ -175,32 +174,28 @@ public class DiffEntry {
     /**
      * @return the path of the old object
      */
-    public @Nullable
-    String oldPath() {
+    public @Nullable String oldPath() {
         return oldObject == null ? null : oldObject.path();
     }
 
     /**
      * @return the path of the new object
      */
-    public @Nullable
-    String newPath() {
+    public @Nullable String newPath() {
         return newObject == null ? null : newObject.path();
     }
 
     /**
      * @return the name of the new object
      */
-    public @Nullable
-    String newName() {
+    public @Nullable String newName() {
         return newObject == null ? null : newObject.getNode().getName();
     }
 
     /**
      * @return the name of the old object
      */
-    public @Nullable
-    String oldName() {
+    public @Nullable String oldName() {
         return oldObject == null ? null : oldObject.getNode().getName();
     }
 
@@ -217,15 +212,15 @@ public class DiffEntry {
      * 
      * @param target
      */
-    public void expand (Envelope target){
+    public void expand(Envelope target) {
         if (oldObject != null) {
-                oldObject.expand(target);
-         }
-         if(newObject != null){
-                newObject.expand(target);
-         }
+            oldObject.expand(target);
         }
-        
+        if (newObject != null) {
+            newObject.expand(target);
+        }
+    }
+
     @Override
     public int hashCode() {
         return Objects.hashCode(oldObject, newObject);

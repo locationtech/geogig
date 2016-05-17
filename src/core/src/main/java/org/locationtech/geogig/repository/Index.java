@@ -175,7 +175,8 @@ public class Index implements StagingArea {
         Map<String, RevTreeBuilder> parentTress = Maps.newHashMap();
         Map<String, ObjectId> parentMetadataIds = Maps.newHashMap();
         Set<String> removedTrees = Sets.newHashSet();
-        ConflictsDatabase conflictsDb = conflictsDatabase();
+        final ConflictsDatabase conflictsDb = conflictsDatabase();
+        final boolean hasConflicts = conflictsDb.hasConflicts(null);
         while (unstaged.hasNext()) {
             final DiffEntry diff = unstaged.next();
             final String fullPath = diff.oldPath() == null ? diff.newPath() : diff.oldPath();
@@ -219,8 +220,9 @@ public class Index implements StagingArea {
                 Node node = newObject.getNode();
                 parentTree.put(node);
             }
-
-            conflictsDb.removeConflict(null, fullPath);
+            if (hasConflicts) {
+                conflictsDb.removeConflict(null, fullPath);
+            }
         }
 
         ObjectId newRootTree = currentIndexHead.getId();
@@ -273,8 +275,8 @@ public class Index implements StagingArea {
 
                 parentBuilder = new RevTreeBuilder(context.objectDatabase(),
                         context.command(FindOrCreateSubtree.class)
-                        .setParent(Suppliers.ofInstance(Optional.of(getTree())))
-                        .setChildPath(parentPath).call());
+                                .setParent(Suppliers.ofInstance(Optional.of(getTree())))
+                                .setChildPath(parentPath).call());
             }
             parentTress.put(parentPath, parentBuilder);
             if (parentMetadataId != null) {

@@ -477,7 +477,7 @@ public class GeogigCLI {
                 args = Arrays.asList(args).subList(1, args.length)
                         .toArray(new String[args.length - 1]);
                 mainCommander = ((CLICommandExtension) object).getCommandParser();
-                if (Lists.newArrayList(args).contains("--help")) {
+                if (args.length == 1 && "--help".equals(args[0])) {
                     printUsage(mainCommander);
                     return;
                 }

@@ -19,7 +19,7 @@ public class CLI {
      */
     public static void main(String[] args) {
         String repoURI = null;
-        if ("--repo".equals(args[0]) && args.length > 1) {
+        if (args.length > 1 && "--repo".equals(args[0])) {
             repoURI = args[1];
             String[] norepoArgs = new String[args.length - 2];
             if (args.length > 2) {

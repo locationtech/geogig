@@ -18,11 +18,23 @@ public class CLI {
      * @param args
      */
     public static void main(String[] args) {
+        String repoURI = null;
+        if ("--repo".equals(args[0]) && args.length > 1) {
+            repoURI = args[1];
+            String[] norepoArgs = new String[args.length - 2];
+            if (args.length > 2) {
+                System.arraycopy(args, 2, norepoArgs, 0, args.length - 2);
+            }
+            args = norepoArgs;
+        }
+
         GlobalContextBuilder.builder(new CLIContextBuilder());
         Logging.tryConfigureLogging();
         Console consoleReader = new Console();
 
         final GeogigCLI cli = new GeogigCLI(consoleReader);
+        cli.setRepositoryURI(repoURI);
+
         addShutdownHook(cli);
         int exitCode = cli.execute(args);
 

@@ -689,7 +689,7 @@ public class GeogigCLI {
         }
         Console console = getConsole();
         try {
-            console.println("usage: geogig <command> [<args>]");
+            console.println("usage: geogig [--repo <URI>] <command> [<args>]");
             console.println();
             console.println("The most commonly used geogig commands are:");
             for (String cmd : commandNames) {

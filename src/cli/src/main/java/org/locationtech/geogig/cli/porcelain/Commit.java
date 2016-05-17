@@ -75,6 +75,9 @@ public class Commit extends AbstractCommand implements CLICommand {
     @Parameter(description = "<pathFilter>  [<paths_to_commit]...")
     private List<String> pathFilters = Lists.newLinkedList();
 
+    @Parameter(names = "--allow-empty", description = "Create commit even if there are no staged changes (i.e. it'll point to the same root tree than its parent)")
+    private boolean allowEmpty;
+
     /**
      * Executes the commit command using the provided options.
      * 
@@ -99,7 +102,8 @@ public class Commit extends AbstractCommand implements CLICommand {
         RevCommit commit;
         ProgressListener progress = cli.getProgressListener();
         try {
-            CommitOp commitOp = geogig.command(CommitOp.class).setMessage(message).setAmend(amend);
+            CommitOp commitOp = geogig.command(CommitOp.class).setMessage(message).setAmend(amend)
+                    .setAllowEmpty(allowEmpty);
             if (commitTimestamp != null && !Strings.isNullOrEmpty(commitTimestamp)) {
                 Long millis = geogig.command(ParseTimestamp.class).setString(commitTimestamp)
                         .call();

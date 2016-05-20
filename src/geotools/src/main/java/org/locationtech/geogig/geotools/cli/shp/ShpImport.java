@@ -73,6 +73,12 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
     String fidAttribute;
 
     /**
+     * Charset to use for decoding attributes in DBF file
+     */
+    @Parameter(names = { "--charset" }, description = "Use the specified charset to decode attributes. Default is ISO-8859-1.")
+    String charset = "ISO-8859-1";
+
+    /**
      * Executes the import command using the provided options.
      */
     @Override
@@ -84,7 +90,7 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
 
             DataStore dataStore = null;
             try {
-                dataStore = getDataStore(shp);
+                dataStore = getDataStore(shp, charset);
             } catch (InvalidParameterException e) {
                 cli.getConsole().println(
                         "The shapefile '" + shp + "' could not be found, skipping...");

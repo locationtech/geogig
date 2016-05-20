@@ -46,7 +46,7 @@ public abstract class AbstractShpCommand extends AbstractCommand implements CLIC
      * @throws IllegalArgumentException if the datastore cannot be acquired
      * @see DataStore
      */
-    protected DataStore getDataStore(String shapefile) {
+    protected DataStore getDataStore(String shapefile, String charset) {
         File file = new File(shapefile);
         checkParameter(file.exists(), "File does not exist '%s'", shapefile);
 
@@ -57,6 +57,7 @@ public abstract class AbstractShpCommand extends AbstractCommand implements CLIC
             params.put(ShapefileDataStoreFactory.CREATE_SPATIAL_INDEX.key, Boolean.FALSE);
             params.put(ShapefileDataStoreFactory.ENABLE_SPATIAL_INDEX.key, Boolean.FALSE);
             params.put(ShapefileDataStoreFactory.MEMORY_MAPPED.key, Boolean.FALSE);
+            params.put(ShapefileDataStoreFactory.DBFCHARSET.key, charset);
 
             DataStore dataStore = dataStoreFactory.createDataStore(params);
             checkParameter(dataStore != null, "Unable to open '%s' as a shapefile", shapefile);

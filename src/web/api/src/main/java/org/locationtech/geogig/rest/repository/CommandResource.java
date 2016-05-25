@@ -158,9 +158,9 @@ public class CommandResource extends Resource {
         return new FormParams(options);
     }
 
+    protected Optional<GeoGIG> geogig = null;
     protected Representation runCommand(Variant variant, Request request) {
-
-        final Optional<GeoGIG> geogig = getGeogig(request);
+        geogig = getGeogig(request);
         Preconditions.checkState(geogig.isPresent());
 
         Representation rep;

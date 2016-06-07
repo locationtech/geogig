@@ -19,6 +19,7 @@ import static org.locationtech.geogig.web.api.TestData.linesType;
 import static org.locationtech.geogig.web.api.TestData.point1;
 import static org.locationtech.geogig.web.api.TestData.point2;
 import static org.locationtech.geogig.web.api.TestData.point3;
+import static org.locationtech.geogig.web.api.TestData.point_string_fid;
 import static org.locationtech.geogig.web.api.TestData.pointsType;
 import static org.locationtech.geogig.web.api.TestData.poly1;
 import static org.locationtech.geogig.web.api.TestData.poly2;
@@ -41,16 +42,19 @@ import java.util.concurrent.ExecutionException;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
+import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
+import org.geotools.jdbc.JDBCDataStore;
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.geotools.Export;
@@ -113,16 +117,19 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         GeoGIG repo = context.getGeoGIG();
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
+        testData.addAndCommit("Added feature with non-numeric fid.", point_string_fid);
 
         Export op = buildCommand("format", "gpkg");
 
-        DataStore result = store(run(op));
+        File result = run(op);
+        DataStore store = store(result);
         try {
-            assertFeatures(result, pointsType.getTypeName(), point1, point2, point3);
-            assertFeatures(result, linesType.getTypeName(), line1, line2, line3);
-            assertFeatures(result, polysType.getTypeName(), poly1, poly2, poly3);
+            assertFeatures(store, pointsType.getTypeName(), point_string_fid, point1, point2,
+                    point3);
+            assertFeatures(store, linesType.getTypeName(), line1, line2, line3);
+            assertFeatures(store, polysType.getTypeName(), poly1, poly2, poly3);
         } finally {
-            result.dispose();
+            store.dispose();
         }
     }
 
@@ -134,8 +141,8 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
 
         Export op = buildCommand("format", "gpkg", "interchange", "true");
 
-        final File result = run(op);
-        final DataStore store = store(result);
+        File result = run(op);
+        DataStore store = store(result);
         try {
             assertFeatures(store, pointsType.getTypeName(), point1, point2, point3);
             assertFeatures(store, linesType.getTypeName(), line1, line2, line3);
@@ -158,13 +165,14 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         // but we request branch2
         Export op = buildCommand("format", "GPKG", "root", "branch2");
 
-        DataStore result = store(run(op));
+        File result = run(op);
+        DataStore store = store(result);
         try {
-            assertFeatures(result, pointsType.getTypeName(), point1, point3);
-            assertFeatures(result, linesType.getTypeName(), line1, line3);
-            assertFeatures(result, polysType.getTypeName(), poly1, poly3);
+            assertFeatures(store, pointsType.getTypeName(), point1, point3);
+            assertFeatures(store, linesType.getTypeName(), line1, line3);
+            assertFeatures(store, polysType.getTypeName(), poly1, poly3);
         } finally {
-            result.dispose();
+            store.dispose();
         }
     }
 
@@ -177,15 +185,16 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
         Export op = buildCommand("format", "gpkg", "path", layerFilter);
 
-        DataStore result = store(run(op));
+        File result = run(op);
+        DataStore store = store(result);
         try {
-            assertFeatures(result, linesType.getTypeName(), line1, line2, line3);
-            assertFeatures(result, polysType.getTypeName(), poly1, poly2, poly3);
+            assertFeatures(store, linesType.getTypeName(), line1, line2, line3);
+            assertFeatures(store, polysType.getTypeName(), poly1, poly2, poly3);
 
-            Set<String> exportedTypeNames = Sets.newHashSet(result.getTypeNames());
+            Set<String> exportedTypeNames = Sets.newHashSet(store.getTypeNames());
             assertFalse(exportedTypeNames.contains(pointsType.getTypeName()));
         } finally {
-            result.dispose();
+            store.dispose();
         }
     }
 
@@ -202,13 +211,14 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         // but we request branch2
         Export op = buildCommand("format", "gpkg", "root", "branch2", "bbox", bboxStr);
 
-        DataStore result = store(run(op));
+        File result = run(op);
+        DataStore store = store(result);
         try {
-            assertFeatures(result, pointsType.getTypeName(), point3);
-            assertFeatures(result, linesType.getTypeName(), line3);
-            assertFeatures(result, polysType.getTypeName(), poly3);
+            assertFeatures(store, pointsType.getTypeName(), point3);
+            assertFeatures(store, linesType.getTypeName(), line3);
+            assertFeatures(store, polysType.getTypeName(), poly3);
         } finally {
-            result.dispose();
+            store.dispose();
         }
     }
 
@@ -227,15 +237,16 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         Export op = buildCommand("format", "gpkg", "root", "branch2", "bbox", bboxFilter,
                 "path", layerFilter);
 
-        DataStore result = store(run(op));
+        File result = run(op);
+        DataStore store = store(result);
         try {
-            assertFeatures(result, linesType.getTypeName(), line3);
-            assertFeatures(result, polysType.getTypeName(), poly3);
+            assertFeatures(store, linesType.getTypeName(), line3);
+            assertFeatures(store, polysType.getTypeName(), poly3);
 
-            Set<String> exportedTypeNames = Sets.newHashSet(result.getTypeNames());
+            Set<String> exportedTypeNames = Sets.newHashSet(store.getTypeNames());
             assertFalse(exportedTypeNames.contains(pointsType.getTypeName()));
         } finally {
-            result.dispose();
+            store.dispose();
         }
     }
 
@@ -294,7 +305,8 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         return result;
     }
 
-    private DataStore store(File result) throws JSONException, InterruptedException,
+    private DataStore store(File result)
+            throws JSONException, InterruptedException,
             ExecutionException {
 
         assertNotNull(result);
@@ -317,8 +329,13 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         return dataStore;
     }
 
-    private void assertFeatures(DataStore store, String typeName, SimpleFeature... expected)
-            throws IOException {
+    private void assertFeatures(DataStore store, String typeName,
+            SimpleFeature... expected)
+            throws Exception {
+        Connection connection = ((JDBCDataStore) store).getConnection(Transaction.AUTO_COMMIT);
+        GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+        Map<String, String> mappings = metadata.getFidMappings(typeName);
+
         SimpleFeatureSource source = store.getFeatureSource(typeName);
         SimpleFeatureCollection features = source.getFeatures();
 
@@ -332,7 +349,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
             try (SimpleFeatureIterator fiter = features.features()) {
                 while (fiter.hasNext()) {
                     SimpleFeature feature = fiter.next();
-                    actualFeatureIDs.add(feature.getID().split("\\.")[1]);
+                    actualFeatureIDs.add(mappings.get(feature.getID().split("\\.")[1]));
                 }
             }
         }

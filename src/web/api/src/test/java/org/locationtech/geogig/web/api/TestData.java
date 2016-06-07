@@ -121,6 +121,8 @@ public class TestData {
 
     public static final SimpleFeature point1_modified, point2_modified, point3_modified;
 
+    public static final SimpleFeature point_string_fid;
+
     public static final SimpleFeature line1, line2, line3;
 
     public static final SimpleFeature poly1, poly2, poly3;
@@ -138,6 +140,7 @@ public class TestData {
         point2 = feature(pointsType, "2", "StringProp1_2", 2000, "POINT(-10 -10)");
         point3 = feature(pointsType, "3", "StringProp1_3", 3000, "POINT(10 10)");
         point4 = feature(pointsType, "4", "StringProp1_4", 4000, "POINT(15 15)");
+        point_string_fid = feature(pointsType, "myPoint", "StringProp1_5", 5000, "POINT(5 5)");
 
         point1_modified = feature(pointsType, "1", "StringProp1_1", 1500, "POINT(0 0)");
         point2_modified = feature(pointsType, "2", "StringProp1_2", 2000, "POINT(-15 -10)");

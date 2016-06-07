@@ -72,9 +72,9 @@ public class GeoPkgExportOutputFormat extends Export.OutputFormat {
 
     public static final String INTERCHANGE_PARAM = "interchange";
 
-    private boolean enableInterchangeExtension;
+    protected boolean enableInterchangeExtension;
 
-    private static class TempGeoPackageSupplier implements Supplier<DataStore> {
+    static class TempGeoPackageSupplier implements Supplier<DataStore> {
 
         private File targetFile;
 
@@ -126,7 +126,7 @@ public class GeoPkgExportOutputFormat extends Export.OutputFormat {
 
     }
 
-    private TempGeoPackageSupplier dataStore;
+    protected TempGeoPackageSupplier dataStore;
 
     public GeoPkgExportOutputFormat(ParameterSet options) {
         setIntechangeExtension(Boolean.parseBoolean(options.getFirstValue(INTERCHANGE_PARAM)));

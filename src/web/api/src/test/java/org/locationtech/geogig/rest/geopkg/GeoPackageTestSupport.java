@@ -27,18 +27,36 @@ import static org.locationtech.geogig.web.api.TestData.polysType;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
+import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.factory.Hints;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
+import org.geotools.jdbc.JDBCDataStore;
+import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
 import org.locationtech.geogig.web.api.TestData;
+import org.opengis.feature.GeometryAttribute;
+import org.opengis.feature.Property;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -114,8 +132,13 @@ public class GeoPackageTestSupport {
         return file;
     }
 
-    public void export(SimpleFeatureSource source, DataStore gpkg) throws IOException {
+    static AtomicLong nextId = new AtomicLong(37);
 
+    public void export(SimpleFeatureSource source, DataStore gpkg)
+            throws IOException, SQLException {
+
+        JDBCDataStore gpkgStore = (JDBCDataStore) gpkg;
+        GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(gpkgStore.getConnection(Transaction.AUTO_COMMIT));
         Transaction gttx = new DefaultTransaction();
         try {
             gpkg.createSchema(source.getSchema());
@@ -125,11 +148,48 @@ public class GeoPackageTestSupport {
             store.setTransaction(gttx);
             SimpleFeatureCollection features = source.getFeatures();
             
-            store.addFeatures(features);
+            SimpleFeatureIterator iter = features.features();
+            SimpleFeature original, updated;
+            SimpleFeatureType featureType = null;
+            List<SimpleFeature> updatedFeatures = new LinkedList<SimpleFeature>();
+            ConcurrentMap<String, String> mappings = new ConcurrentHashMap<String, String>();
+            while (iter.hasNext()) {
+                original = iter.next();
+                featureType = original.getFeatureType();
+                updated = transformFeatureId(original);
+                updatedFeatures.add(updated);
+                mappings.put(updated.getID(), original.getID());
+            }
+            ListFeatureCollection transformedFeatures = new ListFeatureCollection(featureType,
+                    updatedFeatures);
+            metadata.createFidMappingTable(source.getName().getLocalPart(), mappings);
+            
+            store.addFeatures(transformedFeatures);
             gttx.commit();
         } finally {
             gttx.close();
         }
+    }
+
+    private SimpleFeature transformFeatureId(SimpleFeature feature) {
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(feature.getFeatureType());
+        for (Property property : feature.getProperties()) {
+            if (property instanceof GeometryAttribute) {
+                builder.set(feature.getFeatureType().getGeometryDescriptor().getName(),
+                        property.getValue());
+            } else {
+                builder.set(property.getName().getLocalPart(), property.getValue());
+            }
+        }
+        Map<Object, Object> userData = feature.getUserData();
+        for (Entry<Object, Object> entry : userData.entrySet()) {
+            builder.featureUserData(entry.getKey(), entry.getValue());
+        }
+        long fidValue = nextId.incrementAndGet();
+        builder.featureUserData(Hints.USE_PROVIDED_FID, true);
+        builder.featureUserData(Hints.PROVIDED_FID, Long.valueOf(fidValue));
+        SimpleFeature modifiedFeature = builder.buildFeature(Long.toString(fidValue));
+        return modifiedFeature;
     }
 
 }

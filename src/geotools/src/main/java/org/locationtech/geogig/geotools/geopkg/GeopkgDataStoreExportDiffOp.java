@@ -5,12 +5,13 @@
  * https://www.eclipse.org/org/documents/edl-v10.html
  *
  * Contributors:
- * Gabriel Roldan (Boundless) - initial implementation
+ * Johnathan Garrett (Prominent Edge) - initial implementation
  */
 package org.locationtech.geogig.geotools.geopkg;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +22,9 @@ import org.geotools.data.DataStore;
 import org.geotools.factory.Hints;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.api.ProgressListener;
+import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
+import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
 import org.opengis.feature.Feature;
 import org.opengis.feature.GeometryAttribute;
@@ -29,24 +33,15 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 /**
- * Exports layers from a repository snapshot to a GeoPackage file.
- * <p>
- * Enabling the GeoGig geopackage interchange format extension is enabled through the
- * {@link #setInterchangeFormat(boolean) interchangeFormat} argument.
- * <p>
- * Implementation detail: since the GeoTools geopackage datastore does not expose the file it writes
- * to, it shall be given as an argument through {@link #setDatabaseFile(File)}, while the
- * {@link DataStore} given at {@link #setDataStore} must already be a geopackage one.
- * 
- * @see DataStoreExportOp
- * @see GeopkgAuditExport
+ * Exports changes between two commits to a geopackage file. The features that were changed between
+ * the two commits are written to a table in the geopackage, and the change types are logged in a
+ * change table.
  */
-public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
-
-    private boolean enableInterchangeFormat;
+public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
 
     private File geopackage;
 
@@ -54,37 +49,66 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
 
     private final AtomicLong nextId = new AtomicLong(1);
 
-    public GeopkgDataStoreExportOp setInterchangeFormat(boolean enable) {
-        this.enableInterchangeFormat = enable;
-        return this;
-    }
+    private String oldRef = null;
 
-    public GeopkgDataStoreExportOp setDatabaseFile(File geopackage) {
-        this.geopackage = geopackage;
+    private String newRef = null;
+
+    private Map<String, ChangeType> changedNodes = new HashMap<String, ChangeType>();
+
+    /**
+     * @param oldRef the old version to compare against
+     * @return {@code this}
+     */
+    public GeopkgDataStoreExportDiffOp setOldRef(String oldRef) {
+        this.oldRef = oldRef;
         return this;
     }
 
     /**
-     * Overrides to call {@code super.export} and then enable the geopackage interchange format
-     * after the data has been exported for the given layer. {@inheritDoc}
+     * @param newRef the new version to compare against
+     * @return {@code this}
      */
+    public GeopkgDataStoreExportDiffOp setNewRef(String newRef) {
+        this.newRef = newRef;
+        return this;
+    }
+
+    /**
+     * @param geopackage the geopackage database file
+     * @return {@code this}
+     */
+    public GeopkgDataStoreExportDiffOp setDatabaseFile(File geopackage) {
+        this.geopackage = geopackage;
+        return this;
+    }
+
     @Override
     protected void export(final String refSpec, final DataStore targetStore,
             final String targetTableName, final ProgressListener progress) {
+        Preconditions.checkArgument(oldRef != null, "Old ref not specified.");
+        Preconditions.checkArgument(newRef != null, "New ref not specified.");
+
+        changedNodes.clear();
+
+        final Iterator<DiffEntry> diff = context.command(DiffOp.class).setOldVersion(oldRef)
+                .setNewVersion(newRef).setFilter(targetTableName).call();
+
+        InterchangeFormat format = new InterchangeFormat(geopackage, context());
+
+        while (diff.hasNext()) {
+            DiffEntry entry = diff.next();
+            changedNodes.put(entry.newName() != null ? entry.newName() : entry.oldName(),
+                    entry.changeType());
+        }
 
         super.export(refSpec, targetStore, targetTableName, progress);
-        
-        InterchangeFormat format = new InterchangeFormat(geopackage, context());
 
         try {
             format.createFIDMappingTable(fidMappings, targetTableName);
-        } catch (IOException e) {
+            // create change log
+            format.createChangeLog(targetTableName, changedNodes);
+        } catch (Exception e) {
             Throwables.propagate(e);
-        }
-
-        if (enableInterchangeFormat) {
-            command(GeopkgAuditExport.class).setSourcePathspec(refSpec)
-                    .setTargetTableName(targetTableName).setDatabase(geopackage).call();
         }
     }
 
@@ -102,6 +126,11 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
     protected Function<Feature, Optional<Feature>> getTransformingFunction(
             final SimpleFeatureType featureType) {
         Function<Feature, Optional<Feature>> function = (feature) -> {
+            // Return optional.absent for features that were not part of the diff
+            String featureId = feature.getIdentifier().getID();
+            if (!changedNodes.containsKey(featureId)) {
+                return Optional.absent();
+            }
 
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
             for (Property property : feature.getProperties()) {
@@ -117,7 +146,7 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
             }
             long fidValue = nextId.incrementAndGet();
             builder.featureUserData(Hints.PROVIDED_FID, Long.valueOf(fidValue));
-            fidMappings.put(Long.toString(fidValue), feature.getIdentifier().getID());
+            fidMappings.put(Long.toString(fidValue), featureId);
             Feature modifiedFeature = builder.buildFeature(Long.toString(fidValue));
             return Optional.fromNullable(modifiedFeature);
         };

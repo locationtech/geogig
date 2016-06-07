@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -27,11 +29,12 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.api.plumbing.merge.ReportMergeScenarioOp;
-import org.locationtech.geogig.api.porcelain.MergeConflictsException;
 import org.locationtech.geogig.geotools.geopkg.GeopkgDataStoreAuditImportOp;
+import org.locationtech.geogig.geotools.geopkg.GeopkgDataStoreImportOp;
+import org.locationtech.geogig.geotools.geopkg.GeopkgImportResult;
+import org.locationtech.geogig.geotools.geopkg.GeopkgMergeConflictsException;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp.DataStoreSupplier;
-import org.locationtech.geogig.geotools.plumbing.DefaultDataStoreImportOp;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
@@ -72,13 +75,14 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
     }
 
     @Override
-    public DataStoreImportOp<RevCommit> createCommand(final Context context,
+    public DataStoreImportOp<?> createCommand(final Context context,
             final ParameterSet options) {
         if (Boolean.parseBoolean(options.getFirstValue("interchange", "false"))) {
             return context.command(GeopkgDataStoreAuditImportOp.class)
                     .setDatabaseFile(options.getUploadedFile());
         }
-        return context.command(DefaultDataStoreImportOp.class);
+        return context.command(GeopkgDataStoreImportOp.class)
+                .setDatabaseFile(options.getUploadedFile());
     }
 
     private static class GpkgDataStoreSupplier implements DataStoreSupplier {
@@ -134,7 +138,8 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
         }
     }
 
-    public static class RepresentationFactory implements CommandRepresentationFactory<RevCommit> {
+    public static class RepresentationFactory
+            implements CommandRepresentationFactory<GeopkgImportResult> {
 
         @Override
         public boolean supports(Class<? extends AbstractGeoGigOp<?>> cmdClass) {
@@ -142,7 +147,8 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
         }
 
         @Override
-        public AsyncCommandRepresentation<RevCommit> newRepresentation(AsyncCommand<RevCommit> cmd,
+        public AsyncCommandRepresentation<GeopkgImportResult> newRepresentation(
+                AsyncCommand<GeopkgImportResult> cmd,
                 MediaType mediaType, String baseURL) {
 
             return new GeopkgAuditImportRepresentation(mediaType, cmd, baseURL);
@@ -150,25 +156,26 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
     }
 
     public static class GeopkgAuditImportRepresentation
-            extends AsyncCommandRepresentation<RevCommit> {
+            extends AsyncCommandRepresentation<GeopkgImportResult> {
 
-        public GeopkgAuditImportRepresentation(MediaType mediaType, AsyncCommand<RevCommit> cmd,
+        public GeopkgAuditImportRepresentation(MediaType mediaType,
+                AsyncCommand<GeopkgImportResult> cmd,
                 String baseURL) {
             super(mediaType, cmd, baseURL);
         }
 
         @Override
-        protected void writeResultBody(XMLStreamWriter w, RevCommit result)
+        protected void writeResultBody(XMLStreamWriter w, GeopkgImportResult result)
                 throws XMLStreamException {
             ResponseWriter out = new ResponseWriter(w);
-            out.writeCommit(result, "commit", null, null, null);
+            writeImportResult(result, w, out);
         }
 
         @Override
         protected void writeError(XMLStreamWriter w, Throwable cause) throws XMLStreamException {
-            if (cause instanceof MergeConflictsException) {
+            if (cause instanceof GeopkgMergeConflictsException) {
                 Context context = cmd.getContext();
-                MergeConflictsException m = (MergeConflictsException) cause;
+                GeopkgMergeConflictsException m = (GeopkgMergeConflictsException) cause;
                 final RevCommit ours = context.repository().getCommit(m.getOurs());
                 final RevCommit theirs = context.repository().getCommit(m.getTheirs());
                 final Optional<ObjectId> ancestor = context.command(FindCommonAncestor.class)
@@ -181,10 +188,34 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
                 w.writeStartElement("result");
                 out.writeMergeResponse(mergeCommit, report, context, ours.getId(), theirs.getId(),
                         ancestor.get());
+                w.writeStartElement("import");
+                writeImportResult(m.importResult, w, out);
+                w.writeEndElement();
                 w.writeEndElement();
             } else {
                 super.writeError(w, cause);
             }
+        }
+
+        private void writeImportResult(GeopkgImportResult result, XMLStreamWriter w,
+                ResponseWriter out) throws XMLStreamException {
+            if (result.newCommit != null) {
+                out.writeCommit(result.newCommit, "newCommit", null, null, null);
+            }
+            out.writeCommit(result.importCommit, "importCommit", null, null, null);
+            w.writeStartElement("NewFeatures");
+            for (Entry<String, Map<String, String>> layerMappings : result.newMappings.entrySet()) {
+                w.writeStartElement("type");
+                w.writeAttribute("name", layerMappings.getKey());
+                for (Entry<String, String> mapping : layerMappings.getValue().entrySet()) {
+                    w.writeStartElement("id");
+                    w.writeAttribute("provided", mapping.getKey());
+                    w.writeAttribute("assigned", mapping.getValue());
+                    w.writeEndElement();
+                }
+                w.writeEndElement();
+            }
+            w.writeEndElement();
         }
     }
 }

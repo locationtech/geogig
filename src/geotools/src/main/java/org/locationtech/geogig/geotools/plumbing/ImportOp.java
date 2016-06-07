@@ -116,6 +116,8 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
 
     private boolean usePaging = true;
 
+    private ForwardingFeatureIteratorProvider forwardingFeatureIteratorProvider = null;
+
     /**
      * Executes the import operation using the parameters that have been specified. Features will be
      * added to the working tree, and a new working tree will be constructed. Either {@code all} or
@@ -390,8 +392,20 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
 
                         FeatureIterator iterator = delegate.features();
 
-                        return new FidAndFtReplacerIterator(iterator, fidAttribute, fidPrefix,
+                        FeatureIterator fidAndFtReplaced = new FidAndFtReplacerIterator(iterator,
+                                fidAttribute, fidPrefix,
                                 (SimpleFeatureType) featureType);
+                        
+                        FeatureIterator finalIterator;
+
+                        if (forwardingFeatureIteratorProvider != null) {
+                            finalIterator = forwardingFeatureIteratorProvider.forwardIterator(
+                                    fidAndFtReplaced, (SimpleFeatureType) featureType);
+                        } else {
+                            finalIterator = fidAndFtReplaced;
+                        }
+                        
+                        return finalIterator;
                     }
                 };
             }
@@ -573,6 +587,17 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
      */
     public ImportOp setDataStore(DataStore dataStore) {
         this.dataStore = dataStore;
+        return this;
+    }
+
+    /**
+     * @param provider the forwarding feature iterator provider to use to transform incoming
+     *        features during the import
+     * @return {@code this}
+     */
+    public ImportOp setForwardingFeatureIteratorProvider(
+            ForwardingFeatureIteratorProvider provider) {
+        this.forwardingFeatureIteratorProvider = provider;
         return this;
     }
 

@@ -11,7 +11,6 @@ package org.locationtech.geogig.geotools.geopkg;
 
 import java.io.File;
 
-import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 
@@ -21,7 +20,7 @@ import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
  * @see DataStoreImportOp
  * @see GeopkgAuditImport
  */
-public class GeopkgDataStoreAuditImportOp extends DataStoreImportOp<RevCommit> {
+public class GeopkgDataStoreAuditImportOp extends DataStoreImportOp<GeopkgImportResult> {
 
     private File geopackage;
 
@@ -31,8 +30,8 @@ public class GeopkgDataStoreAuditImportOp extends DataStoreImportOp<RevCommit> {
     }
 
     @Override
-    protected RevCommit callInternal() {
-        RevCommit result;
+    protected GeopkgImportResult callInternal() {
+        GeopkgImportResult result;
         try {
             result = command(GeopkgAuditImport.class).setDatabase(geopackage)
                     .setAuthorName(authorName).setAuthorEmail(authorEmail)

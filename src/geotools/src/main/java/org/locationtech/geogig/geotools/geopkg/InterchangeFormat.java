@@ -13,9 +13,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
-import static org.locationtech.geogig.geotools.geopkg.GeogigMetadata.AUDIT_OP_DELETE;
-import static org.locationtech.geogig.geotools.geopkg.GeogigMetadata.AUDIT_OP_INSERT;
-import static org.locationtech.geogig.geotools.geopkg.GeogigMetadata.AUDIT_OP_UPDATE;
+import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_DELETE;
+import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_INSERT;
+import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_UPDATE;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.sql.DataSource;
 
@@ -56,6 +57,7 @@ import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.porcelain.ConfigGet;
+import org.locationtech.geogig.api.porcelain.MergeConflictsException;
 import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.SpatialOps;
@@ -83,7 +85,7 @@ import com.google.common.collect.Sets;
  * functionality with GeoGig. Extra tables keep track of which commit an export came from as well as
  * which features have been modified since the export so that they can be properly merged on import.
  */
-class InterchangeFormat {
+public class InterchangeFormat {
 
     private Context context;
 
@@ -106,6 +108,23 @@ class InterchangeFormat {
 
     private void info(String msgFormat, Object... args) {
         progressListener.setDescription(format(msgFormat, args));
+    }
+
+    public void createFIDMappingTable(ConcurrentMap<String, String> fidMappings,
+            String targetTableName) throws IOException {
+        final GeoPackage geopackage = new GeoPackage(geopackageDbFile);
+        try {
+            final DataSource dataSource = geopackage.getDataSource();
+
+            try (Connection connection = dataSource.getConnection()) {
+                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+                metadata.createFidMappingTable(targetTableName, fidMappings);
+            } catch (SQLException e) {
+                throw Throwables.propagate(e);
+            }
+        } finally {
+            geopackage.close();
+        }
     }
 
     /**
@@ -183,7 +202,7 @@ class InterchangeFormat {
         final DataSource dataSource = geopackage.getDataSource();
 
         try (Connection connection = dataSource.getConnection()) {
-            GeogigMetadata metadata = new GeogigMetadata(connection);
+            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
             URI repoURI = context.repository().getLocation();
             metadata.init(repoURI);
 
@@ -191,6 +210,18 @@ class InterchangeFormat {
 
             metadata.createAudit(auditedTable, mappedPath, commitId);
         }
+    }
+
+    public void createChangeLog(final String targetTableName, Map<String, ChangeType> changedNodes)
+            throws IOException, SQLException {
+        final GeoPackage geopackage = new GeoPackage(geopackageDbFile);
+        final DataSource dataSource = geopackage.getDataSource();
+        try (Connection connection = dataSource.getConnection()) {
+            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+            metadata.createChangeLog(targetTableName);
+            metadata.populateChangeLog(targetTableName, changedNodes);
+        }
+
     }
 
     /**
@@ -207,7 +238,8 @@ class InterchangeFormat {
      * @return the commit with the imported features, or the merge commit if it was not a
      *         fast-forward merge
      */
-    public RevCommit importAuditLog(@Nullable String commitMessage, @Nullable String authorName,
+    public GeopkgImportResult importAuditLog(@Nullable String commitMessage,
+            @Nullable String authorName,
             @Nullable String authorEmail, @Nullable String... tableNames) {
 
         final Set<String> importTables = tableNames == null ? ImmutableSet.of() : Sets
@@ -222,10 +254,11 @@ class InterchangeFormat {
         }
         final DataSource dataSource = geopackage.getDataSource();
 
-        RevCommit newCommit = null;
+        RevCommit importCommit = null;
+        GeopkgImportResult importResult = null;
 
         try (Connection connection = dataSource.getConnection()) {
-            GeogigMetadata metadata = new GeogigMetadata(connection);
+            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
 
             final Map<String, AuditTable> tables = Maps.filterKeys(
                     Maps.uniqueIndex(metadata.getAuditTables(), t -> t.getTableName()),
@@ -244,8 +277,11 @@ class InterchangeFormat {
             RevTreeBuilder newTreeBuilder = new RevTreeBuilder(context.objectDatabase(),
                     baseTree);
 
+            Map<String, String> fidMappings = null;
             for (AuditTable t : tables.values()) {
-                AuditReport report = importAuditLog(geopackage, t, baseTree, newTreeBuilder);
+                fidMappings = metadata.getFidMappings(t.getTableName());
+                AuditReport report = importAuditLog(geopackage, t, baseTree, newTreeBuilder,
+                        fidMappings);
                 reports.add(report);
             }
             
@@ -277,7 +313,12 @@ class InterchangeFormat {
                 builder.setMessage("Imported features from geopackage.");
             }
 
-            RevCommit importCommit = builder.build();
+            importCommit = builder.build();
+            importResult = new GeopkgImportResult(importCommit);
+            for (AuditReport auditReport : reports) {
+                importResult.newMappings.put(auditReport.table.getFeatureTreePath(),
+                        auditReport.newMappings);
+            }
 
             context.objectDatabase().put(importCommit);
 
@@ -289,14 +330,17 @@ class InterchangeFormat {
             }
 
             MergeReport report = merge.call();
-            newCommit = report.getMergeCommit();
+            RevCommit newCommit = report.getMergeCommit();
+            importResult.newCommit = newCommit;
 
+        } catch (MergeConflictsException e) {
+            throw new GeopkgMergeConflictsException(e, importResult);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
             geopackage.close();
         }
-        return newCommit;
+        return importResult;
     }
 
     /**
@@ -310,7 +354,7 @@ class InterchangeFormat {
      * @throws SQLException
      */
     private AuditReport importAuditLog(GeoPackage geopackage, AuditTable auditTable,
-            RevTree baseTree, RevTreeBuilder newTreeBuilder)
+            RevTree baseTree, RevTreeBuilder newTreeBuilder, Map<String, String> fidMappings)
             throws SQLException {
         info("Importing changes to table %s onto feature tree %s...", auditTable.getTableName(),
                 auditTable.getFeatureTreePath());
@@ -338,7 +382,7 @@ class InterchangeFormat {
 
                     final Iterator<Change> changes = asChanges(rs, featureType, tableReport);
                     final RevTree newFeatureTree = importAuditLog(store, currentFeatureTree,
-                            changes);
+                            changes, fidMappings, tableReport);
 
                     Node featureTreeNode = Node.create(featureTreeRef.name(),
                             newFeatureTree.getId(), featureTreeRef.getMetadataId(), TYPE.TREE,
@@ -361,7 +405,8 @@ class InterchangeFormat {
      * @throws SQLException
      */
     private RevTree importAuditLog(ObjectStore store, RevTree currentFeatureTree,
-            Iterator<Change> changes) throws SQLException {
+            Iterator<Change> changes, Map<String, String> fidMappings, AuditReport report)
+                    throws SQLException {
 
         RevTreeBuilder builder = new RevTreeBuilder(store, currentFeatureTree);
 
@@ -378,16 +423,22 @@ class InterchangeFormat {
                 @Nullable
                 RevFeature feature = change.getFeature();
 
-                String feautreId = change.getFeautreId();
+                String featureId = null;
+                if (fidMappings.containsKey(change.getFeautreId())) {
+                    featureId = fidMappings.get(change.getFeautreId());
+                } else {
+                    featureId = newFeatureId();
+                    report.newMappings.put(change.getFeautreId(), featureId);
+                }
 
                 ChangeType type = change.getType();
                 switch (type) {
                 case REMOVED:
-                    builder.remove(feautreId);
+                    builder.remove(featureId);
                     break;
                 case ADDED:
                 case MODIFIED:
-                    Node node = Node.create(feautreId, feature.getId(), ObjectId.NULL,
+                    Node node = Node.create(featureId, feature.getId(), ObjectId.NULL,
                             TYPE.FEATURE, SpatialOps.boundsOf(feature));
                     builder.put(node);
                     return feature;
@@ -472,6 +523,10 @@ class InterchangeFormat {
                 }
             }
         };
+    }
+
+    private String newFeatureId() {
+        return SimpleFeatureBuilder.createDefaultFeatureId();
     }
 
     /**

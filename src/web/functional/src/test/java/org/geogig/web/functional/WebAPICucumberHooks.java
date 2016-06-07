@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -140,6 +142,8 @@ public class WebAPICucumberHooks {
      * The {@code DataTable} top cells represent feature tree paths, and their cells beneath each
      * feature tree path, the feature ids expected for each layer.
      * <p>
+     * A {@code question mark} indicates a wild card feature where the feature id may not be known.
+     * <p>
      * Example:
      * 
      * <pre>
@@ -147,6 +151,7 @@ public class WebAPICucumberHooks {
      *     |  Points   |  Lines   |  Polygons   | 
      *     |  Points.1 |  Lines.1 |  Polygons.1 | 
      *     |  Points.2 |  Lines.2 |  Polygons.2 | 
+     *     |  ?        |          |             |
      *</code>
      * </pre>
      * 
@@ -173,7 +178,27 @@ public class WebAPICucumberHooks {
 
         SetMultimap<String, String> actual = context.listRepo(repositoryName, headRef);
 
-        assertEquals(expected, actual);
+        Map<String, Collection<String>> actualMap = actual.asMap();
+        Map<String, Collection<String>> expectedMap = expected.asMap();
+
+        for (String featureType : actualMap.keySet()) {
+            assertTrue(expectedMap.containsKey(featureType));
+            Collection<String> actualFeatureCollection = actualMap.get(featureType);
+            Collection<String> expectedFeatureCollection = expectedMap.get(featureType);
+            for (String actualFeature : actualFeatureCollection) {
+                if (expectedFeatureCollection.contains(actualFeature)) {
+                    expectedFeatureCollection.remove(actualFeature);
+                } else if (expectedFeatureCollection.contains("?")) {
+                    expectedFeatureCollection.remove("?");
+                } else {
+                    fail();
+                }
+            }
+            assertEquals(0, expectedFeatureCollection.size());
+            expectedMap.remove(featureType);
+        }
+        assertEquals(0, expectedMap.size());
+
     }
 
     /**
@@ -558,6 +583,7 @@ public class WebAPICucumberHooks {
         GeoPackageTestSupport support = new GeoPackageTestSupport();
         File file = new File(context.getVariable(fileVariableName));
         DataStore gpkgStore = support.createDataStore(file);
+
         Transaction gttx = new DefaultTransaction();
         try {
             SimpleFeatureStore store = (SimpleFeatureStore) gpkgStore.getFeatureSource("Points");

@@ -40,10 +40,12 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.repository.Repository;
+import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 
 import com.beust.jcommander.Parameter;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 
 /**
@@ -101,8 +103,8 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
             final String tableName, final DataStore dataStore) throws IOException {
 
         ObjectId featureTypeId = null;
+        SimpleFeatureType outputFeatureType = null;
         if (!Arrays.asList(dataStore.getTypeNames()).contains(tableName)) {
-            SimpleFeatureType outputFeatureType;
             if (sFeatureTypeId != null) {
                 // Check the feature type id string is a correct id
                 Optional<ObjectId> id = cli.getGeogig().command(RevParse.class)
@@ -117,16 +119,7 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
                         .call(RevFeatureType.class).get().type();
                 featureTypeId = id.get();
             } else {
-                try {
-                    final Repository repository = cli.getGeogig().getRepository();
-                    SimpleFeatureType sft = getFeatureType(sourceTreeIsh, repository);
-                    outputFeatureType = new SimpleFeatureTypeImpl(new NameImpl(tableName),
-                            sft.getAttributeDescriptors(), sft.getGeometryDescriptor(),
-                            sft.isAbstract(), sft.getRestrictions(), sft.getSuper(),
-                            sft.getDescription());
-                } catch (GeoToolsOpException e) {
-                    throw new CommandFailedException("No features to export.", e);
-                }
+                outputFeatureType = getFeatureType(cli, sourceTreeIsh, tableName);
             }
             try {
                 dataStore.createSchema(outputFeatureType);
@@ -137,6 +130,8 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
             if (!overwrite) {
                 throw new CommandFailedException(
                         "The selected table already exists. Use -o to overwrite");
+            } else {
+                outputFeatureType = getFeatureType(cli, sourceTreeIsh, tableName);
             }
         }
 
@@ -152,11 +147,19 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
                 throw new CommandFailedException("Error truncating table: " + e.getMessage(), e);
             }
         }
+
         ExportOp op = cli.getGeogig().command(ExportOp.class).setFeatureStore(featureStore)
                 .setPath(sourceTreeIsh).setFilterFeatureTypeId(featureTypeId).setAlter(alter);
         if (defaultType) {
             op.exportDefaultFeatureType();
         }
+
+        Function<Feature, Optional<Feature>> transformingFunction = getTransformingFunction(
+                outputFeatureType);
+        if (transformingFunction != null) {
+            op.setFeatureTypeConversionFunction(transformingFunction);
+        }
+
         try {
             op.setProgressListener(cli.getProgressListener()).call();
         } catch (IllegalArgumentException iae) {
@@ -176,7 +179,22 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
         cli.getConsole().println(sourceTreeIsh + " exported successfully to " + tableName);
     }
 
-    private SimpleFeatureType getFeatureType(final String sourceTreeIsh, final Repository repository) {
+    /**
+     * Returns a transforming function that will be run against all features to be exported. The
+     * function may return {@code Optional.absent()}, which prevents that particular feature from
+     * being exported.
+     * 
+     * @param featureType the feature type of the features to transform
+     * @return the transforming function
+     */
+    protected Function<Feature, Optional<Feature>> getTransformingFunction(
+            final SimpleFeatureType featureType) {
+        return null;
+    }
+
+    private SimpleFeatureType getFeatureType(final GeogigCLI cli, final String sourceTreeIsh,
+            final String tableName) {
+        final Repository repository = cli.getGeogig().getRepository();
 
         checkParameter(sourceTreeIsh != null, "No path specified.");
 
@@ -216,7 +234,11 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
         if (revObject.isPresent() && revObject.get() instanceof RevFeatureType) {
             RevFeatureType revFeatureType = (RevFeatureType) revObject.get();
             if (revFeatureType.type() instanceof SimpleFeatureType) {
-                return (SimpleFeatureType) revFeatureType.type();
+                SimpleFeatureType sft = (SimpleFeatureType) revFeatureType.type();
+                return new SimpleFeatureTypeImpl(new NameImpl(tableName),
+                        sft.getAttributeDescriptors(), sft.getGeometryDescriptor(),
+                        sft.isAbstract(), sft.getRestrictions(), sft.getSuper(),
+                        sft.getDescription());
             } else {
                 throw new InvalidParameterException(
                         "Cannot find feature type for the specified path");

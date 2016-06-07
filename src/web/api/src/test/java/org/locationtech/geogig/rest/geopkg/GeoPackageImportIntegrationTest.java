@@ -41,6 +41,7 @@ import org.locationtech.geogig.api.plumbing.TransactionBegin;
 import org.locationtech.geogig.api.plumbing.TransactionEnd;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
+import org.locationtech.geogig.geotools.geopkg.GeopkgImportResult;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.Status;
 import org.locationtech.geogig.rest.geotools.Import;
@@ -393,13 +394,20 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         Assert.assertEquals(Status.FINISHED, resultStatus);
 
         Object resultObject = result.get();
-        assertTrue(resultObject instanceof RevCommit);
+        assertTrue(resultObject instanceof GeopkgImportResult);
+        GeopkgImportResult importResult = (GeopkgImportResult) resultObject;
 
-        RevCommit mergeCommit = (RevCommit) resultObject;
+        RevCommit mergeCommit = importResult.newCommit;
         assertEquals("Merge: Imported geopackage.", mergeCommit.getMessage());
         assertEquals(2, mergeCommit.getParentIds().size());
         assertEquals("Tester", mergeCommit.getAuthor().getName().get());
         assertEquals("tester@example.com", mergeCommit.getAuthor().getEmail().get());
+
+        RevCommit importCommit = importResult.importCommit;
+        assertEquals("Imported geopackage.", importCommit.getMessage());
+        assertEquals(1, importCommit.getParentIds().size());
+        assertEquals("Tester", importCommit.getAuthor().getName().get());
+        assertEquals("tester@example.com", importCommit.getAuthor().getEmail().get());
 
         repo.command(TransactionEnd.class).setTransaction(transaction).call();
 
@@ -477,13 +485,20 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         Assert.assertEquals(Status.FINISHED, resultStatus);
 
         Object resultObject = result.get();
-        assertTrue(resultObject instanceof RevCommit);
+        assertTrue(resultObject instanceof GeopkgImportResult);
+        GeopkgImportResult importResult = (GeopkgImportResult) resultObject;
 
-        RevCommit mergeCommit = (RevCommit) resultObject;
+        RevCommit mergeCommit = importResult.newCommit;
         assertEquals("Merge: Imported geopackage.", mergeCommit.getMessage());
         assertEquals(2, mergeCommit.getParentIds().size());
         assertEquals("Tester", mergeCommit.getAuthor().getName().get());
         assertEquals("tester@example.com", mergeCommit.getAuthor().getEmail().get());
+
+        RevCommit importCommit = importResult.importCommit;
+        assertEquals("Imported geopackage.", importCommit.getMessage());
+        assertEquals(1, importCommit.getParentIds().size());
+        assertEquals("Tester", importCommit.getAuthor().getName().get());
+        assertEquals("tester@example.com", importCommit.getAuthor().getEmail().get());
 
         repo.command(TransactionEnd.class).setTransaction(transaction).call();
 

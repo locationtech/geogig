@@ -10,7 +10,6 @@
 package org.locationtech.geogig.rest.geotools;
 
 import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp.DataStoreSupplier;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -55,6 +54,6 @@ public interface DataStoreImportContextService {
      * 
      * @return the import command to use.
      */
-    public DataStoreImportOp<RevCommit> createCommand(final Context context,
+    public DataStoreImportOp<?> createCommand(final Context context,
             final ParameterSet options);
 }

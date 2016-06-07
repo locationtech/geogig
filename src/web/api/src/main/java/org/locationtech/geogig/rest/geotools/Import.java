@@ -12,7 +12,6 @@ package org.locationtech.geogig.rest.geotools;
 import java.util.function.Function;
 
 import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
@@ -188,12 +187,12 @@ public class Import extends AbstractWebAPICommand {
         DataStoreImportContextService ctxService = DataStoreImportContextServiceFactory
                 .getContextService(requestFormat);
         // build DataStore from options
-        DataStoreImportOp<RevCommit> command = buildImportOp(ctxService, transaction);
+        DataStoreImportOp<?> command = buildImportOp(ctxService, transaction);
         final String commandDescription = ctxService.getCommandDescription();
         if (asyncContext == null) {
             asyncContext = AsyncContext.get();
         }
-        final AsyncContext.AsyncCommand<RevCommit> asyncCommand = asyncContext.run(command,
+        final AsyncContext.AsyncCommand<?> asyncCommand = asyncContext.run(command,
                 commandDescription);
 
         Function<MediaType, Representation> rep = new Function<MediaType, Representation>() {
@@ -217,7 +216,7 @@ public class Import extends AbstractWebAPICommand {
         return Method.POST.equals(method);
     }
 
-    private DataStoreImportOp<RevCommit> buildImportOp(
+    private DataStoreImportOp<?> buildImportOp(
             final DataStoreImportContextService ctxService, Context context) {
         // collect Import parameters
         final String layerTableName = options.getFirstValue(LAYER_KEY);
@@ -233,7 +232,7 @@ public class Import extends AbstractWebAPICommand {
         final String authorEmail = options.getFirstValue(AUTHOR_EMAIL_KEY);
         final String commitMessage = options.getFirstValue(COMMIT_MSG_KEY);
         // regardless, we have to create the DataStoreImportOp
-        DataStoreImportOp<RevCommit> command = ctxService.createCommand(context, options);
+        DataStoreImportOp<?> command = ctxService.createCommand(context, options);
         // set all the import op parameters
         return command.setDataStore(ctxService.getDataStore(options)).setTable(layerTableName)
                 .setRoot(root).setAll(all).setAdd(add).setForceFeatureType(forceFeatureType)

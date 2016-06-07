@@ -33,4 +33,4 @@ Feature: Rename repository
       And the response ContentType should be "application/xml"
       And the xpath "/response/success/text()" equals "true"
       And the xpath "/response/repo/name/text()" equals "repo1Renamed"
-      And the xpath "/response/repo/atom:link/@href" equals "/repos/repo1Renamed.xml"
+      And the xpath "/response/repo/atom:link/@href" contains "/repos/repo1Renamed.xml"

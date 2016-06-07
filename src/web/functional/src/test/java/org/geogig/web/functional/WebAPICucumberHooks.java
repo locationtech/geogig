@@ -18,6 +18,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -67,28 +68,35 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
+import com.google.inject.Inject;
 
 import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import cucumber.runtime.java.StepDefAnnotation;
+import cucumber.runtime.java.guice.ScenarioScoped;
 
 /**
  *
  */
+@ScenarioScoped
 @StepDefAnnotation
 public class WebAPICucumberHooks {
 
-    public FunctionalTestContext context = new FunctionalTestContext();
+    public FunctionalTestContext context = null;
 
     private static final Map<String, String> NSCONTEXT = ImmutableMap.of("atom",
             "http://www.w3.org/2005/Atom");
+
+    @Inject
+    public WebAPICucumberHooks(FunctionalTestContext context) {
+        this.context = context;
+    }
 
     @cucumber.api.java.Before
     public void before() throws Exception {
@@ -116,11 +124,13 @@ public class WebAPICucumberHooks {
     public void setUpEmptyRepo(String name) throws Throwable {
         String repoUri = "/repos/" + name;
         String urlSpec = repoUri + "/init";
-        Response response = context.callDontSaveResponse(Method.PUT, urlSpec);
-        assertStatusCode(response, Status.SUCCESS_CREATED.getCode());
+        context.call(Method.PUT, urlSpec);
+        assertStatusCode(Status.SUCCESS_CREATED.getCode());
         
-        context.callDontSaveResponse(Method.POST, repoUri + "/config?name=user.name&value=webuser");
-        context.callDontSaveResponse(Method.POST, repoUri + "/config?name=user.email&value=webuser@test.com");
+        context.call(Method.POST,
+                repoUri + "/config?name=user.name&value=webuser");
+        context.call(Method.POST,
+                repoUri + "/config?name=user.email&value=webuser@test.com");
     }
 
     /**
@@ -197,7 +207,8 @@ public class WebAPICucumberHooks {
      */
     @Given("^I have a transaction as \"([^\"]*)\" on the \"([^\"]*)\" repo$")
     public void beginTransactionAsVariable(final String variableName, final String repoName) {
-        GeogigTransaction transaction = context.getRepo(repoName).command(TransactionBegin.class)
+        GeogigTransaction transaction = context.getRepo(repoName)
+                .command(TransactionBegin.class)
                 .call();
 
         context.setVariable(variableName, transaction.getTransactionId().toString());
@@ -262,12 +273,11 @@ public class WebAPICucumberHooks {
 
     @Then("^the response status should be '(\\d+)'$")
     public void checkStatusCode(final int statusCode) {
-        Response response = context.getLastResponse();
-        assertStatusCode(response, statusCode);
+        assertStatusCode(statusCode);
     }
 
-    private void assertStatusCode(Response response, final int statusCode) {
-        Status status = response.getStatus();
+    private void assertStatusCode(final int statusCode) {
+        Status status = Status.valueOf(context.getLastResponseStatus());
         Status expected = Status.valueOf(statusCode);
         assertEquals(format("Expected status code %s, but got %s", expected, status), statusCode,
                 status.getCode());
@@ -276,7 +286,7 @@ public class WebAPICucumberHooks {
     @Then("^the response ContentType should be \"([^\"]*)\"$")
     public void checkContentType(final String expectedContentType) {
         String actualContentType = context.getLastResponseContentType();
-        assertEquals(context.getLastResponseText(), expectedContentType, actualContentType);
+        assertTrue(actualContentType.contains(expectedContentType));
     }
 
     /**
@@ -291,14 +301,10 @@ public class WebAPICucumberHooks {
     @Then("^the response allowed methods should be \"([^\"]*)\"$")
     public void checkResponseAllowedMethods(final String csvMethodList) {
 
-        Set<Method> expected = Sets.newHashSet(//
-                Iterables.transform(//
-                        Splitter.on(',').omitEmptyStrings().splitToList(csvMethodList), //
-                        (s) -> Method.valueOf(s)//
-                )//
-        );
+        Set<String> expected = Sets
+                .newHashSet(Splitter.on(',').omitEmptyStrings().splitToList(csvMethodList));
 
-        Set<Method> allowedMethods = context.getLastResponse().getAllowedMethods();
+        Set<String> allowedMethods = context.getLastResponseAllowedMethods();
 
         assertEquals(expected, allowedMethods);
     }
@@ -431,8 +437,8 @@ public class WebAPICucumberHooks {
 
     private String getAsyncTaskAsXML(final Integer taskId) throws IOException {
         String url = String.format("/tasks/%d", taskId);
-        Response taskResponse = context.callDontSaveResponse(Method.GET, url);
-        String text = taskResponse.getEntity().getText();
+        context.call(Method.GET, url);
+        String text = context.getLastResponseText();
         return text;
     }
 
@@ -493,10 +499,11 @@ public class WebAPICucumberHooks {
     public void gpkg_CheckResponseIsGeoPackage() throws Throwable {
         checkContentType(Variants.GEOPKG_MEDIA_TYPE.getName());
 
-        File tmp = File.createTempFile("gpkg_functional_test", ".gpkg", context.getTempFolder());
+        File tmp = File.createTempFile("gpkg_functional_test", ".gpkg",
+ context.getTempFolder());
         tmp.deleteOnExit();
 
-        try (InputStream stream = context.getLastResponse().getEntity().getStream()) {
+        try (InputStream stream = context.getLastResponseInputStream()) {
             try (OutputStream to = new FileOutputStream(tmp)) {
                 ByteStreams.copy(stream, to);
             }

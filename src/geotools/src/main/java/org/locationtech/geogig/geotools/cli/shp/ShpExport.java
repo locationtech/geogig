@@ -54,7 +54,7 @@ import com.google.common.base.Optional;
 
 /**
  * Exports features from a feature type into a shapefile.
- * 
+ *
  * @see ExportOp
  */
 @ReadOnly
@@ -79,6 +79,12 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
             "--featuretype" }, description = "Export only features with the specified feature type if several types are found")
     @Nullable
     public String sFeatureTypeId;
+
+    /**
+     * Charset to use for encoding attributes in DBF file
+     */
+    @Parameter(names = { "--charset" }, description = "Use the specified charset to encode attributes. Default is ISO-8859-1.")
+    public String charset = "ISO-8859-1";
 
     /**
      * Executes the export command using the provided options.
@@ -111,6 +117,7 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
         params.put(ShapefileDataStoreFactory.URLP.key, targetShapefileAsUrl);
         params.put(ShapefileDataStoreFactory.CREATE_SPATIAL_INDEX.key, Boolean.FALSE);
         params.put(ShapefileDataStoreFactory.ENABLE_SPATIAL_INDEX.key, Boolean.FALSE);
+        params.put(ShapefileDataStoreFactory.DBFCHARSET.key, charset);
 
         ShapefileDataStore dataStore = (ShapefileDataStore) dataStoreFactory
                 .createNewDataStore(params);

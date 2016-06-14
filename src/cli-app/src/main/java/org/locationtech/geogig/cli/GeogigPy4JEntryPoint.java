@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -41,26 +42,25 @@ public class GeogigPy4JEntryPoint {
 
         private static final int PAGE_SIZE = 1000;
 
-        StringBuffer sb = new StringBuffer();
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
         @Override
         public void write(int b) throws IOException {
-            char c = (char) b;
-            String s = String.valueOf(c);
-            sb.append(s);
+            bytes.write((byte)b);
         }
 
         public void clear() {
-            sb = new StringBuffer();
+            bytes = new ByteArrayOutputStream();
         }
 
-        public String asString() {
-            return sb.toString();
+        public String asString() throws IOException {
+            return bytes.toString("UTF-8");
         }
 
-        public Iterator<String> getIterator() {
+        public Iterator<String> getIterator() throws IOException {
             Splitter page = Splitter.fixedLength(PAGE_SIZE);
-            return page.split(sb.toString()).iterator();
+            String buffer = bytes.toString("UTF-8");
+            return page.split(buffer).iterator();
         }
 
     }
@@ -89,7 +89,7 @@ public class GeogigPy4JEntryPoint {
 
     /**
      * Runs a command on a given repository
-     * 
+     *
      * @param folder the repository folder
      * @param args the args to run, including the command itself and additional parameters
      * @return
@@ -169,7 +169,7 @@ public class GeogigPy4JEntryPoint {
 
     /**
      * Sets the progress listener that will receive progress updates
-     * 
+     *
      * @param listener
      */
     public void setProgressListener(GeoGigPy4JProgressListener listener) {

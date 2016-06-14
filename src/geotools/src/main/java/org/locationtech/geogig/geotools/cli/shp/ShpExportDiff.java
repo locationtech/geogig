@@ -51,7 +51,7 @@ import com.google.common.base.Optional;
 
 /**
  * Exports features from a feature type into a shapefile.
- * 
+ *
  * @see ExportOp
  */
 @Parameters(commandNames = "export-diff", commandDescription = "Export changed features to Shapefile")
@@ -65,6 +65,12 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
 
     @Parameter(names = { "--old" }, description = "Export features from the old version instead of the most recent one")
     public boolean old;
+
+    /**
+     * Charset to use for encoding attributes in DBF file
+     */
+    @Parameter(names = { "--charset" }, description = "Use the specified charset to encode attributes. Default is ISO-8859-1.")
+    public String charset = "ISO-8859-1";
 
     /**
      * Executes the export command using the provided options.
@@ -93,6 +99,7 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
         params.put(ShapefileDataStoreFactory.URLP.key, file.toURI().toURL());
         params.put(ShapefileDataStoreFactory.CREATE_SPATIAL_INDEX.key, Boolean.FALSE);
         params.put(ShapefileDataStoreFactory.ENABLE_SPATIAL_INDEX.key, Boolean.FALSE);
+        params.put(ShapefileDataStoreFactory.DBFCHARSET.key, charset);
 
         ShapefileDataStore dataStore = (ShapefileDataStore) dataStoreFactory
                 .createNewDataStore(params);
@@ -153,7 +160,7 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
             final SimpleFeatureType featureType) {
 
         Function<Feature, Optional<Feature>> function = (feature) -> {
-            
+
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
             for (Property property : feature.getProperties()) {
                 if (property instanceof GeometryAttribute) {

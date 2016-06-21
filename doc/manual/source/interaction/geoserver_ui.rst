@@ -1,18 +1,19 @@
 .. _geoserver_ui:
 
-GeoServer
-=========
+GeoServer GUI Configuration
+===========================
 
 A GeoServer extension is available to allow GeoServer to interact with a GeoGig repository and use it as data store. It
-enables a GeoGig repository to be exposed as a remote for cloning, pushing and pulling as well as via OGC services
-(WMS/WFS/WMTS etc). Each top level tree in a GeoGig repository corresponds to a GeoServer layer. GeoServer treats a GeoGig
+enables a GeoGig repository to be exposed as a remote for cloning, pushing and pulling as well as to publish its data via OGC services
+(WMS/WFS/WMTS/etc). Each top level tree (often called "feature tree") in a GeoGig repository corresponds to a GeoServer layer. GeoServer treats a GeoGig
 repository as a store in much the same way as it does a database.
 
 Building/installing the GeoServer GeoGig extension
-----------------------------------------------------
+--------------------------------------------------
 
+You can download the latest stable version of the GeoGig GeoServer plugin from the `GeoGig <http://www.geogig.org/>`_ home page.
 
-The GeoGig module is currently included in the 2.8.x branch of GeoServer's community extensions. To build it, clone the
+In order to build it from sources, a GeoGig module is currently included in the 2.8.x branch of GeoServer's community extensions. To build it, clone the
 GeoServer GitHub repository::
 
     git clone git@github.com:geoserver/geoserver.git
@@ -159,7 +160,7 @@ backed repositories. Select the **Repository Type** and choose/enter to reposito
    *PostgreSQL backed Repository configuration*
 
 Cloning, Pushing and Pulling
----------------------------
+----------------------------
 
 Once GeoServer is configured with a GeoGig repository, you can address it over the network at a URL path of the form::
 

@@ -1,4 +1,4 @@
-Web-API and GeoServer REST configuration 
+GeoServer REST configuration integration 
 ========================================
 
 GeoGig integrates well with the standard GeoServer REST configuration API in order to configure
@@ -10,20 +10,21 @@ create a wide variety of scripts.
 GeoGig's plugin Web-API
 -----------------------
 
-With the GeoGig GeoServer plug-in, unlike than with the ``geogig serve`` command, it is possible to expose
-several repositories. To do so, the GeoGig plug-in installs REST entry points under the ``<geoserver context>/geogig``
-context (e.g. ``http://localhost:8080/geoserver/geogig``).
+With the GeoGig GeoServer plug-in, like with the ``geogig serve --multirepo`` command, it is possible to expose
+several repositories. To do so, the GeoGig plug-in installs REST entry points under the ``<geoserver context>/geogig/repos``
+context (e.g. ``http://localhost:8080/geoserver/geogig/repos``).
 
 That root context can be used to query which repositories are being served by GeoServer.
 
-GeoSever managed repositories are uniquely identified by a UUID automatically assigned when the repository is first added
-to the GeoServer configuration.
+GeoSever managed repositories are internaly identified by a UUID automatically assigned when the repository is first added
+to the GeoServer configuration, and published through their names. The repository name is assigned by the user and must also
+be unique across all the configured repositories.
 
-Each specific repository's Web-API is accessed through the ``<geosever context>/geogig/<repository id>`` entry point, at
-a difference to the ``geogig serve`` command that exposes the repository at the root application context.
+Each specific repository's Web-API is accessed through the ``<geosever context>/geogig/repos/<repository name>`` entry point, at
+a difference to the ``geogig serve`` command that exposes the repository at the ``/repos`` application context.
 
-So, for example, whenever you would list the current HEAD's commits by querying ``http://localhost:8182/log`` if serving
-a single repository with ``geogig serve``, the same command as served by GeoServer would be at ``http://localhost:8080/geoserver/geogig/<repository id>/log``. 
+So, for example, whenever you would list the current HEAD's commits by querying ``http://localhost:8182/repos/<repo name>/log`` if serving
+a single repository with ``geogig serve``, the same command as served by GeoServer would be at ``http://localhost:8080/geoserver/geogig/repos/<repo name>/log``. 
 
 From that point on, the commands available are exactly the same then when using the standalone Web API.
 
@@ -80,7 +81,7 @@ Lets start by listing the available repositories, given there are none yet added
 
 ::
 
-   $ curl -v -u admin:geoserver -H "Accept:text/xml" "http://localhost:8080/geoserver/geogig"
+   $ curl -v -u admin:geoserver -H "Accept:text/xml" "http://localhost:8080/geoserver/geogig/repos"
    < HTTP/1.1 200 OK
    < Content-Type: application/xml
    <?xml version='1.0' encoding='UTF-8'?>
@@ -292,17 +293,17 @@ Lets revisit the initial query in this tutorial, and check the list of available
 
 ::
 
-   $ curl -v -u admin:geoserver -H "Accept:text/xml" "http://localhost:8080/geoserver/geogig"
+   $ curl -v -u admin:geoserver -H "Accept:text/xml" "http://localhost:8080/geoserver/geogig/repos"
    < HTTP/1.1 200 OK
    <?xml version='1.0' encoding='UTF-8'?>
    <repositories>
       <repository>
          <id>6d62a0fe-1d98-42ac-a8ac-169dbc6e778a</id>
          <name>rosario_osm</name>
-         <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8080/geoserver/geogig/6d62a0fe-1d98-42ac-a8ac-169dbc6e778a.xml" type="application/xml"/>
+         <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8080/geoserver/geogig/rosario_osm.xml" type="application/xml"/>
       </repository>
    </repositories>
-   $ curl -v -u admin:geoserver -H "Accept:text/xml" "http://localhost:8080/geoserver/geogig/6d62a0fe-1d98-42ac-a8ac-169dbc6e778a.xml"
+   $ curl -v -u admin:geoserver -H "Accept:text/xml" "http://localhost:8080/geoserver/geogig/repos/rosario_osm.xml"
    < HTTP/1.1 200 OK
    <?xml version='1.0' encoding='UTF-8'?>
    <repository>
@@ -315,7 +316,7 @@ Also make sure the repository contains the expected feature type trees using the
 
 ::
 
-   $ curl -v -u admin:geoserver -H "Accept:text/xml" "http://localhost:8080/geoserver/geogig/6d62a0fe-1d98-42ac-a8ac-169dbc6e778a/ls-tree"
+   $ curl -v -u admin:geoserver -H "Accept:text/xml" "http://localhost:8080/geoserver/geogig/repos/rosario_osm/ls-tree"
    < HTTP/1.1 200 OK
    <response>
       <success>true</success>

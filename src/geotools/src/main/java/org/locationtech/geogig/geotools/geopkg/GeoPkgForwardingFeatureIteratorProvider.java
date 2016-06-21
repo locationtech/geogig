@@ -11,14 +11,11 @@ package org.locationtech.geogig.geotools.geopkg;
 
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.api.data.ForwardingFeatureIterator;
 import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvider;
-import org.opengis.feature.GeometryAttribute;
-import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -77,17 +74,7 @@ public class GeoPkgForwardingFeatureIteratorProvider extends ForwardingFeatureIt
         public SimpleFeature next() {
             SimpleFeature next = super.next();
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-            for (Property property : next.getProperties()) {
-                if (property instanceof GeometryAttribute) {
-                    builder.set(featureType.getGeometryDescriptor().getName(), property.getValue());
-                } else {
-                    builder.set(property.getName().getLocalPart(), property.getValue());
-                }
-            }
-            Map<Object, Object> userData = next.getUserData();
-            for (Entry<Object, Object> entry : userData.entrySet()) {
-                builder.featureUserData(entry.getKey(), entry.getValue());
-            }
+            builder.init(next);
             String oldFeatureId = next.getIdentifier().getID();
             String featureId;
             if (fidMappings.containsKey(oldFeatureId)) {

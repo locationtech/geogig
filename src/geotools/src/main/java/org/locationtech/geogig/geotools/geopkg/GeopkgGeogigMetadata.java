@@ -13,6 +13,7 @@ import static java.lang.String.format;
 
 import java.net.URI;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -131,17 +132,26 @@ public class GeopkgGeogigMetadata {
     }
 
     public Map<String, String> getFidMappings(String tableName) throws SQLException {
-        final String sql = format("SELECT gpkg_fid, geogig_fid FROM %s", tableName + "_fids");
+        String fidTable = tableName + "_fids";
         Map<String, String> mappings = new HashMap<String, String>();
-        try (Statement st = cx.createStatement()) {
-            try (ResultSet rs = st.executeQuery(sql)) {
-                while (rs.next()) {
-                    String gpkg_fid = rs.getString(1);
-                    String geogig_fid = rs.getString(2);
-                    mappings.put(gpkg_fid, geogig_fid);
+        DatabaseMetaData dbm = cx.getMetaData();
+        ResultSet tables = dbm.getTables(null, null, fidTable, null);
+        while (tables.next()) {
+            if (tables.getString("TABLE_NAME").equals(fidTable)) {
+                // Fid table exists
+                final String sql = format("SELECT gpkg_fid, geogig_fid FROM %s", fidTable);
+                try (Statement st = cx.createStatement()) {
+                    try (ResultSet rs = st.executeQuery(sql)) {
+                        while (rs.next()) {
+                            String gpkg_fid = rs.getString(1);
+                            String geogig_fid = rs.getString(2);
+                            mappings.put(gpkg_fid, geogig_fid);
+                        }
+                    }
                 }
             }
         }
+
         return mappings;
     }
 

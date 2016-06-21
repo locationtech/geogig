@@ -11,8 +11,6 @@ package org.locationtech.geogig.geotools.geopkg;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -23,8 +21,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
 import org.opengis.feature.Feature;
-import org.opengis.feature.GeometryAttribute;
-import org.opengis.feature.Property;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
@@ -104,17 +101,7 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
         Function<Feature, Optional<Feature>> function = (feature) -> {
 
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-            for (Property property : feature.getProperties()) {
-                if (property instanceof GeometryAttribute) {
-                    builder.set(featureType.getGeometryDescriptor().getName(), property.getValue());
-                } else {
-                    builder.set(property.getName().getLocalPart(), property.getValue());
-                }
-            }
-            Map<Object, Object> userData = feature.getUserData();
-            for (Entry<Object, Object> entry : userData.entrySet()) {
-                builder.featureUserData(entry.getKey(), entry.getValue());
-            }
+            builder.init((SimpleFeature) feature);
             long fidValue = nextId.incrementAndGet();
             builder.featureUserData(Hints.PROVIDED_FID, Long.valueOf(fidValue));
             fidMappings.put(Long.toString(fidValue), feature.getIdentifier().getID());

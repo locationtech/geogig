@@ -338,6 +338,13 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         Consumer consumer = new Consumer() {
             final int bulkSize = 10_000;
 
+            /**
+             * Cache already inserted metadata ids, in order to avoid inserting the same
+             * RevFeatureType over and over, yet handling the case where a feature node has a
+             * different metadata id than it's tree's default one
+             */
+            final Set<ObjectId> insertedMetadataIds = Sets.newConcurrentHashSet();
+
             @Override
             public void feature(@Nullable NodeRef left, NodeRef right) {
                 // add(left);
@@ -354,12 +361,16 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
                 if (node == null) {
                     return;
                 }
-                ObjectId metadataId = node.getMetadataId();
+                Optional<ObjectId> metadataId = node.getNode().getMetadataId();
                 lock.writeLock().lock();
                 try {
                     ids.add(node.getObjectId());
-                    if (!metadataId.isNull()) {
-                        ids.add(metadataId);
+                    if (metadataId.isPresent()) {
+                        ObjectId mdid = metadataId.get();
+                        if (!insertedMetadataIds.contains(mdid)) {
+                            ids.add(mdid);
+                            insertedMetadataIds.add(mdid);
+                        }
                     }
                 } finally {
                     lock.writeLock().unlock();

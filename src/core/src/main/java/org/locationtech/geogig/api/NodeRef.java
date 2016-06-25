@@ -286,7 +286,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         if (parentPath.isEmpty()) {
             return !nodePath.isEmpty() && idx == -1;
         }
-        return idx == parentPath.length() && nodePath.substring(0, idx).equals(parentPath);
+        return idx == parentPath.length() && nodePath.startsWith(parentPath);
     }
 
     /**

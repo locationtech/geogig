@@ -9,11 +9,9 @@
  */
 package org.locationtech.geogig.api.plumbing.merge;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ObjectId;
@@ -22,13 +20,11 @@ import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.PeekingIterator;
 
 /**
  * Checks for conflicts between changes introduced by different histories, or features that have to
@@ -70,46 +66,68 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
             Preconditions.checkState(ancestor.isPresent(), "No ancestor commit could be found.");
         }
 
-        Map<String, List<DiffEntry>> diffs = Maps.newHashMap();
-        Set<String> removedPaths = Sets.newTreeSet();
+        List<Iterator<DiffEntry>> commitDiffs = new ArrayList<Iterator<DiffEntry>>();
 
         // we organize the changes made for each path
         for (RevCommit commit : commits) {
             Iterator<DiffEntry> toMergeDiffs = command(DiffTree.class).setReportTrees(true)
-                    .setOldTree(ancestor.get()).setNewTree(commit.getId()).call();
-            while (toMergeDiffs.hasNext()) {
-                DiffEntry diff = toMergeDiffs.next();
-                String path = diff.oldPath() == null ? diff.newPath() : diff.oldPath();
-                if (diffs.containsKey(path)) {
-                    diffs.get(path).add(diff);
-                } else {
-                    diffs.put(path, Lists.newArrayList(diff));
-                }
-                if (ChangeType.REMOVED.equals(diff.changeType())) {
-                    removedPaths.add(path);
-                }
-            }
+                    .setOldTree(ancestor.get()).setNewTree(commit.getId())
+                    .setPreserveIterationOrder(true).call();
+            commitDiffs.add(toMergeDiffs);
         }
 
-        // now we check that, for any path, changes are compatible
-        Collection<List<DiffEntry>> values = diffs.values();
-        for (List<DiffEntry> list : values) {
-            for (int i = 0; i < list.size(); i++) {
-                for (int j = i + 1; j < list.size(); j++) {
-                    if (hasConflicts(list.get(i), list.get(j))) {
-                        return true;
-                    }
-                }
-                if (!ChangeType.REMOVED.equals(list.get(i).changeType())) {
-                    if (removedPaths.contains(list.get(i).getNewObject().getParentPath())) {
-                        return true;
-                    }
-                }
+        PeekingIterator<DiffEntry> merged = Iterators
+                .peekingIterator(Iterators.mergeSorted(commitDiffs, DiffEntry.COMPARATOR));
+
+        while (merged.hasNext()) {
+            List<DiffEntry> nextPath = nextPath(merged);
+            if (hasConflicts(nextPath)) {
+                return true;
             }
         }
 
         return false;
 
+    }
+
+    /**
+     * Get all the next set of nodes from the iterator with the same path.
+     * 
+     * @param iterator
+     * @return
+     */
+    private List<DiffEntry> nextPath(PeekingIterator<DiffEntry> iterator) {
+        List<DiffEntry> entries = new ArrayList<DiffEntry>();
+        DiffEntry next = iterator.next();
+        entries.add(next);
+        String name = next.oldName() != null ? next.oldName() : next.newName();
+        while (iterator.hasNext()) {
+            DiffEntry peeked = iterator.peek();
+            String peekedName = peeked.oldName() != null ? peeked.oldName() : peeked.newName();
+            if (name.equals(peekedName)) {
+                entries.add(iterator.next());
+            } else {
+                break;
+            }
+        }
+        return entries;
+    }
+
+    /**
+     * Check all nodes with the same path for conflicts.
+     * 
+     * @param diffs
+     * @return
+     */
+    private boolean hasConflicts(List<DiffEntry> diffs) {
+        for (int i = 0; i < diffs.size(); i++) {
+            for (int j = i + 1; j < diffs.size(); j++) {
+                if (hasConflicts(diffs.get(i), diffs.get(j))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean hasConflicts(DiffEntry diff1, DiffEntry diff2) {

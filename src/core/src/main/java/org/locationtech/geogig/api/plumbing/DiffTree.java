@@ -53,7 +53,8 @@ import com.google.common.collect.Lists;
  * Compares the content and metadata links of blobs found via two tree objects on the repository's
  * {@link ObjectDatabase}
  */
-public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
+public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>>
+        implements
         Supplier<Iterator<DiffEntry>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DiffTree.class);
@@ -85,6 +86,8 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
     private ObjectId newTreeId;
 
     private ObjectId oldTreeId;
+
+    private boolean preserveIterationOrder = false;
 
     /**
      * Constructs a new instance of the {@code DiffTree} operation with the given parameters.
@@ -126,6 +129,17 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
      */
     public DiffTree setNewTree(ObjectId newTreeId) {
         this.newTreeId = newTreeId;
+        return this;
+    }
+
+    /**
+     * Note: Preserving the iteration order will disable parallel processing of the diff.
+     * 
+     * @param preserveIterationOorder whether or not to preserve the iteration order
+     * @return {@code this}
+     */
+    public DiffTree setPreserveIterationOrder(boolean preserveIterationOrder) {
+        this.preserveIterationOrder = preserveIterationOrder;
         return this;
     }
 
@@ -198,7 +212,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
         }
 
         final PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource,
-                rightSource);
+                rightSource, preserveIterationOrder);
         visitor.setDefaultMetadataId(this.metadataId);
 
         final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(10_000);

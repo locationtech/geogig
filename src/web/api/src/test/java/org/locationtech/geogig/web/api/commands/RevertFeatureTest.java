@@ -92,11 +92,6 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
         JSONObject response = getJSONResponse().getJSONObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
-        JSONObject feature = merge.getJSONObject("Feature");
-        assertEquals("MODIFIED", feature.get("change"));
-        assertEquals(path, feature.get("id"));
-        assertEquals("POINT (0 0)", feature.get("geometry"));
     }
 
     @Test
@@ -132,11 +127,6 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
         JSONObject response = getJSONResponse().getJSONObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
-        JSONObject feature = merge.getJSONObject("Feature");
-        assertEquals("REMOVED", feature.get("change"));
-        assertEquals(path, feature.get("id"));
-        assertEquals("LINESTRING (-1 -1, 1 1)", feature.get("geometry"));
     }
 
     @Test
@@ -170,11 +160,6 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
         JSONObject response = getJSONResponse().getJSONObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
-        JSONObject feature = merge.getJSONObject("Feature");
-        assertEquals("ADDED", feature.get("change"));
-        assertEquals(path, feature.get("id"));
-        assertEquals("POINT (0 0)", feature.get("geometry"));
     }
 
     @Test

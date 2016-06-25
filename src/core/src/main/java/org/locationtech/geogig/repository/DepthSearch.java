@@ -41,7 +41,7 @@ public class DepthSearch {
 
     private final ObjectStore objectDb;
 
-    private NodePathStorageOrder refOrder = new NodePathStorageOrder();
+    private NodePathStorageOrder refOrder = NodePathStorageOrder.INSTANCE;
 
     /**
      * Constructs a new {@code DepthSearch} with the given parameters.

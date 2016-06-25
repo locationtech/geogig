@@ -733,7 +733,7 @@ public class ResponseWriter {
         out.writeEndElement();
     }
 
-    public void writePullResponse(PullResult result, Iterator<DiffEntry> iter, Context geogig)
+    public void writePullResponse(PullResult result, Iterator<DiffEntry> iter)
             throws XMLStreamException {
         out.writeStartElement("Pull");
         writeFetchResponse(result.getFetchResult());
@@ -761,7 +761,7 @@ public class ResponseWriter {
                 && result.getMergeReport().get().getReport().isPresent()) {
             MergeReport report = result.getMergeReport().get();
             writeMergeResponse(Optional.fromNullable(report.getMergeCommit()),
-                    report.getReport().get(), geogig, report.getOurs(),
+                    report.getReport().get(), report.getOurs(),
                     report.getPairs().get(0).getTheirs(), report.getPairs().get(0).getAncestor());
         }
         out.writeEndElement();
@@ -1106,16 +1106,18 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for a merge dry-run, contains unconflicted, conflicted and merged
-     * features.
+     * Writes the response for a merge.
      * 
-     * @param report - the MergeScenarioReport containing all the merge results
-     * @param transaction - a transaction aware injector to call commands from
+     * @param mergeCommit - the merge commit, if the merge was successful
+     * @param report - the MergeScenarioReport containing a summary of the merge results
+     * @param ours - our commit id
+     * @param theirs - their commit id
+     * @param ancestor - the ancestor commit id
      * @throws XMLStreamException
      */
     public void writeMergeResponse(Optional<RevCommit> mergeCommit, MergeScenarioReport report,
-            Context transaction, ObjectId ours, ObjectId theirs, ObjectId ancestor)
-            throws XMLStreamException {
+            ObjectId ours, ObjectId theirs, ObjectId ancestor)
+                    throws XMLStreamException {
         out.writeStartElement("Merge");
         writeElement("ours", ours.toString());
         writeElement("theirs", theirs.toString());
@@ -1123,12 +1125,66 @@ public class ResponseWriter {
         if (mergeCommit.isPresent()) {
             writeElement("mergedCommit", mergeCommit.get().getId().toString());
         }
-        if (report.getConflicts().size() > 0) {
-            writeElement("conflicts", Integer.toString(report.getConflicts().size()));
+        if (report.getConflicts() > 0) {
+            writeElement("conflicts", Long.toString(report.getConflicts()));
         }
-        writeGeometryChanges(transaction, report.getUnconflicted().iterator(), 0, 0);
-        writeConflicts(transaction, report.getConflicts().iterator(), ours, theirs);
-        writeMerged(transaction, report.getMerged().iterator());
+        out.writeEndElement();
+    }
+
+    /**
+     * Writes the response for a merge that includes the first page of features from the merge
+     * scenario.
+     * 
+     * @param mergeCommit - the merge commit, if the merge was successful
+     * @param report - the MergeScenarioReport containing a summary of the merge results
+     * @param context - the context that the merge was run on
+     * @param ours - our commit id
+     * @param theirs - their commit id
+     * @param ancestor - the ancestor commit id
+     * @param consumer - the page of features
+     * @throws XMLStreamException
+     */
+    public void writeMergeConflictsResponse(Optional<RevCommit> mergeCommit,
+            MergeScenarioReport report, Context context, ObjectId ours, ObjectId theirs,
+            ObjectId ancestor, PagedMergeScenarioConsumer consumer)
+                    throws XMLStreamException {
+        out.writeStartElement("Merge");
+        writeElement("ours", ours.toString());
+        writeElement("theirs", theirs.toString());
+        writeElement("ancestor", ancestor.toString());
+        if (mergeCommit.isPresent()) {
+            writeElement("mergedCommit", mergeCommit.get().getId().toString());
+        }
+        if (report.getConflicts() > 0) {
+            writeElement("conflicts", Long.toString(report.getConflicts()));
+        }
+        writeGeometryChanges(context, consumer.getUnconflicted(), 0, 0);
+        writeConflicts(context, consumer.getConflicted(), ours, theirs);
+        writeMerged(context, consumer.getMerged());
+        if (!consumer.didFinish()) {
+            writeElement("additionalChanges", Boolean.toString(true));
+        }
+        out.writeEndElement();
+    }
+
+    /**
+     * Writes a page of features from a merge scenario.
+     * 
+     * @param context the context that the merge scenario was run on
+     * @param ours our commit id
+     * @param theirs their commit id
+     * @param consumer the page of features
+     * @throws XMLStreamException
+     */
+    public void writeReportMergeScenarioResponse(Context context, ObjectId ours, ObjectId theirs,
+            PagedMergeScenarioConsumer consumer) throws XMLStreamException {
+        out.writeStartElement("Merge");
+        writeGeometryChanges(context, consumer.getUnconflicted(), 0, 0);
+        writeConflicts(context, consumer.getConflicted(), ours, theirs);
+        writeMerged(context, consumer.getMerged());
+        if (!consumer.didFinish()) {
+            writeElement("additionalChanges", Boolean.toString(true));
+        }
         out.writeEndElement();
     }
 

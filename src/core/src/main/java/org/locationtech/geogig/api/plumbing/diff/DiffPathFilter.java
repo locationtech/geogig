@@ -35,7 +35,7 @@ final class DiffPathFilter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DiffPathFilter.class);
 
-    private static final NodePathStorageOrder ORDER = new NodePathStorageOrder();
+    private static final NodePathStorageOrder ORDER = NodePathStorageOrder.INSTANCE;
 
     private List<String> pathFilters;
 

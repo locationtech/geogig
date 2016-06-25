@@ -9,76 +9,61 @@
  */
 package org.locationtech.geogig.api.plumbing.merge;
 
-import java.util.List;
-
-import org.locationtech.geogig.api.FeatureInfo;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * A class that contains changes introduced by a branch to be merged, divided in categories
+ * A class that counts the changes introduced by a branch to be merged, divided in categories
  * according to how they can (or can't) be merged into the destination branch
- * 
- * 
  */
 public class MergeScenarioReport {
 
-    List<Conflict> conflicts;
-
-    List<DiffEntry> unconflicted;
-
-    List<FeatureInfo> merged;
+    private final AtomicLong conflicts, unconflicted, merged;
 
     public MergeScenarioReport() {
-        conflicts = Lists.newArrayList();
-        unconflicted = Lists.newArrayList();
-        merged = Lists.newArrayList();
+        conflicts = new AtomicLong();
+        unconflicted = new AtomicLong();
+        merged = new AtomicLong();
     }
 
-    public void addConflict(Conflict conflict) {
-        conflicts.add(conflict);
-
-    }
-
-    public void addUnconflicted(DiffEntry diff) {
-        unconflicted.add(diff);
-    }
-
-    public void addMerged(FeatureInfo merged) {
-        this.merged.add(merged);
+    public void addConflict() {
+        conflicts.incrementAndGet();
 
     }
 
-    /**
-     * Returns a list of conflicts, with the corresponding versions involved in the conflict.
-     * 
-     * @return
-     */
-    public List<Conflict> getConflicts() {
-        return ImmutableList.copyOf(conflicts);
+    public void addUnconflicted() {
+        unconflicted.incrementAndGet();
+    }
+
+    public void addMerged() {
+        merged.incrementAndGet();
+
     }
 
     /**
-     * List of diff entries that can be applied as they are, without merging with the corresponding
-     * features in the receiving branch, but overwriting them
+     * Returns the number of conflicts.
      * 
      * @return
      */
-    public List<DiffEntry> getUnconflicted() {
-        return ImmutableList.copyOf(unconflicted);
+    public long getConflicts() {
+        return conflicts.get();
     }
 
     /**
-     * Returns a list of new features that result from the merge. These are the feature obtained as
-     * output of the merge when that output is neither one of the input features to be merged and it
-     * does not exist in the repository
+     * Returns the number of unconflicted features.
      * 
      * @return
      */
-    public List<FeatureInfo> getMerged() {
-        return ImmutableList.copyOf(merged);
+    public long getUnconflicted() {
+        return unconflicted.get();
+    }
+
+    /**
+     * Returns the number of merged features.
+     * 
+     * @return
+     */
+    public long getMerged() {
+        return merged.get();
     }
 
 }

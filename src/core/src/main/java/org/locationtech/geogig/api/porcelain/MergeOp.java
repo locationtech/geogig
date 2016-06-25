@@ -16,6 +16,8 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
@@ -37,13 +39,13 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.CheckMergeScenarioOp;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsWriteOp;
+import org.locationtech.geogig.api.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.api.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.api.plumbing.merge.SaveMergeCommitMessageOp;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
@@ -54,6 +56,8 @@ import com.google.common.collect.Lists;
 public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
     public static final String MERGE_MSG = "MERGE_MSG";
+
+    private final static int BUFFER_SIZE = 1000;
 
     private List<ObjectId> commits = new ArrayList<ObjectId>();;
 
@@ -183,8 +187,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         final ProgressListener progress = getProgressListener();
         progress.started();
 
-        boolean fastForward = true;
-        boolean changed = false;
+        AtomicBoolean fastForward = new AtomicBoolean(true);
+        AtomicBoolean changed = new AtomicBoolean(false);
 
         MergeScenarioReport mergeScenario = null;
 
@@ -219,59 +223,103 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
             pairs.add(new CommitAncestorPair(commitId, ancestorCommit.get()));
 
-            mergeScenario = command(ReportMergeScenarioOp.class).setMergeIntoCommit(headCommit)
-                    .setToMergeCommit(targetCommit).call();
+            // In case there are conflicts
+            StringBuilder conflictMsg = new StringBuilder();
+            StringBuilder mergeMsg = new StringBuilder();
+            Optional<Ref> ref = command(ResolveBranchId.class).setObjectId(commitId).call();
+            if (ref.isPresent()) {
+                mergeMsg.append("Merge branch " + ref.get().getName());
+            } else {
+                mergeMsg.append("Merge commit '" + commitId.toString() + "'. ");
+            }
+            mergeMsg.append("\n\nConflicts:\n");
+            final int maxReportedConflicts = 25;
+            final AtomicInteger reportedConflicts = new AtomicInteger(0);
 
-            List<FeatureInfo> merged = mergeScenario.getMerged();
-            for (FeatureInfo feature : merged) {
-                this.workingTree().insert(NodeRef.parentPath(feature.getPath()),
-                        feature.getFeature());
-                Iterator<DiffEntry> unstaged = workingTree().getUnstaged(null);
-                index().stage(progress, unstaged, 0);
-                changed = true;
-                fastForward = false;
-            }
-            List<DiffEntry> unconflicting = mergeScenario.getUnconflicted();
-            if (!unconflicting.isEmpty()) {
-                index().stage(progress, unconflicting.iterator(), 0);
-                changed = true;
-                fastForward = false;
-            }
+            final List<Conflict> conflictsBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
+            final List<DiffEntry> diffEntryBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
+
+            mergeScenario = command(ReportMergeScenarioOp.class).setMergeIntoCommit(headCommit)
+                    .setToMergeCommit(targetCommit).setConsumer(new MergeScenarioConsumer() {
+
+                        @Override
+                        public void conflicted(Conflict conflict) {
+                            if (!ours) {
+                                conflictsBuffer.add(conflict);
+                                if (conflictsBuffer.size() == BUFFER_SIZE) {
+                                    // Write the conflicts
+                                    command(ConflictsWriteOp.class).setConflicts(conflictsBuffer)
+                                            .call();
+                                    conflictsBuffer.clear();
+                                }
+                            }
+                            if (reportedConflicts.get() < maxReportedConflicts) {
+                                mergeMsg.append("\t" + conflict.getPath() + "\n");
+                                conflictMsg.append(
+                                        "CONFLICT: Merge conflict in " + conflict.getPath() + "\n");
+                                reportedConflicts.incrementAndGet();
+                            }
+                        }
+
+                        @Override
+                        public void unconflicted(DiffEntry diff) {
+                            diffEntryBuffer.add(diff);
+                            if (diffEntryBuffer.size() == BUFFER_SIZE) {
+                                // Stage it
+                                index().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
+                                diffEntryBuffer.clear();
+                            }
+                            changed.set(true);
+                            fastForward.set(false);
+                        }
+
+                        @Override
+                        public void merged(FeatureInfo featureInfo) {
+                            workingTree().insert(NodeRef.parentPath(featureInfo.getPath()),
+                                    featureInfo.getFeature());
+                            Iterator<DiffEntry> unstaged = workingTree().getUnstaged(null);
+                            index().stage(progress, unstaged, 0);
+                            changed.set(true);
+                            fastForward.set(false);
+                        }
+
+                        @Override
+                        public void finished() {
+                            if (conflictsBuffer.size() > 0) {
+                                // Write the conflicts
+                                command(ConflictsWriteOp.class).setConflicts(conflictsBuffer)
+                                        .call();
+                                conflictsBuffer.clear();
+                            }
+                            if (diffEntryBuffer.size() > 0) {
+                                // Stage it
+                                index().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
+                                diffEntryBuffer.clear();
+                            }
+                        }
+                    }).call();
 
             workingTree().updateWorkHead(index().getTree().getId());
 
-            List<Conflict> conflicts = mergeScenario.getConflicts();
-            if (!ours && !conflicts.isEmpty()) {
+            if (!ours && mergeScenario.getConflicts() > 0) {
                 // In case we use the "ours" strategy, we do nothing. We ignore conflicting
                 // changes and leave the current elements
                 command(UpdateRef.class).setName(Ref.MERGE_HEAD).setNewValue(commitId).call();
                 command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(headCommit.getId())
                         .call();
-                command(ConflictsWriteOp.class).setConflicts(conflicts).call();
 
-                StringBuilder msg = new StringBuilder();
-                Optional<Ref> ref = command(ResolveBranchId.class).setObjectId(commitId).call();
-                if (ref.isPresent()) {
-                    msg.append("Merge branch " + ref.get().getName());
-                } else {
-                    msg.append("Merge commit '" + commitId.toString() + "'. ");
-                }
-                msg.append("\n\nConflicts:\n");
-                for (Conflict conflict : mergeScenario.getConflicts()) {
-                    msg.append("\t" + conflict.getPath() + "\n");
+                if (reportedConflicts.get() > maxReportedConflicts) {
+                    mergeMsg.append("and " + (reportedConflicts.get() - maxReportedConflicts)
+                            + " additional conflicts.\n");
+                    conflictMsg.append(
+                            "and " + (reportedConflicts.get() - maxReportedConflicts) + " more.\n");
                 }
 
-                command(SaveMergeCommitMessageOp.class).setMessage(msg.toString()).call();
-
-                StringBuilder sb = new StringBuilder();
-                for (Conflict conflict : Iterables.limit(conflicts, 50) ) {
-                    sb.append("CONFLICT: Merge conflict in " + conflict.getPath() + "\n");
-                }
-                if (conflicts.size() > 50) {
-                    sb.append("and " + (conflicts.size() - 50) + " more.\n");
-                }
-                sb.append("Automatic merge failed. Fix conflicts and then commit the result.\n");
-                throw new MergeConflictsException(sb.toString(), headCommit.getId(), commitId);
+                command(SaveMergeCommitMessageOp.class).setMessage(mergeMsg.toString()).call();
+                conflictMsg.append(
+                        "Automatic merge failed. Fix conflicts and then commit the result.\n");
+                throw new MergeConflictsException(conflictMsg.toString(), headCommit.getId(),
+                        commitId);
 
             }
         } else {
@@ -302,7 +350,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                     workingTree().updateWorkHead(commitId);
                     index().updateStageHead(commitId);
                     subProgress.complete();
-                    changed = true;
+                    changed.set(true);
                     continue;
                 }
 
@@ -337,7 +385,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                         workingTree().updateWorkHead(commitId);
                         index().updateStageHead(commitId);
                         subProgress.complete();
-                        changed = true;
+                        changed.set(true);
                         continue;
                     } else if (ancestorCommit.get().equals(commitId)) {
                         continue;
@@ -349,9 +397,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                         .setNewTree(targetCommit.getId()).setReportTrees(true).call();
                 // stage changes
                 index().stage(new SubProgressListener(subProgress, 100.f), diff, 0);
-                changed = true;
-                fastForward = false;
-
+                changed.set(true);
+                fastForward.set(false);
                 workingTree().updateWorkHead(index().getTree().getId());
 
                 subProgress.complete();
@@ -360,13 +407,13 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
         }
 
-        if (!changed) {
+        if (!changed.get()) {
             throw new NothingToCommitException("The branch has already been merged.");
         }
         if (noFastForward) {
-            fastForward = false;
+            fastForward.set(false);
         }
-        RevCommit mergeCommit = commit(fastForward);
+        RevCommit mergeCommit = commit(fastForward.get());
 
         MergeReport result = new MergeReport(mergeCommit, Optional.fromNullable(mergeScenario),
                 oursId, pairs);

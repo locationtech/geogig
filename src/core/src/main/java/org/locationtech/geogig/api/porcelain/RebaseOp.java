@@ -15,10 +15,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.CommitBuilder;
+import org.locationtech.geogig.api.FeatureInfo;
+import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.Ref;
@@ -26,7 +29,6 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.hooks.Hookable;
 import org.locationtech.geogig.api.plumbing.CatObject;
-import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
@@ -36,6 +38,7 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsWriteOp;
+import org.locationtech.geogig.api.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.api.plumbing.merge.ReportCommitConflictsOp;
 import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
@@ -51,6 +54,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 
 /**
  * 
@@ -85,6 +89,8 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
     private static final String BRANCH = REBASE_FOLDER_PREFIX + "branch";
 
     private static final String SQUASH = REBASE_FOLDER_PREFIX + "squash";
+
+    private final static int BUFFER_SIZE = 1000;
 
     private Supplier<ObjectId> upstream;
 
@@ -430,17 +436,75 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             if (repository.commitExists(parentCommitId)) {
                 parentTreeId = repository.getCommit(parentCommitId).getTreeId();
             }
-            // get changes
-            Iterator<DiffEntry> diff = command(DiffTree.class).setOldTree(parentTreeId)
-                    .setNewTree(commitToApply.getTreeId()).setReportTrees(true).call();
+
+            // In case there are conflicts
+            StringBuilder conflictMsg = new StringBuilder();
+            conflictMsg.append("error: could not apply ");
+            conflictMsg.append(commitToApply.getId().toString().substring(0, 8));
+            conflictMsg.append(" " + commitToApply.getMessage() + "\n");
+            final int maxReportedConflicts = 25;
+            final AtomicInteger reportedConflicts = new AtomicInteger(0);
+
+            final List<Conflict> conflictsBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
+            final List<DiffEntry> diffEntryBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
 
             // see if there are conflicts
-            MergeScenarioReport report = command(ReportCommitConflictsOp.class).setCommit(
-                    commitToApply).call();
-            if (report.getConflicts().isEmpty()) {
-                // stage changes
-                index().stage(getProgressListener(), diff, 0);
+            MergeScenarioReport report = command(ReportCommitConflictsOp.class)
+                    .setCommit(commitToApply).setConsumer(new MergeScenarioConsumer() {
 
+                        @Override
+                        public void conflicted(Conflict conflict) {
+                            conflictsBuffer.add(conflict);
+                            if (conflictsBuffer.size() == BUFFER_SIZE) {
+                                // Write the conflicts
+                                command(ConflictsWriteOp.class).setConflicts(conflictsBuffer)
+                                        .call();
+                                conflictsBuffer.clear();
+                            }
+                            if (reportedConflicts.get() < maxReportedConflicts) {
+                                conflictMsg.append(
+                                        "CONFLICT: conflict in " + conflict.getPath() + "\n");
+                                reportedConflicts.incrementAndGet();
+                            }
+                        }
+
+                        @Override
+                        public void unconflicted(DiffEntry diff) {
+                            diffEntryBuffer.add(diff);
+                            if (diffEntryBuffer.size() == BUFFER_SIZE) {
+                                // Stage it
+                                index().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
+                                diffEntryBuffer.clear();
+                            }
+
+                        }
+
+                        @Override
+                        public void merged(FeatureInfo featureInfo) {
+                            // Stage it
+                            workingTree().insert(NodeRef.parentPath(featureInfo.getPath()),
+                                    featureInfo.getFeature());
+                            Iterator<DiffEntry> unstaged = workingTree().getUnstaged(null);
+                            index().stage(getProgressListener(), unstaged, 0);
+                        }
+
+                        @Override
+                        public void finished() {
+                            if (conflictsBuffer.size() > 0) {
+                                // Write the conflicts
+                                command(ConflictsWriteOp.class).setConflicts(conflictsBuffer)
+                                        .call();
+                                conflictsBuffer.clear();
+                            }
+                            if (diffEntryBuffer.size() > 0) {
+                                // Stage it
+                                index().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
+                                diffEntryBuffer.clear();
+                            }
+                        }
+
+                    }).call();
+            if (report.getConflicts() == 0) {
                 // write new tree
                 ObjectId newTreeId = command(WriteTree2.class).call();
 
@@ -464,23 +528,8 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 index().updateStageHead(newTreeId);
 
             } else {
-                Iterator<DiffEntry> unconflicted = report.getUnconflicted().iterator();
-                // stage unconflicted changes
-                index().stage(getProgressListener(), unconflicted, 0);
+
                 workingTree().updateWorkHead(index().getTree().getId());
-
-                // mark conflicted elements
-                command(ConflictsWriteOp.class).setConflicts(report.getConflicts()).call();
-
-                // created exception message
-                StringBuilder msg = new StringBuilder();
-                msg.append("error: could not apply ");
-                msg.append(commitToApply.getId().toString().substring(0, 8));
-                msg.append(" " + commitToApply.getMessage() + "\n");
-
-                for (Conflict conflict : report.getConflicts()) {
-                    msg.append("CONFLICT: conflict in " + conflict.getPath() + "\n");
-                }
 
                 try {
                     Blobs.putBlob(context().blobStore(), BRANCH, currentBranch);
@@ -488,7 +537,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                     throw new IllegalStateException("Cannot create current branch info", e);
                 }
 
-                throw new RebaseConflictsException(msg.toString());
+                throw new RebaseConflictsException(conflictMsg.toString());
 
             }
         } else {

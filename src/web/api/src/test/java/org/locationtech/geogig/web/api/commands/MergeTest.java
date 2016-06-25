@@ -32,7 +32,6 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class MergeTest extends AbstractWebOpTest {
 
@@ -149,10 +148,6 @@ public class MergeTest extends AbstractWebOpTest {
         assertEquals(ancestor.getId().toString(), merge.getString("ancestor"));
         assertEquals(theirs.getId().toString(), merge.getString("theirs"));
         assertNotNull(merge.getString("mergedCommit"));
-        JSONObject feature = merge.getJSONObject("Feature");
-        String expected = "{'change':'ADDED','id':'" + path
-                + "','geometry':'POINT (10 10)','crs':'EPSG:4326'}";
-        JSONAssert.assertEquals(expected, feature.toString(), true);
     }
 
     @Test

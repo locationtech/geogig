@@ -1,3 +1,5 @@
+.. _geoserver_web-api:
+
 GeoServer REST configuration integration 
 ========================================
 

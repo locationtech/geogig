@@ -26,6 +26,9 @@ import com.google.common.base.Optional;
 
 /**
  * Internal operation for describing a table from a GeoTools {@link DataStore}.
+ * <p>
+ * Note this command doesn't require a repository to exist. {@code call()} merely wraps the static
+ * {@link #describe(DataStore, String)} method.
  * 
  * @see DataStore
  */
@@ -39,9 +42,19 @@ public class DescribeOp extends AbstractGeoGigOp<Optional<Map<String, String>>> 
      * Describes a table from the data store that has been assigned.
      * 
      * @return a map that contains all properties and their types from the provided table
+     * @see #describe(DataStore, String)
      */
     @Override
     protected Optional<Map<String, String>> _call() {
+        return DescribeOp.describe(dataStore, table);
+    }
+
+    /**
+     * Describes a table from the data store that has been assigned.
+     * 
+     * @return a map that contains all properties and their types from the provided table
+     */
+    public static Optional<Map<String, String>> describe(DataStore dataStore, String table) {
         if (dataStore == null) {
             throw new GeoToolsOpException(StatusCode.DATASTORE_NOT_DEFINED);
         }
@@ -77,8 +90,8 @@ public class DescribeOp extends AbstractGeoGigOp<Optional<Map<String, String>>> 
 
             Collection<PropertyDescriptor> descriptors = featureType.getDescriptors();
             for (PropertyDescriptor descriptor : descriptors) {
-                propertyMap.put(descriptor.getName().toString(), descriptor.getType().getBinding()
-                        .getSimpleName());
+                propertyMap.put(descriptor.getName().toString(),
+                        descriptor.getType().getBinding().getSimpleName());
             }
         }
 

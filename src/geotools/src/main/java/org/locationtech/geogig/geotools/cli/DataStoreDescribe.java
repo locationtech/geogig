@@ -17,8 +17,9 @@ import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
+import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.geotools.plumbing.DescribeOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 
@@ -30,7 +31,7 @@ import com.google.common.base.Optional;
  * 
  * @see DescribeOp
  */
-@ReadOnly
+@RequiresRepository(false)
 public abstract class DataStoreDescribe extends AbstractCommand implements CLICommand {
 
     /**
@@ -49,19 +50,19 @@ public abstract class DataStoreDescribe extends AbstractCommand implements CLICo
 
         DataStore dataStore = getDataStore();
 
+        Console console = cli.getConsole();
         try {
-            cli.getConsole().println("Fetching table...");
+            console.println("Fetching table...");
 
-            Optional<Map<String, String>> propertyMap = cli.getGeogig().command(DescribeOp.class)
-                    .setTable(table).setDataStore(dataStore).call();
+            Optional<Map<String, String>> propertyMap = DescribeOp.describe(dataStore, table);
 
             if (propertyMap.isPresent()) {
-                cli.getConsole().println("Table : " + table);
-                cli.getConsole().println("----------------------------------------");
+                console.println("Table : " + table);
+                console.println("----------------------------------------");
                 for (Entry<String, String> entry : propertyMap.get().entrySet()) {
-                    cli.getConsole().println("\tProperty  : " + entry.getKey());
-                    cli.getConsole().println("\tType      : " + entry.getValue());
-                    cli.getConsole().println("----------------------------------------");
+                    console.println("\tProperty  : " + entry.getKey());
+                    console.println("\tType      : " + entry.getValue());
+                    console.println("----------------------------------------");
                 }
             } else {
                 throw new CommandFailedException("Could not find the specified table.");
@@ -80,7 +81,7 @@ public abstract class DataStoreDescribe extends AbstractCommand implements CLICo
 
         } finally {
             dataStore.dispose();
-            cli.getConsole().flush();
+            console.flush();
         }
     }
 }

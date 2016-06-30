@@ -102,6 +102,11 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
     private boolean overwrite = true;
 
     /**
+     * If set to true, only create the schema on the destination path, do not actually insert features.
+     */
+    private boolean createSchemaOnly = false;
+    
+    /**
      * If true, it does not overwrite, and modifies the existing features to have the same feature
      * type as the imported table
      */
@@ -230,13 +235,14 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
                     throw new GeoToolsOpException(StatusCode.UNABLE_TO_INSERT);
                 }
             }
-
-            try {
-                insert(workTree, path, featureSource, taskProgress);
-            } catch (GeoToolsOpException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new GeoToolsOpException(e, StatusCode.UNABLE_TO_INSERT);
+            if(!createSchemaOnly){
+                try {
+                    insert(workTree, path, featureSource, taskProgress);
+                } catch (GeoToolsOpException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new GeoToolsOpException(e, StatusCode.UNABLE_TO_INSERT);
+                }
             }
         }
 
@@ -547,6 +553,11 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
      */
     public ImportOp setOverwrite(boolean overwrite) {
         this.overwrite = overwrite;
+        return this;
+    }
+
+    public ImportOp setCreateSchemaOnly(boolean createSchema) {
+        this.createSchemaOnly = createSchema;
         return this;
     }
 

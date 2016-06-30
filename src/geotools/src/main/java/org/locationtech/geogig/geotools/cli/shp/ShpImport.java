@@ -44,6 +44,12 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
     /**
      * do not replace or delete features
      */
+    @Parameter(names = { "--create", "-c" }, description = "Only create the schema, do not actually import its features")
+    boolean onlyCreate;
+
+    /**
+     * do not replace or delete features
+     */
     @Parameter(names = { "--add" }, description = "Do not replace or delete features on the destination path, but just add new ones")
     boolean add;
 
@@ -112,7 +118,8 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
                         .setTable(null).setAlter(alter).setOverwrite(!add)
                         .setDestinationPath(destTable).setDataStore(dataStore)
                         .setFidAttribute(fidAttribute)
-                        .setAdaptToDefaultFeatureType(!forceFeatureType);
+                        .setAdaptToDefaultFeatureType(!forceFeatureType)
+                        .setCreateSchemaOnly(onlyCreate);
 
                 // force the import not to use paging due to a bug in the shapefile datastore
                 command.setUsePaging(false);

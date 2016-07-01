@@ -18,6 +18,7 @@ import org.geotools.data.DataUtilities;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TestName;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
@@ -61,8 +62,12 @@ public class MergeOpTest extends RepositoryTestCase {
 
     private static final String COMMITTER_EMAIL = "groldan@boundlessgeo.com";
 
+    @Rule
+    public TestName testName = new TestName();
+
     @Override
     protected void setUpInternal() throws Exception {
+        System.err.println(testName.getMethodName());
         // These values should be used during a commit to set author/committer
         // TODO: author/committer roles need to be defined better, but for
         // now they are the same thing.

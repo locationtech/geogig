@@ -16,13 +16,9 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.FeatureInfo;
-import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
@@ -37,9 +33,6 @@ import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.CheckMergeScenarioOp;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsWriteOp;
-import org.locationtech.geogig.api.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.api.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.api.plumbing.merge.SaveMergeCommitMessageOp;
@@ -56,8 +49,6 @@ import com.google.common.collect.Lists;
 public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
     public static final String MERGE_MSG = "MERGE_MSG";
-
-    private final static int BUFFER_SIZE = 1000;
 
     private List<ObjectId> commits = new ArrayList<ObjectId>();;
 
@@ -170,15 +161,15 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
      */
     @Override
     protected MergeReport _call() throws RuntimeException {
-
+        final List<ObjectId> commits = this.commits;
         checkArgument(commits.size() > 0, "No commits specified for merge.");
         checkArgument(!(ours && theirs), "Cannot use both --ours and --theirs.");
         checkArgument(!(noFastForward && fastForwardOnly), "Cannot use both --no-ff and --ff-only");
 
         final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
-        checkState(currHead.isPresent(), "Repository has no HEAD, can't rebase.");
+        checkState(currHead.isPresent(), "Repository has no HEAD, can't merge.");
         Ref headRef = currHead.get();
-        ObjectId oursId = headRef.getObjectId();
+        final ObjectId oursId = headRef.getObjectId();// on top of which commit to merge
         // checkState(currHead.get() instanceof SymRef,
         // "Can't rebase from detached HEAD");
         // SymRef headRef = (SymRef) currHead.get();
@@ -187,33 +178,31 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         final ProgressListener progress = getProgressListener();
         progress.started();
 
-        AtomicBoolean fastForward = new AtomicBoolean(true);
-        AtomicBoolean changed = new AtomicBoolean(false);
-
+        MergeStatusBuilder mergeStatusBuilder = new MergeStatusBuilder(context(), ours, commits, progress);
         MergeScenarioReport mergeScenario = null;
 
         List<CommitAncestorPair> pairs = Lists.newArrayList();
 
         List<RevCommit> revCommits = Lists.newArrayList();
-        if (!ObjectId.NULL.equals(headRef.getObjectId())) {
+        if (!headRef.getObjectId().isNull()) {
             revCommits.add(repository().getCommit(headRef.getObjectId()));
         }
         for (ObjectId commitId : commits) {
             revCommits.add(repository().getCommit(commitId));
         }
-        final boolean hasConflictsOrAutomerge;
-        hasConflictsOrAutomerge = command(CheckMergeScenarioOp.class).setCommits(revCommits).call()
-                .booleanValue();
-        checkState(!(hasConflictsOrAutomerge && fastForwardOnly),
+        final boolean mightHaveConflicts;// either there are conflicts or two features modified by
+                                         // different branches might cause conflicts
+        mightHaveConflicts = command(CheckMergeScenarioOp.class).setCommits(revCommits).call();
+        checkState(!(mightHaveConflicts && fastForwardOnly),
                 "The flag --ff-only was specified but no fast forward merge could be executed");
-        if (hasConflictsOrAutomerge && !theirs) {
+        if (mightHaveConflicts && !theirs) {
             checkState(commits.size() < 2,
                     "Conflicted merge.\nCannot merge more than two commits when conflicts exist"
                             + " or features have been modified in several histories");
 
             RevCommit headCommit = repository().getCommit(headRef.getObjectId());
             ObjectId commitId = commits.get(0);
-            checkArgument(!ObjectId.NULL.equals(commitId), "Cannot merge a NULL commit.");
+            checkArgument(!commitId.isNull(), "Cannot merge a NULL commit.");
             checkArgument(repository().commitExists(commitId),
                     "Not a valid commit: " + commitId.toString());
 
@@ -223,81 +212,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
             pairs.add(new CommitAncestorPair(commitId, ancestorCommit.get()));
 
-            // In case there are conflicts
-            StringBuilder conflictMsg = new StringBuilder();
-            StringBuilder mergeMsg = new StringBuilder();
-            Optional<Ref> ref = command(ResolveBranchId.class).setObjectId(commitId).call();
-            if (ref.isPresent()) {
-                mergeMsg.append("Merge branch " + ref.get().getName());
-            } else {
-                mergeMsg.append("Merge commit '" + commitId.toString() + "'. ");
-            }
-            mergeMsg.append("\n\nConflicts:\n");
-            final int maxReportedConflicts = 25;
-            final AtomicInteger reportedConflicts = new AtomicInteger(0);
-
-            final List<Conflict> conflictsBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
-            final List<DiffEntry> diffEntryBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
-
             mergeScenario = command(ReportMergeScenarioOp.class).setMergeIntoCommit(headCommit)
-                    .setToMergeCommit(targetCommit).setConsumer(new MergeScenarioConsumer() {
-
-                        @Override
-                        public void conflicted(Conflict conflict) {
-                            if (!ours) {
-                                conflictsBuffer.add(conflict);
-                                if (conflictsBuffer.size() == BUFFER_SIZE) {
-                                    // Write the conflicts
-                                    command(ConflictsWriteOp.class).setConflicts(conflictsBuffer)
-                                            .call();
-                                    conflictsBuffer.clear();
-                                }
-                            }
-                            if (reportedConflicts.get() < maxReportedConflicts) {
-                                mergeMsg.append("\t" + conflict.getPath() + "\n");
-                                conflictMsg.append(
-                                        "CONFLICT: Merge conflict in " + conflict.getPath() + "\n");
-                                reportedConflicts.incrementAndGet();
-                            }
-                        }
-
-                        @Override
-                        public void unconflicted(DiffEntry diff) {
-                            diffEntryBuffer.add(diff);
-                            if (diffEntryBuffer.size() == BUFFER_SIZE) {
-                                // Stage it
-                                index().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
-                                diffEntryBuffer.clear();
-                            }
-                            changed.set(true);
-                            fastForward.set(false);
-                        }
-
-                        @Override
-                        public void merged(FeatureInfo featureInfo) {
-                            workingTree().insert(NodeRef.parentPath(featureInfo.getPath()),
-                                    featureInfo.getFeature());
-                            Iterator<DiffEntry> unstaged = workingTree().getUnstaged(null);
-                            index().stage(progress, unstaged, 0);
-                            changed.set(true);
-                            fastForward.set(false);
-                        }
-
-                        @Override
-                        public void finished() {
-                            if (conflictsBuffer.size() > 0) {
-                                // Write the conflicts
-                                command(ConflictsWriteOp.class).setConflicts(conflictsBuffer)
-                                        .call();
-                                conflictsBuffer.clear();
-                            }
-                            if (diffEntryBuffer.size() > 0) {
-                                // Stage it
-                                index().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
-                                diffEntryBuffer.clear();
-                            }
-                        }
-                    }).call();
+                    .setToMergeCommit(targetCommit).setConsumer(mergeStatusBuilder).call();
 
             workingTree().updateWorkHead(index().getTree().getId());
 
@@ -308,22 +224,15 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(headCommit.getId())
                         .call();
 
-                if (reportedConflicts.get() > maxReportedConflicts) {
-                    mergeMsg.append("and " + (reportedConflicts.get() - maxReportedConflicts)
-                            + " additional conflicts.\n");
-                    conflictMsg.append(
-                            "and " + (reportedConflicts.get() - maxReportedConflicts) + " more.\n");
-                }
+                String mergeMsg = mergeStatusBuilder.getMergeMessage();
+                String conflictMsg = mergeStatusBuilder.getConflictsMessage();
+                command(SaveMergeCommitMessageOp.class).setMessage(mergeMsg).call();
 
-                command(SaveMergeCommitMessageOp.class).setMessage(mergeMsg.toString()).call();
-                conflictMsg.append(
-                        "Automatic merge failed. Fix conflicts and then commit the result.\n");
-                throw new MergeConflictsException(conflictMsg.toString(), headCommit.getId(),
-                        commitId);
+                throw new MergeConflictsException(conflictMsg, headCommit.getId(), commitId);
 
             }
         } else {
-            checkState(!hasConflictsOrAutomerge || commits.size() < 2,
+            checkState(!mightHaveConflicts || commits.size() < 2,
                     "Conflicted merge.\nCannot merge more than two commits when conflicts exist"
                             + " or features have been modified in several histories");
             for (ObjectId commitId : commits) {
@@ -334,7 +243,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                         "Not a valid commit: " + commitId.toString());
 
                 subProgress.started();
-                if (ObjectId.NULL.equals(headRef.getObjectId())) {
+                if (headRef.getObjectId().isNull()) {
                     // Fast-forward
                     if (headRef instanceof SymRef) {
                         final String currentBranch = ((SymRef) headRef).getTarget();
@@ -350,7 +259,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                     workingTree().updateWorkHead(commitId);
                     index().updateStageHead(commitId);
                     subProgress.complete();
-                    changed.set(true);
+                    mergeStatusBuilder.setChanged(true);
                     continue;
                 }
 
@@ -385,7 +294,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                         workingTree().updateWorkHead(commitId);
                         index().updateStageHead(commitId);
                         subProgress.complete();
-                        changed.set(true);
+                        mergeStatusBuilder.setChanged(true);
                         continue;
                     } else if (ancestorCommit.get().equals(commitId)) {
                         continue;
@@ -397,8 +306,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                         .setNewTree(targetCommit.getId()).setReportTrees(true).call();
                 // stage changes
                 index().stage(new SubProgressListener(subProgress, 100.f), diff, 0);
-                changed.set(true);
-                fastForward.set(false);
+                mergeStatusBuilder.setChanged(true);
+                mergeStatusBuilder.setFastFoward(false);
                 workingTree().updateWorkHead(index().getTree().getId());
 
                 subProgress.complete();
@@ -407,13 +316,13 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
         }
 
-        if (!changed.get()) {
+        if (!mergeStatusBuilder.isChanged()) {
             throw new NothingToCommitException("The branch has already been merged.");
         }
         if (noFastForward) {
-            fastForward.set(false);
+            mergeStatusBuilder.setFastFoward(false);
         }
-        RevCommit mergeCommit = commit(fastForward.get());
+        RevCommit mergeCommit = commit(mergeStatusBuilder.isFastForward());
 
         MergeReport result = new MergeReport(mergeCommit, Optional.fromNullable(mergeScenario),
                 oursId, pairs);

@@ -13,7 +13,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -136,6 +139,27 @@ public class FileConflictsDatabase implements ConflictsDatabase {
             try {
                 final File file = fileOp.get();
                 Files.append(conflict.toString() + "\n", file, Charsets.UTF_8);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+    }
+
+    @Override
+    public void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts) {
+        final Object monitor = resolveConflictsMonitor(namespace);
+        checkState(monitor != null,
+                "Either not inside a repository directory or the staging area is closed");
+        synchronized (monitor) {
+            Optional<File> fileOp = findOrCreateConflictsFile(namespace);
+            checkState(fileOp.isPresent());
+            final File file = fileOp.get();
+            try (OutputStreamWriter writer = new OutputStreamWriter(
+                    new FileOutputStream(file, true), Charsets.UTF_8)) {
+                for (Conflict conflict : conflicts) {
+                    writer.write(conflict.toString());
+                    writer.write('\n');
+                }
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }

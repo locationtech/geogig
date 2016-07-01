@@ -39,6 +39,9 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+
 @RunWith(MockitoJUnitRunner.class)
 public class PGConflictsDatabaseTest {
 
@@ -120,6 +123,26 @@ public class PGConflictsDatabaseTest {
         assertFalse(conflicts.getConflict(ns, "not/a/conflict").isPresent());
         assertFalse(conflicts.getConflict(null, c2.getPath()).isPresent());
         assertFalse(conflicts.getConflict(null, c3.getPath()).isPresent());
+    }
+
+    @Test
+    public void testAddConflicts() {
+        final String ns = null;
+        Iterable<Conflict> list = ImmutableList.of(c1, c2, c3);
+        conflicts.addConflicts(ns, list);
+        assertEquals(c1, conflicts.getConflict(ns, c1.getPath()).get());
+        assertEquals(c2, conflicts.getConflict(ns, c2.getPath()).get());
+        assertEquals(c3, conflicts.getConflict(ns, c3.getPath()).get());
+    }
+
+    @Test
+    public void testAddConflictsNS() {
+        final String ns = UUID.randomUUID().toString();
+        Iterable<Conflict> list = ImmutableList.of(c1, c2, c3);
+        conflicts.addConflicts(ns, list);
+        assertEquals(c1, conflicts.getConflict(ns, c1.getPath()).get());
+        assertEquals(c2, conflicts.getConflict(ns, c2.getPath()).get());
+        assertEquals(c3, conflicts.getConflict(ns, c3.getPath()).get());
     }
 
     @Test

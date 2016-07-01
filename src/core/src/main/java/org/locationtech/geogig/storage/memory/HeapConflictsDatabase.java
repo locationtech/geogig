@@ -50,7 +50,8 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
      * @return the list of conflicts
      */
     @Override
-    public List<Conflict> getConflicts(@Nullable String namespace, @Nullable final String pathFilter) {
+    public List<Conflict> getConflicts(@Nullable String namespace,
+            @Nullable final String pathFilter) {
         if (namespace == null) {
             namespace = "root";
         }
@@ -61,14 +62,14 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
         if (pathFilter == null) {
             return ImmutableList.copyOf(conflicts.get(namespace).values());
         }
-        UnmodifiableIterator<Conflict> filtered = Iterators.filter(conflicts.get(namespace)
-                .values().iterator(), new Predicate<Conflict>() {
-            @Override
-            public boolean apply(@Nullable Conflict c) {
-                return (c.getPath().startsWith(pathFilter));
-            }
+        UnmodifiableIterator<Conflict> filtered = Iterators
+                .filter(conflicts.get(namespace).values().iterator(), new Predicate<Conflict>() {
+                    @Override
+                    public boolean apply(@Nullable Conflict c) {
+                        return (c.getPath().startsWith(pathFilter));
+                    }
 
-        });
+                });
         return ImmutableList.copyOf(filtered);
     }
 
@@ -90,6 +91,19 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
         }
         conflictMap.put(conflict.getPath(), conflict);
 
+    }
+
+    @Override
+    public void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts) {
+        if (namespace == null) {
+            namespace = "root";
+        }
+        Map<String, Conflict> conflictMap = this.conflicts.get(namespace);
+        if (conflictMap == null) {
+            conflictMap = Maps.newHashMap();
+            this.conflicts.put(namespace, conflictMap);
+        }
+        conflictMap.putAll(Maps.uniqueIndex(conflicts, (c) -> c.getPath()));
     }
 
     /**

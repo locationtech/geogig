@@ -57,6 +57,7 @@ public interface ConflictsDatabase {
      */
     public void addConflict(@Nullable String namespace, Conflict conflict);
 
+    public void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts);
     /**
      * Removes a conflict from the database.
      * 

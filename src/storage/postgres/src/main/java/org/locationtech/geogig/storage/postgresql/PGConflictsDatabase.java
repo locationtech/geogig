@@ -119,6 +119,48 @@ class PGConflictsDatabase implements ConflictsDatabase {
     }
 
     @Override
+    public void addConflicts(@Nullable String ns, Iterable<Conflict> conflicts) {
+        Preconditions.checkNotNull(conflicts);
+        final String namespace = namespace(ns);
+
+        final String sql = format(
+                "INSERT INTO %s (repository, namespace, path, ancestor, ours, theirs) VALUES (?,?,?,?,?,?)",
+                conflictsTable);
+
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try (PreparedStatement ps = cx.prepareStatement(sql)) {
+                for (Conflict conflict : conflicts) {
+                    final String path = conflict.getPath();
+                    Preconditions.checkNotNull(path);
+
+                    ps.setString(1, repositoryId);
+                    ps.setString(2, namespace);
+                    ps.setString(3, path);
+                    ObjectId ancestor = conflict.getAncestor();
+                    if (ancestor.isNull()) {
+                        ps.setNull(4, java.sql.Types.OTHER, "bytea");
+                    } else {
+                        ps.setBytes(4, ancestor.getRawValue());
+                    }
+                    ps.setBytes(5, conflict.getOurs().getRawValue());
+                    ps.setBytes(6, conflict.getTheirs().getRawValue());
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+    }
+
+    @Override
     public Optional<Conflict> getConflict(@Nullable String namespace, String path) {
         List<Conflict> conflicts = getConflicts(namespace(namespace), path);
         if (conflicts.isEmpty()) {

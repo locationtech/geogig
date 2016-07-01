@@ -46,7 +46,8 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
      * @param database the original conflicts database
      * @param transactionId the transaction id
      */
-    public TransactionConflictsDatabase(final ConflictsDatabase database, final UUID transactionId) {
+    public TransactionConflictsDatabase(final ConflictsDatabase database,
+            final UUID transactionId) {
         this.database = database;
         this.txNamespace = append(append(TRANSACTIONS_PREFIX, transactionId.toString()),
                 "conflicts");
@@ -86,6 +87,11 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
     @Override
     public void addConflict(@Nullable String namespace, Conflict conflict) {
         database.addConflict(txNamespace, conflict);
+    }
+
+    @Override
+    public void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts) {
+        database.addConflicts(txNamespace, conflicts);
     }
 
     /**

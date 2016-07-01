@@ -103,6 +103,11 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
         database.removeConflict(txNamespace, path);
     }
 
+    @Override
+    public void removeConflicts(@Nullable String namespace, Iterable<String> paths) {
+        database.removeConflicts(txNamespace, paths);
+    }
+
     /**
      * Pass through to {@link StagingDatabase}, replacing the namespace with the transaction
      * namespace.

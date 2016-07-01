@@ -37,6 +37,7 @@ import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.di.Singleton;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.PersistedIterable;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -175,78 +176,87 @@ public class Index implements StagingArea {
         Map<String, RevTreeBuilder> parentTress = Maps.newHashMap();
         Map<String, ObjectId> parentMetadataIds = Maps.newHashMap();
         Set<String> removedTrees = Sets.newHashSet();
-        final ConflictsDatabase conflictsDb = conflictsDatabase();
-        final boolean hasConflicts = conflictsDb.hasConflicts(null);
-        while (unstaged.hasNext()) {
-            final DiffEntry diff = unstaged.next();
-            final String fullPath = diff.oldPath() == null ? diff.newPath() : diff.oldPath();
-            final String parentPath = NodeRef.parentPath(fullPath);
-            /*
-             * TODO: revisit, ideally the list of diff entries would come with one single entry for
-             * the whole removed tree instead of that one and every single children of it.
-             */
-            if (removedTrees.contains(parentPath)) {
-                continue;
-            }
-            if (null == parentPath) {
-                // it is the root tree that's been changed, update head and ignore anything else
-                ObjectId newRoot = diff.newObjectId();
-                updateStageHead(newRoot);
-                progress.setProgress(100f);
-                progress.complete();
-                return;
-            }
-            RevTreeBuilder parentTree = getParentTree(currentIndexHead, parentPath, parentTress,
-                    parentMetadataIds);
 
-            i++;
-            progress.setProgress((float) (i * 100) / numChanges);
+        PersistedIterable<String> pathsForConflictCleanup;
+        pathsForConflictCleanup = PersistedIterable.newStringIterable(1000, true);
 
-            NodeRef oldObject = diff.getOldObject();
-            NodeRef newObject = diff.getNewObject();
-            if (newObject == null) {
-                // Delete
-                parentTree.remove(oldObject.name());
-                if (TYPE.TREE.equals(oldObject.getType())) {
-                    removedTrees.add(oldObject.path());
+        try {
+            while (unstaged.hasNext()) {
+                final DiffEntry diff = unstaged.next();
+                final String fullPath = diff.oldPath() == null ? diff.newPath() : diff.oldPath();
+                final String parentPath = NodeRef.parentPath(fullPath);
+                pathsForConflictCleanup.add(fullPath);
+                /*
+                 * TODO: revisit, ideally the list of diff entries would come with one single entry
+                 * for the whole removed tree instead of that one and every single children of it.
+                 */
+                if (removedTrees.contains(parentPath)) {
+                    continue;
                 }
-            } else if (oldObject == null) {
-                // Add
-                Node node = newObject.getNode();
-                parentTree.put(node);
-                parentMetadataIds.put(newObject.path(), newObject.getMetadataId());
-            } else {
-                // Modify
-                Node node = newObject.getNode();
-                parentTree.put(node);
+                if (null == parentPath) {
+                    // it is the root tree that's been changed, update head and ignore anything else
+                    ObjectId newRoot = diff.newObjectId();
+                    updateStageHead(newRoot);
+                    progress.setProgress(100f);
+                    progress.complete();
+                    return;
+                }
+                RevTreeBuilder parentTree = getParentTree(currentIndexHead, parentPath, parentTress,
+                        parentMetadataIds);
+
+                i++;
+                progress.setProgress((float) (i * 100) / numChanges);
+
+                NodeRef oldObject = diff.getOldObject();
+                NodeRef newObject = diff.getNewObject();
+                if (newObject == null) {
+                    // Delete
+                    parentTree.remove(oldObject.name());
+                    if (TYPE.TREE.equals(oldObject.getType())) {
+                        removedTrees.add(oldObject.path());
+                    }
+                } else if (oldObject == null) {
+                    // Add
+                    Node node = newObject.getNode();
+                    parentTree.put(node);
+                    parentMetadataIds.put(newObject.path(), newObject.getMetadataId());
+                } else {
+                    // Modify
+                    Node node = newObject.getNode();
+                    parentTree.put(node);
+                }
             }
+
+            ObjectId newRootTree = currentIndexHead.getId();
+
+            ObjectStore objectDatabase = context.objectDatabase();
+            for (Map.Entry<String, RevTreeBuilder> entry : parentTress.entrySet()) {
+                String changedTreePath = entry.getKey();
+                RevTreeBuilder changedTreeBuilder = entry.getValue();
+                RevTree changedTree = changedTreeBuilder.build();
+                ObjectId parentMetadataId = parentMetadataIds.get(changedTreePath);
+                if (NodeRef.ROOT.equals(changedTreePath)) {
+                    // root
+                    objectDatabase.put(changedTree);
+                    newRootTree = changedTree.getId();
+                } else {
+                    // parentMetadataId = parentMetadataId == null ?
+                    Supplier<RevTreeBuilder> rootTreeSupplier = getTreeSupplier();
+                    newRootTree = context.command(WriteBack.class).setAncestor(rootTreeSupplier)
+                            .setChildPath(changedTreePath).setMetadataId(parentMetadataId)
+                            .setTree(changedTree).call();
+                }
+                updateStageHead(newRootTree);
+            }
+            // remove conflicts once the STAGE_HEAD was updated
+            final ConflictsDatabase conflictsDb = conflictsDatabase();
+            final boolean hasConflicts = conflictsDb.hasConflicts(null);
             if (hasConflicts) {
-                conflictsDb.removeConflict(null, fullPath);
+                conflictsDb.removeConflicts(null, pathsForConflictCleanup);
             }
+        } finally {
+            pathsForConflictCleanup.close();
         }
-
-        ObjectId newRootTree = currentIndexHead.getId();
-
-        ObjectStore objectDatabase = context.objectDatabase();
-        for (Map.Entry<String, RevTreeBuilder> entry : parentTress.entrySet()) {
-            String changedTreePath = entry.getKey();
-            RevTreeBuilder changedTreeBuilder = entry.getValue();
-            RevTree changedTree = changedTreeBuilder.build();
-            ObjectId parentMetadataId = parentMetadataIds.get(changedTreePath);
-            if (NodeRef.ROOT.equals(changedTreePath)) {
-                // root
-                objectDatabase.put(changedTree);
-                newRootTree = changedTree.getId();
-            } else {
-                // parentMetadataId = parentMetadataId == null ?
-                Supplier<RevTreeBuilder> rootTreeSupplier = getTreeSupplier();
-                newRootTree = context.command(WriteBack.class).setAncestor(rootTreeSupplier)
-                        .setChildPath(changedTreePath).setMetadataId(parentMetadataId)
-                        .setTree(changedTree).call();
-            }
-            updateStageHead(newRootTree);
-        }
-
         progress.complete();
     }
 

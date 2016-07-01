@@ -257,6 +257,37 @@ class PGConflictsDatabase implements ConflictsDatabase {
     }
 
     @Override
+    public void removeConflicts(final @Nullable String ns, final Iterable<String> paths) {
+        checkNotNull(paths, "paths is null");
+        final String namespace = namespace(ns);
+
+        final String sql = format(
+                "DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
+                conflictsTable);
+
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try (PreparedStatement ps = cx.prepareStatement(sql)) {
+                for (String path : paths) {
+                    ps.setString(1, repositoryId);
+                    ps.setString(2, namespace);
+                    ps.setString(3, path);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+    }
+
+    @Override
     public void removeConflicts(@Nullable final String ns) {
         final String namespace = namespace(ns);
         final String sql;

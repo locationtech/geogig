@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2014 Boundless and others.
+/* Copyright (c) 2012-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -14,9 +14,9 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,6 +28,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
 
@@ -319,6 +320,66 @@ public class FileConflictsDatabase implements ConflictsDatabase {
             File file = resolveConflictsFile(namespace);
             if (file != null && file.exists()) {
                 checkState(file.delete(), "Unable to delete conflicts file %s", file);
+            }
+        }
+    }
+
+    @Override
+    public void removeConflicts(@Nullable String namespace, Iterable<String> paths) {
+        checkNotNull(paths, "paths is null");
+        final Object monitor = resolveConflictsMonitor(namespace);
+        checkState(monitor != null,
+                "Either not inside a repository directory or the staging area is closed");
+        synchronized (monitor) {
+            final File conflictsFile = resolveConflictsFile(namespace);
+            if (conflictsFile == null || !conflictsFile.exists()) {
+                return;
+            }
+
+            try {
+                final File tmpFile = File.createTempFile("conflicts", ".tmp",
+                        conflictsFile.getParentFile());
+                try (OutputStreamWriter writer = new OutputStreamWriter(
+                        new FileOutputStream(tmpFile), Charsets.UTF_8)) {
+
+                    HashSet<String> pathSet = Sets.newHashSet(paths);
+
+                    Files.readLines(conflictsFile, Charsets.UTF_8, new LineProcessor<Void>() {
+                        @Override
+                        public Void getResult() {
+                            return null;
+                        }
+
+                        @Override
+                        public boolean processLine(String line) throws IOException {
+                            Conflict c = Conflict.valueOf(line);
+                            String path = c.getPath();
+                            boolean removed = pathSet.remove(path);
+                            if (!removed) {
+                                writer.write(line);
+                                writer.write('\n');
+                            }
+                            boolean continueProcessing = !pathSet.isEmpty();
+                            return continueProcessing;
+                        }
+                    });
+
+                }
+                File backup = new File(conflictsFile.getParentFile(),
+                        conflictsFile.getName() + ".bak");
+                if (backup.exists()) {
+                    backup.delete();
+                }
+                Files.move(conflictsFile, backup);
+                try {
+                    Files.move(tmpFile, conflictsFile);
+                    backup.delete();
+                } catch (IOException cantMove) {
+                    Files.move(backup, conflictsFile);
+                    throw Throwables.propagate(cantMove);
+                }
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
         }
     }

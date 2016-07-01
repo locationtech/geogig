@@ -34,6 +34,7 @@ import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.CheckMergeScenarioOp;
 import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
+import org.locationtech.geogig.api.plumbing.merge.MergeStatusBuilder;
 import org.locationtech.geogig.api.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.api.plumbing.merge.SaveMergeCommitMessageOp;
 
@@ -50,7 +51,10 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
     public static final String MERGE_MSG = "MERGE_MSG";
 
-    private List<ObjectId> commits = new ArrayList<ObjectId>();;
+    /**
+     * The commits to merge on top of the current HEAD. If more than one then it's an octopus merge.
+     */
+    private List<ObjectId> commits = new ArrayList<ObjectId>();
 
     private String message = null;
 
@@ -85,8 +89,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
      */
     public MergeOp addCommit(final Supplier<ObjectId> commit) {
         checkNotNull(commit);
-
-        this.commits.add(commit.get());
+        this.commits.add(checkNotNull(commit.get()));
         return this;
     }
 
@@ -178,7 +181,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         final ProgressListener progress = getProgressListener();
         progress.started();
 
-        MergeStatusBuilder mergeStatusBuilder = new MergeStatusBuilder(context(), ours, commits, progress);
+        MergeStatusBuilder mergeStatusBuilder = new MergeStatusBuilder(context(), ours, commits,
+                progress);
         MergeScenarioReport mergeScenario = null;
 
         List<CommitAncestorPair> pairs = Lists.newArrayList();
@@ -237,10 +241,6 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                             + " or features have been modified in several histories");
             for (ObjectId commitId : commits) {
                 ProgressListener subProgress = subProgress(100.f / commits.size());
-
-                checkArgument(!ObjectId.NULL.equals(commitId), "Cannot merge a NULL commit.");
-                checkArgument(repository().commitExists(commitId),
-                        "Not a valid commit: " + commitId.toString());
 
                 subProgress.started();
                 if (headRef.getObjectId().isNull()) {

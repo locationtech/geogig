@@ -73,4 +73,5 @@ public interface ConflictsDatabase {
      */
     public void removeConflicts(@Nullable String namespace);
 
+    public void removeConflicts(@Nullable String namespace, Iterable<String> paths);
 }

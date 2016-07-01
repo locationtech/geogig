@@ -123,6 +123,13 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
         }
     }
 
+    @Override
+    public void removeConflicts(@Nullable String namespace, Iterable<String> paths) {
+        for (String path : paths) {
+            removeConflict(namespace, path);
+        }
+    }
+
     /**
      * Gets the specified conflict from the database.
      * 

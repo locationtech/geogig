@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.geotools.cli.geopkg;
 
+import java.io.File;
+
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
@@ -17,6 +19,7 @@ import org.locationtech.geogig.geotools.plumbing.DescribeOp;
 
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
+import com.google.common.base.Preconditions;
 
 /**
  * Describes a table from a Geopackage database.
@@ -38,6 +41,8 @@ public class GeopkgDescribe extends DataStoreDescribe implements CLICommand {
 
     @Override
     protected DataStore getDataStore() {
+        File databaseFile = new File(commonArgs.database);
+        Preconditions.checkArgument(databaseFile.exists(), "Database file not found.");
         return support.getDataStore(commonArgs);
     }
 

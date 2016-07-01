@@ -24,6 +24,8 @@ import org.locationtech.geogig.repository.Repository;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 /**
  * Pulls changes from a geopackage audit log into the current branch
@@ -41,26 +43,28 @@ public class GeopkgPull extends AbstractCommand {
 
     @Parameter(names = { "-t",
             "--table" }, description = "Feature table to import.  Required if tables are from multiple commits.")
-    private String table = null;
+    String table = null;
 
+    @VisibleForTesting
     @Parameter(names = { "-m", "--message" }, description = "Commit message to ")
-    private String commitMessage;
+    String commitMessage;
 
+    @VisibleForTesting
     @Parameter(names = { "-n", "--no-commit" }, description = "Do not create a commit from the audit log, just import to WORK_HEAD", arity = 0)
-    private boolean noCommit = false;
+    boolean noCommit = false;
 
     final GeopkgSupport support = new GeopkgSupport();
 
     @Override
     protected void runInternal(GeogigCLI cli) throws InvalidParameterException,
             CommandFailedException, IOException {
-
         Repository repository = cli.getGeogig().getRepository();
-        final File file = new File(commonArgs.database);
+        File databaseFile = new File(commonArgs.database);
+        Preconditions.checkArgument(databaseFile.exists(), "Database file not found.");
 
         ProgressListener listener = cli.getProgressListener();
         try {
-            repository.command(GeopkgAuditImport.class).setDatabase(file)
+            repository.command(GeopkgAuditImport.class).setDatabase(databaseFile)
                     .setCommitMessage(commitMessage).setNoCommit(noCommit).setTable(table)
                     .setProgressListener(listener).call();
 

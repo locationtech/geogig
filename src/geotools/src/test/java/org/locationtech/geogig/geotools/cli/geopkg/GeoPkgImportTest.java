@@ -9,31 +9,23 @@
  */
 package org.locationtech.geogig.geotools.cli.geopkg;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.collect.Lists;
 
-public class GeoPkgImportTest extends Assert {
+public class GeoPkgImportTest extends RepositoryTestCase {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -43,16 +35,16 @@ public class GeoPkgImportTest extends Assert {
 
     private GeogigCLI cli;
 
-    @Before
-    public void setUp() throws Exception {
+    @Override
+    public void setUpInternal() throws Exception {
         Console consoleReader = new Console().disableAnsi();
-        cli = spy(new GeogigCLI(consoleReader));
+        cli = new GeogigCLI(consoleReader);
 
-        setUpGeogig(cli);
+        cli.setGeogig(geogig);
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    public void tearDownInternal() throws Exception {
         cli.close();
     }
 
@@ -110,18 +102,6 @@ public class GeoPkgImportTest extends Assert {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Database file not found.");
         importCommand.run(cli);
-    }
-
-    private void setUpGeogig(GeogigCLI cli) throws Exception {
-        final File userhome = tempFolder.newFolder("mockUserHomeDir");
-        final File workingDir = tempFolder.newFolder("mockWorkingDir");
-        tempFolder.newFolder("mockWorkingDir", ".geogig");
-
-        final Platform platform = mock(Platform.class);
-        when(platform.pwd()).thenReturn(workingDir);
-        when(platform.getUserHome()).thenReturn(userhome);
-
-        cli.setPlatform(platform);
     }
 
 }

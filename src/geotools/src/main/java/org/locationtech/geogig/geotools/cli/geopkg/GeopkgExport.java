@@ -35,6 +35,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 
@@ -55,8 +56,9 @@ public class GeopkgExport extends DataStoreExport implements CLICommand {
 
     final GeopkgSupport support = new GeopkgSupport();
 
+    @VisibleForTesting
     @Parameter(names = { "-i", "--interchange" }, description = "Export as geogig mobile interchange format")
-    private boolean interchangeFormat;
+    boolean interchangeFormat;
 
     @Override
     protected DataStore getDataStore() {
@@ -89,8 +91,6 @@ public class GeopkgExport extends DataStoreExport implements CLICommand {
 
             } catch (Exception e) {
                 throw new CommandFailedException("Unable to export: " + e.getMessage(), e);
-            } finally {
-                cli.close();
             }
         }
     }

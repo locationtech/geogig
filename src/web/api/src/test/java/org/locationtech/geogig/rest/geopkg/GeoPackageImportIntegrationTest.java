@@ -337,7 +337,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
     @Test
     public void testImportInterchange() throws Throwable {
         // get a DB file to import
-        GeoPackageTestSupport support = new GeoPackageTestSupport();
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport();
         File file = support.createEmptyDatabase();
 
         MemoryDataStore memStore = TestData.newMemoryDataStore();
@@ -425,7 +425,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
     @Test
     public void testImportInterchangeOnBranch() throws Throwable {
         // get a DB file to import
-        GeoPackageTestSupport support = new GeoPackageTestSupport();
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport();
         File file = support.createEmptyDatabase();
 
         MemoryDataStore memStore = TestData.newMemoryDataStore();
@@ -520,7 +520,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
     @Test
     public void testImportInterchangeConflicts() throws Throwable {
         // get a DB file to import
-        GeoPackageTestSupport support = new GeoPackageTestSupport();
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport();
         File file = support.createEmptyDatabase();
 
         MemoryDataStore memStore = TestData.newMemoryDataStore();
@@ -640,7 +640,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
     }
 
     private File generateDbFile() throws Exception {
-        GeoPackageTestSupport support = new GeoPackageTestSupport();
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport();
 
         File file = support.createDefaultTestData();
 

@@ -35,7 +35,7 @@ public class GeopkgDataStoreAuditImportOp extends DataStoreImportOp<GeopkgImport
         try {
             result = command(GeopkgAuditImport.class).setDatabase(geopackage)
                     .setAuthorName(authorName).setAuthorEmail(authorEmail)
-                    .setCommitMessage(commitMessage).setNoCommit(false).setTable(table).call();
+                    .setCommitMessage(commitMessage).setTable(table).call();
 
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new CommandFailedException(e.getMessage(), e);

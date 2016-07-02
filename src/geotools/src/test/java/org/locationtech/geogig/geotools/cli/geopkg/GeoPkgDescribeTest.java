@@ -46,11 +46,13 @@ public class GeoPkgDescribeTest extends Assert {
 
     private Console consoleReader;
 
+    private GeoPackageTestSupport support;
+
     @Before
     public void setUp() throws Exception {
         consoleReader = spy(new Console().disableAnsi());
         cli = spy(new GeogigCLI(consoleReader));
-
+        support = new GeoPackageTestSupport();
         setUpGeogig(cli);
     }
 
@@ -62,7 +64,7 @@ public class GeoPkgDescribeTest extends Assert {
     @Test
     public void testDescribe() throws Exception {
         GeopkgDescribe describeCommand = new GeopkgDescribe();
-        describeCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        describeCommand.commonArgs.database = support.createDefaultTestData().getAbsolutePath();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         describeCommand.run(cli);
@@ -71,7 +73,7 @@ public class GeoPkgDescribeTest extends Assert {
     @Test
     public void testDescribeHelp() throws Exception {
         GeopkgDescribe describeCommand = new GeopkgDescribe();
-        describeCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        describeCommand.commonArgs.database = support.newFile().getAbsolutePath();
         describeCommand.help = true;
         describeCommand.run(cli);
     }
@@ -88,7 +90,7 @@ public class GeoPkgDescribeTest extends Assert {
     @Test
     public void testDescribeNonexistentTable() throws Exception {
         GeopkgDescribe describeCommand = new GeopkgDescribe();
-        describeCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        describeCommand.commonArgs.database = support.createDefaultTestData().getAbsolutePath();
         describeCommand.table = "nonexistent";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(CommandFailedException.class);
@@ -98,7 +100,7 @@ public class GeoPkgDescribeTest extends Assert {
     @Test
     public void testNoTable() throws Exception {
         GeopkgDescribe describeCommand = new GeopkgDescribe();
-        describeCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        describeCommand.commonArgs.database = support.newFile().getAbsolutePath();
         describeCommand.table = "";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(CommandFailedException.class);
@@ -108,7 +110,7 @@ public class GeoPkgDescribeTest extends Assert {
     @Test
     public void testNullDataStore() throws Exception {
         GeopkgDescribe describeCommand = new GeopkgDescribe();
-        describeCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        describeCommand.commonArgs.database = support.newFile().getAbsolutePath();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
@@ -119,7 +121,7 @@ public class GeoPkgDescribeTest extends Assert {
     public void testDescribeException() throws Exception {
         when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
         GeopkgDescribe describeCommand = new GeopkgDescribe();
-        describeCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        describeCommand.commonArgs.database = support.newFile().getAbsolutePath();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
@@ -131,7 +133,7 @@ public class GeoPkgDescribeTest extends Assert {
         doThrow(new IOException("Exception")).when(consoleReader).flush();
 
         GeopkgDescribe describeCommand = new GeopkgDescribe();
-        describeCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        describeCommand.commonArgs.database = support.newFile().getAbsolutePath();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(Exception.class);

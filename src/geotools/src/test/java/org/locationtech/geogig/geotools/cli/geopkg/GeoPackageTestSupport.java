@@ -7,22 +7,18 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.rest.geopkg;
+package org.locationtech.geogig.geotools.cli.geopkg;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.locationtech.geogig.web.api.TestData.line1;
-import static org.locationtech.geogig.web.api.TestData.line2;
-import static org.locationtech.geogig.web.api.TestData.line3;
-import static org.locationtech.geogig.web.api.TestData.linesType;
-import static org.locationtech.geogig.web.api.TestData.point1;
-import static org.locationtech.geogig.web.api.TestData.point2;
-import static org.locationtech.geogig.web.api.TestData.point3;
-import static org.locationtech.geogig.web.api.TestData.pointsType;
-import static org.locationtech.geogig.web.api.TestData.poly1;
-import static org.locationtech.geogig.web.api.TestData.poly2;
-import static org.locationtech.geogig.web.api.TestData.poly3;
-import static org.locationtech.geogig.web.api.TestData.polysType;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines1;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines2;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines3;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.linesType;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points1;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points2;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.pointsType;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,8 +47,10 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
+import org.locationtech.geogig.cli.test.functional.TestFeatures;
 import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
-import org.locationtech.geogig.web.api.TestData;
+import org.locationtech.geogig.geotools.test.storage.MemoryDataStoreWithProvidedFIDSupport;
+import org.opengis.feature.Feature;
 import org.opengis.feature.GeometryAttribute;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
@@ -112,20 +110,31 @@ public class GeoPackageTestSupport {
         return dataStore;
     }
 
+    public void exportToFile(File file, String tableName, ImmutableList<Feature> features)
+            throws Exception {
+        MemoryDataStore memStore = new MemoryDataStoreWithProvidedFIDSupport();
+        memStore.addFeatures(features);
+        DataStore gpkgStore = createDataStore(file);
+        try {
+            export(memStore.getFeatureSource(tableName), gpkgStore);
+        } finally {
+            gpkgStore.dispose();
+        }
+    }
+
     public File createDefaultTestData() throws Exception {
 
         File file = createEmptyDatabase();
 
-        MemoryDataStore memStore = TestData.newMemoryDataStore();
-        memStore.addFeatures(ImmutableList.of(point1, point2, point3));
-        memStore.addFeatures(ImmutableList.of(line1, line2, line3));
-        memStore.addFeatures(ImmutableList.of(poly1, poly2, poly3));
+        MemoryDataStore memStore = new MemoryDataStoreWithProvidedFIDSupport();
+        TestFeatures.setupFeatures();
+        memStore.addFeatures(ImmutableList.of(points1, points2, points3));
+        memStore.addFeatures(ImmutableList.of(lines1, lines2, lines3));
 
         DataStore gpkgStore = createDataStore(file);
         try {
             export(memStore.getFeatureSource(pointsType.getName().getLocalPart()), gpkgStore);
             export(memStore.getFeatureSource(linesType.getName().getLocalPart()), gpkgStore);
-            export(memStore.getFeatureSource(polysType.getName().getLocalPart()), gpkgStore);
         } finally {
             gpkgStore.dispose();
         }

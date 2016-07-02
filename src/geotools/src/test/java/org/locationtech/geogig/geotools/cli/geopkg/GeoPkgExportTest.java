@@ -10,8 +10,6 @@
 package org.locationtech.geogig.geotools.cli.geopkg;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -26,7 +24,6 @@ import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +42,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -55,6 +51,8 @@ public class GeoPkgExportTest extends RepositoryTestCase {
     public ExpectedException exception = ExpectedException.none();
 
     private GeogigCLI cli;
+
+    private GeoPackageTestSupport support;
 
     @Override
     public void setUpInternal() throws Exception {
@@ -76,6 +74,8 @@ public class GeoPkgExportTest extends RepositoryTestCase {
         insertAndAdd(lines3);
 
         geogig.command(CommitOp.class).call();
+
+        support = new GeoPackageTestSupport();
     }
 
     @Override
@@ -86,7 +86,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
     @Test
     public void testExport() throws Exception {
         GeopkgExport exportCommand = new GeopkgExport();
-        File geoPkgFile = new File(geogig.getPlatform().pwd(), "TestPoints.gpkg");
+        File geoPkgFile = support.newFile();
         String geoPkgFileName = geoPkgFile.getAbsolutePath();
         exportCommand.args = Arrays.asList("Points", "Points");
         exportCommand.commonArgs.database = geoPkgFileName;
@@ -106,8 +106,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
     @Test
     public void testExportWithNullFeatureType() throws Exception {
         GeopkgExport exportCommand = new GeopkgExport();
-        String geoPkgFileName = new File(geogig.getPlatform().pwd(), "TestPoints.gpkg")
-                .getAbsolutePath();
+        String geoPkgFileName = support.newFile().getAbsolutePath();
         exportCommand.args = Arrays.asList(null, "Points");
         exportCommand.commonArgs.database = geoPkgFileName;
         exception.expect(InvalidParameterException.class);
@@ -117,8 +116,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
     @Test
     public void testExportWithInvalidFeatureType() throws Exception {
         GeopkgExport exportCommand = new GeopkgExport();
-        String geoPkgFileName = new File(geogig.getPlatform().pwd(), "TestPoints.gpkg")
-                .getAbsolutePath();
+        String geoPkgFileName = support.newFile().getAbsolutePath();
         exportCommand.args = Arrays.asList("invalidType", "Points");
         exportCommand.commonArgs.database = geoPkgFileName;
         exception.expect(InvalidParameterException.class);
@@ -128,7 +126,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
     @Test
     public void testExportToFileThatAlreadyExists() throws Exception {
         GeopkgExport exportCommand = new GeopkgExport();
-        File geoPkgFile = new File(geogig.getPlatform().pwd(), "TestPoints.gpkg");
+        File geoPkgFile = support.newFile();
         String geoPkgFileName = geoPkgFile.getAbsolutePath();
 
         exportCommand.args = Arrays.asList("WORK_HEAD:Points", "Points");
@@ -162,7 +160,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
     @Test
     public void testExportToFileThatAlreadyExistsWithOverwrite() throws Exception {
         GeopkgExport exportCommand = new GeopkgExport();
-        File geoPkgFile = new File(geogig.getPlatform().pwd(), "TestPoints.gpkg");
+        File geoPkgFile = support.newFile();
         String geoPkgFileName = geoPkgFile.getAbsolutePath();
         exportCommand.args = Arrays.asList("Points", "Points");
         exportCommand.commonArgs.database = geoPkgFileName;
@@ -188,7 +186,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
     @Test
     public void testExportInterchangeFormat() throws Exception {
         GeopkgExport exportCommand = new GeopkgExport();
-        File geoPkgFile = new File(geogig.getPlatform().pwd(), "TestPoints.gpkg");
+        File geoPkgFile = support.newFile();
         String geoPkgFileName = geoPkgFile.getAbsolutePath();
         ObjectId headCommitId = cli.getGeogig().command(RevObjectParse.class).setRefSpec("HEAD")
                 .call(RevCommit.class).get().getId();
@@ -226,25 +224,8 @@ public class GeoPkgExportTest extends RepositoryTestCase {
     }
 
     private DataStore store(File result) throws InterruptedException, ExecutionException {
-
         assertNotNull(result);
-
-        final GeoPkgDataStoreFactory factory = new GeoPkgDataStoreFactory();
-
-        final Map<String, Serializable> params = ImmutableMap.of(GeoPkgDataStoreFactory.DBTYPE.key,
-                "geopkg", GeoPkgDataStoreFactory.DATABASE.key, result.getAbsolutePath());
-
-        DataStore dataStore;
-        try {
-            dataStore = factory.createDataStore(params);
-        } catch (IOException ioe) {
-            throw new RuntimeException("Unable to create GeoPkgDataStore", ioe);
-        }
-        if (null == dataStore) {
-            throw new RuntimeException("Unable to create GeoPkgDataStore");
-        }
-
-        return dataStore;
+        return support.createDataStore(result);
     }
 
     private void assertFeatures(DataStore store, String typeName, Feature... expected)

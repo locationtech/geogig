@@ -10,12 +10,9 @@
 package org.locationtech.geogig.geotools.cli.geopkg;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.geotools.data.DataStore;
@@ -23,7 +20,6 @@ import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -34,7 +30,7 @@ import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.MergeConflictsException;
+import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
@@ -42,7 +38,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 public class GeoPkgPullTest extends RepositoryTestCase {
@@ -55,6 +50,8 @@ public class GeoPkgPullTest extends RepositoryTestCase {
 
     private GeogigCLI cli;
 
+    private GeoPackageTestSupport support;
+
     @Override
     public void setUpInternal() throws Exception {
         setupCLI();
@@ -65,6 +62,8 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         cli = new GeogigCLI(consoleReader);
 
         cli.setGeogig(geogig);
+
+        support = new GeoPackageTestSupport();
     }
 
     @Override
@@ -82,7 +81,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         geogig.command(CommitOp.class).call();
 
         GeopkgExport exportCommand = new GeopkgExport();
-        File geoPkgFile = new File(cli.getGeogig().getPlatform().pwd(), "TestPoints.gpkg");
+        File geoPkgFile = support.newFile();
         String geoPkgFileName = geoPkgFile.getAbsolutePath();
         exportCommand.args = Arrays.asList("Points", "Points");
         exportCommand.commonArgs.database = geoPkgFileName;
@@ -144,7 +143,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         geogig.command(CommitOp.class).call();
 
         GeopkgExport exportCommand = new GeopkgExport();
-        File geoPkgFile = new File(cli.getGeogig().getPlatform().pwd(), "TestPoints.gpkg");
+        File geoPkgFile = support.newFile();
         String geoPkgFileName = geoPkgFile.getAbsolutePath();
         exportCommand.args = Arrays.asList("Points", "Points");
         exportCommand.commonArgs.database = geoPkgFileName;
@@ -221,7 +220,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         geogig.command(CommitOp.class).call();
 
         GeopkgExport exportCommand = new GeopkgExport();
-        File geoPkgFile = new File(cli.getGeogig().getPlatform().pwd(), "TestPoints.gpkg");
+        File geoPkgFile = support.newFile();
         String geoPkgFileName = geoPkgFile.getAbsolutePath();
         exportCommand.args = Arrays.asList("Points", "Points");
         exportCommand.commonArgs.database = geoPkgFileName;
@@ -253,7 +252,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         pullCommand.commonArgs.database = geoPkgFileName;
         pullCommand.commitMessage = "Imported from geopackage.";
         pullCommand.table = "Points";
-        exception.expect(MergeConflictsException.class);
+        exception.expect(CommandFailedException.class);
         exception.expectMessage("CONFLICT: Merge conflict");
         pullCommand.run(cli);
     }
@@ -268,25 +267,8 @@ public class GeoPkgPullTest extends RepositoryTestCase {
     }
 
     private DataStore store(File result) throws InterruptedException, ExecutionException {
-
         assertNotNull(result);
-
-        final GeoPkgDataStoreFactory factory = new GeoPkgDataStoreFactory();
-
-        final Map<String, Serializable> params = ImmutableMap.of(GeoPkgDataStoreFactory.DBTYPE.key,
-                "geopkg", GeoPkgDataStoreFactory.DATABASE.key, result.getAbsolutePath());
-
-        DataStore dataStore;
-        try {
-            dataStore = factory.createDataStore(params);
-        } catch (IOException ioe) {
-            throw new RuntimeException("Unable to create GeoPkgDataStore", ioe);
-        }
-        if (null == dataStore) {
-            throw new RuntimeException("Unable to create GeoPkgDataStore");
-        }
-
-        return dataStore;
+        return support.createDataStore(result);
     }
 
 }

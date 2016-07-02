@@ -42,12 +42,16 @@ public class GeoPkgListTest extends Assert {
 
     private GeogigCLI cli;
 
+    private GeoPackageTestSupport support;
+
     @Before
     public void setUp() throws Exception {
         Console consoleReader = new Console().disableAnsi();
         cli = spy(new GeogigCLI(consoleReader));
 
         setUpGeogig(cli);
+
+        support = new GeoPackageTestSupport();
     }
 
     @After
@@ -58,7 +62,7 @@ public class GeoPkgListTest extends Assert {
     @Test
     public void testList() throws Exception {
         GeopkgList listCommand = new GeopkgList();
-        listCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        listCommand.commonArgs.database = support.createDefaultTestData().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         listCommand.run(cli);
     }
@@ -81,7 +85,7 @@ public class GeoPkgListTest extends Assert {
     @Test
     public void testNullDataStore() throws Exception {
         GeopkgList listCommand = new GeopkgList();
-        listCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
         listCommand.run(cli);
@@ -90,7 +94,7 @@ public class GeoPkgListTest extends Assert {
     @Test
     public void testEmptyDataStore() throws Exception {
         GeopkgList listCommand = new GeopkgList();
-        listCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createEmptyTestFactory();
         exception.expect(CommandFailedException.class);
         listCommand.run(cli);
@@ -99,7 +103,7 @@ public class GeoPkgListTest extends Assert {
     @Test
     public void testGetNamesException() throws Exception {
         GeopkgList listCommand = new GeopkgList();
-        listCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createFactoryWithGetNamesException();
         exception.expect(CommandFailedException.class);
         listCommand.run(cli);
@@ -109,7 +113,7 @@ public class GeoPkgListTest extends Assert {
     public void testListException() throws Exception {
         when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
         GeopkgList listCommand = new GeopkgList();
-        listCommand.commonArgs.database = GeopkgList.class.getResource("sample.gpkg").getFile();
+        listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
         listCommand.run(cli);

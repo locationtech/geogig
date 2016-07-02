@@ -28,23 +28,12 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<GeopkgImportResult> {
 
     private String authorEmail = null;
 
-    private boolean noCommit = false;
-
     private File geopackageFile;
 
     private String table = null;
 
     public GeopkgAuditImport setDatabase(File geopackageFile) {
         this.geopackageFile = geopackageFile;
-        return this;
-    }
-
-    /**
-     * @param noCommit if {@code true}, do not create a commit from the audit log, just import to
-     *        WORK_HEAD; defaults to {@code false}
-     */
-    public GeopkgAuditImport setNoCommit(boolean noCommit) {
-        this.noCommit = noCommit;
         return this;
     }
 
@@ -72,7 +61,7 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<GeopkgImportResult> {
     protected GeopkgImportResult _call() throws IllegalArgumentException, IllegalStateException {
         checkArgument(null != geopackageFile, "Geopackage database not provided");
         checkArgument(geopackageFile.exists(), "Database %s does not exist", geopackageFile);
-        checkArgument(noCommit || commitMessage != null, "Commit message not provided");
+        checkArgument(commitMessage != null, "Commit message not provided");
         checkState(workingTree().isClean(),
                 "The working tree has unstaged changes. It must be clean for the import to run cleanly.");
         checkState(index().isClean(),

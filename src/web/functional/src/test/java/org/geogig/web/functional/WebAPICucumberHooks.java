@@ -52,7 +52,7 @@ import org.locationtech.geogig.api.plumbing.TransactionEnd;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Variants;
-import org.locationtech.geogig.rest.geopkg.GeoPackageTestSupport;
+import org.locationtech.geogig.rest.geopkg.GeoPackageWebAPITestSupport;
 import org.locationtech.geogig.web.api.TestData;
 import org.mortbay.log.Log;
 import org.opengis.filter.Filter;
@@ -550,7 +550,8 @@ public class WebAPICucumberHooks {
      */
     @Given("^I have a geopackage file (@[^\"]*)$")
     public void gpkg_CreateSampleGeopackage(final String fileVariableName) throws Throwable {
-        GeoPackageTestSupport support = new GeoPackageTestSupport(context.getTempFolder());
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport(
+                context.getTempFolder());
         File dbfile = support.createDefaultTestData();
         context.setVariable(fileVariableName, dbfile.getAbsolutePath());
     }
@@ -565,7 +566,8 @@ public class WebAPICucumberHooks {
     @Given("^I export Points from \"([^\"]*)\" to a geopackage file with audit logs as (@[^\"]*)$")
     public void gpkg_ExportAuditLogs(final String repoName, final String fileVariableName)
             throws Throwable {
-        GeoPackageTestSupport support = new GeoPackageTestSupport(context.getTempFolder());
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport(
+                context.getTempFolder());
         GeoGIG geogig = context.getRepo(repoName);
         File file = support.createDefaultTestData();
         geogig.command(GeopkgAuditExport.class).setDatabase(file).setTargetTableName("Points")
@@ -580,7 +582,7 @@ public class WebAPICucumberHooks {
      */
     @When("^I add Points/4 to the geopackage file (@[^\"]*)$")
     public void gpkg_AddFeature(final String fileVariableName) throws Throwable {
-        GeoPackageTestSupport support = new GeoPackageTestSupport();
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport();
         File file = new File(context.getVariable(fileVariableName));
         DataStore gpkgStore = support.createDataStore(file);
 
@@ -605,7 +607,7 @@ public class WebAPICucumberHooks {
      */
     @When("^I modify the Point features in the geopackage file (@[^\"]*)$")
     public void gpkg_ModifyFeature(final String fileVariableName) throws Throwable {
-        GeoPackageTestSupport support = new GeoPackageTestSupport();
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport();
         File file = new File(context.getVariable(fileVariableName));
         DataStore gpkgStore = support.createDataStore(file);
         Transaction gttx = new DefaultTransaction();

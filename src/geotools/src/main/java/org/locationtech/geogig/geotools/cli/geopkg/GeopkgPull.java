@@ -13,12 +13,14 @@ import java.io.File;
 import java.io.IOException;
 
 import org.locationtech.geogig.api.ProgressListener;
+import org.locationtech.geogig.api.porcelain.MergeConflictsException;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditImport;
+import org.locationtech.geogig.geotools.geopkg.GeopkgImportResult;
 import org.locationtech.geogig.repository.Repository;
 
 import com.beust.jcommander.Parameter;
@@ -49,10 +51,6 @@ public class GeopkgPull extends AbstractCommand {
     @Parameter(names = { "-m", "--message" }, description = "Commit message to ")
     String commitMessage;
 
-    @VisibleForTesting
-    @Parameter(names = { "-n", "--no-commit" }, description = "Do not create a commit from the audit log, just import to WORK_HEAD", arity = 0)
-    boolean noCommit = false;
-
     final GeopkgSupport support = new GeopkgSupport();
 
     @Override
@@ -64,11 +62,14 @@ public class GeopkgPull extends AbstractCommand {
 
         ProgressListener listener = cli.getProgressListener();
         try {
-            repository.command(GeopkgAuditImport.class).setDatabase(databaseFile)
-                    .setCommitMessage(commitMessage).setNoCommit(noCommit).setTable(table)
+            GeopkgImportResult result = repository.command(GeopkgAuditImport.class).setDatabase(databaseFile)
+                    .setCommitMessage(commitMessage).setTable(table)
                     .setProgressListener(listener).call();
+            
+            cli.getConsole().println("Import successful.");
+            cli.getConsole().println("Changes committed and merge at " + result.newCommit.getId());
 
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (IllegalArgumentException | IllegalStateException | MergeConflictsException e) {
             throw new CommandFailedException(e.getMessage(), e);
         }
 

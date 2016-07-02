@@ -35,12 +35,16 @@ public class GeoPkgImportTest extends RepositoryTestCase {
 
     private GeogigCLI cli;
 
+    private GeoPackageTestSupport support;
+
     @Override
     public void setUpInternal() throws Exception {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
         cli.setGeogig(geogig);
+
+        support = new GeoPackageTestSupport();
     }
 
     @Override
@@ -51,7 +55,7 @@ public class GeoPkgImportTest extends RepositoryTestCase {
     @Test
     public void testImportTable() throws Exception {
         GeopkgImport importCommand = new GeopkgImport();
-        importCommand.commonArgs.database = GeopkgImport.class.getResource("sample.gpkg").getFile();
+        importCommand.commonArgs.database = support.createDefaultTestData().getAbsolutePath();
         importCommand.table = "Points";
         importCommand.run(cli);
         
@@ -71,7 +75,7 @@ public class GeoPkgImportTest extends RepositoryTestCase {
     @Test
     public void testImportAll() throws Exception {
         GeopkgImport importCommand = new GeopkgImport();
-        importCommand.commonArgs.database = GeopkgImport.class.getResource("sample.gpkg").getFile();
+        importCommand.commonArgs.database = support.createDefaultTestData().getAbsolutePath();
         importCommand.all = true;
         importCommand.run(cli);
 

@@ -32,6 +32,7 @@ import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
+import org.locationtech.geogig.api.plumbing.merge.ConflictsQueryOp;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.plumbing.merge.ReadMergeCommitMessageOp;
 import org.locationtech.geogig.api.porcelain.AddOp;
@@ -53,6 +54,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 
 public class MergeOpTest extends RepositoryTestCase {
     @Rule
@@ -738,7 +740,8 @@ public class MergeOpTest extends RepositoryTestCase {
         String msg = geogig.command(ReadMergeCommitMessageOp.class).call();
         assertFalse(Strings.isNullOrEmpty(msg));
 
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
+        List<Conflict> conflicts = Lists
+                .newArrayList(geogig.command(ConflictsQueryOp.class).call());
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);

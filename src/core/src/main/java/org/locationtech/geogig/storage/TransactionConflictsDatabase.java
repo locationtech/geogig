@@ -12,7 +12,9 @@ package org.locationtech.geogig.storage;
 import static org.locationtech.geogig.api.Ref.TRANSACTIONS_PREFIX;
 import static org.locationtech.geogig.api.Ref.append;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -115,5 +117,28 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
     @Override
     public void removeConflicts(@Nullable String namespace) {
         database.removeConflicts(txNamespace);
+    }
+
+    @Override
+    public Iterator<Conflict> getByPrefix(@Nullable String namespace,
+            @Nullable String prefixFilter) {
+
+        return database.getByPrefix(txNamespace, prefixFilter);
+    }
+
+    @Override
+    public long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
+
+        return database.getCountByPrefix(txNamespace, treePath);
+    }
+
+    @Override
+    public Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
+        return database.findConflicts(txNamespace, paths);
+    }
+
+    @Override
+    public void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
+        database.removeByPrefix(txNamespace, pathPrefix);
     }
 }

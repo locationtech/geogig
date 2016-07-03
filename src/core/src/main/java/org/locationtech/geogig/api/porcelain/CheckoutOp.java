@@ -14,7 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -41,9 +41,10 @@ import org.locationtech.geogig.api.porcelain.CheckoutException.StatusCode;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 
 /**
@@ -118,11 +119,12 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
 
         CheckoutResult result = new CheckoutResult();
 
-        List<Conflict> conflicts = conflictsDatabase().getConflicts(null, null);
+        final ConflictsDatabase conflictsDatabase = conflictsDatabase();
+        final boolean hasConflicts = conflictsDatabase.hasConflicts(null);
         if (!paths.isEmpty()) {
             result.setResult(CheckoutResult.Results.UPDATE_OBJECTS);
             Optional<RevTree> tree = Optional.absent();
-            List<String> unmerged = lookForUnmerged(conflicts, paths);
+            final Set<String> unmerged = conflictsDatabase.findConflicts(null, paths);
             if (!unmerged.isEmpty()) {
                 if (!(force || ours || theirs)) {
                     StringBuilder msg = new StringBuilder();
@@ -149,11 +151,11 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                 if (unmerged.contains(st)) {
                     if (ours || theirs) {
                         String refspec = ours ? Ref.ORIG_HEAD : Ref.MERGE_HEAD;
-                        Optional<ObjectId> treeId = command(ResolveTreeish.class).setTreeish(
-                                refspec).call();
+                        Optional<ObjectId> treeId = command(ResolveTreeish.class)
+                                .setTreeish(refspec).call();
                         if (treeId.isPresent()) {
-                            tree = command(RevObjectParse.class).setObjectId(treeId.get()).call(
-                                    RevTree.class);
+                            tree = command(RevObjectParse.class).setObjectId(treeId.get())
+                                    .call(RevTree.class);
                         }
                     } else {// --force
                         continue;
@@ -169,8 +171,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                     // remove the node.
                     command(RemoveOp.class).setRecursive(true).addPathToRemove(st).call();
                 } else {
-                    checkArgument(node.isPresent(), "pathspec '" + st
-                            + "' didn't match a feature in the tree");
+                    checkArgument(node.isPresent(),
+                            "pathspec '" + st + "' didn't match a feature in the tree");
 
                     if (node.get().getType() == TYPE.TREE) {
                         RevTreeBuilder treeBuilder = new RevTreeBuilder(objectDatabase(),
@@ -189,8 +191,9 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                         RevTreeBuilder treeBuilder = null;
                         if (parentNode.isPresent()) {
                             metadataId = parentNode.get().getMetadataId();
-                            Optional<RevTree> parsed = command(RevObjectParse.class).setObjectId(
-                                    parentNode.get().getNode().getObjectId()).call(RevTree.class);
+                            Optional<RevTree> parsed = command(RevObjectParse.class)
+                                    .setObjectId(parentNode.get().getNode().getObjectId())
+                                    .call(RevTree.class);
                             checkArgument(parsed.isPresent(),
                                     "Parent tree couldn't be found in the repository.");
                             treeBuilder = new RevTreeBuilder(objectDatabase(), parsed.get());
@@ -210,11 +213,18 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             }
 
         } else {
-            if (!conflicts.isEmpty()) {
+            if (hasConflicts) {
                 if (!(force)) {
+                    final long conflictCount = conflictsDatabase.getCountByPrefix(null, null);
+                    Iterator<Conflict> conflicts = Iterators
+                            .limit(conflictsDatabase.getByPrefix(branchOrCommit, null), 25);
                     StringBuilder msg = new StringBuilder();
-                    for (Conflict conflict : conflicts) {
+                    while (conflicts.hasNext()) {
+                        Conflict conflict = conflicts.next();
                         msg.append("error: " + conflict.getPath() + " needs merge.\n");
+                    }
+                    if (conflictCount > 25) {
+                        msg.append(String.format("and %,d more.\n", (conflictCount - 25)));
                     }
                     msg.append("You need to resolve your index first.\n");
                     throw new CheckoutException(msg.toString(), StatusCode.UNMERGED_PATHS);
@@ -228,8 +238,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                 ObjectId commitId = targetRef.get().getObjectId();
                 if (targetRef.get().getName().startsWith(Ref.REMOTES_PREFIX)) {
                     String remoteName = targetRef.get().getName();
-                    remoteName = remoteName.substring(Ref.REMOTES_PREFIX.length(), targetRef.get()
-                            .getName().lastIndexOf("/"));
+                    remoteName = remoteName.substring(Ref.REMOTES_PREFIX.length(),
+                            targetRef.get().getName().lastIndexOf("/"));
 
                     if (branchOrCommit.contains(remoteName + '/')) {
                         RevCommit commit = command(RevObjectParse.class).setObjectId(commitId)
@@ -241,8 +251,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                     } else {
 
                         Ref branch = command(BranchCreateOp.class)
-                                .setName(targetRef.get().localName())
-                                .setSource(commitId.toString()).call();
+                                .setName(targetRef.get().localName()).setSource(commitId.toString())
+                                .call();
 
                         command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET)
                                 .setScope(ConfigScope.LOCAL)
@@ -264,8 +274,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                     targetTreeId = Optional.of(ObjectId.NULL);
                     targetCommitId = Optional.of(ObjectId.NULL);
                 } else {
-                    Optional<RevCommit> parsed = command(RevObjectParse.class)
-                            .setObjectId(commitId).call(RevCommit.class);
+                    Optional<RevCommit> parsed = command(RevObjectParse.class).setObjectId(commitId)
+                            .call(RevCommit.class);
                     checkState(parsed.isPresent());
                     checkState(parsed.get() instanceof RevCommit);
                     RevCommit commit = parsed.get();
@@ -273,10 +283,10 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                     targetTreeId = Optional.of(commit.getTreeId());
                 }
             } else {
-                final Optional<ObjectId> addressed = command(RevParse.class).setRefSpec(
-                        branchOrCommit).call();
-                checkArgument(addressed.isPresent(), "source '" + branchOrCommit
-                        + "' not found in repository");
+                final Optional<ObjectId> addressed = command(RevParse.class)
+                        .setRefSpec(branchOrCommit).call();
+                checkArgument(addressed.isPresent(),
+                        "source '" + branchOrCommit + "' not found in repository");
 
                 RevCommit commit = command(RevObjectParse.class).setObjectId(addressed.get())
                         .call(RevCommit.class).get();
@@ -326,18 +336,5 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         }
         result.setNewTree(workingTree().getTree().getId());
         return result;
-    }
-
-    private List<String> lookForUnmerged(List<Conflict> conflicts, Set<String> paths) {
-        List<String> unmerged = Lists.newArrayList();
-        for (String path : paths) {
-            for (Conflict conflict : conflicts) {
-                if (conflict.getPath().equals(path)) {
-                    unmerged.add(path);
-                    break;
-                }
-            }
-        }
-        return unmerged;
     }
 }

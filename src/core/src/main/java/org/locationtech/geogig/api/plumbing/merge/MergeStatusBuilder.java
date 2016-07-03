@@ -40,7 +40,10 @@ import com.google.common.collect.Lists;
 
 public class MergeStatusBuilder extends MergeScenarioConsumer {
 
-    private final static int BUFFER_SIZE = 1_000;
+    /**
+     * Makes for a {@link #conflictsBuffer} of ~14MB
+     */
+    private final static int BUFFER_SIZE = 100_000;
 
     final List<Conflict> conflictsBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
 
@@ -147,12 +150,12 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
 
     @Override
     public void finished() {
-        if (conflictsBuffer.size() > 0) {
-            // Write the conflicts
-            context.command(ConflictsWriteOp.class).setConflicts(conflictsBuffer).call();
-            conflictsBuffer.clear();
-        }
         try {
+            if (conflictsBuffer.size() > 0) {
+                // Write the conflicts
+                context.command(ConflictsWriteOp.class).setConflicts(conflictsBuffer).call();
+                conflictsBuffer.clear();
+            }
             if (diffEntryBuffer.size() > 0) {
                 progress.setDescription(String.format("Staging %,d unconflicted differences...",
                         diffEntryBuffer.size()));

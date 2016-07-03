@@ -227,16 +227,15 @@ public class ResponseWriter {
         writeDiffEntries("unstaged", start, length, setFilter.call());
     }
 
-    public void writeUnmerged(List<Conflict> conflicts, int start, int length)
+    public void writeUnmerged(Iterator<Conflict> conflicts, int start, int length)
             throws XMLStreamException {
-        Iterator<Conflict> entries = conflicts.iterator();
 
-        Iterators.advance(entries, start);
-        if (length < 0) {
-            length = Integer.MAX_VALUE;
+        Iterators.advance(conflicts, start);
+        if (length >= 0) {
+            conflicts = Iterators.limit(conflicts, length);
         }
-        for (int i = 0; i < length && entries.hasNext(); i++) {
-            Conflict entry = entries.next();
+        while (conflicts.hasNext()) {
+            Conflict entry = conflicts.next();
             out.writeStartElement("unmerged");
             writeElement("changeType", "CONFLICT");
             writeElement("path", entry.getPath());
@@ -1116,8 +1115,7 @@ public class ResponseWriter {
      * @throws XMLStreamException
      */
     public void writeMergeResponse(Optional<RevCommit> mergeCommit, MergeScenarioReport report,
-            ObjectId ours, ObjectId theirs, ObjectId ancestor)
-                    throws XMLStreamException {
+            ObjectId ours, ObjectId theirs, ObjectId ancestor) throws XMLStreamException {
         out.writeStartElement("Merge");
         writeElement("ours", ours.toString());
         writeElement("theirs", theirs.toString());
@@ -1146,8 +1144,7 @@ public class ResponseWriter {
      */
     public void writeMergeConflictsResponse(Optional<RevCommit> mergeCommit,
             MergeScenarioReport report, Context context, ObjectId ours, ObjectId theirs,
-            ObjectId ancestor, PagedMergeScenarioConsumer consumer)
-                    throws XMLStreamException {
+            ObjectId ancestor, PagedMergeScenarioConsumer consumer) throws XMLStreamException {
         out.writeStartElement("Merge");
         writeElement("ours", ours.toString());
         writeElement("theirs", theirs.toString());

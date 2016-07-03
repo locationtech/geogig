@@ -180,15 +180,15 @@ public class PGObjectDatabase implements ObjectDatabase {
         final String conflictsTable = config.getTables().conflicts();
         final String blobsTable = config.getTables().blobs();
 
-        conflicts = new PGConflictsDatabase(dataSource, conflictsTable, repositoryId);
-        blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
-
         final String prefix = config.getTables().getPrefix();
         final ConnectionConfig connectionConfig = config.connectionConfig;
         ObjectDatabaseSharedResources.retain(configdb, connectionConfig, prefix);
         executor = ObjectDatabaseSharedResources.getExecutor(connectionConfig, prefix);
         byteCache = ObjectDatabaseSharedResources.getByteCache(connectionConfig, prefix);
         threadPoolSize = ObjectDatabaseSharedResources.getThreadPoolSize(connectionConfig, prefix);
+
+        conflicts = new PGConflictsDatabase(dataSource, conflictsTable, repositoryId);
+        blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
     }
 
     @Override

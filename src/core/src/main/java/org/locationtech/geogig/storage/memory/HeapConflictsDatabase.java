@@ -9,8 +9,13 @@
  */
 package org.locationtech.geogig.storage.memory;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -19,17 +24,16 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
-import com.google.common.collect.UnmodifiableIterator;
 
 /**
  * Volatile implementation of a GeoGig {@link ConflictsDatabase} that utilizes the heap for storage.
  */
 public class HeapConflictsDatabase implements ConflictsDatabase {
 
-    private Map<String, Map<String, Conflict>> conflicts;
+    private ConcurrentHashMap<String, ConcurrentHashMap<String, Conflict>> conflicts;
 
     public HeapConflictsDatabase() {
         conflicts = new ConcurrentHashMap<>();
@@ -42,6 +46,20 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
         }
     }
 
+    private String namespace(@Nullable String namespace) {
+        return namespace == null ? "" : namespace;
+    }
+
+    private synchronized ConcurrentHashMap<String, Conflict> get(@Nullable String namespace) {
+        namespace = namespace(namespace);
+        ConcurrentHashMap<String, Conflict> nsmap = this.conflicts.get(namespace);
+        if (nsmap == null) {
+            nsmap = new ConcurrentHashMap<>();
+            this.conflicts.put(namespace, nsmap);
+        }
+        return nsmap;
+    }
+
     /**
      * Gets all conflicts that match the specified path filter.
      * 
@@ -52,25 +70,13 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
     @Override
     public List<Conflict> getConflicts(@Nullable String namespace,
             @Nullable final String pathFilter) {
-        if (namespace == null) {
-            namespace = "root";
-        }
 
-        if (conflicts.get(namespace) == null) {
-            return ImmutableList.of();
-        }
-        if (pathFilter == null) {
-            return ImmutableList.copyOf(conflicts.get(namespace).values());
-        }
-        UnmodifiableIterator<Conflict> filtered = Iterators
-                .filter(conflicts.get(namespace).values().iterator(), new Predicate<Conflict>() {
-                    @Override
-                    public boolean apply(@Nullable Conflict c) {
-                        return (c.getPath().startsWith(pathFilter));
-                    }
+        ConcurrentHashMap<String, Conflict> map = get(namespace);
 
-                });
-        return ImmutableList.copyOf(filtered);
+        Predicate<String> filter;
+        filter = pathFilter == null ? Predicates.alwaysTrue() : new PathFilter(pathFilter);
+
+        return ImmutableList.copyOf(Maps.filterKeys(map, filter).values());
     }
 
     /**
@@ -81,29 +87,14 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
      */
     @Override
     public void addConflict(@Nullable String namespace, Conflict conflict) {
-        if (namespace == null) {
-            namespace = "root";
-        }
-        Map<String, Conflict> conflictMap = conflicts.get(namespace);
-        if (conflictMap == null) {
-            conflictMap = Maps.newHashMap();
-            conflicts.put(namespace, conflictMap);
-        }
-        conflictMap.put(conflict.getPath(), conflict);
-
+        ConcurrentHashMap<String, Conflict> map = get(namespace);
+        map.put(conflict.getPath(), conflict);
     }
 
     @Override
     public void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts) {
-        if (namespace == null) {
-            namespace = "root";
-        }
-        Map<String, Conflict> conflictMap = this.conflicts.get(namespace);
-        if (conflictMap == null) {
-            conflictMap = Maps.newHashMap();
-            this.conflicts.put(namespace, conflictMap);
-        }
-        conflictMap.putAll(Maps.uniqueIndex(conflicts, (c) -> c.getPath()));
+        ConcurrentHashMap<String, Conflict> map = get(namespace);
+        map.putAll(Maps.uniqueIndex(conflicts, (c) -> c.getPath()));
     }
 
     /**
@@ -114,13 +105,8 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
      */
     @Override
     public void removeConflict(@Nullable String namespace, String path) {
-        if (namespace == null) {
-            namespace = "root";
-        }
-        Map<String, Conflict> conflictMap = conflicts.get(namespace);
-        if (conflictMap != null) {
-            conflictMap.remove(path);
-        }
+        ConcurrentHashMap<String, Conflict> map = get(namespace);
+        map.remove(path);
     }
 
     @Override
@@ -139,14 +125,8 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
      */
     @Override
     public Optional<Conflict> getConflict(@Nullable String namespace, String path) {
-        if (namespace == null) {
-            namespace = "root";
-        }
-        Map<String, Conflict> conflictMap = conflicts.get(namespace);
-        if (conflictMap != null) {
-            return Optional.fromNullable(conflictMap.get(path));
-        }
-        return Optional.absent();
+        ConcurrentHashMap<String, Conflict> map = get(namespace);
+        return Optional.fromNullable(map.get(path));
     }
 
     /**
@@ -156,19 +136,79 @@ public class HeapConflictsDatabase implements ConflictsDatabase {
      */
     @Override
     public void removeConflicts(@Nullable String namespace) {
-        if (namespace == null) {
-            namespace = "root";
-        }
-        conflicts.remove(namespace);
+        conflicts.remove(namespace(namespace));
     }
 
     @Override
     public boolean hasConflicts(String namespace) {
-        if (namespace == null) {
-            namespace = "root";
-        }
-        Map<String, Conflict> conflicts = this.conflicts.get(namespace);
-        return conflicts != null && !conflicts.isEmpty();
+        ConcurrentHashMap<String, Conflict> map = get(namespace);
+        return !map.isEmpty();
     }
 
+    @Override
+    public Iterator<Conflict> getByPrefix(@Nullable String namespace,
+            @Nullable String prefixFilter) {
+
+        ConcurrentHashMap<String, Conflict> map = get(namespace);
+        Predicate<String> filter;
+        filter = prefixFilter == null ? Predicates.alwaysTrue() : new PathFilter(prefixFilter);
+
+        return Maps.filterKeys(map, filter).values().iterator();
+    }
+
+    @Override
+    public long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
+        ConcurrentHashMap<String, Conflict> map = get(namespace);
+        Predicate<String> filter;
+        filter = treePath == null ? Predicates.alwaysTrue() : new PathFilter(treePath);
+
+        int count = Maps.filterKeys(map, filter).size();
+        return count;
+    }
+
+    private static class PathFilter implements Predicate<String> {
+
+        private String prefix;
+
+        private String treePath;
+
+        PathFilter(final String treePath) {
+            checkNotNull(treePath);
+            this.prefix = treePath + "/";
+            this.treePath = treePath;
+        }
+
+        @Override
+        public boolean apply(String path) {
+            boolean matches = treePath.equals(path) || path.startsWith(prefix);
+            return matches;
+        }
+
+    }
+
+    @Override
+    public Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
+        checkNotNull(paths);
+
+        Map<String, Conflict> nsmap = get(namespace);
+        Set<String> matches = new HashSet<>();
+        if (!nsmap.isEmpty()) {
+            Set<String> keys = nsmap.keySet();
+            for (String path : paths) {
+                if (keys.contains(path)) {
+                    matches.add(path);
+                }
+            }
+        }
+        return matches;
+    }
+
+    @Override
+    public void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
+        Iterator<Conflict> matches = getByPrefix(namespace, pathPrefix);
+        ConcurrentHashMap<String, Conflict> map = get(namespace);
+        while (matches.hasNext()) {
+            map.remove(matches.next().getPath());
+        }
+    }
 }

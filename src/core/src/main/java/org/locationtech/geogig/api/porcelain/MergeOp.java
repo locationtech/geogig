@@ -194,6 +194,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         for (ObjectId commitId : commits) {
             revCommits.add(repository().getCommit(commitId));
         }
+        progress.setDescription("Checking for possible conflicts...");
         final boolean mightHaveConflicts;// either there are conflicts or two features modified by
                                          // different branches might cause conflicts
         mightHaveConflicts = command(CheckMergeScenarioOp.class).setCommits(revCommits).call();
@@ -216,6 +217,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
             pairs.add(new CommitAncestorPair(commitId, ancestorCommit.get()));
 
+            progress.setDescription("Possible conflicts. Creating intermediate merge status...");
             mergeScenario = command(ReportMergeScenarioOp.class).setMergeIntoCommit(headCommit)
                     .setToMergeCommit(targetCommit).setConsumer(mergeStatusBuilder).call();
 

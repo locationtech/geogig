@@ -25,6 +25,7 @@ import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
+import org.locationtech.geogig.api.plumbing.merge.ConflictsQueryOp;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
@@ -37,6 +38,7 @@ import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 
 public class RevertOpTest extends RepositoryTestCase {
     @Rule
@@ -321,11 +323,13 @@ public class RevertOpTest extends RepositoryTestCase {
         assertTrue(ref.isPresent());
         assertEquals(c3.getId(), ref.get().getObjectId());
 
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
+        List<Conflict> conflicts = Lists
+                .newArrayList(geogig.command(ConflictsQueryOp.class).call());
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
-        assertEquals(conflicts.get(0).getOurs(), RevFeatureBuilder.build(points1_modifiedB).getId());
+        assertEquals(conflicts.get(0).getOurs(),
+                RevFeatureBuilder.build(points1_modifiedB).getId());
         assertEquals(conflicts.get(0).getTheirs(), RevFeatureBuilder.build(points1).getId());
 
         // solve, and continue
@@ -382,11 +386,13 @@ public class RevertOpTest extends RepositoryTestCase {
         assertTrue(ref.isPresent());
         assertEquals(c3.getId(), ref.get().getObjectId());
 
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
+        List<Conflict> conflicts = Lists
+                .newArrayList(geogig.command(ConflictsQueryOp.class).call());
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
-        assertEquals(conflicts.get(0).getOurs(), RevFeatureBuilder.build(points1_modifiedB).getId());
+        assertEquals(conflicts.get(0).getOurs(),
+                RevFeatureBuilder.build(points1_modifiedB).getId());
         assertEquals(conflicts.get(0).getTheirs(), RevFeatureBuilder.build(points1).getId());
 
         geogig.command(RevertOp.class).setAbort(true).call();

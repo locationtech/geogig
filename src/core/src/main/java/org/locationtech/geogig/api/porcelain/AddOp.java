@@ -11,7 +11,6 @@ package org.locationtech.geogig.api.porcelain;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -24,7 +23,6 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -89,8 +87,9 @@ public class AddOp extends AbstractGeoGigOp<WorkingTree> {
 
         // short cut for the case where the index is empty and we're staging all changes in the
         // working tree, so it's just a matter of updating the index ref to working tree RevTree id
-        if (null == pathFilter && !index().getStaged(null).hasNext() && !updateOnly
-                && index().countConflicted(null) == 0) {
+        final StagingArea index = index();
+        if (null == pathFilter && !index.getStaged(null).hasNext() && !updateOnly
+                && index.countConflicted(null) == 0) {
             progress.started();
             Optional<ObjectId> workHead = command(RevParse.class).setRefSpec(Ref.WORK_HEAD).call();
             if (workHead.isPresent()) {
@@ -118,17 +117,14 @@ public class AddOp extends AbstractGeoGigOp<WorkingTree> {
             });
         }
 
-        index().stage(progress, unstaged, numChanges);
+        index.stage(progress, unstaged, numChanges);
 
-        List<Conflict> conflicts = index().getConflicted(pathFilter);
+        // if we are staging unmerged files, the conflict should get solved. However, if the
+        // working index object is the same as the staging area one (for instance, after running
+        // checkout --ours), it will not be reported by the getUnstaged method. We solve that
+        // here.
         ConflictsDatabase conflictsDatabase = conflictsDatabase();
-        for (Conflict conflict : conflicts) {
-            // if we are staging unmerged files, the conflict should get solved. However, if the
-            // working index object is the same as the staging area one (for instance, after running
-            // checkout --ours), it will not be reported by the getUnstaged method. We solve that
-            // here.
-            conflictsDatabase.removeConflict(null, conflict.getPath());
-        }
+        conflictsDatabase.removeByPrefix(null, pathFilter);
     }
 
     /**

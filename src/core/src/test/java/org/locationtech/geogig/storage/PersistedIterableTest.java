@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.storage;
 
+import static org.locationtech.geogig.storage.PersistedIterable.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -44,9 +44,8 @@ public class PersistedIterableTest {
 
         List<String> expected = new ArrayList<>();
         Random rnd = new Random();
-        PersistedIterable<String> iterable = PersistedIterable.newStringIterable(bufferSize,
-                compress);
-        try {
+
+        try (PersistedIterable<String> iterable = newStringIterable(bufferSize, compress)) {
             for (int i = 0; i < entryCount; i++) {
                 String s = "s " + rnd.nextInt();
                 expected.add(s);
@@ -58,9 +57,9 @@ public class PersistedIterableTest {
             List<String> actual = Lists.newArrayList(iterator);
             assertEquals(expected.size(), actual.size());
             assertEquals(expected, actual);
-        } finally {
             iterable.close();
-            assertFalse(Files.exists(iterable.tmpFile));
+            assertNull(iterable.tmpFile);
+        } finally {
         }
     }
 

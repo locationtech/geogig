@@ -19,11 +19,17 @@ import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
-public class ConflictsReadOp extends AbstractGeoGigOp<List<Conflict>> implements
-        Supplier<Iterable<Conflict>> {
+/**
+ * 
+ * @deprecated at 1.0-RC3
+ * @see ConflictsQueryOp
+ */
+@Deprecated
+public class ConflictsReadOp extends AbstractGeoGigOp<List<Conflict>>
+        implements Supplier<Iterable<Conflict>> {
 
     @Override
-    protected  List<Conflict> _call() {
+    protected List<Conflict> _call() {
         final Optional<URI> repoUrl = command(ResolveGeogigURI.class).call();
         if (repoUrl.isPresent()) {
             return conflictsDatabase().getConflicts(null, null);

@@ -15,6 +15,7 @@ import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.DiffIndex;
 import org.locationtech.geogig.api.plumbing.DiffWorkTree;
 import org.locationtech.geogig.api.plumbing.RefParse;
+import org.locationtech.geogig.api.plumbing.merge.ConflictsQueryOp;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -88,7 +89,7 @@ public class Status extends AbstractWebAPICommand {
                         limit);
                 writer.writeUnstaged(geogig.command(DiffWorkTree.class).setFilter(pathFilter),
                         offset, limit);
-                writer.writeUnmerged(geogig.command(ConflictsReadOp.class).call(), offset, limit);
+                writer.writeUnmerged(geogig.command(ConflictsQueryOp.class).call(), offset, limit);
 
                 writer.finish();
             }

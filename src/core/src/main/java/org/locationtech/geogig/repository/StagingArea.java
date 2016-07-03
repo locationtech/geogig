@@ -90,7 +90,7 @@ public interface StagingArea {
      * @param pathFilter
      * @return
      */
-    public int countConflicted(final @Nullable String pathFilter);
+    public long countConflicted(final @Nullable String pathFilter);
 
     /**
      * returns the list of conflicted objects in the index, for the given path filter
@@ -98,6 +98,6 @@ public interface StagingArea {
      * @param pathFilter
      * @return
      */
-    public List<Conflict> getConflicted(final @Nullable String pathFilter);
+    public Iterator<Conflict> getConflicted(final @Nullable String pathFilter);
 
 }

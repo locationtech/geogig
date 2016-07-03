@@ -58,15 +58,11 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
 
     private final boolean compress;
 
-    private volatile long iteratorOffsetLimit;
-
     private volatile long size;
 
     private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     Path tmpFile;
-
-    private DataOutputStream out;
 
     public PersistedIterable(final @Nullable Path tmpDir, Serializer<T> serializer) {
         this(tmpDir, serializer, DEFAULT_BUFFER_SIZE, false);
@@ -100,17 +96,11 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
             this.buffer.clear();
             if (this.tmpFile != null) {
                 try {
-                    if (this.out != null) {
-                        this.out.close();
-                    }
+                    Files.delete(this.tmpFile);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
-                    try {
-                        Files.delete(this.tmpFile);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    this.tmpFile = null;
                 }
             }
         } finally {
@@ -121,6 +111,12 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
     public long size() {
         return this.size;
     }
+
+    public void addAll(Iterable<T> collection) {
+        for (T t : collection) {
+            add(t);
+        }
+    };
 
     public void add(@NonNull T value) {
         checkNotNull(value);
@@ -141,33 +137,35 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         if (tmpFile == null) {
             createFile();
         }
-        try {
+        try (DataOutputStream out = createOutStream(tmpFile)) {
             for (T val : buffer) {
                 int writtenBytes;
                 writtenBytes = serializer.write(out, val);
-                this.iteratorOffsetLimit += writtenBytes;
             }
-            this.out.flush();
+            out.flush();
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }
 
+    private DataOutputStream createOutStream(Path tmpFile) throws IOException {
+        OutputStream outStream = Files.newOutputStream(tmpFile, StandardOpenOption.APPEND);
+        outStream = new BufferedOutputStream(outStream, 16 * 1024);
+        if (this.compress) {
+            outStream = new LZFOutputStream(outStream);
+        }
+        return new DataOutputStream(outStream);
+    }
+
     private void createFile() {
         try {
-            final String prefix = "geogigPersistedIterator";
+            final String prefix = "geogigPersistedIterable";
             final String suffix = ".tmp";
             if (this.tmpDir == null) {
                 this.tmpFile = Files.createTempFile(prefix, suffix);
             } else {
                 this.tmpFile = Files.createTempFile(tmpDir, prefix, suffix);
             }
-            OutputStream outStream = Files.newOutputStream(tmpFile, StandardOpenOption.WRITE);
-            outStream = new BufferedOutputStream(outStream, 16 * 1024);
-            if (this.compress) {
-                outStream = new LZFOutputStream(outStream);
-            }
-            this.out = new DataOutputStream(outStream);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
@@ -176,16 +174,12 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
     @Override
     public Iterator<T> iterator() {
 
-        final long streamLimit;
         Iterator<T> iterator = Collections.emptyIterator();
 
         lock.readLock().lock();
         try {
-            if (this.out != null) {
-                this.out.close();
-                this.out = null;
-            }
-            streamLimit = this.iteratorOffsetLimit;
+            final long streamLimit = this.tmpFile == null ? 0L
+                    : (Files.exists(this.tmpFile) ? Files.size(this.tmpFile) : 0L);
 
             if (streamLimit > 0) {
                 InputStream in;
@@ -208,7 +202,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
                 ArrayList<T> buffered = Lists.newArrayList(this.buffer);
                 iterator = Iterators.concat(iterator, buffered.iterator());
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
             lock.readLock().unlock();
@@ -303,5 +297,5 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
                 this.buffer = new byte[len];
             }
         }
-    };
+    }
 }

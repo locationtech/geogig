@@ -24,7 +24,6 @@ import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.BranchCreateOp;
 import org.locationtech.geogig.api.porcelain.CheckoutOp;
@@ -211,9 +210,7 @@ public class AddOpTest extends RepositoryTestCase {
         }
         insert(points1);
         geogig.command(AddOp.class).call();
-        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
-                .getConflicts(null, null);
-        assertTrue(conflicts.isEmpty());
+        assertFalse(geogig.getRepository().conflictsDatabase().hasConflicts(null));
         geogig.command(CommitOp.class).call();
         Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());
@@ -245,9 +242,7 @@ public class AddOpTest extends RepositoryTestCase {
             assertTrue(true);
         }
         geogig.command(AddOp.class).call();
-        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
-                .getConflicts(null, null);
-        assertTrue(conflicts.isEmpty());
+        assertFalse(geogig.getRepository().conflictsDatabase().hasConflicts(null));
         geogig.command(CommitOp.class).call();
         Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());

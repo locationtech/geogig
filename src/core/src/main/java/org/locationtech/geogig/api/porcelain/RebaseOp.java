@@ -195,8 +195,8 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
         }
 
         // Rebase can only be run in a conflicted situation if the skip or abort option is used
-        List<Conflict> conflicts = command(ConflictsReadOp.class).call();
-        Preconditions.checkState(conflicts.isEmpty() || skip || abort,
+        final boolean hasConflicts = conflictsDatabase().hasConflicts(null);
+        Preconditions.checkState(!hasConflicts || skip || abort,
                 "Cannot run operation while merge conflicts exist.");
 
         Optional<Ref> origHead = command(RefParse.class).setName(Ref.ORIG_HEAD).call();
@@ -246,9 +246,8 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 return true;
             }
         } else {
-            Preconditions
-                    .checkState(!origHead.isPresent(),
-                            "You are currently in the middle of a merge or rebase project <ORIG_HEAD is present>.");
+            Preconditions.checkState(!origHead.isPresent(),
+                    "You are currently in the middle of a merge or rebase project <ORIG_HEAD is present>.");
 
             getProgressListener().started();
 
@@ -321,8 +320,8 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 squashCommit = builder.build();
                 // save the commit, since it does not exist in the database, and might be needed if
                 // there is a conflict
-                CharSequence commitString = command(CatObject.class).setObject(
-                        Suppliers.ofInstance(squashCommit)).call();
+                CharSequence commitString = command(CatObject.class)
+                        .setObject(Suppliers.ofInstance(squashCommit)).call();
                 try {
                     Blobs.putBlob(context().blobStore(), SQUASH, commitString);
                 } catch (Exception e) {

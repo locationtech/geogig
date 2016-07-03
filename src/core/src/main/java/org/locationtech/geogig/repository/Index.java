@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.repository;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -177,15 +179,35 @@ public class Index implements StagingArea {
         Map<String, ObjectId> parentMetadataIds = Maps.newHashMap();
         Set<String> removedTrees = Sets.newHashSet();
 
-        PersistedIterable<String> pathsForConflictCleanup;
-        pathsForConflictCleanup = PersistedIterable.newStringIterable(1000, true);
+        final ConflictsDatabase conflictsDb = conflictsDatabase();
+        final boolean hasConflicts = conflictsDb.hasConflicts(null);
 
+        // persisted iterable for very large number of matching conflict paths
+        PersistedIterable<String> pathsForConflictCleanup = null;
+        // local buffer to check for matching conflict paths every N diff entries
+        Set<String> pathBuffer = null;
+        if (hasConflicts) {
+            pathsForConflictCleanup = PersistedIterable.newStringIterable(10_000, true);
+            pathBuffer = new HashSet<>();
+        }
         try {
             while (unstaged.hasNext()) {
                 final DiffEntry diff = unstaged.next();
                 final String fullPath = diff.oldPath() == null ? diff.newPath() : diff.oldPath();
+                if (hasConflicts) {
+                    pathBuffer.add(fullPath);
+                    if (pathBuffer.size() == 100_000) {
+                        // Stopwatch s = Stopwatch.createStarted();
+                        Set<String> matches = conflictsDb.findConflicts(null, pathBuffer);
+                        // System.err.printf("queried %,d possible conflicts in %s\n",
+                        // pathBuffer.size(), s.stop());
+                        if (!matches.isEmpty()) {
+                            pathsForConflictCleanup.addAll(matches);
+                        }
+                        pathBuffer.clear();
+                    }
+                }
                 final String parentPath = NodeRef.parentPath(fullPath);
-                pathsForConflictCleanup.add(fullPath);
                 /*
                  * TODO: revisit, ideally the list of diff entries would come with one single entry
                  * for the whole removed tree instead of that one and every single children of it.
@@ -232,6 +254,7 @@ public class Index implements StagingArea {
             ObjectStore objectDatabase = context.objectDatabase();
             for (Map.Entry<String, RevTreeBuilder> entry : parentTress.entrySet()) {
                 String changedTreePath = entry.getKey();
+                progress.setDescription("Building final tree " + changedTreePath);
                 RevTreeBuilder changedTreeBuilder = entry.getValue();
                 RevTree changedTree = changedTreeBuilder.build();
                 ObjectId parentMetadataId = parentMetadataIds.get(changedTreePath);
@@ -248,14 +271,37 @@ public class Index implements StagingArea {
                 }
                 updateStageHead(newRootTree);
             }
+
             // remove conflicts once the STAGE_HEAD was updated
-            final ConflictsDatabase conflictsDb = conflictsDatabase();
-            final boolean hasConflicts = conflictsDb.hasConflicts(null);
             if (hasConflicts) {
-                conflictsDb.removeConflicts(null, pathsForConflictCleanup);
+                if (!pathBuffer.isEmpty()) {
+                    // Stopwatch s = Stopwatch.createStarted();
+                    Set<String> matches = conflictsDb.findConflicts(null, pathBuffer);
+                    // System.err.printf("queried %,d possible conflicts in %s\n",
+                    // pathBuffer.size(), s.stop());
+                    if (!matches.isEmpty()) {
+                        pathsForConflictCleanup.addAll(matches);
+                    }
+                    pathBuffer.clear();
+                }
+
+                if (pathsForConflictCleanup.size() > 0L) {
+                    progress.setDescription(String.format("Removing %,d merged conflcits...",
+                            pathsForConflictCleanup.size()));
+                    // Stopwatch sw = Stopwatch.createStarted();
+                    conflictsDb.removeConflicts(null, pathsForConflictCleanup);
+                }
+                // System.err.printf("tried to remove paths in %s\n", sw.stop());
+                long remainingConflicts = conflictsDb.getCountByPrefix(null, null);
+                progress.setDescription(
+                        String.format("Done. %,d unmerged conflicts.", remainingConflicts));
+            } else {
+                progress.setDescription("Done.");
             }
         } finally {
-            pathsForConflictCleanup.close();
+            if (pathsForConflictCleanup != null) {
+                pathsForConflictCleanup.close();
+            }
         }
         progress.complete();
     }
@@ -321,13 +367,13 @@ public class Index implements StagingArea {
     }
 
     @Override
-    public int countConflicted(String pathFilter) {
-        return conflictsDatabase().getConflicts(null, pathFilter).size();
+    public long countConflicted(String pathFilter) {
+        return conflictsDatabase().getCountByPrefix(null, null);
     }
 
     @Override
-    public List<Conflict> getConflicted(@Nullable String pathFilter) {
-        return conflictsDatabase().getConflicts(null, pathFilter);
+    public Iterator<Conflict> getConflicted(@Nullable String pathFilter) {
+        return conflictsDatabase().getByPrefix(null, pathFilter);
     }
 
 }

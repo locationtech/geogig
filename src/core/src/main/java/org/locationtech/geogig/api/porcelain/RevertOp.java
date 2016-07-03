@@ -34,7 +34,6 @@ import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.WriteTree2;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsWriteOp;
 import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.di.CanRunDuringConflict;
@@ -154,8 +153,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         getProgressListener().started();
 
         // Revert can only be run in a conflicted situation if the abort option is used
-        List<Conflict> conflicts = command(ConflictsReadOp.class).call();
-        Preconditions.checkState(conflicts.isEmpty() || abort,
+        final boolean hasConflicts = conflictsDatabase().hasConflicts(null);
+        Preconditions.checkState(!hasConflicts || abort,
                 "Cannot run operation while merge conflicts exist.");
 
         Optional<Ref> ref = command(RefParse.class).setName(Ref.ORIG_HEAD).call();

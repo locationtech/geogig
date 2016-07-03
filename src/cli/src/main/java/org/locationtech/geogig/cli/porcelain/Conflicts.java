@@ -12,6 +12,7 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.List;
 
 import org.locationtech.geogig.api.GeoGIG;
@@ -27,7 +28,7 @@ import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
+import org.locationtech.geogig.api.plumbing.merge.ConflictsQueryOp;
 import org.locationtech.geogig.api.porcelain.FeatureNodeRefFromRefspec;
 import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -58,7 +59,8 @@ public class Conflicts extends AbstractCommand implements CLICommand {
     @Parameter(description = "<path> [<path>...]")
     private List<String> paths = Lists.newArrayList();
 
-    @Parameter(names = { "--diff" }, description = "Show diffs instead of full element descriptions")
+    @Parameter(names = {
+            "--diff" }, description = "Show diffs instead of full element descriptions")
     private boolean previewDiff;
 
     @Parameter(names = { "--ids-only" }, description = "Just show ids of elements")
@@ -79,13 +81,14 @@ public class Conflicts extends AbstractCommand implements CLICommand {
                 "Cannot use --ids-only and --refspecs-only at the same time");
 
         geogig = cli.getGeogig();
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
+        Iterator<Conflict> conflicts = geogig.command(ConflictsQueryOp.class).call();
 
-        if (conflicts.isEmpty()) {
+        if (!conflicts.hasNext()) {
             cli.getConsole().println("No elements need merging.");
             return;
         }
-        for (Conflict conflict : conflicts) {
+        while (conflicts.hasNext()) {
+            Conflict conflict = conflicts.next();
             if (paths.isEmpty() || paths.contains(conflict.getPath())) {
                 if (previewDiff) {
                     printConflictDiff(conflict, cli.getConsole(), geogig);
@@ -114,8 +117,8 @@ public class Conflicts extends AbstractCommand implements CLICommand {
             theirsHeadId = mergeHead.get().getObjectId();
         } else {
             File branchFile = new File(getRebaseFolder(), "branch");
-            Preconditions
-                    .checkState(branchFile.exists(), "Cannot find merge/rebase head reference");
+            Preconditions.checkState(branchFile.exists(),
+                    "Cannot find merge/rebase head reference");
             try {
                 String currentBranch = Files.readFirstLine(branchFile, Charsets.UTF_8);
                 Optional<Ref> rebaseHead = geogig.command(RefParse.class).setName(currentBranch)
@@ -157,8 +160,8 @@ public class Conflicts extends AbstractCommand implements CLICommand {
             theirsHeadId = mergeHead.get().getObjectId();
         } else {
             File branchFile = new File(getRebaseFolder(), "branch");
-            Preconditions
-                    .checkState(branchFile.exists(), "Cannot find merge/rebase head reference");
+            Preconditions.checkState(branchFile.exists(),
+                    "Cannot find merge/rebase head reference");
             try {
                 String currentBranch = Files.readFirstLine(branchFile, Charsets.UTF_8);
                 Optional<Ref> rebaseHead = geogig.command(RefParse.class).setName(currentBranch)

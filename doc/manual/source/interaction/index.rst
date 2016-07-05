@@ -8,13 +8,13 @@ This section will discuss alternate ways of interacting with GeoGig, both local 
 .. toctree::
    :maxdepth: 1
 
-   console
    networking
+   web-repository-management
    geoserver_ui
    geoserver_web-api
-   osm
+   geoserver_web-api-init
    web-api
-   web-repository-management
    async-tasks
+   osm
    osm-web-api
    geopackage-import-export

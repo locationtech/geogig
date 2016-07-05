@@ -6,7 +6,7 @@ Feature: "geopkg describe" command
   Scenario: Try describing a GeoPackage table from an empty directory
     Given I am in an empty directory
      When I run the command "geopkg describe --table test" on an existing GeoPackage file
-     Then the response should start with "Not in a geogig repository"
+     Then the response should contain "Could not find the specified table."
       
   Scenario: Try describing a GeoPackage table
     Given I have a repository

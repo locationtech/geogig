@@ -15,9 +15,12 @@ import static org.locationtech.geogig.api.RevObject.TYPE.FEATURE;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Bounded;
@@ -188,8 +191,8 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             throws SynchronizationException {
 
         Optional<Ref> remoteRef = remoteRepository.command(RefParse.class).setName(refspec).call();
-        remoteRef = remoteRef.or(remoteRepository.command(RefParse.class)
-                .setName(Ref.TAGS_PREFIX + refspec).call());
+        remoteRef = remoteRef.or(
+                remoteRepository.command(RefParse.class).setName(Ref.TAGS_PREFIX + refspec).call());
         checkPush(ref, remoteRef);
 
         CommitTraverser traverser = getPushTraverser(remoteRef);
@@ -202,8 +205,8 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             walkHead(commitId, false, progress);
         }
 
-        String nameToSet = remoteRef.isPresent() ? remoteRef.get().getName() : Ref.HEADS_PREFIX
-                + refspec;
+        String nameToSet = remoteRef.isPresent() ? remoteRef.get().getName()
+                : Ref.HEADS_PREFIX + refspec;
 
         Ref updatedRef = remoteRepository.command(UpdateRef.class).setName(nameToSet)
                 .setNewValue(ref.getObjectId()).call().get();
@@ -298,7 +301,8 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
 
         // holds object ids that need to be copied to the target db. Pruned when it reaches a
         // threshold.
-        final Set<ObjectId> ids = Sets.newConcurrentHashSet();
+        final Set<ObjectId> ids = new HashSet<>();
+        final ReadWriteLock lock = new ReentrantReadWriteLock();
 
         // This filter further refines the post order diff walk by making it ignore trees/buckets
         // that are already present in the target db
@@ -318,8 +322,14 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
                 }
 
                 final ObjectId id = b.getObjectId();
-                boolean exists = !progress.isCanceled() && (ids.contains(id) || toDb.exists(id));
-                return !exists;
+                lock.readLock().lock();
+                try {
+                    boolean exists = !progress.isCanceled()
+                            && (ids.contains(id) || toDb.exists(id));
+                    return !exists;
+                } finally {
+                    lock.readLock().unlock();
+                }
             }
         };
 
@@ -327,6 +337,13 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
         // side of the comparisons
         Consumer consumer = new Consumer() {
             final int bulkSize = 10_000;
+
+            /**
+             * Cache already inserted metadata ids, in order to avoid inserting the same
+             * RevFeatureType over and over, yet handling the case where a feature node has a
+             * different metadata id than it's tree's default one
+             */
+            final Set<ObjectId> insertedMetadataIds = Sets.newConcurrentHashSet();
 
             @Override
             public void feature(@Nullable NodeRef left, NodeRef right) {
@@ -344,12 +361,19 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
                 if (node == null) {
                     return;
                 }
-                ObjectId metadataId = node.getMetadataId();
-                synchronized (ids) {
+                Optional<ObjectId> metadataId = node.getNode().getMetadataId();
+                lock.writeLock().lock();
+                try {
                     ids.add(node.getObjectId());
-                    if (!metadataId.isNull()) {
-                        ids.add(metadataId);
+                    if (metadataId.isPresent()) {
+                        ObjectId mdid = metadataId.get();
+                        if (!insertedMetadataIds.contains(mdid)) {
+                            ids.add(mdid);
+                            insertedMetadataIds.add(mdid);
+                        }
                     }
+                } finally {
+                    lock.writeLock().unlock();
                 }
                 checkLimitAndCopy();
             }
@@ -361,8 +385,11 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
                 // ids.add(left.getObjectId());
                 // }
                 if (right != null) {
-                    synchronized (ids) {
+                    lock.writeLock().lock();
+                    try {
                         ids.add(right.getObjectId());
+                    } finally {
+                        lock.writeLock().unlock();
                     }
                 }
                 checkLimitAndCopy();
@@ -371,14 +398,25 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             private void checkLimitAndCopy() {
                 // double check lock on ids to reduce contention when pruning it as this method can
                 // be called from several concurrent threads from inside PreOrderDiffWalk
-                if (ids.size() >= bulkSize) {
-                    synchronized (ids) {
-                        if (ids.size() >= bulkSize) {
-                            Set<ObjectId> copyIds = Sets.newHashSet(ids);
-                            copy(copyIds, fromDb, toDb, progress);
+                Set<ObjectId> copyIds = null;
+                lock.readLock().lock();
+                try {
+                    if (ids.size() >= bulkSize) {
+                        lock.readLock().unlock();
+                        lock.writeLock().lock();
+                        try {
+                            copyIds = Sets.newHashSet(ids);
                             ids.clear();
+                        } finally {
+                            lock.writeLock().unlock();
+                            lock.readLock().lock();
                         }
                     }
+                } finally {
+                    lock.readLock().unlock();
+                }
+                if (copyIds != null) {
+                    copy(copyIds, fromDb, toDb, progress);
                 }
             }
         };

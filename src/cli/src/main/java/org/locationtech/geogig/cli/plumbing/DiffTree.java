@@ -61,7 +61,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
     @Parameter(description = "[<treeish> [<treeish>]] [-- <path>...]", arity = 2)
     private List<String> refSpec = Lists.newArrayList();
 
-    @Parameter(names = {"--path", "-p"}, hidden = true, variableArity = true)
+    @Parameter(names = { "--path", "-p" }, hidden = true, variableArity = true)
     private List<String> paths = Lists.newArrayList();
 
     @Parameter(names = "--describe", description = "add description of versions for each modified element")
@@ -123,8 +123,8 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                             .setOldVersion(Suppliers.ofInstance(diffEntry.getOldObject())).call();
                     Map<PropertyDescriptor, AttributeDiff> diffs = featureDiff.getDiffs();
                     HashSet<PropertyDescriptor> diffDescriptors = Sets.newHashSet(diffs.keySet());
-                    NodeRef noderef = diffEntry.changeType() != ChangeType.REMOVED ? diffEntry
-                            .getNewObject() : diffEntry.getOldObject();
+                    NodeRef noderef = diffEntry.changeType() != ChangeType.REMOVED
+                            ? diffEntry.getNewObject() : diffEntry.getOldObject();
                     RevFeatureType featureType = geogig.command(RevObjectParse.class)
                             .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class).get();
                     Optional<RevObject> obj = geogig.command(RevObjectParse.class)
@@ -139,21 +139,21 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                             sb.append(ad.getType().toString().charAt(0) + " "
                                     + descriptor.getName().toString() + LINE_BREAK);
                             if (!ad.getType().equals(TYPE.ADDED)) {
-                                Object value = ad.getOldValue().orNull();
-                                sb.append(TextValueSerializer.asString(Optional.fromNullable(value)));
+                                Object value = ad.getOldValue();
+                                sb.append(TextValueSerializer.asString(value));
                                 sb.append(LINE_BREAK);
                             }
                             if (!ad.getType().equals(TYPE.REMOVED)) {
-                                Object value = ad.getNewValue().orNull();
-                                sb.append(TextValueSerializer.asString(Optional.fromNullable(value)));
+                                Object value = ad.getNewValue();
+                                sb.append(TextValueSerializer.asString(value));
                                 sb.append(LINE_BREAK);
                             }
                             diffDescriptors.remove(descriptor);
                         } else {
                             sb.append("U ").append(descriptor.getName().toString())
                                     .append(LINE_BREAK);
-                            sb.append(TextValueSerializer.asString(values.get(idx))).append(
-                                    LINE_BREAK);
+                            sb.append(TextValueSerializer.asString(values.get(idx)))
+                                    .append(LINE_BREAK);
                         }
                         idx++;
                     }
@@ -162,19 +162,19 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                         sb.append(ad.getType().toString().charAt(0) + " "
                                 + descriptor.getName().toString() + LINE_BREAK);
                         if (!ad.getType().equals(TYPE.ADDED)) {
-                            Object value = ad.getOldValue().orNull();
-                            sb.append(TextValueSerializer.asString(Optional.fromNullable(value)));
+                            Object value = ad.getOldValue();
+                            sb.append(TextValueSerializer.asString(value));
                             sb.append(LINE_BREAK);
                         }
                         if (!ad.getType().equals(TYPE.REMOVED)) {
-                            Object value = ad.getNewValue().orNull();
-                            sb.append(TextValueSerializer.asString(Optional.fromNullable(value)));
+                            Object value = ad.getNewValue();
+                            sb.append(TextValueSerializer.asString(value));
                             sb.append(LINE_BREAK);
                         }
                     }
                 } else {
-                    NodeRef noderef = diffEntry.changeType() == ChangeType.ADDED ? diffEntry
-                            .getNewObject() : diffEntry.getOldObject();
+                    NodeRef noderef = diffEntry.changeType() == ChangeType.ADDED
+                            ? diffEntry.getNewObject() : diffEntry.getOldObject();
                     RevFeatureType featureType = geogig.command(RevObjectParse.class)
                             .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class).get();
                     Optional<RevObject> obj = geogig.command(RevObjectParse.class)

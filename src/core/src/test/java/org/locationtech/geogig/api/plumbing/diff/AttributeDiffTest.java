@@ -13,8 +13,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.base.Optional;
-
 /**
  *
  */
@@ -26,82 +24,62 @@ public class AttributeDiffTest extends Assert {
 
     @Test
     public void testAttributeDiffRemoved() {
-        Optional<Integer> oldValue = Optional.of(1);
-        Optional<Integer> newValue = null;
+        Integer oldValue = 1;
+        Integer newValue = null;
 
         AttributeDiff diff = new GenericAttributeDiffImpl(oldValue, newValue);
-        assertTrue(diff.getType() == AttributeDiff.TYPE.REMOVED);
-        assertTrue(diff.getOldValue().equals(oldValue));
-        assertFalse(diff.getNewValue().isPresent());
-
-        newValue = Optional.absent();
-        diff = new GenericAttributeDiffImpl(oldValue, newValue);
-        assertTrue(diff.getType() == AttributeDiff.TYPE.REMOVED);
-        assertTrue(diff.getOldValue().equals(oldValue));
-        assertFalse(diff.getNewValue().isPresent());
+        assertEquals(AttributeDiff.TYPE.REMOVED, diff.getType());
+        assertEquals(oldValue, diff.getOldValue());
+        assertNull(diff.getNewValue());
     }
 
     @Test
     public void testAttributeDiffAdded() {
-        Optional<Integer> oldValue = null;
-        Optional<Integer> newValue = Optional.of(1);
+        Integer oldValue = null;
+        Integer newValue = 1;
         AttributeDiff diff = new GenericAttributeDiffImpl(oldValue, newValue);
-        assertTrue(diff.getType() == AttributeDiff.TYPE.ADDED);
-        assertFalse(diff.getOldValue().isPresent());
-        assertTrue(diff.getNewValue().equals(newValue));
+        assertEquals(AttributeDiff.TYPE.ADDED, diff.getType());
+        assertNull(diff.getOldValue());
+        assertEquals(newValue, diff.getNewValue());
 
-        oldValue = Optional.absent();
+        oldValue = null;
         diff = new GenericAttributeDiffImpl(oldValue, newValue);
-        assertTrue(diff.getType() == AttributeDiff.TYPE.ADDED);
-        assertFalse(diff.getOldValue().isPresent());
-        assertTrue(diff.getNewValue().equals(newValue));
+        assertEquals(AttributeDiff.TYPE.ADDED, diff.getType());
+        assertNull(diff.getOldValue());
+        assertEquals(newValue, diff.getNewValue());
     }
 
     @Test
     public void testAttributeDiffModified() {
-        Optional<Integer> oldValue = Optional.of(1);
-        Optional<Integer> newValue = Optional.of(2);
+        Integer oldValue = 1;
+        Integer newValue = 2;
         AttributeDiff diff = new GenericAttributeDiffImpl(oldValue, newValue);
-        assertTrue(diff.getType() == AttributeDiff.TYPE.MODIFIED);
-        assertTrue(diff.getOldValue().equals(oldValue));
-        assertTrue(diff.getNewValue().equals(newValue));
+        assertEquals(AttributeDiff.TYPE.MODIFIED, diff.getType());
+        assertEquals(oldValue, diff.getOldValue());
+        assertEquals(newValue, diff.getNewValue());
     }
 
     @Test
     public void testAttributeDiffNoChange() {
-        Optional<Integer> oldValue = Optional.of(1);
-        Optional<Integer> newValue = Optional.of(1);
+        Integer oldValue = 1;
+        Integer newValue = 1;
         AttributeDiff diff = new GenericAttributeDiffImpl(oldValue, newValue);
-        assertTrue(diff.getType() == AttributeDiff.TYPE.NO_CHANGE);
-        assertTrue(diff.getOldValue().equals(oldValue));
-        assertTrue(diff.getNewValue().equals(newValue));
-
-        oldValue = Optional.absent();
-        newValue = Optional.absent();
-        diff = new GenericAttributeDiffImpl(oldValue, newValue);
-        assertTrue(diff.getType() == AttributeDiff.TYPE.NO_CHANGE);
-        assertFalse(diff.getOldValue().isPresent());
-        assertFalse(diff.getNewValue().isPresent());
+        assertEquals(AttributeDiff.TYPE.NO_CHANGE, diff.getType());
+        assertEquals(oldValue, diff.getOldValue());
+        assertEquals(newValue, diff.getNewValue());
 
         oldValue = null;
         newValue = null;
         diff = new GenericAttributeDiffImpl(oldValue, newValue);
-        assertTrue(diff.getType() == AttributeDiff.TYPE.NO_CHANGE);
-        assertFalse(diff.getOldValue().isPresent());
-        assertFalse(diff.getNewValue().isPresent());
+        assertEquals(AttributeDiff.TYPE.NO_CHANGE, diff.getType());
+        assertNull(diff.getOldValue());
+        assertNull(diff.getNewValue());
 
         oldValue = null;
-        newValue = Optional.absent();
-        diff = new GenericAttributeDiffImpl(oldValue, newValue);
-        assertTrue(diff.getType() == AttributeDiff.TYPE.NO_CHANGE);
-        assertFalse(diff.getOldValue().isPresent());
-        assertFalse(diff.getNewValue().isPresent());
-
-        oldValue = Optional.absent();
         newValue = null;
         diff = new GenericAttributeDiffImpl(oldValue, newValue);
-        assertTrue(diff.getType() == AttributeDiff.TYPE.NO_CHANGE);
-        assertFalse(diff.getOldValue().isPresent());
-        assertFalse(diff.getNewValue().isPresent());
+        assertEquals(AttributeDiff.TYPE.NO_CHANGE, diff.getType());
+        assertNull(diff.getOldValue());
+        assertNull(diff.getNewValue());
     }
 }

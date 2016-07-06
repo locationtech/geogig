@@ -555,8 +555,8 @@ public class DefaultStepDefinitions {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Optional<?> oldValue = Optional.fromNullable(points1.getProperty("sp").getValue());
-        GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, Optional.of("new"));
+        Object oldValue = points1.getProperty("sp").getValue();
+        GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
         map.put(pointsType.getDescriptor("sp"), diff);
         FeatureDiff feaureDiff = new FeatureDiff(path, map, RevFeatureTypeImpl.build(pointsType),
                 RevFeatureTypeImpl.build(pointsType));

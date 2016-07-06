@@ -622,7 +622,8 @@ public class ResponseWriter {
         for (Ref branch : remoteBranches) {
             if (!(branch instanceof SymRef)) {
                 out.writeStartElement("Branch");
-                writeElement("remoteName", branch.namespace().replace(Ref.REMOTES_PREFIX + "/", ""));
+                writeElement("remoteName",
+                        branch.namespace().replace(Ref.REMOTES_PREFIX + "/", ""));
                 writeElement("name", branch.localName());
                 out.writeEndElement();
             }
@@ -759,9 +760,9 @@ public class ResponseWriter {
         if (result.getMergeReport().isPresent()
                 && result.getMergeReport().get().getReport().isPresent()) {
             MergeReport report = result.getMergeReport().get();
-            writeMergeResponse(Optional.fromNullable(report.getMergeCommit()), report.getReport()
-                    .get(), geogig, report.getOurs(), report.getPairs().get(0).getTheirs(), report
-                    .getPairs().get(0).getAncestor());
+            writeMergeResponse(Optional.fromNullable(report.getMergeCommit()),
+                    report.getReport().get(), geogig, report.getOurs(),
+                    report.getPairs().get(0).getTheirs(), report.getPairs().get(0).getAncestor());
         }
         out.writeEndElement();
     }
@@ -799,14 +800,12 @@ public class ResponseWriter {
             }
             writeElement("attributename", entry.getKey().getName().toString());
             writeElement("changetype", entry.getValue().getType().toString());
-            if (entry.getValue().getOldValue() != null
-                    && entry.getValue().getOldValue().isPresent()) {
-                writeElement("oldvalue", entry.getValue().getOldValue().get().toString());
+            if (entry.getValue().getOldValue() != null) {
+                writeElement("oldvalue", entry.getValue().getOldValue().toString());
             }
             if (entry.getValue().getNewValue() != null
-                    && entry.getValue().getNewValue().isPresent()
                     && !entry.getValue().getType().equals(TYPE.NO_CHANGE)) {
-                writeElement("newvalue", entry.getValue().getNewValue().get().toString());
+                writeElement("newvalue", entry.getValue().getNewValue().toString());
             }
             out.writeEndElement();
         }
@@ -937,8 +936,8 @@ public class ResponseWriter {
                         if (object.isPresent() && object.get() instanceof RevCommit) {
                             commit = (RevCommit) object.get();
                         } else {
-                            throw new CommandSpecException("Couldn't resolve id: "
-                                    + commitId.toString() + " to a commit");
+                            throw new CommandSpecException(
+                                    "Couldn't resolve id: " + commitId.toString() + " to a commit");
                         }
 
                         object = geogig.command(RevObjectParse.class)
@@ -1076,10 +1075,10 @@ public class ResponseWriter {
                         }
 
                         FeatureBuilder builder = new FeatureBuilder(featureType);
-                        GeogigSimpleFeature simpleFeature = (GeogigSimpleFeature) builder.build(
-                                revFeature.getId().toString(), revFeature);
-                        change = new GeometryChange(simpleFeature, ChangeType.MODIFIED, input
-                                .getPath(), crsCode);
+                        GeogigSimpleFeature simpleFeature = (GeogigSimpleFeature) builder
+                                .build(revFeature.getId().toString(), revFeature);
+                        change = new GeometryChange(simpleFeature, ChangeType.MODIFIED,
+                                input.getPath(), crsCode);
                         return change;
                     }
                 });
@@ -1173,9 +1172,9 @@ public class ResponseWriter {
         out.writeEndElement();
     }
 
-    public void writeStatistics(List<Statistics.FeatureTypeStats> stats,
-            RevCommit firstCommit, RevCommit lastCommit, int totalCommits, List<RevPerson> authors,
-            int totalAdded, int totalModified, int totalRemoved) throws XMLStreamException {
+    public void writeStatistics(List<Statistics.FeatureTypeStats> stats, RevCommit firstCommit,
+            RevCommit lastCommit, int totalCommits, List<RevPerson> authors, int totalAdded,
+            int totalModified, int totalRemoved) throws XMLStreamException {
         out.writeStartElement("Statistics");
         int numFeatureTypes = 0;
         int totalNumFeatures = 0;

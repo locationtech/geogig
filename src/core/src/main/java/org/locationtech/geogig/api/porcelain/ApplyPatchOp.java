@@ -119,8 +119,8 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
     protected Patch _call() throws RuntimeException {
         Preconditions.checkArgument(patch != null, "No patch file provided");
 
-        VerifyPatchResults verify = command(VerifyPatchOp.class).setPatch(patch)
-                .setReverse(reverse).call();
+        VerifyPatchResults verify = command(VerifyPatchOp.class).setPatch(patch).setReverse(reverse)
+                .call();
         Patch toReject = verify.getToReject();
         Patch toApply = verify.getToApply();
 
@@ -173,12 +173,12 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
                     .sortedDescriptors();
             SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
                     (SimpleFeatureType) newRevFeatureType.type());
-            Map<Name, Optional<?>> attrs = Maps.newHashMap();
+            Map<Name, Object> attrs = Maps.newHashMap();
             for (int i = 0; i < oldDescriptors.size(); i++) {
                 PropertyDescriptor descriptor = oldDescriptors.get(i);
                 if (newDescriptors.contains(descriptor)) {
                     Optional<Object> value = values.get(i);
-                    attrs.put(descriptor.getName(), value);
+                    attrs.put(descriptor.getName(), value.orNull());
                 }
             }
             Set<Entry<PropertyDescriptor, AttributeDiff>> featureDiffs = diff.getDiffs().entrySet();
@@ -186,15 +186,14 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
                     .iterator(); iterator.hasNext();) {
                 Entry<PropertyDescriptor, AttributeDiff> entry = iterator.next();
                 if (!entry.getValue().getType().equals(TYPE.REMOVED)) {
-                    Optional<?> oldValue = attrs.get(entry.getKey().getName());
+                    Object oldValue = attrs.get(entry.getKey().getName());
                     attrs.put(entry.getKey().getName(), entry.getValue().applyOn(oldValue));
                 }
             }
-            Set<Entry<Name, Optional<?>>> entries = attrs.entrySet();
-            for (Iterator<Entry<Name, Optional<?>>> iterator = entries.iterator(); iterator
-                    .hasNext();) {
-                Entry<Name, Optional<?>> entry = iterator.next();
-                featureBuilder.set(entry.getKey(), entry.getValue().orNull());
+            Set<Entry<Name, Object>> entries = attrs.entrySet();
+            for (Iterator<Entry<Name, Object>> iterator = entries.iterator(); iterator.hasNext();) {
+                Entry<Name, Object> entry = iterator.next();
+                featureBuilder.set(entry.getKey(), entry.getValue());
 
             }
 
@@ -224,8 +223,8 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
         List<AttributeDescriptor> added = Lists.newArrayList();
 
         Set<Entry<PropertyDescriptor, AttributeDiff>> featureDiffs = diff.getDiffs().entrySet();
-        for (Iterator<Entry<PropertyDescriptor, AttributeDiff>> iterator = featureDiffs.iterator(); iterator
-                .hasNext();) {
+        for (Iterator<Entry<PropertyDescriptor, AttributeDiff>> iterator = featureDiffs
+                .iterator(); iterator.hasNext();) {
             Entry<PropertyDescriptor, AttributeDiff> entry = iterator.next();
             if (entry.getValue().getType() == TYPE.REMOVED) {
                 removed.add(entry.getKey().getName().getLocalPart());

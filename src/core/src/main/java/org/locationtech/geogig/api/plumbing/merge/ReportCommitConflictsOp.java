@@ -172,7 +172,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                                                                    // setting the same value, it is
                                                                    // compatible, so no need to
                                                                    // check
-                                        if (!attrDiff.canBeAppliedOn(value)) {
+                                        if (!attrDiff.canBeAppliedOn(value.orNull())) {
                                             ok = false;
                                         }
                                         break;

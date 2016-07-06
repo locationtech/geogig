@@ -9,6 +9,14 @@
  */
 package org.locationtech.geogig.api.plumbing.diff;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.ADDED;
+import static org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.MODIFIED;
+import static org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.NO_CHANGE;
+import static org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.REMOVED;
+
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
@@ -25,21 +33,25 @@ public class GeometryAttributeDiff implements AttributeDiff {
 
     private TYPE type;
 
-    private Optional<Geometry> oldGeometry;
+    private @Nullable Geometry oldGeometry;
 
-    private Optional<Geometry> newGeometry;
+    private @Nullable Geometry newGeometry;
 
     private LCSGeometryDiffImpl diff;
 
-    public GeometryAttributeDiff(Optional<Geometry> oldGeom, Optional<Geometry> newGeom) {
+    public GeometryAttributeDiff(@Nullable Geometry oldGeom, @Nullable Geometry newGeom) {
         Preconditions.checkArgument(oldGeom != null || newGeom != null);
         oldGeometry = oldGeom;
         newGeometry = newGeom;
-        if (newGeom == null || !newGeom.isPresent()) {
+        if (newGeom == null) {
             type = TYPE.REMOVED;
-        } else if (oldGeom == null || !oldGeom.isPresent()) {
+        } else if (oldGeom == null) {
             type = TYPE.ADDED;
-        } else if (oldGeom.equals(newGeom)) {
+        } else if (oldGeom.equalsExact(newGeom)) {
+            // Note the use of Geometry.equalsExact() instead of equals() (which defers to
+            // equalsTopo() and may throw a TopologyException, while equalsExact() just compares
+            // coordinate by coordinate, which is what we intend to do here. Not doing topology
+            // validation which is up to the application.
             type = TYPE.NO_CHANGE;
             diff = new LCSGeometryDiffImpl(oldGeom, newGeom);
         } else {
@@ -62,13 +74,15 @@ public class GeometryAttributeDiff implements AttributeDiff {
         } else if (tokens[0].equals("A")) {
             Preconditions.checkArgument(tokens.length == 3);
             type = TYPE.ADDED;
-            newGeometry = Optional.fromNullable((Geometry) TextValueSerializer.fromString(
-                    FieldType.forBinding(Geometry.class), tokens[1]));
+            String wkt = tokens[1];
+            newGeometry = (Geometry) TextValueSerializer
+                    .fromString(FieldType.forBinding(Geometry.class), wkt);
         } else if (tokens[0].equals("R")) {
             Preconditions.checkArgument(tokens.length == 3);
             type = TYPE.REMOVED;
-            oldGeometry = Optional.fromNullable((Geometry) TextValueSerializer.fromString(
-                    FieldType.forBinding(Geometry.class), tokens[1]));
+            String wkt = tokens[1];
+            oldGeometry = (Geometry) TextValueSerializer
+                    .fromString(FieldType.forBinding(Geometry.class), wkt);
         } else {
             throw new IllegalArgumentException("Wrong difference definition:" + s);
         }
@@ -76,12 +90,12 @@ public class GeometryAttributeDiff implements AttributeDiff {
     }
 
     @Override
-    public Optional<?> getOldValue() {
+    public Geometry getOldValue() {
         return oldGeometry;
     }
 
     @Override
-    public Optional<?> getNewValue() {
+    public Geometry getNewValue() {
         return newGeometry;
     }
 
@@ -99,10 +113,9 @@ public class GeometryAttributeDiff implements AttributeDiff {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public Optional<?> applyOn(Optional<?> obj) {
-        Preconditions.checkState(canBeAppliedOn(obj));
+    public Geometry applyOn(@Nullable Object value) {
+        Preconditions.checkState(canBeAppliedOn(value));
         switch (type) {
         case ADDED:
             return newGeometry;
@@ -110,21 +123,24 @@ public class GeometryAttributeDiff implements AttributeDiff {
             return null;
         case MODIFIED:
         default:
-            return diff.applyOn((Optional<Geometry>) obj);
+            return diff.applyOn((Geometry) value);
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public boolean canBeAppliedOn(Optional<?> obj) {
-        switch (type) {
+    public boolean canBeAppliedOn(@Nullable Object value) {
+        checkArgument(!(value instanceof Optional));
+        switch (this.type) {
         case ADDED:
-            return obj == null;
+            return value == null;
         case REMOVED:
-            return obj.equals(oldGeometry);
+            checkNotNull(oldGeometry);
+            checkNotNull(value);
+            Geometry geom = (Geometry) value;
+            return geom.equalsExact(oldGeometry);
         case MODIFIED:
         default:
-            return diff.canBeAppliedOn((Optional<Geometry>) obj);
+            return diff.canBeAppliedOn((Geometry) value);
         }
 
     }
@@ -132,13 +148,9 @@ public class GeometryAttributeDiff implements AttributeDiff {
     public String toString() {
         switch (type) {
         case ADDED:
-            return "[MISSING] -> "
-                    + TextValueSerializer.asString(Optional.fromNullable((Object) newGeometry
-                            .orNull()));
+            return "[MISSING] -> " + TextValueSerializer.asString(newGeometry);
         case REMOVED:
-            return TextValueSerializer
-                    .asString(Optional.fromNullable((Object) oldGeometry.orNull()))
-                    + " -> [MISSING]";
+            return TextValueSerializer.asString(oldGeometry) + " -> [MISSING]";
         case MODIFIED:
         default:
             return diff.toString();
@@ -149,15 +161,9 @@ public class GeometryAttributeDiff implements AttributeDiff {
     public String asText() {
         switch (type) {
         case ADDED:
-            return type.name().toCharArray()[0]
-                    + "\t"
-                    + TextValueSerializer.asString(Optional.fromNullable((Object) newGeometry
-                            .orNull()));
+            return type.name().toCharArray()[0] + "\t" + TextValueSerializer.asString(newGeometry);
         case REMOVED:
-            return type.name().toCharArray()[0]
-                    + "\t"
-                    + TextValueSerializer.asString(Optional.fromNullable((Object) oldGeometry
-                            .orNull()));
+            return type.name().toCharArray()[0] + "\t" + TextValueSerializer.asString(oldGeometry);
         case MODIFIED:
         default:
             return type.name().toCharArray()[0] + "\t" + diff.asText();
@@ -191,19 +197,27 @@ public class GeometryAttributeDiff implements AttributeDiff {
         if (!(ad instanceof GeometryAttributeDiff)) {
             return true;
         }
-        GeometryAttributeDiff gad = (GeometryAttributeDiff) ad;
-        if (TYPE.REMOVED.equals(ad.getType()) && TYPE.REMOVED.equals(getType())) {
+        final GeometryAttributeDiff gad = (GeometryAttributeDiff) ad;
+        final TYPE myType = getType();
+        final TYPE otherType = ad.getType();
+        // if either side of the diff is a no change, then there's no conflict, regardless of the
+        // type of the other side
+        if (NO_CHANGE == myType || NO_CHANGE == otherType) {
             return false;
         }
-        if (TYPE.MODIFIED.equals(ad.getType()) && TYPE.MODIFIED.equals(getType())) {
+
+        if (REMOVED == myType && REMOVED == otherType) {
+            return false;
+        }
+        if (MODIFIED == myType && MODIFIED == otherType) {
             if (gad.diff.equals(diff)) {
                 return false;
             } else {
                 return !gad.canBeAppliedOn(newGeometry);
             }
         }
-        if (TYPE.ADDED.equals(ad.getType()) && TYPE.ADDED.equals(getType())) {
-            return !gad.newGeometry.equals(newGeometry);
+        if (ADDED == myType && ADDED == otherType) {
+            return !gad.newGeometry.equalsExact(newGeometry);
         }
 
         return true;

@@ -57,9 +57,9 @@ public class LCSGeometryDiffImpl {
 
     private String diffText;
 
-    public LCSGeometryDiffImpl(Optional<Geometry> oldGeom, Optional<Geometry> newGeom) {
-        String oldText = oldGeom.isPresent() ? oldGeom.get().toText() : "";
-        String newText = newGeom.isPresent() ? newGeom.get().toText() : "";
+    public LCSGeometryDiffImpl(@Nullable Geometry oldGeom, @Nullable Geometry newGeom) {
+        String oldText = oldGeom == null ? "" : oldGeom.toText();
+        String newText = newGeom == null ? "" : newGeom.toText();
         diffMatchPatch = new DiffMatchPatch();
         LinkedList<Diff> diffs = diffMatchPatch.diff_main(oldText, newText);
         patches = diffMatchPatch.patch_make(diffs);
@@ -88,15 +88,19 @@ public class LCSGeometryDiffImpl {
     }
 
     public LCSGeometryDiffImpl(String s) {
-        String[] tokens = s.split("\t");
-        Preconditions.checkArgument(tokens.length == 2);
-        String[] countings = tokens[0].split("/");
+        // Use Splitter because String.split would return a 1 element array if the second token is
+        // empty, but Splitter returns an empty string
+        final List<String> tokens = Splitter.on('\t').splitToList(s);
+        Preconditions.checkArgument(tokens.size() == 2);
+        final String deletesInsertsUpdates = tokens.get(0); // format: <deletes>/<inserts>/<updates>
+        final String patch = tokens.get(1);
+        String[] countings = deletesInsertsUpdates.split("/");
         Preconditions.checkArgument(countings.length == 3);
         totalDeletions = Integer.parseInt(countings[0]);
         totalInsertions = Integer.parseInt(countings[1]);
         replacings = Integer.parseInt(countings[2]);
         diffMatchPatch = new DiffMatchPatch();
-        String unescaped = tokens[1].replace("\\n", "\n");
+        String unescaped = patch.replace("\\n", "\n");
         patches = (LinkedList<Patch>) diffMatchPatch.patch_fromText(unescaped);
     }
 
@@ -155,15 +159,14 @@ public class LCSGeometryDiffImpl {
         diffText = diffText.replace(" ]", "]");
     }
 
-    private String geomToStringOfCoordinates(Optional<Geometry> opt) {
-        if (!opt.isPresent()) {
+    private String geomToStringOfCoordinates(@Nullable Geometry geom) {
+        if (null == geom) {
             return "";
         }
         final Function<Coordinate, String> printCoords = (c) -> Double.toString(c.x) + ","
                 + Double.toString(c.y);
 
         StringBuilder sb = new StringBuilder();
-        Geometry geom = opt.get();
         sb.append(geom.getGeometryType() + " ");
         int n = geom.getNumGeometries();
         for (int i = 0; i < n; i++) {
@@ -171,8 +174,8 @@ public class LCSGeometryDiffImpl {
             if (subgeom instanceof Polygon) {
                 Polygon polyg = (Polygon) subgeom;
                 Coordinate[] coords = polyg.getExteriorRing().getCoordinates();
-                Iterator<String> iter = Iterators
-                        .transform(Iterators.forArray(coords), printCoords);
+                Iterator<String> iter = Iterators.transform(Iterators.forArray(coords),
+                        printCoords);
                 sb.append(Joiner.on(' ').join(iter));
                 for (int j = 0; j < polyg.getNumInteriorRing(); j++) {
                     coords = polyg.getInteriorRingN(j).getCoordinates();
@@ -185,8 +188,8 @@ public class LCSGeometryDiffImpl {
                 }
             } else {
                 Coordinate[] coords = subgeom.getCoordinates();
-                Iterator<String> iter = Iterators
-                        .transform(Iterators.forArray(coords), printCoords);
+                Iterator<String> iter = Iterators.transform(Iterators.forArray(coords),
+                        printCoords);
                 sb.append(Joiner.on(' ').join(iter));
                 sb.append(" " + SUBGEOM_SEPARATOR + " ");
             }
@@ -212,8 +215,8 @@ public class LCSGeometryDiffImpl {
         return new LCSGeometryDiffImpl(reversedPatches);
     }
 
-    public boolean canBeAppliedOn(Optional<Geometry> obj) {
-        String wkt = obj.isPresent() ? obj.get().toText() : "";
+    public boolean canBeAppliedOn(@Nullable Geometry obj) {
+        String wkt = obj == null ? "" : obj.toText();
         Object[] res = diffMatchPatch.patch_apply(patches, wkt);
         boolean[] bool = (boolean[]) res[1];
         for (int i = 0; i < bool.length; i++) {
@@ -224,16 +227,16 @@ public class LCSGeometryDiffImpl {
         return true;
     }
 
-    public Optional<Geometry> applyOn(Optional<Geometry> obj) {
+    @Nullable
+    public Geometry applyOn(@Nullable Geometry obj) {
         Preconditions.checkState(canBeAppliedOn(obj));
-        String wkt = obj.isPresent() ? obj.get().toText() : "";
+        String wkt = obj == null ? "" : obj.toText();
         String res = (String) diffMatchPatch.patch_apply(patches, wkt)[0];
         if (!res.isEmpty()) {
-            return Optional.fromNullable((Geometry) TextValueSerializer.fromString(
-                    FieldType.forBinding(Geometry.class), res));
-        } else {
-            return Optional.absent();
+            return (Geometry) TextValueSerializer.fromString(FieldType.forBinding(Geometry.class),
+                    res);
         }
+        return null;
     }
 
     /**
@@ -269,6 +272,9 @@ public class LCSGeometryDiffImpl {
             return false;
         }
         LCSGeometryDiffImpl d = (LCSGeometryDiffImpl) o;
+        if (this.patches.size() != d.patches.size()) {
+            return false;
+        }
         for (int i = 0; i < d.patches.size(); i++) {
             Patch patchA = patches.get(i);
             Patch patchB = d.patches.get(i);

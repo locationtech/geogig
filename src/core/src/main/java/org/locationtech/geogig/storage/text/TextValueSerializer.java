@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.util.Converters;
 import org.locationtech.geogig.storage.FieldType;
 
@@ -34,9 +35,9 @@ public class TextValueSerializer {
 
     static interface ValueSerializer {
 
-        public Object fromString(String in) throws ParseException;
+        public Object fromString(@Nullable String in) throws ParseException;
 
-        public String toString(Object value);
+        public String toString(@Nullable Object value);
 
     }
 
@@ -307,9 +308,13 @@ public class TextValueSerializer {
      * @param opt
      */
     public static String asString(Optional<Object> opt) {
-        final FieldType type = FieldType.forValue(opt);
+        return asString(opt.orNull());
+    }
+
+    public static String asString(@Nullable Object value) {
+        final FieldType type = FieldType.forValue(value);
         if (serializers.containsKey(type)) {
-            return serializers.get(type).toString(opt.orNull());
+            return serializers.get(type).toString(value);
         } else {
             throw new IllegalArgumentException("The specified type is not supported: " + type);
         }

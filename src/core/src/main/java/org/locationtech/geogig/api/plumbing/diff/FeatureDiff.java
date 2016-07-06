@@ -80,12 +80,11 @@ public class FeatureDiff {
                 Optional<Object> oldValue = oldValues.get(i);
                 PropertyDescriptor descriptor = oldAttributes.get(i);
                 if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
-                    diffs.put(descriptor,
-                            new GeometryAttributeDiff(
-                                    Optional.fromNullable((Geometry) oldValue.orNull()),
-                                    Optional.absent()));
+                    diffs.put(descriptor, new GeometryAttributeDiff((Geometry) oldValue.orNull(),
+                            (Geometry) null));
                 } else {
-                    diffs.put(oldAttributes.get(i), new GenericAttributeDiffImpl(oldValue, null));
+                    diffs.put(oldAttributes.get(i),
+                            new GenericAttributeDiffImpl(oldValue.orNull(), null));
                 }
             }
         } else if (oldRevFeature == null) {
@@ -99,10 +98,11 @@ public class FeatureDiff {
                 Optional<Object> newValue = newValues.get(i);
                 PropertyDescriptor descriptor = newAttributes.get(i);
                 if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
-                    diffs.put(descriptor, new GeometryAttributeDiff(Optional.absent(),
-                            Optional.fromNullable((Geometry) newValue.orNull())));
+                    diffs.put(descriptor, new GeometryAttributeDiff((Geometry) null,
+                            (Geometry) newValue.orNull()));
                 } else {
-                    diffs.put(newAttributes.get(i), new GenericAttributeDiffImpl(null, newValue));
+                    diffs.put(newAttributes.get(i),
+                            new GenericAttributeDiffImpl(null, newValue.orNull()));
                 }
             }
         } else {
@@ -119,43 +119,38 @@ public class FeatureDiff {
                     if (!oldValue.equals(newValue) || all) {
                         if (Geometry.class
                                 .isAssignableFrom(oldAttributes.get(i).getType().getBinding())) {
-                            diffs.put(oldAttributes.get(i),
-                                    new GeometryAttributeDiff(
-                                            Optional.fromNullable((Geometry) oldValue.orNull()),
-                                            Optional.fromNullable((Geometry) newValue.orNull())));
+                            diffs.put(oldAttributes.get(i), new GeometryAttributeDiff(
+                                    (Geometry) oldValue.orNull(), (Geometry) newValue.orNull()));
                         } else {
-                            diffs.put(oldAttributes.get(i),
-                                    new GenericAttributeDiffImpl(oldValue, newValue));
+                            diffs.put(oldAttributes.get(i), new GenericAttributeDiffImpl(
+                                    oldValue.orNull(), newValue.orNull()));
                         }
                     }
                     updatedAttributes.set(idx);
                 } else {
                     if (Geometry.class
                             .isAssignableFrom(oldAttributes.get(i).getType().getBinding())) {
-                        diffs.put(oldAttributes.get(i),
-                                new GeometryAttributeDiff(
-                                        Optional.fromNullable((Geometry) oldValue.orNull()),
-                                        Optional.fromNullable((Geometry) null)));
+                        diffs.put(oldAttributes.get(i), new GeometryAttributeDiff(
+                                (Geometry) oldValue.orNull(), (Geometry) null));
                     } else {
                         diffs.put(oldAttributes.get(i),
-                                new GenericAttributeDiffImpl(oldValue, null));
+                                new GenericAttributeDiffImpl(oldValue.orNull(), null));
                     }
                 }
             }
             updatedAttributes.flip(0, newValues.size());
             for (int i = updatedAttributes.nextSetBit(0); i >= 0; i = updatedAttributes
                     .nextSetBit(i + 1)) {
-                if (Geometry.class.isAssignableFrom(newAttributes.get(i).getType().getBinding())) {
-                    diffs.put(newAttributes.get(i),
-                            new GeometryAttributeDiff(Optional.fromNullable((Geometry) null),
-                                    Optional.fromNullable((Geometry) newValues.get(i).orNull())));
+                PropertyDescriptor descriptor = newAttributes.get(i);
+                if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
+                    diffs.put(descriptor, new GeometryAttributeDiff((Geometry) null,
+                            (Geometry) newValues.get(i).orNull()));
                 } else {
-                    diffs.put(newAttributes.get(i),
-                            new GenericAttributeDiffImpl(null, newValues.get(i)));
+                    diffs.put(descriptor,
+                            new GenericAttributeDiffImpl(null, newValues.get(i).orNull()));
                 }
             }
         }
-
 
     }
 
@@ -241,8 +236,8 @@ public class FeatureDiff {
     public FeatureDiff reversed() {
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
         Set<Entry<PropertyDescriptor, AttributeDiff>> entries = diffs.entrySet();
-        for (Iterator<Entry<PropertyDescriptor, AttributeDiff>> iterator = entries.iterator(); iterator
-                .hasNext();) {
+        for (Iterator<Entry<PropertyDescriptor, AttributeDiff>> iterator = entries
+                .iterator(); iterator.hasNext();) {
             Entry<PropertyDescriptor, AttributeDiff> entry = iterator.next();
             map.put(entry.getKey(), entry.getValue().reversed());
 

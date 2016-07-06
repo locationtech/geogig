@@ -40,7 +40,7 @@ public class PatchSerializationTest extends RepositoryTestCase {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Optional<?> oldValue = Optional.fromNullable(points1B.getProperty("extra").getValue());
+        Object oldValue = points1B.getProperty("extra").getValue();
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
@@ -55,7 +55,7 @@ public class PatchSerializationTest extends RepositoryTestCase {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Optional<?> newValue = Optional.fromNullable(points1B.getProperty("extra").getValue());
+        Object newValue = points1B.getProperty("extra").getValue();
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(null, newValue);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map, RevFeatureTypeImpl.build(pointsType),
@@ -70,11 +70,10 @@ public class PatchSerializationTest extends RepositoryTestCase {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Optional<?> oldValue = Optional.fromNullable(points1.getProperty("sp").getValue());
-        GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, Optional.of("new"));
-        Optional<Geometry> oldGeometry = Optional.fromNullable((Geometry) points1.getProperty("pp")
-                .getValue());
-        Optional<Geometry> newGeometry = Optional.of(new WKTReader2().read("POINT (2 2)"));
+        Object oldValue = points1.getProperty("sp").getValue();
+        GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
+        Geometry oldGeometry = (Geometry) points1.getProperty("pp").getValue();
+        Geometry newGeometry = new WKTReader2().read("POINT (2 2)");
         GeometryAttributeDiff geomDiff = new GeometryAttributeDiff(oldGeometry, newGeometry);
         map.put(pointsType.getDescriptor("sp"), diff);
         map.put(pointsType.getDescriptor("pp"), geomDiff);
@@ -107,8 +106,8 @@ public class PatchSerializationTest extends RepositoryTestCase {
         RevFeatureType modifiedFeatureType = RevFeatureTypeImpl.build(modifiedPointsType);
         patch.addFeatureType(featureType);
         patch.addFeatureType(modifiedFeatureType);
-        patch.addAlteredTree(new FeatureTypeDiff(pointsName, featureType.getId(),
-                modifiedFeatureType.getId()));
+        patch.addAlteredTree(
+                new FeatureTypeDiff(pointsName, featureType.getId(), modifiedFeatureType.getId()));
         testPatch(patch);
     }
 

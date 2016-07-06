@@ -122,7 +122,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
                     for (int i = 0; i < descriptors.size(); i++) {
                         if (descriptors.get(i).equals(descriptor)) {
                             Optional<Object> value = feature.getValues().get(i);
-                            if (!attrDiff.canBeAppliedOn(value)) {
+                            if (!attrDiff.canBeAppliedOn(value.orNull())) {
                                 ok = false;
                             }
                             break;

@@ -28,7 +28,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -45,6 +49,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
+import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.MaxFeatureDiffsLimiter;
@@ -55,6 +60,7 @@ import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.mockito.ArgumentCaptor;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class PreOrderDiffWalkTest {
@@ -829,6 +835,75 @@ public class PreOrderDiffWalkTest {
         final RevTree right = createFeaturesTree(rightSource, "f", rightsize);
 
         checkFalseReturnValueOnConsumerFeatureAbortsTraversal(left, right);
+    }
+
+    @Test
+    public void checkExpectedNotificationOrder() {
+        final int size = 100_000;
+
+        final RevTree left = createFeaturesTree(leftSource, "", size);
+        ArrayList<NodeRef> leftFeatureNodes = Lists.newArrayList(new DepthTreeIterator("",
+                ObjectId.NULL, left, leftSource, Strategy.RECURSIVE_FEATURES_ONLY));
+
+        RevTreeBuilder rightBuilder = new RevTreeBuilder(rightSource);
+
+        Map<String, Node> rightChanges = new HashMap<>();
+        Collections.shuffle(leftFeatureNodes);
+        int i = 0;
+        for (NodeRef nr : leftFeatureNodes) {
+            Node node = nr.getNode();
+            if (i++ < 100) {
+                // make a change
+                node = Node.create(node.getName(), ObjectId.forString("changed-" + i),
+                        node.getMetadataId().or(ObjectId.NULL), TYPE.FEATURE, (Envelope) null);
+                rightChanges.put(node.getName(), node);
+            }
+            rightBuilder.put(node);
+        }
+
+        final RevTree right = rightBuilder.build();
+        rightSource.put(right);
+        List<String> expectedOrder = new ArrayList<>(rightChanges.keySet());
+        Collections.sort(expectedOrder, NodePathStorageOrder.INSTANCE);
+
+        final List<String> actualOrder = new ArrayList<>();
+
+        Consumer c = new Consumer() {
+
+            @Override
+            public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+                actualOrder.add(right.getNode().getName());
+                return true;
+            }
+
+            @Override
+            public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+                return true;
+            }
+
+            @Override
+            public void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
+            }
+
+            @Override
+            public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                    @Nullable Bucket left, @Nullable Bucket right) {
+            }
+
+            @Override
+            public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                    @Nullable Bucket left, @Nullable Bucket right) {
+                return true;
+            }
+        };
+
+        final boolean preserveIterationOrder = true;
+        PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, leftSource, rightSource,
+                preserveIterationOrder);
+        walk.walk(c);
+
+        assertEquals(expectedOrder.size(), actualOrder.size());
+        assertEquals(expectedOrder, actualOrder);
     }
 
     public void checkFalseReturnValueOnConsumerFeatureAbortsTraversal(RevTree left, RevTree right) {

@@ -21,38 +21,32 @@ public class FeatureInfo {
 
     private Feature feature;
 
-    private RevFeatureType featureType;
+    private ObjectId featureTypeId;
 
     private String path;
 
-    public FeatureInfo(Feature feature, RevFeatureType featureType, String path) {
+    public FeatureInfo(Feature feature, ObjectId featureTypeId, String path) {
         this.path = path;
         this.feature = feature;
-        this.featureType = featureType;
+        this.featureTypeId = featureTypeId;
     }
 
     /**
      * The feature
-     * 
-     * @return
      */
     public Feature getFeature() {
         return feature;
     }
 
     /**
-     * The feature type of the feature
-     * 
-     * @return
+     * The id of the {@link RevFeatureType feature type} of the feature
      */
-    public RevFeatureType getFeatureType() {
-        return featureType;
+    public ObjectId getFeatureTypeId() {
+        return featureTypeId;
     }
 
     /**
      * The path to where the feature is to be added
-     * 
-     * @return
      */
     public String getPath() {
         return path;

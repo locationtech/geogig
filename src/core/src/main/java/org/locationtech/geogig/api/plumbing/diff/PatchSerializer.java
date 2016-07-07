@@ -169,7 +169,7 @@ public class PatchSerializer {
 
         for (FeatureInfo feature : patch.getAddedFeatures()) {
             String path = feature.getPath();
-            sb.append("A\t" + path + "\t" + feature.getFeatureType().getId() + "\n");
+            sb.append("A\t" + path + "\t" + feature.getFeatureTypeId() + "\n");
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
             try {
@@ -181,7 +181,7 @@ public class PatchSerializer {
         }
         for (FeatureInfo feature : patch.getRemovedFeatures()) {
             String path = feature.getPath();
-            sb.append("R\t" + path + "\t" + feature.getFeatureType().getId() + "\n");
+            sb.append("R\t" + path + "\t" + feature.getFeatureTypeId() + "\n");
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
             try {

@@ -10,6 +10,7 @@
 package org.locationtech.geogig.web.api;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1045,11 +1046,19 @@ public class ResponseWriter {
             throws XMLStreamException {
         Iterator<GeometryChange> changeIterator = Iterators.transform(features,
                 new Function<FeatureInfo, GeometryChange>() {
+
+                    private Map<ObjectId, RevFeatureType> typeCache = new HashMap<>();
+
                     @Override
                     public GeometryChange apply(FeatureInfo input) {
                         GeometryChange change = null;
                         RevFeature revFeature = RevFeatureBuilder.build(input.getFeature());
-                        RevFeatureType featureType = input.getFeatureType();
+                        ObjectId typeId = input.getFeatureTypeId();
+                        RevFeatureType featureType = typeCache.get(typeId);
+                        if (null == featureType) {
+                            featureType = geogig.objectDatabase().getFeatureType(typeId);
+                            typeCache.put(typeId, featureType);
+                        }
                         Collection<PropertyDescriptor> attribs = featureType.type()
                                 .getDescriptors();
                         String crsCode = null;

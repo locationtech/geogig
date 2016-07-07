@@ -21,7 +21,6 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.DiffFeature;
@@ -259,8 +258,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
             }
             // if the feature types are different we report a conflict and do not
             // try to perform automerge
-            if (!theirsDiff.getNewObject().getMetadataId()
-                    .equals(oursDiff.newMetadataId())) {
+            if (!theirsDiff.getNewObject().getMetadataId().equals(oursDiff.newMetadataId())) {
                 consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
                 report.addConflict();
                 break;
@@ -279,9 +277,8 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                     consumer.unconflicted(theirsDiff);
                     report.addUnconflicted();
                 } else {
-                    RevFeatureType featureType = objectDatabase()
-                            .getFeatureType(oursDiff.getNewObject().getMetadataId());
-                    FeatureInfo merged = new FeatureInfo(mergedFeature, featureType, path);
+                    ObjectId featureTypeId = oursDiff.getNewObject().getMetadataId();
+                    FeatureInfo merged = new FeatureInfo(mergedFeature, featureTypeId, path);
                     consumer.merged(merged);
                     report.addMerged();
                 }

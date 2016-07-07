@@ -11,6 +11,7 @@ package org.locationtech.geogig.api.plumbing.diff;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -77,12 +78,11 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
 
         Patch patch = reverse ? this.patch.reversed() : this.patch;
 
-        Patch toApply = new Patch();
-        Patch toReject = new Patch();
-        for (RevFeatureType ft : patch.getFeatureTypes()) {
-            toApply.addFeatureType(ft);
-            toReject.addFeatureType(ft);
-        }
+        Map<ObjectId, RevFeatureType> typeCache = patch.featureTypes();
+
+        Patch toApply = new Patch(typeCache);
+        Patch toReject = new Patch(typeCache);
+
         String path;
         Optional<RevObject> obj;
         List<FeatureDiff> diffs = patch.getModifiedFeatures();
@@ -102,8 +102,8 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
             ImmutableList<PropertyDescriptor> descriptors = featureType.sortedDescriptors();
             Set<Entry<PropertyDescriptor, AttributeDiff>> attrDiffs = diff.getDiffs().entrySet();
             boolean ok = true;
-            for (Iterator<Entry<PropertyDescriptor, AttributeDiff>> iterator = attrDiffs.iterator(); iterator
-                    .hasNext();) {
+            for (Iterator<Entry<PropertyDescriptor, AttributeDiff>> iterator = attrDiffs
+                    .iterator(); iterator.hasNext();) {
                 Entry<PropertyDescriptor, AttributeDiff> entry = iterator.next();
                 AttributeDiff attrDiff = entry.getValue();
                 PropertyDescriptor descriptor = entry.getKey();
@@ -142,10 +142,10 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
             obj = command(RevObjectParse.class).setRefSpec(refSpec).call();
             if (obj.isPresent()) {
                 toReject.addAddedFeature(feature.getPath(), feature.getFeature(),
-                        feature.getFeatureType());
+                        getType(feature.getFeatureTypeId(), typeCache));
             } else {
                 toApply.addAddedFeature(feature.getPath(), feature.getFeature(),
-                        feature.getFeatureType());
+                        getType(feature.getFeatureTypeId(), typeCache));
             }
 
         }
@@ -155,23 +155,21 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
             obj = command(RevObjectParse.class).setRefSpec(refSpec).call();
             if (!obj.isPresent()) {
                 toReject.addRemovedFeature(feature.getPath(), feature.getFeature(),
-                        feature.getFeatureType());
+                        getType(feature.getFeatureTypeId(), typeCache));
             } else {
                 RevFeature revFeature = (RevFeature) obj.get();
                 DepthSearch depthSearch = new DepthSearch(objectDatabase());
                 Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(),
                         feature.getPath());
-                RevFeatureType revFeatureType = command(RevObjectParse.class)
-                        .setObjectId(noderef.get().getMetadataId()).call(RevFeatureType.class)
-                        .get();
+                ObjectId revFeatureTypeId = noderef.get().getMetadataId();
                 RevFeature patchRevFeature = RevFeatureBuilder.build(feature.getFeature());
                 if (revFeature.equals(patchRevFeature)
-                        && revFeatureType.equals(feature.getFeatureType())) {
+                        && revFeatureTypeId.equals(feature.getFeatureTypeId())) {
                     toApply.addRemovedFeature(feature.getPath(), feature.getFeature(),
-                            feature.getFeatureType());
+                            getType(feature.getFeatureTypeId(), typeCache));
                 } else {
                     toReject.addRemovedFeature(feature.getPath(), feature.getFeature(),
-                            feature.getFeatureType());
+                            getType(feature.getFeatureTypeId(), typeCache));
                 }
             }
         }
@@ -190,6 +188,17 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
 
         return new VerifyPatchResults(toApply, toReject);
 
+    }
+
+    private RevFeatureType getType(ObjectId featureTypeId,
+            Map<ObjectId, RevFeatureType> typeCache) {
+
+        RevFeatureType type = typeCache.get(featureTypeId);
+        if (null == type) {
+            type = objectDatabase().getFeatureType(featureTypeId);
+            typeCache.put(featureTypeId, type);
+        }
+        return type;
     }
 
 }

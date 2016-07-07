@@ -74,7 +74,7 @@ import com.vividsolutions.jts.geom.Envelope;
 @NonNullByDefault
 public class PreOrderDiffWalk {
 
-    public static final NodeStorageOrder ORDER = new NodeStorageOrder();
+    public static final NodeStorageOrder ORDER = NodeStorageOrder.INSTANCE;
 
     private static final ForkJoinPool FORK_JOIN_POOL;
 

@@ -27,6 +27,8 @@ public final class NodeStorageOrder extends Ordering<Node> implements Serializab
 
     private final NodePathStorageOrder nameOrder = new NodePathStorageOrder();
 
+    public static final NodeStorageOrder INSTANCE = new NodeStorageOrder();
+    
     @Override
     public int compare(Node nr1, Node nr2) {
         return nameOrder.compare(nr1.getName(), nr2.getName());

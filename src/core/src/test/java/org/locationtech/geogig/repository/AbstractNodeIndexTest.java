@@ -30,7 +30,6 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.storage.NodeStorageOrder;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
@@ -76,18 +75,8 @@ public abstract class AbstractNodeIndexTest extends Assert {
     }
 
     @Test
-    public void testOrder1k() throws Exception {
-        testOrder(1000);
-    }
-
-    @Test
     public void test10k() throws Exception {
         testNodes(1000 * 10);
-    }
-
-    @Test
-    public void testOrder10k() throws Exception {
-        testOrder(1000 * 10);
     }
 
     @Test
@@ -97,21 +86,9 @@ public abstract class AbstractNodeIndexTest extends Assert {
     }
 
     @Test
-    public void testOrder100k() throws Exception {
-        int count = 1000 * 100;
-        testOrder(count);
-    }
-
-    @Test
     public void test1M() throws Exception {
         int count = 1000 * 1000;
         testNodes(count);
-    }
-
-    @Test
-    public void testOrder1M() throws Exception {
-        int count = 1000 * 1000;
-        testOrder(count);
     }
 
     @Ignore
@@ -153,8 +130,8 @@ public abstract class AbstractNodeIndexTest extends Assert {
         }
         Iterator<Node> nodes = index.nodes();
         assertNotNull(nodes);
-        System.err.printf("Added %,d nodes to %s index in %s. Traversing...\n", count, index
-                .getClass().getSimpleName(), sw.stop());
+        System.err.printf("Added %,d nodes to %s index in %s. Traversing...\n", count,
+                index.getClass().getSimpleName(), sw.stop());
         final double indexCreateMem = getMemUsage();
 
         sw.reset().start();
@@ -162,9 +139,9 @@ public abstract class AbstractNodeIndexTest extends Assert {
         System.err.printf("Traversed %,d nodes in %s\n", size, sw.stop());
         final double indexTraversedMem = getMemUsage();
 
-        System.err
-                .printf("Initial memory usage: %.2fMB, after creating index: %.2fMB, after traversing: %.2fMB\n",
-                        initialMem, indexCreateMem, indexTraversedMem);
+        System.err.printf(
+                "Initial memory usage: %.2fMB, after creating index: %.2fMB, after traversing: %.2fMB\n",
+                initialMem, indexCreateMem, indexTraversedMem);
         if (count >= 1_000_000) {
             System.gc();
             Thread.sleep(1000);
@@ -175,24 +152,6 @@ public abstract class AbstractNodeIndexTest extends Assert {
         }
         System.err.println();
         assertEquals(count, size);
-    }
-
-    private void testOrder(final int count) throws Exception {
-
-        for (int i = 0; i < count; i++) {
-            Node node = node(i);
-            index.add(node);
-        }
-
-        final Iterator<Node> nodes = index.nodes();
-        Iterable<Node> iterable = new Iterable<Node>() {
-            @Override
-            public Iterator<Node> iterator() {
-                return nodes;
-            }
-        };
-        NodeStorageOrder ordering = new NodeStorageOrder();
-        assertTrue(ordering.isStrictlyOrdered(iterable));
     }
 
     private Node node(int i) {

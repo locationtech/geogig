@@ -74,9 +74,10 @@ import com.vividsolutions.jts.geom.Envelope;
 @NonNullByDefault
 public class PreOrderDiffWalk {
 
-    private static final NodeStorageOrder ORDER = new NodeStorageOrder();
+    public static final NodeStorageOrder ORDER = NodeStorageOrder.INSTANCE;
 
     private static final ForkJoinPool FORK_JOIN_POOL;
+
     static {
         int parallelism = Math.max(2, Runtime.getRuntime().availableProcessors() / 2);
         FORK_JOIN_POOL = new ForkJoinPool(parallelism);
@@ -172,8 +173,15 @@ public class PreOrderDiffWalk {
 
     private ObjectId metadataId;
 
+    private ForkJoinPool forkJoinPool;
+
     public PreOrderDiffWalk(RevTree left, RevTree right, ObjectStore leftSource,
             ObjectStore rightSource) {
+        this(left, right, leftSource, rightSource, false);
+    }
+
+    public PreOrderDiffWalk(RevTree left, RevTree right, ObjectStore leftSource,
+            ObjectStore rightSource, boolean preserveIterationOrder) {
 
         checkNotNull(left, "left");
         checkNotNull(right, "right");
@@ -184,6 +192,12 @@ public class PreOrderDiffWalk {
         this.right = right;
         this.leftSource = leftSource;
         this.rightSource = rightSource;
+        if (preserveIterationOrder) {
+            forkJoinPool = new ForkJoinPool(1);
+        } else {
+            // TODO: I think for parallel forkjoinpools we could use asyncMode = true
+            forkJoinPool = FORK_JOIN_POOL;
+        }
     }
 
     public void setDefaultMetadataId(ObjectId metadataId) {
@@ -237,7 +251,7 @@ public class PreOrderDiffWalk {
 
         TraverseTree task = new TraverseTree(new CancellableConsumer(consumer), leftSource,
                 rightSource, leftRef, rightRef);
-        FORK_JOIN_POOL.invoke(task);
+        forkJoinPool.invoke(task);
 
     }
 

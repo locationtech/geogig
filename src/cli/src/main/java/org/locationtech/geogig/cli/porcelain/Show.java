@@ -196,7 +196,7 @@ public class Show extends AbstractCommand implements CLICommand {
                 ansi.a(Strings.padEnd("Author:", 15, ' ')).fg(Color.GREEN)
                         .a(formatPerson(commit.getAuthor())).reset().newline();
                 ansi.a(Strings.padEnd("Committer:", 15, ' ')).fg(Color.GREEN)
-                        .a(formatPerson(commit.getAuthor())).reset().newline();
+                        .a(formatPerson(commit.getCommitter())).reset().newline();
                 ansi.a(Strings.padEnd("Author date:", 15, ' ')).a("(").fg(Color.RED)
                         .a(estimateSince(geogig.getPlatform(), commit.getAuthor().getTimestamp()))
                         .reset().a(") ").a(new Date(commit.getAuthor().getTimestamp())).newline();

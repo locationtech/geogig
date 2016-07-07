@@ -404,9 +404,12 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 mergeCommit = headCommit;
                 command(SaveMergeCommitMessageOp.class).setMessage(commitMessage).call();
             } else {
-                mergeCommit = command(CommitOp.class).setAllowEmpty(true).setMessage(commitMessage)
-                        .addParents(commits).setAuthor(authorName.orNull(), authorEmail.orNull())
-                        .call();
+                CommitOp commit = command(CommitOp.class).setAllowEmpty(true)
+                        .setMessage(commitMessage).addParents(commits);
+                if (authorName.isPresent() || authorEmail.isPresent()) {
+                    commit.setAuthor(authorName.orNull(), authorEmail.orNull());
+                }
+                mergeCommit = commit.call();
             }
         }
 

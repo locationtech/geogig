@@ -57,15 +57,19 @@ public class MergeOpTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    private static final String COMMITTER_NAME = "groldan";
+
+    private static final String COMMITTER_EMAIL = "groldan@boundlessgeo.com";
+
     @Override
     protected void setUpInternal() throws Exception {
         // These values should be used during a commit to set author/committer
         // TODO: author/committer roles need to be defined better, but for
         // now they are the same thing.
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
-                .setValue("groldan").call();
+                .setValue(COMMITTER_NAME).call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
-                .setValue("groldan@boundlessgeo.com").call();
+                .setValue(COMMITTER_EMAIL).call();
     }
 
     @Test
@@ -632,6 +636,41 @@ public class MergeOpTest extends RepositoryTestCase {
         assertEquals(2, mergeCommit.getParentIds().size());
         assertEquals(masterCommit.getId(), mergeCommit.getParentIds().get(0));
         assertEquals(branchCommit.getId(), mergeCommit.getParentIds().get(1));
+        assertEquals(COMMITTER_NAME, mergeCommit.getAuthor().getName().get());
+        assertEquals(COMMITTER_EMAIL, mergeCommit.getAuthor().getEmail().get());
+        assertEquals(COMMITTER_NAME, mergeCommit.getCommitter().getName().get());
+        assertEquals(COMMITTER_EMAIL, mergeCommit.getCommitter().getEmail().get());
+    }
+
+    @Test
+    public void testNoFastForwardSpecifyAuthor() throws Exception {
+        // Create the following revision graph
+        // o
+        // |
+        // o - Master - Point 1 added
+        // |
+        // o - TestBranch - Point 2 added
+
+        insertAndAdd(points1);
+        RevCommit masterCommit = geogig.command(CommitOp.class).call();
+        geogig.command(BranchCreateOp.class).setName("TestBranch").call();
+        geogig.command(CheckoutOp.class).setSource("TestBranch").call();
+        insertAndAdd(points2);
+        RevCommit branchCommit = geogig.command(CommitOp.class).call();
+        geogig.command(CheckoutOp.class).setSource("master").call();
+        Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
+        MergeOp mergeOp = geogig.command(MergeOp.class).setAuthor("Test Author", "author@test.com")
+                .addCommit(Suppliers.ofInstance(branch.getObjectId()));
+        mergeOp.setNoFastForward(true).call();
+        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        RevCommit mergeCommit = log.next();
+        assertEquals(2, mergeCommit.getParentIds().size());
+        assertEquals(masterCommit.getId(), mergeCommit.getParentIds().get(0));
+        assertEquals(branchCommit.getId(), mergeCommit.getParentIds().get(1));
+        assertEquals("Test Author", mergeCommit.getAuthor().getName().get());
+        assertEquals("author@test.com", mergeCommit.getAuthor().getEmail().get());
+        assertEquals(COMMITTER_NAME, mergeCommit.getCommitter().getName().get());
+        assertEquals(COMMITTER_EMAIL, mergeCommit.getCommitter().getEmail().get());
     }
 
     @Test

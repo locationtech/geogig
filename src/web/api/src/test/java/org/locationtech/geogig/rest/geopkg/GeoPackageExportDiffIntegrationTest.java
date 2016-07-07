@@ -17,7 +17,6 @@ import static org.locationtech.geogig.web.api.TestData.linesType;
 import static org.locationtech.geogig.web.api.TestData.point1_modified;
 import static org.locationtech.geogig.web.api.TestData.point2;
 import static org.locationtech.geogig.web.api.TestData.point3;
-import static org.locationtech.geogig.web.api.TestData.point_string_fid;
 import static org.locationtech.geogig.web.api.TestData.pointsType;
 import static org.locationtech.geogig.web.api.TestData.poly1;
 import static org.locationtech.geogig.web.api.TestData.poly2;
@@ -122,8 +121,7 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
         testData.add();
         RevCommit commit1 = geogig.command(CommitOp.class).setMessage("point1, line1, poly1")
                 .call();
-        testData.addAndCommit("modify point1; add point_string_fid, point2, line2, poly2",
-                TestData.point_string_fid, TestData.point1_modified,
+        testData.addAndCommit("modify point1; add point2, line2, poly2", TestData.point1_modified,
                 TestData.point2, TestData.line2, TestData.poly2);
         testData.insert(TestData.point3, TestData.line3, TestData.poly3);
         testData.remove(TestData.poly1);
@@ -140,17 +138,15 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
         File result = run(op);
         DataStore store = store(result);
         try {
-            assertFeatures(store, pointsType.getTypeName(), point_string_fid, point1_modified,
+            assertFeatures(store, pointsType.getTypeName(), point1_modified,
                     point2, point3);
             assertFeatures(store, linesType.getTypeName(), line2, line3);
             assertFeatures(store, polysType.getTypeName(), poly2, poly3);
 
             // Check _changes table to make sure all the changes are properly recorded
             Map<String, ChangeType> pointChanges = getChangesForTable(pointsType.getTypeName(), result);
-            assertEquals(4, pointChanges.size());
+            assertEquals(3, pointChanges.size());
             assertEquals(ChangeType.MODIFIED, pointChanges.get(point1_modified.getIdentifier().getID()));
-            assertEquals(ChangeType.ADDED,
-                    pointChanges.get(point_string_fid.getIdentifier().getID()));
             assertEquals(ChangeType.ADDED, pointChanges.get(point2.getIdentifier().getID()));
             assertEquals(ChangeType.ADDED, pointChanges.get(point3.getIdentifier().getID()));
 

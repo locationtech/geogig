@@ -418,8 +418,8 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
                 (nr) -> nr.name());
         assertEquals(2, nodeList.size());
-        assertTrue(nodeList.contains("1"));
-        assertTrue(nodeList.contains("2"));
+        assertTrue(nodeList.contains("Point.1"));
+        assertTrue(nodeList.contains("Point.2"));
     }
 
     @Test
@@ -513,8 +513,8 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
                 (nr) -> nr.name());
         assertEquals(2, nodeList.size());
-        assertTrue(nodeList.contains("1"));
-        assertTrue(nodeList.contains("2"));
+        assertTrue(nodeList.contains("Point.1"));
+        assertTrue(nodeList.contains("Point.2"));
     }
 
     @Test
@@ -583,7 +583,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         assertEquals(1, merge.getInt("conflicts"));
         JSONObject conflictedFeature = merge.getJSONObject("Feature");
         assertEquals("CONFLICT", conflictedFeature.getString("change"));
-        assertEquals("Points/1", conflictedFeature.getString("id"));
+        assertEquals("Points/Point.1", conflictedFeature.getString("id"));
     }
 
     private Status waitForTask(AsyncContext.AsyncCommand<?> result) {

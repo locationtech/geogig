@@ -19,7 +19,6 @@ import static org.locationtech.geogig.web.api.TestData.linesType;
 import static org.locationtech.geogig.web.api.TestData.point1;
 import static org.locationtech.geogig.web.api.TestData.point2;
 import static org.locationtech.geogig.web.api.TestData.point3;
-import static org.locationtech.geogig.web.api.TestData.point_string_fid;
 import static org.locationtech.geogig.web.api.TestData.pointsType;
 import static org.locationtech.geogig.web.api.TestData.poly1;
 import static org.locationtech.geogig.web.api.TestData.poly2;
@@ -117,15 +116,13 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         GeoGIG repo = context.getGeoGIG();
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
-        testData.addAndCommit("Added feature with non-numeric fid.", point_string_fid);
 
         Export op = buildCommand("format", "gpkg");
 
         File result = run(op);
         DataStore store = store(result);
         try {
-            assertFeatures(store, pointsType.getTypeName(), point_string_fid, point1, point2,
-                    point3);
+            assertFeatures(store, pointsType.getTypeName(), point1, point2, point3);
             assertFeatures(store, linesType.getTypeName(), line1, line2, line3);
             assertFeatures(store, polysType.getTypeName(), poly1, poly2, poly3);
         } finally {

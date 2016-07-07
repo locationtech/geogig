@@ -9,6 +9,11 @@
  */
 package org.locationtech.geogig.api.plumbing.merge;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.util.Iterator;
+
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.FeatureInfo;
 import org.locationtech.geogig.api.NodeRef;
@@ -22,15 +27,13 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.DiffFeature;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.FeatureDiff;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Suppliers;
+import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
 
@@ -74,31 +77,129 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
         if (consumer == null) {
             consumer = new MergeScenarioConsumer();
         }
-        final Optional<ObjectId> ancestor = command(FindCommonAncestor.class).setLeft(toMerge)
+        final Optional<ObjectId> ancestorOpt = command(FindCommonAncestor.class).setLeft(toMerge)
                 .setRight(mergeInto).call();
-        Preconditions.checkState(ancestor.isPresent(), "No ancestor commit could be found.");
+        Preconditions.checkState(ancestorOpt.isPresent(), "No ancestor commit could be found.");
 
-        MergeScenarioReport report = new MergeScenarioReport();
+        final ObjectId ancestor = ancestorOpt.get();
 
-        PeekingIterator<DiffEntry> mergeIntoDiffs = Iterators.peekingIterator(
-                command(DiffTree.class).setOldTree(ancestor.get()).setReportTrees(true)
-                        .setNewTree(mergeInto.getId()).setPreserveIterationOrder(true).call());
+        Iterator<DiffEntry> mergeIntoDiffs = command(DiffTree.class).setOldTree(ancestor)
+                .setReportTrees(true).setNewTree(mergeInto.getId()).setPreserveIterationOrder(true)
+                .call();
 
-        final RevCommit ancestorCommit = objectDatabase().getCommit(ancestor.get());
+        Iterator<DiffEntry> toMergeDiffs = command(DiffTree.class).setOldTree(ancestor)
+                .setReportTrees(true).setNewTree(toMerge.getId()).setPreserveIterationOrder(true)
+                .call();
+
+        Iterator<MergeDiffRef> tupleIterator = new MergeDiffIterator(mergeIntoDiffs, toMergeDiffs);
+
+        final RevCommit ancestorCommit = objectDatabase().getCommit(ancestor);
         final RevTree ancestorTree = objectDatabase().getTree(ancestorCommit.getTreeId());
 
-        PeekingIterator<DiffEntry> toMergeDiffs = Iterators.peekingIterator(
-                command(DiffTree.class).setOldTree(ancestor.get()).setReportTrees(true)
-                        .setNewTree(toMerge.getId()).setPreserveIterationOrder(true).call());
+        MergeScenarioReport report = process(tupleIterator, ancestorTree);
 
-        while (toMergeDiffs.hasNext()) {
-            processNext(mergeIntoDiffs, toMergeDiffs, ancestorTree, report);
+        return report;
+
+    }
+
+    private static class MergeDiffIterator extends AbstractIterator<MergeDiffRef> {
+
+        private PeekingIterator<DiffEntry> ours;
+
+        private PeekingIterator<DiffEntry> theirs;
+
+        MergeDiffIterator(Iterator<DiffEntry> ours, Iterator<DiffEntry> theirs) {
+            this.ours = Iterators.peekingIterator(ours);
+            this.theirs = Iterators.peekingIterator(theirs);
+        }
+
+        @Override
+        protected MergeDiffRef computeNext() {
+            DiffEntry left = ours.hasNext() ? ours.peek() : null;
+            DiffEntry right = theirs.hasNext() ? theirs.peek() : null;
+
+            if (left == null && right == null) {
+                return endOfData();
+            }
+            if (right == null) {
+                // no more their's diffs to process
+                return endOfData();
+            }
+
+            if (left != null && right != null) {
+                final int compare = DiffEntry.COMPARATOR.compare(left, right);
+                if (compare < 0) {
+                    // Only "our" branch modified the path, advance "our" iterator
+                    ours.next();
+                    right = null;
+                } else if (compare > 0) {
+                    // Only "their" branch modified the path, advance "their" iterator
+                    theirs.next();
+                    left = null;
+                } else {
+                    // Same path modified on both, advance both iterators
+                    ours.next();
+                    theirs.next();
+                }
+            } else if (left == null) {
+                theirs.next();
+            } else {
+                ours.next();
+            }
+
+            return new MergeDiffRef(left, right);
+        }
+
+    }
+
+    private static class MergeDiffRef {
+
+        private final DiffEntry ours;
+
+        private final DiffEntry theirs;
+
+        public MergeDiffRef(@Nullable DiffEntry ours, @Nullable DiffEntry theirs) {
+            checkArgument(!(ours == null && theirs == null));
+            this.ours = ours;
+            this.theirs = theirs;
+        }
+
+        public DiffEntry ours() {
+            return ours;
+        }
+
+        public DiffEntry theirs() {
+            return theirs;
+        }
+    }
+
+    private MergeScenarioReport process(Iterator<MergeDiffRef> tupleIterator,
+            RevTree ancestorTree) {
+
+        MergeScenarioReport report = new MergeScenarioReport();
+        while (tupleIterator.hasNext()) {
+            MergeDiffRef mr = tupleIterator.next();
+
+            DiffEntry ours = mr.ours();
+            DiffEntry theirs = mr.theirs();
+            if (ours == null) {
+                // Only "their" branch modified the path
+                consumer.unconflicted(theirs);
+                report.addUnconflicted();
+            } else if (theirs == null) {
+                // Only "our" branch modified the path
+                // nothing else to do
+            } else {
+                // both branches modifies the same path
+                processPossibleConflict(ours, theirs, ancestorTree, report);
+            }
+
             if (consumer.isCancelled()) {
                 break;
             }
         }
 
-        if (!consumer.isCancelled() || !toMergeDiffs.hasNext()) {
+        if (!consumer.isCancelled() || !tupleIterator.hasNext()) {
             consumer.finished();
         }
 
@@ -106,146 +207,103 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
 
     }
 
-    /**
-     * Process the next modified path in the diff.
-     * 
-     * @param mergeIntoDiffs diffs from "our" branch
-     * @param toMergeDiffs diffs from "their" branch
-     * @param ancestorTree root tree for the ancestor commit of both branches
-     * @param report the merge scenario report.
-     * @return
-     */
-    private void processNext(PeekingIterator<DiffEntry> mergeIntoDiffs,
-            PeekingIterator<DiffEntry> toMergeDiffs, RevTree ancestorTree,
-            MergeScenarioReport report) {
-        DiffEntry mergeIntoDiff = mergeIntoDiffs.hasNext() ? mergeIntoDiffs.peek() : null;
-        DiffEntry toMergeDiff = toMergeDiffs.peek();
-        // If merge into diff is null, that means the path will be unconflicted, no need to compare.
-        int compare = mergeIntoDiff != null
-                ? DiffEntry.COMPARATOR.compare(mergeIntoDiff, toMergeDiff) : 1;
-        if (compare < 0) {
-            // Only "our" branch modified the path, advance "our" iterator
-            mergeIntoDiffs.next();
-        } else if (compare > 0) {
-            // Only "their" branch modified the path, advance "their" iterator
-            toMergeDiffs.next();
+    private void processPossibleConflict(DiffEntry oursDiff, DiffEntry theirsDiff,
+            RevTree ancestorTree, MergeScenarioReport report) {
 
-            consumer.unconflicted(toMergeDiff);
-            report.addUnconflicted();
-        } else {
-            // Same path modified on both, advance both iterators
-            mergeIntoDiffs.next();
-            toMergeDiffs.next();
+        Preconditions.checkArgument(oursDiff.oldObject().equals(theirsDiff.oldObject()));
 
-            String path = mergeIntoDiff.oldPath() != null ? mergeIntoDiff.oldPath()
-                    : mergeIntoDiff.newPath();
+        final String path = oursDiff.path();
 
-            Optional<NodeRef> ancestorVersion = command(FindTreeChild.class).setChildPath(path)
-                    .setParent(ancestorTree).call();
-            ObjectId ancestorVersionId = ancestorVersion.isPresent()
-                    ? ancestorVersion.get().getNode().getObjectId() : ObjectId.NULL;
-            ObjectId theirs = toMergeDiff.getNewObject() == null ? ObjectId.NULL
-                    : toMergeDiff.getNewObject().getObjectId();
-            ObjectId ours = mergeIntoDiff.getNewObject() == null ? ObjectId.NULL
-                    : mergeIntoDiff.getNewObject().getObjectId();
-            if (!mergeIntoDiff.changeType().equals(toMergeDiff.changeType())) {
+        final Optional<NodeRef> ancestorVersion = oursDiff.oldObject();
+
+        final ObjectId ancestorVersionId = theirsDiff.oldObjectId();
+        final ObjectId ours = oursDiff.newObjectId();
+        final ObjectId theirs = theirsDiff.newObjectId();
+
+        if (!oursDiff.changeType().equals(theirsDiff.changeType())) {
+            consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
+            report.addConflict();
+            return;
+        }
+        switch (theirsDiff.changeType()) {
+        case ADDED:
+            if (theirsDiff.getNewObject().equals(oursDiff.getNewObject())) {
+                // already added in current branch, no need to do anything
+            } else {
+                if (TYPE.TREE == theirsDiff.newObjectType()) {
+                    checkForFeatureTypeConflict(ancestorVersion, oursDiff, theirsDiff, report);
+                } else {
+                    consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
+                    report.addConflict();
+                }
+            }
+            break;
+        case REMOVED:
+            // removed by both histories => no conflict and no need to do anything
+            break;
+        case MODIFIED:
+            if (TYPE.TREE == theirsDiff.newObjectType()) {
+                checkForFeatureTypeConflict(ancestorVersion, oursDiff, theirsDiff, report);
+                break;
+            }
+            final FeatureDiff toMergeFeatureDiff = command(DiffFeature.class)
+                    .setOldVersion(theirsDiff.getOldObject())
+                    .setNewVersion(theirsDiff.getNewObject()).call();
+            final FeatureDiff mergeIntoFeatureDiff = command(DiffFeature.class)
+                    .setOldVersion(oursDiff.getOldObject()).setNewVersion(oursDiff.getNewObject())
+                    .call();
+            if (toMergeFeatureDiff.conflicts(mergeIntoFeatureDiff)) {
                 consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
                 report.addConflict();
-                return;
+                break;
             }
-            switch (toMergeDiff.changeType()) {
-            case ADDED:
-                if (toMergeDiff.getNewObject().equals(mergeIntoDiff.getNewObject())) {
-                    // already added in current branch, no need to do anything
-                } else {
-                    final TYPE type = toMergeDiff.getNewObject().getType();
-                    if (TYPE.TREE.equals(type)) {
-                        boolean conflict = !toMergeDiff.getNewObject().getMetadataId()
-                                .equals(mergeIntoDiff.getNewObject().getMetadataId());
-                        if (conflict) {
-                            // In this case, we store the metadata id, not the element id
-                            ancestorVersionId = ancestorVersion.isPresent()
-                                    ? ancestorVersion.get().getMetadataId() : ObjectId.NULL;
-                            ours = mergeIntoDiff.getNewObject().getMetadataId();
-                            theirs = toMergeDiff.getNewObject().getMetadataId();
-                            consumer.conflicted(
-                                    new Conflict(path, ancestorVersionId, ours, theirs));
-                            report.addConflict();
-                        }
-                        // if the metadata ids match, it means both branches have added the same
-                        // tree, maybe with different content, but there is no need to do
-                        // anything. The correct tree is already there and the merge can be run
-                        // safely, so we do not add it neither as a conflicted change nor as an
-                        // unconflicted one
-                    } else {
-                        consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
-                        report.addConflict();
-                    }
-                }
-                break;
-            case REMOVED:
-                // removed by both histories => no conflict and no need to do anything
-                break;
-            case MODIFIED:
-                final TYPE type = toMergeDiff.getNewObject().getType();
-                if (TYPE.TREE.equals(type)) {
-                    boolean conflict = !toMergeDiff.getNewObject().getMetadataId()
-                            .equals(mergeIntoDiff.getNewObject().getMetadataId());
-                    if (conflict) {
-                        // In this case, we store the metadata id, not the element id
-                        ancestorVersionId = ancestorVersion.isPresent()
-                                ? ancestorVersion.get().getMetadataId() : ObjectId.NULL;
-                        ours = mergeIntoDiff.getNewObject().getMetadataId();
-                        theirs = toMergeDiff.getNewObject().getMetadataId();
-                        consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
-                        report.addConflict();
-                    }
-                } else {
-                    FeatureDiff toMergeFeatureDiff = command(DiffFeature.class)
-                            .setOldVersion(Suppliers.ofInstance(toMergeDiff.getOldObject()))
-                            .setNewVersion(Suppliers.ofInstance(toMergeDiff.getNewObject())).call();
-                    FeatureDiff mergeIntoFeatureDiff = command(DiffFeature.class)
-                            .setOldVersion(Suppliers.ofInstance(mergeIntoDiff.getOldObject()))
-                            .setNewVersion(Suppliers.ofInstance(mergeIntoDiff.getNewObject()))
-                            .call();
-                    if (toMergeFeatureDiff.conflicts(mergeIntoFeatureDiff)) {
-                        consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
-                        report.addConflict();
-                    } else {
-                        // if the feature types are different we report a conflict and do not
-                        // try to perform automerge
-                        if (!toMergeDiff.getNewObject().getMetadataId()
-                                .equals(mergeIntoDiff.getNewObject().getMetadataId())) {
-                            consumer.conflicted(
-                                    new Conflict(path, ancestorVersionId, ours, theirs));
-                            report.addConflict();
-                        } else if (!toMergeFeatureDiff.equals(mergeIntoFeatureDiff)) {
-                            Feature mergedFeature = command(MergeFeaturesOp.class)
-                                    .setFirstFeature(mergeIntoDiff.getNewObject())
-                                    .setSecondFeature(toMergeDiff.getNewObject())
-                                    .setAncestorFeature(mergeIntoDiff.getOldObject()).call();
-                            RevFeature revFeature = RevFeatureBuilder.build(mergedFeature);
-                            if (revFeature.getId().equals(toMergeDiff.newObjectId())) {
-                                // the resulting merged feature equals the feature to merge from
-                                // the branch, which means that it exists in the repo and there
-                                // is no need to add it
-                                consumer.unconflicted(toMergeDiff);
-                                report.addUnconflicted();
-                            } else {
-                                RevFeatureType featureType = command(RevObjectParse.class)
-                                        .setObjectId(mergeIntoDiff.getNewObject().getMetadataId())
-                                        .call(RevFeatureType.class).get();
-                                FeatureInfo merged = new FeatureInfo(mergedFeature, featureType,
-                                        path);
-                                consumer.merged(merged);
-                                report.addMerged();
-                            }
-                        }
-                    }
-                }
+            // if the feature types are different we report a conflict and do not
+            // try to perform automerge
+            if (!theirsDiff.getNewObject().getMetadataId()
+                    .equals(oursDiff.newMetadataId())) {
+                consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
+                report.addConflict();
                 break;
             }
 
+            if (!toMergeFeatureDiff.equals(mergeIntoFeatureDiff)) {
+                Feature mergedFeature = command(MergeFeaturesOp.class)
+                        .setFirstFeature(oursDiff.getNewObject())
+                        .setSecondFeature(theirsDiff.getNewObject())
+                        .setAncestorFeature(oursDiff.getOldObject()).call();
+                RevFeature revFeature = RevFeatureBuilder.build(mergedFeature);
+                if (revFeature.getId().equals(theirsDiff.newObjectId())) {
+                    // the resulting merged feature equals the feature to merge from
+                    // the branch, which means that it exists in the repo and there
+                    // is no need to add it
+                    consumer.unconflicted(theirsDiff);
+                    report.addUnconflicted();
+                } else {
+                    RevFeatureType featureType = objectDatabase()
+                            .getFeatureType(oursDiff.getNewObject().getMetadataId());
+                    FeatureInfo merged = new FeatureInfo(mergedFeature, featureType, path);
+                    consumer.merged(merged);
+                    report.addMerged();
+                }
+            }
+        }
+    }
+
+    private void checkForFeatureTypeConflict(Optional<NodeRef> ancestorVersion, DiffEntry oursDiff,
+            DiffEntry theirsDiff, MergeScenarioReport report) {
+
+        final String path = oursDiff.path();
+
+        final boolean featureTypeConflict = !theirsDiff.getNewObject().getMetadataId()
+                .equals(oursDiff.getNewObject().getMetadataId());
+        if (featureTypeConflict) {
+            // In this case, we store the metadata id, not the element id
+            ObjectId ancestorVersionId = ancestorVersion.isPresent()
+                    ? ancestorVersion.get().getMetadataId() : ObjectId.NULL;
+            ObjectId ours = oursDiff.getNewObject().getMetadataId();
+            ObjectId theirs = theirsDiff.getNewObject().getMetadataId();
+            consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
+            report.addConflict();
         }
     }
 }

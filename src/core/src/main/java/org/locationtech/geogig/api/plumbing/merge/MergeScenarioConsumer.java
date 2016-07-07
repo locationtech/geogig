@@ -64,6 +64,11 @@ public class MergeScenarioConsumer {
      */
     public final void cancel() {
         cancelled.set(true);
+        cancelled();
+    }
+
+    protected void cancelled() {
+
     }
 
 }

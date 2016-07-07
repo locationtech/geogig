@@ -118,7 +118,7 @@ public class DiffEntry {
         return oldObject;
     }
 
-    public Optional<NodeRef> oldObject(){
+    public Optional<NodeRef> oldObject() {
         return Optional.fromNullable(oldObject);
     }
 
@@ -138,7 +138,7 @@ public class DiffEntry {
         return newObject;
     }
 
-    public Optional<NodeRef> newObject(){
+    public Optional<NodeRef> newObject() {
         return Optional.fromNullable(newObject);
     }
 
@@ -189,6 +189,10 @@ public class DiffEntry {
      */
     public @Nullable String oldPath() {
         return oldObject == null ? null : oldObject.path();
+    }
+
+    public String path() {
+        return newObject == null ? oldObject.path() : newObject.path();
     }
 
     /**
@@ -278,4 +282,20 @@ public class DiffEntry {
             return nodeRef1.getType() == TYPE.FEATURE ? -1 : 1;
         }
     };
+
+    public TYPE newObjectType() {
+        return getNewObject().getType();
+    }
+
+    public TYPE oldObjectType() {
+        return getOldObject().getType();
+    }
+
+    public ObjectId newMetadataId() {
+        return getNewObject().getMetadataId();
+    }
+
+    public ObjectId oldMetadataId() {
+        return getOldObject().getMetadataId();
+    }
 }

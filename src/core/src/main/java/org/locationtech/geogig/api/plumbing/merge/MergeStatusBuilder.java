@@ -36,7 +36,6 @@ import org.locationtech.geogig.storage.PersistedIterable;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 
 public class MergeStatusBuilder extends MergeScenarioConsumer {
 
@@ -45,7 +44,8 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
      */
     private final static int BUFFER_SIZE = 100_000;
 
-    final List<Conflict> conflictsBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
+    final PersistedIterable<Conflict> conflictsBuffer = new PersistedIterable<>(null,
+            new ConflictSerializer(), BUFFER_SIZE, true);
 
     final PersistedIterable<DiffEntry> diffEntryBuffer = new PersistedIterable<>(null,
             new DiffEntrySerializer(), BUFFER_SIZE, true);
@@ -119,11 +119,6 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
     public void conflicted(Conflict conflict) {
         if (!ours) {
             conflictsBuffer.add(conflict);
-            if (conflictsBuffer.size() == BUFFER_SIZE) {
-                // Write the conflicts
-                context.command(ConflictsWriteOp.class).setConflicts(conflictsBuffer).call();
-                conflictsBuffer.clear();
-            }
         }
         if (reportedConflicts.get() < maxReportedConflicts) {
             mergeMsg.append("\t" + conflict.getPath() + "\n");
@@ -141,6 +136,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
 
     @Override
     public void merged(FeatureInfo featureInfo) {
+        System.err.println("Merged " + featureInfo);
         workingTree.insert(NodeRef.parentPath(featureInfo.getPath()), featureInfo.getFeature());
         Iterator<DiffEntry> unstaged = workingTree.getUnstaged(null);
         index.stage(progress, unstaged, 0);
@@ -149,12 +145,18 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
     }
 
     @Override
+    protected void cancelled() {
+        dispose();
+    }
+
+    @Override
     public void finished() {
         try {
             if (conflictsBuffer.size() > 0) {
                 // Write the conflicts
+                progress.setDescription(
+                        String.format("Saving %,d conflicts...", conflictsBuffer.size()));
                 context.command(ConflictsWriteOp.class).setConflicts(conflictsBuffer).call();
-                conflictsBuffer.clear();
             }
             if (diffEntryBuffer.size() > 0) {
                 progress.setDescription(String.format("Staging %,d unconflicted differences...",
@@ -163,7 +165,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
                 index.stage(progress, diffEntryBuffer.iterator(), diffEntryBuffer.size());
             }
         } finally {
-            diffEntryBuffer.close();
+            dispose();
         }
 
         if (reportedConflicts.get() > maxReportedConflicts) {
@@ -173,6 +175,14 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
                     .append("and " + (reportedConflicts.get() - maxReportedConflicts) + " more.\n");
         }
         conflictMsg.append("Automatic merge failed. Fix conflicts and then commit the result.\n");
+    }
+
+    private void dispose() {
+        try {
+            conflictsBuffer.close();
+        } finally {
+            diffEntryBuffer.close();
+        }
     }
 
     static class DiffEntrySerializer implements PersistedIterable.Serializer<DiffEntry> {
@@ -297,19 +307,91 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             return FormatCommonV2.readNode(in);
         }
 
-        private static final class InternalByteArrayOutputStream extends ByteArrayOutputStream {
+    }
 
-            public InternalByteArrayOutputStream(int initialBuffSize) {
-                super(initialBuffSize);
-            }
+    static class ConflictSerializer implements PersistedIterable.Serializer<Conflict> {
 
-            public byte[] bytes() {
-                return super.buf;
-            }
+        private static final byte HAS_ANCESTOR = 0b00000001;
 
-            public int size() {
-                return super.count;
+        private static final byte HAS_OURS = 0b00000010;
+
+        private static final byte HAS_THEIRS = 0b00000100;
+
+        private Lock writeBufferLock = new ReentrantLock();
+
+        private InternalByteArrayOutputStream tmpOut = new InternalByteArrayOutputStream(1024);
+
+        private DataOutputStream tmp = new DataOutputStream(tmpOut);
+
+        @Override
+        public int write(DataOutputStream out, Conflict value) throws IOException {
+
+            String path = value.getPath();
+            ObjectId ancestor = value.getAncestor();
+            ObjectId ours = value.getOurs();
+            ObjectId theirs = value.getTheirs();
+
+            byte flags = ancestor.isNull() ? 0x00 : HAS_ANCESTOR;
+            flags |= ours.isNull() ? 0x00 : HAS_OURS;
+            flags |= theirs.isNull() ? 0x00 : HAS_THEIRS;
+            writeBufferLock.lock();
+            int length;
+            try {
+                tmpOut.reset();
+                tmp.writeByte(flags);
+                tmp.writeUTF(path);
+                if (!ancestor.isNull()) {
+                    tmp.write(ancestor.getRawValue());
+                }
+                if (!ours.isNull()) {
+                    tmp.write(ours.getRawValue());
+                }
+                if (!theirs.isNull()) {
+                    tmp.write(theirs.getRawValue());
+                }
+                tmp.flush();
+
+                byte[] bytes = tmpOut.bytes();
+                length = tmpOut.size();
+                out.write(bytes, 0, length);
+            } finally {
+                writeBufferLock.unlock();
             }
+            return length;
+        }
+
+        @Override
+        public Conflict read(DataInputStream in) throws IOException {
+            byte flags = in.readByte();
+            boolean hasAncestor = (flags & HAS_ANCESTOR) == HAS_ANCESTOR;
+            boolean hasOurs = (flags & HAS_OURS) == HAS_OURS;
+            boolean hasTheirs = (flags & HAS_THEIRS) == HAS_THEIRS;
+            String path = in.readUTF();
+            ObjectId ancestor = hasAncestor ? readOid(in) : ObjectId.NULL;
+            ObjectId ours = hasOurs ? readOid(in) : ObjectId.NULL;
+            ObjectId theirs = hasTheirs ? readOid(in) : ObjectId.NULL;
+            return new Conflict(path, ancestor, ours, theirs);
+        }
+
+        private ObjectId readOid(DataInputStream in) throws IOException {
+            byte[] raw = new byte[ObjectId.NUM_BYTES];
+            in.readFully(raw);
+            return ObjectId.createNoClone(raw);
+        }
+    }
+
+    private static final class InternalByteArrayOutputStream extends ByteArrayOutputStream {
+
+        public InternalByteArrayOutputStream(int initialBuffSize) {
+            super(initialBuffSize);
+        }
+
+        public byte[] bytes() {
+            return super.buf;
+        }
+
+        public int size() {
+            return super.count;
         }
     }
 }

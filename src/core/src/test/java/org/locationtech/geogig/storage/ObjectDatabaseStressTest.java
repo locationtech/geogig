@@ -40,7 +40,6 @@ import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
@@ -150,11 +149,7 @@ public abstract class ObjectDatabaseStressTest {
             Future<?> future = executor.submit(new Runnable() {
                 @Override
                 public void run() {
-                    // Stopwatch sw = Stopwatch.createStarted();
                     db.putAll(objects, listener);
-                    // sw.stop();
-                    // System.err.printf("\t%s inserted %,d in %s\n",
-                    // Thread.currentThread().getName(), myCount, sw);
                 }
             });
             futures.add(future);
@@ -313,12 +308,7 @@ public abstract class ObjectDatabaseStressTest {
     }
 
     public Iterator<RevObject> asObjects(Iterator<ObjectId> ids) {
-        return Iterators.transform(ids, new Function<ObjectId, RevObject>() {
-            @Override
-            public RevObject apply(ObjectId input) {
-                return fakeObject(input);
-            }
-        });
+        return Iterators.transform(ids, (id) -> fakeObject(id));
     }
 
     private RevObject fakeObject(int i) {

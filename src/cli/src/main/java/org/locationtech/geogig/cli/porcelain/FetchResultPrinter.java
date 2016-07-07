@@ -28,8 +28,8 @@ class FetchResultPrinter {
             for (ChangedRef ref : entry.getValue()) {
                 String line;
                 if (ref.getType() == ChangeTypes.CHANGED_REF) {
-                    line = "   " + ref.getOldRef().getObjectId().toString().substring(0, 7) + ".."
-                            + ref.getNewRef().getObjectId().toString().substring(0, 7) + "     "
+                    line = "   " + ref.getOldRef().getObjectId().toString().substring(0, 8) + ".."
+                            + ref.getNewRef().getObjectId().toString().substring(0, 8) + "     "
                             + ref.getOldRef().localName() + " -> " + ref.getOldRef().getName();
                 } else if (ref.getType() == ChangeTypes.ADDED_REF) {
                     String reftype = (ref.getNewRef().getName().startsWith(Ref.TAGS_PREFIX)) ? "tag"

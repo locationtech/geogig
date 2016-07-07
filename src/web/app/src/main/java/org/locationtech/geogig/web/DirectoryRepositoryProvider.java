@@ -265,12 +265,12 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
             }
         }
 
-        Context context = GlobalContextBuilder.builder.build(hints);
+        Context context = GlobalContextBuilder.builder().build(hints);
 
         GeoGIG geogig;
         if (repo.toFile().exists()) {
             try {
-                geogig = new GeoGIG(context, repo.toFile());
+                geogig = new GeoGIG(context);
             } catch (Exception e) {
                 geogig = new GeoGIG(context);
             }

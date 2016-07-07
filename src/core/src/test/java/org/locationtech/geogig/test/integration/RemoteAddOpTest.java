@@ -43,6 +43,15 @@ public class RemoteAddOpTest extends RepositoryTestCase {
     }
 
     @Test
+    public void testInvalidName() {
+        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
+        remoteAdd.setName("ma..er").setURL("http://test.com").call();
+    }
+
+    @Test
     public void testNullURL() {
         final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
 

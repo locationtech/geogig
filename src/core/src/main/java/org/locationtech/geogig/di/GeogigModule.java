@@ -16,6 +16,7 @@ import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.DefaultPlatform;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.hooks.CommandHooksDecorator;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Index;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
@@ -80,7 +81,8 @@ public class GeogigModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), Decorator.class);
         bind(DecoratorProvider.class).in(Scopes.SINGLETON);
 
-        bind(Platform.class).to(DefaultPlatform.class).asEagerSingleton();
+        bind(Platform.class).toProvider(new PlatformProvider(binder().getProvider(Hints.class)))
+                .in(Scopes.SINGLETON);
 
         bind(Repository.class).in(Scopes.SINGLETON);
         bind(ConfigDatabase.class).to(IniFileConfigDatabase.class).in(Scopes.SINGLETON);
@@ -91,8 +93,8 @@ public class GeogigModule extends AbstractModule {
         bind(ObjectDatabase.class).to(FileObjectDatabase.class).in(Scopes.SINGLETON);
         bind(RefDatabase.class).to(FileRefDatabase.class).in(Scopes.SINGLETON);
 
-        bind(ObjectSerializingFactory.class).to(DataStreamSerializationFactoryV2.class).in(
-                Scopes.SINGLETON);
+        bind(ObjectSerializingFactory.class).to(DataStreamSerializationFactoryV2.class)
+                .in(Scopes.SINGLETON);
 
         bind(DeduplicationService.class).to(HeapDeduplicationService.class).in(Scopes.SINGLETON);
 
@@ -101,6 +103,25 @@ public class GeogigModule extends AbstractModule {
         bindConflictCheckingInterceptor();
 
         bindDecorator(binder(), new CommandHooksDecorator());
+    }
+
+    private static class PlatformProvider implements Provider<Platform> {
+        private final Provider<Hints> hints;
+
+        private Platform resolved;
+
+        public PlatformProvider(Provider<Hints> hints) {
+            this.hints = hints;
+        }
+
+        @Override
+        public Platform get() {
+            if (resolved == null) {
+                Hints hints = this.hints.get();
+                resolved = (Platform) hints.get(Hints.PLATFORM).or(new DefaultPlatform());
+            }
+            return resolved;
+        }
     }
 
     private void bindConflictCheckingInterceptor() {

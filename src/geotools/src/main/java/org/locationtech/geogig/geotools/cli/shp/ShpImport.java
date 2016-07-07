@@ -73,6 +73,12 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
     String fidAttribute;
 
     /**
+     * Charset to use for decoding attributes in DBF file
+     */
+    @Parameter(names = { "--charset" }, description = "Use the specified charset to decode attributes. Default is ISO-8859-1.")
+    String charset = "ISO-8859-1";
+
+    /**
      * Executes the import command using the provided options.
      */
     @Override
@@ -84,7 +90,7 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
 
             DataStore dataStore = null;
             try {
-                dataStore = getDataStore(shp);
+                dataStore = getDataStore(shp, charset);
             } catch (InvalidParameterException e) {
                 cli.getConsole().println(
                         "The shapefile '" + shp + "' could not be found, skipping...");
@@ -118,7 +124,7 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
             } catch (GeoToolsOpException e) {
                 switch (e.statusCode) {
                 case NO_FEATURES_FOUND:
-                    throw new CommandFailedException("No features were found in the shapefile.", e);
+                    throw new CommandFailedException("No features were found in the shapefile.", true);
                 case UNABLE_TO_GET_NAMES:
                     throw new CommandFailedException(
                             "Unable to get feature types from the shapefile.", e);
@@ -132,7 +138,7 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
                     throw new CommandFailedException(
                             "The feature type of the data to import does not match the feature type of the destination tree and cannot be imported\n"
                                     + "USe the --force-featuretype switch to import using the original featuretype and crete a mixed type tree",
-                            e);
+                                    true);
                 default:
                     throw new CommandFailedException("Import failed with exception: "
                             + e.statusCode.name(), e);

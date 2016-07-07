@@ -14,13 +14,13 @@ import org.locationtech.geogig.api.ObjectId;
 public class AuditTable {
     private final String tableName, featureTreePath, auditTable;
 
-    private final ObjectId rootTreeId;
+    private final ObjectId commitId;
 
-    AuditTable(String tableName, String featureTreePath, String auditTable, ObjectId rootTree) {
+    AuditTable(String tableName, String featureTreePath, String auditTable, ObjectId commitId) {
         this.tableName = tableName;
         this.featureTreePath = featureTreePath;
         this.auditTable = auditTable;
-        rootTreeId = rootTree;
+        this.commitId = commitId;
     }
 
     public String getTableName() {
@@ -35,7 +35,7 @@ public class AuditTable {
         return auditTable;
     }
 
-    public ObjectId getRootTreeId() {
-        return rootTreeId;
+    public ObjectId getCommitId() {
+        return commitId;
     }
 }

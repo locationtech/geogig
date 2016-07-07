@@ -40,7 +40,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -92,7 +91,7 @@ public class WriteTree2Test extends RepositoryTestCase {
     @Test
     public void testEmptyRepoSingleStagedTree() {
         rightTree = createStageHeadTree(//
-        indexTree("roads", "a1", "d1", 10)//
+                indexTree("roads", "a1", "d1", 10)//
         );
 
         ObjectId newRepoRoot = command.call();
@@ -109,10 +108,10 @@ public class WriteTree2Test extends RepositoryTestCase {
     @Test
     public void testRename() {
         leftTree = createHeadTree(//
-        repoTree("roads", EMPTY_ID, null, 0) //
+                repoTree("roads", EMPTY_ID, null, 0) //
         );
         rightTree = createStageHeadTree(//
-        indexTree("roadsRenamed", EMPTY_ID, null, 0) //
+                indexTree("roadsRenamed", EMPTY_ID, null, 0) //
         );
 
         ObjectId newRepoRoot = command.call();
@@ -129,12 +128,12 @@ public class WriteTree2Test extends RepositoryTestCase {
     public void testRenameNested() {
         leftTree = createHeadTree(//
                 repoTree("roads", EMPTY_ID, null, 0), //
-                repoTree("roads/highways", "a2", "d1", 2),//
+                repoTree("roads/highways", "a2", "d1", 2), //
                 repoTree("roads/streets", "a3", "d2", 2) //
         );
         rightTree = createStageHeadTree(//
                 indexTree("roads", EMPTY_ID, null, 0), //
-                indexTree("roads/highways", "a2", "d1", 2),//
+                indexTree("roads/highways", "a2", "d1", 2), //
                 indexTree("roads/streetsRenamed", "a3", "d2", 2) //
         );
 
@@ -153,15 +152,15 @@ public class WriteTree2Test extends RepositoryTestCase {
     @Test
     public void testNoChanges() {
         leftTree = createHeadTree(//
-                repoTree("buildings", EMPTY_ID, null, 0),//
-                repoTree("buildings/stores", "a5", "d3", 5),//
-                repoTree("buildings/unknown", "a6", "d4", 5),//
+                repoTree("buildings", EMPTY_ID, null, 0), //
+                repoTree("buildings/stores", "a5", "d3", 5), //
+                repoTree("buildings/unknown", "a6", "d4", 5), //
                 repoTree("buildings/towers", "a7", "d5", 5)//
         );
         rightTree = createStageHeadTree(//
-                repoTree("buildings", EMPTY_ID, null, 0),//
-                repoTree("buildings/stores", "a5", "d3", 5),//
-                repoTree("buildings/unknown", "a6", "d4", 5),//
+                repoTree("buildings", EMPTY_ID, null, 0), //
+                repoTree("buildings/stores", "a5", "d3", 5), //
+                repoTree("buildings/unknown", "a6", "d4", 5), //
                 repoTree("buildings/towers", "a7", "d5", 5)//
         );
 
@@ -180,11 +179,11 @@ public class WriteTree2Test extends RepositoryTestCase {
     @Test
     public void testMetadataIdChangeOnly() {
         leftTree = createHeadTree(//
-                repoTree("buildings", EMPTY_ID, null, 0),//
+                repoTree("buildings", EMPTY_ID, null, 0), //
                 repoTree("buildings/stores", "a5", "d3", 5)// old md id is d3
         );
         rightTree = createStageHeadTree(//
-                indexTree("buildings", EMPTY_ID, null, 0),//
+                indexTree("buildings", EMPTY_ID, null, 0), //
                 indexTree("buildings/stores", "a5", "d31", 5)// new md id is d31
         );
 
@@ -201,11 +200,11 @@ public class WriteTree2Test extends RepositoryTestCase {
     public void testDeleteAll() {
         leftTree = createHeadTree(//
                 repoTree("roads", EMPTY_ID, null, 0), //
-                repoTree("roads/highways", "a2", "d1", 10),//
+                repoTree("roads/highways", "a2", "d1", 10), //
                 repoTree("roads/streets", "a3", "d2", 10), //
-                repoTree("buildings", EMPTY_ID, null, 0),//
-                repoTree("buildings/stores", "a5", "d3", 5),//
-                repoTree("buildings/unknown", "a6", "d4", 5),//
+                repoTree("buildings", EMPTY_ID, null, 0), //
+                repoTree("buildings/stores", "a5", "d3", 5), //
+                repoTree("buildings/unknown", "a6", "d4", 5), //
                 repoTree("buildings/towers", "a7", "d5", 5)//
         );
         rightTree = createStageHeadTree();
@@ -221,17 +220,17 @@ public class WriteTree2Test extends RepositoryTestCase {
     public void testDeletes() {
         leftTree = createHeadTree(//
                 repoTree("roads", EMPTY_ID, null, 0), //
-                repoTree("roads/highways", "a2", "d1", 10),//
+                repoTree("roads/highways", "a2", "d1", 10), //
                 repoTree("roads/streets", "a3", "d2", 10), //
-                repoTree("buildings", EMPTY_ID, null, 0),//
-                repoTree("buildings/stores", "a5", "d3", 5),//
-                repoTree("buildings/unknown", "a6", "d4", 5),//
+                repoTree("buildings", EMPTY_ID, null, 0), //
+                repoTree("buildings/stores", "a5", "d3", 5), //
+                repoTree("buildings/unknown", "a6", "d4", 5), //
                 repoTree("buildings/towers", "a7", "d5", 5)//
         );
         rightTree = createStageHeadTree(//
                 indexTree("roads", EMPTY_ID, null, 0), //
-                indexTree("roads/highways", "a2", "d1", 10),//
-                indexTree("buildings", EMPTY_ID, null, 0),//
+                indexTree("roads/highways", "a2", "d1", 10), //
+                indexTree("buildings", EMPTY_ID, null, 0), //
                 indexTree("buildings/stores", "a5", "d31", 5)//
         );
 
@@ -276,18 +275,18 @@ public class WriteTree2Test extends RepositoryTestCase {
     public void testNestedChanges() {
         leftTree = createHeadTree(//
                 repoTree("roads", EMPTY_ID, null, 0), //
-                repoTree("roads/highways", EMPTY_ID, "d1", 0),//
+                repoTree("roads/highways", EMPTY_ID, "d1", 0), //
                 repoTree("roads/streets", "a3", "d2", 1), //
-                repoTree("buildings", EMPTY_ID, null, 0),//
-                repoTree("buildings/stores", EMPTY_ID, "d3", 0),//
+                repoTree("buildings", EMPTY_ID, null, 0), //
+                repoTree("buildings/stores", EMPTY_ID, "d3", 0), //
                 repoTree("buildings/unknown", "a6", "d4", 1)//
         );
         rightTree = createStageHeadTree(//
                 indexTree("roads", EMPTY_ID, null, 0), //
-                indexTree("roads/highways", "a21", "d1", 1),// 1 added
+                indexTree("roads/highways", "a21", "d1", 1), // 1 added
                 indexTree("roads/streets", EMPTY_ID, "d2", 0), // 1 removed
-                indexTree("buildings", EMPTY_ID, null, 0),//
-                indexTree("buildings/stores", "a51", "d3", 2),// 2 added
+                indexTree("buildings", EMPTY_ID, null, 0), //
+                indexTree("buildings/stores", "a51", "d3", 2), // 2 added
                 indexTree("buildings/unknown", "a6", "d4", 1)// not changed
         );
 
@@ -310,24 +309,24 @@ public class WriteTree2Test extends RepositoryTestCase {
     public void testAllKindsOfChanges() {
         leftTree = createHeadTree(//
                 repoTree("roads", EMPTY_ID, null, 0), //
-                repoTree("roads/highways", "a2", "d1", 1),//
+                repoTree("roads/highways", "a2", "d1", 1), //
                 repoTree("roads/streets", "a3", "d2", 1), //
-                repoTree("buildings", "a4", null, 2),// mixed tree, contains features and subtrees
-                repoTree("buildings/stores", "a5", "d3", 1),//
-                repoTree("buildings/unknown", "a6", "d4", 1),//
+                repoTree("buildings", "a4", null, 2), // mixed tree, contains features and subtrees
+                repoTree("buildings/stores", "a5", "d3", 1), //
+                repoTree("buildings/unknown", "a6", "d4", 1), //
                 repoTree("buildings/towers", "a7", "d5", 5)//
         );
         rightTree = createStageHeadTree(//
                 indexTree("roads", EMPTY_ID, null, 0), //
-                indexTree("roads/highways", "a21", "d1", 2),// 1 feature added
+                indexTree("roads/highways", "a21", "d1", 2), // 1 feature added
                 indexTree("roads/streetsRenamed", "a3", "d2", 1), // tree renamed
-                indexTree("buildings", "a41", null, 1),// 1 feature removed
-                indexTree("buildings/stores", "a5", "d31", 1),// only metadata changed
-                indexTree("buildings/knownUnknown", "a61", "d41", 2),// renamed, changed tree and
-                                                                     // metadata
+                indexTree("buildings", "a41", null, 1), // 1 feature removed
+                indexTree("buildings/stores", "a5", "d31", 1), // only metadata changed
+                indexTree("buildings/knownUnknown", "a61", "d41", 2), // renamed, changed tree and
+                                                                      // metadata
                 // buildings/towers removed completely
-                indexTree("admin", "c1", "d5", 2),// new mixed tree, contains features and subtrees
-                indexTree("admin/area", "c2", "d6", 1),//
+                indexTree("admin", "c1", "d5", 2), // new mixed tree, contains features and subtrees
+                indexTree("admin/area", "c2", "d6", 1), //
                 indexTree("admin/line", EMPTY_ID, "d7", 0)//
         );
 
@@ -342,24 +341,24 @@ public class WriteTree2Test extends RepositoryTestCase {
         paths.addAll(refsByPath.keySet());
 
         Set<String> expected = set(//
-                "roads",//
-                "roads/highways",//
-                "roads/highways/highways.0",//
-                "roads/highways/highways.1",//
-                "roads/streetsRenamed",//
-                "roads/streetsRenamed/streets.0",//
-                "buildings",//
-                "buildings/buildings.0",//
-                "buildings/stores",//
-                "buildings/stores/stores.0",//
-                "buildings/knownUnknown",//
-                "buildings/knownUnknown/knownUnknown.0",//
-                "buildings/knownUnknown/knownUnknown.1",//
-                "admin",//
-                "admin/admin.0",//
-                "admin/admin.1",//
-                "admin/area",//
-                "admin/area/area.0",//
+                "roads", //
+                "roads/highways", //
+                "roads/highways/highways.0", //
+                "roads/highways/highways.1", //
+                "roads/streetsRenamed", //
+                "roads/streetsRenamed/streets.0", //
+                "buildings", //
+                "buildings/buildings.0", //
+                "buildings/stores", //
+                "buildings/stores/stores.0", //
+                "buildings/knownUnknown", //
+                "buildings/knownUnknown/knownUnknown.0", //
+                "buildings/knownUnknown/knownUnknown.1", //
+                "admin", //
+                "admin/admin.0", //
+                "admin/admin.1", //
+                "admin/area", //
+                "admin/area/area.0", //
                 "admin/line"//
         );
         assertEquals(expected, paths);
@@ -369,13 +368,13 @@ public class WriteTree2Test extends RepositoryTestCase {
     public void testPathFilteringTopLevelTree() {
         leftTree = createHeadTree(//
                 repoTree("roads", "a1", null, 2), //
-                repoTree("roads/highways", "a2", "d1", 1),//
-                repoTree("roads/streets", "a3", "d2", 2),//
+                repoTree("roads/highways", "a2", "d1", 1), //
+                repoTree("roads/streets", "a3", "d2", 2), //
                 repoTree("buildings", "a4", "d3", 2)// deleted tree completely
         );
         rightTree = createStageHeadTree(//
                 repoTree("roads", "a11", null, 1), // deleted 1 feature
-                repoTree("roads/highways", "a21", "d1", 3),// added 2 features
+                repoTree("roads/highways", "a21", "d1", 3), // added 2 features
                 repoTree("roads/streets", "a31", "d2", 1) // removed 1 feature
         );
 
@@ -390,7 +389,8 @@ public class WriteTree2Test extends RepositoryTestCase {
         entriesInCommon = difference.entriesInCommon().keySet();
         Set<String> entriesDiffering = difference.entriesDiffering().keySet();
 
-        assertEquals(set("buildings", "buildings/buildings.0", "buildings/buildings.1"), onlyOnLeft);
+        assertEquals(set("buildings", "buildings/buildings.0", "buildings/buildings.1"),
+                onlyOnLeft);
         assertEquals(set(), onlyOnRight);
         assertEquals(
                 set("roads", "roads/roads.0", "roads/streets/streets.0",
@@ -422,8 +422,8 @@ public class WriteTree2Test extends RepositoryTestCase {
 
         assertEquals(set(), onlyOnLeft);
         assertEquals(set("roads/highways/highways.1", "roads/highways/highways.2"), onlyOnRight);
-        assertEquals(set("roads/highways/highways.0", "roads/roads.0"), difference
-                .entriesInCommon().keySet());
+        assertEquals(set("roads/highways/highways.0", "roads/roads.0"),
+                difference.entriesInCommon().keySet());
     }
 
     @Test
@@ -433,7 +433,7 @@ public class WriteTree2Test extends RepositoryTestCase {
                 repoTree("highways", "a2", "d1", 2)//
         );
         rightTree = createStageHeadTree(//
-        repoTree("roads", "a1", null, 1)
+                repoTree("roads", "a1", null, 1)
         // deleted highways
         );
 
@@ -475,7 +475,8 @@ public class WriteTree2Test extends RepositoryTestCase {
 
         assertEquals(set(), onlyOnLeft);
         assertEquals(set("points"), entriesDiffering);
-        assertEquals(set("points/points.0", "lines", "lines/lines.0", "lines/lines.1"), onlyOnRight);
+        assertEquals(set("points/points.0", "lines", "lines/lines.0", "lines/lines.1"),
+                onlyOnRight);
         assertEquals(set("points/points.1", "points/points.2"), entriesInCommon);
 
         difference = runWithPathFilter(leftTree, rightTree, "lines/lines.1", "badFilter");
@@ -485,9 +486,8 @@ public class WriteTree2Test extends RepositoryTestCase {
         entriesInCommon = difference.entriesInCommon().keySet();
 
         assertEquals(set(), onlyOnLeft);
-        assertEquals(
-                set("lines/lines.0", "points", "points/points.0", "points/points.1",
-                        "points/points.2"), onlyOnRight);
+        assertEquals(set("lines/lines.0", "points", "points/points.0", "points/points.1",
+                "points/points.2"), onlyOnRight);
         assertEquals(set("lines"), entriesDiffering);
         assertEquals(set("lines/lines.1"), entriesInCommon);
     }
@@ -511,7 +511,8 @@ public class WriteTree2Test extends RepositoryTestCase {
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
 
         final boolean includeFeatures = true;
-        ImmutableMap<String, NodeRef> stagedRefs = getRefsByPath(rightTree.getId(), includeFeatures);
+        ImmutableMap<String, NodeRef> stagedRefs = getRefsByPath(rightTree.getId(),
+                includeFeatures);
 
         ImmutableMap<String, NodeRef> resultRefs = getRefsByPath(newRepoRoot, includeFeatures);
 
@@ -524,43 +525,19 @@ public class WriteTree2Test extends RepositoryTestCase {
         Iterator<NodeRef> iterator = geogig.command(LsTreeOp.class)
                 .setReference(newRepoRoot.toString()).setStrategy(Strategy.DEPTHFIRST_ONLY_TREES)
                 .call();
-        Function<NodeRef, String> keyFunction = new Function<NodeRef, String>() {
-            @Override
-            public String apply(NodeRef input) {
-                return input.path();
-            }
-        };
-        ImmutableMap<String, NodeRef> refsByPath = Maps.uniqueIndex(iterator, keyFunction);
+
+        ImmutableMap<String, NodeRef> refsByPath = Maps.uniqueIndex(iterator, (n) -> n.path());
         return refsByPath;
     }
 
-    private ImmutableMap<String, NodeRef> getRefsByPath(ObjectId repoRoot, boolean includeFeatures) {
+    private ImmutableMap<String, NodeRef> getRefsByPath(ObjectId repoRoot,
+            boolean includeFeatures) {
 
         Strategy strategy = includeFeatures ? Strategy.DEPTHFIRST : Strategy.DEPTHFIRST_ONLY_TREES;
         Iterator<NodeRef> iterator = geogig.command(LsTreeOp.class)
                 .setReference(repoRoot.toString()).setStrategy(strategy).call();
-        Function<NodeRef, String> keyFunction = new Function<NodeRef, String>() {
-            @Override
-            public String apply(NodeRef input) {
-                return input.path();
-            }
-        };
-        ImmutableMap<String, NodeRef> refsByPath = Maps.uniqueIndex(iterator, keyFunction);
+        ImmutableMap<String, NodeRef> refsByPath = Maps.uniqueIndex(iterator, (n) -> n.path());
         return refsByPath;
-    }
-
-    private void print(ObjectId treeId) {
-        System.err.println(treeId);
-        Iterator<NodeRef> iterator = geogig.command(LsTreeOp.class).setReference(treeId.toString())
-                .setStrategy(Strategy.DEPTHFIRST).call();
-        while (iterator.hasNext()) {
-            print(iterator.next());
-        }
-    }
-
-    private void print(NodeRef ref) {
-        System.err.printf("\t%s '%s' -> %s (%s)\n", ref.getType().toString().charAt(0), ref.path(),
-                ref.getObjectId(), ref.getNode().getMetadataId());
     }
 
     private void verifyRepositoryTree(String path, ObjectId repoTreeId) {
@@ -635,14 +612,9 @@ public class WriteTree2Test extends RepositoryTestCase {
     }
 
     private void verifyTreeStructure(ObjectId treeId, NodeRef... treeRefs) {
-        Function<NodeRef, String> function = new Function<NodeRef, String>() {
-            @Override
-            public String apply(NodeRef input) {
-                return input.path();
-            }
-        };
-        Set<String> expectedPaths = ImmutableSet.copyOf(Iterables.transform(
-                Arrays.asList(treeRefs), function));
+
+        Set<String> expectedPaths = ImmutableSet
+                .copyOf(Iterables.transform(Arrays.asList(treeRefs), (nr) -> nr.path()));
 
         ImmutableMap<String, NodeRef> refs = getTreeRefsByPath(treeId);
 

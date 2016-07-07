@@ -120,43 +120,36 @@ public class CreateOSMChangesetOp extends AbstractGeoGigOp<Iterator<ChangeContai
         Iterator<DiffEntry> iterator = Iterators.concat(nodeIterator, wayIterator);
 
         final EntityConverter converter = new EntityConverter();
-        Function<DiffEntry, ChangeContainer> function = new Function<DiffEntry, ChangeContainer>() {
-
-            @Override
-            @Nullable
-            public ChangeContainer apply(@Nullable DiffEntry diff) {
-                NodeRef ref = diff.changeType().equals(ChangeType.REMOVED) ? diff.getOldObject()
-                        : diff.getNewObject();
-                RevFeature revFeature = command(RevObjectParse.class).setObjectId(ref.getObjectId())
-                        .call(RevFeature.class).get();
-                RevFeatureType revFeatureType = command(RevObjectParse.class)
-                        .setObjectId(ref.getMetadataId()).call(RevFeatureType.class).get();
-                SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
-                        (SimpleFeatureType) revFeatureType.type());
-                ImmutableList<PropertyDescriptor> descriptors = revFeatureType.sortedDescriptors();
-                ImmutableList<Optional<Object>> values = revFeature.getValues();
-                for (int i = 0; i < descriptors.size(); i++) {
-                    PropertyDescriptor descriptor = descriptors.get(i);
-                    Optional<Object> value = values.get(i);
-                    featureBuilder.set(descriptor.getName(), value.orNull());
-                }
-                SimpleFeature feature = featureBuilder.buildFeature(ref.name());
-                Entity entity = converter.toEntity(feature, id);
-                EntityContainer container;
-                if (entity instanceof Node) {
-                    container = new NodeContainer((Node) entity);
-                } else {
-                    container = new WayContainer((Way) entity);
-                }
-
-                ChangeAction action = diff.changeType().equals(ChangeType.ADDED) ? ChangeAction.Create
-                        : diff.changeType().equals(ChangeType.MODIFIED) ? ChangeAction.Modify
-                                : ChangeAction.Delete;
-
-                return new ChangeContainer(container, action);
-
+        final Function<DiffEntry, ChangeContainer> function = (diff) -> {
+            NodeRef ref = diff.changeType().equals(ChangeType.REMOVED) ? diff.getOldObject()
+                    : diff.getNewObject();
+            RevFeature revFeature = command(RevObjectParse.class).setObjectId(ref.getObjectId())
+                    .call(RevFeature.class).get();
+            RevFeatureType revFeatureType = command(RevObjectParse.class)
+                    .setObjectId(ref.getMetadataId()).call(RevFeatureType.class).get();
+            SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
+                    (SimpleFeatureType) revFeatureType.type());
+            ImmutableList<PropertyDescriptor> descriptors = revFeatureType.sortedDescriptors();
+            ImmutableList<Optional<Object>> values = revFeature.getValues();
+            for (int i = 0; i < descriptors.size(); i++) {
+                PropertyDescriptor descriptor = descriptors.get(i);
+                Optional<Object> value = values.get(i);
+                featureBuilder.set(descriptor.getName(), value.orNull());
+            }
+            SimpleFeature feature = featureBuilder.buildFeature(ref.name());
+            Entity entity = converter.toEntity(feature, id);
+            EntityContainer container;
+            if (entity instanceof Node) {
+                container = new NodeContainer((Node) entity);
+            } else {
+                container = new WayContainer((Way) entity);
             }
 
+            ChangeAction action = diff.changeType().equals(ChangeType.ADDED) ? ChangeAction.Create
+                    : diff.changeType().equals(ChangeType.MODIFIED) ? ChangeAction.Modify
+                            : ChangeAction.Delete;
+
+            return new ChangeContainer(container, action);
         };
         return Iterators.transform(iterator, function);
     }

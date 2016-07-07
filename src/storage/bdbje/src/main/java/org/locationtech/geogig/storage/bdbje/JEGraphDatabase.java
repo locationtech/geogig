@@ -111,8 +111,6 @@ abstract class JEGraphDatabase extends SynchronizedGraphDatabase {
                 return;
             }
             this.graphDb = createDatabase();
-            // System.err.println("---> " + getClass().getName() + ".open() " + env.getHome());
-
             LOGGER.debug("Graph database opened at {}. Transactional: {}", env.getHome(), graphDb
                     .getConfig().getTransactional());
         }
@@ -205,7 +203,6 @@ abstract class JEGraphDatabase extends SynchronizedGraphDatabase {
                 LOGGER.trace("Database already closed.");
                 return;
             }
-            // System.err.println("<--- " + getClass().getName() + ".close() " + env.getHome());
             final File envHome = env.getHome();
             try {
                 LOGGER.debug("Closing graph database at {}", envHome);

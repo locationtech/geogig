@@ -63,15 +63,15 @@ import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
-import org.locationtech.geogig.web.api.commands.BranchWebOp;
+import org.locationtech.geogig.web.api.commands.Branch;
 import org.locationtech.geogig.web.api.commands.Commit;
 import org.locationtech.geogig.web.api.commands.Log.CommitWithChangeCounts;
 import org.locationtech.geogig.web.api.commands.LsTree;
-import org.locationtech.geogig.web.api.commands.RefParseWeb;
-import org.locationtech.geogig.web.api.commands.RemoteWebOp;
-import org.locationtech.geogig.web.api.commands.StatisticsWebOp;
-import org.locationtech.geogig.web.api.commands.TagWebOp;
-import org.locationtech.geogig.web.api.commands.UpdateRefWeb;
+import org.locationtech.geogig.web.api.commands.RefParse;
+import org.locationtech.geogig.web.api.commands.RemoteManagement;
+import org.locationtech.geogig.web.api.commands.Statistics;
+import org.locationtech.geogig.web.api.commands.Tag;
+import org.locationtech.geogig.web.api.commands.UpdateRef;
 import org.opengis.feature.type.GeometryType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.feature.type.PropertyType;
@@ -345,7 +345,7 @@ public class ResponseWriter {
         if (tree.trees().isPresent()) {
             ImmutableList<Node> trees = tree.trees().get();
             for (Node ref : trees) {
-                writeNode(ref, "tree");
+                writeNode(ref, "subtree");
             }
         }
         if (tree.features().isPresent()) {
@@ -559,7 +559,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link UpdateRefWeb} command to the stream.
+     * Writes the response for the {@link UpdateRef} command to the stream.
      * 
      * @param ref the ref returned from the command
      * @throws XMLStreamException
@@ -575,7 +575,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link RefParseWeb} command to the stream.
+     * Writes the response for the {@link RefParse} command to the stream.
      * 
      * @param ref the ref returned from the command
      * @throws XMLStreamException
@@ -601,7 +601,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link BranchWebOp} command to the stream.
+     * Writes the response for the {@link Branch} command to the stream.
      * 
      * @param localBranches the local branches of the repository
      * @param remoteBranches the remote branches of the repository
@@ -622,7 +622,8 @@ public class ResponseWriter {
         for (Ref branch : remoteBranches) {
             if (!(branch instanceof SymRef)) {
                 out.writeStartElement("Branch");
-                writeElement("remoteName", branch.namespace().replace(Ref.REMOTES_PREFIX + "/", ""));
+                writeElement("remoteName",
+                        branch.namespace().replace(Ref.REMOTES_PREFIX + "/", ""));
                 writeElement("name", branch.localName());
                 out.writeEndElement();
             }
@@ -639,7 +640,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link RemoteWebOp} command to the stream.
+     * Writes the response for the {@link RemoteManagement} command to the stream.
      * 
      * @param remotes the list of the {@link Remote}s of this repository
      * @throws XMLStreamException
@@ -660,7 +661,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link RemoteWebOp} command to the stream.
+     * Writes the response for the {@link RemoteManagement} command to the stream.
      * 
      * @param success whether or not the ping was successful
      * @throws XMLStreamException
@@ -672,7 +673,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link TagWebOp} command to the stream.
+     * Writes the response for the {@link Tag} command to the stream.
      * 
      * @param tags the list of {@link RevTag}s of this repository
      * @throws XMLStreamException
@@ -709,7 +710,7 @@ public class ResponseWriter {
         if (result.getChangedRefs().entrySet().size() > 0) {
             for (Entry<String, Collection<ChangedRef>> entry : result.getChangedRefs().entrySet()) {
                 out.writeStartElement("Remote");
-                writeElement("remoteName", entry.getKey());
+                writeElement("remoteURL", entry.getKey());
                 for (ChangedRef ref : entry.getValue()) {
                     out.writeStartElement("Branch");
 
@@ -759,9 +760,9 @@ public class ResponseWriter {
         if (result.getMergeReport().isPresent()
                 && result.getMergeReport().get().getReport().isPresent()) {
             MergeReport report = result.getMergeReport().get();
-            writeMergeResponse(Optional.fromNullable(report.getMergeCommit()), report.getReport()
-                    .get(), geogig, report.getOurs(), report.getPairs().get(0).getTheirs(), report
-                    .getPairs().get(0).getAncestor());
+            writeMergeResponse(Optional.fromNullable(report.getMergeCommit()),
+                    report.getReport().get(), geogig, report.getOurs(),
+                    report.getPairs().get(0).getTheirs(), report.getPairs().get(0).getAncestor());
         }
         out.writeEndElement();
     }
@@ -799,14 +800,12 @@ public class ResponseWriter {
             }
             writeElement("attributename", entry.getKey().getName().toString());
             writeElement("changetype", entry.getValue().getType().toString());
-            if (entry.getValue().getOldValue() != null
-                    && entry.getValue().getOldValue().isPresent()) {
-                writeElement("oldvalue", entry.getValue().getOldValue().get().toString());
+            if (entry.getValue().getOldValue() != null) {
+                writeElement("oldvalue", entry.getValue().getOldValue().toString());
             }
             if (entry.getValue().getNewValue() != null
-                    && entry.getValue().getNewValue().isPresent()
                     && !entry.getValue().getType().equals(TYPE.NO_CHANGE)) {
-                writeElement("newvalue", entry.getValue().getNewValue().get().toString());
+                writeElement("newvalue", entry.getValue().getNewValue().toString());
             }
             out.writeEndElement();
         }
@@ -937,8 +936,8 @@ public class ResponseWriter {
                         if (object.isPresent() && object.get() instanceof RevCommit) {
                             commit = (RevCommit) object.get();
                         } else {
-                            throw new CommandSpecException("Couldn't resolve id: "
-                                    + commitId.toString() + " to a commit");
+                            throw new CommandSpecException(
+                                    "Couldn't resolve id: " + commitId.toString() + " to a commit");
                         }
 
                         object = geogig.command(RevObjectParse.class)
@@ -1076,10 +1075,10 @@ public class ResponseWriter {
                         }
 
                         FeatureBuilder builder = new FeatureBuilder(featureType);
-                        GeogigSimpleFeature simpleFeature = (GeogigSimpleFeature) builder.build(
-                                revFeature.getId().toString(), revFeature);
-                        change = new GeometryChange(simpleFeature, ChangeType.MODIFIED, input
-                                .getPath(), crsCode);
+                        GeogigSimpleFeature simpleFeature = (GeogigSimpleFeature) builder
+                                .build(revFeature.getId().toString(), revFeature);
+                        change = new GeometryChange(simpleFeature, ChangeType.MODIFIED,
+                                input.getPath(), crsCode);
                         return change;
                     }
                 });
@@ -1173,15 +1172,15 @@ public class ResponseWriter {
         out.writeEndElement();
     }
 
-    public void writeStatistics(List<StatisticsWebOp.FeatureTypeStats> stats,
-            RevCommit firstCommit, RevCommit lastCommit, int totalCommits, List<RevPerson> authors,
-            int totalAdded, int totalModified, int totalRemoved) throws XMLStreamException {
+    public void writeStatistics(List<Statistics.FeatureTypeStats> stats, RevCommit firstCommit,
+            RevCommit lastCommit, int totalCommits, List<RevPerson> authors, int totalAdded,
+            int totalModified, int totalRemoved) throws XMLStreamException {
         out.writeStartElement("Statistics");
         int numFeatureTypes = 0;
         int totalNumFeatures = 0;
         if (!stats.isEmpty()) {
             out.writeStartElement("FeatureTypes");
-            for (StatisticsWebOp.FeatureTypeStats stat : stats) {
+            for (Statistics.FeatureTypeStats stat : stats) {
                 numFeatureTypes++;
                 out.writeStartElement("FeatureType");
                 writeElement("name", stat.getName());

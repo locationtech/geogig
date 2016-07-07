@@ -12,13 +12,16 @@ package org.locationtech.geogig.geotools.plumbing;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.Ref;
+import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.porcelain.AddOp;
+import org.locationtech.geogig.api.porcelain.CheckoutOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
 
+import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 
 /**
@@ -27,7 +30,7 @@ import com.google.common.base.Supplier;
  * by {@link CommitOp} to make the import atomic.
  *
  */
-public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
+public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
 
     /**
      * Extends the {@link com.google.common.base.Supplier} interface to provide for a way to request
@@ -41,35 +44,38 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
         void cleanupResources();
     }
 
-    private DataStoreSupplier dataStoreSupplier;
+    protected DataStoreSupplier dataStoreSupplier;
 
     // commit options
     @Nullable
-    private String authorEmail;
+    protected String authorEmail;
 
     @Nullable
-    private String authorName;
+    protected String authorName;
 
     @Nullable
-    private String commitMessage;
+    protected String commitMessage;
+
+    @Nullable
+    protected String root;
 
     // import options
     @Nullable // except if all == false
-    private String table;
+    protected String table;
 
-    private boolean all = false;
+    protected boolean all = false;
 
-    private boolean add = false;
+    protected boolean add = false;
 
-    private boolean alter = false;
+    protected boolean alter = false;
 
-    private boolean forceFeatureType = false;
-
-    @Nullable
-    private String dest;
+    protected boolean forceFeatureType = false;
 
     @Nullable
-    private String fidAttribute;
+    protected String dest;
+
+    @Nullable
+    protected String fidAttribute;
 
     /**
      * Set the source {@link DataStore DataStore}, from which features should be imported.
@@ -78,56 +84,9 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
      *        {@link DataStore DataStore} containing features to import into the repository.
      * @return A reference to this Operation.
      */
-    public DataStoreImportOp setDataStore(DataStoreSupplier dataStore) {
+    public DataStoreImportOp<T> setDataStore(DataStoreSupplier dataStore) {
         this.dataStoreSupplier = dataStore;
         return this;
-    }
-
-    @Override
-    protected RevCommit _call() {
-
-        final DataStore dataStore = dataStoreSupplier.get();
-
-        RevCommit revCommit;
-
-        /**
-         * Import needs to: 1) Import the data 2) Add changes to be staged 3) Commit staged changes
-         */
-        try {
-            // import data into the repository
-            final ImportOp importOp = getImportOp(dataStore);
-            importOp.setProgressListener(getProgressListener());
-            final RevTree revTree = importOp.call();
-            // add the imported data to the staging area
-            final WorkingTree workingTree = callAdd();
-            // commit the staged changes
-            revCommit = callCommit();
-        } finally {
-            dataStore.dispose();
-            dataStoreSupplier.cleanupResources();
-        }
-
-        return revCommit;
-    }
-
-    private WorkingTree callAdd() {
-        final AddOp addOp = context.command(AddOp.class);
-        addOp.setProgressListener(getProgressListener());
-        return addOp.call();
-    }
-
-    private RevCommit callCommit() {
-        final CommitOp commitOp = context.command(CommitOp.class).setAll(true)
-                .setAuthor(authorName, authorEmail).setMessage(commitMessage);
-        commitOp.setProgressListener(getProgressListener());
-        return commitOp.call();
-    }
-
-    private ImportOp getImportOp(DataStore dataStore) {
-        final ImportOp importOp = context.command(ImportOp.class);
-        return importOp.setDataStore(dataStore).setTable(table).setAll(all).setOverwrite(!add)
-                .setAdaptToDefaultFeatureType(!forceFeatureType).setAlter(alter)
-                .setDestinationPath(dest).setFidAttribute(fidAttribute);
     }
 
     /**
@@ -146,7 +105,7 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
      * @see org.locationtech.geogig.api.porcelain.CommitOp#setAuthor(java.lang.String,
      *      java.lang.String)
      */
-    public DataStoreImportOp setAuthorEmail(String authorEmail) {
+    public DataStoreImportOp<T> setAuthorEmail(String authorEmail) {
         this.authorEmail = authorEmail;
         return this;
     }
@@ -167,7 +126,7 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
      * @see org.locationtech.geogig.api.porcelain.CommitOp#setAuthor(java.lang.String,
      *      java.lang.String)
      */
-    public DataStoreImportOp setAuthorName(String authorName) {
+    public DataStoreImportOp<T> setAuthorName(String authorName) {
         this.authorName = authorName;
         return this;
     }
@@ -187,7 +146,7 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
      *
      * @see org.locationtech.geogig.api.porcelain.CommitOp#setMessage(java.lang.String)
      */
-    public DataStoreImportOp setCommitMessage(String commitMessage) {
+    public DataStoreImportOp<T> setCommitMessage(String commitMessage) {
         this.commitMessage = commitMessage;
         return this;
     }
@@ -213,7 +172,7 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
      *
      * @see ImportOp#setOverwrite(boolean)
      */
-    public DataStoreImportOp setAdd(boolean add) {
+    public DataStoreImportOp<T> setAdd(boolean add) {
         this.add = add;
         return this;
     }
@@ -235,7 +194,7 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
      * @see ImportOp#setTable(java.lang.String)
      * @see DataStoreImportOp#setTable(java.lang.String)
      */
-    public DataStoreImportOp setAll(boolean all) {
+    public DataStoreImportOp<T> setAll(boolean all) {
         this.all = all;
         return this;
     }
@@ -256,7 +215,7 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
      *
      * @see ImportOp#setAlter(boolean)
      */
-    public DataStoreImportOp setAlter(boolean alter) {
+    public DataStoreImportOp<T> setAlter(boolean alter) {
         this.alter = alter;
         return this;
     }
@@ -277,7 +236,7 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
      *
      * @see ImportOp#setFidAttribute(java.lang.String)
      */
-    public DataStoreImportOp setFidAttribute(String fidAttribute) {
+    public DataStoreImportOp<T> setFidAttribute(String fidAttribute) {
         this.fidAttribute = fidAttribute;
         return this;
     }
@@ -299,7 +258,7 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
      * @see ImportOp#setAll(boolean)
      * @see DataStoreImportOp#setAll(boolean)
      */
-    public DataStoreImportOp setTable(String table) {
+    public DataStoreImportOp<T> setTable(String table) {
         this.table = table;
         return this;
     }
@@ -321,7 +280,7 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
      *
      * @see ImportOp#setAdaptToDefaultFeatureType(boolean)
      */
-    public DataStoreImportOp setForceFeatureType(boolean forceFeatureType) {
+    public DataStoreImportOp<T> setForceFeatureType(boolean forceFeatureType) {
         this.forceFeatureType = forceFeatureType;
         return this;
     }
@@ -341,8 +300,50 @@ public class DataStoreImportOp extends AbstractGeoGigOp<RevCommit> {
      *
      * @see ImportOp#setDestinationPath(java.lang.String)
      */
-    public DataStoreImportOp setDest(String dest) {
+    public DataStoreImportOp<T> setDest(String dest) {
         this.dest = dest;
         return this;
     }
+
+    /**
+     * Sets the root for the import.
+     * <p>
+     * If this value is set, the imported features will be applied to the specified branch. If not
+     * set, it will default to the HEAD branch.
+     * 
+     * @param root The branch to import the features on to.
+     * 
+     * @return A reference to this operation.
+     */
+    public DataStoreImportOp<T> setRoot(String root) {
+        this.root = root;
+        return this;
+    }
+
+    @Override
+    protected T _call() {
+        SymRef originalHead = null;
+        if (root != null) {
+            Preconditions.checkArgument(
+                    !root.startsWith(Ref.HEADS_PREFIX) && !root.startsWith(Ref.REMOTES_PREFIX));
+            Optional<Ref> head = command(RefParse.class).setName(Ref.HEAD).call();
+            Preconditions.checkState(head.isPresent(), "Could not find HEAD ref.");
+            Preconditions.checkState(head.get() instanceof SymRef,
+                    "Unable to import with detatched HEAD.");
+            originalHead = (SymRef) head.get();
+            Optional<Ref> rootBranch = command(RefParse.class).setName(root).call();
+            Preconditions.checkArgument(rootBranch.isPresent(),
+                    "Unable to resolve '" + root + "' branch.");
+            Preconditions.checkArgument(rootBranch.get().getName().startsWith(Ref.HEADS_PREFIX),
+                    "Root must be a local branch.");
+            command(CheckoutOp.class).setSource(rootBranch.get().getName()).call();
+        }
+        T result = callInternal();
+        if (originalHead != null) {
+            command(CheckoutOp.class).setSource(originalHead.getTarget()).call();
+        }
+        return result;
+    }
+
+    protected abstract T callInternal();
 }

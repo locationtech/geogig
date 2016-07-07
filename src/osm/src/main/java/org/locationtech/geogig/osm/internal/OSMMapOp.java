@@ -146,7 +146,7 @@ public class OSMMapOp extends AbstractGeoGigOp<RevTree> {
 
         Iterator<NodeRef> iterator = op.call();
 
-        Function<NodeRef, Feature> nodeRefToFeature = new Function<NodeRef, Feature>() {
+        final Function<NodeRef, Feature> nodeRefToFeature = new Function<NodeRef, Feature>() {
 
             private final Map<String, FeatureBuilder> builders = //
                     ImmutableMap.<String, FeatureBuilder> of(//

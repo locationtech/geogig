@@ -69,7 +69,7 @@ public class BlameOp extends AbstractGeoGigOp<BlameReport> {
     }
 
     @Override
-    protected  BlameReport _call() {
+    protected BlameReport _call() {
         String fullPath = (commit != null ? commit.toString() : Ref.HEAD) + ":" + path;
         Optional<ObjectId> id = command(RevParse.class).setRefSpec(fullPath).call();
         if (!id.isPresent()) {
@@ -119,7 +119,8 @@ public class BlameOp extends AbstractGeoGigOp<BlameReport> {
                     Iterator<PropertyDescriptor> iter = attribDiffs.keySet().iterator();
                     while (iter.hasNext()) {
                         PropertyDescriptor key = iter.next();
-                        Optional<?> value = attribDiffs.get(key).getNewValue();
+                        Optional<?> value = Optional
+                                .fromNullable(attribDiffs.get(key).getNewValue());
                         String attribute = key.getName().toString();
                         report.addDiff(attribute, value, commit);
                     }

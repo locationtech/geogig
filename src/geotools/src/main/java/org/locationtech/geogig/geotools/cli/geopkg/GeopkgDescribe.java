@@ -11,7 +11,6 @@ package org.locationtech.geogig.geotools.cli.geopkg;
 
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
-import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.cli.DataStoreDescribe;
 import org.locationtech.geogig.geotools.plumbing.DescribeOp;
 
@@ -25,7 +24,6 @@ import com.beust.jcommander.ParametersDelegate;
  * 
  * @see DescribeOp
  */
-@ReadOnly
 @Parameters(commandNames = "describe", commandDescription = "Describe a Geopackage table")
 public class GeopkgDescribe extends DataStoreDescribe implements CLICommand {
     /**

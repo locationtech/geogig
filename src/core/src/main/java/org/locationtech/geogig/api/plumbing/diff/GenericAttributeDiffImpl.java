@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.api.plumbing.diff;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
@@ -25,38 +27,37 @@ public class GenericAttributeDiffImpl implements AttributeDiff {
     /**
      * The new value. Null if it does not exist (the attribute has been removed)
      */
-    private Optional<?> newValue;
+    private @Nullable Object newValue;
 
     /**
      * The old value. Null if it did not exist (the attribute has been added)
      */
-    private Optional<?> oldValue;
+    private @Nullable Object oldValue;
 
-    public GenericAttributeDiffImpl(@Nullable Optional<?> oldValue, @Nullable Optional<?> newValue) {
-        if (oldValue == null) {
-            this.oldValue = Optional.absent();
-        } else {
-            this.oldValue = oldValue;
-        }
-
-        if (newValue == null) {
-            this.newValue = Optional.absent();
-        } else {
-            this.newValue = newValue;
-        }
+    /**
+     * @param oldValue The new value. {@code null} if it does not exist (the attribute has been
+     *        removed)
+     * @param newValue The old value. {@code null} if it did not exist (the attribute has been
+     *        added)
+     */
+    public GenericAttributeDiffImpl(@Nullable Object oldValue, @Nullable Object newValue) {
+        // checkArgument(!(oldValue == null && newValue == null),
+        // "both sides of the attribute diff can't be null");
+        checkArgument(!(oldValue instanceof Optional));
+        checkArgument(!(newValue instanceof Optional));
+        this.oldValue = oldValue;
+        this.newValue = newValue;
     }
 
     @Override
     public TYPE getType() {
         TYPE type;
-        if (!oldValue.isPresent() && !newValue.isPresent()) {
+        if (java.util.Objects.equals(oldValue, newValue)) {
             type = TYPE.NO_CHANGE;
-        } else if (!newValue.isPresent()) {
+        } else if (null == newValue) {
             type = TYPE.REMOVED;
-        } else if (!oldValue.isPresent()) {
+        } else if (null == oldValue) {
             type = TYPE.ADDED;
-        } else if (oldValue.equals(newValue)) {
-            type = TYPE.NO_CHANGE;
         } else {
             type = TYPE.MODIFIED;
         }
@@ -64,12 +65,12 @@ public class GenericAttributeDiffImpl implements AttributeDiff {
     }
 
     @Override
-    public Optional<?> getOldValue() {
+    public Object getOldValue() {
         return oldValue;
     }
 
     @Override
-    public Optional<?> getNewValue() {
+    public Object getNewValue() {
         return newValue;
     }
 
@@ -85,12 +86,11 @@ public class GenericAttributeDiffImpl implements AttributeDiff {
         }
     }
 
-    private CharSequence attributeValueAsString(Optional<?> value) {
-        if (value.isPresent()) {
-            return TextValueSerializer.asString(Optional.fromNullable((Object) value.get()));
-        } else {
+    private CharSequence attributeValueAsString(@Nullable Object value) {
+        if (null == value) {
             return "NULL";
         }
+        return TextValueSerializer.asString(value);
     }
 
     @Override
@@ -99,17 +99,15 @@ public class GenericAttributeDiffImpl implements AttributeDiff {
     }
 
     @Override
-    public Optional<?> applyOn(Optional<?> obj) {
+    public Object applyOn(@Nullable Object obj) {
         Preconditions.checkState(canBeAppliedOn(obj));
         return newValue;
     }
 
     @Override
-    public boolean canBeAppliedOn(Optional<?> obj) {
-        if (obj == null) {
-            obj = Optional.absent();
-        }
-        return obj.equals(oldValue) || obj.equals(newValue);
+    public boolean canBeAppliedOn(@Nullable Object obj) {
+        checkArgument(!(obj instanceof Optional));
+        return Objects.equal(obj, oldValue) || Objects.equal(obj, newValue);
     }
 
     @Override

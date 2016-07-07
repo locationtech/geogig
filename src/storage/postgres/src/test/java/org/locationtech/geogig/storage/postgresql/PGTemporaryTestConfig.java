@@ -10,10 +10,10 @@
 package org.locationtech.geogig.storage.postgresql;
 
 import java.io.File;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Random;
 
 import javax.sql.DataSource;
 
@@ -27,7 +27,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(PGTemporaryTestConfig.class);
 
-    private static Random RND = new Random();
+    private static SecureRandom RND = new SecureRandom();
 
     private Environment environment;
 
@@ -110,7 +110,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
         if (environment == null) {
             String tablePrefix;
             synchronized (RND) {
-                tablePrefix = "geogig_test_" + Math.abs(RND.nextInt(10_000)) + "_";
+                tablePrefix = "geogig_" + Math.abs(RND.nextInt(100_000)) + "_";
             }
             environment = props.getConfig(repositoryId, tablePrefix);
         }

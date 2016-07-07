@@ -12,6 +12,7 @@ package org.locationtech.geogig.web.api;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,9 @@ import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.WKTReader2;
+import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.api.GeogigTransaction;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
@@ -50,7 +53,6 @@ import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
-import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.IllegalAttributeException;
 import org.opengis.feature.simple.SimpleFeature;
@@ -62,6 +64,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.io.ParseException;
 
@@ -114,7 +117,9 @@ public class TestData {
 
     public static final SimpleFeatureType pointsType, linesType, polysType;
 
-    public static final SimpleFeature point1, point2, point3;
+    public static final SimpleFeature point1, point2, point3, point4;
+
+    public static final SimpleFeature point1_modified, point2_modified, point3_modified;
 
     public static final SimpleFeature line1, line2, line3;
 
@@ -129,24 +134,31 @@ public class TestData {
             throw Throwables.propagate(e);
         }
 
-        point1 = feature(pointsType, "Points.1", "StringProp1_1", 1000, "POINT(0 0)");
-        point2 = feature(pointsType, "Points.2", "StringProp1_2", 2000, "POINT(-10 -10)");
-        point3 = feature(pointsType, "Points.3", "StringProp1_3", 3000, "POINT(10 10)");
+        point1 = feature(pointsType, "1", "StringProp1_1", 1000, "POINT(0 0)");
+        point2 = feature(pointsType, "2", "StringProp1_2", 2000, "POINT(-10 -10)");
+        point3 = feature(pointsType, "3", "StringProp1_3", 3000, "POINT(10 10)");
+        point4 = feature(pointsType, "4", "StringProp1_4", 4000, "POINT(15 15)");
 
-        line1 = feature(linesType, "Lines.1", "StringProp2_1", 1000, "LINESTRING (-1 -1, 1 1)");
-        line2 = feature(linesType, "Lines.2", "StringProp2_2", 2000, "LINESTRING (-11 -11, -9 -9)");
-        line3 = feature(linesType, "Lines.3", "StringProp2_3", 3000, "LINESTRING (9 9, 11 11)");
+        point1_modified = feature(pointsType, "1", "StringProp1_1", 1500, "POINT(0 0)");
+        point2_modified = feature(pointsType, "2", "StringProp1_2", 2000, "POINT(-15 -10)");
+        point3_modified = feature(pointsType, "3", "StringProp1_3_M", 3000, "POINT(10 10)");
 
-        poly1 = feature(polysType, "Polygons.1", "StringProp3_1", 1000,
+        line1 = feature(linesType, "1", "StringProp2_1", 1000, "LINESTRING (-1 -1, 1 1)");
+        line2 = feature(linesType, "2", "StringProp2_2", 2000, "LINESTRING (-11 -11, -9 -9)");
+        line3 = feature(linesType, "3", "StringProp2_3", 3000, "LINESTRING (9 9, 11 11)");
+
+        poly1 = feature(polysType, "1", "StringProp3_1", 1000,
                 "POLYGON ((-1 -1, -1 1, 1 1, 1 -1, -1 -1))");
-        poly2 = feature(polysType, "Polygons.2", "StringProp3_2", 2000,
+        poly2 = feature(polysType, "2", "StringProp3_2", 2000,
                 "POLYGON ((-11 -11, -11 -9, -9 -9, -9 -11, -11 -11))");
-        poly3 = feature(polysType, "Polygons.3", "StringProp3_3", 3000,
+        poly3 = feature(polysType, "3", "StringProp3_3", 3000,
                 "POLYGON ((9 9, 9 11, 11 11, 11 9, 9 9))");
 
     }
 
     private GeoGIG repo;
+
+    private GeogigTransaction transaction = null;
 
     public TestData(final GeoGIG repo) throws Exception {
         this.repo = repo;
@@ -160,12 +172,23 @@ public class TestData {
         return new MemoryDataStoreWithProvidedFIDSupport();
     }
 
+    public void setTransaction(GeogigTransaction transaction) {
+        this.transaction = transaction;
+    }
+
+    private Context getContext() {
+        if (transaction != null) {
+            return transaction;
+        }
+        return repo.getContext();
+    }
+
     public TestData init() {
         return init("John Doe", "JohnDoe@example.com");
     }
 
     public TestData init(final String userName, final String userEmail) {
-        Repository repository = repo.command(InitOp.class).call();
+        repo.command(InitOp.class).call();
         config("user.name", userName).config("user.email", userEmail);
         return this;
     }
@@ -184,17 +207,17 @@ public class TestData {
      * 
      * <pre>
      * <code>
-     *             (adds Points.2, Lines.2, Polygons.2)
+     *             (adds Points/2, Lines/2, Polygons/2)
      *    branch1 o-------------------------------------
      *           /                                      \
      *          /                                        \  no ff merge
      *  master o------------------------------------------o-----------------o
      *          \  (initial commit has                                     / no ff merge
-     *           \     Points.1, Lines.1, Polygons.1)                     /
+     *           \     Points/1, Lines/1, Polygons/1)                     /
      *            \                                                      /  
      *             \                                                    /
      *     branch2  o--------------------------------------------------
-     *             (adds Points.3, Lines.3, Polygons.3)
+     *             (adds Points/3, Lines/3, Polygons/3)
      *        
      * </code>
      * </pre>
@@ -213,20 +236,22 @@ public class TestData {
 
         LOG.debug("HEAD: " + repo.command(RefParse.class).setName(Ref.HEAD).call().get());
         List<NodeRef> treeRefs = Lists
-                .newArrayList(repo.command(LsTreeOp.class).setReference(Ref.HEAD).call());
+                .newArrayList(getContext().command(LsTreeOp.class)
+                .setReference(Ref.HEAD).call());
         checkState(3 == treeRefs.size());
         for (NodeRef r : treeRefs) {
-            RevTree tree = repo.getRepository().objectDatabase().getTree(r.getObjectId());
+            RevTree tree = getContext().objectDatabase().getTree(r.getObjectId());
             checkState(3 == tree.size());
         }
         return this;
     }
 
     public TestData mergeNoFF(String branchToMerge, String mergeCommitMessage) {
-        ObjectId branchHead = repo.command(RefParse.class).setName(branchToMerge).call().get()
+        ObjectId branchHead = getContext().command(RefParse.class).setName(branchToMerge).call()
+                .get()
                 .getObjectId();
         Supplier<ObjectId> commit = Suppliers.ofInstance(branchHead);
-        MergeReport report = repo.command(MergeOp.class).setNoFastForward(true)
+        MergeReport report = getContext().command(MergeOp.class).setNoFastForward(true)
                 .setMessage(mergeCommitMessage).addCommit(commit).call();
         RevCommit mergeCommit = report.getMergeCommit();
         checkState(mergeCommit.getParentIds().size() == 2);
@@ -239,17 +264,17 @@ public class TestData {
     }
 
     public TestData branch(String newBranch) {
-        Ref ref = repo.command(BranchCreateOp.class).setName(newBranch).call();
+        Ref ref = getContext().command(BranchCreateOp.class).setName(newBranch).call();
         checkState(newBranch.equals(ref.localName()));
         return this;
     }
 
     public TestData checkout(String branch) {
-        repo.command(CheckoutOp.class).setSource(branch).call();
-        Ref head = repo.command(RefParse.class).setName(Ref.HEAD).call().get();
+        getContext().command(CheckoutOp.class).setSource(branch).call();
+        Ref head = getContext().command(RefParse.class).setName(Ref.HEAD).call().get();
         if (head instanceof SymRef) {
             String target = ((SymRef) head).getTarget();
-            head = repo.command(RefParse.class).setName(target).call().get();
+            head = getContext().command(RefParse.class).setName(target).call().get();
         }
         String headBranch = head.localName();
         checkState(branch.equals(headBranch), "expected %s, got %s", branch, headBranch);
@@ -265,7 +290,7 @@ public class TestData {
     }
 
     private TestData commit(String commitMessage, boolean allowEmpty) {
-        RevCommit commit = repo.command(CommitOp.class).setAllowEmpty(allowEmpty)
+        RevCommit commit = getContext().command(CommitOp.class).setAllowEmpty(allowEmpty)
                 .setMessage(commitMessage).call();
         LOG.debug(commit.toString());
         return this;
@@ -276,7 +301,7 @@ public class TestData {
     }
 
     public TestData insert(SimpleFeature... features) {
-        WorkingTree workingTree = repo.getRepository().workingTree();
+        WorkingTree workingTree = getContext().workingTree();
         for (SimpleFeature sf : features) {
             String parentTreePath = sf.getType().getName().getLocalPart();
             workingTree.insert(parentTreePath, sf);
@@ -284,9 +309,24 @@ public class TestData {
         return this;
     }
 
-    public TestData add() {
-        repo.command(AddOp.class).call();
+    public TestData remove(SimpleFeature... features) {
+        WorkingTree workingTree = getContext().workingTree();
+        for (SimpleFeature sf : features) {
+            String parentTreePath = sf.getType().getName().getLocalPart();
+            workingTree.delete(parentTreePath, sf.getID());
+        }
         return this;
+    }
+
+    public TestData add() {
+        getContext().command(AddOp.class).call();
+        return this;
+    }
+
+    public static <E> List<E> toList(Iterator<E> logs) {
+        List<E> logged = new ArrayList<E>();
+        Iterators.addAll(logged, logs);
+        return logged;
     }
 
     static SimpleFeature feature(SimpleFeatureType type, String id, Object... values) {

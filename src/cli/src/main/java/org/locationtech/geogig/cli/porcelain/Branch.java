@@ -199,7 +199,7 @@ public class Branch extends AbstractCommand implements CLICommand {
 
             if (verbose) {
                 ansi.a(Strings.repeat(" ", 1 + (largest - branchName.length())));
-                ansi.a(branchRef.getObjectId().toString().substring(0, 7)).a(" ");
+                ansi.a(branchRef.getObjectId().toString().substring(0, 8)).a(" ");
 
                 Optional<RevCommit> commit = findCommit(geogig, branchRef);
                 if (commit.isPresent()) {

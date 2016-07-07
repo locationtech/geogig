@@ -18,7 +18,6 @@ import org.locationtech.geogig.api.plumbing.TransactionEnd;
 import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.api.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.api.porcelain.MergeConflictsException;
-import org.locationtech.geogig.api.porcelain.RebaseConflictsException;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -36,7 +35,7 @@ import com.google.common.base.Optional;
 
 public class EndTransaction extends AbstractWebAPICommand {
 
-    private boolean cancel;
+    boolean cancel;
     
     public EndTransaction (ParameterSet options) {
         super(options);
@@ -61,25 +60,20 @@ public class EndTransaction extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         if (this.getTransactionId() == null) {
-            throw new CommandSpecException("There isn't a transaction to end.");
+            throw new CommandSpecException("No transaction was specified.");
         }
 
         final Context transaction = this.getCommandLocator(context);
 
         TransactionEnd endTransaction = context.getGeoGIG().command(TransactionEnd.class);
         try {
-            final boolean closed = endTransaction.setCancel(cancel)
-                    .setTransaction((GeogigTransaction) transaction).call();
+            endTransaction.setCancel(cancel).setTransaction((GeogigTransaction) transaction).call();
 
             context.setResponseContent(new CommandResponse() {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
-                    if (closed) {
-                        out.writeTransactionId(null);
-                    } else {
-                        out.writeTransactionId(getTransactionId());
-                    }
+                    out.writeTransactionId(getTransactionId());
                     out.finish();
                 }
             });
@@ -101,8 +95,6 @@ public class EndTransaction extends AbstractWebAPICommand {
                     out.finish();
                 }
             });
-        } catch (RebaseConflictsException r) {
-            // TODO: Handle rebase exception
         }
     }
 }

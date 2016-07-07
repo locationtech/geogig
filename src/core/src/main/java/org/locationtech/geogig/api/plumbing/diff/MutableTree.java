@@ -31,7 +31,6 @@ import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
@@ -126,17 +125,10 @@ public class MutableTree implements Cloneable {
         return createFromRefs(rootId, refs);
     }
 
-    public static MutableTree createFromRefs(final ObjectId rootId, final Iterator<NodeRef> treeRefs) {
+    public static MutableTree createFromRefs(final ObjectId rootId,
+            final Iterator<NodeRef> treeRefs) {
 
-        Function<NodeRef, String> keyFunction = new Function<NodeRef, String>() {
-
-            @Override
-            public String apply(@Nullable NodeRef input) {
-                return input.path();
-            }
-        };
-
-        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(treeRefs, keyFunction);
+        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(treeRefs, (n) -> n.path());
 
         return createFromPaths(rootId, treesByPath);
     }

@@ -14,7 +14,7 @@ import org.restlet.Router;
 public class PGRouter extends Router {
 
     public PGRouter() {
-        attach("/import.{extension}", PGImportWebOp.class);
-        attach("/import", PGImportWebOp.class);
+        attach("/import.{extension}", PGImport.class);
+        attach("/import", PGImport.class);
     }
 }

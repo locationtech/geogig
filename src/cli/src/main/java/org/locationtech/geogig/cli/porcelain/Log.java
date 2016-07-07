@@ -59,7 +59,7 @@ import com.google.common.collect.ImmutableSet;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig log [<options>]}
+ * <li>{@code geogig log [<options>]}
  * </ul>
  * 
  * @see org.locationtech.geogig.api.porcelain.LogOp
@@ -170,8 +170,8 @@ public class Log extends AbstractCommand implements CLICommand {
             op.setTimeRange(new Range<Date>(Date.class, since, until));
         }
         if (!args.sinceUntilPaths.isEmpty()) {
-            List<String> sinceUntil = ImmutableList.copyOf((Splitter.on("..")
-                    .split(args.sinceUntilPaths.get(0))));
+            List<String> sinceUntil = ImmutableList
+                    .copyOf((Splitter.on("..").split(args.sinceUntilPaths.get(0))));
             checkParameter(sinceUntil.size() == 1 || sinceUntil.size() == 2,
                     "Invalid refSpec format, expected [<until>]|[<since>..<until>]: %s",
                     args.sinceUntilPaths.get(0));
@@ -288,7 +288,7 @@ public class Log extends AbstractCommand implements CLICommand {
             if (commit.getParentIds().size() > 1) {
                 ansi.a("Merge: ");
                 for (ObjectId parent : commit.getParentIds()) {
-                    ansi.a(parent.toString().substring(0, 7)).a(" ");
+                    ansi.a(getIdAsString(parent)).a(" ");
                 }
                 ansi.newline();
             }
@@ -424,7 +424,7 @@ public class Log extends AbstractCommand implements CLICommand {
     private String getIdAsString(ObjectId id) {
         StringBuilder sb = new StringBuilder();
         if (args.abbrev) {
-            sb.append(id.toString().substring(0, 7));
+            sb.append(id.toString().substring(0, 8));
         } else {
             sb.append(id.toString());
         }

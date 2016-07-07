@@ -21,7 +21,6 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
-import org.locationtech.geogig.api.plumbing.ResolveObjectType;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 
@@ -58,7 +57,7 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
     }
 
     @Override
-    protected  Boolean _call() {
+    protected Boolean _call() {
         if (commits.size() < 2) {
             return Boolean.FALSE;
         }
@@ -113,32 +112,42 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
 
     }
 
-    private boolean hasConflicts(DiffEntry diff, DiffEntry diff2) {
-        if (!diff.changeType().equals(diff2.changeType())) {
+    private boolean hasConflicts(DiffEntry diff1, DiffEntry diff2) {
+        if (!diff1.changeType().equals(diff2.changeType())) {
             return true;
         }
-        switch (diff.changeType()) {
-        case ADDED:
-            TYPE type = command(ResolveObjectType.class)
-                    .setObjectId(diff.getNewObject().getObjectId()).call();
+
+        boolean isConflict;
+
+        switch (diff1.changeType()) {
+        case ADDED: {
+            TYPE type = diff1.getNewObject().getType();
             if (TYPE.TREE.equals(type)) {
-                return !diff.getNewObject().getMetadataId()
-                        .equals(diff2.getNewObject().getMetadataId());
-            }
-            return !diff.getNewObject().getObjectId().equals(diff2.getNewObject().getObjectId());
-        case REMOVED:
-            break;
-        case MODIFIED:
-            type = command(ResolveObjectType.class).setObjectId(diff.getNewObject().getObjectId())
-                    .call();
-            if (TYPE.TREE.equals(type)) {
-                return !diff.getNewObject().getMetadataId()
+                isConflict = !diff1.getNewObject().getMetadataId()
                         .equals(diff2.getNewObject().getMetadataId());
             } else {
-                return !diff.newObjectId().equals(diff2.newObjectId());
+                isConflict = !diff1.getNewObject().getObjectId()
+                        .equals(diff2.getNewObject().getObjectId());
+            }
+        }
+            break;
+        case MODIFIED: {
+            TYPE type = diff1.getNewObject().getType();
+            if (TYPE.TREE.equals(type)) {
+                isConflict = !diff1.getNewObject().getMetadataId()
+                        .equals(diff2.getNewObject().getMetadataId());
+            } else {
+                isConflict = !diff1.newObjectId().equals(diff2.newObjectId());
 
             }
         }
-        return false;
+            break;
+        case REMOVED:
+            isConflict = false;
+            break;
+        default:
+            throw new IllegalStateException();
+        }
+        return isConflict;
     }
 }

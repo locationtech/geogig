@@ -21,8 +21,8 @@ import com.google.common.primitives.UnsignedLong;
 
 /**
  * Defines storage order of {@link RevTree tree} {@link Node nodes} based on the non cryptographic
- * 64-bit <a
- * href="http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function">FNV-1a</a>
+ * 64-bit
+ * <a href="http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function">FNV-1a</a>
  * variation of the "Fowler/Noll/Vo" hash algorithm.
  * <p>
  * This class mandates in which order {@link Node nodes} are stored inside {@link RevTree trees},
@@ -54,8 +54,8 @@ import com.google.common.primitives.UnsignedLong;
  * {@code octet_of_data}, in big-endian order.
  * <p>
  * This hash function proved to be extremely fast while maintaining a good distribution and low
- * collision rate, and is widely used by the computer science industry as explained <a
- * href="http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param">here</a> when speed is
+ * collision rate, and is widely used by the computer science industry as explained
+ * <a href="http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param">here</a> when speed is
  * needed in contrast to cryptographic security.
  * 
  * <p>
@@ -104,7 +104,7 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
     private static final FNV1a64bitHash hashOrder = new FNV1a64bitHash();
 
     public static final NodePathStorageOrder INSTANCE = new NodePathStorageOrder();
-    
+
     @Override
     public int compare(String p1, String p2) {
         return hashOrder.compare(p1, p2);
@@ -184,28 +184,22 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
      * @return and Integer between zero and {@link #maxBucketsForLevel
      *         maxBucketsForLevel(depthIndex)} minus one
      */
-    public Integer bucket(final String nodeName, final int depthIndex) {
-
-        final int byteN = hashOrder.byteN(nodeName, depthIndex);
-        Preconditions.checkState(byteN >= 0);
-        Preconditions.checkState(byteN < 256);
-
-        final int maxBuckets = NodePathStorageOrder.maxBucketsForLevel(depthIndex);
-
-        final int bucket = (byteN * maxBuckets) / 256;
+    public static Integer bucket(final String nodeName, final int depthIndex) {
+        final long longBits = hashOrder.fnvBits(nodeName);
+        final int bucket = hashOrder.bucket(longBits, depthIndex);
         return Integer.valueOf(bucket);
     }
 
     /**
-     * Computes the <a
-     * href="http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function">FNV-1a</a>
-     * hash code for the given feature identifier, as an unsigned long.
+     * Computes the
+     * <a href="http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function">FNV-1a
+     * </a> hash code for the given feature identifier, as an unsigned long.
      * 
      * @param featureIdentifier
      * @return an unsigned long representing the FNV-1a hash code for the given feature identifier.
      */
     public UnsignedLong hashCodeLong(String featureIdentifier) {
-        UnsignedLong fnv = FNV1a64bitHash.fnv(featureIdentifier);
+        UnsignedLong fnv = hashOrder.fnv(featureIdentifier);
         return fnv;
     }
 
@@ -234,12 +228,43 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
         private static final UnsignedLong FNV64_PRIME = UnsignedLong.valueOf("1099511628211");
 
         public int compare(final String p1, final String p2) {
-            UnsignedLong hash1 = fnv(p1);
-            UnsignedLong hash2 = fnv(p2);
-            return hash1.compareTo(hash2);
+            final long longBits1 = fnvBits(p1);
+            final long longBits2 = fnvBits(p2);
+
+            for (int i = 0; i < 8; i++) {
+                int bucket1 = bucket(longBits1, i);
+                int bucket2 = bucket(longBits2, i);
+                if (bucket1 > bucket2) {
+                    return 1;
+                } else if (bucket2 > bucket1) {
+                    return -1;
+                }
+            }
+            if (!p1.equals(p2)) {
+                // They fall on the same bucket all the way down to the last level. Fall back to
+                // canonical string sorting
+                return p1.compareTo(p2);
+            }
+            return 0;
         }
 
-        private static UnsignedLong fnv(CharSequence chars) {
+        private int bucket(long longBits, int depthIndex) {
+            final int byteN = byteN(longBits, depthIndex);
+            Preconditions.checkState(byteN >= 0);
+            Preconditions.checkState(byteN < 256);
+
+            final int maxBuckets = NodePathStorageOrder.maxBucketsForLevel(depthIndex);
+
+            final int bucket = (byteN * maxBuckets) / 256;
+            return bucket;
+        }
+
+        private UnsignedLong fnv(CharSequence chars) {
+            long hash = fnvBits(chars);
+            return UnsignedLong.fromLongBits(hash);
+        }
+
+        private long fnvBits(CharSequence chars) {
             final int length = chars.length();
 
             long hash = FNV64_OFFSET_BASIS.longValue();
@@ -251,7 +276,7 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
                 hash = update(hash, b1);
                 hash = update(hash, b2);
             }
-            return UnsignedLong.fromLongBits(hash);
+            return hash;
         }
 
         private static long update(long hash, final byte octet) {
@@ -259,10 +284,6 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
             // on the lower byte of the long value
             final long longValue = hash;
             final long bits = longValue ^ octet;
-
-            // System.err.println("hash : " + Long.toBinaryString(longValue));
-            // System.err.println("xor  : " + Long.toBinaryString(bits));
-            // System.err.println("octet: " + Integer.toBinaryString(octet));
 
             // convert back to unsigned long
             // hash = UnsignedLong.fromLongBits(bits);
@@ -277,14 +298,11 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
         }
 
         /**
-         * Returns the Nth unsigned byte in the hash of {@code nodeName} where N is given by
+         * Returns the Nth unsigned byte in the hash of a given node name where N is given by
          * {@code depth}
          */
-        public int byteN(final String nodeName, final int depth) {
+        private int byteN(final long longBits, final int depth) {
             Preconditions.checkArgument(depth < 8, "depth too deep: %s", Integer.valueOf(depth));
-
-            final long longBits = fnv(nodeName).longValue();
-
             final int displaceBits = 8 * (7 - depth);// how many bits to right shift longBits to get
                                                      // the byte N
 

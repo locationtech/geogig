@@ -24,13 +24,6 @@ Feature: Create Repository
     When I call "PUT /repos/repo1/init"
     Then the response status should be '201'
     And the response ContentType should be "application/xml"
-    And the response xml matches
-      """
-      <response>
-        <success>true</success>
-        <repo>
-          <name>repo1</name>
-          <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="/repos/repo1.xml" type="application/xml"/>
-        </repo>
-      </response>
-      """
+    And the xpath "/response/success/text()" equals "true"
+    And the xpath "/response/repo/name/text()" equals "repo1"
+    And the xpath "/response/repo/atom:link/@href" contains "/repos/repo1.xml"

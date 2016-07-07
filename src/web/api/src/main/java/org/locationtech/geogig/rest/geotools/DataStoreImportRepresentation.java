@@ -19,6 +19,7 @@ import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
+import org.locationtech.geogig.web.api.ResponseWriter;
 import org.restlet.data.MediaType;
 
 /**
@@ -36,10 +37,8 @@ public class DataStoreImportRepresentation extends AsyncCommandRepresentation<Re
     @Override
     protected void writeResultBody(XMLStreamWriter w, RevCommit result) throws XMLStreamException {
         if (result != null) {
-            w.writeStartElement("RevCommit");
-            element(w, "id", result.getId());
-            element(w, "treeId", result.getTreeId().toString());
-            w.writeEndElement();
+            ResponseWriter out = new ResponseWriter(w);
+            out.writeCommit(result, "commit", null, null, null);
         }
     }
 

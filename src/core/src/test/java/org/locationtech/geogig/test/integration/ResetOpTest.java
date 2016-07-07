@@ -252,9 +252,8 @@ public class ResetOpTest extends RepositoryTestCase {
         assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
                 .getObjectId());
 
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(ResetOp.class).addPattern(pointsName).setMode(ResetMode.SOFT).call();
-
     }
 
     @Test
@@ -307,9 +306,8 @@ public class ResetOpTest extends RepositoryTestCase {
 
     @Test
     public void testResetNoCommits() throws Exception {
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(ResetOp.class).call();
-
     }
 
     @Test
@@ -338,7 +336,7 @@ public class ResetOpTest extends RepositoryTestCase {
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
             geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+                    .setMessage("Merge features.").call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
@@ -351,6 +349,10 @@ public class ResetOpTest extends RepositoryTestCase {
         assertTrue(conflicts.isEmpty());
         Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());
+        ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
+        assertFalse(ref.isPresent());
+        Optional<byte[]> mergemsg = geogig.getRepository().blobStore().getBlob(MergeOp.MERGE_MSG);
+        assertFalse(mergemsg.isPresent());
     }
 
     @Test

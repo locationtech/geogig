@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.api.plumbing.merge;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.locationtech.geogig.api.ObjectId;
 
 import com.google.common.base.Objects;
@@ -19,20 +21,26 @@ import com.google.common.base.Preconditions;
  * the object id's that point to the common ancestor and both versions of a given geogig element
  * that are to be merged.
  * 
- * A null ObjectId indicates that, for the corresponding version, the element did not exist
+ * A {@link ObjectId#NULL null} ObjectId indicates that, for the corresponding version, the element
+ * did not exist
  * 
  */
 public final class Conflict {
 
-    private ObjectId ancestor;
+    private final ObjectId ancestor;
 
-    private ObjectId theirs;
+    private final ObjectId theirs;
 
-    private ObjectId ours;
+    private final ObjectId ours;
 
-    private String path;
+    private final String path;
 
     public Conflict(String path, ObjectId ancestor, ObjectId ours, ObjectId theirs) {
+        checkNotNull(path, "path");
+        checkNotNull(ancestor, "ancestor");
+        checkNotNull(ours, "ours");
+        checkNotNull(theirs, "theirs");
+
         this.path = path;
         this.ancestor = ancestor;
         this.ours = ours;
@@ -58,10 +66,9 @@ public final class Conflict {
     public boolean equals(Object x) {
         if (x instanceof Conflict) {
             Conflict that = (Conflict) x;
-            return Objects.equal(this.ancestor, that.ancestor) &&
-                   Objects.equal(this.theirs, that.theirs) &&
-                   Objects.equal(this.ours, that.ours) &&
-                   Objects.equal(this.path, that.path);
+            return Objects.equal(this.ancestor, that.ancestor)
+                    && Objects.equal(this.theirs, that.theirs)
+                    && Objects.equal(this.ours, that.ours) && Objects.equal(this.path, that.path);
         } else {
             return false;
         }

@@ -9,11 +9,10 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
-import static org.locationtech.geogig.storage.Blobs.*;
 import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.storage.Blobs.putBlob;
+import static org.locationtech.geogig.storage.Blobs.readLines;
 
-import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -30,7 +29,6 @@ import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.WriteTree2;
@@ -42,7 +40,6 @@ import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.repository.Repository;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -177,9 +174,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
             applyNextCommit(false);
             // Commit files should already be prepared, so we do nothing else
         } else {
-            Preconditions
-                    .checkState(!ref.isPresent(),
-                            "You are currently in the middle of a merge or rebase operation <ORIG_HEAD is present>.");
+            Preconditions.checkState(!ref.isPresent(),
+                    "You are currently in the middle of a merge or rebase operation <ORIG_HEAD is present>.");
 
             getProgressListener().started();
 
@@ -238,42 +234,40 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         String idx = nextFile.get(0);
         String commitBlobName = REVERT_PREFIX + idx;
         List<String> commitFile = readLines(context().blobStore(), commitBlobName);
-        if (!commitFile.isEmpty()) {
-            String commitId = commitFile.get(0);
-            RevCommit commit = repository.getCommit(ObjectId.valueOf(commitId));
-            List<Conflict> conflicts = Lists.newArrayList();
-            if (useCommitChanges) {
-                conflicts = applyRevertedChanges(commit);
-            }
-            if (createCommit && conflicts.isEmpty()) {
-                createCommit(commit);
-            } else {
-                workingTree().updateWorkHead(repository.index().getTree().getId());
-                if (!conflicts.isEmpty()) {
-                    // mark conflicted elements
-                    command(ConflictsWriteOp.class).setConflicts(conflicts).call();
-
-                    // created exception message
-                    StringBuilder msg = new StringBuilder();
-                    msg.append("error: could not apply ");
-                    msg.append(commit.getId().toString().substring(0, 7));
-                    msg.append(" " + commit.getMessage() + "\n");
-
-                    for (Conflict conflict : conflicts) {
-                        msg.append("CONFLICT: conflict in " + conflict.getPath() + "\n");
-                    }
-
-                    throw new RevertConflictsException(msg.toString());
-                }
-            }
-            context().blobStore().removeBlob(commitBlobName);
-            int newIdx = Integer.parseInt(idx) + 1;
-            putBlob(context().blobStore(), NEXT, Integer.toString(newIdx));
-            return true;
-        } else {
+        if (commitFile.isEmpty()) {
             return false;
         }
+        String commitId = commitFile.get(0);
+        RevCommit commit = repository.getCommit(ObjectId.valueOf(commitId));
+        List<Conflict> conflicts = Lists.newArrayList();
+        if (useCommitChanges) {
+            conflicts = applyRevertedChanges(commit);
+        }
+        if (createCommit && conflicts.isEmpty()) {
+            createCommit(commit);
+        } else {
+            workingTree().updateWorkHead(repository.index().getTree().getId());
+            if (!conflicts.isEmpty()) {
+                // mark conflicted elements
+                command(ConflictsWriteOp.class).setConflicts(conflicts).call();
 
+                // created exception message
+                StringBuilder msg = new StringBuilder();
+                msg.append("error: could not apply ");
+                msg.append(commit.getId().toString().substring(0, 8));
+                msg.append(" " + commit.getMessage() + "\n");
+
+                for (Conflict conflict : conflicts) {
+                    msg.append("CONFLICT: conflict in " + conflict.getPath() + "\n");
+                }
+
+                throw new RevertConflictsException(msg.toString());
+            }
+        }
+        context().blobStore().removeBlob(commitBlobName);
+        int newIdx = Integer.parseInt(idx) + 1;
+        putBlob(context().blobStore(), NEXT, Integer.toString(newIdx));
+        return true;
     }
 
     private List<Conflict> applyRevertedChanges(RevCommit commit) {
@@ -305,8 +299,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                         .setParent(headTree).call();
                 // make sure it is still deleted
                 if (node.isPresent()) {
-                    conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(), node.get()
-                            .getObjectId(), diff.newObjectId()));
+                    conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(),
+                            node.get().getObjectId(), diff.newObjectId()));
                 } else {
                     index().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
                 }
@@ -321,8 +315,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                 } else {
                     // do not mark as conflict if reverting to the same feature currently in HEAD
                     if (!nodeId.equals(diff.newObjectId())) {
-                        conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(), node.get()
-                                .getObjectId(), diff.newObjectId()));
+                        conflicts.add(new Conflict(diff.oldPath(), diff.oldObjectId(),
+                                node.get().getObjectId(), diff.newObjectId()));
                     }
                 }
 
@@ -346,8 +340,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         builder.setParentIds(Arrays.asList(revertHead));
         builder.setTreeId(newTreeId);
         builder.setCommitterTimestamp(timestamp);
-        builder.setMessage("Revert '" + commit.getMessage() + "'\nThis reverts "
-                + commit.getId().toString());
+        builder.setMessage(
+                "Revert '" + commit.getMessage() + "'\nThis reverts " + commit.getId().toString());
         builder.setCommitter(committerName);
         builder.setCommitterEmail(committerEmail);
         builder.setAuthor(committerName);
@@ -370,8 +364,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         final String key = "user.name";
         Optional<String> name = command(ConfigGet.class).setName(key).call();
 
-        checkState(
-                name.isPresent(),
+        checkState(name.isPresent(),
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
                 key, key);
 
@@ -382,8 +375,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         final String key = "user.email";
         Optional<String> email = command(ConfigGet.class).setName(key).call();
 
-        checkState(
-                email.isPresent(),
+        checkState(email.isPresent(),
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",
                 key, key);
 

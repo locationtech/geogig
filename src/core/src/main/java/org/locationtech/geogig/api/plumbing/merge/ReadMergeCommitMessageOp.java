@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.locationtech.geogig.storage.BlobStore;
 
 import com.google.common.base.Charsets;
@@ -29,7 +30,7 @@ public class ReadMergeCommitMessageOp extends AbstractGeoGigOp<String> {
     protected String _call() {
         BlobStore blobStore = context.blobStore();
 
-        Optional<InputStream> blobAsStream = blobStore.getBlobAsStream("MERGE_MSG");
+        Optional<InputStream> blobAsStream = blobStore.getBlobAsStream(MergeOp.MERGE_MSG);
         if (!blobAsStream.isPresent()) {
             return "";
         }

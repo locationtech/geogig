@@ -202,7 +202,7 @@ public class CheckoutOpTest extends RepositoryTestCase {
         insertAndAdd(points2);
         insert(points1_modified);
 
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(CheckoutOp.class).addPath("Points/Points.1").call();
 
     }

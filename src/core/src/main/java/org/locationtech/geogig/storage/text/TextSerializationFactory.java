@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.storage.text;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +61,6 @@ import org.opengis.filter.Filter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.InternationalString;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -68,7 +69,6 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
@@ -394,7 +394,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
 
         }
 
-        private void writeChildren(Writer w, ImmutableCollection<Node> children) throws IOException {
+        private void writeChildren(Writer w, ImmutableCollection<Node> children)
+                throws IOException {
             for (Node ref : children) {
                 writeNode(w, ref);
             }
@@ -469,10 +470,9 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
                 T parsed = read(id, reader, type);
                 Preconditions.checkState(parsed != null, "parsed to null");
                 if (id != null) {
-                    Preconditions
-                            .checkState(id.equals(parsed.getId()),
-                                    "Expected and parsed object ids don't match: %s %s", id,
-                                    parsed.getId());
+                    Preconditions.checkState(id.equals(parsed.getId()),
+                            "Expected and parsed object ids don't match: %s %s", id,
+                            parsed.getId());
                 }
                 return parsed;
             } catch (Exception e) {
@@ -481,7 +481,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         }
 
         protected String parseLine(String line, String expectedHeader) throws IOException {
-            List<String> fields = Lists.newArrayList(Splitter.on('\t').split(line));
+            List<String> fields = newArrayList(Splitter.on('\t').split(line));
             Preconditions.checkArgument(fields.size() == 2, "Expected %s\\t<...>, got '%s'",
                     expectedHeader, line);
             Preconditions.checkArgument(expectedHeader.equals(fields.get(0)),
@@ -493,7 +493,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         protected abstract T read(ObjectId id, BufferedReader reader, TYPE type) throws IOException;
 
         protected Node parseNodeLine(String line) {
-            List<String> tokens = Lists.newArrayList(Splitter.on('\t').split(line));
+            List<String> tokens = newArrayList(Splitter.on('\t').split(line));
             Preconditions.checkArgument(tokens.size() == 6, "Wrong tree element definition: %s",
                     line);
             TYPE type = TYPE.valueOf(tokens.get(1));
@@ -502,8 +502,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             ObjectId metadataId = ObjectId.valueOf(tokens.get(4));
             Envelope bbox = parseBBox(tokens.get(5));
 
-            org.locationtech.geogig.api.Node ref = org.locationtech.geogig.api.Node.create(name,
-                    id, metadataId, type, bbox);
+            org.locationtech.geogig.api.Node ref = org.locationtech.geogig.api.Node.create(name, id,
+                    metadataId, type, bbox);
 
             return ref;
 
@@ -513,7 +513,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             if (s.equals(TextWriter.NULL_BOUNDING_BOX)) {
                 return new Envelope();
             }
-            List<String> tokens = Lists.newArrayList(Splitter.on(';').split(s));
+            List<String> tokens = newArrayList(Splitter.on(';').split(s));
             Preconditions.checkArgument(tokens.size() == 4, "Wrong bounding box definition: %s", s);
 
             double minx = Double.parseDouble(tokens.get(0));
@@ -570,7 +570,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         protected RevCommit read(ObjectId id, BufferedReader reader, TYPE type) throws IOException {
             Preconditions.checkArgument(TYPE.COMMIT.equals(type), "Wrong type: %s", type.name());
             String tree = parseLine(requireLine(reader), "tree");
-            List<String> parents = Lists.newArrayList(Splitter.on(' ').omitEmptyStrings()
+            List<String> parents = newArrayList(Splitter.on(' ').omitEmptyStrings()
                     .split(parseLine(requireLine(reader), "parents")));
             RevPerson author = parsePerson(requireLine(reader), "author");
             RevPerson committer = parsePerson(requireLine(reader), "committer");
@@ -586,15 +586,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             builder.setCommitterTimestamp(committer.getTimestamp());
             builder.setCommitterTimeZoneOffset(committer.getTimeZoneOffset());
             builder.setMessage(message);
-            List<ObjectId> parentIds = Lists.newArrayList(Iterators.transform(parents.iterator(),
-                    new Function<String, ObjectId>() {
-
-                        @Override
-                        public ObjectId apply(String input) {
-                            ObjectId objectId = ObjectId.valueOf(input);
-                            return objectId;
-                        }
-                    }));
+            List<ObjectId> parentIds = Lists.transform(parents, (str) -> ObjectId.valueOf(str));
             builder.setParentIds(parentIds);
             builder.setTreeId(ObjectId.valueOf(tree));
             RevCommit commit = builder.build();
@@ -642,9 +634,10 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
     private static final TextReader<RevFeature> FEATURE_READER = new TextReader<RevFeature>() {
 
         @Override
-        protected RevFeature read(ObjectId id, BufferedReader reader, TYPE type) throws IOException {
+        protected RevFeature read(ObjectId id, BufferedReader reader, TYPE type)
+                throws IOException {
             Preconditions.checkArgument(TYPE.FEATURE.equals(type), "Wrong type: %s", type.name());
-            List<Object> values = Lists.newArrayList();
+            List<Object> values = newArrayList();
             String line;
             while ((line = reader.readLine()) != null) {
                 values.add(parseAttribute(line));
@@ -658,7 +651,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         }
 
         private Object parseAttribute(String line) {
-            List<String> tokens = Lists.newArrayList(Splitter.on('\t').split(line));
+            List<String> tokens = newArrayList(Splitter.on('\t').split(line));
             Preconditions.checkArgument(tokens.size() == 2, "Wrong attribute definition: %s", line);
             String typeName = tokens.get(0);
             String value = tokens.get(1);
@@ -725,7 +718,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         }
 
         private AttributeDescriptor parseAttributeDescriptor(String line) {
-            ArrayList<String> tokens = Lists.newArrayList(Splitter.on('\t').split(line));
+            ArrayList<String> tokens = newArrayList(Splitter.on('\t').split(line));
             Preconditions.checkArgument(tokens.size() == 5 || tokens.size() == 6,
                     "Wrong attribute definition: %s", line);
             NameImpl name = new NameImpl(tokens.get(0));
@@ -799,7 +792,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String line;
             while ((line = reader.readLine()) != null) {
                 Preconditions.checkArgument(!line.isEmpty(), "Empty tree element definition");
-                ArrayList<String> tokens = Lists.newArrayList(Splitter.on('\t').split(line));
+                ArrayList<String> tokens = newArrayList(Splitter.on('\t').split(line));
                 String nodeType = tokens.get(0);
                 if (nodeType.equals(TextWriter.TreeNode.REF.name())) {
                     Node entryRef = parseNodeLine(line);

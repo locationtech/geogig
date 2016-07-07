@@ -29,12 +29,13 @@ import com.google.common.base.Throwables;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig [--]version}
+ * <li>{@code geogig [--]version}
  * </ul>
  */
 @ReadOnly
 @RequiresRepository(false)
-@Parameters(commandNames = { "--version", "version" }, commandDescription = "Display GeoGig version information")
+@Parameters(commandNames = { "--version",
+        "version" }, commandDescription = "Display GeoGig version information")
 public class Version implements CLICommand {
 
     private Console console;
@@ -50,7 +51,7 @@ public class Version implements CLICommand {
     public void run(GeogigCLI cli) {
         GeoGIG geogig = cli.getGeogig();
         if (geogig == null) {
-            geogig = new GeoGIG();
+            geogig = cli.newGeoGIG();
         }
         this.console = cli.getConsole();
         VersionInfo info = geogig.command(VersionOp.class).call();

@@ -20,10 +20,13 @@ import cucumber.api.junit.Cucumber;
  * 
  */
 @RunWith(Cucumber.class)
-@CucumberOptions(monochrome = true, format = { "pretty", "html:target/cucumber-report" }, strict = true, //
-// the glue option tells cucumber where to look for step definitions
-glue = { "org.locationtech.geogig.cli.test.functional",
-        "org.locationtech.geogig.geotools.cli.test.sqlserver.functional" })
+@CucumberOptions(plugin = { "pretty", "html:target/cucumber-report" }//
+        , strict = true //
+        // the glue option tells cucumber where to look for step definitions
+        , glue = { "org.locationtech.geogig.cli.test.functional",
+                "org.locationtech.geogig.geotools.cli.test.sqlserver.functional" }//
+        , features = { "../src/test/resources/features/sqlserver" }//
+)
 public class RunSQLServerFunctionalTest {
 
 }

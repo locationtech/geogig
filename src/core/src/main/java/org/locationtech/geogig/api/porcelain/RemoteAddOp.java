@@ -14,6 +14,7 @@ import java.util.List;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.Remote;
+import org.locationtech.geogig.api.plumbing.CheckRefFormat;
 import org.locationtech.geogig.api.porcelain.RemoteException.StatusCode;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
@@ -53,6 +54,8 @@ public class RemoteAddOp extends AbstractGeoGigOp<Remote> {
         if (branch == null || branch.isEmpty()) {
             branch = "*";
         }
+        command(CheckRefFormat.class).setThrowsException(true).setAllowOneLevel(true).setRef(name)
+                .call();
 
         ConfigDatabase config = configDatabase();
         List<String> allRemotes = config.getAllSubsections("remote");

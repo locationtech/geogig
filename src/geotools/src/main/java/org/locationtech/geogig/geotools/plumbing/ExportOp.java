@@ -86,15 +86,8 @@ import com.vividsolutions.jts.geom.Envelope;
 @Hookable(name = "export")
 public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
-    private static final Function<Feature, Optional<Feature>> IDENTITY = new Function<Feature, Optional<Feature>>() {
-
-        @Override
-        @Nullable
-        public Optional<Feature> apply(@Nullable Feature feature) {
-            return Optional.fromNullable(feature);
-        }
-
-    };
+    private static final Function<Feature, Optional<Feature>> IDENTITY = (feature) -> Optional
+            .fromNullable(feature);
 
     private String path;
 
@@ -162,28 +155,19 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             Iterator<Optional<Feature>> transformed = Iterators.transform(adaptedFeatures,
                     ExportOp.this.function);
 
-            Iterator<SimpleFeature> result = Iterators.filter(Iterators.transform(transformed,
-                    new Function<Optional<Feature>, SimpleFeature>() {
-                        @Override
-                        public SimpleFeature apply(Optional<Feature> input) {
-                            return (SimpleFeature) input.orNull();
-                        }
-                    }), Predicates.notNull());
+            Iterator<SimpleFeature> result = Iterators.filter(
+                    Iterators.transform(transformed, (f) -> (SimpleFeature) f.orNull()),
+                    Predicates.notNull());
 
             // check the resulting schema has something to contribute
             PeekingIterator<SimpleFeature> peekingIt = Iterators.peekingIterator(result);
             if (peekingIt.hasNext()) {
-                Function<AttributeDescriptor, String> toString = new Function<AttributeDescriptor, String>() {
-                    @Override
-                    public String apply(AttributeDescriptor input) {
-                        return input.getLocalName();
-                    }
-                };
+                Function<AttributeDescriptor, String> toString = (at) -> at.getLocalName();
                 SimpleFeature peek = peekingIt.peek();
-                Set<String> sourceAtts = new HashSet<String>(Lists.transform(peek.getFeatureType()
-                        .getAttributeDescriptors(), toString));
-                Set<String> targetAtts = new HashSet<String>(Lists.transform(targetStore
-                        .getSchema().getAttributeDescriptors(), toString));
+                Set<String> sourceAtts = new HashSet<String>(
+                        Lists.transform(peek.getFeatureType().getAttributeDescriptors(), toString));
+                Set<String> targetAtts = new HashSet<String>(Lists
+                        .transform(targetStore.getSchema().getAttributeDescriptors(), toString));
                 if (Sets.intersection(sourceAtts, targetAtts).isEmpty()) {
                     throw new GeoToolsOpException(StatusCode.UNABLE_TO_ADD,
                             "No common attributes between source and target feature types");
@@ -367,42 +351,38 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
         final RevFeatureType targetType = objectDatabase().getFeatureType(targetFeatureTypeId);
 
-        Function<SimpleFeature, SimpleFeature> alterFunction = new Function<SimpleFeature, SimpleFeature>() {
-            @Override
-            public SimpleFeature apply(SimpleFeature input) {
-                final RevFeatureType oldFeatureType;
-                oldFeatureType = (RevFeatureType) input.getUserData().get(RevFeatureType.class);
+        final Function<SimpleFeature, SimpleFeature> alterFunction = (sf) -> {
+            final RevFeatureType oldFeatureType;
+            oldFeatureType = (RevFeatureType) sf.getUserData().get(RevFeatureType.class);
 
-                final ObjectId metadataId = oldFeatureType.getId();
-                if (targetType.getId().equals(metadataId)) {
-                    return input;
-                }
-
-                final RevFeature oldFeature;
-                oldFeature = (RevFeature) input.getUserData().get(RevFeature.class);
-
-                ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType
-                        .sortedDescriptors();
-                ImmutableList<PropertyDescriptor> newAttributes = targetType.sortedDescriptors();
-
-                ImmutableList<Optional<Object>> oldValues = oldFeature.getValues();
-                List<Optional<Object>> newValues = Lists.newArrayList();
-                for (int i = 0; i < newAttributes.size(); i++) {
-                    int idx = oldAttributes.indexOf(newAttributes.get(i));
-                    if (idx != -1) {
-                        Optional<Object> oldValue = oldValues.get(idx);
-                        newValues.add(oldValue);
-                    } else {
-                        newValues.add(Optional.absent());
-                    }
-                }
-                RevFeature newFeature = RevFeatureImpl.build(ImmutableList.copyOf(newValues));
-                FeatureBuilder featureBuilder = new FeatureBuilder(targetType);
-                SimpleFeature feature = (SimpleFeature) featureBuilder.build(input.getID(),
-                        newFeature);
-                return feature;
+            final ObjectId metadataId = oldFeatureType.getId();
+            if (targetType.getId().equals(metadataId)) {
+                return sf;
             }
+
+            final RevFeature oldFeature;
+            oldFeature = (RevFeature) sf.getUserData().get(RevFeature.class);
+
+            ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.sortedDescriptors();
+            ImmutableList<PropertyDescriptor> newAttributes = targetType.sortedDescriptors();
+
+            ImmutableList<Optional<Object>> oldValues = oldFeature.getValues();
+            List<Optional<Object>> newValues = Lists.newArrayList();
+            for (int i = 0; i < newAttributes.size(); i++) {
+                int idx = oldAttributes.indexOf(newAttributes.get(i));
+                if (idx != -1) {
+                    Optional<Object> oldValue = oldValues.get(idx);
+                    newValues.add(oldValue);
+                } else {
+                    newValues.add(Optional.absent());
+                }
+            }
+            RevFeature newFeature = RevFeatureImpl.build(ImmutableList.copyOf(newValues));
+            FeatureBuilder featureBuilder = new FeatureBuilder(targetType);
+            SimpleFeature feature = (SimpleFeature) featureBuilder.build(sf.getID(), newFeature);
+            return feature;
         };
+
         return Iterators.transform(plainFeatures, alterFunction);
     }
 

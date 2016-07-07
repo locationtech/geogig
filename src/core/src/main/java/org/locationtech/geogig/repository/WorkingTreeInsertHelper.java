@@ -42,11 +42,8 @@ import com.vividsolutions.jts.geom.Envelope;
 
 class WorkingTreeInsertHelper {
 
-    private static final Function<Feature, String> SIMPLE_PATH_RESOLVER = new Function<Feature, String>() {
-        @Override
-        public String apply(Feature f) {
-            return f.getType().getName().getLocalPart();
-        }
+    private static final Function<Feature, String> SIMPLE_PATH_RESOLVER = (f) -> {
+        return f.getType().getName().getLocalPart();
     };
 
     private final ObjectDatabase db;

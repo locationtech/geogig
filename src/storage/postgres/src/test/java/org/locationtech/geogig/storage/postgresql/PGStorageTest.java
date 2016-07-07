@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 Boundless.
+/* Copyright (c) 2015-2016 Boundless.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -13,7 +13,6 @@ import static java.lang.String.format;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -28,6 +27,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 
+import com.google.common.base.Throwables;
+
 public class PGStorageTest {
 
     @Rule
@@ -41,37 +42,33 @@ public class PGStorageTest {
     }
 
     @Test
-    public void testCreateNewRepo() {
-        final DataSource ds = PGStorage.newDataSource(config);
+    public void testCreateNewRepo() throws SQLException {
         final TableNames tables = config.getTables();
         final List<String> tableNames = tables.all();
+        final DataSource dataSource = PGStorage.newDataSource(config);
         try {
             for (String table : tableNames) {
-                assertTableDoesntExist(ds, table);
+                assertTableDoesntExist(dataSource, table);
             }
             PGStorage.createNewRepo(config);
             for (String table : tableNames) {
-                assertTableExist(ds, table);
+                assertTableExist(dataSource, table);
             }
 
-            new DbOp<Void>() {
-                @Override
-                protected Void doRun(Connection cx) throws IOException, SQLException {
-                    String repositories = tables.repositories();
-                    String sql = format("SELECT * from %s WHERE repository = ?", repositories);
-                    String repositoryId = config.getRepositoryId();
-                    try (PreparedStatement st = cx.prepareStatement(sql)) {
-                        st.setString(1, repositoryId);
-                        try (ResultSet rs = st.executeQuery()) {
-                            assertTrue(format("repository '%s' not found in table '%s'",
-                                    repositoryId, repositories), rs.next());
-                        }
+            try (Connection cx = dataSource.getConnection()) {
+                String repositories = tables.repositories();
+                String sql = format("SELECT * from %s WHERE repository = ?", repositories);
+                String repositoryId = config.getRepositoryId();
+                try (PreparedStatement st = cx.prepareStatement(sql)) {
+                    st.setString(1, repositoryId);
+                    try (ResultSet rs = st.executeQuery()) {
+                        assertTrue(format("repository '%s' not found in table '%s'", repositoryId,
+                                repositories), rs.next());
                     }
-                    return null;
                 }
-            }.run(ds);
+            }
         } finally {
-            PGStorage.closeDataSource(ds);
+            PGStorage.closeDataSource(dataSource);
         }
     }
 
@@ -125,17 +122,16 @@ public class PGStorageTest {
         assertFalse(format("Table %s already exists", table), tableExists(ds, table));
     }
 
-    private boolean tableExists(DataSource ds, final String tableName) {
-        return new DbOp<Boolean>() {
-            @Override
-            protected Boolean doRun(Connection cx) throws IOException, SQLException {
-                DatabaseMetaData md = cx.getMetaData();
-                final String schema = PGStorage.schema(tableName);
-                final String table = PGStorage.stripSchema(tableName);
-                try (ResultSet rs = md.getTables(null, schema, table, null)) {
-                    return rs.next();
-                }
+    private boolean tableExists(DataSource dataSource, final String tableName) {
+        try (Connection cx = dataSource.getConnection()) {
+            DatabaseMetaData md = cx.getMetaData();
+            final String schema = PGStorage.schema(tableName);
+            final String table = PGStorage.stripSchema(tableName);
+            try (ResultSet rs = md.getTables(null, schema, table, null)) {
+                return rs.next();
             }
-        }.run(ds);
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        }
     }
 }

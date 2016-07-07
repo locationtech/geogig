@@ -26,6 +26,7 @@ import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.plumbing.merge.ReadMergeCommitMessageOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.api.porcelain.ConflictsException;
 import org.locationtech.geogig.api.porcelain.NothingToCommitException;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -47,7 +48,7 @@ import com.google.common.collect.Lists;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig commit -m <msg>}
+ * <li>{@code geogig commit -m <msg>}
  * </ul>
  * 
  * @see CommitOp
@@ -67,11 +68,15 @@ public class Commit extends AbstractCommand implements CLICommand {
     @Parameter(names = "--amend", description = "Amends last commit")
     private boolean amend;
 
-    @Parameter(names = { "--quiet", "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
+    @Parameter(names = { "--quiet",
+            "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
     private boolean quiet;
 
     @Parameter(description = "<pathFilter>  [<paths_to_commit]...")
     private List<String> pathFilters = Lists.newLinkedList();
+
+    @Parameter(names = "--allow-empty", description = "Create commit even if there are no staged changes (i.e. it'll point to the same root tree than its parent)")
+    private boolean allowEmpty;
 
     /**
      * Executes the commit command using the provided options.
@@ -97,7 +102,8 @@ public class Commit extends AbstractCommand implements CLICommand {
         RevCommit commit;
         ProgressListener progress = cli.getProgressListener();
         try {
-            CommitOp commitOp = geogig.command(CommitOp.class).setMessage(message).setAmend(amend);
+            CommitOp commitOp = geogig.command(CommitOp.class).setMessage(message).setAmend(amend)
+                    .setAllowEmpty(allowEmpty);
             if (commitTimestamp != null && !Strings.isNullOrEmpty(commitTimestamp)) {
                 Long millis = geogig.command(ParseTimestamp.class).setString(commitTimestamp)
                         .call();
@@ -115,8 +121,8 @@ public class Commit extends AbstractCommand implements CLICommand {
                 commitOp.setCommit(geogig.getRepository().getCommit(commitId.get()));
             }
             commit = commitOp.setPathFilters(pathFilters).setProgressListener(progress).call();
-        } catch (NothingToCommitException noChanges) {
-            throw new CommandFailedException(noChanges.getMessage(), noChanges);
+        } catch (NothingToCommitException | ConflictsException notificationError) {
+            throw new CommandFailedException(notificationError.getMessage(), true);
         }
         final ObjectId parentId = commit.parentN(0).or(ObjectId.NULL);
 
@@ -132,7 +138,7 @@ public class Commit extends AbstractCommand implements CLICommand {
             console.print("Committed, counting objects...");
             console.flush();
             final DiffObjectCount diffCount = geogig.command(DiffCount.class)
-                    .setOldVersion(parentId.toString()).setNewVersion(commit.getId().toString())
+                    .setOldVersion(parentId.toString()).setNewTree(commit.getTreeId())
                     .setProgressListener(progress).call();
 
             if (progress.isCanceled()) {

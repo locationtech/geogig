@@ -17,14 +17,22 @@ import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.cre
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createFeaturesTreeBuilder;
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createLargeFeaturesTree;
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createTreesTree;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
+import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -41,6 +49,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
+import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.api.plumbing.diff.PreOrderDiffWalk.MaxFeatureDiffsLimiter;
@@ -51,6 +60,7 @@ import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.mockito.ArgumentCaptor;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class PreOrderDiffWalkTest {
@@ -83,8 +93,8 @@ public class PreOrderDiffWalkTest {
      */
     private NodeRef nodeFor(RevTree root) {
         Envelope bounds = SpatialOps.boundsOf(root);
-        return NodeRef.createRoot(Node.create(NodeRef.ROOT, root.getId(), ObjectId.NULL, TYPE.TREE,
-                bounds));
+        return NodeRef.createRoot(
+                Node.create(NodeRef.ROOT, root.getId(), ObjectId.NULL, TYPE.TREE, bounds));
     }
 
     @Test
@@ -231,10 +241,10 @@ public class PreOrderDiffWalkTest {
         verify(consumer, times(2)).tree(larg.capture(), rarg.capture());
 
         assertEquals(2, larg.getAllValues().size());
-        assertEquals("left side arg for the first tree() call is not the left root", lroot, larg
-                .getAllValues().get(0));
-        assertNull("left side arg for the second tree() call should be null", larg.getAllValues()
-                .get(1));
+        assertEquals("left side arg for the first tree() call is not the left root", lroot,
+                larg.getAllValues().get(0));
+        assertNull("left side arg for the second tree() call should be null",
+                larg.getAllValues().get(1));
 
         assertEquals(2, rarg.getAllValues().size());
         assertEquals(rroot, rarg.getAllValues().get(0));
@@ -292,9 +302,8 @@ public class PreOrderDiffWalkTest {
         when(consumer.tree(eq(lroot), eq(rroot))).thenReturn(true);
 
         // skip all buckets of depth 0
-        when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), argThat(depthMatches(0)),
-                        any(Bucket.class), any(Bucket.class))).thenReturn(false);
+        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), argThat(depthMatches(0)),
+                any(Bucket.class), any(Bucket.class))).thenReturn(false);
 
         visitor.walk(consumer);
 
@@ -345,8 +354,8 @@ public class PreOrderDiffWalkTest {
         // two leaf trees
         final RevTree left;
         final RevTree right;
-        final Node nodeChange1 = Node.create("f2", ObjectId.forString("forcechange"),
-                ObjectId.NULL, TYPE.FEATURE, null);
+        final Node nodeChange1 = Node.create("f2", ObjectId.forString("forcechange"), ObjectId.NULL,
+                TYPE.FEATURE, null);
         final Node nodeChange2 = Node.create("f3", ObjectId.forString("fakefake"), ObjectId.NULL,
                 TYPE.FEATURE, null);
         {
@@ -402,9 +411,8 @@ public class PreOrderDiffWalkTest {
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-        when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
-                        any(Bucket.class), any(Bucket.class))).thenReturn(true);
+        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
+                any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
         verify(consumer, times(1)).tree(any(NodeRef.class), any(NodeRef.class));
@@ -420,23 +428,18 @@ public class PreOrderDiffWalkTest {
 
     @Test
     public void testBucketBucketFlatMoreDepth() {
-        RevTree left = createFeaturesTree(
-                leftSource,
-                "f",
+        RevTree left = createFeaturesTree(leftSource, "f",
                 NodePathStorageOrder.maxBucketsForLevel(0)
                         * NodePathStorageOrder.normalizedSizeLimit(0));
-        RevTree right = createFeaturesTree(
-                rightSource,
-                "f",
+        RevTree right = createFeaturesTree(rightSource, "f",
                 NodePathStorageOrder.maxBucketsForLevel(0)
                         * NodePathStorageOrder.normalizedSizeLimit(0) + 1);
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-        when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
-                        any(Bucket.class), any(Bucket.class))).thenReturn(true);
+        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
+                any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
         verify(consumer, times(1)).tree(any(NodeRef.class), any(NodeRef.class));
@@ -467,9 +470,8 @@ public class PreOrderDiffWalkTest {
 
         // consume all
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-        when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
-                        any(Bucket.class), any(Bucket.class))).thenReturn(true);
+        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
+                any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
         // there's only the root tree
@@ -500,9 +502,8 @@ public class PreOrderDiffWalkTest {
 
         // consume all
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-        when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
-                        any(Bucket.class), any(Bucket.class))).thenReturn(true);
+        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
+                any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
         // there's only the root tree
@@ -562,12 +563,9 @@ public class PreOrderDiffWalkTest {
                 * NodePathStorageOrder.normalizedSizeLimit(0);
         final int overlapCount = 100;
 
-        long totalMillis = 0;
         int runs = 1;
         for (int i = 0; i < runs; i++)
-            totalMillis += testBucketLeafPerf(left, rightsize, overlapCount);
-
-        // System.err.printf("Total: %sms, Average: %sms\n", totalMillis, totalMillis / runs);
+            testBucketLeafPerf(left, rightsize, overlapCount);
     }
 
     private long testBucketLeafDeeper(final RevTree left, final int rightsize,
@@ -579,17 +577,16 @@ public class PreOrderDiffWalkTest {
         final int leftsize = (int) left.size();
         // the right tree feature node names start at "f<leftsize - 100>", so there's a 100 node
         // overlap
-        RevTree right = createLargeFeaturesTree(rightSource, "f", rightsize, leftsize
-                - overlapCount, false);
+        RevTree right = createLargeFeaturesTree(rightSource, "f", rightsize,
+                leftsize - overlapCount, false);
         rightSource.put(right);
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
 
         // consume all
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-        when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
-                        any(Bucket.class), any(Bucket.class))).thenReturn(true);
+        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
+                any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         Stopwatch sw = Stopwatch.createStarted();
         visitor.walk(consumer);
@@ -610,7 +607,8 @@ public class PreOrderDiffWalkTest {
         return sw.elapsed(TimeUnit.MILLISECONDS);
     }
 
-    private long testBucketLeafPerf(final RevTree left, final int rightsize, final int overlapCount) {
+    private long testBucketLeafPerf(final RevTree left, final int rightsize,
+            final int overlapCount) {
 
         consumer = new Consumer() {
 
@@ -653,8 +651,8 @@ public class PreOrderDiffWalkTest {
         final int leftsize = (int) left.size();
         // the right tree feature node names start at "f<leftsize - 100>", so there's a 100 node
         // overlap
-        RevTree right = createLargeFeaturesTree(rightSource, "f", rightsize, leftsize
-                - overlapCount, false);
+        RevTree right = createLargeFeaturesTree(rightSource, "f", rightsize,
+                leftsize - overlapCount, false);
         rightSource.put(right);
 
         PreOrderDiffWalk visitor = newVisitor(left, right);
@@ -707,9 +705,8 @@ public class PreOrderDiffWalkTest {
 
         // consume all
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-        when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
-                        any(Bucket.class), any(Bucket.class))).thenReturn(true);
+        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
+                any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
 
@@ -743,7 +740,6 @@ public class PreOrderDiffWalkTest {
 
             @Override
             public boolean tree(NodeRef left, NodeRef right) {
-                // System.err.printf("tree:  %s, %s\n", left, right);
                 return true;
             }
 
@@ -756,11 +752,6 @@ public class PreOrderDiffWalkTest {
             public boolean bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
                     Bucket left, Bucket right) {
                 int bucketDepth = bucketIndex.depthIndex();
-                // System.err.printf("bucket:  %s, %s, %d, %d, %s %s\n", lparent, rparent,
-                // bucketIndex, bucketDepth, left, right);
-                // System.err.printf("bucket: index: %d, depth: %d, %s %s\n", bucketIndex,
-                // bucketDepth, left, right);
-                // System.err.printf("bucket %s, depth: %d\n", left.getObjectId(), bucketDepth);
                 maxDepth.set(Math.max(maxDepth.get(), bucketDepth + 1));// use +1 cause we want the
                                                                         // number of levels, not the
                                                                         // zero-based level index
@@ -769,14 +760,11 @@ public class PreOrderDiffWalkTest {
 
             @Override
             public void endTree(NodeRef left, NodeRef right) {
-                // System.err.printf("end tree:  %s, %s\n", left, right);
             }
 
             @Override
             public void endBucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
                     Bucket left, Bucket right) {
-                // System.err.printf("end bucket: index: %d, depth: %d, %s %s\n", bucketIndex,
-                // bucketDepth, left, right);
             }
         });
         return maxDepth.get();
@@ -792,9 +780,8 @@ public class PreOrderDiffWalkTest {
 
         // consume all
         when(consumer.tree(any(NodeRef.class), any(NodeRef.class))).thenReturn(true);
-        when(
-                consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
-                        any(Bucket.class), any(Bucket.class))).thenReturn(true);
+        when(consumer.bucket(any(NodeRef.class), any(NodeRef.class), any(BucketIndex.class),
+                any(Bucket.class), any(Bucket.class))).thenReturn(true);
 
         visitor.walk(consumer);
         // there's only the root tree
@@ -848,6 +835,75 @@ public class PreOrderDiffWalkTest {
         final RevTree right = createFeaturesTree(rightSource, "f", rightsize);
 
         checkFalseReturnValueOnConsumerFeatureAbortsTraversal(left, right);
+    }
+
+    @Test
+    public void checkExpectedNotificationOrder() {
+        final int size = 100_000;
+
+        final RevTree left = createFeaturesTree(leftSource, "", size);
+        ArrayList<NodeRef> leftFeatureNodes = Lists.newArrayList(new DepthTreeIterator("",
+                ObjectId.NULL, left, leftSource, Strategy.RECURSIVE_FEATURES_ONLY));
+
+        RevTreeBuilder rightBuilder = new RevTreeBuilder(rightSource);
+
+        Map<String, Node> rightChanges = new HashMap<>();
+        Collections.shuffle(leftFeatureNodes);
+        int i = 0;
+        for (NodeRef nr : leftFeatureNodes) {
+            Node node = nr.getNode();
+            if (i++ < 100) {
+                // make a change
+                node = Node.create(node.getName(), ObjectId.forString("changed-" + i),
+                        node.getMetadataId().or(ObjectId.NULL), TYPE.FEATURE, (Envelope) null);
+                rightChanges.put(node.getName(), node);
+            }
+            rightBuilder.put(node);
+        }
+
+        final RevTree right = rightBuilder.build();
+        rightSource.put(right);
+        List<String> expectedOrder = new ArrayList<>(rightChanges.keySet());
+        Collections.sort(expectedOrder, NodePathStorageOrder.INSTANCE);
+
+        final List<String> actualOrder = new ArrayList<>();
+
+        Consumer c = new Consumer() {
+
+            @Override
+            public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+                actualOrder.add(right.getNode().getName());
+                return true;
+            }
+
+            @Override
+            public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+                return true;
+            }
+
+            @Override
+            public void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
+            }
+
+            @Override
+            public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                    @Nullable Bucket left, @Nullable Bucket right) {
+            }
+
+            @Override
+            public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                    @Nullable Bucket left, @Nullable Bucket right) {
+                return true;
+            }
+        };
+
+        final boolean preserveIterationOrder = true;
+        PreOrderDiffWalk walk = new PreOrderDiffWalk(left, right, leftSource, rightSource,
+                preserveIterationOrder);
+        walk.walk(c);
+
+        assertEquals(expectedOrder.size(), actualOrder.size());
+        assertEquals(expectedOrder, actualOrder);
     }
 
     public void checkFalseReturnValueOnConsumerFeatureAbortsTraversal(RevTree left, RevTree right) {

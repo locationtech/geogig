@@ -58,7 +58,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.ning.compress.lzf.LZFInputStream;
 import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.CursorConfig;
@@ -130,8 +129,9 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
         this.envProvider = envProvider;
         this.readOnly = readOnly;
         this.envName = envName;
-        this.conflicts = new FileConflictsDatabase(envProvider.getPlatform());
-        this.blobStore = new FileBlobStore(envProvider.getPlatform());
+        File geoGigDirectory = envProvider.getGeoGigDirectory();
+        this.conflicts = new FileConflictsDatabase(geoGigDirectory);
+        this.blobStore = new FileBlobStore(geoGigDirectory);
     }
 
     /**
@@ -264,9 +264,6 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
             environment = createEnvironment(readOnly);
         }
 
-        // System.err.println("Opened ObjectDatabase at " + env.getHome()
-        // + ". Environment read-only: " + environment.getConfig().getReadOnly()
-        // + " database read only: " + this.readOnly);
         Database database;
         try {
             LOGGER.debug("Opening ObjectDatabase at {}", environment.getHome());
@@ -839,8 +836,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
                     OperationStatus status;
                     status = cursor.getSearchKey(key, data, LockMode.READ_UNCOMMITTED);
                     if (SUCCESS.equals(status)) {
-                        InputStream rawData;
-                        rawData = new LZFInputStream(new ByteArrayInputStream(data.getData()));
+                        InputStream rawData = new ByteArrayInputStream(data.getData());
                         found = reader.read(id, rawData);
                         if (filter.isAssignableFrom(found.getClass())) {
                             listener.found(found.getId(), data.getSize());

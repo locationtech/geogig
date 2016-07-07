@@ -11,6 +11,14 @@ package org.locationtech.geogig.api;
 
 public class GlobalContextBuilder {
 
-    public static ContextBuilder builder = new ContextBuilder();
+    private static ContextBuilder builder = new ContextBuilder();
+
+    public static ContextBuilder builder() {
+        return builder;
+    }
+
+    public static void builder(ContextBuilder builder) {
+        GlobalContextBuilder.builder = builder;
+    }
 
 }

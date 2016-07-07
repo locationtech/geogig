@@ -81,7 +81,7 @@ class GeogigMetadata {
                 st.execute(log(sql));
 
                 sql = format(
-                        "CREATE TABLE IF NOT EXISTS %s (table_name VARCHAR, mapped_path VARCHAR, audit_table VARCHAR, root_tree_id VARCHAR)",
+                        "CREATE TABLE IF NOT EXISTS %s (table_name VARCHAR, mapped_path VARCHAR, audit_table VARCHAR, commit_id VARCHAR)",
                         AUDIT_METADATA_TABLE);
 
                 st.execute(log(sql));
@@ -104,8 +104,7 @@ class GeogigMetadata {
     }
 
     public List<AuditTable> getAuditTables() throws SQLException {
-        final String sql = format(
-                "SELECT table_name, mapped_path, audit_table, root_tree_id FROM %s",
+        final String sql = format("SELECT table_name, mapped_path, audit_table, commit_id FROM %s",
                 AUDIT_METADATA_TABLE);
 
         List<AuditTable> tables = new ArrayList<>();
@@ -115,11 +114,11 @@ class GeogigMetadata {
                     String tableName = rs.getString(1);
                     String featureTreePath = rs.getString(2);
                     String auditTable = rs.getString(3);
-                    String rootId = rs.getString(4);
-                    ObjectId rootTreeId = ObjectId.valueOf(rootId);
+                    String commitId = rs.getString(4);
+                    ObjectId commitObjectId = ObjectId.valueOf(commitId);
 
                     AuditTable tableInfo = new AuditTable(tableName, featureTreePath, auditTable,
-                            rootTreeId);
+                            commitObjectId);
                     tables.add(tableInfo);
                 }
             }
@@ -128,7 +127,7 @@ class GeogigMetadata {
     }
 
     public void createAudit(final String tableName, final String mappedPath,
-            final ObjectId rootTreeId) throws SQLException {
+            final ObjectId commitObjectId) throws SQLException {
         cx.setAutoCommit(false);
         try {
             String sql = format("INSERT OR REPLACE INTO %s VALUES(?, ?, ?, ?)",
@@ -140,7 +139,7 @@ class GeogigMetadata {
                 st.setString(1, tableName);
                 st.setString(2, mappedPath);
                 st.setString(3, audit_table);
-                st.setString(4, rootTreeId.toString());
+                st.setString(4, commitObjectId.toString());
 
                 st.executeUpdate();
             }

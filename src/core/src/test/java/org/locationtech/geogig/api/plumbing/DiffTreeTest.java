@@ -39,6 +39,8 @@ import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.di.GeogigModule;
+import org.locationtech.geogig.di.HintsModule;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -74,8 +76,9 @@ public class DiffTreeTest extends Assert {
 
         File workingDirectory = tempFolder.newFolder("mockWorkingDir");
         Platform testPlatform = new TestPlatform(workingDirectory);
-        Context injector = Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new MemoryModule(testPlatform)))
+        Context injector = Guice
+                .createInjector(Modules.override(new GeogigModule()).with(new MemoryModule(),
+                        new HintsModule(new Hints().platform(testPlatform))))
                 .getInstance(Context.class);
 
         geogig = new GeoGIG(injector);
@@ -214,10 +217,10 @@ public class DiffTreeTest extends Assert {
         final RevTree root1 = createRoot(db, tree1, tree2);
         final RevTree root2 = createRoot(db, tree1, tree2Changed);
 
-        assertChangeTypeFilter(ObjectId.NULL, root1.getId(), (int) (tree1.size() + tree2.size()),
-                0, 0);
-        assertChangeTypeFilter(root1.getId(), ObjectId.NULL, 0,
-                (int) (tree1.size() + tree2.size()), 0);
+        assertChangeTypeFilter(ObjectId.NULL, root1.getId(), (int) (tree1.size() + tree2.size()), 0,
+                0);
+        assertChangeTypeFilter(root1.getId(), ObjectId.NULL, 0, (int) (tree1.size() + tree2.size()),
+                0);
 
         assertChangeTypeFilter(tree2.getId(), tree2Changed.getId(), 0, 10, 10);
         assertChangeTypeFilter(root1.getId(), root2.getId(), 0, 10, 10);

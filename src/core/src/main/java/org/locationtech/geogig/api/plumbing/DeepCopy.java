@@ -122,16 +122,14 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
 
         Iterable<ObjectId> ids = new Iterable<ObjectId>() {
 
-            final Function<Node, ObjectId> asId = new Function<Node, ObjectId>() {
-                @Override
-                public ObjectId apply(Node input) {
-                    Optional<ObjectId> metadataId = input.getMetadataId();
-                    if (metadataId.isPresent()) {
-                        metadataIds.add(input.getMetadataId().get());
-                    }
-                    ObjectId id = input.getObjectId();
-                    return id;
+            final Function<Node, ObjectId> asId = (node) -> {
+
+                Optional<ObjectId> metadataId = node.getMetadataId();
+                if (metadataId.isPresent()) {
+                    metadataIds.add(node.getMetadataId().get());
                 }
+                ObjectId id = node.getObjectId();
+                return id;
             };
 
             @Override
@@ -174,19 +172,9 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
         Supplier<Iterator<NodeRef>> refs = command(LsTreeOp.class).setReference(treeId.toString())
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES);
 
-        Supplier<Iterator<Node>> nodes = Suppliers
-                .compose(new Function<Iterator<NodeRef>, Iterator<Node>>() {
-
-                    @Override
-                    public Iterator<Node> apply(Iterator<NodeRef> input) {
-                        return Iterators.transform(input, new Function<NodeRef, Node>() {
-                            @Override
-                            public Node apply(NodeRef input) {
-                                return input.getNode();
-                            }
-                        });
-                    }
-                }, refs);
+        Supplier<Iterator<Node>> nodes = Suppliers.compose(//
+                (it) -> Iterators.transform(it, (ref) -> ref.getNode())//
+                , refs);
 
         // move all features, recursively as given by the LsTreeOp strategy
         copyObjects(from, to, nodes, metadataIds);

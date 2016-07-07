@@ -13,21 +13,27 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
-import java.util.List;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.NothingToCommitException;
+import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.api.porcelain.MergeConflictsException;
 
-public class GeopkgAuditImport extends AbstractGeoGigOp<List<AuditReport>> {
+import com.google.common.base.Throwables;
+
+public class GeopkgAuditImport extends AbstractGeoGigOp<RevCommit> {
 
     private String commitMessage;
+
+    private String authorName = null;
+
+    private String authorEmail = null;
 
     private boolean noCommit = false;
 
     private File geopackageFile;
+
+    private String table = null;
 
     public GeopkgAuditImport setDatabase(File geopackageFile) {
         this.geopackageFile = geopackageFile;
@@ -48,8 +54,23 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<List<AuditReport>> {
         return this;
     }
 
+    public GeopkgAuditImport setTable(String table) {
+        this.table = table;
+        return this;
+    }
+
+    public GeopkgAuditImport setAuthorName(String authorName) {
+        this.authorName = authorName;
+        return this;
+    }
+
+    public GeopkgAuditImport setAuthorEmail(String authorEmail) {
+        this.authorEmail = authorEmail;
+        return this;
+    }
+
     @Override
-    protected List<AuditReport> _call() throws IllegalArgumentException, IllegalStateException {
+    protected RevCommit _call() throws IllegalArgumentException, IllegalStateException {
         checkArgument(null != geopackageFile, "Geopackage database not provided");
         checkArgument(geopackageFile.exists(), "Database %s does not exist", geopackageFile);
         checkArgument(noCommit || commitMessage != null, "Commit message not provided");
@@ -58,31 +79,29 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<List<AuditReport>> {
         checkState(index().isClean(),
                 "The staging ares has uncommitted changes. It must be clean for the import to run cleanly.");
 
-        List<AuditReport> tableReports;
+        RevCommit newCommit = null;
 
         try {
             InterchangeFormat interchange;
             ProgressListener progress = getProgressListener();
-            interchange = new InterchangeFormat(geopackageFile, repository())
+            interchange = new InterchangeFormat(geopackageFile, context())
                     .setProgressListener(progress);
 
-            tableReports = interchange.importAuditLog();
-
-            if (!noCommit) {
-                progress.setDescription("Committing changes...");
-                command(AddOp.class).call();
-                try {
-                    command(CommitOp.class).setMessage(commitMessage).call();
-                } catch (NothingToCommitException e) {
-                    progress.setDescription(e.getMessage());
-                }
+            if (table == null) {
+                newCommit = interchange.importAuditLog(commitMessage, authorName, authorEmail);
+            } else {
+                newCommit = interchange.importAuditLog(commitMessage, authorName, authorEmail,
+                        table);
             }
+
+        } catch (MergeConflictsException e) {
+            Throwables.propagate(e);
         } catch (Exception e) {
-            throw new IllegalStateException("Unable to export: " + e.getMessage(), e);
+            throw new IllegalStateException("Unable to import: " + e.getMessage(), e);
         } finally {
 
         }
 
-        return tableReports;
+        return newCommit;
     }
 }

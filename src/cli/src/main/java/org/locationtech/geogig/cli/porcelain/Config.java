@@ -149,7 +149,7 @@ public class Config extends AbstractCommand implements CLICommand {
             switch (e.statusCode) {
             case INVALID_LOCATION:
                 // TODO: This could probably be more descriptive.
-                throw new CommandFailedException("The config location is invalid", e);
+                throw new CommandFailedException("The config location is invalid", true);
             case CANNOT_WRITE:
                 throw new CommandFailedException("Cannot write to the config", e);
             case SECTION_OR_NAME_NOT_PROVIDED:

@@ -78,7 +78,7 @@ public class BranchDeleteOpTest extends RepositoryTestCase {
         geogig.command(AddOp.class).call();
         geogig.command(CommitOp.class).call();
 
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(BranchDeleteOp.class).setName("TestBranch").call();
     }
 

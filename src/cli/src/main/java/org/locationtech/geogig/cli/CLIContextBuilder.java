@@ -31,14 +31,13 @@ import com.google.inject.util.Modules;
 
 public class CLIContextBuilder extends ContextBuilder {
 
-    private static final PluginDefaults defaults = new PluginDefaults(new JEStorageProviderV02());
-
     @Override
     public Context build(Hints hints) {
-        return Guice.createInjector(
-                Modules.override(new GeogigModule(), new CachingModule(), new HintsModule(hints))
-                        .with(new PluginsModule(), new DefaultPlugins())).getInstance(
-                org.locationtech.geogig.api.Context.class);
+        return Guice
+                .createInjector(Modules
+                        .override(new GeogigModule(), new CachingModule(), new HintsModule(hints))
+                        .with(new PluginsModule(), new DefaultPlugins()))
+                .getInstance(org.locationtech.geogig.api.Context.class);
     }
 
     public static class DefaultPlugins extends AbstractModule {
@@ -46,16 +45,20 @@ public class CLIContextBuilder extends ContextBuilder {
         @Override
         protected void configure() {
 
+            final PluginDefaults defaults = new PluginDefaults(new JEStorageProviderV02());
             bind(PluginDefaults.class).toInstance(defaults);
 
-            MapBinder<VersionedFormat, RefDatabase> refPlugins = MapBinder.newMapBinder(binder(),
-                    VersionedFormat.class, RefDatabase.class).permitDuplicates();
+            MapBinder<VersionedFormat, RefDatabase> refPlugins = MapBinder
+                    .newMapBinder(binder(), VersionedFormat.class, RefDatabase.class)
+                    .permitDuplicates();
 
-            MapBinder<VersionedFormat, ObjectDatabase> objectPlugins = MapBinder.newMapBinder(
-                    binder(), VersionedFormat.class, ObjectDatabase.class).permitDuplicates();
+            MapBinder<VersionedFormat, ObjectDatabase> objectPlugins = MapBinder
+                    .newMapBinder(binder(), VersionedFormat.class, ObjectDatabase.class)
+                    .permitDuplicates();
 
-            MapBinder<VersionedFormat, GraphDatabase> graphPlugins = MapBinder.newMapBinder(
-                    binder(), VersionedFormat.class, GraphDatabase.class).permitDuplicates();
+            MapBinder<VersionedFormat, GraphDatabase> graphPlugins = MapBinder
+                    .newMapBinder(binder(), VersionedFormat.class, GraphDatabase.class)
+                    .permitDuplicates();
 
             Iterable<StorageProvider> providers = StorageProvider.findProviders();
 

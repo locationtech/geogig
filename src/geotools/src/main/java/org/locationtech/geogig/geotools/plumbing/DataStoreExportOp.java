@@ -24,14 +24,14 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
+import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
+import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Optional;
@@ -173,12 +173,14 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
     private Set<String> resolveExportLayerRefSpecs() {
 
         final String refSpec = fromNullable(commitIsh).or(Ref.HEAD);
-        final Optional<ObjectId> id = command(ResolveTreeish.class).setTreeish(refSpec).call();
+        Optional<RevCommit> commit = command(RevObjectParse.class).setRefSpec(refSpec)
+                .call(RevCommit.class);
 
-        checkArgument(id.isPresent(), "RefSpec doesn't resolve to a tree: '%s'", refSpec);
+        checkArgument(commit.isPresent(), "RefSpec doesn't resolve to a commit: '%s'", refSpec);
 
-        final List<NodeRef> featureTreeRefs = Lists.newArrayList(command(LsTreeOp.class)
-                .setReference(id.get().toString()).setStrategy(Strategy.TREES_ONLY).call());
+        final List<NodeRef> featureTreeRefs = Lists.newArrayList(
+                command(LsTreeOp.class).setReference(commit.get().getTreeId().toString())
+                        .setStrategy(Strategy.TREES_ONLY).call());
 
         final Set<String> exportLayers;
 
@@ -198,7 +200,7 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
             exportLayers = requestedLayers;
         }
 
-        final String commitId = id.get().toString() + ":";
+        final String commitId = commit.get().getId().toString() + ":";
         return Sets.newHashSet(Iterables.transform(exportLayers, (s) -> commitId + s));
     }
 

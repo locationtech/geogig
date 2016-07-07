@@ -639,8 +639,6 @@ class HttpUtils {
                 throw new IOException("Error closing " + connection.getURL() + ": response code: "
                         + responseCode);
             }
-            // System.err.println("Response code: " + responseCode);
-            // System.err.flush();
         }
     }
 }

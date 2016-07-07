@@ -9,11 +9,13 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.CheckRefFormat;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
@@ -75,15 +77,17 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
      */
     @Override
     protected  Ref _call() {
-        checkState(newBranchName != null, "New branch name not specified");
-        checkState(!newBranchName.equals(oldBranchName), "Done");
+        checkArgument(newBranchName != null, "New branch name not specified");
+        checkArgument(!newBranchName.equals(oldBranchName), "Done");
+        command(CheckRefFormat.class).setThrowsException(true).setRef(newBranchName)
+                .setAllowOneLevel(true).call();
         Optional<Ref> branch = Optional.absent();
 
         boolean headBranch = false;
 
         if (oldBranchName == null) {
             Optional<Ref> headRef = command(RefParse.class).setName(Ref.HEAD).call();
-            checkState(headRef.isPresent() && headRef.get() instanceof SymRef,
+            checkArgument(headRef.isPresent() && headRef.get() instanceof SymRef,
                     "Cannot rename detached HEAD.");
             branch = command(RefParse.class).setName(((SymRef) (headRef.get())).getTarget()).call();
             headBranch = true;
@@ -96,7 +100,7 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
         Optional<Ref> newBranch = command(RefParse.class).setName(newBranchName).call();
 
         if (!force) {
-            checkState(
+            checkArgument(
                     !newBranch.isPresent(),
                     "Cannot rename branch to '"
                             + newBranchName

@@ -25,7 +25,7 @@ public class GeopkgAuditExport extends AbstractGeoGigOp<Void> {
 
     private File databaseFile;
 
-    private String sourceTreeIsh;
+    private String sourcePathspec;
 
     private String targetTableName;
 
@@ -34,8 +34,8 @@ public class GeopkgAuditExport extends AbstractGeoGigOp<Void> {
         return this;
     }
 
-    public GeopkgAuditExport setSourceTreeish(String sourceTreeIsh) {
-        this.sourceTreeIsh = sourceTreeIsh;
+    public GeopkgAuditExport setSourcePathspec(String sourcePathspec) {
+        this.sourcePathspec = sourcePathspec;
         return this;
     }
 
@@ -53,10 +53,10 @@ public class GeopkgAuditExport extends AbstractGeoGigOp<Void> {
         ProgressListener progress = getProgressListener();
 
         InterchangeFormat interchange;
-        interchange = new InterchangeFormat(databaseFile, repository).setProgressListener(progress);
+        interchange = new InterchangeFormat(databaseFile, context()).setProgressListener(progress);
 
         try {
-            interchange.export(sourceTreeIsh, targetTableName);
+            interchange.export(sourcePathspec, targetTableName);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

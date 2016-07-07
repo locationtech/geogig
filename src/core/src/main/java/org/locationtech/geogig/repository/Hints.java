@@ -10,10 +10,12 @@
 package org.locationtech.geogig.repository;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.locationtech.geogig.api.ContextBuilder;
+import org.locationtech.geogig.api.Platform;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
@@ -36,6 +38,8 @@ public class Hints implements Serializable {
     public static final String REPOSITORY_URL = "REPOSITORY_URL";
 
     public static final String REPOSITORY_NAME = "REPOSITORY_NAME";
+
+    public static final String PLATFORM = "PLATFORM";
 
     private Map<String, Serializable> hintsMap = Maps.newHashMap();
 
@@ -83,5 +87,15 @@ public class Hints implements Serializable {
         hints.set(Hints.OBJECTS_READ_ONLY, Boolean.FALSE);
         hints.set(Hints.REMOTES_READ_ONLY, Boolean.FALSE);
         return hints;
+    }
+
+    public Hints uri(URI repoURI) {
+        set(REPOSITORY_URL, repoURI);
+        return this;
+    }
+
+    public Hints platform(Platform platform) {
+        set(PLATFORM, platform);
+        return this;
     }
 }

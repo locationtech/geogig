@@ -139,7 +139,7 @@ public class Pull extends AbstractCommand implements CLICommand {
             case HISTORY_TOO_SHALLOW:
             default:
                 throw new CommandFailedException("Unable to pull, the remote history is shallow.",
-                        e);
+                        true);
             }
         }
 

@@ -179,17 +179,11 @@ public abstract class GraphDatabaseTest {
         parents = ImmutableList.of(commit10);
         database.put(commit11, parents);
 
-        System.out.println("Testing depth");
         assertEquals(0, database.getDepth(rootId));
-        System.out.println("Testing depth 9");
         assertEquals(2, database.getDepth(commit9));
-        System.out.println("Testing depth 8");
         assertEquals(3, database.getDepth(commit8));
-        System.out.println("Testing depth 6");
         assertEquals(5, database.getDepth(commit6));
-        System.out.println("Testing depth 4");
         assertEquals(4, database.getDepth(commit4));
-        System.out.println("Testing depth 11");
         assertEquals(1, database.getDepth(commit11));
     }
 

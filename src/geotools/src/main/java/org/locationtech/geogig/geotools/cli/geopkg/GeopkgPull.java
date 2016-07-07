@@ -11,7 +11,6 @@ package org.locationtech.geogig.geotools.cli.geopkg;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -19,7 +18,6 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
-import org.locationtech.geogig.geotools.geopkg.AuditReport;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditImport;
 import org.locationtech.geogig.repository.Repository;
 
@@ -41,6 +39,10 @@ public class GeopkgPull extends AbstractCommand {
     @ParametersDelegate
     final GeopkgCommonArgs commonArgs = new GeopkgCommonArgs();
 
+    @Parameter(names = { "-t",
+            "--table" }, description = "Feature table to import.  Required if tables are from multiple commits.")
+    private String table = null;
+
     @Parameter(names = { "-m", "--message" }, description = "Commit message to ")
     private String commitMessage;
 
@@ -57,11 +59,9 @@ public class GeopkgPull extends AbstractCommand {
         final File file = new File(commonArgs.database);
 
         ProgressListener listener = cli.getProgressListener();
-
-        List<AuditReport> report;
         try {
-            report = repository.command(GeopkgAuditImport.class).setDatabase(file)
-                    .setCommitMessage(commitMessage).setNoCommit(noCommit)
+            repository.command(GeopkgAuditImport.class).setDatabase(file)
+                    .setCommitMessage(commitMessage).setNoCommit(noCommit).setTable(table)
                     .setProgressListener(listener).call();
 
         } catch (IllegalArgumentException | IllegalStateException e) {

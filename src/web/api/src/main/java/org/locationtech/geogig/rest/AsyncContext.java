@@ -168,6 +168,10 @@ public class AsyncContext {
             return Optional.absent();
         }
 
+        public Context getContext() {
+            return command.command.context();
+        }
+
         public Status getStatus() {
             return command.status;
         }

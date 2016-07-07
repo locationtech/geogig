@@ -14,7 +14,6 @@ import java.util.Map;
 
 import org.locationtech.geogig.api.ObjectId;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -64,24 +63,14 @@ class Node {
      * Returns all nodes reachable from this node through an outgoing relationship. 
      */
     public Iterable<Node> to() {
-        return Iterables.transform(out, new Function<Edge,Node>() {
-            @Override
-            public Node apply(Edge e) {
-                return e.dst;
-            }
-        });
+        return Iterables.transform(out, (e) -> e.dst);
     }
 
     /**
      * Returns all nodes related to this node through an incoming relationship.
      */
     public Iterable<Node> from() {
-        return Iterables.transform(in, new Function<Edge,Node>() {
-            @Override
-            public Node apply(Edge e) {
-                return e.src;
-            }
-        });
+        return Iterables.transform(in, (e) -> e.src);
     }
 
     /**

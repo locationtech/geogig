@@ -55,7 +55,6 @@ import org.locationtech.geogig.api.porcelain.PullOp;
 import org.locationtech.geogig.api.porcelain.PushOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.storage.DeduplicationService;
 import org.locationtech.geogig.test.integration.TestContextBuilder;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -134,10 +133,10 @@ public abstract class RemoteRepositoryTestCase {
             envHome = tempFolder.newFolder(workingDirectory);
 
             ContextBuilder injectorBuilder = createInjectorBuilder();
-            GlobalContextBuilder.builder = injectorBuilder;
+            GlobalContextBuilder.builder(injectorBuilder);
             injector = injectorBuilder.build();
 
-            geogig = new GeoGIG(injector, envHome);
+            geogig = new GeoGIG(injector);
             repo = geogig.getOrCreateRepository();
 
             repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
@@ -192,8 +191,8 @@ public abstract class RemoteRepositoryTestCase {
         localGeogig = new GeogigContainer("localtestrepository");
         remoteGeogig = new GeogigContainer("remotetestrepository");
 
-        LocalRemoteRepo remoteRepo = spy(new LocalRemoteRepo(remoteGeogig.geogig.getRepository(),
-                localGeogig.repo));
+        LocalRemoteRepo remoteRepo = spy(
+                new LocalRemoteRepo(remoteGeogig.geogig.getRepository(), localGeogig.repo));
 
         doNothing().when(remoteRepo).close();
 

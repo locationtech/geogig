@@ -35,13 +35,20 @@ public class BranchRenameOpTest extends RepositoryTestCase {
 
     @Test
     public void NoBranchNameTest() {
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(BranchRenameOp.class).call();
     }
 
     @Test
+    public void InvalidBranchNameTest() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
+        geogig.command(BranchRenameOp.class).setNewName("ma..er").call();
+    }
+
+    @Test
     public void SameNameTest() {
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(BranchRenameOp.class).setNewName("master").setOldName("master").call();
     }
 
@@ -115,7 +122,7 @@ public class BranchRenameOpTest extends RepositoryTestCase {
 
         assertEquals(TestBranch1.getObjectId(), SuperTestBranch.getObjectId());
 
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(BranchRenameOp.class).setNewName("master").call();
     }
 }

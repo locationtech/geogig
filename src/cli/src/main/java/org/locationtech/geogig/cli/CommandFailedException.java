@@ -28,24 +28,33 @@ public class CommandFailedException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    public final boolean reportOnly;
+
     /**
      * Empty constructor, use it only to signal abnormal command termination but there's nothing to
      * report to the console or log.
      */
     public CommandFailedException() {
         super();
+        reportOnly = false;
     }
 
     public CommandFailedException(String message) {
+        this(message, false);
+    }
+
+    public CommandFailedException(String message, boolean reportOnly) {
         super(message);
+        this.reportOnly = reportOnly;
     }
 
     public CommandFailedException(String message, Throwable cause) {
         super(message, cause);
+        reportOnly = false;
     }
 
     public CommandFailedException(Throwable cause) {
-        super(cause);
+        this(cause.getMessage(), cause);
     }
 
 }

@@ -99,7 +99,7 @@ public class Blame extends AbstractCommand {
                         String s = value.isPresent() ? value.get().toString() : "NULL";
                         ansi.fg(YELLOW).a(s).a(" ").reset();
                     }
-                    ansi.a(commit.getId().toString().substring(0, 7)).a(" ");
+                    ansi.a(commit.getId().toString().substring(0, 8)).a(" ");
                     ansi.a(commit.getAuthor().getName().or("")).a(" ");
                     ansi.a(commit.getAuthor().getEmail().or("")).a(" ");
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");

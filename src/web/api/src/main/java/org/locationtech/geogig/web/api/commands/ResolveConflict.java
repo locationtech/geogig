@@ -47,9 +47,9 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class ResolveConflict extends AbstractWebAPICommand {
 
-    private String path;
+    String path;
 
-    private ObjectId objectId;
+    ObjectId objectId;
 
     public ResolveConflict(ParameterSet options) {
         super(options);
@@ -67,7 +67,11 @@ public class ResolveConflict extends AbstractWebAPICommand {
     }
 
     public void setFeatureObjectId(String objectId) {
-        this.objectId = ObjectId.valueOf(objectId);
+        if (objectId == null) {
+            this.objectId = null;
+        } else {
+            this.objectId = ObjectId.valueOf(objectId);
+        }
     }
 
     /**
@@ -81,7 +85,7 @@ public class ResolveConflict extends AbstractWebAPICommand {
     protected void runInternal(CommandContext context) {
         if (this.getTransactionId() == null) {
             throw new CommandSpecException(
-                    "No transaction was specified, add requires a transaction to preserve the stability of the repository.");
+                    "No transaction was specified, resolve conflict requires a transaction to preserve the stability of the repository.");
         }
         final Context geogig = this.getCommandLocator(context);
 

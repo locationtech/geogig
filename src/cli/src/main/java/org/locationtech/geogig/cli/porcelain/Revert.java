@@ -82,7 +82,7 @@ public class Revert extends AbstractCommand implements CLICommand {
             sb.append(e.getMessage() + "\n");
             sb.append("When you have fixed these conflicts, run 'geogig revert --continue' to continue the revert operation.\n");
             sb.append("To abort the revert operation, run 'geogig revert --abort'\n");
-            throw new CommandFailedException(sb.toString());
+            throw new CommandFailedException(sb.toString(), true);
         }
 
         if (abort) {

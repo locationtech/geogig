@@ -44,7 +44,6 @@ import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.data.store.FeatureIteratorIterator;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.json.JSONException;
@@ -54,7 +53,7 @@ import org.junit.Test;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
-import org.locationtech.geogig.rest.geotools.ExportWebOp;
+import org.locationtech.geogig.rest.geotools.Export;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -88,8 +87,8 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
     }
 
     @Override
-    protected ExportWebOp buildCommand(@Nullable String... optionsKvp) {
-        ExportWebOp o = super.buildCommand(optionsKvp);
+    protected Export buildCommand(@Nullable String... optionsKvp) {
+        Export o = super.buildCommand(optionsKvp);
         o.asyncContext = testAsyncContext;
         return o;
     }
@@ -101,7 +100,12 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
 
     @Override
     protected Class<? extends AbstractWebAPICommand> getCommandClass() {
-        return ExportWebOp.class;
+        return Export.class;
+    }
+
+    @Override
+    protected boolean requiresTransaction() {
+        return false;
     }
 
     @Test
@@ -110,7 +114,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
-        ExportWebOp op = buildCommand("format", "gpkg");
+        Export op = buildCommand("format", "gpkg");
 
         DataStore result = store(run(op));
         try {
@@ -128,7 +132,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
-        ExportWebOp op = buildCommand("format", "gpkg", "interchange", "true");
+        Export op = buildCommand("format", "gpkg", "interchange", "true");
 
         final File result = run(op);
         final DataStore store = store(result);
@@ -152,7 +156,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         testData.init().loadDefaultData().checkout("branch1");
 
         // but we request branch2
-        ExportWebOp op = buildCommand("format", "GPKG", "root", "branch2");
+        Export op = buildCommand("format", "GPKG", "root", "branch2");
 
         DataStore result = store(run(op));
         try {
@@ -171,7 +175,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
 
         // but we request branch2
         String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
-        ExportWebOp op = buildCommand("format", "gpkg", "path", layerFilter);
+        Export op = buildCommand("format", "gpkg", "path", layerFilter);
 
         DataStore result = store(run(op));
         try {
@@ -196,7 +200,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         String bboxStr = String.format("%f,%f,%f,%f,EPSG:4326", bounds.getMinX(), bounds.getMinY(),
                 bounds.getMaxX(), bounds.getMaxY());
         // but we request branch2
-        ExportWebOp op = buildCommand("format", "gpkg", "root", "branch2", "bbox", bboxStr);
+        Export op = buildCommand("format", "gpkg", "root", "branch2", "bbox", bboxStr);
 
         DataStore result = store(run(op));
         try {
@@ -220,7 +224,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
                 bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY());
         String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
         // but we request branch2
-        ExportWebOp op = buildCommand("format", "gpkg", "root", "branch2", "bbox", bboxFilter,
+        Export op = buildCommand("format", "gpkg", "root", "branch2", "bbox", bboxFilter,
                 "path", layerFilter);
 
         DataStore result = store(run(op));
@@ -247,7 +251,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
                 bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY());
         String layerFilter = linesType.getTypeName() + "," + polysType.getTypeName();
         // but we request branch2
-        ExportWebOp op = buildCommand("format", "gpkg", "root", "branch2", "bbox", bboxFilter,
+        Export op = buildCommand("format", "gpkg", "root", "branch2", "bbox", bboxFilter,
                 "path", layerFilter, "interchange", "true");
 
         final File result = run(op);
@@ -265,7 +269,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         assertEquals(Sets.newHashSet("Lines_audit", "Polygons_audit"), getAuditTableNames(result));
     }
 
-    private File run(ExportWebOp op) throws JSONException, InterruptedException, ExecutionException {
+    private File run(Export op) throws JSONException, InterruptedException, ExecutionException {
 
         op.run(context);
 
@@ -323,17 +327,19 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
             List<SimpleFeature> list = Lists.newArrayList(expected);
             expectedFeatures = Maps.uniqueIndex(list, (f) -> f.getID());
         }
-        Map<String, SimpleFeature> actualFeatures;
+        Set<String> actualFeatureIDs = new HashSet<String>();
         {
             try (SimpleFeatureIterator fiter = features.features()) {
-                List<SimpleFeature> list = Lists
-                        .newArrayList(new FeatureIteratorIterator<SimpleFeature>(fiter));
-                actualFeatures = Maps.uniqueIndex(list, (f) -> f.getID());
+                while (fiter.hasNext()) {
+                    SimpleFeature feature = fiter.next();
+                    actualFeatureIDs.add(feature.getID().split("\\.")[1]);
+                }
             }
         }
 
-        assertEquals(expectedFeatures.keySet(), actualFeatures.keySet());
-        // assertEquals(expectedFeatures, actualFeatures);
+        Set<String> expectedFeatureIDs = expectedFeatures.keySet();
+
+        assertEquals(expectedFeatureIDs, actualFeatureIDs);
     }
 
     private Set<String> getAuditTableNames(File gpkg) throws IOException, SQLException {
@@ -349,7 +355,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
                             String table = rs.getString("table_name");
                             String treePath = rs.getString("mapped_path");
                             String auditTable = rs.getString("audit_table");
-                            String rootTreeId = rs.getString("root_tree_id");
+                            String rootTreeId = rs.getString("commit_id");
                             auditTables.add(auditTable);
                         }
                     }

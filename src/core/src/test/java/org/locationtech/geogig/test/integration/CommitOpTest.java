@@ -11,6 +11,8 @@ package org.locationtech.geogig.test.integration;
 
 import static org.locationtech.geogig.api.NodeRef.appendChild;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -59,15 +61,14 @@ public class CommitOpTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testInitialCommit() throws Exception {
-        try {
-            geogig.command(AddOp.class).addPattern(".").call();
-            geogig.command(CommitOp.class).call();
-            fail("expected NothingToCommitException");
-        } catch (NothingToCommitException e) {
-            assertTrue(true);
-        }
+    public void testNothingToCommit() throws Exception {
+        geogig.command(AddOp.class).addPattern(".").call();
+        exception.expect(NothingToCommitException.class);
+        geogig.command(CommitOp.class).call();
+    }
 
+    @Test
+    public void testInitialCommit() throws Exception {
         ObjectId oid1 = insertAndAdd(points1);
 
         ObjectId oid2 = insertAndAdd(points2);
@@ -132,8 +133,8 @@ public class CommitOpTest extends RepositoryTestCase {
         {
             assertCommit(commit1, null, null, null);
             // check points1 is there
-            assertEquals(oId1_1, repo.getRootTreeChild(appendChild(pointsName, idP1)).get()
-                    .getObjectId());
+            assertEquals(oId1_1,
+                    repo.getRootTreeChild(appendChild(pointsName, idP1)).get().getObjectId());
             // and check the objects were actually copied
             assertNotNull(repo.objectDatabase().get(oId1_1));
         }
@@ -151,20 +152,20 @@ public class CommitOpTest extends RepositoryTestCase {
             // new PrintVisitor(repo.objectDatabase(), new PrintWriter(System.out)));
 
             // check points2, points3 and lines1
-            assertEquals(oId1_2, repo.getRootTreeChild(appendChild(pointsName, idP2)).get()
-                    .getObjectId());
-            assertEquals(oId1_3, repo.getRootTreeChild(appendChild(pointsName, idP3)).get()
-                    .getObjectId());
-            assertEquals(oId2_1, repo.getRootTreeChild(appendChild(linesName, idL1)).get()
-                    .getObjectId());
+            assertEquals(oId1_2,
+                    repo.getRootTreeChild(appendChild(pointsName, idP2)).get().getObjectId());
+            assertEquals(oId1_3,
+                    repo.getRootTreeChild(appendChild(pointsName, idP3)).get().getObjectId());
+            assertEquals(oId2_1,
+                    repo.getRootTreeChild(appendChild(linesName, idL1)).get().getObjectId());
             // and check the objects were actually copied
             assertNotNull(repo.objectDatabase().get(oId1_2));
             assertNotNull(repo.objectDatabase().get(oId1_3));
             assertNotNull(repo.objectDatabase().get(oId2_1));
 
             // as well as feature1_1 from the previous commit
-            assertEquals(oId1_1, repo.getRootTreeChild(appendChild(pointsName, idP1)).get()
-                    .getObjectId());
+            assertEquals(oId1_1,
+                    repo.getRootTreeChild(appendChild(pointsName, idP1)).get().getObjectId());
         }
         // delete feature1_1, feature1_3, and feature2_1
         assertTrue(deleteAndAdd(points1));
@@ -186,10 +187,10 @@ public class CommitOpTest extends RepositoryTestCase {
             assertFalse(repo.getRootTreeChild(appendChild(pointsName, idP3)).isPresent());
             assertFalse(repo.getRootTreeChild(appendChild(linesName, idL3)).isPresent());
 
-            assertEquals(oId1_2, repo.getRootTreeChild(appendChild(pointsName, idP2)).get()
-                    .getObjectId());
-            assertEquals(oId2_2, repo.getRootTreeChild(appendChild(linesName, idL2)).get()
-                    .getObjectId());
+            assertEquals(oId1_2,
+                    repo.getRootTreeChild(appendChild(pointsName, idP2)).get().getObjectId());
+            assertEquals(oId2_2,
+                    repo.getRootTreeChild(appendChild(linesName, idL2)).get().getObjectId());
             // and check the objects were actually copied
             assertNotNull(repo.objectDatabase().get(oId1_2));
             assertNotNull(repo.objectDatabase().get(oId2_2));
@@ -198,13 +199,6 @@ public class CommitOpTest extends RepositoryTestCase {
 
     @Test
     public void testCommitWithCustomAuthorAndCommitter() throws Exception {
-        try {
-            geogig.command(AddOp.class).addPattern(".").call();
-            geogig.command(CommitOp.class).call();
-            fail("expected NothingToCommitException");
-        } catch (NothingToCommitException e) {
-            assertTrue(true);
-        }
 
         ObjectId oid1 = insertAndAdd(points1);
 
@@ -253,14 +247,38 @@ public class CommitOpTest extends RepositoryTestCase {
     }
 
     @Test
+    public void testCommitWithExplicitNullAuthorEmail() throws Exception {
+
+        CommitOp commitCommand = geogig.command(CommitOp.class);
+        commitCommand.setAuthor("John Doe", null);
+        commitCommand.setAllowEmpty(true);
+        RevCommit commit = commitCommand.call();
+        assertFalse(commit.getAuthor().getEmail().isPresent());
+
+        assertEquals("groldan", commit.getCommitter().getName().get());
+        assertEquals("groldan@boundlessgeo.com", commit.getCommitter().getEmail().get());
+        assertEquals("John Doe", commit.getAuthor().getName().get());
+    }
+
+    @Test
+    public void testExplicitTimeStamp() throws Exception {
+
+        CommitOp commitCommand = geogig.command(CommitOp.class);
+        commitCommand.setAuthorTimestamp(1000L);
+        commitCommand.setAuthorTimeZoneOffset(-3);
+        commitCommand.setCommitterTimestamp(2000L);
+        commitCommand.setCommitterTimeZoneOffset(+4);
+
+        commitCommand.setAllowEmpty(true);
+        RevCommit commit = commitCommand.call();
+        assertEquals(1000L, commit.getAuthor().getTimestamp());
+        assertEquals(-3, commit.getAuthor().getTimeZoneOffset());
+        assertEquals(2000L, commit.getCommitter().getTimestamp());
+        assertEquals(+4, commit.getCommitter().getTimeZoneOffset());
+    }
+
+    @Test
     public void testCommitWithAllOption() throws Exception {
-        try {
-            geogig.command(AddOp.class).addPattern(".").call();
-            geogig.command(CommitOp.class).call();
-            fail("expected NothingToCommitException");
-        } catch (NothingToCommitException e) {
-            assertTrue(true);
-        }
 
         insertAndAdd(points1);
 
@@ -300,13 +318,6 @@ public class CommitOpTest extends RepositoryTestCase {
 
     @Test
     public void testCommitWithAllOptionAndPaths() throws Exception {
-        try {
-            geogig.command(AddOp.class).addPattern(".").call();
-            geogig.command(CommitOp.class).call();
-            fail("expected NothingToCommitException");
-        } catch (NothingToCommitException e) {
-            assertTrue(true);
-        }
 
         insertAndAdd(points1);
 
@@ -355,13 +366,6 @@ public class CommitOpTest extends RepositoryTestCase {
 
     @Test
     public void testEmptyCommit() throws Exception {
-        try {
-            geogig.command(AddOp.class).addPattern(".").call();
-            geogig.command(CommitOp.class).call();
-            fail("expected NothingToCommitException");
-        } catch (NothingToCommitException e) {
-            assertTrue(true);
-        }
 
         CommitOp commitCommand = geogig.command(CommitOp.class);
         RevCommit commit = commitCommand.setAllowEmpty(true).call();
@@ -377,13 +381,6 @@ public class CommitOpTest extends RepositoryTestCase {
 
     @Test
     public void testNoCommitterName() throws Exception {
-        try {
-            geogig.command(AddOp.class).addPattern(".").call();
-            geogig.command(CommitOp.class).call();
-            fail("expected NothingToCommitException");
-        } catch (NothingToCommitException e) {
-            assertTrue(true);
-        }
 
         injector.configDatabase().remove("user.name");
 
@@ -394,13 +391,6 @@ public class CommitOpTest extends RepositoryTestCase {
 
     @Test
     public void testNoCommitterEmail() throws Exception {
-        try {
-            geogig.command(AddOp.class).addPattern(".").call();
-            geogig.command(CommitOp.class).call();
-            fail("expected NothingToCommitException");
-        } catch (NothingToCommitException e) {
-            assertTrue(true);
-        }
 
         injector.configDatabase().remove("user.email");
 
@@ -420,14 +410,6 @@ public class CommitOpTest extends RepositoryTestCase {
         ProgressListener listener3 = mock(ProgressListener.class);
         when(listener3.isCanceled()).thenReturn(false, false, true);
 
-        try {
-            geogig.command(AddOp.class).addPattern(".").call();
-            geogig.command(CommitOp.class).call();
-            fail("expected NothingToCommitException");
-        } catch (NothingToCommitException e) {
-            assertTrue(true);
-        }
-
         CommitOp commitCommand1 = geogig.command(CommitOp.class);
         commitCommand1.setProgressListener(listener1);
         assertNull(commitCommand1.setAllowEmpty(true).call());
@@ -439,6 +421,10 @@ public class CommitOpTest extends RepositoryTestCase {
         CommitOp commitCommand3 = geogig.command(CommitOp.class);
         commitCommand3.setProgressListener(listener3);
         assertNull(commitCommand3.setAllowEmpty(true).call());
+
+        verify(listener1, times(1)).isCanceled();
+        verify(listener2, times(2)).isCanceled();
+        verify(listener3, times(3)).isCanceled();
     }
 
     @Test
@@ -554,8 +540,8 @@ public class CommitOpTest extends RepositoryTestCase {
         final RevCommit commit1 = geogig.command(CommitOp.class).setMessage("Message").call();
         {
             assertCommit(commit1, null, null, null);
-            assertEquals(id, repo.getRootTreeChild(appendChild(pointsName, idP1)).get()
-                    .getObjectId());
+            assertEquals(id,
+                    repo.getRootTreeChild(appendChild(pointsName, idP1)).get().getObjectId());
             assertNotNull(repo.objectDatabase().get(id));
         }
 
@@ -735,5 +721,4 @@ public class CommitOpTest extends RepositoryTestCase {
         featureBlobId = repo.getTreeChild(root, NodeRef.appendChild(linesName, featureId));
         assertTrue(featureBlobId.isPresent());
     }
-
 }

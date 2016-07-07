@@ -10,11 +10,11 @@
 package org.locationtech.geogig.storage.postgresql;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.rollbackAndRethrow;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -28,6 +28,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.util.Converters;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -158,7 +159,7 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     @Override
     public void removeSection(String key) {
-        removeAll(key, local());
+        removeSection(key, local());
     }
 
     private String local() {
@@ -174,7 +175,7 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     @Override
     public void removeSectionGlobal(String key) {
-        removeAll(key, global());
+        removeSection(key, global());
     }
 
     <T> Optional<T> get(Entry entry, Class<T> clazz, final String repositoryId) {
@@ -212,168 +213,153 @@ public class PGConfigDatabase implements ConfigDatabase {
         }
     }
 
+    @Nullable
     protected String get(final Entry entry, final String repositoryId) {
         checkArgument(!Strings.isNullOrEmpty(entry.section), "Section name required");
         checkArgument(!Strings.isNullOrEmpty(entry.key), "Key required");
 
-        return new DbOp<String>() {
-            @Override
-            protected String doRun(Connection cx) throws IOException, SQLException {
-                String sql = format(
-                        "SELECT value FROM %s WHERE repository = ? AND section = ? AND key = ?",
-                        config.getTables().config());
+        final String sql = format(
+                "SELECT value FROM %s WHERE repository = ? AND section = ? AND key = ?",
+                config.getTables().config());
 
-                String s = entry.section;
-                String k = entry.key;
+        final String s = entry.section;
+        final String k = entry.key;
 
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, s, k))) {
-                    ps.setString(1, repositoryId);
-                    ps.setString(2, s);
-                    ps.setString(3, k);
+        try (Connection cx = connect(config).getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, s, k))) {
+                ps.setString(1, repositoryId);
+                ps.setString(2, s);
+                ps.setString(3, k);
 
-                    try (ResultSet rs = ps.executeQuery()) {
-                        return rs.next() ? rs.getString(1) : null;
-                    }
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next() ? rs.getString(1) : null;
                 }
             }
-        }.run(connect(config));
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     protected Map<String, String> all(final String repositoryId) {
-        return new DbOp<Map<String, String>>() {
-            @Override
-            protected Map<String, String> doRun(Connection cx) throws IOException, SQLException {
-                String sql = format("SELECT section,key,value FROM %s WHERE repository = ?", config
-                        .getTables().config());
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId))) {
-                    ps.setString(1, repositoryId);
-                    Map<String, String> all = new LinkedHashMap<>();
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            String entry = String.format("%s.%s", rs.getString(1), rs.getString(2));
-                            all.put(entry, rs.getString(3));
-                        }
-                    }
-                    return all;
-                }
-            }
-        }.run(connect(config));
-    }
 
-    protected Map<String, String> all(final String section, final String repositoryId) {
-        return new DbOp<Map<String, String>>() {
-            @Override
-            protected Map<String, String> doRun(Connection cx) throws IOException, SQLException {
-                String sql = format(
-                        "SELECT key,value FROM %s WHERE repository = ? AND section = ?", config
-                                .getTables().config());
+        final String sql = format("SELECT section,key,value FROM %s WHERE repository = ?",
+                config.getTables().config());
 
-                try (PreparedStatement ps = cx
-                        .prepareStatement(log(sql, LOG, repositoryId, section))) {
-                    ps.setString(1, repositoryId);
-                    ps.setString(2, section);
-                    Map<String, String> all = Maps.newLinkedHashMap();
-
-                    final String sectionPrefix = section + ".";
-
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            String key = rs.getString(1);
-                            String value = rs.getString(2);
-                            all.put(key, value);
-                        }
-                    }
-
-                    return all;
-                }
-            }
-        }.run(connect(config));
-    }
-
-    protected List<String> list(final String section, final String repositoryId) {
-        return new DbOp<List<String>>() {
-            @Override
-            protected List<String> doRun(Connection cx) throws IOException, SQLException {
-                String sql = format(
-                        "SELECT section FROM %s WHERE repository = ? AND section LIKE ?", config
-                                .getTables().config());
-
-                List<String> all = new ArrayList<>(1);
-
-                final String sectionPrefix = section + (section.endsWith(".") ? "" : ".");
-
-                try (PreparedStatement ps = cx
-                        .prepareStatement(log(sql, LOG, repositoryId, section))) {
-                    ps.setString(1, repositoryId);
-                    ps.setString(2, sectionPrefix + "%");
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            String section = rs.getString(1);
-                            String subsection = section.substring(sectionPrefix.length());
-                            all.add(subsection);
-                        }
+        try (Connection cx = connect(config).getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId))) {
+                ps.setString(1, repositoryId);
+                Map<String, String> all = new LinkedHashMap<>();
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String entry = String.format("%s.%s", rs.getString(1), rs.getString(2));
+                        all.put(entry, rs.getString(3));
                     }
                 }
                 return all;
             }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+    }
 
-        }.run(connect(config));
+    protected Map<String, String> all(final String section, final String repositoryId) {
+        final String sql = format("SELECT key,value FROM %s WHERE repository = ? AND section = ?",
+                config.getTables().config());
 
+        try (Connection cx = connect(config).getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, section))) {
+                ps.setString(1, repositoryId);
+                ps.setString(2, section);
+                Map<String, String> all = Maps.newLinkedHashMap();
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String key = rs.getString(1);
+                        String value = rs.getString(2);
+                        all.put(key, value);
+                    }
+                }
+                return all;
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+    }
+
+    protected List<String> list(final String section, final String repositoryId) {
+        String sql = format(
+                "SELECT DISTINCT section FROM %s WHERE repository = ? AND section LIKE ?",
+                config.getTables().config());
+
+        try (Connection cx = connect(config).getConnection()) {
+            List<String> all = new ArrayList<>(1);
+
+            final String sectionPrefix = section + (section.endsWith(".") ? "" : ".");
+
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, section))) {
+                ps.setString(1, repositoryId);
+                ps.setString(2, sectionPrefix + "%");
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String sect = rs.getString(1);
+                        String subsection = sect.substring(sectionPrefix.length());
+                        all.add(subsection);
+                    }
+                }
+            }
+            return all;
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     protected void put(final Entry entry, final String value, final String repositoryId) {
-        new DbOp<Void>() {
-            @Override
-            protected boolean isAutoCommit() {
-                return false;
+
+        final String sql = format(
+                "insert into %s (repository, section, key, value) values(?, ?, ?, ?)",
+                config.getTables().config());
+
+        try (Connection cx = connect(config).getConnection()) {
+            cx.setAutoCommit(false);
+            doRemove(entry, cx, repositoryId);
+            String s = entry.section;
+            String k = entry.key;
+
+            try (PreparedStatement ps = cx
+                    .prepareStatement(log(sql, LOG, repositoryId, s, k, value))) {
+                ps.setString(1, repositoryId);
+                ps.setString(2, s);
+                ps.setString(3, k);
+                ps.setString(4, value);
+
+                ps.executeUpdate();
+                cx.commit();
+            } catch (SQLException e) {
+                rollbackAndRethrow(cx, e);
+            } finally {
+                cx.setAutoCommit(true);
             }
-
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-
-                doRemove(entry, cx, repositoryId);
-                String sql = format(
-                        "insert into %s (repository, section, key, value) values(?, ?, ?, ?)",
-                        config.getTables().config());
-
-                String s = entry.section;
-                String k = entry.key;
-
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, s, k,
-                        value))) {
-                    ps.setString(1, repositoryId);
-                    ps.setString(2, s);
-                    ps.setString(3, k);
-                    ps.setString(4, value);
-
-                    ps.executeUpdate();
-                    cx.commit();
-                } catch (SQLException e) {
-                    rollbackAndRethrow(cx, e);
-                }
-                return null;
-            }
-        }.run(connect(config));
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     private void remove(final Entry entry, final String repositoryId) {
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                doRemove(entry, cx, repositoryId);
-                return null;
-            }
-        }.run(connect(config));
+        try (Connection cx = connect(config).getConnection()) {
+            doRemove(entry, cx, repositoryId);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     private void doRemove(final Entry entry, Connection cx, final String repositoryId)
             throws SQLException {
 
-        String sql = format("DELETE FROM %s WHERE repository = ? AND section = ? AND key = ?",
+        final String sql = format("DELETE FROM %s WHERE repository = ? AND section = ? AND key = ?",
                 config.getTables().config());
 
-        String s = entry.section;
-        String k = entry.key;
+        final String s = entry.section;
+        final String k = entry.key;
 
         try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, s, k))) {
             ps.setString(1, repositoryId);
@@ -385,39 +371,39 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     }
 
-    protected void removeAll(final String section, final String repositoryId) {
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                String sql = format("DELETE FROM %s WHERE repository = ? AND section = ?", config
-                        .getTables().config());
+    protected void removeSection(final String section, final String repositoryId) {
+        final String sql = format("DELETE FROM %s WHERE repository = ? AND section = ?",
+                config.getTables().config());
 
-                try (PreparedStatement ps = cx
-                        .prepareStatement(log(sql, LOG, repositoryId, section))) {
-                    ps.setString(1, repositoryId);
-                    ps.setString(2, section);
-                    ps.executeUpdate();
+        try (Connection cx = connect(config).getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, section))) {
+                ps.setString(1, repositoryId);
+                ps.setString(2, section);
+                int updateCount = ps.executeUpdate();
+                if (0 == updateCount) {
+                    throw new ConfigException(StatusCode.MISSING_SECTION);
                 }
-                return null;
             }
-        }.run(connect(config));
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     synchronized DataSource connect(final Environment config) {
         if (this.dataSource == null) {
             this.dataSource = PGStorage.newDataSource(config);
-            boolean tablesExist = new DbOp<Boolean>() {
-                @Override
-                protected Boolean doRun(Connection cx) throws SQLException {
-                    DatabaseMetaData md = cx.getMetaData();
-                    final String configTable = config.getTables().config();
-                    final String schema = PGStorage.schema(configTable);
-                    final String table = PGStorage.stripSchema(configTable);
-                    try (ResultSet tables = md.getTables(null, schema, table, null)) {
-                        return tables.next();
-                    }
+            boolean tablesExist;
+            try (Connection cx = dataSource.getConnection()) {
+                DatabaseMetaData md = cx.getMetaData();
+                final String configTable = config.getTables().config();
+                final String schema = PGStorage.schema(configTable);
+                final String table = PGStorage.stripSchema(configTable);
+                try (ResultSet tables = md.getTables(null, schema, table, null)) {
+                    tablesExist = tables.next();
                 }
-            }.run(dataSource);
+            } catch (SQLException e) {
+                throw propagate(e);
+            }
             if (!tablesExist) {
                 PGStorage.createTables(config);
             }

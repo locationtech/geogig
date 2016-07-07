@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
@@ -78,18 +77,12 @@ public class OSMExportPG extends AbstractCommand implements CLICommand {
         checkParameter(!rules.isEmpty(), "No rules are defined in the specified mapping");
 
         for (final MappingRule rule : mapping.getRules()) {
-            Function<Feature, Optional<Feature>> function = new Function<Feature, Optional<Feature>>() {
-
-                @Override
-                @Nullable
-                public Optional<Feature> apply(@Nullable Feature feature) {
-                    Optional<Feature> mapped = rule.apply(feature);
-                    if (mapped.isPresent()) {
-                        return Optional.of(mapped.get());
-                    }
-                    return Optional.absent();
+            final Function<Feature, Optional<Feature>> function = (feature) -> {
+                Optional<Feature> mapped = rule.apply(feature);
+                if (mapped.isPresent()) {
+                    return Optional.of(mapped.get());
                 }
-
+                return Optional.absent();
             };
             final ProgressListener progressListener = cli.getProgressListener();
             SimpleFeatureType outputFeatureType = rule.getFeatureType();

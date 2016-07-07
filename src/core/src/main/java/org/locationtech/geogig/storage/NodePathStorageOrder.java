@@ -236,7 +236,13 @@ public final class NodePathStorageOrder extends Ordering<String> implements Seri
         public int compare(final String p1, final String p2) {
             UnsignedLong hash1 = fnv(p1);
             UnsignedLong hash2 = fnv(p2);
-            return hash1.compareTo(hash2);
+            int c = hash1.compareTo(hash2);
+            if (c == 0 && !p1.equals(p2)) {
+                // make sure we're not running into a fnv hash clash. If so, fall back to canonical
+                // string sorting
+                c = p1.compareTo(p2);
+            }
+            return c;
         }
 
         private static UnsignedLong fnv(CharSequence chars) {

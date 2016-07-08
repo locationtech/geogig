@@ -16,8 +16,8 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -67,10 +67,8 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         Preconditions.checkNotNull(node, "node is null");
         Preconditions.checkNotNull(metadataId, "metadataId is null, did you mean ObjectId.NULL?");
 
-        Preconditions
-                .checkArgument(
-                        parentPath != null || NodeRef.ROOT.equals(node.getName()),
-                        "parentPath is null, did you mean an empty string? null parent path is only allowed for the root node");
+        Preconditions.checkArgument(parentPath != null || NodeRef.ROOT.equals(node.getName()),
+                "parentPath is null, did you mean an empty string? null parent path is only allowed for the root node");
 
         this.node = node;
         this.parentPath = parentPath;
@@ -157,6 +155,10 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         } else {
             return this.metadataId;
         }
+    }
+
+    public ObjectId getDefaultMetadataId() {
+        return this.metadataId;
     }
 
     /**
@@ -286,7 +288,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         if (parentPath.isEmpty()) {
             return !nodePath.isEmpty() && idx == -1;
         }
-        return idx == parentPath.length() && nodePath.substring(0, idx).equals(parentPath);
+        return idx == parentPath.length() && nodePath.startsWith(parentPath);
     }
 
     /**

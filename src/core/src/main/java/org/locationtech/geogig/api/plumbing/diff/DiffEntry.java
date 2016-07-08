@@ -9,13 +9,18 @@
  */
 package org.locationtech.geogig.api.plumbing.diff;
 
+import java.util.Comparator;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.repository.SpatialOps;
+import org.locationtech.geogig.storage.NodeStorageOrder;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -113,6 +118,10 @@ public class DiffEntry {
         return oldObject;
     }
 
+    public Optional<NodeRef> oldObject() {
+        return Optional.fromNullable(oldObject);
+    }
+
     /**
      * @return the id of the new version id of the object, or {@link ObjectId#NULL} if
      *         {@link #changeType()} is {@code DELETE}
@@ -127,6 +136,10 @@ public class DiffEntry {
      */
     public NodeRef getNewObject() {
         return newObject;
+    }
+
+    public Optional<NodeRef> newObject() {
+        return Optional.fromNullable(newObject);
     }
 
     /**
@@ -176,6 +189,10 @@ public class DiffEntry {
      */
     public @Nullable String oldPath() {
         return oldObject == null ? null : oldObject.path();
+    }
+
+    public String path() {
+        return newObject == null ? oldObject.path() : newObject.path();
     }
 
     /**
@@ -236,5 +253,49 @@ public class DiffEntry {
 
     public boolean isChange() {
         return ChangeType.MODIFIED.equals(changeType());
+    }
+
+    public static Comparator<DiffEntry> COMPARATOR = new Comparator<DiffEntry>() {
+
+        @Override
+        public int compare(DiffEntry left, DiffEntry right) {
+            final NodeRef nodeRef1 = left.oldObject().or(left.newObject()).get();
+            final NodeRef nodeRef2 = right.oldObject().or(right.newObject()).get();
+
+            if (nodeRef1.getType().equals(nodeRef2.getType())) {
+                return NodeStorageOrder.INSTANCE.compare(nodeRef1.getNode(), nodeRef2.getNode());
+            }
+            // one is a tree, the other a feature.
+            // the tree comes first if it's a feature's parent
+            boolean leftIsRightsParent = NodeRef.isChild(nodeRef1.path()/* parent */,
+                    nodeRef2.path()/* child */);
+            if (leftIsRightsParent) {
+                return -1;
+            }
+            boolean rightIsLeftsParent = NodeRef.isDirectChild(nodeRef2.path()/* parent */,
+                    nodeRef1.path()/* child */);
+            if (rightIsLeftsParent) {
+                return 1;
+            }
+            // feature wins (got a new tree on one end while all features of the previous tree
+            // haven't been consumed)
+            return nodeRef1.getType() == TYPE.FEATURE ? -1 : 1;
+        }
+    };
+
+    public TYPE newObjectType() {
+        return getNewObject().getType();
+    }
+
+    public TYPE oldObjectType() {
+        return getOldObject().getType();
+    }
+
+    public ObjectId newMetadataId() {
+        return getNewObject().getMetadataId();
+    }
+
+    public ObjectId oldMetadataId() {
+        return getOldObject().getMetadataId();
     }
 }

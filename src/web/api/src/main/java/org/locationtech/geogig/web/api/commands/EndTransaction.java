@@ -22,6 +22,7 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
@@ -82,16 +83,16 @@ public class EndTransaction extends AbstractWebAPICommand {
             final RevCommit theirs = context.getGeoGIG().getRepository().getCommit(m.getTheirs());
             final Optional<ObjectId> ancestor = transaction.command(FindCommonAncestor.class)
                     .setLeft(ours).setRight(theirs).call();
+            final PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);
+            final MergeScenarioReport report = transaction.command(ReportMergeScenarioOp.class)
+                    .setMergeIntoCommit(ours).setToMergeCommit(theirs).setConsumer(consumer).call();
             context.setResponseContent(new CommandResponse() {
-                final MergeScenarioReport report = transaction.command(ReportMergeScenarioOp.class)
-                        .setMergeIntoCommit(ours).setToMergeCommit(theirs).call();
-
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
                     Optional<RevCommit> mergeCommit = Optional.absent();
-                    out.writeMergeResponse(mergeCommit, report, transaction, ours.getId(),
-                            theirs.getId(), ancestor.get());
+                    out.writeMergeConflictsResponse(mergeCommit, report, transaction, ours.getId(),
+                            theirs.getId(), ancestor.get(), consumer);
                     out.finish();
                 }
             });

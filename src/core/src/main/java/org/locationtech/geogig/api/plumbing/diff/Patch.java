@@ -12,15 +12,16 @@ package org.locationtech.geogig.api.plumbing.diff;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.BitSet;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.locationtech.geogig.api.FeatureInfo;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.storage.text.TextSerializationFactory;
-import org.opengis.feature.Feature;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Optional;
@@ -39,7 +40,7 @@ public class Patch {
      * Feature types needed to use the patch. This include those used by features involved, and aso
      * feature type that have been modified
      */
-    private List<RevFeatureType> featureTypes;
+    private Map<ObjectId, RevFeatureType> featureTypes;
 
     /**
      * features that have been edited
@@ -57,11 +58,15 @@ public class Patch {
     private List<FeatureInfo> removedFeatures;
 
     public Patch() {
+        this(Collections.emptyMap());
+    }
+
+    public Patch(Map<ObjectId, RevFeatureType> typeCache) {
         modifiedFeatures = Lists.newArrayList();
         removedFeatures = Lists.newArrayList();
         addedFeatures = Lists.newArrayList();
-        featureTypes = Lists.newArrayList();
         alteredTrees = Lists.newArrayList();
+        featureTypes = new HashMap<>(typeCache);
     }
 
     /**
@@ -98,8 +103,8 @@ public class Patch {
      * @param feature the feature
      * @param featureType the feature type of the added feature
      */
-    public void addAddedFeature(String path, Feature feature, RevFeatureType featureType) {
-        addedFeatures.add(new FeatureInfo(feature, featureType, path));
+    public void addAddedFeature(String path, RevFeature feature, RevFeatureType featureType) {
+        addedFeatures.add(new FeatureInfo(feature, featureType.getId(), path));
         addFeatureType(featureType);
     }
 
@@ -110,8 +115,8 @@ public class Patch {
      * @param feature the feature
      * @param featureType the feature type of the removed feature
      */
-    public void addRemovedFeature(String path, Feature feature, RevFeatureType featureType) {
-        removedFeatures.add(new FeatureInfo(feature, featureType, path));
+    public void addRemovedFeature(String path, RevFeature feature, RevFeatureType featureType) {
+        removedFeatures.add(new FeatureInfo(feature, featureType.getId(), path));
         addFeatureType(featureType);
     }
 
@@ -132,7 +137,11 @@ public class Patch {
      * @return
      */
     public List<RevFeatureType> getFeatureTypes() {
-        return ImmutableList.copyOf(featureTypes);
+        return ImmutableList.copyOf(featureTypes.values());
+    }
+
+    public Map<ObjectId, RevFeatureType> featureTypes() {
+        return new HashMap<>(this.featureTypes);
     }
 
     /**
@@ -143,12 +152,7 @@ public class Patch {
      * @return
      */
     public Optional<RevFeatureType> getFeatureTypeFromId(ObjectId id) {
-        for (RevFeatureType featureType : featureTypes) {
-            if (featureType.getId().equals(id)) {
-                return Optional.of(featureType);
-            }
-        }
-        return Optional.absent();
+        return Optional.fromNullable(featureTypes.get(id));
     }
 
     /**
@@ -161,10 +165,10 @@ public class Patch {
     }
 
     public void addAlteredTree(DiffEntry diff) {
-        ObjectId oldFeatureType = diff.getOldObject() == null ? null : diff.getOldObject()
-                .getMetadataId();
-        ObjectId newFeatureType = diff.getNewObject() == null ? null : diff.getNewObject()
-                .getMetadataId();
+        ObjectId oldFeatureType = diff.getOldObject() == null ? null
+                : diff.getOldObject().getMetadataId();
+        ObjectId newFeatureType = diff.getNewObject() == null ? null
+                : diff.getNewObject().getMetadataId();
         String path = diff.oldPath() == null ? diff.newPath() : diff.oldPath();
         alteredTrees.add(new FeatureTypeDiff(path, oldFeatureType, newFeatureType));
     }
@@ -179,9 +183,7 @@ public class Patch {
      * @param featureType
      */
     public void addFeatureType(RevFeatureType featureType) {
-        if (!featureTypes.contains(featureType)) {
-            featureTypes.add(featureType);
-        }
+        featureTypes.put(featureType.getId(), featureType);
     }
 
     @Override
@@ -209,9 +211,9 @@ public class Patch {
         StringBuilder sb = new StringBuilder();
         for (FeatureInfo feature : addedFeatures) {
             String path = feature.getPath();
-            sb.append("A\t" + path + "\t" + feature.getFeatureType().getId() + "\n");
+            sb.append("A\t" + path + "\t" + feature.getFeatureTypeId() + "\n");
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
+            RevFeature revFeature = feature.getFeature();
             try {
                 serializer.write(revFeature, output);
             } catch (IOException e) {
@@ -221,9 +223,9 @@ public class Patch {
         }
         for (FeatureInfo feature : removedFeatures) {
             String path = feature.getPath();
-            sb.append("R\t" + path + "\t" + feature.getFeatureType().getId() + "\n");
+            sb.append("R\t" + path + "\t" + feature.getFeatureTypeId() + "\n");
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
+            RevFeature revFeature = feature.getFeature();
             try {
                 serializer.write(revFeature, output);
             } catch (IOException e) {
@@ -235,7 +237,7 @@ public class Patch {
             sb.append("M\t" + diff.getPath() /*
                                               * + "\t" + diff.getOldFeatureType().getId().toString()
                                               * + "\t" + diff.getNewFeatureType().getId().toString()
-                                              */+ "\n");
+                                              */ + "\n");
             sb.append(diff.toString() + "\n");
         }
         for (FeatureTypeDiff diff : alteredTrees) {

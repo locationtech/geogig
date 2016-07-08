@@ -40,6 +40,7 @@ import org.locationtech.geogig.web.api.commands.RefParse;
 import org.locationtech.geogig.web.api.commands.RemoteManagement;
 import org.locationtech.geogig.web.api.commands.Remove;
 import org.locationtech.geogig.web.api.commands.RenameRepository;
+import org.locationtech.geogig.web.api.commands.ReportMergeScenario;
 import org.locationtech.geogig.web.api.commands.RequestDeleteRepositoryToken;
 import org.locationtech.geogig.web.api.commands.ResolveConflict;
 import org.locationtech.geogig.web.api.commands.RevertFeature;
@@ -78,6 +79,7 @@ public class CommandBuilder {
         MAPPINGS.put("featurediff", FeatureDiff::new);
         MAPPINGS.put("getCommitGraph", GetCommitGraph::new);
         MAPPINGS.put("merge", Merge::new);
+        MAPPINGS.put("reportMergeScenario", ReportMergeScenario::new);
         MAPPINGS.put("checkout", Checkout::new);
         MAPPINGS.put("beginTransaction", BeginTransaction::new);
         MAPPINGS.put("endTransaction", EndTransaction::new);

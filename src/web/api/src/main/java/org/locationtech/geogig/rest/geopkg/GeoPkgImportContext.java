@@ -41,6 +41,7 @@ import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.geotools.DataStoreImportContextService;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.restlet.data.MediaType;
@@ -180,14 +181,15 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
                 final RevCommit theirs = context.repository().getCommit(m.getTheirs());
                 final Optional<ObjectId> ancestor = context.command(FindCommonAncestor.class)
                         .setLeft(ours).setRight(theirs).call();
+                PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);
                 final MergeScenarioReport report = context.command(ReportMergeScenarioOp.class)
-                        .setMergeIntoCommit(ours)
-                        .setToMergeCommit(theirs).call();
+                        .setMergeIntoCommit(ours).setToMergeCommit(theirs).setConsumer(consumer)
+                        .call();
                 ResponseWriter out = new ResponseWriter(w);
                 Optional<RevCommit> mergeCommit = Optional.absent();
                 w.writeStartElement("result");
-                out.writeMergeResponse(mergeCommit, report, context, ours.getId(), theirs.getId(),
-                        ancestor.get());
+                out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
+                        theirs.getId(), ancestor.get(), consumer);
                 w.writeStartElement("import");
                 writeImportResult(m.importResult, w, out);
                 w.writeEndElement();

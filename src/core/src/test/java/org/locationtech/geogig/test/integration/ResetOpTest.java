@@ -11,8 +11,6 @@ package org.locationtech.geogig.test.integration;
 
 import static org.locationtech.geogig.api.NodeRef.appendChild;
 
-import java.util.List;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -20,7 +18,6 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.api.porcelain.BranchCreateOp;
 import org.locationtech.geogig.api.porcelain.CheckoutOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
@@ -30,6 +27,8 @@ import org.locationtech.geogig.api.porcelain.MergeConflictsException;
 import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.locationtech.geogig.api.porcelain.ResetOp;
 import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
+import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
@@ -55,33 +54,33 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
-        assertEquals(oId2, repo.index().findStaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
 
         geogig.command(ResetOp.class).call();
 
-        assertEquals(oId1, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
         assertFalse(repo.index().findStaged(appendChild(pointsName, idP2)).isPresent());
         assertFalse(repo.index().findStaged(appendChild(pointsName, idP3)).isPresent());
 
-        assertEquals(oId1_modified, repo.workingTree().findUnstaged(appendChild(pointsName, idP1))
-                .get().getObjectId());
-        assertEquals(oId2, repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
 
     }
 
@@ -90,39 +89,39 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
         ObjectId oId4 = insertAndAdd(lines1);
 
-        assertEquals(oId1_modified, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
-        assertEquals(oId2, repo.index().findStaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
-        assertEquals(oId4, repo.index().findStaged(appendChild(linesName, idL1)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId4,
+                repo.index().findStaged(appendChild(linesName, idL1)).get().getObjectId());
 
         geogig.command(ResetOp.class).addPattern(pointsName).call();
 
-        assertEquals(oId1, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
         assertFalse(repo.index().findStaged(appendChild(pointsName, idP2)).isPresent());
         assertFalse(repo.index().findStaged(appendChild(pointsName, idP3)).isPresent());
         assertTrue(repo.index().findStaged(appendChild(linesName, idL1)).isPresent());
 
-        assertEquals(oId1_modified, repo.workingTree().findUnstaged(appendChild(pointsName, idP1))
-                .get().getObjectId());
-        assertEquals(oId2, repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
-        assertEquals(oId4, repo.workingTree().findUnstaged(appendChild(linesName, idL1)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId4,
+                repo.workingTree().findUnstaged(appendChild(linesName, idL1)).get().getObjectId());
 
     }
 
@@ -131,33 +130,33 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
-        assertEquals(oId2, repo.index().findStaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
 
         geogig.command(ResetOp.class).addPattern(appendChild(pointsName, idP2)).call();
 
-        assertEquals(oId1_modified, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
         assertFalse(repo.index().findStaged(appendChild(pointsName, idP2)).isPresent());
         assertTrue(repo.index().findStaged(appendChild(pointsName, idP3)).isPresent());
 
-        assertEquals(oId1_modified, repo.workingTree().findUnstaged(appendChild(pointsName, idP1))
-                .get().getObjectId());
-        assertEquals(oId2, repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
     }
 
     @Test
@@ -165,29 +164,29 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
-        assertEquals(oId2, repo.index().findStaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
 
         geogig.command(ResetOp.class).setMode(ResetMode.HARD).call();
 
-        assertEquals(oId1, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
         assertFalse(repo.index().findStaged(appendChild(pointsName, idP2)).isPresent());
         assertFalse(repo.index().findStaged(appendChild(pointsName, idP3)).isPresent());
 
-        assertEquals(oId1, repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
         assertFalse(repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).isPresent());
         assertFalse(repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).isPresent());
 
@@ -198,38 +197,38 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
-        assertEquals(oId2, repo.index().findStaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
 
         final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.HEAD).call();
 
         geogig.command(ResetOp.class).setCommit(Suppliers.ofInstance(currHead.get().getObjectId()))
                 .setMode(ResetMode.SOFT).call();
 
-        assertEquals(oId1_modified, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
-        assertEquals(oId2, repo.index().findStaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
 
-        assertEquals(oId1_modified, repo.workingTree().findUnstaged(appendChild(pointsName, idP1))
-                .get().getObjectId());
-        assertEquals(oId2, repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
 
     }
 
@@ -238,19 +237,19 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
-        assertEquals(oId2, repo.index().findStaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
 
         exception.expect(IllegalArgumentException.class);
         geogig.command(ResetOp.class).addPattern(pointsName).setMode(ResetMode.SOFT).call();
@@ -261,19 +260,19 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
-        assertEquals(oId2, repo.index().findStaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
 
         exception.expect(UnsupportedOperationException.class);
         geogig.command(ResetOp.class).setMode(ResetMode.MERGE).call();
@@ -285,19 +284,19 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified, repo.index().findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
-        assertEquals(oId2, repo.index().findStaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
-        assertEquals(oId3, repo.index().findStaged(appendChild(pointsName, idP3)).get()
-                .getObjectId());
+        assertEquals(oId1_modified,
+                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
+        assertEquals(oId3,
+                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
 
         exception.expect(UnsupportedOperationException.class);
         geogig.command(ResetOp.class).setCommit(null).setMode(ResetMode.KEEP).call();
@@ -344,14 +343,13 @@ public class ResetOpTest extends RepositoryTestCase {
 
         geogig.command(ResetOp.class).setMode(ResetMode.HARD)
                 .setCommit(Suppliers.ofInstance(resetCommit.getId())).call();
-        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
-                .getConflicts(null, null);
-        assertTrue(conflicts.isEmpty());
+        Repository repository = geogig.getRepository();
+        assertEquals(0, repository.conflictsDatabase().getCountByPrefix(null, null));
         Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());
         ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
         assertFalse(ref.isPresent());
-        Optional<byte[]> mergemsg = geogig.getRepository().blobStore().getBlob(MergeOp.MERGE_MSG);
+        Optional<byte[]> mergemsg = repository.blobStore().getBlob(MergeOp.MERGE_MSG);
         assertFalse(mergemsg.isPresent());
     }
 
@@ -383,9 +381,9 @@ public class ResetOpTest extends RepositoryTestCase {
 
         geogig.command(ResetOp.class).addPattern(pointsName + "/" + idP1)
                 .setCommit(Suppliers.ofInstance(resetCommit.getId())).call();
-        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
-                .getConflicts(null, null);
-        assertTrue(conflicts.isEmpty());
+        Repository repository = geogig.getRepository();
+        ConflictsDatabase conflicts = repository.conflictsDatabase();
+        assertEquals(0, conflicts.getCountByPrefix(null, null));
     }
 
     @Test
@@ -415,8 +413,8 @@ public class ResetOpTest extends RepositoryTestCase {
         }
 
         geogig.command(ResetOp.class).addPattern(pointsName + "/" + idP1).call();
-        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
-                .getConflicts(null, null);
-        assertTrue(conflicts.isEmpty());
+        Repository repository = geogig.getRepository();
+        ConflictsDatabase conflicts = repository.conflictsDatabase();
+        assertEquals(0, conflicts.getCountByPrefix(null, null));
     }
 }

@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.api;
 
-import org.opengis.feature.Feature;
-
 /**
  * A class to compactly store information about a feature, including its path and feature type. This
  * is to be used in the context of applying patches or performing a merge operation, where this type
@@ -19,40 +17,34 @@ import org.opengis.feature.Feature;
  */
 public class FeatureInfo {
 
-    private Feature feature;
+    private RevFeature feature;
 
-    private RevFeatureType featureType;
+    private ObjectId featureTypeId;
 
     private String path;
 
-    public FeatureInfo(Feature feature, RevFeatureType featureType, String path) {
+    public FeatureInfo(RevFeature feature, ObjectId featureTypeId, String path) {
         this.path = path;
         this.feature = feature;
-        this.featureType = featureType;
+        this.featureTypeId = featureTypeId;
     }
 
     /**
      * The feature
-     * 
-     * @return
      */
-    public Feature getFeature() {
+    public RevFeature getFeature() {
         return feature;
     }
 
     /**
-     * The feature type of the feature
-     * 
-     * @return
+     * The id of the {@link RevFeatureType feature type} of the feature
      */
-    public RevFeatureType getFeatureType() {
-        return featureType;
+    public ObjectId getFeatureTypeId() {
+        return featureTypeId;
     }
 
     /**
      * The path to where the feature is to be added
-     * 
-     * @return
      */
     public String getPath() {
         return path;

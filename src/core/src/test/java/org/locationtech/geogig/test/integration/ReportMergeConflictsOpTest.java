@@ -9,10 +9,18 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.geotools.data.DataUtilities;
 import org.junit.Test;
+import org.locationtech.geogig.api.FeatureInfo;
 import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.api.RevFeatureBuilder;
+import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.CheckMergeScenarioOp;
+import org.locationtech.geogig.api.plumbing.merge.Conflict;
+import org.locationtech.geogig.api.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.api.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.api.porcelain.AddOp;
@@ -31,6 +39,33 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
     protected void setUpInternal() throws Exception {
     }
 
+    private class TestMergeScenarioConsumer extends MergeScenarioConsumer {
+        public List<Conflict> conflicted = new ArrayList<Conflict>();
+
+        public List<DiffEntry> unconflicted = new ArrayList<DiffEntry>();
+
+        public List<FeatureInfo> merged = new ArrayList<FeatureInfo>();
+
+        @Override
+        public void conflicted(Conflict conflict) {
+            conflicted.add(conflict);
+        }
+
+        @Override
+        public void unconflicted(DiffEntry diff) {
+            unconflicted.add(diff);
+        }
+
+        @Override
+        public void merged(FeatureInfo featureInfo) {
+            merged.add(featureInfo);
+        }
+
+        @Override
+        public void finished() {
+        }
+    };
+
     @Test
     public void testAddedSameFeature() throws Exception {
         insertAndAdd(points1);
@@ -42,9 +77,10 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points2);
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(0, conflicts.getConflicts().size());
-        assertEquals(0, conflicts.getUnconflicted().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(0, conflicts.getConflicts());
+        assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertFalse(hasConflicts.booleanValue());
@@ -61,9 +97,10 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         deleteAndAdd(points1);
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(0, conflicts.getConflicts().size());
-        assertEquals(0, conflicts.getUnconflicted().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(0, conflicts.getConflicts());
+        assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertFalse(hasConflicts.booleanValue());
@@ -83,14 +120,16 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
+        TestMergeScenarioConsumer consumer = new TestMergeScenarioConsumer();
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(0, conflicts.getConflicts().size());
-        assertEquals(0, conflicts.getUnconflicted().size());
-        assertEquals(1, conflicts.getMerged().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(consumer).call();
+        assertEquals(0, conflicts.getConflicts());
+        assertEquals(0, conflicts.getUnconflicted());
+        assertEquals(1, conflicts.getMerged());
         Feature pointsMerged = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
                 "POINT(1 1)");
-        assertEquals(pointsMerged, conflicts.getMerged().get(0).getFeature());
+        assertEquals(RevFeatureBuilder.build(pointsMerged), consumer.merged.get(0).getFeature());
         Boolean hasConflictsOrAutomerge = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertTrue(hasConflictsOrAutomerge.booleanValue());
@@ -112,9 +151,10 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points1ModifiedB);
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(0, conflicts.getConflicts().size());
-        assertEquals(1, conflicts.getUnconflicted().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(0, conflicts.getConflicts());
+        assertEquals(1, conflicts.getUnconflicted());
         Boolean hasConflictsOrAutomerge = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertTrue(hasConflictsOrAutomerge.booleanValue());
@@ -135,9 +175,10 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points1ModifiedB);
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(1, conflicts.getConflicts().size());
-        assertEquals(0, conflicts.getUnconflicted().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(1, conflicts.getConflicts());
+        assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
@@ -156,9 +197,10 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         deleteAndAdd(points1);
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(1, conflicts.getConflicts().size());
-        assertEquals(0, conflicts.getUnconflicted().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(1, conflicts.getConflicts());
+        assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
@@ -178,9 +220,10 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
 
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(1, conflicts.getConflicts().size());
-        assertEquals(1, conflicts.getUnconflicted().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(1, conflicts.getConflicts());
+        assertEquals(1, conflicts.getUnconflicted());
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
@@ -197,9 +240,10 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points3);
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(0, conflicts.getConflicts().size());
-        assertEquals(1, conflicts.getUnconflicted().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(0, conflicts.getConflicts());
+        assertEquals(1, conflicts.getUnconflicted());
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertFalse(hasConflicts.booleanValue());
@@ -220,9 +264,10 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         geogig.command(AddOp.class).call();
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(0, conflicts.getConflicts().size());
-        assertEquals(0, conflicts.getUnconflicted().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(0, conflicts.getConflicts());
+        assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertFalse(hasConflicts.booleanValue());
@@ -243,9 +288,10 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         geogig.command(AddOp.class).call();
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(1, conflicts.getConflicts().size());
-        assertEquals(0, conflicts.getUnconflicted().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(1, conflicts.getConflicts());
+        assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
@@ -269,17 +315,19 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         geogig.command(AddOp.class).call();
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(1, conflicts.getConflicts().size()); // the conflict in the feature type
-        assertEquals(0, conflicts.getUnconflicted().size()); // the change in the feature is the
-                                                             // same, so no conflict
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(1, conflicts.getConflicts()); // the conflict in the feature type
+        assertEquals(0, conflicts.getUnconflicted()); // the change in the feature is the
+                                                      // same, so no conflict
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
     }
 
     @Test
-    public void testModifiedFeatureTypeInOneBranchEditedAttributeValueInTheOther() throws Exception {
+    public void testModifiedFeatureTypeInOneBranchEditedAttributeValueInTheOther()
+            throws Exception {
         insertAndAdd(points1);
         geogig.command(CommitOp.class).call();
         geogig.command(BranchCreateOp.class).setName("TestBranch").call();
@@ -292,9 +340,10 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
 
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(1, conflicts.getConflicts().size());
-        assertEquals(1, conflicts.getUnconflicted().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(1, conflicts.getConflicts());
+        assertEquals(1, conflicts.getUnconflicted());
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
@@ -314,9 +363,10 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
 
         MergeScenarioReport conflicts = geogig.command(ReportMergeScenarioOp.class)
-                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit).call();
-        assertEquals(0, conflicts.getConflicts().size());
-        assertEquals(2, conflicts.getUnconflicted().size());
+                .setMergeIntoCommit(masterCommit).setToMergeCommit(branchCommit)
+                .setConsumer(new TestMergeScenarioConsumer()).call();
+        assertEquals(0, conflicts.getConflicts());
+        assertEquals(2, conflicts.getUnconflicted());
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertFalse(hasConflicts.booleanValue());

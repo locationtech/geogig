@@ -83,9 +83,14 @@ public final class Conflict {
                 + theirs.toString();
     }
 
-    public static Conflict valueOf(String s) {
-        String[] tokens = s.split("\t");
-        Preconditions.checkArgument(tokens.length == 4, "wrong conflict definitions: %s", s);
+    /**
+     * @deprecated at 1.0-RC3. Conflict serialization shall be specific to the ConflictsDatabase
+     *             implementation
+     */
+    @Deprecated
+    public static Conflict valueOf(String line) {
+        String[] tokens = line.split("\t");
+        Preconditions.checkArgument(tokens.length == 4, "wrong conflict definitions: %s", line);
         String path = tokens[0];
         ObjectId ancestor = ObjectId.valueOf(tokens[1]);
         ObjectId ours = ObjectId.valueOf(tokens[2]);

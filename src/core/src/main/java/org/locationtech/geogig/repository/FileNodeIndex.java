@@ -73,7 +73,7 @@ class FileNodeIndex implements Closeable, NodeIndex {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileNodeIndex.class);
 
-    private static final NodePathStorageOrder PATH_STORAGE_ORDER = new NodePathStorageOrder();
+    private static final NodePathStorageOrder PATH_STORAGE_ORDER = NodePathStorageOrder.INSTANCE;
 
     private static final NodeStorageOrder NODE_STORAGE_ORDER = new NodeStorageOrder();
 

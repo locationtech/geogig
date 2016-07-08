@@ -12,7 +12,9 @@ package org.locationtech.geogig.storage;
 import static org.locationtech.geogig.api.Ref.TRANSACTIONS_PREFIX;
 import static org.locationtech.geogig.api.Ref.append;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -46,7 +48,8 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
      * @param database the original conflicts database
      * @param transactionId the transaction id
      */
-    public TransactionConflictsDatabase(final ConflictsDatabase database, final UUID transactionId) {
+    public TransactionConflictsDatabase(final ConflictsDatabase database,
+            final UUID transactionId) {
         this.database = database;
         this.txNamespace = append(append(TRANSACTIONS_PREFIX, transactionId.toString()),
                 "conflicts");
@@ -88,6 +91,11 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
         database.addConflict(txNamespace, conflict);
     }
 
+    @Override
+    public void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts) {
+        database.addConflicts(txNamespace, conflicts);
+    }
+
     /**
      * Pass through to {@link StagingDatabase}, replacing the namespace with the transaction
      * namespace.
@@ -97,6 +105,11 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
         database.removeConflict(txNamespace, path);
     }
 
+    @Override
+    public void removeConflicts(@Nullable String namespace, Iterable<String> paths) {
+        database.removeConflicts(txNamespace, paths);
+    }
+
     /**
      * Pass through to {@link StagingDatabase}, replacing the namespace with the transaction
      * namespace.
@@ -104,5 +117,28 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
     @Override
     public void removeConflicts(@Nullable String namespace) {
         database.removeConflicts(txNamespace);
+    }
+
+    @Override
+    public Iterator<Conflict> getByPrefix(@Nullable String namespace,
+            @Nullable String prefixFilter) {
+
+        return database.getByPrefix(txNamespace, prefixFilter);
+    }
+
+    @Override
+    public long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
+
+        return database.getCountByPrefix(txNamespace, treePath);
+    }
+
+    @Override
+    public Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
+        return database.findConflicts(txNamespace, paths);
+    }
+
+    @Override
+    public void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
+        database.removeByPrefix(txNamespace, pathPrefix);
     }
 }

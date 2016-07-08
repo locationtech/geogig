@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.api.ObjectId.NULL;
@@ -23,202 +21,47 @@ import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.UUID;
 
 import javax.sql.DataSource;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+/**
+ * Complements {@link PGConflictsDatabaseConformanceTest} with tests specific to this implementation
+ * that can use mock objects so {@link PGConflictsDatabaseConformanceTest} can run faster for cases
+ * where the actual connection to the database is not needed.
+ *
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class PGConflictsDatabaseTest {
+
+    private static final Conflict c1 = new Conflict("Rivers/1", NULL, forString("ours"),
+            forString("theirs"));
 
     @Rule
     public ExpectedException expected = ExpectedException.none();
 
-    @Rule
-    public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
-
-    private PGConflictsDatabase conflicts;
-
-    private DataSource dataSource;
-
     @Mock
     private DataSource mockSource;
+
+    private ConflictsDatabase mockSourceConflicts;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private Connection mockConnection;
 
-    private PGConflictsDatabase mockSourceConflicts;
-
-    Conflict c1 = new Conflict("Rivers/1", NULL, forString("ours"), forString("theirs"));
-
-    Conflict c2 = new Conflict("Rivers/2", forString("ancestor"), forString("ours2"),
-            forString("theirs2"));
-
-    Conflict c3 = new Conflict("Rivers/3", forString("ancestor"), forString("ours3"),
-            forString("theirs3"));
-
     @Before
-    public void before() throws SQLException {
-        Environment environment = testConfig.getEnvironment();
-        PGStorage.createNewRepo(environment);
-        dataSource = PGStorage.newDataSource(environment);
-
-        String conflictsTable = environment.getTables().conflicts();
-        String repositoryId = environment.getRepositoryId();
-        conflicts = new PGConflictsDatabase(dataSource, conflictsTable, repositoryId);
-
+    public void beforeMocks() throws SQLException {
         when(mockSource.getConnection()).thenReturn(mockConnection);
-        mockSourceConflicts = new PGConflictsDatabase(mockSource, conflictsTable, repositoryId);
-    }
-
-    @After
-    public void after() {
-        if (dataSource != null) {
-            PGStorage.closeDataSource(dataSource);
-        }
-    }
-
-    @Test
-    public void testAddGetNullNamespace() {
-        conflicts.addConflict(null, c1);
-        assertEquals(c1, conflicts.getConflict(null, c1.getPath()).get());
-
-        conflicts.addConflict(null, c2);
-        conflicts.addConflict(null, c3);
-
-        assertEquals(c2, conflicts.getConflict(null, c2.getPath()).get());
-        assertEquals(c3, conflicts.getConflict(null, c3.getPath()).get());
-
-        assertFalse(conflicts.getConflict(null, "not/a/conflict").isPresent());
-    }
-
-    @Test
-    public void testAddGetNamespace() {
-        final String ns = UUID.randomUUID().toString();
-
-        conflicts.addConflict(ns, c1);
-        assertEquals(c1, conflicts.getConflict(ns, c1.getPath()).get());
-        assertFalse(conflicts.getConflict(null, c1.getPath()).isPresent());
-
-        conflicts.addConflict(ns, c2);
-        conflicts.addConflict(ns, c3);
-
-        assertEquals(c2, conflicts.getConflict(ns, c2.getPath()).get());
-        assertEquals(c3, conflicts.getConflict(ns, c3.getPath()).get());
-
-        assertFalse(conflicts.getConflict(ns, "not/a/conflict").isPresent());
-        assertFalse(conflicts.getConflict(null, c2.getPath()).isPresent());
-        assertFalse(conflicts.getConflict(null, c3.getPath()).isPresent());
-    }
-
-    @Test
-    public void testHasConflicts() {
-        final String ns = UUID.randomUUID().toString();
-        assertFalse(conflicts.hasConflicts(null));
-        assertFalse(conflicts.hasConflicts(ns));
-
-        conflicts.addConflict(null, c1);
-        conflicts.addConflict(ns, c2);
-        conflicts.addConflict(ns, c3);
-
-        assertTrue(conflicts.hasConflicts(null));
-        assertTrue(conflicts.hasConflicts(ns));
-        assertFalse(conflicts.hasConflicts(UUID.randomUUID().toString()));
-    }
-
-    @Test
-    public void testGetConflicts() {
-        final String ns = UUID.randomUUID().toString();
-        conflicts.addConflict(null, c1);
-        conflicts.addConflict(null, c3);
-
-        List<Conflict> res;
-        res = conflicts.getConflicts(null, null);
-        assertTrue(res.contains(c1));
-        assertTrue(res.contains(c3));
-
-        res = conflicts.getConflicts(null, "3");
-        assertFalse(res.contains(c1));
-        assertTrue(res.contains(c3));
-
-        res = conflicts.getConflicts(null, "Rivers");
-        assertTrue(res.contains(c1));
-        assertTrue(res.contains(c3));
-
-        conflicts.addConflict(ns, c1);
-        conflicts.addConflict(ns, c2);
-        conflicts.addConflict(ns, c3);
-
-        res = conflicts.getConflicts(ns, "Rivers");
-        assertTrue(res.contains(c1));
-        assertTrue(res.contains(c2));
-        assertTrue(res.contains(c3));
-
-        res = conflicts.getConflicts(ns, "Rivers/2");
-        assertFalse(res.contains(c1));
-        assertTrue(res.contains(c2));
-        assertFalse(res.contains(c3));
-    }
-
-    @Test
-    public void testRemoveConflict() {
-        final String ns = UUID.randomUUID().toString();
-        conflicts.addConflict(null, c1);
-        conflicts.addConflict(ns, c2);
-        conflicts.addConflict(ns, c3);
-        conflicts.addConflict(null, c3);
-
-        conflicts.removeConflict(ns, c1.getPath());
-        assertEquals(c1, conflicts.getConflict(null, c1.getPath()).get());
-        conflicts.removeConflict(null, c1.getPath());
-        assertFalse(conflicts.getConflict(null, c1.getPath()).isPresent());
-        assertFalse(conflicts.getConflict(ns, c1.getPath()).isPresent());
-
-        conflicts.removeConflict(null, c2.getPath());
-        assertEquals(c2, conflicts.getConflict(ns, c2.getPath()).get());
-        conflicts.removeConflict(ns, c2.getPath());
-        assertFalse(conflicts.getConflict(null, c2.getPath()).isPresent());
-        assertFalse(conflicts.getConflict(ns, c2.getPath()).isPresent());
-
-        assertTrue(conflicts.hasConflicts(null));
-        assertTrue(conflicts.hasConflicts(ns));
-        conflicts.removeConflict(null, c3.getPath());
-        assertFalse(conflicts.hasConflicts(null));
-        conflicts.removeConflict(ns, c3.getPath());
-        assertFalse(conflicts.hasConflicts(ns));
-    }
-
-    @Test
-    public void testRemoveConflicts() {
-        final String ns = UUID.randomUUID().toString();
-        conflicts.addConflict(null, c1);
-        conflicts.addConflict(ns, c2);
-        conflicts.addConflict(ns, c3);
-        conflicts.addConflict(null, c3);
-
-        assertTrue(conflicts.hasConflicts(null));
-        assertTrue(conflicts.hasConflicts(ns));
-
-        conflicts.removeConflicts(null);
-        assertFalse(conflicts.hasConflicts(null));
-        assertTrue(conflicts.hasConflicts(ns));
-
-        conflicts.addConflict(null, c1);
-
-        conflicts.removeConflicts(ns);
-        assertTrue(conflicts.hasConflicts(null));
-        assertFalse(conflicts.hasConflicts(ns));
+        mockSourceConflicts = new PGConflictsDatabase(mockSource, "geogig_conflicts", "mockRepoId");
     }
 
     @Test
@@ -302,4 +145,5 @@ public class PGConflictsDatabaseTest {
         verify(mockConnection, times(1)).rollback();
         verify(mockConnection, times(1)).setAutoCommit(eq(true));
     }
+
 }

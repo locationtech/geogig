@@ -34,6 +34,8 @@ import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.locationtech.geogig.api.porcelain.RemoveOp;
 import org.locationtech.geogig.api.porcelain.ResetOp;
 import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
+import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
@@ -152,9 +154,9 @@ public class RemoveOpTest extends RepositoryTestCase {
         assertEquals(1, result.getFeaturesRemoved());
         assertEquals(0, result.getTreesRemoved());
 
-        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase().getConflicts(null,
-                null);
-        assertTrue(conflicts.isEmpty());
+        Repository repository = geogig.getRepository();
+        ConflictsDatabase conflicts = repository.conflictsDatabase();
+        assertEquals(0, conflicts.getCountByPrefix(null, null));
         geogig.command(CommitOp.class).call();
         Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());

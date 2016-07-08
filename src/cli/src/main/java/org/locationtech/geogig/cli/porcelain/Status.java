@@ -42,7 +42,7 @@ import com.google.common.base.Optional;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig status [<options>]}
+ * <li>{@code geogig status [<options>]}
  * </ul>
  * 
  * @see Commit
@@ -88,7 +88,7 @@ public class Status extends AbstractCommand implements CLICommand {
     private void print(Console console, StatusSummary summary) throws IOException {
         long countStaged = summary.getCountStaged();
         long countUnstaged = summary.getCountUnstaged();
-        int countConflicted = summary.getCountConflicts();
+        long countConflicted = summary.getCountConflicts();
 
         if (countStaged + countUnstaged + countConflicted == 0) {
             console.println("nothing to commit (working directory clean)");
@@ -104,15 +104,18 @@ public class Status extends AbstractCommand implements CLICommand {
 
         if (countConflicted > 0) {
             console.println("# Unmerged paths:");
-            console.println("#   (use \"geogig add/rm <path/to/fid>...\" as appropriate to mark resolution");
+            console.println(
+                    "#   (use \"geogig add/rm <path/to/fid>...\" as appropriate to mark resolution");
             console.println("#");
             printUnmerged(console, summary.getConflicts().get(), Color.RED, countConflicted);
         }
 
         if (countUnstaged > 0) {
             console.println("# Changes not staged for commit:");
-            console.println("#   (use \"geogig add <path/to/fid>...\" to update what will be committed");
-            console.println("#   (use \"geogig checkout -- <path/to/fid>...\" to discard changes in working directory");
+            console.println(
+                    "#   (use \"geogig add <path/to/fid>...\" to update what will be committed");
+            console.println(
+                    "#   (use \"geogig checkout -- <path/to/fid>...\" to discard changes in working directory");
             console.println("#");
             print(console, summary.getUnstaged().get(), Color.RED, countUnstaged);
         }
@@ -162,15 +165,16 @@ public class Status extends AbstractCommand implements CLICommand {
         console.println(ansi.toString());
     }
 
-    private void printUnmerged(final Console console, final Iterable<Conflict> conflicts,
-            final Color color, final int total) throws IOException {
+    private void printUnmerged(final Console console, final Iterator<Conflict> iterator,
+            final Color color, final long total) throws IOException {
 
         StringBuilder sb = new StringBuilder();
 
         Ansi ansi = newAnsi(console, sb);
 
         String path;
-        for (Conflict c : conflicts) {
+        while (iterator.hasNext()) {
+            Conflict c = iterator.next();
             path = c.getPath();
             sb.setLength(0);
             ansi.a("#      ").fg(color).a("unmerged").a("  ").a(path).reset();

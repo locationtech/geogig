@@ -9,24 +9,23 @@
  */
 package org.locationtech.geogig.api.plumbing.merge;
 
-import java.util.List;
-
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+
+import com.google.common.base.Preconditions;
 
 public class ConflictsWriteOp extends AbstractGeoGigOp<Void> {
 
-    private List<Conflict> conflicts;
+    private Iterable<Conflict> conflicts;
 
     @Override
-    protected  Void _call() {
-        for (Conflict conflict : conflicts) {
-            conflictsDatabase().addConflict(null, conflict);
-        }
+    protected Void _call() {
+        Preconditions.checkNotNull(conflicts);
+        conflictsDatabase().addConflicts(null, conflicts);
         return null;
 
     }
 
-    public ConflictsWriteOp setConflicts(List<Conflict> conflicts) {
+    public ConflictsWriteOp setConflicts(Iterable<Conflict> conflicts) {
         this.conflicts = conflicts;
         return this;
     }

@@ -9,7 +9,9 @@
  */
 package org.locationtech.geogig.storage;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
@@ -46,8 +48,28 @@ public interface ConflictsDatabase {
      * @param namespace the namespace of the conflict
      * @param pathFilter the path filter, if this is not defined, all conflicts will be returned
      * @return the list of conflicts
+     * @deprecated at 1.0-RC3
      */
+    @Deprecated
     public List<Conflict> getConflicts(@Nullable String namespace, @Nullable String pathFilter);
+
+    /**
+     * @param namespace optional namespace (i.e. transaction id), to filter conflicts by.
+     * @param treePath optional prefix path filter. If not given, all conflicts matching the given
+     *        namespace are returned. If given, the {@code treePath} is the path of the parent tree
+     *        for which to return conflicts.
+     * @param batchSizre
+     * @return an iterator of conflicts matching the prefix filter.
+     * @apiNote {@code treePath} can only be the path of the parent tree for which to return
+     *          conflict information, which in a SQL implementation over a table with a 'path'
+     *          column would translate to
+     *          {@code WHERE path = '<treePath>' OR path LIKE '<treePath>/%'} to account for
+     *          conflicts to the tree itself as well as any of it's children.
+     */
+    public Iterator<Conflict> getByPrefix(@Nullable String namespace,
+            @Nullable String prefixFilter);
+
+    public long getCountByPrefix(@Nullable String namespace, @Nullable String treePath);
 
     /**
      * Adds a conflict to the database.
@@ -56,6 +78,11 @@ public interface ConflictsDatabase {
      * @param conflict the conflict to add
      */
     public void addConflict(@Nullable String namespace, Conflict conflict);
+
+    /**
+     * Adds the provided conflicts to the database for the given namespace.
+     */
+    public void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts);
 
     /**
      * Removes a conflict from the database.
@@ -72,4 +99,22 @@ public interface ConflictsDatabase {
      */
     public void removeConflicts(@Nullable String namespace);
 
+    /**
+     * Removes the conflicts matching the provided paths, if they exist.
+     */
+    public void removeConflicts(@Nullable String namespace, Iterable<String> paths);
+
+    /**
+     * Finds and returns the set of conflict paths that exist and match any of the provided paths.
+     */
+    public Set<String> findConflicts(@Nullable String namespace, Set<String> paths);
+
+    /**
+     * Removes all conflicts that match the specified namespace/prefix filter, if given, or all that
+     * match the specified namespace if not.
+     * 
+     * @param namespace the transaction id, or {@code null} for no transaction namespace.
+     * @param pathPrefix the path of the tree to filter by.
+     */
+    public void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix);
 }

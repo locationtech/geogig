@@ -18,6 +18,7 @@ import org.geotools.data.DataUtilities;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TestName;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
@@ -31,6 +32,7 @@ import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
+import org.locationtech.geogig.api.plumbing.merge.ConflictsQueryOp;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.plumbing.merge.ReadMergeCommitMessageOp;
 import org.locationtech.geogig.api.porcelain.AddOp;
@@ -52,6 +54,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 
 public class MergeOpTest extends RepositoryTestCase {
     @Rule
@@ -61,8 +64,12 @@ public class MergeOpTest extends RepositoryTestCase {
 
     private static final String COMMITTER_EMAIL = "groldan@boundlessgeo.com";
 
+    @Rule
+    public TestName testName = new TestName();
+
     @Override
     protected void setUpInternal() throws Exception {
+        System.err.println(testName.getMethodName());
         // These values should be used during a commit to set author/committer
         // TODO: author/committer roles need to be defined better, but for
         // now they are the same thing.
@@ -733,7 +740,8 @@ public class MergeOpTest extends RepositoryTestCase {
         String msg = geogig.command(ReadMergeCommitMessageOp.class).call();
         assertFalse(Strings.isNullOrEmpty(msg));
 
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
+        List<Conflict> conflicts = Lists
+                .newArrayList(geogig.command(ConflictsQueryOp.class).call());
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);

@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.FeatureBuilder;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
@@ -26,7 +25,6 @@ import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.api.plumbing.diff.Patch;
-import org.opengis.feature.Feature;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
@@ -49,7 +47,7 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
     }
 
     @Override
-    protected  Patch _call() {
+    protected Patch _call() {
         Patch patch = new Patch();
         Map<ObjectId, RevFeatureType> featureTypes = Maps.newHashMap();
         while (diffs.hasNext()) {
@@ -90,11 +88,8 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
                         featureTypes.put(newObject.getMetadataId(), featureType);
                     }
 
-                    FeatureBuilder featureBuilder = new FeatureBuilder(featureType);
-                    Feature feature = featureBuilder.build(diffEntry.newObjectId().toString(),
-                            (RevFeature) revObject);
                     String name = diffEntry.newPath();
-                    patch.addAddedFeature(name, feature, featureType);
+                    patch.addAddedFeature(name, (RevFeature) revObject, featureType);
                 } else if (revObject instanceof RevTree) {
                     ObjectId metadataId = diffEntry.getNewObject().getMetadataId();
                     if (!metadataId.isNull()) {
@@ -117,12 +112,8 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
                                 .get();
                         featureTypes.put(oldObject.getMetadataId(), featureType);
                     }
-
-                    FeatureBuilder featureBuilder = new FeatureBuilder(featureType);
-                    Feature feature = featureBuilder.build(diffEntry.oldObjectId().toString(),
-                            (RevFeature) revObject);
                     String name = diffEntry.oldPath();
-                    patch.addRemovedFeature(name, feature, featureType);
+                    patch.addRemovedFeature(name, (RevFeature) revObject, featureType);
                 } else if (revObject instanceof RevTree) {
                     ObjectId metadataId = diffEntry.getOldObject().getMetadataId();
                     if (!metadataId.isNull()) {

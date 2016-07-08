@@ -31,6 +31,16 @@ public class DiffObjectCount {
         treesChanged = new AtomicInteger();
     }
 
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append("trees   [ added: ").append(treesAdded).append(", changed: ").append(treesChanged)
+                .append(", removed: ").append(treesRemoved).append("]\n");
+        b.append("features[ added: ").append(featuresAdded).append(", changed: ")
+                .append(featuresChanged).append(", removed: ").append(featuresRemoved).append("]");
+        return b.toString();
+    }
+
     /**
      * Returns the total count of modified elements (i.e. sum of added, changed, and removed trees
      * and features)

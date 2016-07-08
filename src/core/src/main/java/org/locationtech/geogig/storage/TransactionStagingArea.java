@@ -118,8 +118,8 @@ public class TransactionStagingArea implements StagingArea {
      *         if a path filter was not specified
      */
     @Override
-    public int countConflicted(@Nullable String pathFilter) {
-        return conflictsDb.getConflicts(null, pathFilter).size();
+    public long countConflicted(@Nullable String pathFilter) {
+        return conflictsDb.getCountByPrefix(null, pathFilter);
     }
 
     /**
@@ -128,8 +128,8 @@ public class TransactionStagingArea implements StagingArea {
      *         conflicts will be returned
      */
     @Override
-    public List<Conflict> getConflicted(@Nullable String pathFilter) {
-        return conflictsDb.getConflicts(null, pathFilter);
+    public Iterator<Conflict> getConflicted(@Nullable String pathFilter) {
+        return conflictsDb.getByPrefix(null, pathFilter);
     }
 
     @Override

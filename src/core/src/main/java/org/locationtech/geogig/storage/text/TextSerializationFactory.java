@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.locationtech.geogig.api.Bucket;
@@ -885,7 +886,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
     }
 
     @Override
-    public RevObject read(ObjectId id, InputStream in) throws IOException {
+    public RevObject read(@Nullable ObjectId id, InputStream in) throws IOException {
         return OBJECT_READER.read(id, in);
     }
 

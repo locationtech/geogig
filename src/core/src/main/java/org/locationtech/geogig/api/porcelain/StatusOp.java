@@ -18,7 +18,7 @@ import org.locationtech.geogig.api.plumbing.DiffIndex;
 import org.locationtech.geogig.api.plumbing.DiffWorkTree;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
+import org.locationtech.geogig.api.plumbing.merge.ConflictsQueryOp;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -26,7 +26,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 
 @CanRunDuringConflict
 public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
@@ -35,15 +34,13 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
 
         private static final Supplier<Iterator<DiffEntry>> empty;
 
-        private static final Supplier<Iterable<Conflict>> no_conflicts;
+        private static final Supplier<Iterator<Conflict>> no_conflicts;
         static {
-            Iterator<DiffEntry> e = Collections.emptyIterator();
-            empty = Suppliers.ofInstance(e);
-            Iterable<Conflict> c = ImmutableList.of();
-            no_conflicts = Suppliers.ofInstance(c);
+            empty = Suppliers.ofInstance(Collections.emptyIterator());
+            no_conflicts = Suppliers.ofInstance(Collections.emptyIterator());
         }
 
-        private Supplier<Iterable<Conflict>> conflicts = no_conflicts;
+        private Supplier<Iterator<Conflict>> conflicts = no_conflicts;
 
         private Supplier<Iterator<DiffEntry>> staged = empty;
 
@@ -51,9 +48,9 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
 
         private long countStaged, countUnstaged;
 
-        private int countConflicted;
+        private long countConflicted;
 
-        public Supplier<Iterable<Conflict>> getConflicts() {
+        public Supplier<Iterator<Conflict>> getConflicts() {
             return conflicts;
         }
 
@@ -73,7 +70,7 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
             return countUnstaged;
         }
 
-        public int getCountConflicts() {
+        public long getCountConflicts() {
             return countConflicted;
         }
     }
@@ -102,7 +99,7 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
                         .setReportTrees(true);
             }
             if (summary.countConflicted > 0) {
-                summary.conflicts = command(ConflictsReadOp.class);
+                summary.conflicts = command(ConflictsQueryOp.class);
             }
         }
         return summary;

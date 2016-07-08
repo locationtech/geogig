@@ -145,14 +145,15 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
             patch = patch.reversed();
         }
 
+        objectDatabase().putAll(patch.getFeatureTypes().iterator());
+
         List<FeatureInfo> removed = patch.getRemovedFeatures();
         for (FeatureInfo feature : removed) {
-            workTree.delete(NodeRef.parentPath(feature.getPath()),
-                    NodeRef.nodeFromPath(feature.getPath()));
+            workTree.delete(feature.getPath());
         }
         List<FeatureInfo> added = patch.getAddedFeatures();
         for (FeatureInfo feature : added) {
-            workTree.insert(NodeRef.parentPath(feature.getPath()), feature.getFeature());
+            workTree.insert(feature);
         }
         List<FeatureDiff> diffs = patch.getModifiedFeatures();
         for (FeatureDiff diff : diffs) {

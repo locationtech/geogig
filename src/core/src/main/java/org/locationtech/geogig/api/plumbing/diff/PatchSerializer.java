@@ -20,15 +20,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.locationtech.geogig.api.FeatureBuilder;
 import org.locationtech.geogig.api.FeatureInfo;
-import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.storage.text.TextSerializationFactory;
-import org.opengis.feature.Feature;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Charsets;
@@ -119,14 +115,11 @@ public class PatchSerializer {
                     String featureTypeId = headerTokens[2].trim();
                     RevFeatureType revFeatureType;
                     revFeatureType = featureTypes.get(featureTypeId);
-                    FeatureBuilder featureBuilder = new FeatureBuilder(revFeatureType);
                     RevFeature revFeature = (RevFeature) serializer.read(null, stream);
-                    Feature feature = featureBuilder.build(NodeRef.nodeFromPath(fullPath),
-                            revFeature);
                     if (operation.equals("R")) {
-                        patch.addRemovedFeature(fullPath, feature, revFeatureType);
+                        patch.addRemovedFeature(fullPath, revFeature, revFeatureType);
                     } else {
-                        patch.addAddedFeature(fullPath, feature, revFeatureType);
+                        patch.addAddedFeature(fullPath, revFeature, revFeatureType);
                     }
                 } else {
                     throw new IllegalArgumentException("Wrong patch content: " + lines.get(0));
@@ -135,8 +128,8 @@ public class PatchSerializer {
 
         } else if (headerTokens.length == 1) {// feature type definition
             String element = Joiner.on("\n").join(lines);
-            ByteArrayInputStream stream = new ByteArrayInputStream(element.getBytes(Charsets.UTF_8));
-            String[] tokens = lines.get(1).split("\t");
+            ByteArrayInputStream stream = new ByteArrayInputStream(
+                    element.getBytes(Charsets.UTF_8));
             RevFeatureType featureType = (RevFeatureType) serializer.read(null, stream);
             featureTypes.put(featureType.getId().toString(), featureType);
         } else {
@@ -152,8 +145,8 @@ public class PatchSerializer {
         if (descriptor == null) {
             descriptor = newRevFeatureType.type().getDescriptor(tokens[0]);
         }
-        AttributeDiff ad = AttributeDiffFactory.attributeDiffFromText(descriptor.getType()
-                .getBinding(), s.substring(s.indexOf("\t") + 1));
+        AttributeDiff ad = AttributeDiffFactory.attributeDiffFromText(
+                descriptor.getType().getBinding(), s.substring(s.indexOf("\t") + 1));
         map.put(descriptor, ad);
     }
 
@@ -171,7 +164,7 @@ public class PatchSerializer {
             String path = feature.getPath();
             sb.append("A\t" + path + "\t" + feature.getFeatureTypeId() + "\n");
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
+            RevFeature revFeature = feature.getFeature();
             try {
                 serializer.write(revFeature, output);
             } catch (IOException e) {
@@ -183,7 +176,7 @@ public class PatchSerializer {
             String path = feature.getPath();
             sb.append("R\t" + path + "\t" + feature.getFeatureTypeId() + "\n");
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
+            RevFeature revFeature = feature.getFeature();
             try {
                 serializer.write(revFeature, output);
             } catch (IOException e) {

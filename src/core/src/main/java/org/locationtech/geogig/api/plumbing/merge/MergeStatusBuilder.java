@@ -134,7 +134,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
     @Override
     public void merged(FeatureInfo featureInfo) {
         System.err.println("Merged " + featureInfo);
-        workingTree.insert(NodeRef.parentPath(featureInfo.getPath()), featureInfo.getFeature());
+        workingTree.insert(featureInfo);
         Iterator<DiffEntry> unstaged = workingTree.getUnstaged(null);
         index.stage(progress, unstaged, 0);
         changed.set(true);
@@ -337,4 +337,5 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             return ObjectId.createNoClone(raw);
         }
     }
+
 }

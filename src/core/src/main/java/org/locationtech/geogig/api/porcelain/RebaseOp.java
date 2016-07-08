@@ -21,7 +21,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.CommitBuilder;
 import org.locationtech.geogig.api.FeatureInfo;
-import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.Ref;
@@ -36,7 +35,6 @@ import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.plumbing.WriteTree2;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsWriteOp;
 import org.locationtech.geogig.api.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
@@ -426,16 +424,6 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
         Repository repository = repository();
         Platform platform = platform();
         if (useCommitChanges) {
-            ObjectId parentTreeId;
-            ObjectId parentCommitId = ObjectId.NULL;
-            if (commitToApply.getParentIds().size() > 0) {
-                parentCommitId = commitToApply.getParentIds().get(0);
-            }
-            parentTreeId = ObjectId.NULL;
-            if (repository.commitExists(parentCommitId)) {
-                parentTreeId = repository.getCommit(parentCommitId).getTreeId();
-            }
-
             // In case there are conflicts
             StringBuilder conflictMsg = new StringBuilder();
             conflictMsg.append("error: could not apply ");
@@ -481,8 +469,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                         @Override
                         public void merged(FeatureInfo featureInfo) {
                             // Stage it
-                            workingTree().insert(NodeRef.parentPath(featureInfo.getPath()),
-                                    featureInfo.getFeature());
+                            workingTree().insert(featureInfo);
                             Iterator<DiffEntry> unstaged = workingTree().getUnstaged(null);
                             index().stage(getProgressListener(), unstaged, 0);
                         }

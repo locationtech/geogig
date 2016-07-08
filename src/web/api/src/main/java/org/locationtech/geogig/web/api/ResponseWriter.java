@@ -37,7 +37,6 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.Remote;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevPerson;
@@ -1052,7 +1051,7 @@ public class ResponseWriter {
                     @Override
                     public GeometryChange apply(FeatureInfo input) {
                         GeometryChange change = null;
-                        RevFeature revFeature = RevFeatureBuilder.build(input.getFeature());
+                        RevFeature revFeature = input.getFeature();
                         ObjectId typeId = input.getFeatureTypeId();
                         RevFeatureType featureType = typeCache.get(typeId);
                         if (null == featureType) {

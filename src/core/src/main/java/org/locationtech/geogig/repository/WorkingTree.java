@@ -34,6 +34,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.DefaultProgressListener;
 import org.locationtech.geogig.api.FeatureBuilder;
+import org.locationtech.geogig.api.FeatureInfo;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
@@ -471,6 +472,55 @@ public class WorkingTree {
                 .call().get();
     }
 
+    public void insert(FeatureInfo featureInfo) {
+        checkNotNull(featureInfo);
+        final RevFeature feature = featureInfo.getFeature();
+
+        final String path = featureInfo.getPath();
+        final String parentTreePath = NodeRef.parentPath(path);
+        final String featureId = NodeRef.nodeFromPath(path);
+
+        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(getTree())
+                .setChildPath(parentTreePath).call();
+
+        NodeRef treeRef;
+        ObjectId metadataId;
+        if (typeTreeRef.isPresent()) {
+            treeRef = typeTreeRef.get();
+            metadataId = treeRef.getMetadataId();
+            if (!featureInfo.getFeatureTypeId().equals(treeRef.getMetadataId())) {
+                checkArgument(indexDatabase.exists(featureInfo.getFeatureTypeId()));
+            }
+        } else {
+            metadataId = featureInfo.getFeatureTypeId();
+            Node treeNode = Node.create(NodeRef.nodeFromPath(parentTreePath), RevTree.EMPTY_TREE_ID,
+                    metadataId, TYPE.TREE, null);
+            String treeParentPath = NodeRef.parentPath(parentTreePath);
+            treeRef = new NodeRef(treeNode, treeParentPath, metadataId);
+        }
+
+        metadataId = featureInfo.getFeatureTypeId().equals(treeRef.getMetadataId()) ? ObjectId.NULL
+                : featureInfo.getFeatureTypeId();
+
+        indexDatabase.put(feature);
+        Envelope bounds = SpatialOps.boundsOf(feature);
+        Node node = Node.create(featureId, feature.getId(), metadataId, TYPE.FEATURE, bounds);
+
+        RevTreeBuilder parentTree = new RevTreeBuilder(indexDatabase,
+                context.command(FindOrCreateSubtree.class)
+                        .setParent(Suppliers.ofInstance(Optional.of(getTree())))
+                        .setChildPath(parentTreePath).call());
+
+        parentTree.put(node);
+        final ObjectId treeMetadataId = treeRef.getMetadataId();
+
+        ObjectId newTree = context.command(WriteBack.class).setAncestor(getTreeSupplier())
+                .setChildPath(parentTreePath).setTree(parentTree.build())
+                .setMetadataId(treeMetadataId).call();
+
+        updateWorkHead(newTree);
+    }
+
     /**
      * Insert a single feature into the working tree and updates the WORK_HEAD ref.
      * 
@@ -500,7 +550,14 @@ public class WorkingTree {
         }
 
         // ObjectId metadataId = treeRef.getMetadataId();
-        final Node node = putInDatabase(feature, metadataId);
+        final RevFeature newFeature = RevFeatureBuilder.build(feature);
+        final ObjectId objectId = newFeature.getId();
+        final Envelope bounds = (ReferencedEnvelope) feature.getBounds();
+        final String nodeName = feature.getIdentifier().getID();
+
+        indexDatabase.put(newFeature);
+
+        final Node node = Node.create(nodeName, objectId, metadataId, TYPE.FEATURE, bounds);
 
         RevTreeBuilder parentTree = new RevTreeBuilder(indexDatabase,
                 context.command(FindOrCreateSubtree.class)
@@ -925,29 +982,6 @@ public class WorkingTree {
     }
 
     /**
-     * Adds a single feature to the staging database.
-     * 
-     * @param feature the feature to add
-     * @param metadataId
-     * @return the Node for the inserted feature
-     */
-    private Node putInDatabase(final Feature feature, final ObjectId metadataId) {
-
-        checkNotNull(feature);
-        checkNotNull(metadataId);
-
-        final RevFeature newFeature = RevFeatureBuilder.build(feature);
-        final ObjectId objectId = newFeature.getId();
-        final Envelope bounds = (ReferencedEnvelope) feature.getBounds();
-        final String nodeName = feature.getIdentifier().getID();
-
-        indexDatabase.put(newFeature);
-
-        Node newObject = Node.create(nodeName, objectId, metadataId, TYPE.FEATURE, bounds);
-        return newObject;
-    }
-
-    /**
      * @return a list of all the feature type names in the working tree
      * @see FindFeatureTypeTrees
      */
@@ -1009,4 +1043,5 @@ public class WorkingTree {
                 .call().get();
 
     }
+
 }

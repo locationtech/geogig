@@ -16,6 +16,7 @@ import org.geotools.data.DataUtilities;
 import org.junit.Test;
 import org.locationtech.geogig.api.FeatureInfo;
 import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.CheckMergeScenarioOp;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
@@ -128,7 +129,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(1, conflicts.getMerged());
         Feature pointsMerged = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
                 "POINT(1 1)");
-        assertEquals(pointsMerged, consumer.merged.get(0).getFeature());
+        assertEquals(RevFeatureBuilder.build(pointsMerged), consumer.merged.get(0).getFeature());
         Boolean hasConflictsOrAutomerge = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertTrue(hasConflictsOrAutomerge.booleanValue());
@@ -318,14 +319,15 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
                 .setConsumer(new TestMergeScenarioConsumer()).call();
         assertEquals(1, conflicts.getConflicts()); // the conflict in the feature type
         assertEquals(0, conflicts.getUnconflicted()); // the change in the feature is the
-                                                             // same, so no conflict
+                                                      // same, so no conflict
         Boolean hasConflicts = geogig.command(CheckMergeScenarioOp.class)
                 .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
     }
 
     @Test
-    public void testModifiedFeatureTypeInOneBranchEditedAttributeValueInTheOther() throws Exception {
+    public void testModifiedFeatureTypeInOneBranchEditedAttributeValueInTheOther()
+            throws Exception {
         insertAndAdd(points1);
         geogig.command(CommitOp.class).call();
         geogig.command(BranchCreateOp.class).setName("TestBranch").call();

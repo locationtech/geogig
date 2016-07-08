@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.FeatureInfo;
-import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
@@ -128,8 +127,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                     @Override
                     public void merged(FeatureInfo featureInfo) {
                         // Stage it
-                        workingTree().insert(NodeRef.parentPath(featureInfo.getPath()),
-                                featureInfo.getFeature());
+                        workingTree().insert(featureInfo);
                         Iterator<DiffEntry> unstaged = workingTree().getUnstaged(null);
                         index().stage(getProgressListener(), unstaged, 0);
                     }

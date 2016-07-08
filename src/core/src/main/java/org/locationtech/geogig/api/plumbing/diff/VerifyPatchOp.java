@@ -21,7 +21,6 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
@@ -128,6 +127,8 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
                             break;
                         }
                     }
+                case NO_CHANGE:
+                    break;// nothing to do
                 }
             }
             if (!ok) {
@@ -162,7 +163,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
                 Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(),
                         feature.getPath());
                 ObjectId revFeatureTypeId = noderef.get().getMetadataId();
-                RevFeature patchRevFeature = RevFeatureBuilder.build(feature.getFeature());
+                RevFeature patchRevFeature = feature.getFeature();
                 if (revFeature.equals(patchRevFeature)
                         && revFeatureTypeId.equals(feature.getFeatureTypeId())) {
                     toApply.addRemovedFeature(feature.getPath(), feature.getFeature(),

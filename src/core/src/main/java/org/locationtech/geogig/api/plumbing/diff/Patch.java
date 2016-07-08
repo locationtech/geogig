@@ -20,10 +20,8 @@ import java.util.Map;
 import org.locationtech.geogig.api.FeatureInfo;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.storage.text.TextSerializationFactory;
-import org.opengis.feature.Feature;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Optional;
@@ -105,7 +103,7 @@ public class Patch {
      * @param feature the feature
      * @param featureType the feature type of the added feature
      */
-    public void addAddedFeature(String path, Feature feature, RevFeatureType featureType) {
+    public void addAddedFeature(String path, RevFeature feature, RevFeatureType featureType) {
         addedFeatures.add(new FeatureInfo(feature, featureType.getId(), path));
         addFeatureType(featureType);
     }
@@ -117,7 +115,7 @@ public class Patch {
      * @param feature the feature
      * @param featureType the feature type of the removed feature
      */
-    public void addRemovedFeature(String path, Feature feature, RevFeatureType featureType) {
+    public void addRemovedFeature(String path, RevFeature feature, RevFeatureType featureType) {
         removedFeatures.add(new FeatureInfo(feature, featureType.getId(), path));
         addFeatureType(featureType);
     }
@@ -215,7 +213,7 @@ public class Patch {
             String path = feature.getPath();
             sb.append("A\t" + path + "\t" + feature.getFeatureTypeId() + "\n");
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
+            RevFeature revFeature = feature.getFeature();
             try {
                 serializer.write(revFeature, output);
             } catch (IOException e) {
@@ -227,7 +225,7 @@ public class Patch {
             String path = feature.getPath();
             sb.append("R\t" + path + "\t" + feature.getFeatureTypeId() + "\n");
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            RevFeature revFeature = RevFeatureBuilder.build(feature.getFeature());
+            RevFeature revFeature = feature.getFeature();
             try {
                 serializer.write(revFeature, output);
             } catch (IOException e) {

@@ -19,13 +19,13 @@ import java.util.Map;
 import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
 import org.locationtech.geogig.api.NodeRef;
+import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevFeatureTypeImpl;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -87,7 +87,8 @@ public class PatchSerializationTest extends RepositoryTestCase {
     public void testAddFeaturePatch() throws Exception {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
-        patch.addAddedFeature(path, points1, RevFeatureTypeImpl.build(pointsType));
+        patch.addAddedFeature(path, RevFeatureBuilder.build(points1),
+                RevFeatureTypeImpl.build(pointsType));
         testPatch(patch);
     }
 
@@ -95,7 +96,8 @@ public class PatchSerializationTest extends RepositoryTestCase {
     public void testRemoveFeaturePatch() throws Exception {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
-        patch.addRemovedFeature(path, points1, RevFeatureTypeImpl.build(pointsType));
+        patch.addRemovedFeature(path, RevFeatureBuilder.build(points1),
+                RevFeatureTypeImpl.build(pointsType));
         testPatch(patch);
     }
 

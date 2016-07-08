@@ -278,7 +278,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                     report.addUnconflicted();
                 } else {
                     ObjectId featureTypeId = oursDiff.getNewObject().getMetadataId();
-                    FeatureInfo merged = new FeatureInfo(mergedFeature, featureTypeId, path);
+                    FeatureInfo merged = new FeatureInfo(revFeature, featureTypeId, path);
                     consumer.merged(merged);
                     report.addMerged();
                 }

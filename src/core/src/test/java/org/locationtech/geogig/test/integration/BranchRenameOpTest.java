@@ -13,7 +13,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.api.Ref;
+import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.RefParse;
+import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.api.porcelain.BranchCreateOp;
 import org.locationtech.geogig.api.porcelain.BranchRenameOp;
@@ -71,6 +73,63 @@ public class BranchRenameOpTest extends RepositoryTestCase {
         assertTrue(result.isPresent());
 
         assertEquals(TestBranch.getObjectId(), SuperTestBranch.getObjectId());
+    }
+
+    @Test
+    public void RenamingCurrentBranchTest() throws Exception {
+        insertAndAdd(points1);
+        geogig.command(AddOp.class).call();
+        geogig.command(CommitOp.class).call();
+
+        Ref NewMaster = geogig.command(BranchRenameOp.class).setOldName("master")
+                .setNewName("newMaster").call();
+
+        assertEquals(Ref.HEADS_PREFIX + "newMaster", NewMaster.getName());
+
+        Optional<Ref> result = geogig.command(RefParse.class).setName("master").call();
+
+        assertFalse(result.isPresent());
+
+        result = geogig.command(RefParse.class).setName("newMaster").call();
+
+        assertTrue(result.isPresent());
+
+        result = geogig.command(RefParse.class).setName(Ref.HEAD).call();
+
+        assertTrue(result.isPresent());
+        assertTrue(result.get() instanceof SymRef);
+        assertEquals(NewMaster.getName(), ((SymRef) result.get()).getTarget());
+    }
+
+    @Test
+    public void RenamingUpdatesSymRefsTest() throws Exception {
+        insertAndAdd(points1);
+        geogig.command(AddOp.class).call();
+        geogig.command(CommitOp.class).call();
+        Ref TestBranch = geogig.command(BranchCreateOp.class).setName("TestBranch").call();
+
+        Optional<Ref> TestSymRef = geogig.command(UpdateSymRef.class)
+                .setName(Ref.HEADS_PREFIX + "TestSymRef").setNewValue(TestBranch.getName()).call();
+
+        assertTrue(TestSymRef.isPresent());
+        assertEquals(TestBranch.getName(), ((SymRef) TestSymRef.get()).getTarget());
+
+        Ref SuperTestBranch = geogig.command(BranchRenameOp.class).setOldName("TestBranch")
+                .setNewName("SuperTestBranch").call();
+
+        Optional<Ref> result = geogig.command(RefParse.class).setName("TestBranch").call();
+
+        assertFalse(result.isPresent());
+
+        result = geogig.command(RefParse.class).setName("SuperTestBranch").call();
+
+        assertTrue(result.isPresent());
+
+        result = geogig.command(RefParse.class).setName("TestSymRef").call();
+
+        assertTrue(result.isPresent());
+        assertTrue(result.get() instanceof SymRef);
+        assertEquals(SuperTestBranch.getName(), ((SymRef) result.get()).getTarget());
     }
 
     @Test

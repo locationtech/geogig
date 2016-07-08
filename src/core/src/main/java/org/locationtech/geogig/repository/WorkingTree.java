@@ -699,6 +699,11 @@ public class WorkingTree {
                 int inserted = 0;
 
                 @Override
+                public void found(ObjectId object, @Nullable Integer storageSizeBytes) {
+                    listener.setProgress((float) (++inserted * 100) / total);
+                }
+
+                @Override
                 public synchronized void inserted(ObjectId object,
                         @Nullable Integer storageSizeBytes) {
                     listener.setProgress((float) (++inserted * 100) / total);

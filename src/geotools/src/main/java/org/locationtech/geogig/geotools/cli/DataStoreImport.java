@@ -17,6 +17,7 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvider;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 
@@ -89,10 +90,16 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
 
             ProgressListener progressListener = cli.getProgressListener();
 
-            cli.getGeogig().command(ImportOp.class).setAll(all).setTable(table).setAlter(alter)
-                    .setDestinationPath(destTable).setOverwrite(!add).setDataStore(dataStore)
-                    .setAdaptToDefaultFeatureType(!forceFeatureType).setFidAttribute(fidAttribute)
-                    .setProgressListener(progressListener).call();
+            ImportOp op = cli.getGeogig().command(ImportOp.class).setAll(all).setTable(table)
+                    .setAlter(alter).setDestinationPath(destTable).setOverwrite(!add)
+                    .setDataStore(dataStore).setAdaptToDefaultFeatureType(!forceFeatureType)
+                    .setFidAttribute(fidAttribute);
+            ForwardingFeatureIteratorProvider transformer = getForwardingFeatureIteratorProvider();
+            if (transformer != null) {
+                op.setForwardingFeatureIteratorProvider(transformer);
+            }
+
+            op.setProgressListener(progressListener).call();
 
             cli.getConsole().println("Import successful.");
 
@@ -132,5 +139,15 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
             dataStore.dispose();
             cli.getConsole().flush();
         }
+    }
+
+    /**
+     * Returns a {@link ForwardingFeatureIteratorProvider}. It can be used to transform incoming
+     * features. If the function returns {@code null}, the features will not be transformed.
+     * 
+     * @return the forwarding feature iterator provider
+     */
+    protected ForwardingFeatureIteratorProvider getForwardingFeatureIteratorProvider() {
+        return null;
     }
 }

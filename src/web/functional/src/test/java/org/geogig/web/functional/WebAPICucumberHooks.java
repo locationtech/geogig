@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -50,7 +52,7 @@ import org.locationtech.geogig.api.plumbing.TransactionEnd;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Variants;
-import org.locationtech.geogig.rest.geopkg.GeoPackageTestSupport;
+import org.locationtech.geogig.rest.geopkg.GeoPackageWebAPITestSupport;
 import org.locationtech.geogig.web.api.TestData;
 import org.mortbay.log.Log;
 import org.opengis.filter.Filter;
@@ -140,6 +142,8 @@ public class WebAPICucumberHooks {
      * The {@code DataTable} top cells represent feature tree paths, and their cells beneath each
      * feature tree path, the feature ids expected for each layer.
      * <p>
+     * A {@code question mark} indicates a wild card feature where the feature id may not be known.
+     * <p>
      * Example:
      * 
      * <pre>
@@ -147,6 +151,7 @@ public class WebAPICucumberHooks {
      *     |  Points   |  Lines   |  Polygons   | 
      *     |  Points.1 |  Lines.1 |  Polygons.1 | 
      *     |  Points.2 |  Lines.2 |  Polygons.2 | 
+     *     |  ?        |          |             |
      *</code>
      * </pre>
      * 
@@ -173,7 +178,27 @@ public class WebAPICucumberHooks {
 
         SetMultimap<String, String> actual = context.listRepo(repositoryName, headRef);
 
-        assertEquals(expected, actual);
+        Map<String, Collection<String>> actualMap = actual.asMap();
+        Map<String, Collection<String>> expectedMap = expected.asMap();
+
+        for (String featureType : actualMap.keySet()) {
+            assertTrue(expectedMap.containsKey(featureType));
+            Collection<String> actualFeatureCollection = actualMap.get(featureType);
+            Collection<String> expectedFeatureCollection = expectedMap.get(featureType);
+            for (String actualFeature : actualFeatureCollection) {
+                if (expectedFeatureCollection.contains(actualFeature)) {
+                    expectedFeatureCollection.remove(actualFeature);
+                } else if (expectedFeatureCollection.contains("?")) {
+                    expectedFeatureCollection.remove("?");
+                } else {
+                    fail();
+                }
+            }
+            assertEquals(0, expectedFeatureCollection.size());
+            expectedMap.remove(featureType);
+        }
+        assertEquals(0, expectedMap.size());
+
     }
 
     /**
@@ -525,7 +550,8 @@ public class WebAPICucumberHooks {
      */
     @Given("^I have a geopackage file (@[^\"]*)$")
     public void gpkg_CreateSampleGeopackage(final String fileVariableName) throws Throwable {
-        GeoPackageTestSupport support = new GeoPackageTestSupport(context.getTempFolder());
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport(
+                context.getTempFolder());
         File dbfile = support.createDefaultTestData();
         context.setVariable(fileVariableName, dbfile.getAbsolutePath());
     }
@@ -540,7 +566,8 @@ public class WebAPICucumberHooks {
     @Given("^I export Points from \"([^\"]*)\" to a geopackage file with audit logs as (@[^\"]*)$")
     public void gpkg_ExportAuditLogs(final String repoName, final String fileVariableName)
             throws Throwable {
-        GeoPackageTestSupport support = new GeoPackageTestSupport(context.getTempFolder());
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport(
+                context.getTempFolder());
         GeoGIG geogig = context.getRepo(repoName);
         File file = support.createDefaultTestData();
         geogig.command(GeopkgAuditExport.class).setDatabase(file).setTargetTableName("Points")
@@ -555,9 +582,10 @@ public class WebAPICucumberHooks {
      */
     @When("^I add Points/4 to the geopackage file (@[^\"]*)$")
     public void gpkg_AddFeature(final String fileVariableName) throws Throwable {
-        GeoPackageTestSupport support = new GeoPackageTestSupport();
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport();
         File file = new File(context.getVariable(fileVariableName));
         DataStore gpkgStore = support.createDataStore(file);
+
         Transaction gttx = new DefaultTransaction();
         try {
             SimpleFeatureStore store = (SimpleFeatureStore) gpkgStore.getFeatureSource("Points");
@@ -579,7 +607,7 @@ public class WebAPICucumberHooks {
      */
     @When("^I modify the Point features in the geopackage file (@[^\"]*)$")
     public void gpkg_ModifyFeature(final String fileVariableName) throws Throwable {
-        GeoPackageTestSupport support = new GeoPackageTestSupport();
+        GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport();
         File file = new File(context.getVariable(fileVariableName));
         DataStore gpkgStore = support.createDataStore(file);
         Transaction gttx = new DefaultTransaction();

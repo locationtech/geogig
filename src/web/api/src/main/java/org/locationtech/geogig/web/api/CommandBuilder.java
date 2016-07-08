@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.locationtech.geogig.rest.geotools.Export;
+import org.locationtech.geogig.rest.geotools.ExportDiff;
 import org.locationtech.geogig.rest.geotools.Import;
 import org.locationtech.geogig.web.api.commands.Add;
 import org.locationtech.geogig.web.api.commands.BeginTransaction;
@@ -90,6 +91,7 @@ public class CommandBuilder {
         MAPPINGS.put("cat", Cat::new);
         MAPPINGS.put("statistics", Statistics::new);
         MAPPINGS.put("export", Export::new);
+        MAPPINGS.put("export-diff", ExportDiff::new);
         MAPPINGS.put("import", Import::new);
     }
 

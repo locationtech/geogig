@@ -16,12 +16,11 @@ import java.io.File;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.porcelain.MergeConflictsException;
 
 import com.google.common.base.Throwables;
 
-public class GeopkgAuditImport extends AbstractGeoGigOp<RevCommit> {
+public class GeopkgAuditImport extends AbstractGeoGigOp<GeopkgImportResult> {
 
     private String commitMessage;
 
@@ -29,23 +28,12 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<RevCommit> {
 
     private String authorEmail = null;
 
-    private boolean noCommit = false;
-
     private File geopackageFile;
 
     private String table = null;
 
     public GeopkgAuditImport setDatabase(File geopackageFile) {
         this.geopackageFile = geopackageFile;
-        return this;
-    }
-
-    /**
-     * @param noCommit if {@code true}, do not create a commit from the audit log, just import to
-     *        WORK_HEAD; defaults to {@code false}
-     */
-    public GeopkgAuditImport setNoCommit(boolean noCommit) {
-        this.noCommit = noCommit;
         return this;
     }
 
@@ -70,16 +58,16 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<RevCommit> {
     }
 
     @Override
-    protected RevCommit _call() throws IllegalArgumentException, IllegalStateException {
+    protected GeopkgImportResult _call() throws IllegalArgumentException, IllegalStateException {
         checkArgument(null != geopackageFile, "Geopackage database not provided");
         checkArgument(geopackageFile.exists(), "Database %s does not exist", geopackageFile);
-        checkArgument(noCommit || commitMessage != null, "Commit message not provided");
+        checkArgument(commitMessage != null, "Commit message not provided");
         checkState(workingTree().isClean(),
                 "The working tree has unstaged changes. It must be clean for the import to run cleanly.");
         checkState(index().isClean(),
                 "The staging ares has uncommitted changes. It must be clean for the import to run cleanly.");
 
-        RevCommit newCommit = null;
+        GeopkgImportResult importResult = null;
 
         try {
             InterchangeFormat interchange;
@@ -88,9 +76,9 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<RevCommit> {
                     .setProgressListener(progress);
 
             if (table == null) {
-                newCommit = interchange.importAuditLog(commitMessage, authorName, authorEmail);
+                importResult = interchange.importAuditLog(commitMessage, authorName, authorEmail);
             } else {
-                newCommit = interchange.importAuditLog(commitMessage, authorName, authorEmail,
+                importResult = interchange.importAuditLog(commitMessage, authorName, authorEmail,
                         table);
             }
 
@@ -102,6 +90,6 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<RevCommit> {
 
         }
 
-        return newCommit;
+        return importResult;
     }
 }

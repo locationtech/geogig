@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.geotools.geopkg;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class AuditReport {
@@ -17,6 +19,8 @@ public class AuditReport {
 
     public final AtomicLong added = new AtomicLong(), removed = new AtomicLong(),
             changed = new AtomicLong();
+
+    public final Map<String, String> newMappings = new HashMap<String, String>();
 
     AuditReport(AuditTable table) {
         this.table = table;

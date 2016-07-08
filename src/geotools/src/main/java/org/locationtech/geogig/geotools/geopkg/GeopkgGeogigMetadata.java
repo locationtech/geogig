@@ -13,16 +13,21 @@ import static java.lang.String.format;
 
 import java.net.URI;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentMap;
 
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,23 +51,23 @@ import org.slf4j.LoggerFactory;
  * <li>{@code audit_table VARCHAR}
  * </ul>
  */
-class GeogigMetadata {
+public class GeopkgGeogigMetadata {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GeogigMetadata.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GeopkgGeogigMetadata.class);
 
     private static final String REPOSITORY_METADATA_TABLE = "geogig_metadata";
 
     private static final String AUDIT_METADATA_TABLE = "geogig_audited_tables";
 
-    static final int AUDIT_OP_INSERT = 1;
+    public static final int AUDIT_OP_INSERT = 1;
 
-    static final int AUDIT_OP_UPDATE = 2;
+    public static final int AUDIT_OP_UPDATE = 2;
 
-    static final int AUDIT_OP_DELETE = 3;
+    public static final int AUDIT_OP_DELETE = 3;
 
     private Connection cx;
 
-    public GeogigMetadata(Connection connection) {
+    public GeopkgGeogigMetadata(Connection connection) {
         this.cx = connection;
     }
 
@@ -126,6 +131,30 @@ class GeogigMetadata {
         return tables;
     }
 
+    public Map<String, String> getFidMappings(String tableName) throws SQLException {
+        String fidTable = tableName + "_fids";
+        Map<String, String> mappings = new HashMap<String, String>();
+        DatabaseMetaData dbm = cx.getMetaData();
+        ResultSet tables = dbm.getTables(null, null, fidTable, null);
+        while (tables.next()) {
+            if (tables.getString("TABLE_NAME").equals(fidTable)) {
+                // Fid table exists
+                final String sql = format("SELECT gpkg_fid, geogig_fid FROM %s", fidTable);
+                try (Statement st = cx.createStatement()) {
+                    try (ResultSet rs = st.executeQuery(sql)) {
+                        while (rs.next()) {
+                            String gpkg_fid = rs.getString(1);
+                            String geogig_fid = rs.getString(2);
+                            mappings.put(gpkg_fid, geogig_fid);
+                        }
+                    }
+                }
+            }
+        }
+
+        return mappings;
+    }
+
     public void createAudit(final String tableName, final String mappedPath,
             final ObjectId commitObjectId) throws SQLException {
         cx.setAutoCommit(false);
@@ -150,12 +179,95 @@ class GeogigMetadata {
         }
     }
 
+    public void createChangeLog(final String targetTableName)
+            throws SQLException {
+        final String changeTable = targetTableName + "_changes";
+
+        StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS \"").append(changeTable)
+                .append("\" (geogig_fid VARCHAR, audit_op INTEGER)");
+
+        try (Statement st = cx.createStatement()) {
+            st.execute(log(sql.toString()));
+        }
+    }
+    
+    public void populateChangeLog(final String targetTableName,
+            Map<String, ChangeType> changedNodes) throws SQLException {
+        final String changeTable = targetTableName + "_changes";
+
+        StringBuilder sql = new StringBuilder("INSERT INTO ").append(changeTable)
+                .append(" VALUES (?, ?)");
+
+        try (PreparedStatement st = cx.prepareStatement(log(sql.toString()))) {
+            for (Entry<String, ChangeType> changedNode : changedNodes.entrySet()) {
+                st.setString(1, changedNode.getKey());
+                st.setInt(2, auditOpForChangeType(changedNode.getValue()));
+                st.addBatch();
+            }
+
+            st.executeBatch();
+        }
+    }
+
+    private int auditOpForChangeType(ChangeType changeType) {
+        int op = -1;
+        switch (changeType) {
+        case ADDED:
+            op = AUDIT_OP_INSERT;
+            break;
+        case MODIFIED:
+            op = AUDIT_OP_UPDATE;
+            break;
+        case REMOVED:
+            op = AUDIT_OP_DELETE;
+            break;
+        }
+        return op;
+    }
+
+    public String createFidMappingTable(final String tableName,
+            ConcurrentMap<String, String> fidMappings) throws SQLException {
+        final String fidMappingTable = tableName + "_fids";
+
+        StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS \"")
+                .append(fidMappingTable)
+                .append("\" ")
+                .append("(gpkg_fid VARCHAR, geogig_fid VARCHAR, PRIMARY KEY(gpkg_fid))");
+
+        cx.setAutoCommit(false);
+        
+        StringBuilder insertSql = new StringBuilder("INSERT OR REPLACE INTO \"")
+                .append(fidMappingTable)
+                .append("\" VALUES(?,?);");
+        
+        try {
+            Statement st = cx.createStatement();
+            st.execute(log(sql.toString()));
+
+            PreparedStatement prepared = cx.prepareStatement(insertSql.toString());
+            for (Entry<String, String> entry : fidMappings.entrySet()) {
+                prepared.setString(1, entry.getKey());
+                prepared.setString(2, entry.getValue());
+                prepared.addBatch();
+            }
+            prepared.executeBatch();
+
+            cx.commit();
+        } catch (SQLException e) {
+            cx.rollback();
+            throw e;
+        }
+
+        return fidMappingTable;
+    }
+
     private String createAuditTable(final String tableName) throws SQLException {
         final String auditTable = tableName + "_audit";
 
         final LinkedHashMap<String, String> columnNames = getColumnNamesAndTypes(tableName);
 
-        StringBuilder sql = new StringBuilder("CREATE TABLE \"").append(auditTable).append("\" (");
+        StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS \"").append(auditTable)
+                .append("\" (");
 
         for (Map.Entry<String, String> c : columnNames.entrySet()) {
             String colName = c.getKey();

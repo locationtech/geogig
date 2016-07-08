@@ -51,10 +51,13 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
+import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.BoundingBox;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -284,6 +287,12 @@ public class ExportTest extends AbstractWebOpTest {
             @Override
             protected MemoryDataStore buildResult(DataStore targetStore) {
                 return (MemoryDataStore) targetStore;
+            }
+
+            @Override
+            protected Function<Feature, Optional<Feature>> getTransformingFunction(
+                    SimpleFeatureType featureType) {
+                return null;
             }
 
         }

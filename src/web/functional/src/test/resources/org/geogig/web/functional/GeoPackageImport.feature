@@ -57,10 +57,10 @@ Feature: Import GeoPackage
       And the xml response should contain "/task/result/commit/tree"
       And I end the transaction with id "@txId" on the "targetRepo" repo
       And the targetRepo repository's HEAD should have the following features:
-          | Points | Lines | Polygons | 
-          |    1   |   1   |    1     | 
-          |    2   |   2   |    2     | 
-          |    3   |   3   |    3     | 
+          |    Points    |   Lines    |    Polygons     | 
+          |    Point.1   |   Line.1   |    Polygon.1    | 
+          |    Point.2   |   Line.2   |    Polygon.2    | 
+          |    Point.3   |   Line.3   |    Polygon.3    | 
           
   Scenario: Import an interchange geopackage with fast-forward merge
     Given There is a default multirepo server
@@ -73,16 +73,19 @@ Feature: Import GeoPackage
       And the task @taskId description contains "Importing GeoPackage database file."
       And when the task @taskId finishes
      Then the task @taskId status is FINISHED
-      And the xml response should contain "/task/result/commit/id"
-      And the xml response should contain "/task/result/commit/tree"
-      And the xpath "/task/result/commit/message" equals "Imported Geopackage"
+      And the xml response should contain "/task/result/newCommit/id"
+      And the xml response should contain "/task/result/newCommit/tree"
+      And the xml response should contain "/task/result/importCommit/id"
+      And the xml response should contain "/task/result/importCommit/tree"
+      And the xpath "/task/result/newCommit/message" equals "Imported Geopackage"
+      And the xpath "/task/result/importCommit/message" equals "Imported Geopackage"
       And I end the transaction with id "@txId" on the "repo1" repo
       And the repo1 repository's HEAD should have the following features:
-          | Points | Lines | Polygons | 
-          |    1   |   1   |    1     | 
-          |    2   |   2   |    2     | 
-          |    3   |   3   |    3     | 
-          |    4   |       |          |
+          |    Points    |   Lines    |    Polygons     | 
+          |    Point.1   |   Line.1   |    Polygon.1    | 
+          |    Point.2   |   Line.2   |    Polygon.2    | 
+          |    Point.3   |   Line.3   |    Polygon.3    | 
+          |    ?         |            |                 |
       
   Scenario: Import an interchange geopackage with non-conflicting merge
     Given There is a default multirepo server
@@ -96,20 +99,24 @@ Feature: Import GeoPackage
       And the task @taskId description contains "Importing GeoPackage database file."
       And when the task @taskId finishes
      Then the task @taskId status is FINISHED
-      And the xml response should contain "/task/result/commit/id"
-      And the xml response should contain "/task/result/commit/tree"
-      And the xpath "/task/result/commit/message" equals "Merge: Imported Geopackage"
+      And the xml response should contain "/task/result/newCommit/id"
+      And the xml response should contain "/task/result/newCommit/tree"
+      And the xml response should contain "/task/result/importCommit/id"
+      And the xml response should contain "/task/result/importCommit/tree"
+      And the xpath "/task/result/newCommit/message" equals "Merge: Imported Geopackage"
+      And the xpath "/task/result/importCommit/message" equals "Imported Geopackage"
       And I end the transaction with id "@txId" on the "repo1" repo
       And the repo1 repository's HEAD should have the following features:
-          | Points | Lines | Polygons | 
-          |    2   |   1   |    1     | 
-          |    3   |   2   |    2     | 
-          |    4   |   3   |    3     | 
+          |    Points    |   Lines    |    Polygons     | 
+          |    Point.2   |   Line.1   |    Polygon.1    | 
+          |    Point.3   |   Line.2   |    Polygon.2    | 
+          |    ?         |   Line.3   |    Polygon.3    | 
       
   Scenario: Import an interchange geopackage with conflicting merge
     Given There is a default multirepo server
       And I export Points from "repo1" to a geopackage file with audit logs as @gpkgFile
      When I modify the Point features in the geopackage file @gpkgFile
+      And I add Points/4 to the geopackage file @gpkgFile
       And I remove Points/1 from "repo1"
       And I have a transaction as "@txId" on the "repo1" repo
       And I post @gpkgFile as "fileUpload" to "/repos/repo1/import?format=gpkg&message=Imported%20Geopackage&interchange=true&transactionId={@txId}"
@@ -121,6 +128,9 @@ Feature: Import GeoPackage
       And the xml response should contain "/task/result/Merge/ours"
       And the xml response should contain "/task/result/Merge/theirs"
       And the xml response should contain "/task/result/Merge/ancestor"
+      And the xml response should contain "/task/result/import/importCommit/id"
+      And the xml response should contain "/task/result/import/importCommit/tree"
+      And the xpath "/task/result/import/importCommit/message" equals "Imported Geopackage"
       And the xpath "/task/result/Merge/conflicts" equals "1"
 
 

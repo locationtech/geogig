@@ -32,8 +32,10 @@ import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
+import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
@@ -161,13 +163,20 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
 
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
 
-        command(ExportOp.class)//
+        ExportOp cmd = command(ExportOp.class)//
                 .setFeatureStore(featureStore)//
                 .setPath(treeSpec)//
                 .setTransactional(true)//
-                .setBBoxFilter(this.bboxFilter)//
-                .setProgressListener(progress)//
-                .call();
+                .setBBoxFilter(this.bboxFilter);//
+
+        Function<Feature, Optional<Feature>> transformingFunction = getTransformingFunction(
+                featureType);
+
+        if (transformingFunction != null) {
+            cmd.setFeatureTypeConversionFunction(transformingFunction);
+        }
+
+        cmd.setProgressListener(progress).call();//
     }
 
     private Set<String> resolveExportLayerRefSpecs() {
@@ -203,5 +212,12 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
         final String commitId = commit.get().getId().toString() + ":";
         return Sets.newHashSet(Iterables.transform(exportLayers, (s) -> commitId + s));
     }
+
+    /**
+     * @param featureType the feature type of the features to transform
+     * @return a transform function to modify the features being exported
+     */
+    protected abstract Function<Feature, Optional<Feature>> getTransformingFunction(
+            final SimpleFeatureType featureType);
 
 }

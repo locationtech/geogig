@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EnumMap;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
@@ -44,6 +45,7 @@ import org.locationtech.geogig.storage.ObjectReader;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.ObjectWriter;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 
@@ -64,8 +66,17 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
         serializers.put(TYPE.TREE, new TreeSerializer());
     }
 
+    public RevObject read(InputStream rawData) throws IOException {
+        return readInternal(null, rawData);
+    }
+
     @Override
     public RevObject read(ObjectId id, InputStream rawData) throws IOException {
+        Preconditions.checkNotNull(id);
+        return readInternal(id, rawData);
+    }
+
+    public RevObject readInternal(@Nullable ObjectId id, InputStream rawData) throws IOException {
         DataInput in = new DataInputStream(rawData);
         final TYPE type = readHeader(in);
         Serializer<RevObject> serializer = DataStreamSerializationFactoryV2.serializer(type);
@@ -90,8 +101,8 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
     /**
      * Provides an interface for reading and writing objects.
      */
-    private static abstract class Serializer<T extends RevObject> implements ObjectReader<T>,
-            ObjectWriter<T> {
+    private static abstract class Serializer<T extends RevObject>
+            implements ObjectReader<T>, ObjectWriter<T> {
 
         private final TYPE header;
 
@@ -110,7 +121,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
             }
         }
 
-        protected abstract T readBody(ObjectId id, DataInput in) throws IOException;
+        protected abstract T readBody(@Nullable ObjectId id, DataInput in) throws IOException;
 
         /**
          * Writers must call
@@ -135,7 +146,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
         }
 
         @Override
-        public RevCommit readBody(ObjectId id, DataInput in) throws IOException {
+        public RevCommit readBody(@Nullable ObjectId id, DataInput in) throws IOException {
             return readCommit(id, in);
         }
 
@@ -152,7 +163,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
         }
 
         @Override
-        public RevFeature readBody(ObjectId id, DataInput in) throws IOException {
+        public RevFeature readBody(@Nullable ObjectId id, DataInput in) throws IOException {
             return readFeature(id, in);
         }
 
@@ -169,7 +180,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
         }
 
         @Override
-        public RevFeatureType readBody(ObjectId id, DataInput in) throws IOException {
+        public RevFeatureType readBody(@Nullable ObjectId id, DataInput in) throws IOException {
             return readFeatureType(id, in);
         }
 
@@ -186,7 +197,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
         }
 
         @Override
-        public RevTag readBody(ObjectId id, DataInput in) throws IOException {
+        public RevTag readBody(@Nullable ObjectId id, DataInput in) throws IOException {
             return readTag(id, in);
         }
 
@@ -203,7 +214,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
         }
 
         @Override
-        public RevTree readBody(ObjectId id, DataInput in) throws IOException {
+        public RevTree readBody(@Nullable ObjectId id, DataInput in) throws IOException {
             return readTree(id, in);
         }
 

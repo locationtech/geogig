@@ -254,8 +254,10 @@ public class Index implements StagingArea {
             ObjectStore objectDatabase = context.objectDatabase();
             for (Map.Entry<String, RevTreeBuilder> entry : parentTress.entrySet()) {
                 String changedTreePath = entry.getKey();
-                progress.setDescription("Building final tree " + changedTreePath);
                 RevTreeBuilder changedTreeBuilder = entry.getValue();
+                if (!NodeRef.ROOT.equals(changedTreePath)) {
+                    progress.setDescription("Building final tree " + changedTreePath);
+                }
                 RevTree changedTree = changedTreeBuilder.build();
                 ObjectId parentMetadataId = parentMetadataIds.get(changedTreePath);
                 if (NodeRef.ROOT.equals(changedTreePath)) {

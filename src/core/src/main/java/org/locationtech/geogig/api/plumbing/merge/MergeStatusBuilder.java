@@ -12,6 +12,7 @@ package org.locationtech.geogig.api.plumbing.merge;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,14 +26,18 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
+import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.plumbing.ResolveBranchId;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.PersistedIterable;
+import org.locationtech.geogig.storage.PersistedIterable.Serializer;
+import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Iterators;
 
 public class MergeStatusBuilder extends MergeScenarioConsumer {
 
@@ -41,10 +46,13 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
      */
     private final static int BUFFER_SIZE = 100_000;
 
+    final PersistedIterable<FeatureInfo> mergedBuffer = new PersistedIterable<>(null,
+            new FeatureInfoSerializer(), 1000, true);
+
     final PersistedIterable<Conflict> conflictsBuffer = new PersistedIterable<>(null,
             new ConflictSerializer(), BUFFER_SIZE, true);
 
-    final PersistedIterable<DiffEntry> diffEntryBuffer = new PersistedIterable<>(null,
+    final PersistedIterable<DiffEntry> unconflictedBuffer = new PersistedIterable<>(null,
             new DiffEntrySerializer(), BUFFER_SIZE, true);
 
     static final int maxReportedConflicts = 25;
@@ -126,17 +134,14 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
 
     @Override
     public void unconflicted(DiffEntry diff) {
-        diffEntryBuffer.add(diff);
+        unconflictedBuffer.add(diff);
         changed.set(true);
         fastForward.set(false);
     }
 
     @Override
     public void merged(FeatureInfo featureInfo) {
-        System.err.println("Merged " + featureInfo);
-        workingTree.insert(featureInfo);
-        Iterator<DiffEntry> unstaged = workingTree.getUnstaged(null);
-        index.stage(progress, unstaged, 0);
+        mergedBuffer.add(featureInfo);
         changed.set(true);
         fastForward.set(false);
     }
@@ -149,17 +154,28 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
     @Override
     public void finished() {
         try {
+            Iterator<DiffEntry> unstaged = Collections.emptyIterator();
+            if (mergedBuffer.size() > 0) {
+                progress.setDescription(
+                        String.format("Saving %,d merged features...", mergedBuffer.size()));
+                workingTree.insert(mergedBuffer.iterator());
+                unstaged = workingTree.getUnstaged(null);
+            }
+            if (unconflictedBuffer.size() > 0 || unstaged.hasNext()) {
+                progress.setDescription(
+                        String.format("Staging %,d unconflicted and %,d merged differences...",
+                                unconflictedBuffer.size(), mergedBuffer.size()));
+
+                long size = unconflictedBuffer.size() + mergedBuffer.size();
+                unstaged = Iterators.concat(unstaged, unconflictedBuffer.iterator());
+                // Stage it
+                index.stage(progress, unstaged, size);
+            }
             if (conflictsBuffer.size() > 0) {
                 // Write the conflicts
                 progress.setDescription(
                         String.format("Saving %,d conflicts...", conflictsBuffer.size()));
                 context.command(ConflictsWriteOp.class).setConflicts(conflictsBuffer).call();
-            }
-            if (diffEntryBuffer.size() > 0) {
-                progress.setDescription(String.format("Staging %,d unconflicted differences...",
-                        diffEntryBuffer.size()));
-                // Stage it
-                index.stage(progress, diffEntryBuffer.iterator(), diffEntryBuffer.size());
             }
         } finally {
             dispose();
@@ -178,9 +194,28 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         try {
             conflictsBuffer.close();
         } finally {
-            diffEntryBuffer.close();
+            try {
+                unconflictedBuffer.close();
+            } finally {
+                mergedBuffer.close();
+            }
         }
     }
+
+    private static Serializer<ObjectId> OID = new Serializer<ObjectId>() {
+
+        @Override
+        public void write(DataOutputStream out, ObjectId value) throws IOException {
+            out.write(value.getRawValue());
+        }
+
+        @Override
+        public ObjectId read(DataInputStream in) throws IOException {
+            byte[] raw = new byte[ObjectId.NUM_BYTES];
+            in.readFully(raw);
+            return ObjectId.createNoClone(raw);
+        }
+    };
 
     static class DiffEntrySerializer implements PersistedIterable.Serializer<DiffEntry> {
 
@@ -241,7 +276,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
                     out.writeByte(PRESENT_NO_DEFAULT_METADATA);
                 } else {
                     out.writeByte(PRESENT_WITH_DEFAULT_METADATA);
-                    out.write(defaultMetadataId.getRawValue());
+                    OID.write(out, defaultMetadataId);
                 }
                 @Nullable
                 String parentPath = ref.getParentPath();
@@ -258,9 +293,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             case NULL_NODEREF_MASK:
                 return null;
             case PRESENT_WITH_DEFAULT_METADATA:
-                byte[] buff = new byte[ObjectId.NUM_BYTES];
-                in.readFully(buff);
-                defaultMetadataId = ObjectId.createNoClone(buff);
+                defaultMetadataId = OID.read(in);
                 break;
             case PRESENT_NO_DEFAULT_METADATA:
                 break;
@@ -308,13 +341,13 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             out.writeByte(flags);
             out.writeUTF(path);
             if (!ancestor.isNull()) {
-                out.write(ancestor.getRawValue());
+                OID.write(out, ancestor);
             }
             if (!ours.isNull()) {
-                out.write(ours.getRawValue());
+                OID.write(out, ours);
             }
             if (!theirs.isNull()) {
-                out.write(theirs.getRawValue());
+                OID.write(out, theirs);
             }
         }
 
@@ -325,17 +358,32 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             boolean hasOurs = (flags & HAS_OURS) == HAS_OURS;
             boolean hasTheirs = (flags & HAS_THEIRS) == HAS_THEIRS;
             String path = in.readUTF();
-            ObjectId ancestor = hasAncestor ? readOid(in) : ObjectId.NULL;
-            ObjectId ours = hasOurs ? readOid(in) : ObjectId.NULL;
-            ObjectId theirs = hasTheirs ? readOid(in) : ObjectId.NULL;
+            ObjectId ancestor = hasAncestor ? OID.read(in) : ObjectId.NULL;
+            ObjectId ours = hasOurs ? OID.read(in) : ObjectId.NULL;
+            ObjectId theirs = hasTheirs ? OID.read(in) : ObjectId.NULL;
             return new Conflict(path, ancestor, ours, theirs);
-        }
-
-        private ObjectId readOid(DataInputStream in) throws IOException {
-            byte[] raw = new byte[ObjectId.NUM_BYTES];
-            in.readFully(raw);
-            return ObjectId.createNoClone(raw);
         }
     }
 
+    private static class FeatureInfoSerializer implements Serializer<FeatureInfo> {
+
+        @Override
+        public void write(DataOutputStream out, FeatureInfo value) throws IOException {
+            String path = value.getPath();
+            ObjectId featureTypeId = value.getFeatureTypeId();
+            RevFeature feature = value.getFeature();
+            out.writeUTF(path);
+            OID.write(out, featureTypeId);
+            DataStreamSerializationFactoryV2.INSTANCE.write(feature, out);
+        }
+
+        @Override
+        public FeatureInfo read(DataInputStream in) throws IOException {
+            String path = in.readUTF();
+            ObjectId featureTypeId = OID.read(in);
+            RevFeature feature = (RevFeature) DataStreamSerializationFactoryV2.INSTANCE.read(in);
+            return new FeatureInfo(feature, featureTypeId, path);
+        }
+
+    }
 }

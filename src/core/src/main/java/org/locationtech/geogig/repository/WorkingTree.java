@@ -472,6 +472,12 @@ public class WorkingTree {
                 .call().get();
     }
 
+    public void insert(Iterator<FeatureInfo> featureInfos) {
+        while (featureInfos.hasNext()) {
+            insert(featureInfos.next());
+        }
+    }
+
     public void insert(FeatureInfo featureInfo) {
         checkNotNull(featureInfo);
         final RevFeature feature = featureInfo.getFeature();

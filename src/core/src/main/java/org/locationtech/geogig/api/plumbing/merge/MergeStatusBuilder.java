@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.api.plumbing.merge;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -17,8 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Context;
@@ -198,20 +195,14 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         // header value for a NodeRef with default metadataId
         private static final byte PRESENT_WITH_DEFAULT_METADATA = 0x02;
 
-        private InternalByteArrayOutputStream tmpOut = new InternalByteArrayOutputStream(1024);
-
-        private Lock writeBufferLock = new ReentrantLock();
-
         @Override
-        public int write(DataOutputStream out, DiffEntry e) throws IOException {
+        public void write(DataOutputStream out, DiffEntry e) throws IOException {
             @Nullable
             NodeRef left = e.getOldObject();
             @Nullable
             NodeRef right = e.getNewObject();
-            int size = 0;
-            size += write(out, left);
-            size += write(out, right);
-            return size;
+            write(out, left);
+            write(out, right);
         }
 
         @Override
@@ -241,8 +232,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
          * @return
          * @throws IOException
          */
-        private int write(DataOutputStream out, @Nullable NodeRef ref) throws IOException {
-            int length = 1;// header
+        private void write(DataOutputStream out, @Nullable NodeRef ref) throws IOException {
             if (ref == null) {
                 out.writeByte(NULL_NODEREF_MASK);
             } else {
@@ -252,14 +242,12 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
                 } else {
                     out.writeByte(PRESENT_WITH_DEFAULT_METADATA);
                     out.write(defaultMetadataId.getRawValue());
-                    length += ObjectId.NUM_BYTES;
                 }
                 @Nullable
                 String parentPath = ref.getParentPath();
-                length += STRING.write(out, parentPath);
-                length += writeNode(out, ref.getNode());
+                STRING.write(out, parentPath);
+                writeNode(out, ref.getNode());
             }
-            return length;
         }
 
         @Nullable
@@ -287,20 +275,8 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             return ref;
         }
 
-        private int writeNode(DataOutputStream out, Node node) throws IOException {
-            writeBufferLock.lock();
-            try {
-                InternalByteArrayOutputStream tmp = this.tmpOut;
-                tmp.reset();
-                DataOutputStream tmpdataout = new DataOutputStream(tmp);
-                FormatCommonV2.writeNode(node, tmpdataout);
-                final int len = tmp.size();
-                final byte[] buff = tmp.bytes();
-                out.write(buff, 0, len);
-                return len;
-            } finally {
-                writeBufferLock.unlock();
-            }
+        private void writeNode(DataOutputStream out, Node node) throws IOException {
+            FormatCommonV2.writeNode(node, out);
         }
 
         private Node readNode(DataInputStream in) throws IOException {
@@ -317,14 +293,8 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
 
         private static final byte HAS_THEIRS = 0b00000100;
 
-        private Lock writeBufferLock = new ReentrantLock();
-
-        private InternalByteArrayOutputStream tmpOut = new InternalByteArrayOutputStream(1024);
-
-        private DataOutputStream tmp = new DataOutputStream(tmpOut);
-
         @Override
-        public int write(DataOutputStream out, Conflict value) throws IOException {
+        public void write(DataOutputStream out, Conflict value) throws IOException {
 
             String path = value.getPath();
             ObjectId ancestor = value.getAncestor();
@@ -334,30 +304,18 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             byte flags = ancestor.isNull() ? 0x00 : HAS_ANCESTOR;
             flags |= ours.isNull() ? 0x00 : HAS_OURS;
             flags |= theirs.isNull() ? 0x00 : HAS_THEIRS;
-            writeBufferLock.lock();
-            int length;
-            try {
-                tmpOut.reset();
-                tmp.writeByte(flags);
-                tmp.writeUTF(path);
-                if (!ancestor.isNull()) {
-                    tmp.write(ancestor.getRawValue());
-                }
-                if (!ours.isNull()) {
-                    tmp.write(ours.getRawValue());
-                }
-                if (!theirs.isNull()) {
-                    tmp.write(theirs.getRawValue());
-                }
-                tmp.flush();
 
-                byte[] bytes = tmpOut.bytes();
-                length = tmpOut.size();
-                out.write(bytes, 0, length);
-            } finally {
-                writeBufferLock.unlock();
+            out.writeByte(flags);
+            out.writeUTF(path);
+            if (!ancestor.isNull()) {
+                out.write(ancestor.getRawValue());
             }
-            return length;
+            if (!ours.isNull()) {
+                out.write(ours.getRawValue());
+            }
+            if (!theirs.isNull()) {
+                out.write(theirs.getRawValue());
+            }
         }
 
         @Override
@@ -377,21 +335,6 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             byte[] raw = new byte[ObjectId.NUM_BYTES];
             in.readFully(raw);
             return ObjectId.createNoClone(raw);
-        }
-    }
-
-    private static final class InternalByteArrayOutputStream extends ByteArrayOutputStream {
-
-        public InternalByteArrayOutputStream(int initialBuffSize) {
-            super(initialBuffSize);
-        }
-
-        public byte[] bytes() {
-            return super.buf;
-        }
-
-        public int size() {
-            return super.count;
         }
     }
 }

@@ -139,8 +139,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         }
         try (DataOutputStream out = createOutStream(tmpFile)) {
             for (T val : buffer) {
-                int writtenBytes;
-                writtenBytes = serializer.write(out, val);
+                serializer.write(out, val);
             }
             out.flush();
         } catch (IOException e) {
@@ -241,7 +240,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         /**
          * @return number of bytes written
          */
-        public int write(DataOutputStream out, T value) throws IOException;
+        public void write(DataOutputStream out, T value) throws IOException;
 
         /**
          * @param in
@@ -262,15 +261,15 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         private byte[] buffer = new byte[4096];
 
         @Override
-        public int write(DataOutputStream out, @Nullable String value) throws IOException {
+        public void write(DataOutputStream out, @Nullable String value) throws IOException {
             if (value == null) {
-                return Varint.writeSignedVarInt(-1, out);
+                Varint.writeSignedVarInt(-1, out);
+                return;
             }
             byte[] bytes = value.getBytes(Charsets.UTF_8);
             int length = bytes.length;
-            length += Varint.writeSignedVarInt(length, out);
+            Varint.writeSignedVarInt(length, out);
             out.write(bytes);
-            return length;
         }
 
         @Nullable

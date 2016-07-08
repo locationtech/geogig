@@ -171,6 +171,10 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
         final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
         checkState(currHead.isPresent(), "Repository has no HEAD, can't merge.");
+
+        checkState(workingTree().isClean(),
+                "Merge cannot run if there are unstaged changes in the working tree");
+
         Ref headRef = currHead.get();
         final ObjectId oursId = headRef.getObjectId();// on top of which commit to merge
         // checkState(currHead.get() instanceof SymRef,

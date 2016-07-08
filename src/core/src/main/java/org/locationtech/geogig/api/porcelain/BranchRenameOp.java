@@ -12,15 +12,20 @@ package org.locationtech.geogig.api.porcelain;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.List;
+
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.plumbing.CheckRefFormat;
+import org.locationtech.geogig.api.plumbing.ForEachRef;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.UpdateSymRef;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 
 /**
  * Renames a branch by updating its reference
@@ -83,14 +88,11 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
                 .setAllowOneLevel(true).call();
         Optional<Ref> branch = Optional.absent();
 
-        boolean headBranch = false;
-
         if (oldBranchName == null) {
             Optional<Ref> headRef = command(RefParse.class).setName(Ref.HEAD).call();
             checkArgument(headRef.isPresent() && headRef.get() instanceof SymRef,
                     "Cannot rename detached HEAD.");
             branch = command(RefParse.class).setName(((SymRef) (headRef.get())).getTarget()).call();
-            headBranch = true;
         } else {
             branch = command(RefParse.class).setName(oldBranchName).call();
         }
@@ -100,23 +102,35 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
         Optional<Ref> newBranch = command(RefParse.class).setName(newBranchName).call();
 
         if (!force) {
-            checkArgument(
-                    !newBranch.isPresent(),
-                    "Cannot rename branch to '"
-                            + newBranchName
-                            + "' because a branch by that name already exists. Use force option to override this.");
+            checkArgument(!newBranch.isPresent(), "Cannot rename branch to '" + newBranchName
+                    + "' because a branch by that name already exists. Use force option to override this.");
         }
 
         Optional<Ref> renamedBranch = command(UpdateRef.class)
                 .setName(branch.get().namespace() + newBranchName)
                 .setNewValue(branch.get().getObjectId()).call();
 
-        command(UpdateRef.class).setName(branch.get().getName()).setDelete(true).call();
+        // update any sym refs that pointed to the old branch
+        final Predicate<Ref> filter = new Predicate<Ref>() {
+            @Override
+            public boolean apply(Ref input) {
+                if (input instanceof SymRef) {
+                    return true;
+                }
+                return false;
+            }
+        };
 
-        if (headBranch) {
-            command(UpdateSymRef.class).setName(Ref.HEAD)
-                    .setNewValue(renamedBranch.get().getName()).call();
+        List<Ref> symRefs = Lists.newArrayList(command(ForEachRef.class).setFilter(filter).call());
+        for (Ref ref : symRefs) {
+            if (((SymRef) ref).getTarget().equals(branch.get().getName())) {
+                command(UpdateSymRef.class).setName(ref.getName())
+                        .setNewValue(renamedBranch.get().getName()).call();
+            }
         }
+
+        // delete old ref
+        command(UpdateRef.class).setName(branch.get().getName()).setDelete(true).call();
 
         return renamedBranch.get();
 

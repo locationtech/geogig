@@ -472,59 +472,85 @@ public class WorkingTree {
                 .call().get();
     }
 
-    public void insert(Iterator<FeatureInfo> featureInfos) {
-        while (featureInfos.hasNext()) {
-            insert(featureInfos.next());
-        }
-    }
-
     public void insert(FeatureInfo featureInfo) {
         checkNotNull(featureInfo);
-        final RevFeature feature = featureInfo.getFeature();
+        insert(Iterators.singletonIterator(featureInfo), DefaultProgressListener.NULL);
+    }
 
-        final String path = featureInfo.getPath();
-        final String parentTreePath = NodeRef.parentPath(path);
-        final String featureId = NodeRef.nodeFromPath(path);
+    public void insert(Iterator<FeatureInfo> featureInfos, ProgressListener progress) {
+        checkArgument(featureInfos != null);
+        checkArgument(progress != null);
 
-        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(getTree())
-                .setChildPath(parentTreePath).call();
+        final Map<String, NodeRef> currentTrees = Maps
+                .newHashMap(Maps.uniqueIndex(getFeatureTypeTrees(), (nr) -> nr.path()));
 
-        NodeRef treeRef;
-        ObjectId metadataId;
-        if (typeTreeRef.isPresent()) {
-            treeRef = typeTreeRef.get();
-            metadataId = treeRef.getMetadataId();
-            if (!featureInfo.getFeatureTypeId().equals(treeRef.getMetadataId())) {
-                checkArgument(indexDatabase.exists(featureInfo.getFeatureTypeId()));
+        Map<String, RevTreeBuilder> parentBuilders = new HashMap<>();
+
+        Function<FeatureInfo, RevFeature> treeBuildingTransformer = (fi) -> {
+            RevFeature feature = fi.getFeature();
+            String parentPath = NodeRef.parentPath(fi.getPath());
+            ObjectId metadataId = fi.getFeatureTypeId();
+            RevTreeBuilder parentBuilder = getTreeBuilder(currentTrees, parentBuilders, parentPath,
+                    metadataId);
+
+            NodeRef parentRef = currentTrees.get(parentPath);
+            Preconditions.checkNotNull(parentRef);
+            if (fi.getFeatureTypeId().equals(parentRef.getMetadataId())) {
+                metadataId = ObjectId.NULL;// use the parent's default
             }
-        } else {
-            metadataId = featureInfo.getFeatureTypeId();
-            Node treeNode = Node.create(NodeRef.nodeFromPath(parentTreePath), RevTree.EMPTY_TREE_ID,
-                    metadataId, TYPE.TREE, null);
-            String treeParentPath = NodeRef.parentPath(parentTreePath);
-            treeRef = new NodeRef(treeNode, treeParentPath, metadataId);
+
+            String fid = NodeRef.nodeFromPath(fi.getPath());
+            ObjectId oid = feature.getId();
+            Envelope bounds = SpatialOps.boundsOf(feature);
+            Node featureNode = Node.create(fid, oid, metadataId, TYPE.FEATURE, bounds);
+
+            parentBuilder.put(featureNode);
+            return feature;
+        };
+
+        Iterator<RevFeature> features = Iterators.transform(featureInfos, treeBuildingTransformer);
+        features = Iterators.filter(features, (f) -> !progress.isCanceled());
+
+        indexDatabase.putAll(features);
+        if (progress.isCanceled()) {
+            return;
         }
 
-        metadataId = featureInfo.getFeatureTypeId().equals(treeRef.getMetadataId()) ? ObjectId.NULL
-                : featureInfo.getFeatureTypeId();
+        parentBuilders.forEach((path, builder) -> {
 
-        indexDatabase.put(feature);
-        Envelope bounds = SpatialOps.boundsOf(feature);
-        Node node = Node.create(featureId, feature.getId(), metadataId, TYPE.FEATURE, bounds);
+            RevTree newFeatureTree = builder.build();
+            ObjectId treeMetadataId = currentTrees.get(path).getDefaultMetadataId();
 
-        RevTreeBuilder parentTree = new RevTreeBuilder(indexDatabase,
-                context.command(FindOrCreateSubtree.class)
-                        .setParent(Suppliers.ofInstance(Optional.of(getTree())))
-                        .setChildPath(parentTreePath).call());
+            ObjectId newWorkTree = context.command(WriteBack.class).setAncestor(getTreeSupplier())
+                    .setChildPath(path).setTree(newFeatureTree).setMetadataId(treeMetadataId)
+                    .call();
 
-        parentTree.put(node);
-        final ObjectId treeMetadataId = treeRef.getMetadataId();
+            updateWorkHead(newWorkTree);
+        });
 
-        ObjectId newTree = context.command(WriteBack.class).setAncestor(getTreeSupplier())
-                .setChildPath(parentTreePath).setTree(parentTree.build())
-                .setMetadataId(treeMetadataId).call();
+    }
 
-        updateWorkHead(newTree);
+    private RevTreeBuilder getTreeBuilder(Map<String, NodeRef> currentTrees,
+            Map<String, RevTreeBuilder> treeBuilders, String treePath, ObjectId featureMetadataId) {
+
+        RevTreeBuilder builder = treeBuilders.get(treePath);
+        if (builder == null) {
+            NodeRef treeRef = currentTrees.get(treePath);
+            if (treeRef == null) {
+                String parentPath = NodeRef.parentPath(treePath);
+                Node treeNode = Node.create(NodeRef.nodeFromPath(treePath), RevTree.EMPTY_TREE_ID,
+                        featureMetadataId, TYPE.TREE, null);
+                treeRef = new NodeRef(treeNode, parentPath, featureMetadataId);
+                currentTrees.put(treePath, treeRef);
+            }
+
+            builder = new RevTreeBuilder(indexDatabase,
+                    context.command(FindOrCreateSubtree.class)
+                            .setParent(Suppliers.ofInstance(Optional.of(getTree())))
+                            .setChildPath(treePath).call());
+            treeBuilders.put(treePath, builder);
+        }
+        return builder;
     }
 
     /**

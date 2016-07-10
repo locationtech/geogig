@@ -158,7 +158,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             if (mergedBuffer.size() > 0) {
                 progress.setDescription(
                         String.format("Saving %,d merged features...", mergedBuffer.size()));
-                workingTree.insert(mergedBuffer.iterator());
+                workingTree.insert(mergedBuffer.iterator(), progress);
                 unstaged = workingTree.getUnstaged(null);
             }
             if (unconflictedBuffer.size() > 0 || unstaged.hasNext()) {

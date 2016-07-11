@@ -12,14 +12,20 @@ package org.locationtech.geogig.api.plumbing;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.NodeRef;
+import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
+import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.plumbing.diff.FeatureDiff;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * Compares two features in the repository and returns a {code FeatureDiff} object representing it.
@@ -77,24 +83,25 @@ public class DiffFeature extends AbstractGeoGigOp<FeatureDiff> {
         checkArgument(oldPath.equals(newPath),
                 "old and new versions do not corespond to the same feature");
 
-        Optional<RevFeature> oldFeature = command(RevObjectParse.class)
-                .setObjectId(oldNodeRef.getNode().getObjectId()).call(RevFeature.class);
-        checkArgument(oldFeature.isPresent(), "Invalid reference: %s", oldNodeRef);
+        Set<ObjectId> ids = Sets.newHashSet(oldNodeRef.getObjectId(), newNodeRef.getObjectId(),
+                oldNodeRef.getMetadataId(), newNodeRef.getMetadataId());
 
-        Optional<RevFeature> newFeature = command(RevObjectParse.class)
-                .setObjectId(newNodeRef.getNode().getObjectId()).call(RevFeature.class);
-        checkArgument(newFeature.isPresent(), "Invalid reference: %s", newNodeRef);
+        Map<ObjectId, RevObject> objects = Maps.uniqueIndex(objectDatabase().getAll(ids),
+                (o) -> o.getId());
 
-        Optional<RevFeatureType> oldFeatureType = command(RevObjectParse.class)
-                .setObjectId(oldNodeRef.getMetadataId()).call(RevFeatureType.class);
-        checkArgument(oldFeatureType.isPresent(), "Invalid reference: %s", oldNodeRef);
+        RevFeature oldFeature = (RevFeature) objects.get(oldNodeRef.getObjectId());
+        checkArgument(oldFeature != null, "Invalid reference: %s", oldNodeRef);
 
-        Optional<RevFeatureType> newFeatureType = command(RevObjectParse.class)
-                .setObjectId(newNodeRef.getMetadataId()).call(RevFeatureType.class);
-        checkArgument(newFeatureType.isPresent(), "Invalid reference: %s", newNodeRef);
+        RevFeature newFeature = (RevFeature) objects.get(newNodeRef.getObjectId());
+        checkArgument(newFeature != null, "Invalid reference: %s", newNodeRef);
 
-        return compare(oldFeature.get(), newFeature.get(), oldFeatureType.get(),
-                newFeatureType.get());
+        RevFeatureType oldFeatureType = (RevFeatureType) objects.get(oldNodeRef.getMetadataId());
+        checkArgument(oldFeatureType != null, "Invalid reference: %s", oldNodeRef);
+
+        RevFeatureType newFeatureType = (RevFeatureType) objects.get(newNodeRef.getMetadataId());
+        checkArgument(newFeatureType != null, "Invalid reference: %s", newNodeRef);
+
+        return compare(oldFeature, newFeature, oldFeatureType, newFeatureType);
 
     }
 

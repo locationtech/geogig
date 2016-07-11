@@ -47,7 +47,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
     private final static int BUFFER_SIZE = 100_000;
 
     final PersistedIterable<FeatureInfo> mergedBuffer = new PersistedIterable<>(null,
-            new FeatureInfoSerializer(), 1000, true);
+            new FeatureInfoSerializer(), 10_000, true);
 
     final PersistedIterable<Conflict> conflictsBuffer = new PersistedIterable<>(null,
             new ConflictSerializer(), BUFFER_SIZE, true);
@@ -85,6 +85,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         this.workingTree = context.workingTree();
         this.ours = ours;
         this.progress = progress;
+        progress.setMaxProgress(0);
 
         ObjectId commitId = commits.get(0);
         Optional<Ref> ref = context.command(ResolveBranchId.class).setObjectId(commitId).call();
@@ -130,6 +131,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             conflictMsg.append("CONFLICT: Merge conflict in " + conflict.getPath() + "\n");
             reportedConflicts.incrementAndGet();
         }
+        progress.setProgress(1f + progress.getProgress());
     }
 
     @Override
@@ -137,6 +139,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         unconflictedBuffer.add(diff);
         changed.set(true);
         fastForward.set(false);
+        progress.setProgress(1f + progress.getProgress());
     }
 
     @Override
@@ -144,6 +147,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         mergedBuffer.add(featureInfo);
         changed.set(true);
         fastForward.set(false);
+        progress.setProgress(1f + progress.getProgress());
     }
 
     @Override
@@ -153,6 +157,8 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
 
     @Override
     public void finished() {
+        progress.complete();
+        progress.started();
         try {
             Iterator<DiffEntry> unstaged = Collections.emptyIterator();
             if (mergedBuffer.size() > 0) {

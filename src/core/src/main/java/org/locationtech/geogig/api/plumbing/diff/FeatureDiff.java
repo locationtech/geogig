@@ -42,6 +42,10 @@ public class FeatureDiff {
 
     private RevFeatureType oldFeatureType;
 
+    private RevFeature newRevFeature;
+
+    private RevFeature oldRevFeature;
+
     public FeatureDiff(String path, Map<PropertyDescriptor, AttributeDiff> diffs,
             RevFeatureType oldFeatureType, RevFeatureType newFeatureType) {
         this.path = path;
@@ -64,6 +68,8 @@ public class FeatureDiff {
             @Nullable RevFeatureType oldRevFeatureType, boolean all) {
 
         this.path = path;
+        this.newRevFeature = newRevFeature;
+        this.oldRevFeature = oldRevFeature;
         this.newFeatureType = newRevFeatureType;
         this.oldFeatureType = oldRevFeatureType;
         diffs = new HashMap<PropertyDescriptor, AttributeDiff>();
@@ -187,6 +193,14 @@ public class FeatureDiff {
      */
     public RevFeatureType getOldFeatureType() {
         return oldFeatureType;
+    }
+
+    public RevFeature getNewFeature() {
+        return newRevFeature;
+    }
+
+    public RevFeature getOldFeature() {
+        return oldRevFeature;
     }
 
     /**

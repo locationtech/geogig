@@ -760,7 +760,7 @@ public class GeogigCLI {
 
                 private final NumberFormat numberFormat = NumberFormat.getIntegerInstance();
 
-                private final long delayNanos = TimeUnit.NANOSECONDS.convert(100,
+                private final long delayNanos = TimeUnit.NANOSECONDS.convert(150,
                         TimeUnit.MILLISECONDS);
 
                 // Don't skip the first update

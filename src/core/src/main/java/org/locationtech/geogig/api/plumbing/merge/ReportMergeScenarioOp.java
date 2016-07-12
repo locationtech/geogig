@@ -20,15 +20,12 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.DiffFeature;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.FeatureDiff;
-import org.opengis.feature.Feature;
+import org.locationtech.geogig.api.plumbing.merge.DiffMergeFeaturesOp.DiffMergeFeatureResult;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -245,44 +242,32 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                 checkForFeatureTypeConflict(ancestorVersion, oursDiff, theirsDiff, report);
                 break;
             }
-            final FeatureDiff toMergeFeatureDiff = command(DiffFeature.class)
-                    .setOldVersion(theirsDiff.getOldObject())
-                    .setNewVersion(theirsDiff.getNewObject()).call();
-            final FeatureDiff mergeIntoFeatureDiff = command(DiffFeature.class)
-                    .setOldVersion(oursDiff.getOldObject()).setNewVersion(oursDiff.getNewObject())
-                    .call();
-            if (toMergeFeatureDiff.conflicts(mergeIntoFeatureDiff)) {
-                consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
-                report.addConflict();
-                break;
-            }
-            // if the feature types are different we report a conflict and do not
-            // try to perform automerge
-            if (!theirsDiff.getNewObject().getMetadataId().equals(oursDiff.newMetadataId())) {
-                consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
-                report.addConflict();
-                break;
-            }
 
-            if (!toMergeFeatureDiff.equals(mergeIntoFeatureDiff)) {
-                Feature mergedFeature = command(MergeFeaturesOp.class)
-                        .setFirstFeature(oursDiff.getNewObject())
-                        .setSecondFeature(theirsDiff.getNewObject())
-                        .setAncestorFeature(oursDiff.getOldObject()).call();
-                RevFeature revFeature = RevFeatureBuilder.build(mergedFeature);
-                if (revFeature.getId().equals(theirsDiff.newObjectId())) {
+            DiffMergeFeatureResult result = command(DiffMergeFeaturesOp.class)//
+                    .setCommonAncestor(theirsDiff.getOldObject())//
+                    .setMergeInto(oursDiff.getNewObject())//
+                    .setToMerge(theirsDiff.getNewObject())//
+                    .call();
+
+            if (result.isConflict()) {
+                consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
+                report.addConflict();
+            } else if (result.isMerge()) {
+                RevFeature mergedFeature = result.mergedFeature();
+                if (mergedFeature.getId().equals(theirsDiff.newObjectId())) {
                     // the resulting merged feature equals the feature to merge from
-                    // the branch, which means that it exists in the repo and there
-                    // is no need to add it
+                    // the branch, which means that it exists in the merge into tree and there
+                    // is no need to report the to merge change as merged.
                     consumer.unconflicted(theirsDiff);
                     report.addUnconflicted();
                 } else {
                     ObjectId featureTypeId = oursDiff.getNewObject().getMetadataId();
-                    FeatureInfo merged = new FeatureInfo(revFeature, featureTypeId, path);
+                    FeatureInfo merged = new FeatureInfo(mergedFeature, featureTypeId, path);
                     consumer.merged(merged);
                     report.addMerged();
                 }
             }
+            // else do nothing, 'ours' has changed in the same way as 'theirs'
         }
     }
 

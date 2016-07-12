@@ -1029,8 +1029,8 @@ These commands can be used by using the ``repos/<repo name>/repo/`` endpoint, in
     
        {
          path: 'featureType/feature',
-         ours: 'objectId for left feature',
-         theirs: 'objectId for right feature',
+         ours: 'commitId that contains the left feature',
+         theirs: 'commitId that contains the right feature',
          merges: {
             attr1: {
                 ours: true // use the value from the left feature

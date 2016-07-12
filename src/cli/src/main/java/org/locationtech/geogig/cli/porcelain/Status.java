@@ -33,6 +33,7 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Optional;
+import com.google.common.collect.Iterators;
 
 /**
  * Displays features that have differences between the index and the current HEAD commit and
@@ -165,20 +166,25 @@ public class Status extends AbstractCommand implements CLICommand {
         console.println(ansi.toString());
     }
 
-    private void printUnmerged(final Console console, final Iterator<Conflict> iterator,
+    private void printUnmerged(final Console console, Iterator<Conflict> iterator,
             final Color color, final long total) throws IOException {
+
+        final int limit = all || this.limit == null ? Integer.MAX_VALUE : this.limit.intValue();
 
         StringBuilder sb = new StringBuilder();
 
         Ansi ansi = newAnsi(console, sb);
 
         String path;
-        while (iterator.hasNext()) {
-            Conflict c = iterator.next();
-            path = c.getPath();
-            sb.setLength(0);
-            ansi.a("#      ").fg(color).a("unmerged").a("  ").a(path).reset();
-            console.println(ansi.toString());
+        if (limit > 0) {
+            iterator = Iterators.limit(iterator, limit);
+            while (iterator.hasNext()) {
+                Conflict c = iterator.next();
+                path = c.getPath();
+                sb.setLength(0);
+                ansi.a("#      ").fg(color).a("unmerged").a("  ").a(path).reset();
+                console.println(ansi.toString());
+            }
         }
 
         sb.setLength(0);

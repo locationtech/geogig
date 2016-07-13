@@ -35,7 +35,7 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
+import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevFeatureTypeImpl;
 import org.locationtech.geogig.api.RevTree;
@@ -102,10 +102,11 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
     private boolean overwrite = true;
 
     /**
-     * If set to true, only create the schema on the destination path, do not actually insert features.
+     * If set to true, only create the schema on the destination path, do not actually insert
+     * features.
      */
     private boolean createSchemaOnly = false;
-    
+
     /**
      * If true, it does not overwrite, and modifies the existing features to have the same feature
      * type as the imported table
@@ -235,7 +236,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
                     throw new GeoToolsOpException(StatusCode.UNABLE_TO_INSERT);
                 }
             }
-            if(!createSchemaOnly){
+            if (!createSchemaOnly) {
                 try {
                     insert(workTree, path, featureSource, taskProgress);
                 } catch (GeoToolsOpException e) {
@@ -399,9 +400,8 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
                         FeatureIterator iterator = delegate.features();
 
                         FeatureIterator fidAndFtReplaced = new FidAndFtReplacerIterator(iterator,
-                                fidAttribute, fidPrefix,
-                                (SimpleFeatureType) featureType);
-                        
+                                fidAttribute, fidPrefix, (SimpleFeatureType) featureType);
+
                         FeatureIterator finalIterator;
 
                         if (forwardingFeatureIteratorProvider != null) {
@@ -410,7 +410,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
                         } else {
                             finalIterator = fidAndFtReplaced;
                         }
-                        
+
                         return finalIterator;
                     }
                 };
@@ -510,17 +510,17 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.sortedDescriptors();
         ImmutableList<PropertyDescriptor> newAttributes = featureType.sortedDescriptors();
         ImmutableList<Optional<Object>> oldValues = oldFeature.getValues();
-        List<Optional<Object>> newValues = Lists.newArrayList();
+        RevFeatureBuilder builder = RevFeatureBuilder.builder();
         for (int i = 0; i < newAttributes.size(); i++) {
             int idx = oldAttributes.indexOf(newAttributes.get(i));
             if (idx != -1) {
                 Optional<Object> oldValue = oldValues.get(idx);
-                newValues.add(oldValue);
+                builder.addValue(oldValue.orNull());
             } else {
-                newValues.add(Optional.absent());
+                builder.addValue(null);
             }
         }
-        RevFeature newFeature = RevFeatureImpl.build(ImmutableList.copyOf(newValues));
+        RevFeature newFeature = builder.build();
         FeatureBuilder featureBuilder = new FeatureBuilder(featureType);
         Feature feature = featureBuilder.build(node.name(), newFeature);
         return feature;

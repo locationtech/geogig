@@ -11,34 +11,32 @@ package org.locationtech.geogig.api;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.locationtech.geogig.api.RevObject.TYPE;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 public class RevFeatureTest {
 
     @Test
     public void testRevFeatureConstructorAndAccessors() {
-        ImmutableList<Optional<Object>> values = ImmutableList.of(
-                Optional.of((Object) "StringProp1_1"), Optional.of((Object) new Integer(1000)),
-                Optional.of((Object) "POINT(1 1)"));
+        List<Object> values = Lists.newArrayList("StringProp1_1", new Integer(1000), "POINT(1 1)");
 
-        RevFeature feature = RevFeatureImpl.build(values);
+        RevFeature feature = RevFeatureBuilder.builder().addAll(values).build();
 
         assertEquals(TYPE.FEATURE, feature.getType());
 
-        assertEquals(values, feature.getValues());
+        assertEquals(Lists.transform(values, (v) -> Optional.fromNullable(v)), feature.getValues());
     }
 
     @Test
     public void testRevFeatureToString() {
-        ImmutableList<Optional<Object>> values = ImmutableList.of(
-                Optional.of((Object) "StringProp1_1"), Optional.of((Object) new Integer(1000)),
-                Optional.of((Object) "POINT(1 1)"));
+        List<Object> values = Lists.newArrayList("StringProp1_1", new Integer(1000), "POINT(1 1)");
 
-        RevFeature feature = RevFeatureImpl.build(values);
+        RevFeature feature = RevFeatureBuilder.builder().addAll(values).build();
 
         String featureString = feature.toString();
 

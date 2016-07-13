@@ -9,14 +9,16 @@
  */
 package org.locationtech.geogig.repository;
 
+import static org.locationtech.geogig.api.RevFeatureBuilder.builder;
+
 import org.junit.Test;
+import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import org.opengis.feature.simple.SimpleFeature;
 
 public class RevFeatureBuilderTest extends RepositoryTestCase {
 
@@ -26,9 +28,9 @@ public class RevFeatureBuilderTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testBuildEmpty() throws Exception {
+    public void testNullFeature() throws Exception {
         try {
-            RevFeatureBuilder.build(null);
+            RevFeatureBuilder.build((Feature) null);
             fail("expected IllegalStateException on null feature");
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("No feature set"));
@@ -36,26 +38,88 @@ public class RevFeatureBuilderTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testBuildFull() throws Exception {
-        RevFeature feature = RevFeatureBuilder.build(points1);
+    public void testBuildEmpty() throws Exception {
 
-        ImmutableList<Optional<Object>> values = feature.getValues();
+        RevFeature emptyFeature = RevFeatureBuilder.builder().build();
+        assertNotNull(emptyFeature);
+        assertTrue(emptyFeature.getValues().isEmpty());
 
-        assertEquals(values.size(), points1.getProperties().size());
+        assertEquals(ObjectId.valueOf("0aaf76f425c6e0f43a36197de768e67d9e035abb"),
+                emptyFeature.getId());
+    }
 
-        for (Property prop : points1.getProperties()) {
-            assertTrue(values.contains(Optional.fromNullable(prop.getValue())));
+    @Test
+    public void testBuildWithAddValue() throws Exception {
+        SimpleFeature f = (SimpleFeature) points1;
+        RevFeature feature = RevFeatureBuilder.build(f);
+
+        RevFeatureBuilder b = builder();
+        for (int i = 0; i < f.getAttributeCount(); i++) {
+            b.addValue(f.getAttribute(i));
         }
+        RevFeature built = b.build();
+        assertEquals(feature, built);
 
-        RevFeature feature2 = RevFeatureBuilder.build(lines1);
-
-        values = feature2.getValues();
-
-        assertEquals(values.size(), lines1.getProperties().size());
-
-        for (Property prop : lines1.getProperties()) {
-            assertTrue(values.contains(Optional.fromNullable(prop.getValue())));
+        for (int i = 0; i < f.getAttributeCount(); i++) {
+            assertEquals(f.getAttribute(i), built.getValues().get(i).orNull());
         }
+    }
 
+    @Test
+    public void testBuildWithAddProperty() throws Exception {
+        SimpleFeature f = (SimpleFeature) points1;
+        RevFeature feature = RevFeatureBuilder.build(f);
+
+        RevFeatureBuilder b = builder();
+        for (Property p : f.getProperties()) {
+            b.addProperty(p);
+        }
+        RevFeature built = b.build();
+        assertEquals(feature, built);
+
+        for (int i = 0; i < f.getAttributeCount(); i++) {
+            assertEquals(f.getAttribute(i), built.getValues().get(i).orNull());
+        }
+    }
+
+    @Test
+    public void testReset() {
+        SimpleFeature f = (SimpleFeature) points1;
+        RevFeature feature = RevFeatureBuilder.build(f);
+
+        RevFeatureBuilder b = builder();
+        b.addValue(1000);
+        b.addValue("str");
+        b.reset();
+        for (Property p : f.getProperties()) {
+            b.addProperty(p);
+        }
+        RevFeature built = b.build();
+        assertEquals(feature, built);
+
+        for (int i = 0; i < f.getAttributeCount(); i++) {
+            assertEquals(f.getAttribute(i), built.getValues().get(i).orNull());
+        }
+    }
+
+    @Test
+    public void testAddAll() {
+        SimpleFeature f = (SimpleFeature) points1;
+        RevFeature feature = RevFeatureBuilder.build(f);
+
+        RevFeatureBuilder b = builder();
+        b.addAll(f.getAttributes());
+
+        RevFeature builtWithList = b.build();
+        assertEquals(feature, builtWithList);
+
+        b.reset();
+        b.addAll(f.getAttributes().toArray(new Object[f.getAttributeCount()]));
+        RevFeature builtWithArray = b.build();
+        assertEquals(feature, builtWithArray);
+        
+        for (int i = 0; i < f.getAttributeCount(); i++) {
+            assertEquals(f.getAttribute(i), builtWithList.getValues().get(i).orNull());
+        }
     }
 }

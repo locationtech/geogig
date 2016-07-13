@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.api;
 
-import org.locationtech.geogig.api.plumbing.HashObject;
-
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
@@ -22,18 +20,13 @@ public class RevFeatureImpl extends AbstractRevObject implements RevFeature {
 
     private final ImmutableList<Optional<Object>> values;
 
-    public static RevFeatureImpl build(ImmutableList<Optional<Object>> values) {
-        ObjectId id = HashObject.hashFeature(values);
-        return new RevFeatureImpl(id, values);
-    }
-
     /**
      * Constructs a new {@code RevFeature} with the provided {@link ObjectId} and set of values
      * 
      * @param id the {@link ObjectId} to use for this feature
      * @param values a list of values, with {@link Optional#absent()} representing a null value
      */
-    public RevFeatureImpl(ObjectId id, ImmutableList<Optional<Object>> values) {
+    RevFeatureImpl(ObjectId id, ImmutableList<Optional<Object>> values) {
         super(id);
         this.values = values;
     }

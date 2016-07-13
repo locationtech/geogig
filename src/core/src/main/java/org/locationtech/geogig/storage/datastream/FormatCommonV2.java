@@ -44,7 +44,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevCommitImpl;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
+import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevFeatureTypeImpl;
 import org.locationtech.geogig.api.RevObject;
@@ -323,20 +323,17 @@ public class FormatCommonV2 {
 
     public static RevFeature readFeature(@Nullable ObjectId id, DataInput in) throws IOException {
         final int count = readUnsignedVarInt(in);
-        final ImmutableList.Builder<Optional<Object>> builder = ImmutableList.builder();
+        final RevFeatureBuilder builder = RevFeatureBuilder.builder();
 
         for (int i = 0; i < count; i++) {
             final byte fieldTag = in.readByte();
             final FieldType fieldType = FieldType.valueOf(fieldTag);
             Object value = DataStreamValueSerializerV2.read(fieldType, in);
-            builder.add(Optional.fromNullable(value));
+            builder.addValue(value);
         }
 
-        ImmutableList<Optional<Object>> values = builder.build();
-        if (id == null) {
-            id = HashObject.hashFeature(values);
-        }
-        return new RevFeatureImpl(id, values);
+        RevFeature built = builder.build();
+        return built;
     }
 
     public static void writeHeader(DataOutput data, RevObject.TYPE header) throws IOException {

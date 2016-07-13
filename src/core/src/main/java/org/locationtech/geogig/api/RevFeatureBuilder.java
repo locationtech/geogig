@@ -9,24 +9,85 @@
  */
 package org.locationtech.geogig.api;
 
-import java.util.Collection;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.api.plumbing.HashObject;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
+import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
- * Provides a method of building a {@link RevFeature} from a {@link Feature}.
+ * Builder for {@link RevFeature} instances.
+ * 
+ * <p>
+ * Use the {@link #addValue(Object)} method as many times as needed to provide the sequence of
+ * property values, then call {@link #build()} to get the final {@link RevFeature}.
  * 
  * @see RevFeature
  * @see Feature
  */
 public final class RevFeatureBuilder {
 
+    private List</* @Nullable */Object> values = new ArrayList<>();
+
     private RevFeatureBuilder() {
         //
+    }
+
+    public static RevFeatureBuilder builder() {
+        return new RevFeatureBuilder();
+    }
+
+    public RevFeature build() {
+        ObjectId id = HashObject.hashFeatureValues(values);
+        return new RevFeatureImpl(id,
+                ImmutableList.copyOf(Lists.transform(values, (v) -> Optional.fromNullable(v))));
+    }
+
+    public RevFeatureBuilder reset() {
+        this.values.clear();
+        return this;
+    }
+
+    public RevFeatureBuilder addProperty(Property featureProp) {
+        checkNotNull(featureProp);
+        // This is where we might handle complex properties if ever supported
+        addValue(featureProp.getValue());
+        return this;
+    }
+
+    public RevFeatureBuilder addValue(@Nullable Object value) {
+        // TODO: normalize polygons
+        Preconditions.checkArgument(!(value instanceof Optional));// remove once everything is
+                                                                  // ported
+        this.values.add(value);
+        return this;
+    }
+
+    public RevFeatureBuilder addAll(List<Object> values) {
+        checkNotNull(values);
+        for (Object v : values) {
+            addValue(v);
+        }
+        return this;
+    }
+
+    public RevFeatureBuilder addAll(Object... values) {
+        checkNotNull(values);
+        for (Object v : values) {
+            addValue(v);
+        }
+        return this;
     }
 
     /**
@@ -40,14 +101,19 @@ public final class RevFeatureBuilder {
             throw new IllegalStateException("No feature set");
         }
 
-        Collection<Property> props = feature.getProperties();
+        RevFeatureBuilder builder = RevFeatureBuilder.builder();
 
-        ImmutableList.Builder<Optional<Object>> valuesBuilder = new ImmutableList.Builder<Optional<Object>>();
-
-        for (Property prop : props) {
-            valuesBuilder.add(Optional.fromNullable(prop.getValue()));
+        if (feature instanceof SimpleFeature) {
+            // Just
+            SimpleFeature sf = (SimpleFeature) feature;
+            int attributeCount = sf.getAttributeCount();
+            for (int i = 0; i < attributeCount; i++) {
+                builder.addValue(sf.getAttribute(i));
+            }
+        } else {
+            Collection<Property> props = feature.getProperties();
+            props.forEach((p) -> builder.addProperty(p));
         }
-
-        return RevFeatureImpl.build(valuesBuilder.build());
+        return builder.build();
     }
 }

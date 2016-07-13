@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.storage;
 
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.featureForceId;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -34,17 +36,14 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.RevFeatureImpl;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
@@ -213,9 +212,8 @@ public abstract class ObjectDatabaseStressTest {
             }
             // Assert.assertNotNull(o);
         }
-        System.err.printf(
-                "----- %,d out of %,d random objects queried with getIfPresent() in %s\n", found,
-                queryCount, s.stop());
+        System.err.printf("----- %,d out of %,d random objects queried with getIfPresent() in %s\n",
+                found, queryCount, s.stop());
 
         Assert.assertEquals(queryCount, found);
     }
@@ -280,8 +278,8 @@ public abstract class ObjectDatabaseStressTest {
             public Iterator<ObjectId> iterator() {
                 return new AbstractIterator<ObjectId>() {
 
-                    final BloomFilter<Integer> bloomFilter = BloomFilter.create(
-                            Funnels.integerFunnel(), count, 0.001);
+                    final BloomFilter<Integer> bloomFilter = BloomFilter
+                            .create(Funnels.integerFunnel(), count, 0.001);
 
                     final Random random = new Random();
 
@@ -316,7 +314,7 @@ public abstract class ObjectDatabaseStressTest {
         return fakeObject(objectId);
     }
 
-    private RevObject fakeObject(ObjectId objectId) {
+    private RevObject fakeObject(ObjectId forcedId) {
         // String oidString = objectId.toString();
         // ObjectId treeId = ObjectId.forString("tree" + oidString);
         // ImmutableList<ObjectId> parentIds = ImmutableList.of();
@@ -325,14 +323,7 @@ public abstract class ObjectDatabaseStressTest {
         // String message = "message " + oidString;
         // return new RevCommitImpl(objectId, treeId, parentIds, author, committer, message);
 
-        ImmutableList.Builder<Optional<Object>> builder = new ImmutableList.Builder();
-
-        builder.add(Optional.absent());
-        builder.add(Optional.of("Some string value " + objectId));
-
-        ImmutableList<Optional<Object>> values = builder.build();
-        RevFeatureImpl feature = new RevFeatureImpl(objectId, values);
-        return feature;
+        return featureForceId(forcedId, "null", "Some string value " + forcedId);
     }
 
     private ObjectId fakeId(int i) {

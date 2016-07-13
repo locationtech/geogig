@@ -17,8 +17,6 @@ import static org.locationtech.geogig.api.RevObject.TYPE.TREE;
 
 import java.util.List;
 
-import javax.swing.text.html.Option;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.Bucket;
@@ -42,7 +40,8 @@ import com.google.common.hash.Hasher;
 public class HashObject extends AbstractGeoGigOp<ObjectId> {
 
     @SuppressWarnings("unchecked")
-    private static final Funnel<? extends RevObject>[] FUNNELS = new Funnel[RevObject.TYPE.values().length];
+    private static final Funnel<? extends RevObject>[] FUNNELS = new Funnel[RevObject.TYPE
+            .values().length];
     static {
         FUNNELS[COMMIT.value()] = HashObjectFunnels.commitFunnel();
         FUNNELS[TREE.value()] = HashObjectFunnels.treeFunnel();
@@ -85,6 +84,17 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
 
         HashObjectFunnels.featureFunnel().funnel(values, hasher);
+
+        final byte[] rawKey = hasher.hash().asBytes();
+        final ObjectId id = ObjectId.createNoClone(rawKey);
+
+        return id;
+    }
+
+    public static ObjectId hashFeatureValues(List<Object> values) {
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+
+        HashObjectFunnels.featureFunnel().funnelValues(values, hasher);
 
         final byte[] rawKey = hasher.hash().asBytes();
         final ObjectId id = ObjectId.createNoClone(rawKey);

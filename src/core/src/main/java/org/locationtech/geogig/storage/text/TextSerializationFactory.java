@@ -36,7 +36,7 @@ import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
+import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevFeatureTypeImpl;
 import org.locationtech.geogig.api.RevObject;
@@ -638,17 +638,13 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         protected RevFeature read(ObjectId id, BufferedReader reader, TYPE type)
                 throws IOException {
             Preconditions.checkArgument(TYPE.FEATURE.equals(type), "Wrong type: %s", type.name());
-            List<Object> values = newArrayList();
+
+            RevFeatureBuilder builder = RevFeatureBuilder.builder();
             String line;
             while ((line = reader.readLine()) != null) {
-                values.add(parseAttribute(line));
+                builder.addValue(parseAttribute(line));
             }
-
-            ImmutableList.Builder<Optional<Object>> valuesBuilder = new ImmutableList.Builder<Optional<Object>>();
-            for (Object value : values) {
-                valuesBuilder.add(Optional.fromNullable(value));
-            }
-            return RevFeatureImpl.build(valuesBuilder.build());
+            return builder.build();
         }
 
         private Object parseAttribute(String line) {

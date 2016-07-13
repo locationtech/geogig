@@ -20,7 +20,6 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.RandomAccess;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -49,6 +48,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Lists;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Funnels;
 import com.google.common.hash.PrimitiveSink;
@@ -67,8 +67,8 @@ class HashObjectFunnels {
     // This random byte code is used to represent null in hashing. This is intended to be something
     // that would be unlikely to duplicated by accident with real data. Changing this will cause all
     // objects that contain null values to hash differently.
-    private static final byte[] NULL_BYTE_CODE = { 0x60, (byte) 0xe5, 0x6d, 0x08, (byte) 0xd3,
-            0x08, 0x53, (byte) 0xb7, (byte) 0x84, 0x07, 0x77 };
+    private static final byte[] NULL_BYTE_CODE = { 0x60, (byte) 0xe5, 0x6d, 0x08, (byte) 0xd3, 0x08,
+            0x53, (byte) 0xb7, (byte) 0x84, 0x07, 0x77 };
 
     public static CommitFunnel commitFunnel() {
         return CommitFunnel.INSTANCE;
@@ -227,20 +227,14 @@ class HashObjectFunnels {
             this.funnel(from.getValues(), into);
         }
 
-        public void funnel(List<Optional<Object>> values, PrimitiveSink into) {
+        public void funnelValues(List<Object> values, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
 
-            if (values instanceof RandomAccess) {
-                Optional<Object> value;
-                for (int i = 0; i < values.size(); i++) {
-                    value = values.get(i);
-                    PropertyValueFunnel.funnel(value.orNull(), into);
-                }
-            } else {
-                for (Optional<Object> value : values) {
-                    PropertyValueFunnel.funnel(value.orNull(), into);
-                }
-            }
+            values.forEach((v) -> PropertyValueFunnel.funnel(v, into));
+        }
+
+        public void funnel(List<Optional<Object>> values, PrimitiveSink into) {
+            funnelValues(Lists.transform(values, (v) -> v.orNull()), into);
         }
     };
 

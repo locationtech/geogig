@@ -23,18 +23,8 @@ public class RevFeatureImpl extends AbstractRevObject implements RevFeature {
     private final ImmutableList<Optional<Object>> values;
 
     public static RevFeatureImpl build(ImmutableList<Optional<Object>> values) {
-        RevFeatureImpl unnamed = new RevFeatureImpl(values);
-        ObjectId id = new HashObject().setObject(unnamed).call();
+        ObjectId id = HashObject.hashFeature(values);
         return new RevFeatureImpl(id, values);
-    }
-
-    /**
-     * Constructs a new {@code RevFeature} with the provided set of values.
-     * 
-     * @param values a list of values, with {@link Optional#absent()} representing a null value
-     */
-    private RevFeatureImpl(ImmutableList<Optional<Object>> values) {
-        this(ObjectId.NULL, values);
     }
 
     /**
@@ -49,7 +39,7 @@ public class RevFeatureImpl extends AbstractRevObject implements RevFeature {
     }
 
     @Override
-	public ImmutableList<Optional<Object>> getValues() {
+    public ImmutableList<Optional<Object>> getValues() {
         return values;
     }
 

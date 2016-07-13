@@ -80,13 +80,13 @@ import com.google.common.collect.Lists;
 @Hookable(name = "rebase")
 public class RebaseOp extends AbstractGeoGigOp<Boolean> {
 
-    private static final String REBASE_FOLDER_PREFIX = "rebase-apply/";
+    private static final String REBASE_BLOB_PREFIX = "rebase-apply/";
 
-    private static final String NEXT = REBASE_FOLDER_PREFIX + "next";
+    public static final String REBASE_NEXT_BLOB = REBASE_BLOB_PREFIX + "next";
 
-    private static final String BRANCH = REBASE_FOLDER_PREFIX + "branch";
+    public static final String REBASE_BRANCH_BLOB = REBASE_BLOB_PREFIX + "branch";
 
-    private static final String SQUASH = REBASE_FOLDER_PREFIX + "squash";
+    public static final String REBASE_SQUASH_BLOB = REBASE_BLOB_PREFIX + "squash";
 
     private final static int BUFFER_SIZE = 1000;
 
@@ -198,7 +198,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 "Cannot run operation while merge conflicts exist.");
 
         Optional<Ref> origHead = command(RefParse.class).setName(Ref.ORIG_HEAD).call();
-        final Optional<byte[]> branch = Blobs.getBlob(context().blobStore(), BRANCH);
+        final Optional<byte[]> branch = Blobs.getBlob(context().blobStore(), REBASE_BRANCH_BLOB);
         RevCommit squashCommit = readSquashCommit();
         if (abort) {
             Preconditions.checkState(origHead.isPresent() && branch.isPresent(),
@@ -321,7 +321,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 CharSequence commitString = command(CatObject.class)
                         .setObject(Suppliers.ofInstance(squashCommit)).call();
                 try {
-                    Blobs.putBlob(context().blobStore(), SQUASH, commitString);
+                    Blobs.putBlob(context().blobStore(), REBASE_SQUASH_BLOB, commitString);
                 } catch (Exception e) {
                     throw new IllegalStateException("Cannot create squash commit info blob", e);
                 }
@@ -342,9 +342,9 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
         }
 
         // clean up
-        context().blobStore().removeBlob(SQUASH);
+        context().blobStore().removeBlob(REBASE_SQUASH_BLOB);
         command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
-        context().blobStore().removeBlob(BRANCH);
+        context().blobStore().removeBlob(REBASE_BRANCH_BLOB);
 
         // subProgress.complete();
 
@@ -355,13 +355,13 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
     }
 
     private void skipCurrentCommit() {
-        List<String> nextFile = Blobs.readLines(context().blobStore(), NEXT);
+        List<String> nextFile = Blobs.readLines(context().blobStore(), REBASE_NEXT_BLOB);
         try {
             String idx = nextFile.get(0);
-            String blobName = REBASE_FOLDER_PREFIX + idx;
+            String blobName = REBASE_BLOB_PREFIX + idx;
             context().blobStore().removeBlob(blobName);
             int newIdx = Integer.parseInt(idx) + 1;
-            Blobs.putBlob(context().blobStore(), NEXT, String.valueOf(newIdx));
+            Blobs.putBlob(context().blobStore(), REBASE_NEXT_BLOB, String.valueOf(newIdx));
         } catch (Exception e) {
             throw new IllegalStateException("Cannot read/write rebase commits index", e);
         }
@@ -371,7 +371,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
     private void createRebaseCommitsInfo(List<RevCommit> commitsToRebase) {
 
         for (int i = commitsToRebase.size() - 1, idx = 1; i >= 0; i--, idx++) {
-            String blobName = REBASE_FOLDER_PREFIX + Integer.toString(idx);
+            String blobName = REBASE_BLOB_PREFIX + Integer.toString(idx);
             try {
                 String contents = commitsToRebase.get(i).getId().toString();
                 Blobs.putBlob(context().blobStore(), blobName, contents);
@@ -380,7 +380,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             }
         }
         try {
-            Blobs.putBlob(context().blobStore(), NEXT, "1");
+            Blobs.putBlob(context().blobStore(), REBASE_NEXT_BLOB, "1");
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create next rebase commit info");
         }
@@ -388,12 +388,12 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
     }
 
     private boolean applyNextCommit(boolean useCommitChanges) {
-        List<String> nextFile = Blobs.readLines(context().blobStore(), NEXT);
+        List<String> nextFile = Blobs.readLines(context().blobStore(), REBASE_NEXT_BLOB);
         if (nextFile.isEmpty()) {
             return false;
         }
         String idx = nextFile.get(0);
-        String blobName = REBASE_FOLDER_PREFIX + idx;
+        String blobName = REBASE_BLOB_PREFIX + idx;
         List<String> commitFile = Blobs.readLines(context().blobStore(), blobName);
         if (commitFile.isEmpty()) {
             return false;
@@ -404,7 +404,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
         context().blobStore().removeBlob(blobName);
         int newIdx = Integer.parseInt(idx) + 1;
         try {
-            Blobs.putBlob(context().blobStore(), NEXT, String.valueOf(newIdx));
+            Blobs.putBlob(context().blobStore(), REBASE_NEXT_BLOB, String.valueOf(newIdx));
         } catch (Exception e) {
             throw new IllegalStateException("Cannot read/write rebase commits index", e);
         }
@@ -518,7 +518,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 workingTree().updateWorkHead(index().getTree().getId());
 
                 try {
-                    Blobs.putBlob(context().blobStore(), BRANCH, currentBranch);
+                    Blobs.putBlob(context().blobStore(), REBASE_BRANCH_BLOB, currentBranch);
                 } catch (Exception e) {
                     throw new IllegalStateException("Cannot create current branch info", e);
                 }
@@ -561,7 +561,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
      */
     @Nullable
     private RevCommit readSquashCommit() {
-        List<String> lines = Blobs.readLines(context().blobStore(), SQUASH);
+        List<String> lines = Blobs.readLines(context().blobStore(), REBASE_SQUASH_BLOB);
         if (lines.isEmpty()) {
             return null;
         }

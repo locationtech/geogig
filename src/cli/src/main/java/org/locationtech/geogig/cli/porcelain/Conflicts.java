@@ -9,9 +9,7 @@
  */
 package org.locationtech.geogig.cli.porcelain;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,27 +22,26 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.plumbing.CatObject;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.api.plumbing.merge.ConflictsQueryOp;
 import org.locationtech.geogig.api.porcelain.FeatureNodeRefFromRefspec;
 import org.locationtech.geogig.api.porcelain.MergeOp;
+import org.locationtech.geogig.api.porcelain.RebaseOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
+import org.locationtech.geogig.storage.Blobs;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 
 /**
  * Show existing conflicts
@@ -103,32 +100,9 @@ public class Conflicts extends AbstractCommand implements CLICommand {
         }
     }
 
-    private File getRebaseFolder() {
-        URI dir = geogig.command(ResolveGeogigURI.class).call().get();
-        File rebaseFolder = new File(new File(dir), "rebase-apply");
-        return rebaseFolder;
-    }
-
     private void printRefspecs(Conflict conflict, Console console, GeoGIG geogig)
             throws IOException {
-        ObjectId theirsHeadId;
-        Optional<Ref> mergeHead = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
-        if (mergeHead.isPresent()) {
-            theirsHeadId = mergeHead.get().getObjectId();
-        } else {
-            File branchFile = new File(getRebaseFolder(), "branch");
-            Preconditions.checkState(branchFile.exists(),
-                    "Cannot find merge/rebase head reference");
-            try {
-                String currentBranch = Files.readFirstLine(branchFile, Charsets.UTF_8);
-                Optional<Ref> rebaseHead = geogig.command(RefParse.class).setName(currentBranch)
-                        .call();
-                theirsHeadId = rebaseHead.get().getObjectId();
-            } catch (IOException e) {
-                throw new IllegalStateException("Cannot read current branch info file");
-            }
-
-        }
+        ObjectId theirsHeadId = getTheirsHeadId();
         Optional<RevCommit> theirsHead = geogig.command(RevObjectParse.class)
                 .setObjectId(theirsHeadId).call(RevCommit.class);
         ObjectId oursHeadId = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call().get()
@@ -153,25 +127,7 @@ public class Conflicts extends AbstractCommand implements CLICommand {
             throws IOException {
         FullDiffPrinter diffPrinter = new FullDiffPrinter(false, true);
         console.println("---" + conflict.getPath() + "---");
-
-        ObjectId theirsHeadId;
-        Optional<Ref> mergeHead = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
-        if (mergeHead.isPresent()) {
-            theirsHeadId = mergeHead.get().getObjectId();
-        } else {
-            File branchFile = new File(getRebaseFolder(), "branch");
-            Preconditions.checkState(branchFile.exists(),
-                    "Cannot find merge/rebase head reference");
-            try {
-                String currentBranch = Files.readFirstLine(branchFile, Charsets.UTF_8);
-                Optional<Ref> rebaseHead = geogig.command(RefParse.class).setName(currentBranch)
-                        .call();
-                theirsHeadId = rebaseHead.get().getObjectId();
-            } catch (IOException e) {
-                throw new IllegalStateException("Cannot read current branch info file");
-            }
-
-        }
+        ObjectId theirsHeadId = getTheirsHeadId();
         Optional<RevCommit> theirsHead = geogig.command(RevObjectParse.class)
                 .setObjectId(theirsHeadId).call(RevCommit.class);
         ObjectId oursHeadId = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call().get()
@@ -211,6 +167,27 @@ public class Conflicts extends AbstractCommand implements CLICommand {
         printObject("Theirs", conflict.getTheirs(), console, geogig);
         console.println();
 
+    }
+
+    private ObjectId getTheirsHeadId() {
+        ObjectId theirsHeadId;
+        Optional<Ref> mergeHead = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
+        if (mergeHead.isPresent()) {
+            // It was a merge
+            theirsHeadId = mergeHead.get().getObjectId();
+        } else {
+            // It was a rebase
+            final Optional<byte[]> branchBlob = geogig.getRepository().blobStore()
+                    .getBlob(RebaseOp.REBASE_BRANCH_BLOB);
+            Preconditions.checkState(branchBlob.isPresent(),
+                    "Cannot find merge/rebase head reference");
+            List<String> branchLines = Blobs.readLines(branchBlob);
+            String currentBranch = branchLines.get(0);
+            Optional<Ref> rebaseHead = geogig.command(RefParse.class).setName(currentBranch).call();
+            Preconditions.checkState(rebaseHead.isPresent(), "Rebase head could not be resolved.");
+            theirsHeadId = rebaseHead.get().getObjectId();
+        }
+        return theirsHeadId;
     }
 
     private void printObject(String name, ObjectId id, Console console, GeoGIG geogig)

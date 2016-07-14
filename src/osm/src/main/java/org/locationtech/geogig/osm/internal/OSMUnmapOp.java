@@ -93,7 +93,7 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
 
     private static int getPropertyIndex(RevFeatureType type, String name) {
 
-        ImmutableList<PropertyDescriptor> descriptors = type.sortedDescriptors();
+        ImmutableList<PropertyDescriptor> descriptors = type.descriptors();
         for (int i = 0; i < descriptors.size(); i++) {
             if (descriptors.get(i).getName().getLocalPart().equals(name)) {
                 return i;
@@ -142,17 +142,16 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
                     .call(RevFeature.class).get();
             RevFeatureType revFeatureType = command(RevObjectParse.class)
                     .setObjectId(node.getMetadataId()).call(RevFeatureType.class).get();
-            List<PropertyDescriptor> descriptors = revFeatureType.sortedDescriptors();
-            ImmutableList<Optional<Object>> values = revFeature.getValues();
+            List<PropertyDescriptor> descriptors = revFeatureType.descriptors();
             SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
                     (SimpleFeatureType) revFeatureType.type());
             String id = null;
             for (int i = 0; i < descriptors.size(); i++) {
                 PropertyDescriptor descriptor = descriptors.get(i);
                 if (descriptor.getName().getLocalPart().equals("id")) {
-                    id = values.get(i).get().toString();
+                    id = revFeature.get(i).get().toString();
                 }
-                Optional<Object> value = values.get(i);
+                Optional<Object> value = revFeature.get(i);
                 featureBuilder.set(descriptor.getName(), value.orNull());
             }
             Preconditions.checkNotNull(id, "No 'id' attribute found");
@@ -182,17 +181,16 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
                     RevFeatureType revFeatureType = command(RevObjectParse.class)
                             .setObjectId(diff.getOldObject().getMetadataId())
                             .call(RevFeatureType.class).get();
-                    List<PropertyDescriptor> descriptors = revFeatureType.sortedDescriptors();
-                    ImmutableList<Optional<Object>> values = revFeature.getValues();
+                    List<PropertyDescriptor> descriptors = revFeatureType.descriptors();
                     SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
                             (SimpleFeatureType) revFeatureType.type());
                     String id = null;
                     for (int i = 0; i < descriptors.size(); i++) {
                         PropertyDescriptor descriptor = descriptors.get(i);
                         if (descriptor.getName().getLocalPart().equals("id")) {
-                            id = values.get(i).get().toString();
+                            id = revFeature.get(i).get().toString();
                         }
-                        Optional<Object> value = values.get(i);
+                        Optional<Object> value = revFeature.get(i);
                         featureBuilder.set(descriptor.getName(), value.orNull());
                     }
                     Preconditions.checkNotNull(id, "No 'id' attribute found");
@@ -223,8 +221,9 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         boolean modified = false;
         String id = feature.getID();
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(OSMUtils.nodeType());
-        Optional<RevFeature> rawFeature = command(RevObjectParse.class).setRefSpec(
-                "WORK_HEAD:" + OSMUtils.NODE_TYPE_NAME + "/" + id).call(RevFeature.class);
+        Optional<RevFeature> rawFeature = command(RevObjectParse.class)
+                .setRefSpec("WORK_HEAD:" + OSMUtils.NODE_TYPE_NAME + "/" + id)
+                .call(RevFeature.class);
         Map<String, String> tagsMap = new HashMap<>();
         long timestamp = System.currentTimeMillis();
         int version = 1;
@@ -232,21 +231,21 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         String user = UNKNOWN_USER;
 
         if (rawFeature.isPresent()) {
-            ImmutableList<Optional<Object>> values = rawFeature.get().getValues();
-            tagsMap = (Map<String, String>) values.get(NODE_TAGS_FIELD_INDEX).or(tagsMap);
-            Optional<Object> timestampOpt = values.get(NODE_TIMESTAMP_FIELD_INDEX);
+            RevFeature revFeature = rawFeature.get();
+            tagsMap = (Map<String, String>) revFeature.get(NODE_TAGS_FIELD_INDEX).or(tagsMap);
+            Optional<Object> timestampOpt = revFeature.get(NODE_TIMESTAMP_FIELD_INDEX);
             if (timestampOpt.isPresent()) {
                 timestamp = ((Long) timestampOpt.get()).longValue();
             }
-            Optional<Object> versionOpt = values.get(NODE_VERSION_FIELD_INDEX);
+            Optional<Object> versionOpt = revFeature.get(NODE_VERSION_FIELD_INDEX);
             if (versionOpt.isPresent()) {
                 version = ((Integer) versionOpt.get()).intValue();
             }
-            Optional<Object> changesetOpt = values.get(NODE_CHANGESET_FIELD_INDEX);
+            Optional<Object> changesetOpt = revFeature.get(NODE_CHANGESET_FIELD_INDEX);
             if (changesetOpt.isPresent()) {
                 changeset = ((Long) changesetOpt.get()).longValue();
             }
-            Optional<Object> userOpt = values.get(NODE_USER_FIELD_INDEX);
+            Optional<Object> userOpt = revFeature.get(NODE_USER_FIELD_INDEX);
             if (userOpt.isPresent()) {
                 user = (String) userOpt.get();
             }
@@ -256,9 +255,8 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         Collection<Property> properties = feature.getProperties();
         for (Property property : properties) {
             String name = property.getName().getLocalPart();
-            if (name.equals("id")
-                    || Geometry.class.isAssignableFrom(property.getDescriptor().getType()
-                            .getBinding())) {
+            if (name.equals("id") || Geometry.class
+                    .isAssignableFrom(property.getDescriptor().getType().getBinding())) {
                 continue;
             }
             Object value = property.getValue();
@@ -337,12 +335,11 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         long[] nodeIds = (long[]) way.getAttribute("nodes");
         if (nodeIds != null) {
             for (long nodeId : nodeIds) {
-                Optional<RevFeature> revFeature = command(RevObjectParse.class).setRefSpec(
-                        "WORK_HEAD:" + OSMUtils.NODE_TYPE_NAME + "/" + nodeId).call(
-                        RevFeature.class);
+                Optional<RevFeature> revFeature = command(RevObjectParse.class)
+                        .setRefSpec("WORK_HEAD:" + OSMUtils.NODE_TYPE_NAME + "/" + nodeId)
+                        .call(RevFeature.class);
                 if (revFeature.isPresent()) {
-                    Optional<Object> location = revFeature.get().getValues()
-                            .get(NODE_LOCATION_FIELD_INDEX);
+                    Optional<Object> location = revFeature.get().get(NODE_LOCATION_FIELD_INDEX);
                     if (location.isPresent()) {
                         Coordinate coord = ((Geometry) location.get()).getCoordinate();
                         nodeCoords.put(coord, nodeId);
@@ -393,8 +390,9 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         boolean modified = false;
         String id = feature.getID();
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(OSMUtils.wayType());
-        Optional<RevFeature> rawFeature = command(RevObjectParse.class).setRefSpec(
-                "WORK_HEAD:" + OSMUtils.WAY_TYPE_NAME + "/" + id).call(RevFeature.class);
+        Optional<RevFeature> rawFeature = command(RevObjectParse.class)
+                .setRefSpec("WORK_HEAD:" + OSMUtils.WAY_TYPE_NAME + "/" + id)
+                .call(RevFeature.class);
         Map<String, String> tagsMap = Maps.newHashMap();
         long timestamp = System.currentTimeMillis();
         int version = 1;
@@ -402,23 +400,23 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         String user = UNKNOWN_USER;
         Collection<Tag> tags = Lists.newArrayList();
         if (rawFeature.isPresent()) {
-            ImmutableList<Optional<Object>> values = rawFeature.get().getValues();
-            tagsMap = (Map<String, String>) values.get(WAY_TAGS_FIELD_INDEX).or(tagsMap);
+            RevFeature revFeature = rawFeature.get();
+            tagsMap = (Map<String, String>) revFeature.get(WAY_TAGS_FIELD_INDEX).or(tagsMap);
             tags = OSMUtils.buildTagsCollection(tagsMap);
 
-            Optional<Object> timestampOpt = values.get(WAY_TIMESTAMP_FIELD_INDEX);
+            Optional<Object> timestampOpt = revFeature.get(WAY_TIMESTAMP_FIELD_INDEX);
             if (timestampOpt.isPresent()) {
                 timestamp = ((Long) timestampOpt.get()).longValue();
             }
-            Optional<Object> versionOpt = values.get(WAY_VERSION_FIELD_INDEX);
+            Optional<Object> versionOpt = revFeature.get(WAY_VERSION_FIELD_INDEX);
             if (versionOpt.isPresent()) {
                 version = ((Integer) versionOpt.get()).intValue();
             }
-            Optional<Object> changesetOpt = values.get(WAY_CHANGESET_FIELD_INDEX);
+            Optional<Object> changesetOpt = revFeature.get(WAY_CHANGESET_FIELD_INDEX);
             if (changesetOpt.isPresent()) {
                 changeset = ((Long) changesetOpt.get()).longValue();
             }
-            Optional<Object> userOpt = values.get(WAY_USER_FIELD_INDEX);
+            Optional<Object> userOpt = revFeature.get(WAY_USER_FIELD_INDEX);
             if (userOpt.isPresent()) {
                 user = (String) userOpt.get();
             }
@@ -428,10 +426,8 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         Collection<Property> properties = feature.getProperties();
         for (Property property : properties) {
             String name = property.getName().getLocalPart();
-            if (name.equals("id")
-                    || name.equals("nodes")
-                    || Geometry.class.isAssignableFrom(property.getDescriptor().getType()
-                            .getBinding())) {
+            if (name.equals("id") || name.equals("nodes") || Geometry.class
+                    .isAssignableFrom(property.getDescriptor().getType().getBinding())) {
                 continue;
             }
             Object value = property.getValue();

@@ -441,9 +441,8 @@ public class Log extends AbstractWebAPICommand {
                         Optional<RevObject> feature = geogig.command(RevObjectParse.class)
                                 .setObjectId(entry.newObjectId()).call();
                         RevFeature revFeature = (RevFeature) feature.get();
-                        List<Optional<Object>> values = revFeature.getValues();
-                        for (int index = 0; index < values.size(); index++) {
-                            Optional<Object> value = values.get(index);
+                        for (int index = 0; index < revFeature.size(); index++) {
+                            Optional<Object> value = revFeature.get(index);
                             PropertyDescriptor attrib = (PropertyDescriptor) attribs.toArray()[index];
                             String stringValue = "";
                             if (value.isPresent()) {

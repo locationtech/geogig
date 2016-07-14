@@ -144,7 +144,7 @@ public class OSMMapOpTest extends RepositoryTestCase {
         Optional<RevFeatureType> revFeatureType = geogig.command(ResolveFeatureType.class)
                 .setRefSpec("HEAD:onewaystreets/31045880").call();
         assertTrue(revFeatureType.isPresent());
-        ImmutableList<PropertyDescriptor> descriptors = revFeatureType.get().sortedDescriptors();
+        ImmutableList<PropertyDescriptor> descriptors = revFeatureType.get().descriptors();
         assertEquals("timestamp", descriptors.get(1).getName().toString());
         assertEquals("visible", descriptors.get(2).getName().toString());
 
@@ -395,7 +395,7 @@ public class OSMMapOpTest extends RepositoryTestCase {
                 .setRefSpec("HEAD:busstops/507464799").call();
         assertTrue(featureType.isPresent());
         ImmutableList<Optional<Object>> values = revFeature.get().getValues();
-        ImmutableList<PropertyDescriptor> descriptors = featureType.get().sortedDescriptors();
+        ImmutableList<PropertyDescriptor> descriptors = featureType.get().descriptors();
         assertEquals("the_name", descriptors.get(1).getName().getLocalPart());
         assertEquals("Gielgen", values.get(1).get());
         assertEquals("the_geometry", descriptors.get(2).getName().getLocalPart());

@@ -23,7 +23,6 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -104,16 +103,13 @@ public class SpatialOps {
 
     @Nullable
     public static Envelope boundsOf(RevFeature feat) {
-        Envelope env = null;
-        for (Optional<Object> opt : feat.getValues()) {
-            if (opt.isPresent() && opt.get() instanceof Geometry) {
-                if (env == null) {
-                    env = new Envelope();
-                }
-                env.expandToInclude(((Geometry) opt.get()).getEnvelopeInternal());
+        Envelope env = new Envelope();
+        feat.forEach((o) -> {
+            if (o instanceof Geometry) {
+                env.expandToInclude(((Geometry) o).getEnvelopeInternal());
             }
-        }
-        return env;
+        });
+        return env.isNull() ? null : env;
     }
 
     /**
@@ -156,8 +152,8 @@ public class SpatialOps {
         try {
             crs = CRS.decode(srs, true);
         } catch (FactoryException e) {
-            throw new IllegalArgumentException(String.format(
-                    "Invalid bbox parameter: '%s'. Can't parse CRS '%s'", bboxArg, srs));
+            throw new IllegalArgumentException(String
+                    .format("Invalid bbox parameter: '%s'. Can't parse CRS '%s'", bboxArg, srs));
         }
         ReferencedEnvelope env = new ReferencedEnvelope(minx, maxx, miny, maxy, crs);
         return env;

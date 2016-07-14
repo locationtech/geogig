@@ -308,11 +308,11 @@ public class FormatCommonV2 {
     }
 
     public static void writeFeature(RevFeature feature, DataOutput data) throws IOException {
-        ImmutableList<Optional<Object>> values = feature.getValues();
 
-        writeUnsignedVarInt(values.size(), data);
+        writeUnsignedVarInt(feature.size(), data);
 
-        for (Optional<Object> field : values) {
+        for (int i = 0; i < feature.size(); i++) {
+            Optional<Object> field = feature.get(i);
             FieldType type = FieldType.forValue(field);
             data.writeByte(type.getTag());
             if (type != FieldType.NULL) {
@@ -606,7 +606,7 @@ public class FormatCommonV2 {
     public static void writeFeatureType(RevFeatureType object, DataOutput data) throws IOException {
         writeName(object.getName(), data);
 
-        ImmutableList<PropertyDescriptor> descriptors = object.sortedDescriptors();
+        ImmutableList<PropertyDescriptor> descriptors = object.descriptors();
         writeUnsignedVarInt(descriptors.size(), data);
 
         for (PropertyDescriptor desc : object.type().getDescriptors()) {

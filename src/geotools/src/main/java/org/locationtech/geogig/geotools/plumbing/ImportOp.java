@@ -507,14 +507,13 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         RevFeatureType oldFeatureType;
         oldFeatureType = command(RevObjectParse.class).setObjectId(node.getMetadataId())
                 .call(RevFeatureType.class).get();
-        ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.sortedDescriptors();
-        ImmutableList<PropertyDescriptor> newAttributes = featureType.sortedDescriptors();
-        ImmutableList<Optional<Object>> oldValues = oldFeature.getValues();
+        ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.descriptors();
+        ImmutableList<PropertyDescriptor> newAttributes = featureType.descriptors();
         RevFeatureBuilder builder = RevFeatureBuilder.builder();
         for (int i = 0; i < newAttributes.size(); i++) {
             int idx = oldAttributes.indexOf(newAttributes.get(i));
             if (idx != -1) {
-                Optional<Object> oldValue = oldValues.get(idx);
+                Optional<Object> oldValue = oldFeature.get(idx);
                 builder.addValue(oldValue.orNull());
             } else {
                 builder.addValue(null);

@@ -307,7 +307,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 .setObjectId(set.iterator().next()).call(RevFeatureType.class);
         assertTrue(featureType.isPresent());
         assertEquals("table1", featureType.get().getName().getLocalPart());
-        assertEquals("name", featureType.get().sortedDescriptors().get(1).getName().getLocalPart());
+        assertEquals("name", featureType.get().descriptors().get(1).getName().getLocalPart());
     }
 
     @Test
@@ -325,7 +325,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 .setObjectId(list.get(0).getMetadataId()).call(RevFeatureType.class);
         assertTrue(featureType.isPresent());
         assertEquals("table1", featureType.get().getName().getLocalPart());
-        assertEquals("my_geom_name", featureType.get().sortedDescriptors().get(0).getName()
+        assertEquals("my_geom_name", featureType.get().descriptors().get(0).getName()
                 .getLocalPart());
     }
 

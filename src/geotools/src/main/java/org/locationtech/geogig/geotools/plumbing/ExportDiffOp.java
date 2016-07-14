@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureStore;
@@ -51,7 +50,6 @@ import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.UnmodifiableIterator;
 
@@ -155,12 +153,12 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
     }
 
-    private static Iterator<SimpleFeature> getFeatures(Iterator<DiffEntry> diffs,
-            final boolean old, final ObjectStore database, final ObjectId metadataId,
+    private static Iterator<SimpleFeature> getFeatures(Iterator<DiffEntry> diffs, final boolean old,
+            final ObjectStore database, final ObjectId metadataId,
             final ProgressListener progressListener) {
 
-        final SimpleFeatureType featureType = addChangeTypeAttribute(database
-                .getFeatureType(metadataId));
+        final SimpleFeatureType featureType = addChangeTypeAttribute(
+                database.getFeatureType(metadataId));
         final RevFeatureType revFeatureType = RevFeatureTypeImpl.build(featureType);
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(featureType);
 
@@ -170,10 +168,9 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
                 return null;
             }
             final RevFeature revFeature = database.getFeature(nodeRef.getObjectId());
-            ImmutableList<Optional<Object>> values = revFeature.getValues();
-            for (int i = 0; i < values.size(); i++) {
+            for (int i = 0; i < revFeature.size(); i++) {
                 String name = featureType.getDescriptor(i + 1).getLocalName();
-                Object value = values.get(i).orNull();
+                Object value = revFeature.get(i).orNull();
                 featureBuilder.set(name, value);
             }
             featureBuilder.set(CHANGE_TYPE_NAME, de.changeType().name().charAt(0));
@@ -187,7 +184,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             }
             return null;
         };
-        
+
         Iterator<SimpleFeature> asFeatures = Iterators.transform(diffs, asFeature);
 
         UnmodifiableIterator<SimpleFeature> filterNulls = Iterators.filter(asFeatures,
@@ -214,8 +211,8 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         Optional<NodeRef> typeTreeRef = command(FindTreeChild.class).setParent(rootTree)
                 .setChildPath(treePath).call();
         checkArgument(typeTreeRef.isPresent(), "Type tree %s does not exist", refspec);
-        checkArgument(TYPE.TREE.equals(typeTreeRef.get().getType()),
-                "%s did not resolve to a tree", refspec);
+        checkArgument(TYPE.TREE.equals(typeTreeRef.get().getType()), "%s did not resolve to a tree",
+                refspec);
         return typeTreeRef.get();
     }
 

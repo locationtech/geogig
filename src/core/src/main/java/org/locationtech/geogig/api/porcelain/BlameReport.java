@@ -19,7 +19,6 @@ import org.locationtech.geogig.api.RevFeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
@@ -36,7 +35,7 @@ public class BlameReport {
 
     public BlameReport(RevFeatureType featureType) {
         attributes = Lists.newArrayList();
-        for (PropertyDescriptor attribute : featureType.sortedDescriptors()) {
+        for (PropertyDescriptor attribute : featureType.descriptors()) {
             attributes.add(attribute.getName().getLocalPart());
         }
         this.changes = new HashMap<String, ValueAndCommit>();
@@ -84,11 +83,10 @@ public class BlameReport {
      * @param commit
      */
     public void setFirstVersion(RevFeature feature, RevCommit commit) {
-        ImmutableList<Optional<Object>> values = feature.getValues();
         for (int i = 0; i < attributes.size(); i++) {
             String attr = attributes.get(i);
             if (!changes.containsKey(attr)) {
-                Optional<Object> value = values.get(i);
+                Optional<Object> value = feature.get(i);
                 changes.put(attr, new ValueAndCommit(value, commit));
             }
         }

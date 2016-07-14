@@ -219,12 +219,12 @@ class HashObjectFunnels {
 
         @Override
         public void funnel(RevFeature from, PrimitiveSink into) {
-            this.funnel(from.getValues(), into);
+            RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
+            from.forEach((v) -> PropertyValueFunnel.funnel(v, into));
         }
 
         public void funnelValues(List<Object> values, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
-
             values.forEach((v) -> PropertyValueFunnel.funnel(v, into));
         }
 

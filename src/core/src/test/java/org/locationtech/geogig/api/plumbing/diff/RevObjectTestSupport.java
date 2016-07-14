@@ -11,6 +11,7 @@ package org.locationtech.geogig.api.plumbing.diff;
 
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 import org.locationtech.geogig.api.AbstractRevObject;
 import org.locationtech.geogig.api.DefaultPlatform;
@@ -191,6 +192,22 @@ public class RevObjectTestSupport {
             }
             builder.append(']');
             return builder.toString();
+        }
+
+        @Override
+        public int size() {
+            return values.size();
+        }
+
+        @Override
+        public Optional<Object> get(int index) {
+            // we're intentionally not enforcing a safe copy in this test-only code
+            return values.get(index);
+        }
+
+        @Override
+        public void forEach(final Consumer<Object> consumer) {
+            values.forEach((o) -> consumer.accept(o.orNull()));
         }
     }
 

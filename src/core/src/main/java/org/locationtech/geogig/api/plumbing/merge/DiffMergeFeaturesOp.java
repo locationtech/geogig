@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +42,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Geometry;
@@ -278,7 +278,8 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
                 Object[] array = new Optional[descriptors.size()];
                 ancestorValues = Arrays.asList(array);
             } else {
-                ancestorValues = Lists.transform(ancestor.getValues(), (o) -> o.orNull());
+                ancestorValues = new ArrayList<>(ancestor.size());
+                ancestor.forEach((v) -> ancestorValues.add(v));
             }
         }
         return ancestorValues;

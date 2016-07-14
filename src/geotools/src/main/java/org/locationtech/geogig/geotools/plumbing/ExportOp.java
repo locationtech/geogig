@@ -363,15 +363,14 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             final RevFeature oldFeature;
             oldFeature = (RevFeature) sf.getUserData().get(RevFeature.class);
 
-            ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.sortedDescriptors();
-            ImmutableList<PropertyDescriptor> newAttributes = targetType.sortedDescriptors();
+            ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.descriptors();
+            ImmutableList<PropertyDescriptor> newAttributes = targetType.descriptors();
 
-            ImmutableList<Optional<Object>> oldValues = oldFeature.getValues();
             RevFeatureBuilder builder = RevFeatureBuilder.builder();
             for (int i = 0; i < newAttributes.size(); i++) {
                 int idx = oldAttributes.indexOf(newAttributes.get(i));
                 if (idx != -1) {
-                    Optional<Object> oldValue = oldValues.get(idx);
+                    Optional<Object> oldValue = oldFeature.get(idx);
                     builder.addValue(oldValue.orNull());
                 } else {
                     builder.addValue(null);

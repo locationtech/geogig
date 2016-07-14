@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 Boundless and others.
+/* Copyright (c) 2013-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -191,6 +191,7 @@ public enum FieldType {
      * @param value an object of this {@code FiledType}'s {@link FieldType#getBinding() binding}
      *        type.
      */
+    @Nullable
     public Object safeCopy(@Nullable Object value) {
         return safeCopyBuilder.apply(value);
     }

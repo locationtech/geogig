@@ -95,14 +95,13 @@ public class Show extends AbstractCommand implements CLICommand {
                         .setRefSpec(ref).call();
                 if (opt.isPresent()) {
                     RevFeatureType ft = opt.get();
-                    ImmutableList<PropertyDescriptor> attribs = ft.sortedDescriptors();
+                    ImmutableList<PropertyDescriptor> attribs = ft.descriptors();
                     RevFeature feature = (RevFeature) revObject;
                     Ansi ansi = super.newAnsi(console);
                     ansi.a(ref).newline();
                     ansi.a(feature.getId().toString()).newline();
-                    ImmutableList<Optional<Object>> values = feature.getValues();
-                    int i = 0;
-                    for (Optional<Object> value : values) {
+                    for (int i = 0; i < feature.size(); i++) {
+                        Optional<Object> value = feature.get(i);
                         PropertyDescriptor attrib = attribs.get(i);
                         ansi.a(attrib.getName()).newline();
                         PropertyType attrType = attrib.getType();
@@ -116,7 +115,6 @@ public class Show extends AbstractCommand implements CLICommand {
                             ansi.a(typeName).newline();
                         }
                         ansi.a(value.or("[NULL]").toString()).newline();
-                        i++;
                     }
                     console.println(ansi.toString());
                 } else {
@@ -148,21 +146,19 @@ public class Show extends AbstractCommand implements CLICommand {
                         .setRefSpec(ref).call();
                 if (opt.isPresent()) {
                     RevFeatureType ft = opt.get();
-                    ImmutableList<PropertyDescriptor> attribs = ft.sortedDescriptors();
+                    ImmutableList<PropertyDescriptor> attribs = ft.descriptors();
                     RevFeature feature = (RevFeature) revObject;
                     Ansi ansi = super.newAnsi(console);
-                    ansi.newline().fg(Color.YELLOW).a("ID:  ").reset()
-                            .a(feature.getId().toString()).newline();
+                    ansi.newline().fg(Color.YELLOW).a("ID:  ").reset().a(feature.getId().toString())
+                            .newline();
                     ansi.fg(Color.YELLOW).a("FEATURE TYPE ID:  ").reset().a(ft.getId().toString())
                             .newline().newline();
                     ansi.a("ATTRIBUTES  ").newline();
                     ansi.a("----------  ").newline();
-                    ImmutableList<Optional<Object>> values = feature.getValues();
-                    int i = 0;
-                    for (Optional<Object> value : values) {
+                    for (int i = 0; i < feature.size(); i++) {
+                        Optional<Object> value = feature.get(i);
                         ansi.fg(Color.YELLOW).a(attribs.get(i).getName() + ": ").reset();
                         ansi.a(value.or("[NULL]").toString()).newline();
-                        i++;
                     }
                     console.println(ansi.toString());
                 } else {
@@ -200,10 +196,9 @@ public class Show extends AbstractCommand implements CLICommand {
                 ansi.a(Strings.padEnd("Author date:", 15, ' ')).a("(").fg(Color.RED)
                         .a(estimateSince(geogig.getPlatform(), commit.getAuthor().getTimestamp()))
                         .reset().a(") ").a(new Date(commit.getAuthor().getTimestamp())).newline();
-                ansi.a(Strings.padEnd("Committer date:", 15, ' '))
-                        .a("(")
-                        .fg(Color.RED)
-                        .a(estimateSince(geogig.getPlatform(), commit.getCommitter().getTimestamp()))
+                ansi.a(Strings.padEnd("Committer date:", 15, ' ')).a("(").fg(Color.RED)
+                        .a(estimateSince(geogig.getPlatform(),
+                                commit.getCommitter().getTimestamp()))
                         .reset().a(") ").a(new Date(commit.getCommitter().getTimestamp()))
                         .newline();
                 ansi.a(Strings.padEnd("Subject:", 15, ' ')).a(commit.getMessage()).newline();
@@ -236,10 +231,10 @@ public class Show extends AbstractCommand implements CLICommand {
     }
 
     private void printFeatureType(Ansi ansi, RevFeatureType ft, boolean useDefaultKeyword) {
-        ImmutableList<PropertyDescriptor> attribs = ft.sortedDescriptors();
+        ImmutableList<PropertyDescriptor> attribs = ft.descriptors();
 
-        ansi.fg(Color.YELLOW).a(useDefaultKeyword ? "DEFAULT " : "").a("FEATURE TYPE ID:  ")
-                .reset().a(ft.getId().toString()).newline().newline();
+        ansi.fg(Color.YELLOW).a(useDefaultKeyword ? "DEFAULT " : "").a("FEATURE TYPE ID:  ").reset()
+                .a(ft.getId().toString()).newline().newline();
         ansi.a(useDefaultKeyword ? "DEFAULT " : "").a("FEATURE TYPE ATTRIBUTES").newline();
         for (PropertyDescriptor attrib : attribs) {
             ansi.fg(Color.YELLOW).a(attrib.getName() + ": ").reset()

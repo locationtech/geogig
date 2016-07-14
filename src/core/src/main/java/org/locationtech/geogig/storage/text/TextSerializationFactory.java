@@ -291,8 +291,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
 
         @Override
         protected void print(RevFeature feature, Writer w) throws IOException {
-            ImmutableList<Optional<Object>> values = feature.getValues();
-            for (Optional<Object> opt : values) {
+            for (int i = 0; i < feature.size(); i++) {
+                Optional<Object> opt = feature.get(i);
                 final FieldType type = FieldType.forValue(opt);
                 String valueString = TextValueSerializer.asString(opt);
                 println(w, type.toString() + "\t" + valueString);

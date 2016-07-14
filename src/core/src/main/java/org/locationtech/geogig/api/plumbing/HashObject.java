@@ -80,18 +80,7 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
         return id;
     }
 
-    public static ObjectId hashFeature(List<Optional<Object>> values) {
-        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-
-        HashObjectFunnels.featureFunnel().funnel(values, hasher);
-
-        final byte[] rawKey = hasher.hash().asBytes();
-        final ObjectId id = ObjectId.createNoClone(rawKey);
-
-        return id;
-    }
-
-    public static ObjectId hashFeatureValues(List<Object> values) {
+    public static ObjectId hashFeature(List<Object> values) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
 
         HashObjectFunnels.featureFunnel().funnelValues(values, hasher);

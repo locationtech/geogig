@@ -44,7 +44,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 
 interface DiffPrinter {
 
@@ -80,8 +79,8 @@ class SummaryDiffPrinter implements DiffPrinter {
         ansi.a(oldId).a(" ");
         ansi.a(newId).a(" ");
 
-        ansi.fg(entry.changeType() == ADDED ? GREEN : (entry.changeType() == MODIFIED ? YELLOW
-                : RED));
+        ansi.fg(entry.changeType() == ADDED ? GREEN
+                : (entry.changeType() == MODIFIED ? YELLOW : RED));
         char type = entry.changeType().toString().charAt(0);
         ansi.a("  ").a(type).reset();
         ansi.a("  ").a(formatPath(entry));
@@ -180,9 +179,11 @@ class FullDiffPrinter implements DiffPrinter {
                     ansi.reset();
                     ansi.newline();
                 } else {
-                    ansi.fg(ad.getType() == org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.ADDED ? GREEN
-                            : (ad.getType() == org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.REMOVED ? RED
-                                    : YELLOW));
+                    ansi.fg(ad
+                            .getType() == org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.ADDED
+                                    ? GREEN
+                                    : (ad.getType() == org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.REMOVED
+                                            ? RED : YELLOW));
                     ansi.a(pd.getName()).a(": ").a(ad.toString());
                     ansi.reset();
                     ansi.newline();
@@ -196,13 +197,11 @@ class FullDiffPrinter implements DiffPrinter {
             Optional<RevObject> obj = geogig.command(RevObjectParse.class)
                     .setObjectId(noderef.getObjectId()).call();
             RevFeature feature = (RevFeature) obj.get();
-            ImmutableList<Optional<Object>> values = feature.getValues();
-            int i = 0;
-            for (Optional<Object> value : values) {
-                console.println(featureType.sortedDescriptors().get(i).getName() + "\t"
+            for (int i = 0; i < feature.size(); i++) {
+                Optional<Object> value = feature.get(i);
+                console.println(featureType.descriptors().get(i).getName() + "\t"
                         + TextValueSerializer.asString(value));
 
-                i++;
             }
             console.println();
         }

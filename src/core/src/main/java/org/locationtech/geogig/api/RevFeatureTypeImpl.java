@@ -92,10 +92,10 @@ public class RevFeatureTypeImpl extends AbstractRevObject implements RevFeatureT
     }
 
     /**
-     * @return the sorted {@link PropertyDescriptor}s of the feature type
+     * @return the list of {@link PropertyDescriptor}s of the feature type
      */
     @Override
-    public ImmutableList<PropertyDescriptor> sortedDescriptors() {
+    public ImmutableList<PropertyDescriptor> descriptors() {
         return sortedDescriptors;
     }
 
@@ -115,7 +115,7 @@ public class RevFeatureTypeImpl extends AbstractRevObject implements RevFeatureT
         builder.append(getId().toString());
         builder.append("; ");
         boolean first = true;
-        for (PropertyDescriptor desc : sortedDescriptors()) {
+        for (PropertyDescriptor desc : descriptors()) {
             if (first) {
                 first = false;
             } else {

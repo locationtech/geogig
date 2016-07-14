@@ -21,10 +21,6 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
 /**
  * Builder for {@link RevFeature} instances.
  * 
@@ -37,7 +33,7 @@ import com.google.common.collect.Lists;
  */
 public final class RevFeatureBuilder {
 
-    private List</* @Nullable */Object> values = new ArrayList<>();
+    private ArrayList</* @Nullable */Object> values = new ArrayList<>(5);
 
     private RevFeatureBuilder() {
         //
@@ -48,9 +44,8 @@ public final class RevFeatureBuilder {
     }
 
     public RevFeature build() {
-        ObjectId id = HashObject.hashFeatureValues(values);
-        return new RevFeatureImpl(id,
-                ImmutableList.copyOf(Lists.transform(values, (v) -> Optional.fromNullable(v))));
+        ObjectId id = HashObject.hashFeature(values);
+        return new RevFeatureImpl(id, new ArrayList<>(values));
     }
 
     public RevFeatureBuilder reset() {

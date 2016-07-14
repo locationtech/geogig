@@ -79,11 +79,10 @@ public class FeatureDiff {
             Preconditions.checkArgument(oldRevFeatureType != null,
                     "Old feature type must be provided.");
 
-            ImmutableList<PropertyDescriptor> oldAttributes = oldRevFeatureType.sortedDescriptors();
-            ImmutableList<Optional<Object>> oldValues = oldRevFeature.getValues();
+            ImmutableList<PropertyDescriptor> oldAttributes = oldRevFeatureType.descriptors();
 
             for (int i = 0; i < oldAttributes.size(); i++) {
-                Optional<Object> oldValue = oldValues.get(i);
+                Optional<Object> oldValue = oldRevFeature.get(i);
                 PropertyDescriptor descriptor = oldAttributes.get(i);
                 if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
                     diffs.put(descriptor, new GeometryAttributeDiff((Geometry) oldValue.orNull(),
@@ -97,11 +96,10 @@ public class FeatureDiff {
             Preconditions.checkArgument(newRevFeatureType != null,
                     "New feature type must be provided.");
 
-            ImmutableList<PropertyDescriptor> newAttributes = newRevFeatureType.sortedDescriptors();
-            ImmutableList<Optional<Object>> newValues = newRevFeature.getValues();
+            ImmutableList<PropertyDescriptor> newAttributes = newRevFeatureType.descriptors();
 
             for (int i = 0; i < newAttributes.size(); i++) {
-                Optional<Object> newValue = newValues.get(i);
+                Optional<Object> newValue = newRevFeature.get(i);
                 PropertyDescriptor descriptor = newAttributes.get(i);
                 if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
                     diffs.put(descriptor, new GeometryAttributeDiff((Geometry) null,
@@ -112,16 +110,14 @@ public class FeatureDiff {
                 }
             }
         } else {
-            ImmutableList<PropertyDescriptor> oldAttributes = oldRevFeatureType.sortedDescriptors();
-            ImmutableList<PropertyDescriptor> newAttributes = newRevFeatureType.sortedDescriptors();
-            ImmutableList<Optional<Object>> oldValues = oldRevFeature.getValues();
-            ImmutableList<Optional<Object>> newValues = newRevFeature.getValues();
-            BitSet updatedAttributes = new BitSet(newValues.size());
+            ImmutableList<PropertyDescriptor> oldAttributes = oldRevFeatureType.descriptors();
+            ImmutableList<PropertyDescriptor> newAttributes = newRevFeatureType.descriptors();
+            BitSet updatedAttributes = new BitSet(newRevFeature.size());
             for (int i = 0; i < oldAttributes.size(); i++) {
-                Optional<Object> oldValue = oldValues.get(i);
+                Optional<Object> oldValue = oldRevFeature.get(i);
                 int idx = newAttributes.indexOf(oldAttributes.get(i));
                 if (idx != -1) {
-                    Optional<Object> newValue = newValues.get(idx);
+                    Optional<Object> newValue = newRevFeature.get(idx);
                     if (!oldValue.equals(newValue) || all) {
                         if (Geometry.class
                                 .isAssignableFrom(oldAttributes.get(i).getType().getBinding())) {
@@ -144,16 +140,16 @@ public class FeatureDiff {
                     }
                 }
             }
-            updatedAttributes.flip(0, newValues.size());
+            updatedAttributes.flip(0, newRevFeature.size());
             for (int i = updatedAttributes.nextSetBit(0); i >= 0; i = updatedAttributes
                     .nextSetBit(i + 1)) {
                 PropertyDescriptor descriptor = newAttributes.get(i);
                 if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
                     diffs.put(descriptor, new GeometryAttributeDiff((Geometry) null,
-                            (Geometry) newValues.get(i).orNull()));
+                            (Geometry) newRevFeature.get(i).orNull()));
                 } else {
                     diffs.put(descriptor,
-                            new GenericAttributeDiffImpl(null, newValues.get(i).orNull()));
+                            new GenericAttributeDiffImpl(null, newRevFeature.get(i).orNull()));
                 }
             }
         }

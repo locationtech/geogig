@@ -196,7 +196,7 @@ public class OSMMapTest extends Assert {
         Optional<RevFeatureType> ft = cli.getGeogig().command(ResolveFeatureType.class)
                 .setRefSpec("HEAD:" + iter.next().path()).call();
         assertTrue(ft.isPresent());
-        assertEquals(Polygon.class, ft.get().sortedDescriptors().get(1).getType().getBinding());
+        assertEquals(Polygon.class, ft.get().descriptors().get(1).getType().getBinding());
 
     }
 

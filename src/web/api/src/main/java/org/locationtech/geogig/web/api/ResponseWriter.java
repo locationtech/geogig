@@ -29,6 +29,7 @@ import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.FeatureBuilder;
 import org.locationtech.geogig.api.FeatureInfo;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.GeogigSimpleFeature;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
@@ -60,7 +61,6 @@ import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef;
 import org.locationtech.geogig.api.porcelain.ValueAndCommit;
 import org.locationtech.geogig.rest.repository.RESTUtils;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.locationtech.geogig.web.api.commands.Branch;
@@ -379,10 +379,10 @@ public class ResponseWriter {
     public void writeFeature(RevFeature feature, String tag) throws XMLStreamException {
         out.writeStartElement(tag);
         writeElement("id", feature.getId().toString());
-        ImmutableList<Optional<Object>> values = feature.getValues();
-        for (Optional<Object> opt : values) {
-            final FieldType type = FieldType.forValue(opt);
-            String valueString = TextValueSerializer.asString(opt);
+        for (int i = 0; i < feature.size(); i++) {
+            Object value = feature.get(i).orNull();
+            final FieldType type = FieldType.forValue(value);
+            String valueString = TextValueSerializer.asString(value);
             out.writeStartElement("attribute");
             writeElement("type", type.toString());
             writeElement("value", valueString);
@@ -396,7 +396,7 @@ public class ResponseWriter {
         out.writeStartElement(tag);
         writeElement("id", featureType.getId().toString());
         writeElement("name", featureType.getName().toString());
-        ImmutableList<PropertyDescriptor> descriptors = featureType.sortedDescriptors();
+        ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
         for (PropertyDescriptor descriptor : descriptors) {
             out.writeStartElement("attribute");
             writeElement("name", descriptor.getName().toString());

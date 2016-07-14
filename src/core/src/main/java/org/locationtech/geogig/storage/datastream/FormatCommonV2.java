@@ -38,13 +38,14 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.CRS.AxisOrder;
 import org.geotools.referencing.wkt.Formattable;
 import org.locationtech.geogig.api.Bucket;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevCommitImpl;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
+import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevFeatureTypeImpl;
 import org.locationtech.geogig.api.RevObject;
@@ -57,7 +58,6 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeImpl;
 import org.locationtech.geogig.api.plumbing.HashObject;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.storage.FieldType;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
@@ -308,11 +308,11 @@ public class FormatCommonV2 {
     }
 
     public static void writeFeature(RevFeature feature, DataOutput data) throws IOException {
-        ImmutableList<Optional<Object>> values = feature.getValues();
 
-        writeUnsignedVarInt(values.size(), data);
+        writeUnsignedVarInt(feature.size(), data);
 
-        for (Optional<Object> field : values) {
+        for (int i = 0; i < feature.size(); i++) {
+            Optional<Object> field = feature.get(i);
             FieldType type = FieldType.forValue(field);
             data.writeByte(type.getTag());
             if (type != FieldType.NULL) {
@@ -323,20 +323,17 @@ public class FormatCommonV2 {
 
     public static RevFeature readFeature(@Nullable ObjectId id, DataInput in) throws IOException {
         final int count = readUnsignedVarInt(in);
-        final ImmutableList.Builder<Optional<Object>> builder = ImmutableList.builder();
+        final RevFeatureBuilder builder = RevFeatureBuilder.builder();
 
         for (int i = 0; i < count; i++) {
             final byte fieldTag = in.readByte();
             final FieldType fieldType = FieldType.valueOf(fieldTag);
             Object value = DataStreamValueSerializerV2.read(fieldType, in);
-            builder.add(Optional.fromNullable(value));
+            builder.addValue(value);
         }
 
-        ImmutableList<Optional<Object>> values = builder.build();
-        if (id == null) {
-            id = HashObject.hashFeature(values);
-        }
-        return new RevFeatureImpl(id, values);
+        RevFeature built = builder.build();
+        return built;
     }
 
     public static void writeHeader(DataOutput data, RevObject.TYPE header) throws IOException {
@@ -609,7 +606,7 @@ public class FormatCommonV2 {
     public static void writeFeatureType(RevFeatureType object, DataOutput data) throws IOException {
         writeName(object.getName(), data);
 
-        ImmutableList<PropertyDescriptor> descriptors = object.sortedDescriptors();
+        ImmutableList<PropertyDescriptor> descriptors = object.descriptors();
         writeUnsignedVarInt(descriptors.size(), data);
 
         for (PropertyDescriptor desc : object.type().getDescriptors()) {

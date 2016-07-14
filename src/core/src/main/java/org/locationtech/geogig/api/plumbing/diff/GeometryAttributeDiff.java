@@ -17,7 +17,7 @@ import static org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.NO_CH
 import static org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.REMOVED;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.storage.FieldType;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Objects;

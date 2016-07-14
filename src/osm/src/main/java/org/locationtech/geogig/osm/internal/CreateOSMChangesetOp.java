@@ -129,11 +129,10 @@ public class CreateOSMChangesetOp extends AbstractGeoGigOp<Iterator<ChangeContai
                     .setObjectId(ref.getMetadataId()).call(RevFeatureType.class).get();
             SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
                     (SimpleFeatureType) revFeatureType.type());
-            ImmutableList<PropertyDescriptor> descriptors = revFeatureType.sortedDescriptors();
-            ImmutableList<Optional<Object>> values = revFeature.getValues();
+            ImmutableList<PropertyDescriptor> descriptors = revFeatureType.descriptors();
             for (int i = 0; i < descriptors.size(); i++) {
                 PropertyDescriptor descriptor = descriptors.get(i);
-                Optional<Object> value = values.get(i);
+                Optional<Object> value = revFeature.get(i);
                 featureBuilder.set(descriptor.getName(), value.orNull());
             }
             SimpleFeature feature = featureBuilder.buildFeature(ref.name());

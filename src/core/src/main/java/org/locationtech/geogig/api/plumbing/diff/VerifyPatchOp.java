@@ -98,7 +98,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
             Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(), path);
             RevFeatureType featureType = command(RevObjectParse.class)
                     .setObjectId(noderef.get().getMetadataId()).call(RevFeatureType.class).get();
-            ImmutableList<PropertyDescriptor> descriptors = featureType.sortedDescriptors();
+            ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
             Set<Entry<PropertyDescriptor, AttributeDiff>> attrDiffs = diff.getDiffs().entrySet();
             boolean ok = true;
             for (Iterator<Entry<PropertyDescriptor, AttributeDiff>> iterator = attrDiffs
@@ -120,7 +120,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
                     }
                     for (int i = 0; i < descriptors.size(); i++) {
                         if (descriptors.get(i).equals(descriptor)) {
-                            Optional<Object> value = feature.getValues().get(i);
+                            Optional<Object> value = feature.get(i);
                             if (!attrDiff.canBeAppliedOn(value.orNull())) {
                                 ok = false;
                             }

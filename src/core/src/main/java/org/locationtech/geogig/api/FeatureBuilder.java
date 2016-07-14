@@ -9,21 +9,14 @@
  */
 package org.locationtech.geogig.api;
 
-import java.util.List;
 import java.util.Map;
 
 import org.geotools.filter.identity.FeatureIdVersionedImpl;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.identity.FeatureId;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Provides a method of building features from {@link RevFeature} objects that have the type
@@ -34,8 +27,6 @@ import com.google.common.collect.ImmutableList;
  * @see Feature
  */
 public class FeatureBuilder {
-
-    private FeatureType featureType;
 
     private Map<String, Integer> attNameToRevTypeIndex;
 
@@ -48,7 +39,6 @@ public class FeatureBuilder {
      */
     public FeatureBuilder(RevFeatureType type) {
         this.type = type;
-        this.featureType = type.type();
         this.attNameToRevTypeIndex = GeogigSimpleFeature.buildAttNameToRevTypeIndex(type);
     }
 
@@ -79,43 +69,11 @@ public class FeatureBuilder {
 
         final FeatureId fid = new LazyVersionedFeatureId(id, revFeature.getId());
 
-        ImmutableList<Optional<Object>> values = revFeature.getValues();
-        GeogigSimpleFeature feature = new GeogigSimpleFeature(values,
-                (SimpleFeatureType) featureType, fid, attNameToRevTypeIndex);
+        SimpleFeatureType featureType = (SimpleFeatureType) type.type();
+
+        GeogigSimpleFeature feature = new GeogigSimpleFeature(revFeature, featureType, fid,
+                attNameToRevTypeIndex);
         return feature;
-    }
-
-    public Feature buildLazy(final String id, final Node node, final RevObjectParse parser) {
-
-        Supplier<? extends List<Optional<Object>>> valueSupplier = new LazyFeatureLoader(
-                node.getObjectId(), parser);
-
-        valueSupplier = Suppliers.memoize(valueSupplier);
-
-        final FeatureId fid = new LazyVersionedFeatureId(id, node.getObjectId());
-
-        GeogigSimpleFeature feature = new GeogigSimpleFeature(valueSupplier,
-                (SimpleFeatureType) featureType, fid, attNameToRevTypeIndex, node);
-
-        return feature;
-    }
-
-    private static class LazyFeatureLoader implements Supplier<List<Optional<Object>>> {
-
-        private ObjectId objectId;
-
-        private RevObjectParse parser;
-
-        public LazyFeatureLoader(ObjectId objectId, RevObjectParse parser) {
-            this.objectId = objectId;
-            this.parser = parser;
-        }
-
-        @Override
-        public List<Optional<Object>> get() {
-            Optional<RevFeature> revFeature = parser.setObjectId(objectId).call(RevFeature.class);
-            return revFeature.get().getValues();
-        }
     }
 
     private static class LazyVersionedFeatureId extends FeatureIdVersionedImpl {

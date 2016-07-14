@@ -130,8 +130,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                     Optional<RevObject> obj = geogig.command(RevObjectParse.class)
                             .setObjectId(noderef.getObjectId()).call();
                     RevFeature feature = (RevFeature) obj.get();
-                    ImmutableList<Optional<Object>> values = feature.getValues();
-                    ImmutableList<PropertyDescriptor> descriptors = featureType.sortedDescriptors();
+                    ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
                     int idx = 0;
                     for (PropertyDescriptor descriptor : descriptors) {
                         if (diffs.containsKey(descriptor)) {
@@ -152,7 +151,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                         } else {
                             sb.append("U ").append(descriptor.getName().toString())
                                     .append(LINE_BREAK);
-                            sb.append(TextValueSerializer.asString(values.get(idx)))
+                            sb.append(TextValueSerializer.asString(feature.get(idx)))
                                     .append(LINE_BREAK);
                         }
                         idx++;
@@ -180,16 +179,14 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                     Optional<RevObject> obj = geogig.command(RevObjectParse.class)
                             .setObjectId(noderef.getObjectId()).call();
                     RevFeature feature = (RevFeature) obj.get();
-                    ImmutableList<Optional<Object>> values = feature.getValues();
-                    int i = 0;
-                    for (Optional<Object> value : values) {
+                    for (int i = 0; i < feature.size(); i++) {
+                        Optional<Object> value = feature.get(i);
                         sb.append(diffEntry.changeType().toString().charAt(0));
                         sb.append(' ');
-                        sb.append(featureType.sortedDescriptors().get(i).getName().toString());
+                        sb.append(featureType.descriptors().get(i).getName().toString());
                         sb.append(LINE_BREAK);
                         sb.append(TextValueSerializer.asString(value));
                         sb.append(LINE_BREAK);
-                        i++;
                     }
                     sb.append(LINE_BREAK);
                 }

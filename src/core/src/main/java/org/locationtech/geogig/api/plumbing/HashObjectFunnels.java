@@ -9,24 +9,20 @@
  */
 package org.locationtech.geogig.api.plumbing;
 
-import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.RandomAccess;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.api.Bucket;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
@@ -37,7 +33,6 @@ import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevPerson;
 import org.locationtech.geogig.api.RevTag;
 import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.storage.FieldType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -45,10 +40,10 @@ import org.opengis.feature.type.PropertyType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Lists;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Funnels;
 import com.google.common.hash.PrimitiveSink;
@@ -67,8 +62,8 @@ class HashObjectFunnels {
     // This random byte code is used to represent null in hashing. This is intended to be something
     // that would be unlikely to duplicated by accident with real data. Changing this will cause all
     // objects that contain null values to hash differently.
-    private static final byte[] NULL_BYTE_CODE = { 0x60, (byte) 0xe5, 0x6d, 0x08, (byte) 0xd3,
-            0x08, 0x53, (byte) 0xb7, (byte) 0x84, 0x07, 0x77 };
+    private static final byte[] NULL_BYTE_CODE = { 0x60, (byte) 0xe5, 0x6d, 0x08, (byte) 0xd3, 0x08,
+            0x53, (byte) 0xb7, (byte) 0x84, 0x07, 0x77 };
 
     public static CommitFunnel commitFunnel() {
         return CommitFunnel.INSTANCE;
@@ -224,23 +219,17 @@ class HashObjectFunnels {
 
         @Override
         public void funnel(RevFeature from, PrimitiveSink into) {
-            this.funnel(from.getValues(), into);
+            RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
+            from.forEach((v) -> PropertyValueFunnel.funnel(v, into));
+        }
+
+        public void funnelValues(List<Object> values, PrimitiveSink into) {
+            RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
+            values.forEach((v) -> PropertyValueFunnel.funnel(v, into));
         }
 
         public void funnel(List<Optional<Object>> values, PrimitiveSink into) {
-            RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
-
-            if (values instanceof RandomAccess) {
-                Optional<Object> value;
-                for (int i = 0; i < values.size(); i++) {
-                    value = values.get(i);
-                    PropertyValueFunnel.funnel(value.orNull(), into);
-                }
-            } else {
-                for (Optional<Object> value : values) {
-                    PropertyValueFunnel.funnel(value.orNull(), into);
-                }
-            }
+            funnelValues(Lists.transform(values, (v) -> v.orNull()), into);
         }
     };
 
@@ -309,61 +298,107 @@ class HashObjectFunnels {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void funnel(final Object value, PrimitiveSink into) {
-            if (value == null) {
+        public void funnel(final @Nullable Object value, PrimitiveSink into) {
+            final FieldType fieldType = FieldType.forValue(value);
+            switch (fieldType) {
+            case UNKNOWN:
+                throw new IllegalArgumentException(String.format(
+                        "Objects of type %s are not supported as property values (%s)",
+                        value.getClass().getName(), value));
+            case NULL:
                 NullFunnel.funnel(value, into);
-            } else if (value instanceof String) {
-                StringFunnel.funnel((CharSequence) value, into);
-            } else if (value instanceof Boolean) {
+                break;
+            case BOOLEAN:
                 into.putBoolean(((Boolean) value).booleanValue());
-            } else if (value instanceof Byte) {
+                break;
+            case BYTE:
                 into.putByte(((Byte) value).byteValue());
-            } else if (value instanceof Double) {
-                into.putDouble(((Double) value).doubleValue());
-            } else if (value instanceof BigDecimal) {
-                String bdString = ((BigDecimal) value).toEngineeringString();
-                StringFunnel.funnel(bdString, into);
-            } else if (value instanceof Float) {
-                into.putFloat(((Float) value).floatValue());
-            } else if (value instanceof Integer) {
+                break;
+            case SHORT:
+                into.putShort(((Short) value).byteValue());
+                break;
+            case CHAR:
+                into.putChar(((Character) value).charValue());
+                break;
+            case INTEGER:
                 into.putInt(((Integer) value).intValue());
-            } else if (value instanceof BigInteger) {
-                byte[] bigBytes = ((BigInteger) value).toByteArray();
-                into.putBytes(bigBytes);
-            } else if (value instanceof Long) {
+                break;
+            case LONG:
                 into.putLong(((Long) value).longValue());
-            } else if (value.getClass().isArray()) {
+                break;
+            case FLOAT:
+                into.putFloat(((Float) value).floatValue());
+                break;
+            case DOUBLE:
+                into.putDouble(((Double) value).doubleValue());
+                break;
+            case STRING:
+                StringFunnel.funnel((CharSequence) value, into);
+                break;
+            case BOOLEAN_ARRAY:
+            case BYTE_ARRAY:
+            case SHORT_ARRAY:
+            case INTEGER_ARRAY:
+            case LONG_ARRAY:
+            case FLOAT_ARRAY:
+            case DOUBLE_ARRAY:
+            case STRING_ARRAY:
+            case CHAR_ARRAY: {
                 int length = Array.getLength(value);
                 into.putInt(length);
                 for (int i = 0; i < length; i++) {
                     Object arrayElem = Array.get(value, i);
                     PropertyValueFunnel.funnel(arrayElem, into);
                 }
-            } else if (value instanceof java.util.UUID) {
+            }
+                break;
+            case POINT:
+            case LINESTRING:
+            case POLYGON:
+            case MULTIPOINT:
+            case MULTILINESTRING:
+            case MULTIPOLYGON:
+            case GEOMETRYCOLLECTION:
+            case GEOMETRY:
+                GeometryFunnel.funnel((Geometry) value, into);
+                break;
+            case UUID: {
                 UUID uuid = (UUID) value;
                 long most = uuid.getMostSignificantBits();
                 long least = uuid.getLeastSignificantBits();
                 into.putLong(most);
                 into.putLong(least);
-            } else if (value instanceof Geometry) {
-                GeometryFunnel.funnel((Geometry) value, into);
-            } else if (value instanceof Map) {
+            }
+                break;
+            case BIG_INTEGER: {
+                byte[] bigBytes = ((BigInteger) value).toByteArray();
+                into.putBytes(bigBytes);
+            }
+                break;
+            case BIG_DECIMAL: {
+                BigDecimal bd = ((BigDecimal) value);
+                BigInteger unscaledValue = bd.unscaledValue();
+                int scale = bd.scale();
+                byte[] bigBytes = unscaledValue.toByteArray();
+                into.putBytes(bigBytes);
+                into.putInt(scale);
+            }
+                break;
+            case DATETIME:
+            case DATE:
+            case TIME:
+            case TIMESTAMP:
+                into.putLong(((java.util.Date) value).getTime());
+                break;
+            case MAP: {
                 @SuppressWarnings("unchecked")
                 Map<String, ?> map = (Map<String, ?>) value;
                 MapPropertyFunnel.funnel(map, into);
-            } else if (value instanceof Serializable) {
-                OutputStream byteOutput = Funnels.asOutputStream(into);
-                try {
-                    ObjectOutput objectOut = new ObjectOutputStream(byteOutput);
-                    objectOut.writeObject(value);
-                    objectOut.close();
-                    byteOutput.close();
-                } catch (IOException shouldntHappen) {
-                    throw Throwables.propagate(shouldntHappen);
-                }
-            } else {
-                StringFunnel.funnel((CharSequence) value.getClass().getName(), into);
-                StringFunnel.funnel((CharSequence) value.toString(), into);
+            }
+                break;
+            default:
+                throw new RuntimeException(
+                        "Unexpected exception, all FieldType enum values shall be covered");
             }
         }
     };
@@ -414,7 +449,7 @@ class HashObjectFunnels {
             NameFunnel.funnel(attrType.getName(), into);
 
             FieldType type = FieldType.forBinding(attrType.getBinding());
-            into.putInt(type.getTextTag());
+            into.putInt(type.getTag());
             into.putBoolean(descriptor.isNillable());
 
             into.putInt(descriptor.getMaxOccurs());
@@ -434,6 +469,10 @@ class HashObjectFunnels {
         }
     };
 
+    /**
+     * Funnels {@link Map}'s entries in sorted key order for consistent results regardless of
+     * whether the argument map is sorted or not.
+     */
     private static final Funnel<Map<String, ?>> MapPropertyFunnel = new Funnel<Map<String, ?>>() {
         private static final long serialVersionUID = 1L;
 

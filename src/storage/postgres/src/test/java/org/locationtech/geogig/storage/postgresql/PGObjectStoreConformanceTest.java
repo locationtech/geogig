@@ -20,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -67,7 +68,7 @@ public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
      */
     @Test
     public void testPutAllConcurrency() {
-        RevObject object = objects.feature(0, null, "some value");
+        RevObject object = RevObjectTestSupport.feature(0, null, "some value");
         List<RevObject> objects = new LinkedList<RevObject>();
         for (int i = 0; i < 100; i++) {
             objects.add(object);

@@ -159,7 +159,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                     RevFeatureType featureType = command(RevObjectParse.class)
                             .setObjectId(noderef.get().getMetadataId()).call(RevFeatureType.class)
                             .get();
-                    ImmutableList<PropertyDescriptor> descriptors = featureType.sortedDescriptors();
+                    ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
                     FeatureDiff featureDiff = command(DiffFeature.class)
                             .setOldVersion(Suppliers.ofInstance(diff.getOldObject()))
                             .setNewVersion(Suppliers.ofInstance(diff.getNewObject())).call();
@@ -187,8 +187,8 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                             }
                             for (int i = 0; i < descriptors.size(); i++) {
                                 if (descriptors.get(i).equals(descriptor)) {
-                                    Optional<Object> value = feature.getValues().get(i);
-                                    Optional<Object> newValue = newFeature.getValues().get(i);
+                                    Optional<Object> value = feature.get(i);
+                                    Optional<Object> newValue = newFeature.get(i);
                                     if (!newValue.equals(value)) { // if it's going to end up
                                                                    // setting the same value, it is
                                                                    // compatible, so no need to

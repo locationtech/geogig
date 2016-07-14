@@ -34,7 +34,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -118,17 +117,14 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
 
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
                 (SimpleFeatureType) featureType.type());
-        ImmutableList<Optional<Object>> valuesA = featureA.getValues();
-        ImmutableList<Optional<Object>> valuesB = featureB.getValues();
-        ImmutableList<Optional<Object>> valuesAncestor = ancestor.getValues();
-        ImmutableList<PropertyDescriptor> descriptors = featureType.sortedDescriptors();
+        ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
         for (int i = 0; i < descriptors.size(); i++) {
             final PropertyDescriptor descriptor = descriptors.get(i);
             final boolean isGeom = descriptor instanceof GeometryDescriptor;
             Name name = descriptor.getName();
-            Object valueAncestor = valuesAncestor.get(i).orNull();
-            Object valueA = valuesA.get(i).orNull();
-            Object valueB = valuesB.get(i).orNull();
+            Object valueAncestor = ancestor.get(i).orNull();
+            Object valueA = featureA.get(i).orNull();
+            Object valueB = featureB.get(i).orNull();
 
             final boolean valueAEqualsAncestor = valueEquals(isGeom, valueA, valueAncestor);
 

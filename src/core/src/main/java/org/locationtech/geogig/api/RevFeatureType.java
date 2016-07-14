@@ -22,7 +22,7 @@ public interface RevFeatureType extends RevObject {
     /**
      * @return the sorted {@link PropertyDescriptor}s of the feature type
      */
-    public abstract ImmutableList<PropertyDescriptor> sortedDescriptors();
+    public abstract ImmutableList<PropertyDescriptor> descriptors();
 
     /**
      * @return the name of the feature type

@@ -37,7 +37,7 @@ public class RevFeatureTypeTest extends RepositoryTestCase {
 
         ArrayList<PropertyDescriptor> descriptors = Lists.newArrayList(linesType.getDescriptors());
         // Collections.sort(descriptors, RevFeatureType.PROPERTY_ORDER);
-        assertEquals(descriptors, featureType.sortedDescriptors());
+        assertEquals(descriptors, featureType.descriptors());
     }
 
     @Test

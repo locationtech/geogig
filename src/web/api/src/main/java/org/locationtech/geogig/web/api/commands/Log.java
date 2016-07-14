@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.geotools.util.Range;
 import org.locationtech.geogig.api.Context;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
@@ -35,7 +36,6 @@ import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -441,9 +441,8 @@ public class Log extends AbstractWebAPICommand {
                         Optional<RevObject> feature = geogig.command(RevObjectParse.class)
                                 .setObjectId(entry.newObjectId()).call();
                         RevFeature revFeature = (RevFeature) feature.get();
-                        List<Optional<Object>> values = revFeature.getValues();
-                        for (int index = 0; index < values.size(); index++) {
-                            Optional<Object> value = values.get(index);
+                        for (int index = 0; index < revFeature.size(); index++) {
+                            Optional<Object> value = revFeature.get(index);
                             PropertyDescriptor attrib = (PropertyDescriptor) attribs.toArray()[index];
                             String stringValue = "";
                             if (value.isPresent()) {

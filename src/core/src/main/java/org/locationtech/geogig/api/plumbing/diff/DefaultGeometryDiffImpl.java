@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.api.plumbing.diff;
 
-import org.locationtech.geogig.storage.FieldType;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Optional;

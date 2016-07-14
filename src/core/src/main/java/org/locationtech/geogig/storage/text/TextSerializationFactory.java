@@ -32,11 +32,12 @@ import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.locationtech.geogig.api.Bucket;
 import org.locationtech.geogig.api.CommitBuilder;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
+import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevFeatureTypeImpl;
 import org.locationtech.geogig.api.RevObject;
@@ -47,7 +48,6 @@ import org.locationtech.geogig.api.RevTag;
 import org.locationtech.geogig.api.RevTagImpl;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeImpl;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.ObjectReader;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.ObjectWriter;
@@ -291,8 +291,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
 
         @Override
         protected void print(RevFeature feature, Writer w) throws IOException {
-            ImmutableList<Optional<Object>> values = feature.getValues();
-            for (Optional<Object> opt : values) {
+            for (int i = 0; i < feature.size(); i++) {
+                Optional<Object> opt = feature.get(i);
                 final FieldType type = FieldType.forValue(opt);
                 String valueString = TextValueSerializer.asString(opt);
                 println(w, type.toString() + "\t" + valueString);
@@ -638,17 +638,13 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         protected RevFeature read(ObjectId id, BufferedReader reader, TYPE type)
                 throws IOException {
             Preconditions.checkArgument(TYPE.FEATURE.equals(type), "Wrong type: %s", type.name());
-            List<Object> values = newArrayList();
+
+            RevFeatureBuilder builder = RevFeatureBuilder.builder();
             String line;
             while ((line = reader.readLine()) != null) {
-                values.add(parseAttribute(line));
+                builder.addValue(parseAttribute(line));
             }
-
-            ImmutableList.Builder<Optional<Object>> valuesBuilder = new ImmutableList.Builder<Optional<Object>>();
-            for (Object value : values) {
-                valuesBuilder.add(Optional.fromNullable(value));
-            }
-            return RevFeatureImpl.build(valuesBuilder.build());
+            return builder.build();
         }
 
         private Object parseAttribute(String line) {

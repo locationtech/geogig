@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -25,7 +26,7 @@ import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
+import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.plumbing.DiffFeature;
@@ -41,7 +42,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Geometry;
@@ -224,7 +224,7 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
         final List<Object> ancestorValues;
         ancestorValues = getAncestorValues(mergeIntoDiff, toMergeDiff, descriptors);
 
-        ImmutableList.Builder<Optional<Object>> mergedValues = new ImmutableList.Builder<>();
+        RevFeatureBuilder mergedValues = RevFeatureBuilder.builder();
 
         for (int i = 0; i < descriptors.size(); i++) {
             final PropertyDescriptor descriptor = descriptors.get(i);
@@ -262,10 +262,10 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
                     }
                 }
             }
-            mergedValues.add(Optional.fromNullable(merged));
+            mergedValues.addValue(merged);
         }
 
-        return RevFeatureImpl.build(mergedValues.build());
+        return mergedValues.build();
     }
 
     private static List<Object> getAncestorValues(FeatureDiff mergeIntoDiff,
@@ -278,7 +278,8 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
                 Object[] array = new Optional[descriptors.size()];
                 ancestorValues = Arrays.asList(array);
             } else {
-                ancestorValues = Lists.transform(ancestor.getValues(), (o) -> o.orNull());
+                ancestorValues = new ArrayList<>(ancestor.size());
+                ancestor.forEach((v) -> ancestorValues.add(v));
             }
         }
         return ancestorValues;

@@ -11,23 +11,25 @@ package org.locationtech.geogig.api.plumbing.diff;
 
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
+import org.locationtech.geogig.api.AbstractRevObject;
 import org.locationtech.geogig.api.DefaultPlatform;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
+import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
+import org.locationtech.geogig.api.plumbing.HashObject;
 import org.locationtech.geogig.repository.RevTreeBuilder2;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.util.concurrent.MoreExecutors;
 
 public class RevObjectTestSupport {
@@ -132,19 +134,81 @@ public class RevObjectTestSupport {
         return ref;
     }
 
-    public RevFeature feature(int fakeIdIndex, Object... rawValues) {
-        ObjectId id = ObjectId.forString(String.valueOf(fakeIdIndex));
-        return feature(id, rawValues);
+    /**
+     * Only for testing: allows to return a {@link RevFeature} with the specified id instead of the
+     * one resulting from {@link HashObject}
+     */
+    public static RevFeature featureForceId(ObjectId forceId, Object... rawValues) {
+        RevFeatureBuilder builder = RevFeatureBuilder.builder().addAll(rawValues);
+        return new TestFeatureImpl(forceId, builder.build().getValues());
     }
 
-    public RevFeature feature(ObjectId id, Object... rawValues) {
+    public static RevFeature feature(Object... rawValues) {
+        RevFeatureBuilder builder = RevFeatureBuilder.builder().addAll(rawValues);
+        return builder.build();
+    }
 
-        ImmutableList<Optional<Object>> values;
-        Builder<Optional<Object>> builder = ImmutableList.builder();
-        for (int i = 0; rawValues != null && i < rawValues.length; i++) {
-            builder.add(Optional.fromNullable(rawValues[i]));
+    private static class TestFeatureImpl extends AbstractRevObject implements RevFeature {
+
+        private final ImmutableList<Optional<Object>> values;
+
+        /**
+         * Constructs a new {@code RevFeature} with the provided {@link ObjectId} and set of values
+         * 
+         * @param id the {@link ObjectId} to use for this feature
+         * @param values a list of values, with {@link Optional#absent()} representing a null value
+         */
+        TestFeatureImpl(ObjectId id, ImmutableList<Optional<Object>> values) {
+            super(id);
+            this.values = values;
         }
-        values = builder.build();
-        return new RevFeatureImpl(id, values);
+
+        @Override
+        public ImmutableList<Optional<Object>> getValues() {
+            return values;
+        }
+
+        @Override
+        public TYPE getType() {
+            return TYPE.FEATURE;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append("Feature[");
+            builder.append(getId().toString());
+            builder.append("; ");
+            boolean first = true;
+            for (Optional<Object> value : getValues()) {
+                if (first) {
+                    first = false;
+                } else {
+                    builder.append(", ");
+                }
+
+                String valueString = String.valueOf(value.orNull());
+                builder.append(valueString.substring(0, Math.min(10, valueString.length())));
+            }
+            builder.append(']');
+            return builder.toString();
+        }
+
+        @Override
+        public int size() {
+            return values.size();
+        }
+
+        @Override
+        public Optional<Object> get(int index) {
+            // we're intentionally not enforcing a safe copy in this test-only code
+            return values.get(index);
+        }
+
+        @Override
+        public void forEach(final Consumer<Object> consumer) {
+            values.forEach((o) -> consumer.accept(o.orNull()));
+        }
     }
+
 }

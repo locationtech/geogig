@@ -167,18 +167,17 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
                     .call(RevFeature.class).get();
 
             RevFeatureType newRevFeatureType = getFeatureType(diff, feature, oldRevFeatureType);
-            ImmutableList<Optional<Object>> values = feature.getValues();
             ImmutableList<PropertyDescriptor> oldDescriptors = oldRevFeatureType
-                    .sortedDescriptors();
+                    .descriptors();
             ImmutableList<PropertyDescriptor> newDescriptors = newRevFeatureType
-                    .sortedDescriptors();
+                    .descriptors();
             SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
                     (SimpleFeatureType) newRevFeatureType.type());
             Map<Name, Object> attrs = Maps.newHashMap();
             for (int i = 0; i < oldDescriptors.size(); i++) {
                 PropertyDescriptor descriptor = oldDescriptors.get(i);
                 if (newDescriptors.contains(descriptor)) {
-                    Optional<Object> value = values.get(i);
+                    Optional<Object> value = feature.get(i);
                     attrs.put(descriptor.getName(), value.orNull());
                 }
             }

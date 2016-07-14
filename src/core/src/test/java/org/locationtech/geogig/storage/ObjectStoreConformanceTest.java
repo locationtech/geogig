@@ -21,6 +21,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.createFeaturesTree;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.feature;
+import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.featureForceId;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.io.File;
@@ -44,7 +46,6 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevTag;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 
@@ -66,8 +67,6 @@ public abstract class ObjectStoreConformanceTest {
     private Hints hints;
 
     protected ObjectStore db;
-
-    protected RevObjectTestSupport objects = new RevObjectTestSupport();
 
     @Before
     public void setUp() throws IOException {
@@ -260,8 +259,8 @@ public abstract class ObjectStoreConformanceTest {
 
     @Test
     public void testDeleteAll() {
-        ImmutableList<RevObject> objs = ImmutableList.of(objects.feature(0, null, "some value"),
-                objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null));
+        ImmutableList<RevObject> objs = ImmutableList.of(feature(0, null, "some value"),
+                feature(1, "value", new Integer(111)), feature(2, (Object) null));
 
         for (RevObject o : objs) {
             assertTrue(db.put(o));
@@ -279,8 +278,8 @@ public abstract class ObjectStoreConformanceTest {
 
     @Test
     public void testDeleteAllWithListener() {
-        ImmutableList<RevObject> objs = ImmutableList.of(objects.feature(0, null, "some value"),
-                objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null));
+        ImmutableList<RevObject> objs = ImmutableList.of(feature(0, null, "some value"),
+                feature(1, "value", new Integer(111)), feature(2, (Object) null));
 
         for (RevObject o : objs) {
             assertTrue(db.put(o));
@@ -302,7 +301,7 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testExists() {
 
-        RevFeature o = objects.feature(0, null, "some value");
+        RevFeature o = feature(0, null, "some value");
         assertFalse(db.exists(o.getId()));
         assertTrue(db.put(o));
         assertTrue(db.exists(o.getId()));
@@ -311,7 +310,7 @@ public abstract class ObjectStoreConformanceTest {
 
     @Test
     public void testGet() {
-        RevFeature o = objects.feature(0, null, "some value");
+        RevFeature o = feature(0, null, "some value");
 
         try {
             db.get(o.getId());
@@ -329,7 +328,7 @@ public abstract class ObjectStoreConformanceTest {
 
     @Test
     public void testGetWithCast() {
-        RevFeature o = objects.feature(0, null, "some value");
+        RevFeature o = feature(0, null, "some value");
 
         try {
             db.get(o.getId(), RevFeature.class);
@@ -355,15 +354,14 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testGetAll() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(objects.feature(0, null, "some value"),
-                objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null),
-                RevTree.EMPTY);
+        ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
+                feature(1, "value", new Integer(111)), feature(2, (Object) null), RevTree.EMPTY);
 
         for (RevObject o : expected) {
             assertTrue(db.put(o));
         }
-        assertTrue(db.put(objects.feature(5, "not queried 1")));
-        assertTrue(db.put(objects.feature(6, "not queried 2")));
+        assertTrue(db.put(feature(5, "not queried 1")));
+        assertTrue(db.put(feature(6, "not queried 2")));
 
         Function<RevObject, ObjectId> toId = p -> p.getId();
         Iterable<ObjectId> ids = Iterables.transform(expected, toId);
@@ -378,15 +376,14 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testGetAllWithListener() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(objects.feature(0, null, "some value"),
-                objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null),
-                RevTree.EMPTY);
+        ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
+                feature(1, "value", new Integer(111)), feature(2, (Object) null), RevTree.EMPTY);
 
         for (RevObject o : expected) {
             assertTrue(db.put(o));
         }
-        assertTrue(db.put(objects.feature(5, "not queried 1")));
-        assertTrue(db.put(objects.feature(6, "not queried 2")));
+        assertTrue(db.put(feature(5, "not queried 1")));
+        assertTrue(db.put(feature(6, "not queried 2")));
 
         Function<RevObject, ObjectId> toId = p -> p.getId();
         Iterable<ObjectId> ids = Iterables.transform(expected, toId);
@@ -408,9 +405,9 @@ public abstract class ObjectStoreConformanceTest {
 
     @Test
     public void testGetAllOfASpecificType() {
-        final RevFeature f1 = objects.feature(0, null, "some value");
-        final RevFeature f2 = objects.feature(1, "value", new Integer(111));
-        final RevFeature f3 = objects.feature(2, (Object) null);
+        final RevFeature f1 = feature(0, null, "some value");
+        final RevFeature f2 = feature(1, "value", new Integer(111));
+        final RevFeature f3 = feature(2, (Object) null);
         final RevTree t1 = RevTree.EMPTY;
         final RevTree t2 = createFeaturesTree(db, "t", 10);
         final RevTree t3 = createFeaturesTree(db, "t", 100);
@@ -447,9 +444,8 @@ public abstract class ObjectStoreConformanceTest {
 
     @Test
     public void testGetIfPresent() {
-        ImmutableList<RevObject> expected = ImmutableList.of(objects.feature(0, null, "some value"),
-                objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null),
-                RevTree.EMPTY);
+        ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
+                feature(1, "value", new Integer(111)), feature(2, (Object) null), RevTree.EMPTY);
 
         for (RevObject o : expected) {
             assertTrue(db.put(o));
@@ -475,8 +471,8 @@ public abstract class ObjectStoreConformanceTest {
         final ObjectId id1 = ObjectId.valueOf("0123456700000000000000000000000000000000");
         final ObjectId id2 = ObjectId.valueOf("01234567abc00000000000000000000000000000");
 
-        assertTrue(db.put(objects.feature(id1, "f1")));
-        assertTrue(db.put(objects.feature(id2, "f2")));
+        assertTrue(db.put(featureForceId(id1, "f1")));
+        assertTrue(db.put(featureForceId(id2, "f2")));
 
         final String fullId = id1.toString();
 
@@ -504,11 +500,11 @@ public abstract class ObjectStoreConformanceTest {
         final ObjectId id4 = ObjectId.valueOf("0123456789a00000000000000000000000000000");
         final ObjectId id5 = ObjectId.valueOf("0123456789ab0000000000000000000000000000");
 
-        assertTrue(db.put(objects.feature(id1, "f1")));
-        assertTrue(db.put(objects.feature(id2, "f2")));
-        assertTrue(db.put(objects.feature(id3, "f3")));
-        assertTrue(db.put(objects.feature(id4, "f4")));
-        assertTrue(db.put(objects.feature(id5, "f5")));
+        assertTrue(db.put(featureForceId(id1, "f1")));
+        assertTrue(db.put(featureForceId(id2, "f2")));
+        assertTrue(db.put(featureForceId(id3, "f3")));
+        assertTrue(db.put(featureForceId(id4, "f4")));
+        assertTrue(db.put(featureForceId(id5, "f5")));
 
         HashSet<ObjectId> matches;
 
@@ -540,9 +536,8 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testPutAll() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(objects.feature(0, null, "some value"),
-                objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null),
-                RevTree.EMPTY);
+        ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
+                feature(1, "value", new Integer(111)), feature(2, (Object) null), RevTree.EMPTY);
 
         db.putAll(expected.iterator());
         for (RevObject o : expected) {
@@ -553,9 +548,8 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testPutAllWithListener() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(objects.feature(0, null, "some value"),
-                objects.feature(1, "value", new Integer(111)), objects.feature(2, (Object) null),
-                RevTree.EMPTY);
+        ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
+                feature(1, "value", new Integer(111)), feature(2, (Object) null), RevTree.EMPTY);
 
         Function<RevObject, ObjectId> toId = p -> p.getId();
         final Iterable<ObjectId> ids = Iterables.transform(expected, toId);

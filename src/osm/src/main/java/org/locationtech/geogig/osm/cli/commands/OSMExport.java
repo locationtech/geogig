@@ -55,7 +55,6 @@ import com.beust.jcommander.Parameters;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -76,7 +75,8 @@ public class OSMExport extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output file")
     public boolean overwrite;
 
-    @Parameter(names = { "--bbox", "-b" }, description = "The bounding box to use as filter (S W N E).", arity = 4)
+    @Parameter(names = { "--bbox",
+            "-b" }, description = "The bounding box to use as filter (S W N E).", arity = 4)
     private List<String> bbox;
 
     private GeoGIG geogig;
@@ -141,9 +141,8 @@ public class OSMExport extends AbstractCommand implements CLICommand {
         if (bbox != null) {
             final Envelope env;
             try {
-                env = new Envelope(Double.parseDouble(bbox.get(0)),
-                        Double.parseDouble(bbox.get(2)), Double.parseDouble(bbox.get(1)),
-                        Double.parseDouble(bbox.get(3)));
+                env = new Envelope(Double.parseDouble(bbox.get(0)), Double.parseDouble(bbox.get(2)),
+                        Double.parseDouble(bbox.get(1)), Double.parseDouble(bbox.get(3)));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Wrong bbox definition");
             }
@@ -169,11 +168,10 @@ public class OSMExport extends AbstractCommand implements CLICommand {
             }
             SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(featureType);
             RevFeatureType revFeatureType = RevFeatureTypeImpl.build(featureType);
-            List<PropertyDescriptor> descriptors = revFeatureType.sortedDescriptors();
-            ImmutableList<Optional<Object>> values = revFeature.getValues();
+            List<PropertyDescriptor> descriptors = revFeatureType.descriptors();
             for (int i = 0; i < descriptors.size(); i++) {
                 PropertyDescriptor descriptor = descriptors.get(i);
-                Optional<Object> value = values.get(i);
+                Optional<Object> value = revFeature.get(i);
                 featureBuilder.set(descriptor.getName(), value.orNull());
             }
             SimpleFeature feature = featureBuilder.buildFeature(nr.name());

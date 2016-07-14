@@ -9,24 +9,97 @@
  */
 package org.locationtech.geogig.api;
 
-import java.util.Collection;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.api.plumbing.HashObject;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import org.opengis.feature.simple.SimpleFeature;
 
 /**
- * Provides a method of building a {@link RevFeature} from a {@link Feature}.
+ * Builder for {@link RevFeature} instances.
+ * 
+ * <p>
+ * Use the {@link #addValue(Object)} method as many times as needed to provide the sequence of
+ * property values, then call {@link #build()} to get the final {@link RevFeature}.
  * 
  * @see RevFeature
  * @see Feature
  */
 public final class RevFeatureBuilder {
 
+    private ArrayList</* @Nullable */Object> values = new ArrayList<>(5);
+
     private RevFeatureBuilder() {
         //
+    }
+
+    public static RevFeatureBuilder builder() {
+        return new RevFeatureBuilder();
+    }
+
+    public RevFeature build() {
+        ObjectId id = HashObject.hashFeature(values);
+        return new RevFeatureImpl(id, new ArrayList<>(values));
+    }
+
+    public RevFeatureBuilder reset() {
+        this.values.clear();
+        return this;
+    }
+
+    public RevFeatureBuilder addProperty(Property featureProp) {
+        checkNotNull(featureProp);
+        // This is where we might handle complex properties if ever supported
+        addValue(featureProp.getValue());
+        return this;
+    }
+
+    /**
+     * Adds the provided value to the tail of the sequence of attribute values that compose the
+     * {@link RevFeature} being built.
+     * <p>
+     * In order to preserve the {@link RevFeature}'s immutability, a safe copy of the value will be
+     * assigned if it's a mutable type.
+     * 
+     * @see FieldType#safeCopy(Object)
+     */
+    public RevFeatureBuilder addValue(@Nullable Object value) {
+        value = safeCopy(value);
+        this.values.add(value);
+        return this;
+    }
+
+    private Object safeCopy(@Nullable Object value) {
+        FieldType fieldType = FieldType.forValue(value);
+        if (FieldType.UNKNOWN.equals(fieldType)) {
+            throw new IllegalArgumentException(String.format(
+                    "Objects of class %s are not supported as RevFeature attributes: ",
+                    value.getClass().getName()));
+        }
+        value = fieldType.safeCopy(value);
+        return value;
+    }
+
+    public RevFeatureBuilder addAll(List<Object> values) {
+        checkNotNull(values);
+        for (Object v : values) {
+            addValue(v);
+        }
+        return this;
+    }
+
+    public RevFeatureBuilder addAll(Object... values) {
+        checkNotNull(values);
+        for (Object v : values) {
+            addValue(v);
+        }
+        return this;
     }
 
     /**
@@ -40,14 +113,19 @@ public final class RevFeatureBuilder {
             throw new IllegalStateException("No feature set");
         }
 
-        Collection<Property> props = feature.getProperties();
+        RevFeatureBuilder builder = RevFeatureBuilder.builder();
 
-        ImmutableList.Builder<Optional<Object>> valuesBuilder = new ImmutableList.Builder<Optional<Object>>();
-
-        for (Property prop : props) {
-            valuesBuilder.add(Optional.fromNullable(prop.getValue()));
+        if (feature instanceof SimpleFeature) {
+            // Just
+            SimpleFeature sf = (SimpleFeature) feature;
+            int attributeCount = sf.getAttributeCount();
+            for (int i = 0; i < attributeCount; i++) {
+                builder.addValue(sf.getAttribute(i));
+            }
+        } else {
+            Collection<Property> props = feature.getProperties();
+            props.forEach((p) -> builder.addProperty(p));
         }
-
-        return RevFeatureImpl.build(valuesBuilder.build());
+        return builder.build();
     }
 }

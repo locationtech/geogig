@@ -157,9 +157,6 @@ public abstract class AbstractObjectStore implements ObjectStore {
         } finally {
             Closeables.closeQuietly(raw);
         }
-        checkState(id.equals(object.getId()),
-                "Expected id doesn't match parsed id %s, %s. Object: %s", id, object.getId(),
-                object);
         return object;
     }
 

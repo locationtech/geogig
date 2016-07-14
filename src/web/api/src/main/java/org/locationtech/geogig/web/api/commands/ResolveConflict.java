@@ -106,8 +106,8 @@ public class ResolveConflict extends AbstractWebAPICommand {
         Envelope bounds = ReferencedEnvelope.create(crs);
 
         Optional<Object> o;
-        for (int i = 0; i < revFeature.getValues().size(); i++) {
-            o = revFeature.getValues().get(i);
+        for (int i = 0; i < revFeature.size(); i++) {
+            o = revFeature.get(i);
             if (o.isPresent() && o.get() instanceof Geometry) {
                 Geometry g = (Geometry) o.get();
                 if (bounds.isNull()) {
@@ -137,8 +137,7 @@ public class ResolveConflict extends AbstractWebAPICommand {
             treeBuilder = new RevTreeBuilder(geogig.objectDatabase());
         }
         treeBuilder.put(node.getNode());
-        ObjectId newTreeId = geogig
-                .command(WriteBack.class)
+        ObjectId newTreeId = geogig.command(WriteBack.class)
                 .setAncestor(
                         new RevTreeBuilder(geogig.objectDatabase(), geogig.workingTree().getTree()))
                 .setChildPath(node.getParentPath()).setTree(treeBuilder.build())

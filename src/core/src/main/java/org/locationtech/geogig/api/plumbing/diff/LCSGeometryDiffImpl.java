@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.plumbing.diff.DiffMatchPatch.Diff;
 import org.locationtech.geogig.api.plumbing.diff.DiffMatchPatch.LinesToCharsResult;
 import org.locationtech.geogig.api.plumbing.diff.DiffMatchPatch.Operation;
 import org.locationtech.geogig.api.plumbing.diff.DiffMatchPatch.Patch;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Function;

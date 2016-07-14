@@ -39,6 +39,7 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.CRS.AxisOrder;
 import org.geotools.referencing.wkt.Formattable;
 import org.locationtech.geogig.api.Bucket;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
@@ -48,7 +49,6 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTag;
 import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.ObjectReader;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.ObjectWriter;
@@ -116,8 +116,8 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
         return (Serializer<T>) serializer;
     }
 
-    private static interface Serializer<T extends RevObject> extends ObjectReader<T>,
-            ObjectWriter<T> {
+    private static interface Serializer<T extends RevObject>
+            extends ObjectReader<T>, ObjectWriter<T> {
         //
     }
 
@@ -173,7 +173,7 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
         public void write(RevFeature feature, OutputStream out) throws IOException {
             DataOutput data = new DataOutputStream(out);
             writeHeader(data, "feature");
-            data.writeInt(feature.getValues().size());
+            data.writeInt(feature.size());
             for (Optional<Object> field : feature.getValues()) {
                 FieldType type = FieldType.forValue(field);
                 data.writeByte(type.getTag());
@@ -203,7 +203,7 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
             DataOutput data = new DataOutputStream(out);
             writeHeader(data, "featuretype");
             writeName(object.getName(), data);
-            data.writeInt(object.sortedDescriptors().size());
+            data.writeInt(object.descriptors().size());
             for (PropertyDescriptor desc : object.type().getDescriptors()) {
                 writeProperty(desc, data);
             }
@@ -226,7 +226,8 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
                 if (crs == null) {
                     srsName = "urn:ogc:def:crs:EPSG::0";
                 } else {
-                    final boolean longitudeFirst = CRS.getAxisOrder(crs, false) == AxisOrder.EAST_NORTH;
+                    final boolean longitudeFirst = CRS.getAxisOrder(crs,
+                            false) == AxisOrder.EAST_NORTH;
                     final boolean codeOnly = true;
                     String crsCode = CRS.toSRS(crs, codeOnly);
                     if (crsCode != null) {

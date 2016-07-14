@@ -9,10 +9,14 @@
  */
 package org.locationtech.geogig.api;
 
-import org.locationtech.geogig.api.plumbing.HashObject;
+import java.util.ArrayList;
+import java.util.function.Consumer;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
  * A binary representation of the values of a Feature.
@@ -20,27 +24,42 @@ import com.google.common.collect.ImmutableList;
  */
 public class RevFeatureImpl extends AbstractRevObject implements RevFeature {
 
-    private final ImmutableList<Optional<Object>> values;
-
-    public static RevFeatureImpl build(ImmutableList<Optional<Object>> values) {
-        ObjectId id = HashObject.hashFeature(values);
-        return new RevFeatureImpl(id, values);
-    }
+    private final ArrayList<Object> values;
 
     /**
      * Constructs a new {@code RevFeature} with the provided {@link ObjectId} and set of values
      * 
      * @param id the {@link ObjectId} to use for this feature
-     * @param values a list of values, with {@link Optional#absent()} representing a null value
+     * @param values a list of values, {@code null} members allowed
      */
-    public RevFeatureImpl(ObjectId id, ImmutableList<Optional<Object>> values) {
+    RevFeatureImpl(ObjectId id, ArrayList<Object> values) {
         super(id);
         this.values = values;
     }
 
     @Override
     public ImmutableList<Optional<Object>> getValues() {
-        return values;
+        return ImmutableList
+                .copyOf(Lists.transform(values, (v) -> Optional.fromNullable(safeCopy(v))));
+    }
+
+    @Override
+    public int size() {
+        return values.size();
+    }
+
+    @Override
+    public Optional<Object> get(final int index) {
+        return Optional.fromNullable(safeCopy(values.get(index)));
+    }
+
+    @Override
+    public void forEach(final Consumer<Object> consumer) {
+        values.forEach((v) -> consumer.accept(safeCopy(v)));
+    }
+
+    private @Nullable Object safeCopy(@Nullable Object value) {
+        return FieldType.forValue(value).safeCopy(value);
     }
 
     @Override
@@ -55,17 +74,18 @@ public class RevFeatureImpl extends AbstractRevObject implements RevFeature {
         builder.append(getId().toString());
         builder.append("; ");
         boolean first = true;
-        for (Optional<Object> value : getValues()) {
+        for (Object value : values) {
             if (first) {
                 first = false;
             } else {
                 builder.append(", ");
             }
 
-            String valueString = String.valueOf(value.orNull());
+            String valueString = String.valueOf(value);
             builder.append(valueString.substring(0, Math.min(10, valueString.length())));
         }
         builder.append(']');
         return builder.toString();
     }
+
 }

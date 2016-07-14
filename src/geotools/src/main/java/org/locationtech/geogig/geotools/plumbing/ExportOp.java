@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +41,7 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
+import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevObject.TYPE;
@@ -140,8 +139,8 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         final ProgressListener progressListener = getProgressListener();
 
         progressListener.started();
-        progressListener.setDescription("Exporting from " + path + " to "
-                + targetStore.getName().getLocalPart() + "... ");
+        progressListener.setDescription(
+                "Exporting from " + path + " to " + targetStore.getName().getLocalPart() + "... ");
 
         final ReferencedEnvelope bboxFilter = this.bboxFilter;
         final Iterator<SimpleFeature> filtered;
@@ -218,7 +217,8 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
     private static Iterator<SimpleFeature> getFeatures(final RevTree typeTree,
             final ObjectDatabase database, final ObjectId defaultMetadataId,
-            final @Nullable ReferencedEnvelope bboxFilter, final ProgressListener progressListener) {
+            final @Nullable ReferencedEnvelope bboxFilter,
+            final ProgressListener progressListener) {
 
         Iterator<NodeRef> nodes;
         {
@@ -363,21 +363,20 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             final RevFeature oldFeature;
             oldFeature = (RevFeature) sf.getUserData().get(RevFeature.class);
 
-            ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.sortedDescriptors();
-            ImmutableList<PropertyDescriptor> newAttributes = targetType.sortedDescriptors();
+            ImmutableList<PropertyDescriptor> oldAttributes = oldFeatureType.descriptors();
+            ImmutableList<PropertyDescriptor> newAttributes = targetType.descriptors();
 
-            ImmutableList<Optional<Object>> oldValues = oldFeature.getValues();
-            List<Optional<Object>> newValues = Lists.newArrayList();
+            RevFeatureBuilder builder = RevFeatureBuilder.builder();
             for (int i = 0; i < newAttributes.size(); i++) {
                 int idx = oldAttributes.indexOf(newAttributes.get(i));
                 if (idx != -1) {
-                    Optional<Object> oldValue = oldValues.get(idx);
-                    newValues.add(oldValue);
+                    Optional<Object> oldValue = oldFeature.get(idx);
+                    builder.addValue(oldValue.orNull());
                 } else {
-                    newValues.add(Optional.absent());
+                    builder.addValue(null);
                 }
             }
-            RevFeature newFeature = RevFeatureImpl.build(ImmutableList.copyOf(newValues));
+            RevFeature newFeature = builder.build();
             FeatureBuilder featureBuilder = new FeatureBuilder(targetType);
             SimpleFeature feature = (SimpleFeature) featureBuilder.build(sf.getID(), newFeature);
             return feature;
@@ -391,14 +390,14 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         Optional<NodeRef> typeTreeRef = command(FindTreeChild.class).setParent(rootTree)
                 .setChildPath(treePath).call();
         checkArgument(typeTreeRef.isPresent(), "Type tree %s does not exist", refspec);
-        checkArgument(TYPE.TREE.equals(typeTreeRef.get().getType()),
-                "%s did not resolve to a tree", refspec);
+        checkArgument(TYPE.TREE.equals(typeTreeRef.get().getType()), "%s did not resolve to a tree",
+                refspec);
         return typeTreeRef.get();
     }
 
     private RevTree resolveRootTree(final String refspec) {
-        Optional<ObjectId> rootTreeId = command(ResolveTreeish.class).setTreeish(
-                refspec.substring(0, refspec.indexOf(':'))).call();
+        Optional<ObjectId> rootTreeId = command(ResolveTreeish.class)
+                .setTreeish(refspec.substring(0, refspec.indexOf(':'))).call();
 
         checkArgument(rootTreeId.isPresent(), "Invalid tree spec: %s",
                 refspec.substring(0, refspec.indexOf(':')));
@@ -525,7 +524,8 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
      * @param function
      * @return {@code this}
      */
-    public ExportOp setFeatureTypeConversionFunction(Function<Feature, Optional<Feature>> function) {
+    public ExportOp setFeatureTypeConversionFunction(
+            Function<Feature, Optional<Feature>> function) {
         this.function = function == null ? IDENTITY : function;
         return this;
     }

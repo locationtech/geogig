@@ -21,6 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevFeature;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.Blobs;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;

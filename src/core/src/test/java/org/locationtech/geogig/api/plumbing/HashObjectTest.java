@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.api.plumbing;
 
-import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -74,11 +73,6 @@ public class HashObjectTest extends RepositoryTestCase {
 
     private RevFeatureType coverageRevFeatureType;
 
-    private class SomeRandomClass {
-        SomeRandomClass() {
-        }
-    }
-
     @Override
     protected void setUpInternal() throws Exception {
         featureType1 = RevFeatureTypeImpl.build(pointsType);
@@ -127,28 +121,26 @@ public class HashObjectTest extends RepositoryTestCase {
         Object intArray = new int[] { 5, 7, 9, 11, 32 };
         Object longArray = new long[] { 100, 200, 300, 400 };
 
-        TestSerializableObject serializableObject = new TestSerializableObject();
-        serializableObject.words = "words to serialize";
-
         SimpleFeatureType coverageFeatureType = DataUtilities.createType(
-                "http://geoserver.org/test", "TestType", "str:String," + "str2:String,"
-                        + "bool:Boolean," + "byte:java.lang.Byte," + "doub:Double,"
-                        + "bdec:java.math.BigDecimal," + "flt:Float," + "int:Integer,"
-                        + "bint:java.math.BigInteger," + "boolArray:java.lang.Object,"
-                        + "byteArray:java.lang.Object," + "charArray:java.lang.Object,"
-                        + "doubleArray:java.lang.Object," + "floatArray:java.lang.Object,"
-                        + "intArray:java.lang.Object," + "longArray:java.lang.Object,"
-                        + "serialized:java.io.Serializable," + "randomClass:java.lang.Object,"
-                        + "pp:Point:srid=4326," + "lng:java.lang.Long," + "uuid:java.util.UUID");
+                "http://geoserver.org/test", "TestType",
+                "str:String," + "str2:String," + "bool:Boolean," + "byte:java.lang.Byte,"
+                        + "doub:Double," + "bdec:java.math.BigDecimal," + "flt:Float,"
+                        + "int:Integer," + "bint:java.math.BigInteger,"
+                        + "boolArray:java.lang.Object," + "byteArray:java.lang.Object,"
+                        + "charArray:java.lang.Object," + "doubleArray:java.lang.Object,"
+                        + "floatArray:java.lang.Object," + "intArray:java.lang.Object,"
+                        + "longArray:java.lang.Object," + "serialized:java.io.Serializable,"
+                        + "randomClass:java.lang.Object," + "pp:Point:srid=4326,"
+                        + "lng:java.lang.Long," + "uuid:java.util.UUID");
 
         coverageRevFeatureType = RevFeatureTypeImpl.build(coverageFeatureType);
 
         Feature coverageFeature = feature(coverageFeatureType, "TestType.Coverage.1",
                 "StringProp1_1", null, Boolean.TRUE, Byte.valueOf("18"), new Double(100.01),
-                new BigDecimal("1.89e1021"), new Float(12.5), new Integer(1000), new BigInteger(
-                        "90000000"), boolArray, byteArray, charArray, doubleArray, floatArray,
-                intArray, longArray, serializableObject, new SomeRandomClass(), "POINT(1 1)",
-                new Long(800000), UUID.fromString("bd882d24-0fe9-11e1-a736-03b3c0d0d06d"));
+                new BigDecimal("1.89e1021"), new Float(12.5), new Integer(1000),
+                new BigInteger("90000000"), boolArray, byteArray, charArray, doubleArray,
+                floatArray, intArray, longArray, "POINT(1 1)", new Long(800000),
+                UUID.fromString("bd882d24-0fe9-11e1-a736-03b3c0d0d06d"));
 
         coverageRevFeature = RevFeatureBuilder.build(coverageFeature);
 
@@ -156,8 +148,8 @@ public class HashObjectTest extends RepositoryTestCase {
 
         Context mockCommandLocator = mock(Context.class);
         hashCommand.setContext(mockCommandLocator);
-        when(mockCommandLocator.command(eq(DescribeFeatureType.class))).thenReturn(
-                new DescribeFeatureType());
+        when(mockCommandLocator.command(eq(DescribeFeatureType.class)))
+                .thenReturn(new DescribeFeatureType());
     }
 
     @Test
@@ -195,8 +187,6 @@ public class HashObjectTest extends RepositoryTestCase {
         SimpleFeatureType featureType = DataUtilities.createType("http://geoserver.org/test",
                 "TestType", "str:String, map:java.util.Map");
 
-        RevFeatureTypeImpl revFeatureType = RevFeatureTypeImpl.build(featureType);
-
         Map<String, Object> map1, map2, map3;
         map1 = new HashMap<>();
         map2 = new TreeMap<>();
@@ -223,7 +213,7 @@ public class HashObjectTest extends RepositoryTestCase {
         RevFeature revFeature1 = RevFeatureBuilder.build(f1);
         RevFeature revFeature2 = RevFeatureBuilder.build(f2);
         RevFeature revFeature3 = RevFeatureBuilder.build(f3);
-        
+
         ObjectId oid1 = hashCommand.setObject(revFeature1).call();
         ObjectId oid2 = hashCommand.setObject(revFeature2).call();
         ObjectId oid3 = hashCommand.setObject(revFeature3).call();
@@ -235,6 +225,22 @@ public class HashObjectTest extends RepositoryTestCase {
         assertEquals(oid1, oid2);
         assertFalse(oid1.equals(oid3));
         assertEquals(oid3, hashCommand.setObject(revFeature3).call());
+    }
+
+    @Test
+    public void tesFeaturePropertyOfUnsupportedType() {
+        TestSerializableObject serializableObject = new TestSerializableObject();
+        serializableObject.words = "words to serialize";
+
+        try {
+            RevFeatureBuilder.builder().addValue(1).addValue("s").addValue(serializableObject)
+                    .build();
+            fail("Expected IAE");
+        } catch (IllegalArgumentException iae) {
+            String expected = "Objects of class " + serializableObject.getClass().getName()
+                    + " are not supported as RevFeature attributes";
+            assertTrue(iae.getMessage(), iae.getMessage().startsWith(expected));
+        }
     }
 
     @Test

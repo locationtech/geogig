@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevFeatureType;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;

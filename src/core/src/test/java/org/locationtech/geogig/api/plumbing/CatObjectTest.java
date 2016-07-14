@@ -10,6 +10,7 @@
 package org.locationtech.geogig.api.plumbing;
 
 import org.junit.Test;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
@@ -17,7 +18,6 @@ import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.NodePathStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;

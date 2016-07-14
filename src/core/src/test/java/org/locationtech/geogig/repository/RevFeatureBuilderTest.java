@@ -117,9 +117,33 @@ public class RevFeatureBuilderTest extends RepositoryTestCase {
         b.addAll(f.getAttributes().toArray(new Object[f.getAttributeCount()]));
         RevFeature builtWithArray = b.build();
         assertEquals(feature, builtWithArray);
-        
+
         for (int i = 0; i < f.getAttributeCount(); i++) {
             assertEquals(f.getAttribute(i), builtWithList.getValues().get(i).orNull());
         }
     }
+
+    // @Test
+    // public void testEnforcesPolygonNormalization() throws Exception {
+    // // outer ring in cw order, inner rings in ccw order
+    // String normalizedWKT = "POLYGON((0 0, 0 9, 9 9, 9 0, 0 0), (3 3, 6 3, 6 6, 3 6, 3 3))";
+    // // outer ring in ccw order, inner rings in cc order
+    // String reversedWKT = "POLYGON((0 0, 9 0, 9 9, 0 9, 0 0), (3 3, 3 6, 6 6, 6 3, 3 3))";
+    //
+    // Geometry normalized = new WKTReader().read(normalizedWKT);
+    // Geometry reversed = new WKTReader().read(reversedWKT);
+    //
+    // assertTrue(normalized.equalsExact(normalized.norm()));
+    // assertFalse(reversed.equalsExact(reversed.norm()));
+    //
+    // RevFeatureBuilder builder = builder();
+    // RevFeature norm = builder.addValue(normalized).build();
+    // RevFeature rev = builder.reset().addValue(reversed).build();
+    //
+    // Geometry expected = (Geometry) norm.getValues().get(0).get();
+    // Geometry actual = (Geometry) rev.getValues().get(0).get();
+    //
+    // assertTrue(normalized.equalsExact(expected));
+    // assertTrue(normalized.equalsExact(actual));
+    // }
 }

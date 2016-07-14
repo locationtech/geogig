@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
@@ -36,7 +37,6 @@ import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.rest.RestletException;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;

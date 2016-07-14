@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
+import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.api.RevCommit;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
 import org.opengis.feature.type.GeometryType;
 import org.opengis.feature.type.PropertyDescriptor;

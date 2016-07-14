@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.api.data;
 
-import static org.locationtech.geogig.storage.FieldType.UNKNOWN;
+import static org.locationtech.geogig.api.FieldType.UNKNOWN;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,7 +21,7 @@ import org.geotools.factory.Hints;
 import org.geotools.util.Converter;
 import org.geotools.util.ConverterFactory;
 import org.geotools.util.Converters;
-import org.locationtech.geogig.storage.FieldType;
+import org.locationtech.geogig.api.FieldType;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Preconditions;

@@ -22,7 +22,6 @@ import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -66,12 +65,30 @@ public final class RevFeatureBuilder {
         return this;
     }
 
+    /**
+     * Adds the provided value to the tail of the sequence of attribute values that compose the
+     * {@link RevFeature} being built.
+     * <p>
+     * In order to preserve the {@link RevFeature}'s immutability, a safe copy of the value will be
+     * assigned if it's a mutable type.
+     * 
+     * @see FieldType#safeCopy(Object)
+     */
     public RevFeatureBuilder addValue(@Nullable Object value) {
-        // TODO: normalize polygons
-        Preconditions.checkArgument(!(value instanceof Optional));// remove once everything is
-                                                                  // ported
+        value = safeCopy(value);
         this.values.add(value);
         return this;
+    }
+
+    private Object safeCopy(@Nullable Object value) {
+        FieldType fieldType = FieldType.forValue(value);
+        if (FieldType.UNKNOWN.equals(fieldType)) {
+            throw new IllegalArgumentException(String.format(
+                    "Objects of class %s are not supported as RevFeature attributes: ",
+                    value.getClass().getName()));
+        }
+        value = fieldType.safeCopy(value);
+        return value;
     }
 
     public RevFeatureBuilder addAll(List<Object> values) {

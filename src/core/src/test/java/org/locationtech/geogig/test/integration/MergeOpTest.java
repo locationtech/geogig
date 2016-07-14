@@ -1023,7 +1023,7 @@ public class MergeOpTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testMergeWithPolygonAutoMerge() throws Exception {
+    public void testMergeConflictingPolygon() throws Exception {
         String polyId = "polyId";
         String polygonTypeSpec = "poly:Polygon:srid=4326";
         SimpleFeatureType polygonType = DataUtilities.createType("http://geogig.polygon",
@@ -1045,15 +1045,10 @@ public class MergeOpTest extends RepositoryTestCase {
 
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
-        geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
 
-        Optional<RevFeature> feature = repo.command(RevObjectParse.class)
-                .setRefSpec("WORK_HEAD:polygons/polyId").call(RevFeature.class);
-        assertTrue(feature.isPresent());
-        RevFeature merged = feature.get();
-        Feature expected = feature(polygonType, polyId,
-                "POLYGON((0 0,1 0,2 0.2,3 0.2,4 0,5 0,5 1,4 1,3 0.8,2 0.8,1 1,1 0,0 0))");
-        assertEquals(expected.getProperty("poly").getValue(), merged.getValues().get(0).get());
+        exception.expect(MergeConflictsException.class);
+        exception.expectMessage("Merge conflict in polygons/polyId");
+        geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
     }
 
     @Test

@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.api.plumbing.diff;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.ADDED;
 import static org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.MODIFIED;
@@ -21,7 +20,6 @@ import org.locationtech.geogig.api.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -129,7 +127,6 @@ public class GeometryAttributeDiff implements AttributeDiff {
 
     @Override
     public boolean canBeAppliedOn(@Nullable Object value) {
-        checkArgument(!(value instanceof Optional));
         switch (this.type) {
         case ADDED:
             return value == null;
@@ -177,8 +174,7 @@ public class GeometryAttributeDiff implements AttributeDiff {
         }
         GeometryAttributeDiff d = (GeometryAttributeDiff) o;
         if (oldGeometry == null && newGeometry == null) {
-            return Objects.equal(oldGeometry, oldGeometry)
-                    && Objects.equal(newGeometry, d.newGeometry) && Objects.equal(type, d.type);
+            return d.oldGeometry == null && d.newGeometry == null && Objects.equal(type, d.type);
         } else {
             return diff.equals(d.diff);
         }
@@ -213,7 +209,7 @@ public class GeometryAttributeDiff implements AttributeDiff {
             if (gad.diff.equals(diff)) {
                 return false;
             } else {
-                return !gad.canBeAppliedOn(newGeometry);
+                return true;
             }
         }
         if (ADDED == myType && ADDED == otherType) {

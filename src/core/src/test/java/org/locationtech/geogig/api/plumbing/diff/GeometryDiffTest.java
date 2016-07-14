@@ -136,7 +136,7 @@ public class GeometryDiffTest {
     }
 
     @Test
-    public void testNoConflict() throws Exception {
+    public void testConflictPatcheable() throws Exception {
         Geometry oldGeom = new WKTReader().read(
                 "MULTILINESTRING ((40 40, 20 45, 45 30, 40 40),(20 35, 45 10, 30 5, 10 30, 20 35))");
         Geometry newGeom = new WKTReader().read(
@@ -145,7 +145,12 @@ public class GeometryDiffTest {
         Geometry newGeom2 = new WKTReader().read(
                 "MULTILINESTRING ((40 40, 20 45, 45 30, 40 40),(20 35, 45 10, 31 6, 10 30, 20 35))");
         GeometryAttributeDiff diff2 = new GeometryAttributeDiff(oldGeom, newGeom2);
-        assertFalse(diff.conflicts(diff2));
+
+        // it's a conflict for the sake of merging branches
+        assertTrue(diff.conflicts(diff2));
+
+        // yet can be merged for the sake of applying a patch
+        assertTrue(diff2.canBeAppliedOn(newGeom));
         Geometry merged = diff2.applyOn(newGeom);
         assertNotNull(merged);
         assertEquals(
@@ -163,7 +168,12 @@ public class GeometryDiffTest {
         Geometry newGeom2 = new WKTReader().read(
                 "MULTILINESTRING ((40 40, 20 45, 45 30, 40 40),(20 35, 45 10, 31 6, 10 30, 20 35))");
         GeometryAttributeDiff diff2 = new GeometryAttributeDiff(oldGeom, newGeom2);
-        assertFalse(diff.conflicts(diff2));
+
+        // the diff is conflicting
+        assertTrue(diff.conflicts(diff2));
+
+        // yet it can be applied for patching
+        assertTrue(diff2.canBeAppliedOn(newGeom));
         Geometry merged = diff2.applyOn(newGeom);
         assertNotNull(merged);
         assertEquals(
@@ -172,16 +182,21 @@ public class GeometryDiffTest {
     }
 
     @Test
-    public void testNoConflictRemovingPoints() throws Exception {
+    public void testConflictRemovingPoints() throws Exception {
         Geometry oldGeom = new WKTReader().read(
                 "MULTILINESTRING ((40 40, 20 45, 45 30, 40 40),(20 35, 45 10, 30 5, 10 30, 20 35))");
         Geometry newGeom = new WKTReader()
-          .read("MULTILINESTRING ((40 40, 45 30, 40 40),(20 35, 45 10, 30 5, 10 30, 20 35))");
+                .read("MULTILINESTRING ((40 40, 45 30, 40 40),(20 35, 45 10, 30 5, 10 30, 20 35))");
         GeometryAttributeDiff diff = new GeometryAttributeDiff(oldGeom, newGeom);
         Geometry newGeom2 = new WKTReader().read(
                 "MULTILINESTRING ((40 40, 20 45, 45 30, 40 40),(20 35, 45 10, 31 6, 10 30, 20 35))");
         GeometryAttributeDiff diff2 = new GeometryAttributeDiff(oldGeom, newGeom2);
-        assertFalse(diff.conflicts(diff2));
+
+        // the diff reports a conflict
+        assertTrue(diff.conflicts(diff2));
+
+        // yet it can be applied for patching
+        assertTrue(diff2.canBeAppliedOn(newGeom));
         Geometry merged = diff2.applyOn(newGeom);
         assertNotNull(merged);
         Geometry expected = new WKTReader().read(

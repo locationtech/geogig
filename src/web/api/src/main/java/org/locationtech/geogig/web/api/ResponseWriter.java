@@ -424,7 +424,6 @@ public class ResponseWriter {
         writeElement("name", revTag.getName());
         writeElement("message", revTag.getMessage());
         writePerson("tagger", revTag.getTagger());
-
         out.writeEndElement();
     }
 
@@ -672,17 +671,35 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link Tag} command to the stream.
+     * Writes the list response for the {@link Tag} command to the stream.
      * 
      * @param tags the list of {@link RevTag}s of this repository
      * @throws XMLStreamException
      */
     public void writeTagListResponse(List<RevTag> tags) throws XMLStreamException {
         for (RevTag tag : tags) {
-            out.writeStartElement("Tag");
-            writeElement("name", tag.getName());
-            out.writeEndElement();
+            writeTag(tag, "Tag");
         }
+    }
+
+    /**
+     * Writes the delete response for the {@link Tag} command to the stream.
+     * 
+     * @param tag the removed {@link RevTag}
+     * @throws XMLStreamException
+     */
+    public void writeTagDeleteResponse(RevTag tag) throws XMLStreamException {
+        writeTag(tag, "DeletedTag");
+    }
+
+    /**
+     * Writes the create response for the {@link Tag} command to the stream.
+     * 
+     * @param tag the created {@link RevTag}
+     * @throws XMLStreamException
+     */
+    public void writeTagCreateResponse(RevTag tag) throws XMLStreamException {
+        writeTag(tag, "Tag");
     }
 
     public void writeRebuildGraphResponse(ImmutableList<ObjectId> updatedObjects, boolean quiet)

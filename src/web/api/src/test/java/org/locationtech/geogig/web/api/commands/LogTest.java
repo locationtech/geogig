@@ -34,8 +34,6 @@ import org.locationtech.geogig.web.api.TestParams;
 import org.restlet.resource.Representation;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import com.google.common.base.Suppliers;
-
 public class LogTest extends AbstractWebOpTest {
 
     @Override
@@ -104,12 +102,10 @@ public class LogTest extends AbstractWebOpTest {
                 .call();
         testData.checkout("master");
         MergeReport report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch1").addCommit(Suppliers.ofInstance(commit2.getId()))
-                .call();
+                .setMessage("merge branch branch1").addCommit(commit2.getId()).call();
         RevCommit commit4 = report.getMergeCommit();
         report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch2").addCommit(Suppliers.ofInstance(commit3.getId()))
-                .call();
+                .setMessage("merge branch branch2").addCommit(commit3.getId()).call();
         RevCommit commit5 = report.getMergeCommit();
 
         ParameterSet options = TestParams.of();
@@ -152,12 +148,10 @@ public class LogTest extends AbstractWebOpTest {
                 .call();
         testData.checkout("master");
         MergeReport report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch1").addCommit(Suppliers.ofInstance(commit2.getId()))
-                .call();
+                .setMessage("merge branch branch1").addCommit(commit2.getId()).call();
         RevCommit commit4 = report.getMergeCommit();
-        geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch2").addCommit(Suppliers.ofInstance(commit3.getId()))
-                .call();
+        geogig.command(MergeOp.class).setNoFastForward(true).setMessage("merge branch branch2")
+                .addCommit(commit3.getId()).call();
 
         ParameterSet options = TestParams.of("since", commit1.getId().toString(), "until",
                 commit4.getId().toString(), "firstParentOnly", "false");
@@ -191,7 +185,6 @@ public class LogTest extends AbstractWebOpTest {
         RevCommit commit3 = geogig.command(CommitOp.class).setMessage("point3, line3, poly3")
                 .setCommitterTimestamp(Long.valueOf(3000)).call();
 
-
         ParameterSet options = TestParams.of("sinceTime", Long.toString(2000), "untilTime",
                 Long.toString(3000), "firstParentOnly", "false");
         buildCommand(options).run(testContext.get());
@@ -221,8 +214,7 @@ public class LogTest extends AbstractWebOpTest {
         testData.checkout("branch1");
         testData.insert(TestData.line2, TestData.poly2);
         testData.add();
-        RevCommit commit2 = geogig.command(CommitOp.class).setMessage("line2, poly2")
-                .call();
+        RevCommit commit2 = geogig.command(CommitOp.class).setMessage("line2, poly2").call();
         testData.checkout("branch2");
         testData.insert(TestData.point3, TestData.line3, TestData.poly3);
         testData.add();
@@ -230,11 +222,9 @@ public class LogTest extends AbstractWebOpTest {
                 .call();
         testData.checkout("master");
         MergeReport report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch1").addCommit(Suppliers.ofInstance(commit2.getId()))
-                .call();
+                .setMessage("merge branch branch1").addCommit(commit2.getId()).call();
         report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch2").addCommit(Suppliers.ofInstance(commit3.getId()))
-                .call();
+                .setMessage("merge branch branch2").addCommit(commit3.getId()).call();
         RevCommit commit5 = report.getMergeCommit();
 
         ParameterSet options = TestParams.of("path", "Points");
@@ -268,22 +258,18 @@ public class LogTest extends AbstractWebOpTest {
         testData.insert(TestData.point1_modified);
         testData.add();
         RevCommit commit2 = geogig.command(CommitOp.class)
-                .setMessage("point2, poly2, modified point1")
-                .call();
+                .setMessage("point2, poly2, modified point1").call();
         testData.checkout("branch2");
         testData.insert(TestData.point3);
         testData.remove(TestData.line1);
         testData.add();
-        RevCommit commit3 = geogig.command(CommitOp.class).setMessage("+point3 -line1")
-                .call();
+        RevCommit commit3 = geogig.command(CommitOp.class).setMessage("+point3 -line1").call();
         testData.checkout("master");
         MergeReport report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch1").addCommit(Suppliers.ofInstance(commit2.getId()))
-                .call();
+                .setMessage("merge branch branch1").addCommit(commit2.getId()).call();
         RevCommit commit4 = report.getMergeCommit();
         report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch2").addCommit(Suppliers.ofInstance(commit3.getId()))
-                .call();
+                .setMessage("merge branch branch2").addCommit(commit3.getId()).call();
         RevCommit commit5 = report.getMergeCommit();
 
         ParameterSet options = TestParams.of("countChanges", "true");
@@ -315,8 +301,7 @@ public class LogTest extends AbstractWebOpTest {
         testData.checkout("master");
         testData.insert(TestData.point1, TestData.line1, TestData.poly1);
         testData.add();
-        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("point1 line1 poly1")
-                .call();
+        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("point1 line1 poly1").call();
         testData.branch("branch1");
         testData.branch("branch2");
         testData.checkout("branch1");
@@ -329,12 +314,10 @@ public class LogTest extends AbstractWebOpTest {
         testData.add();
         RevCommit commit3 = geogig.command(CommitOp.class).setMessage("+point3 -line1").call();
         testData.checkout("master");
-        geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch1").addCommit(Suppliers.ofInstance(commit2.getId()))
-                .call();
-        geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch2").addCommit(Suppliers.ofInstance(commit3.getId()))
-                .call();
+        geogig.command(MergeOp.class).setNoFastForward(true).setMessage("merge branch branch1")
+                .addCommit(commit2.getId()).call();
+        geogig.command(MergeOp.class).setNoFastForward(true).setMessage("merge branch branch2")
+                .addCommit(commit3.getId()).call();
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point1.getID());

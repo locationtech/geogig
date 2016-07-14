@@ -168,8 +168,7 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
                         try {
                             transaction.command(MergeOp.class)
                                     .setAuthor(authorName.orNull(), authorEmail.orNull())
-                                    .addCommit(Suppliers.ofInstance(repoRef.get().getObjectId()))
-                                    .call();
+                                    .addCommit(repoRef.get().getObjectId()).call();
                         } catch (NothingToCommitException e) {
                             // The repo commit is already in our history, this is a fast
                             // forward.

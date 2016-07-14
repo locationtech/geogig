@@ -95,12 +95,10 @@ public class GetCommitGraphTest extends AbstractWebOpTest {
                 .call();
         testData.checkout("master");
         MergeReport report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch1").addCommit(Suppliers.ofInstance(commit2.getId()))
-                .call();
+                .setMessage("merge branch branch1").addCommit(commit2.getId()).call();
         RevCommit commit4 = report.getMergeCommit();
         report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch2").addCommit(Suppliers.ofInstance(commit3.getId()))
-                .call();
+                .setMessage("merge branch branch2").addCommit(commit3.getId()).call();
         RevCommit commit5 = report.getMergeCommit();
 
         ParameterSet options = TestParams.of("commitId", commit5.getId().toString());
@@ -142,12 +140,10 @@ public class GetCommitGraphTest extends AbstractWebOpTest {
                 .call();
         testData.checkout("master");
         MergeReport report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch1").addCommit(Suppliers.ofInstance(commit2.getId()))
-                .call();
+                .setMessage("merge branch branch1").addCommit(commit2.getId()).call();
         RevCommit commit4 = report.getMergeCommit();
         report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch2").addCommit(Suppliers.ofInstance(commit3.getId()))
-                .call();
+                .setMessage("merge branch branch2").addCommit(commit3.getId()).call();
         RevCommit commit5 = report.getMergeCommit();
 
         ParameterSet options = TestParams.of("depth", "2", "commitId", commit5.getId().toString());

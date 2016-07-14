@@ -302,7 +302,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         RevCommit modifiedCommit = geogig.command(CommitOp.class).setMessage("Commit2").call();
         GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
         try {
-            tx.command(MergeOp.class).addCommit(Suppliers.ofInstance(mainCommit.getId())).call();
+            tx.command(MergeOp.class).addCommit(mainCommit.getId()).call();
             fail("Expected a merge conflict!");
         } catch (org.locationtech.geogig.api.porcelain.MergeConflictsException e) {
             // expected.

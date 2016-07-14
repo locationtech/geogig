@@ -34,7 +34,6 @@ import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
 import org.opengis.feature.Feature;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
@@ -166,10 +165,8 @@ public class LogOpTest extends RepositoryTestCase {
         assertEquals(2, featureCommits.size());
 
         assertEquals(Collections.singletonList(expectedLineCommit), feature2_1Commits);
-        assertEquals(
-                true,
-                featureCommits.contains(expectedPointCommit)
-                        && featureCommits.contains(expectedLineCommit));
+        assertEquals(true, featureCommits.contains(expectedPointCommit)
+                && featureCommits.contains(expectedLineCommit));
     }
 
     @Test
@@ -244,8 +241,8 @@ public class LogOpTest extends RepositoryTestCase {
             Feature f = features.get(i);
             Long timestamp = timestamps.get(i);
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class)
-                    .setCommitterTimestamp(timestamp).call();
+            final RevCommit commit = geogig.command(CommitOp.class).setCommitterTimestamp(timestamp)
+                    .call();
             allCommits.addFirst(commit);
         }
 
@@ -373,8 +370,7 @@ public class LogOpTest extends RepositoryTestCase {
         // o - master - HEAD - Merge commit
 
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1.getObjectId()))
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
 
         RevCommit mergeCommit = mergeReport.getMergeCommit();
@@ -465,8 +461,7 @@ public class LogOpTest extends RepositoryTestCase {
         // o - master - HEAD - Merge commit
 
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1.getObjectId()))
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
 
         RevCommit mergeCommit = mergeReport.getMergeCommit();

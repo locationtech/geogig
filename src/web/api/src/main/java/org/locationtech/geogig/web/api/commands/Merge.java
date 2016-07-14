@@ -30,7 +30,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 
 /**
  * Interface for the Merge operation in GeoGig.
@@ -117,7 +116,7 @@ public class Merge extends AbstractWebAPICommand {
         final Optional<ObjectId> oid = transaction.command(RevParse.class).setRefSpec(commit)
                 .call();
         if (oid.isPresent()) {
-            merge.addCommit(Suppliers.ofInstance(oid.get()));
+            merge.addCommit(oid.get());
         } else {
             throw new CommandSpecException("Couldn't resolve '" + commit + "' to a commit.");
         }

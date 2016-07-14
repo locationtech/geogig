@@ -93,6 +93,12 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         return this;
     }
 
+    public MergeOp addCommit(final ObjectId commit) {
+        checkNotNull(commit);
+        this.commits.add(checkNotNull(commit));
+        return this;
+    }
+
     /**
      * 
      * @param ours true if the "ours" strategy should be used

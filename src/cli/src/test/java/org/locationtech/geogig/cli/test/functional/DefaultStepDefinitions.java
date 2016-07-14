@@ -271,7 +271,7 @@ public class DefaultStepDefinitions {
                 .setName("branch1").call().get();
         try {
             localRepo.geogigCLI.getGeogig(Hints.readWrite()).command(MergeOp.class)
-                    .addCommit(Suppliers.ofInstance(branch.getObjectId())).call();
+                    .addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
         }

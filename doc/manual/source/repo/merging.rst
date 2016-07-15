@@ -64,11 +64,10 @@ Types of conflicts
 
 The following cases will create a merge conflict when the following situations occur on both branches:
 
-* Modifying the same attribute of a feature, setting different values.
+* Modifying the same attribute of a feature (including geometries), setting different values.
 * Modifying an attribute in a feature (on one branch), deleting that attribute (on another branch).
 * Adding different features under the same path.
 * Modifying the default feature type for a given path, setting different values.
-* Modifying the same geometry of a feature differently.
 * One branch has deleted a tree, while the other one has added or modified a feature under that tree.
 * Both branches have modified a feature and at least one of them has changed its feature type, and the resulting feature types are not the same.
 
@@ -77,15 +76,11 @@ The following cases will not produce a merge conflict when the following situati
 
 * Adding the same feature at the same path.
 * Deleting the same feature.
-* Modifying the same attribute in a feature, setting the same new value.
+* Modifying the same attribute in a feature (including geometries), setting the same new value.
 * Setting the same new default feature type for a path.
 * Editing the same feature, but modifying different attributes.
-* Modifying the geometry of a feature, but when changes are compatible and can be both incorporated.
-* Making the same modification to a feature geometry.
 
 In general, whenever the situation doesn't have a clear way of being solved, GeoGig will report a conflict for the sake of safety.
-
-
 
 
 Showing conflicts

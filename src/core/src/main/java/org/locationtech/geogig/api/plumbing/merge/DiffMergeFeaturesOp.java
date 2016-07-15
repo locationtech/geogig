@@ -32,7 +32,6 @@ import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.plumbing.DiffFeature;
 import org.locationtech.geogig.api.plumbing.diff.AttributeDiff;
 import org.locationtech.geogig.api.plumbing.diff.FeatureDiff;
-import org.locationtech.geogig.api.plumbing.diff.GeometryAttributeDiff;
 import org.locationtech.geogig.api.plumbing.merge.DiffMergeFeaturesOp.DiffMergeFeatureResult;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -251,16 +250,6 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
             } else {
                 // both modified the attribute and didn't set the same value
                 merged = valueA;
-                if (isGeom) {
-                    // true merge is only done with geometries
-                    GeometryAttributeDiff diffB;
-                    Geometry ancestorGeom = (Geometry) ancestorValue;
-                    Geometry geomB = (Geometry) valueB;
-                    diffB = new GeometryAttributeDiff(ancestorGeom, geomB);
-                    if (diffB.canBeAppliedOn(valueA)) {
-                        merged = diffB.applyOn(valueA);
-                    }
-                }
             }
             mergedValues.addValue(merged);
         }

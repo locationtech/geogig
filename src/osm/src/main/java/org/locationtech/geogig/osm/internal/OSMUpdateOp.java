@@ -95,8 +95,8 @@ public class OSMUpdateOp extends AbstractGeoGigOp<Optional<OSMReport>> {
         List<OSMLogEntry> entries = command(ReadOSMLogEntries.class).call();
         checkArgument(!entries.isEmpty(), "Not in a geogig repository with OSM data");
 
-        Iterator<RevCommit> log = command(LogOp.class).setFirstParentOnly(false)
-                .setTopoOrder(false).call();
+        Iterator<RevCommit> log = command(LogOp.class).setFirstParentOnly(false).setTopoOrder(false)
+                .call();
 
         RevCommit lastCommit = null;
         OSMLogEntry lastEntry = null;
@@ -135,15 +135,15 @@ public class OSMUpdateOp extends AbstractGeoGigOp<Optional<OSMReport>> {
 
             Optional<Ref> upstreamRef = command(RefParse.class).setName(OSMUtils.OSM_FETCH_BRANCH)
                     .call();
-            Supplier<ObjectId> commitSupplier = Suppliers.ofInstance(upstreamRef.get()
-                    .getObjectId());
+            ObjectId upstreamCommitId = upstreamRef.get().getObjectId();
+            Supplier<ObjectId> commitSupplier = Suppliers.ofInstance(upstreamCommitId);
             if (rebase) {
                 getProgressListener().setDescription("Rebasing updated features...");
                 command(RebaseOp.class).setUpstream(commitSupplier)
                         .setProgressListener(getProgressListener()).call();
             } else {
                 getProgressListener().setDescription("Merging updated features...");
-                command(MergeOp.class).addCommit(commitSupplier)
+                command(MergeOp.class).addCommit(upstreamCommitId)
                         .setProgressListener(getProgressListener()).call();
             }
         }

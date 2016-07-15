@@ -24,7 +24,6 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.plumbing.diff.GeometryAttributeDiff;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -132,20 +131,6 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
                 featureBuilder.set(name, valueB);
             } else {
                 Object merged = valueA;
-                boolean valueBEqualsAncestor = valueEquals(isGeom, valueB, valueAncestor);
-                // true merge is only done with geometries
-                if (isGeom && !valueBEqualsAncestor) {
-                    boolean valueBEqualsValueA = valueEquals(isGeom, valueB, valueA);
-                    if (!valueBEqualsValueA) {
-                        GeometryAttributeDiff diffB;
-                        Geometry ancestorGeom = (Geometry) valueAncestor;
-                        Geometry geomB = (Geometry) valueB;
-                        diffB = new GeometryAttributeDiff(ancestorGeom, geomB);
-                        if (diffB.canBeAppliedOn(valueA)) {
-                            merged = diffB.applyOn(valueA);
-                        }
-                    }
-                }
                 featureBuilder.set(name, merged);
             }
         }

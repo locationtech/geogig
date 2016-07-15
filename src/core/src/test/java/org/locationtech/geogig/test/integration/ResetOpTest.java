@@ -334,7 +334,7 @@ public class ResetOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId())
                     .setMessage("Merge features.").call();
             fail();
         } catch (MergeConflictsException e) {
@@ -372,8 +372,7 @@ public class ResetOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
@@ -405,8 +404,7 @@ public class ResetOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));

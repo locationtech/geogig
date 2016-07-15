@@ -233,7 +233,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         // Merge branch1 into master
         MergeReport report = remoteGeogig.geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1commit.getId())).call();
+                .addCommit(branch1commit.getId()).call();
 
         expectedMaster.addFirst(report.getMergeCommit());
 

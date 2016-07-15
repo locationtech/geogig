@@ -24,7 +24,6 @@ import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 
 public class FindCommonAncestorTest extends RepositoryTestCase {
     @Rule
@@ -161,8 +160,8 @@ public class FindCommonAncestorTest extends RepositoryTestCase {
         insertAndAdd(lines2);
         geogig.command(CommitOp.class).setMessage("commit for " + idL2).call();
 
-        final MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(left.getId())).call();
+        final MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(left.getId())
+                .call();
 
         Optional<ObjectId> commonAncestor = geogig.command(FindCommonAncestor.class)
                 .setLeft(mergeReport.getMergeCommit()).setRight(branch2).call();
@@ -216,8 +215,7 @@ public class FindCommonAncestorTest extends RepositoryTestCase {
         insertAndAdd(poly2);
         geogig.command(CommitOp.class).setMessage("commit for " + idPG2).call();
 
-        MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch3.getId())).call();
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch3.getId()).call();
 
         RevCommit branch2 = mergeReport.getMergeCommit();
 
@@ -231,8 +229,7 @@ public class FindCommonAncestorTest extends RepositoryTestCase {
         insertAndAdd(lines2);
         geogig.command(CommitOp.class).setMessage("commit for " + idL2).call();
 
-        mergeReport = geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(left.getId()))
-                .call();
+        mergeReport = geogig.command(MergeOp.class).addCommit(left.getId()).call();
 
         Optional<ObjectId> commonAncestor = geogig.command(FindCommonAncestor.class)
                 .setLeft(mergeReport.getMergeCommit()).setRight(branch2).call();
@@ -296,8 +293,7 @@ public class FindCommonAncestorTest extends RepositoryTestCase {
 
         // commit5
         geogig.command(CheckoutOp.class).setSource("branch2").call();
-        geogig.command(MergeOp.class).setMessage("commit3")
-                .addCommit(Suppliers.ofInstance(commit4)).call();
+        geogig.command(MergeOp.class).setMessage("commit3").addCommit(commit4).call();
 
         // commit6
         geogig.command(CheckoutOp.class).setSource("branch1").call();
@@ -323,8 +319,8 @@ public class FindCommonAncestorTest extends RepositoryTestCase {
 
         // commit11
         geogig.command(CheckoutOp.class).setSource("master").call();
-        MergeReport report = geogig.command(MergeOp.class).setMessage("commit11")
-                .addCommit(Suppliers.ofInstance(commit9)).call();
+        MergeReport report = geogig.command(MergeOp.class).setMessage("commit11").addCommit(commit9)
+                .call();
 
         Optional<ObjectId> commonAncestor = geogig.command(FindCommonAncestor.class)
                 .setLeft(report.getMergeCommit()).setRight(commit10).call();

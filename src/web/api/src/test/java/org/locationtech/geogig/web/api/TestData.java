@@ -48,8 +48,6 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -223,8 +221,7 @@ public class TestData {
 
         LOG.debug("HEAD: " + repo.command(RefParse.class).setName(Ref.HEAD).call().get());
         List<NodeRef> treeRefs = Lists
-                .newArrayList(getContext().command(LsTreeOp.class)
-                .setReference(Ref.HEAD).call());
+                .newArrayList(getContext().command(LsTreeOp.class).setReference(Ref.HEAD).call());
         checkState(3 == treeRefs.size());
         for (NodeRef r : treeRefs) {
             RevTree tree = getContext().objectDatabase().getTree(r.getObjectId());
@@ -235,11 +232,9 @@ public class TestData {
 
     public TestData mergeNoFF(String branchToMerge, String mergeCommitMessage) {
         ObjectId branchHead = getContext().command(RefParse.class).setName(branchToMerge).call()
-                .get()
-                .getObjectId();
-        Supplier<ObjectId> commit = Suppliers.ofInstance(branchHead);
+                .get().getObjectId();
         MergeReport report = getContext().command(MergeOp.class).setNoFastForward(true)
-                .setMessage(mergeCommitMessage).addCommit(commit).call();
+                .setMessage(mergeCommitMessage).addCommit(branchHead).call();
         RevCommit mergeCommit = report.getMergeCommit();
         checkState(mergeCommit.getParentIds().size() == 2);
         LOG.debug(mergeCommit.toString());

@@ -121,7 +121,7 @@ public class Merge extends AbstractCommand implements CLICommand {
                 Optional<ObjectId> commitId;
                 commitId = geogig.command(RevParse.class).setRefSpec(commitish).call();
                 checkParameter(commitId.isPresent(), "Commit not found '%s'", commitish);
-                merge.addCommit(Suppliers.ofInstance(commitId.get()));
+                merge.addCommit(commitId.get());
             }
             if (progress.isCanceled()) {
                 return;

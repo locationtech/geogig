@@ -56,7 +56,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 
 public class SparseCloneTest extends RemoteRepositoryTestCase {
 
@@ -151,8 +150,8 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
                     .setName("sparse.filter").setValue("filter.ini").setScope(ConfigScope.LOCAL)
                     .call();
 
-            LocalMappedRemoteRepo remoteRepo = spy(new LocalMappedRemoteRepo(
-                    remoteGeogig.envHome.toURI(), localGeogig.repo));
+            LocalMappedRemoteRepo remoteRepo = spy(
+                    new LocalMappedRemoteRepo(remoteGeogig.envHome.toURI(), localGeogig.repo));
 
             doNothing().when(remoteRepo).close();
 
@@ -341,8 +340,8 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         }
 
         assertEquals(3, logged.size());
-        assertEquals(AbstractMappedRemoteRepo.PLACEHOLDER_COMMIT_MESSAGE, logged.get(0)
-                .getMessage());
+        assertEquals(AbstractMappedRemoteRepo.PLACEHOLDER_COMMIT_MESSAGE,
+                logged.get(0).getMessage());
         assertFalse(expected.get(0).getId().equals(logged.get(0).getId()));
         assertEquals("Roads.1", logged.get(1).getMessage());
         assertFalse(expected.get(2).getId().equals(logged.get(1).getId()));
@@ -522,8 +521,8 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
             logged.add(logs.next());
         }
 
-        assertEquals(AbstractMappedRemoteRepo.PLACEHOLDER_COMMIT_MESSAGE, logged.get(0)
-                .getMessage());
+        assertEquals(AbstractMappedRemoteRepo.PLACEHOLDER_COMMIT_MESSAGE,
+                logged.get(0).getMessage());
         assertFalse(commit.getId().equals(logged.get(0).getId()));
 
         assertNotExists(localGeogig, oId);
@@ -598,8 +597,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
 
         // Merge master into Branch1
         MergeOp merge = localGeogig.geogig.command(MergeOp.class);
-        MergeReport report = merge.addCommit(Suppliers.ofInstance(masterCommit))
-                .setMessage("Merge").call();
+        MergeReport report = merge.addCommit(masterCommit).setMessage("Merge").call();
 
         // Update master to the new merge commit
         localGeogig.geogig.command(UpdateRef.class).setName("refs/heads/master")
@@ -680,8 +678,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
 
         // Merge Branch1 into master
         MergeOp merge = localGeogig.geogig.command(MergeOp.class);
-        MergeReport report = merge.addCommit(Suppliers.ofInstance(expected.get(0).getId()))
-                .setMessage("Merge").call();
+        MergeReport report = merge.addCommit(expected.get(0).getId()).setMessage("Merge").call();
 
         PushOp push = push();
         push.addRefSpec("refs/heads/master").call();

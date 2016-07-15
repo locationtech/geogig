@@ -25,7 +25,6 @@ import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
 import org.locationtech.geogig.api.porcelain.BranchCreateOp;
 import org.locationtech.geogig.api.porcelain.CheckoutOp;
 import org.locationtech.geogig.api.porcelain.CommitOp;
@@ -39,7 +38,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 
 public class RemoveOpTest extends RepositoryTestCase {
 
@@ -143,8 +141,7 @@ public class RemoveOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));

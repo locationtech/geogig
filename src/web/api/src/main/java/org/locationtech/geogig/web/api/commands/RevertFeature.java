@@ -41,7 +41,6 @@ import org.locationtech.geogig.web.api.ResponseWriter;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
 /**
@@ -223,8 +222,8 @@ public class RevertFeature extends AbstractWebAPICommand {
         builder.setTreeId(newTreeId);
         builder.setAuthor(authorName.orNull());
         builder.setAuthorEmail(authorEmail.orNull());
-        builder.setMessage(commitMessage.or("Reverted changes made to " + featurePath + " at "
-                + newCommitId.toString()));
+        builder.setMessage(commitMessage
+                .or("Reverted changes made to " + featurePath + " at " + newCommitId.toString()));
 
         RevCommit mapped = builder.build();
         context.getGeoGIG().getRepository().objectDatabase().put(mapped);
@@ -237,7 +236,7 @@ public class RevertFeature extends AbstractWebAPICommand {
 
         MergeOp merge = geogig.command(MergeOp.class);
         merge.setAuthor(authorName.orNull(), authorEmail.orNull());
-        merge.addCommit(Suppliers.ofInstance(mapped.getId()));
+        merge.addCommit(mapped.getId());
         merge.setMessage(mergeMessage.or("Merged revert of " + featurePath));
 
         try {

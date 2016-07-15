@@ -257,7 +257,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
                     try {
                         MergeReport report = command(MergeOp.class)
                                 .setAuthor(authorName.orNull(), authorEmail.orNull())
-                                .addCommit(Suppliers.ofInstance(sourceOid)).call();
+                                .addCommit(sourceOid).call();
                         result.setMergeReport(Optional.of(report));
                     } catch (NothingToCommitException e) {
                         // the branch that we are trying to pull has less history than the

@@ -71,7 +71,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableSet;
@@ -239,11 +238,11 @@ public class InterchangeFormat {
      *         fast-forward merge
      */
     public GeopkgImportResult importAuditLog(@Nullable String commitMessage,
-            @Nullable String authorName,
-            @Nullable String authorEmail, @Nullable String... tableNames) {
+            @Nullable String authorName, @Nullable String authorEmail,
+            @Nullable String... tableNames) {
 
-        final Set<String> importTables = tableNames == null ? ImmutableSet.of() : Sets
-                .newHashSet(tableNames);
+        final Set<String> importTables = tableNames == null ? ImmutableSet.of()
+                : Sets.newHashSet(tableNames);
 
         List<AuditReport> reports = new ArrayList<>();
         GeoPackage geopackage;
@@ -274,8 +273,7 @@ public class InterchangeFormat {
 
             RevCommit commit = context.objectDatabase().getCommit(commitId);
             RevTree baseTree = context.objectDatabase().getTree(commit.getTreeId());
-            RevTreeBuilder newTreeBuilder = new RevTreeBuilder(context.objectDatabase(),
-                    baseTree);
+            RevTreeBuilder newTreeBuilder = new RevTreeBuilder(context.objectDatabase(), baseTree);
 
             Map<String, String> fidMappings = null;
             for (AuditTable t : tables.values()) {
@@ -284,7 +282,7 @@ public class InterchangeFormat {
                         fidMappings);
                 reports.add(report);
             }
-            
+
             RevTree newTree = newTreeBuilder.build();
             context.objectDatabase().put(newTree);
 
@@ -323,7 +321,7 @@ public class InterchangeFormat {
             context.objectDatabase().put(importCommit);
 
             MergeOp merge = context.command(MergeOp.class).setAuthor(authorName, authorEmail)
-                    .addCommit(Suppliers.ofInstance(importCommit.getId()));
+                    .addCommit(importCommit.getId());
 
             if (commitMessage != null) {
                 merge.setMessage("Merge: " + commitMessage);
@@ -377,8 +375,8 @@ public class InterchangeFormat {
 
                     final NodeRef featureTreeRef = currentTreeRef.get();
                     final RevTree currentFeatureTree = store.getTree(featureTreeRef.getObjectId());
-                    final RevFeatureType featureType = store.getFeatureType(featureTreeRef
-                            .getMetadataId());
+                    final RevFeatureType featureType = store
+                            .getFeatureType(featureTreeRef.getMetadataId());
 
                     final Iterator<Change> changes = asChanges(rs, featureType, tableReport);
                     final RevTree newFeatureTree = importAuditLog(store, currentFeatureTree,
@@ -406,7 +404,7 @@ public class InterchangeFormat {
      */
     private RevTree importAuditLog(ObjectStore store, RevTree currentFeatureTree,
             Iterator<Change> changes, Map<String, String> fidMappings, AuditReport report)
-                    throws SQLException {
+            throws SQLException {
 
         RevTreeBuilder builder = new RevTreeBuilder(store, currentFeatureTree);
 
@@ -438,8 +436,8 @@ public class InterchangeFormat {
                     break;
                 case ADDED:
                 case MODIFIED:
-                    Node node = Node.create(featureId, feature.getId(), ObjectId.NULL,
-                            TYPE.FEATURE, SpatialOps.boundsOf(feature));
+                    Node node = Node.create(featureId, feature.getId(), ObjectId.NULL, TYPE.FEATURE,
+                            SpatialOps.boundsOf(feature));
                     builder.put(node);
                     return feature;
                 default:
@@ -516,10 +514,9 @@ public class InterchangeFormat {
                 case AUDIT_OP_DELETE:
                     return ChangeType.REMOVED;
                 default:
-                    throw new IllegalArgumentException(
-                            String.format(
-                                    "Geopackage audit log record contains an invalid audit op code: %d. Expected one if %d(INSERT), %d(UPDATE), %d(DELETE)",
-                                    auditOp, AUDIT_OP_INSERT, AUDIT_OP_UPDATE, AUDIT_OP_DELETE));
+                    throw new IllegalArgumentException(String.format(
+                            "Geopackage audit log record contains an invalid audit op code: %d. Expected one if %d(INSERT), %d(UPDATE), %d(DELETE)",
+                            auditOp, AUDIT_OP_INSERT, AUDIT_OP_UPDATE, AUDIT_OP_DELETE));
                 }
             }
         };
@@ -546,8 +543,8 @@ public class InterchangeFormat {
             List<AttributeDescriptor> descriptors = type.getAttributeDescriptors();
             this.attNames = Lists.transform(descriptors, at -> at.getLocalName());
             GeometryDescriptor geometryDescriptor = type.getGeometryDescriptor();
-            this.geometryAttribute = geometryDescriptor == null ? null : geometryDescriptor
-                    .getLocalName();
+            this.geometryAttribute = geometryDescriptor == null ? null
+                    : geometryDescriptor.getLocalName();
         }
 
         @Override

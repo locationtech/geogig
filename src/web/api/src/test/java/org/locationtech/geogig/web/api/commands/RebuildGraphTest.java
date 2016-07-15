@@ -27,8 +27,6 @@ import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import com.google.common.base.Suppliers;
-
 public class RebuildGraphTest extends AbstractWebOpTest {
 
     @Override
@@ -63,8 +61,7 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         testData.checkout("master");
         testData.insert(TestData.point1, TestData.line1, TestData.poly1);
         testData.add();
-        geogig.command(CommitOp.class).setMessage("point1, line1, poly1")
-                .call();
+        geogig.command(CommitOp.class).setMessage("point1, line1, poly1").call();
         testData.branch("branch1");
         testData.branch("branch2");
         testData.checkout("branch1");
@@ -79,12 +76,10 @@ public class RebuildGraphTest extends AbstractWebOpTest {
                 .call();
         testData.checkout("master");
         MergeReport report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch1").addCommit(Suppliers.ofInstance(commit2.getId()))
-                .call();
+                .setMessage("merge branch branch1").addCommit(commit2.getId()).call();
         RevCommit commit4 = report.getMergeCommit();
         report = geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch2").addCommit(Suppliers.ofInstance(commit3.getId()))
-                .call();
+                .setMessage("merge branch branch2").addCommit(commit3.getId()).call();
         RevCommit commit5 = report.getMergeCommit();
 
         geogig.getRepository().graphDatabase().truncate();
@@ -132,12 +127,10 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         RevCommit commit3 = geogig.command(CommitOp.class).setMessage("point3, line3, poly3")
                 .call();
         testData.checkout("master");
-        geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch1").addCommit(Suppliers.ofInstance(commit2.getId()))
-                .call();
-        geogig.command(MergeOp.class).setNoFastForward(true)
-                .setMessage("merge branch branch2").addCommit(Suppliers.ofInstance(commit3.getId()))
-                .call();
+        geogig.command(MergeOp.class).setNoFastForward(true).setMessage("merge branch branch1")
+                .addCommit(commit2.getId()).call();
+        geogig.command(MergeOp.class).setNoFastForward(true).setMessage("merge branch branch2")
+                .addCommit(commit3.getId()).call();
 
         geogig.getRepository().graphDatabase().truncate();
 

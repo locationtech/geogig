@@ -30,8 +30,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 
-import com.google.common.base.Suppliers;
-
 public class ResolveConflictTest extends AbstractWebOpTest {
 
     @Override
@@ -82,8 +80,7 @@ public class ResolveConflictTest extends AbstractWebOpTest {
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
         try {
-            transaction.command(MergeOp.class)
-                    .addCommit(Suppliers.ofInstance(branch1Commit.getId())).call();
+            transaction.command(MergeOp.class).addCommit(branch1Commit.getId()).call();
         } catch (MergeConflictsException e) {
             // This is expected.
         }

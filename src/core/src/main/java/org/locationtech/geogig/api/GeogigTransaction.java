@@ -87,6 +87,7 @@ public class GeogigTransaction implements Context {
     public void close() {
         transactionBlobStore.removeBlobs(transactionId.toString());
         transactionRefDatabase.close();
+        transactionIndex.conflictsDatabase().removeConflicts(null);
     }
 
     /**

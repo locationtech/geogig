@@ -9,9 +9,6 @@
  */
 package org.locationtech.geogig.storage;
 
-import static org.locationtech.geogig.api.Ref.TRANSACTIONS_PREFIX;
-import static org.locationtech.geogig.api.Ref.append;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -51,8 +48,7 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
     public TransactionConflictsDatabase(final ConflictsDatabase database,
             final UUID transactionId) {
         this.database = database;
-        this.txNamespace = append(append(TRANSACTIONS_PREFIX, transactionId.toString()),
-                "conflicts");
+        this.txNamespace = transactionId.toString();
     }
 
     /**

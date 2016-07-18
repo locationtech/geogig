@@ -544,14 +544,16 @@ public class FileConflictsDatabase implements ConflictsDatabase {
      */
     @Nullable
     private File resolveConflictsFile(@Nullable String namespace) {
+        if (!isOpen()) {
+            return null;
+        }
+        File conflictsFile;
         if (namespace == null) {
-            namespace = "conflicts";
+            conflictsFile = new File(repositoryDirectory, "conflicts");
+        } else {
+            conflictsFile = new File(new File(repositoryDirectory, "txconflicts"), namespace);
         }
-        File file = null;
-        if (isOpen()) {
-            file = new File(repositoryDirectory, namespace);
-        }
-        return file;
+        return conflictsFile;
     }
 
     /**

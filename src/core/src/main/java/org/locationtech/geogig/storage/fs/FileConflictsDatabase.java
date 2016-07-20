@@ -424,8 +424,9 @@ public class FileConflictsDatabase implements ConflictsDatabase {
      *        that shall be removed, and false if the conflict shall be kept
      */
     private void removeInternal(final File conflictsFile, final Predicate<String> pathMatcher) {
+        final File tmpFile;
         try {
-            final File tmpFile = File.createTempFile(conflictsFile.getName(), ".tmp",
+            tmpFile = File.createTempFile(conflictsFile.getName(), ".tmp",
                     conflictsFile.getParentFile());
 
             try (BufferedReader reader = new BufferedReader(
@@ -447,26 +448,29 @@ public class FileConflictsDatabase implements ConflictsDatabase {
                         }
                     });
                 }
-
-                File backup = new File(conflictsFile.getParentFile(),
-                        conflictsFile.getName() + ".bak");
-                if (backup.exists()) {
-                    backup.delete();
-                }
-                Files.move(conflictsFile, backup);
-                try {
-                    Files.move(tmpFile, conflictsFile);
-                    backup.delete();
-                } catch (IOException cantMove) {
-                    Files.move(backup, conflictsFile);
-                    throw Throwables.propagate(cantMove);
-                }
             } catch (Exception e) {
                 tmpFile.delete();
                 throw Throwables.propagate(e);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
+        }
+
+        File backup = new File(conflictsFile.getParentFile(), conflictsFile.getName() + ".bak");
+        if (backup.exists()) {
+            backup.delete();
+        }
+        try {
+            Files.move(conflictsFile, backup);
+            Files.move(tmpFile, conflictsFile);
+            backup.delete();
+        } catch (IOException cantMove) {
+            try {
+                Files.move(backup, conflictsFile);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+            throw Throwables.propagate(cantMove);
         }
     }
 

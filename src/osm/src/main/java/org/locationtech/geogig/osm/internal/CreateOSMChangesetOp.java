@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.osm.internal;
 
-import java.util.Iterator;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
@@ -18,6 +16,7 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
@@ -38,7 +37,6 @@ import org.openstreetmap.osmosis.core.task.common.ChangeAction;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 
 //import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 
@@ -48,7 +46,7 @@ import com.google.common.collect.Iterators;
  * @see CreateOSMChangesetOp
  */
 @CanRunDuringConflict
-public class CreateOSMChangesetOp extends AbstractGeoGigOp<Iterator<ChangeContainer>> {
+public class CreateOSMChangesetOp extends AbstractGeoGigOp<AutoCloseableIterator<ChangeContainer>> {
 
     private String oldRefSpec;
 
@@ -111,13 +109,16 @@ public class CreateOSMChangesetOp extends AbstractGeoGigOp<Iterator<ChangeContai
      * @see DiffEntry
      */
     @Override
-    protected Iterator<ChangeContainer> _call() {
+    protected AutoCloseableIterator<ChangeContainer> _call() {
 
-        Iterator<DiffEntry> nodeIterator = command(DiffOp.class).setFilter(OSMUtils.NODE_TYPE_NAME)
+        AutoCloseableIterator<DiffEntry> nodeIterator = command(DiffOp.class)
+                .setFilter(OSMUtils.NODE_TYPE_NAME)
                 .setNewVersion(newRefSpec).setOldVersion(oldRefSpec).setReportTrees(false).call();
-        Iterator<DiffEntry> wayIterator = command(DiffOp.class).setFilter(OSMUtils.WAY_TYPE_NAME)
+        AutoCloseableIterator<DiffEntry> wayIterator = command(DiffOp.class)
+                .setFilter(OSMUtils.WAY_TYPE_NAME)
                 .setNewVersion(newRefSpec).setOldVersion(oldRefSpec).setReportTrees(false).call();
-        Iterator<DiffEntry> iterator = Iterators.concat(nodeIterator, wayIterator);
+        AutoCloseableIterator<DiffEntry> iterator = AutoCloseableIterator.concat(nodeIterator,
+                wayIterator);
 
         final EntityConverter converter = new EntityConverter();
         final Function<DiffEntry, ChangeContainer> function = (diff) -> {
@@ -150,7 +151,7 @@ public class CreateOSMChangesetOp extends AbstractGeoGigOp<Iterator<ChangeContai
 
             return new ChangeContainer(container, action);
         };
-        return Iterators.transform(iterator, function);
+        return AutoCloseableIterator.transform(iterator, function);
     }
 
 }

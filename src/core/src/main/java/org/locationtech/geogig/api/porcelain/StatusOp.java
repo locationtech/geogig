@@ -14,6 +14,7 @@ import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffIndex;
 import org.locationtech.geogig.api.plumbing.DiffWorkTree;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -32,19 +33,19 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
 
     public static class StatusSummary {
 
-        private static final Supplier<Iterator<DiffEntry>> empty;
+        private static final Supplier<AutoCloseableIterator<DiffEntry>> empty;
 
         private static final Supplier<Iterator<Conflict>> no_conflicts;
         static {
-            empty = Suppliers.ofInstance(Collections.emptyIterator());
+            empty = Suppliers.ofInstance(AutoCloseableIterator.emptyIterator());
             no_conflicts = Suppliers.ofInstance(Collections.emptyIterator());
         }
 
         private Supplier<Iterator<Conflict>> conflicts = no_conflicts;
 
-        private Supplier<Iterator<DiffEntry>> staged = empty;
+        private Supplier<AutoCloseableIterator<DiffEntry>> staged = empty;
 
-        private Supplier<Iterator<DiffEntry>> unstaged = empty;
+        private Supplier<AutoCloseableIterator<DiffEntry>> unstaged = empty;
 
         private long countStaged, countUnstaged;
 
@@ -54,11 +55,11 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
             return conflicts;
         }
 
-        public Supplier<Iterator<DiffEntry>> getStaged() {
+        public Supplier<AutoCloseableIterator<DiffEntry>> getStaged() {
             return staged;
         }
 
-        public Supplier<Iterator<DiffEntry>> getUnstaged() {
+        public Supplier<AutoCloseableIterator<DiffEntry>> getUnstaged() {
             return unstaged;
         }
 

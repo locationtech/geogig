@@ -19,6 +19,7 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevPerson;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.ParseTimestamp;
 import org.locationtech.geogig.api.plumbing.RevParse;
@@ -140,17 +141,18 @@ public class Statistics extends AbstractWebAPICommand {
         int modifiedFeatures = 0;
         int removedFeatures = 0;
         if (since != null && !since.trim().isEmpty() && firstCommit != null && lastCommit != null) {
-            final Iterator<DiffEntry> diff = geogig.command(DiffOp.class)
+            try (final AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
                     .setOldVersion(firstCommit.getId()).setNewVersion(lastCommit.getId())
-                    .setFilter(path).call();
-            while (diff.hasNext()) {
-                DiffEntry entry = diff.next();
-                if (entry.changeType() == DiffEntry.ChangeType.ADDED) {
-                    addedFeatures++;
-                } else if (entry.changeType() == DiffEntry.ChangeType.MODIFIED) {
-                    modifiedFeatures++;
-                } else {
-                    removedFeatures++;
+                    .setFilter(path).call()) {
+                while (diff.hasNext()) {
+                    DiffEntry entry = diff.next();
+                    if (entry.changeType() == DiffEntry.ChangeType.ADDED) {
+                        addedFeatures++;
+                    } else if (entry.changeType() == DiffEntry.ChangeType.MODIFIED) {
+                        modifiedFeatures++;
+                    } else {
+                        removedFeatures++;
+                    }
                 }
             }
         }

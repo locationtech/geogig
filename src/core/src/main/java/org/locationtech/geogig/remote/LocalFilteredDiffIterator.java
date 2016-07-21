@@ -9,11 +9,10 @@
  */
 package org.locationtech.geogig.remote;
 
-import java.util.Iterator;
-
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RepositoryFilter;
 import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 
@@ -33,7 +32,7 @@ class LocalFilteredDiffIterator extends FilteredDiffIterator {
      * @param destinationRepo the sparse repository
      * @param repoFilter the repository filter
      */
-    public LocalFilteredDiffIterator(Iterator<DiffEntry> source, Repository sourceRepo,
+    public LocalFilteredDiffIterator(AutoCloseableIterator<DiffEntry> source, Repository sourceRepo,
             Repository destinationRepo, RepositoryFilter repoFilter) {
         super(source, sourceRepo, repoFilter);
         this.destinationRepo = destinationRepo;

@@ -18,6 +18,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevObject.TYPE;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffWorkTree;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -56,16 +57,18 @@ public class CleanOp extends AbstractGeoGigOp<WorkingTree> {
                     "pathspec '%s' did not resolve to a tree", path);
         }
 
-        final Iterator<DiffEntry> unstaged = command(DiffWorkTree.class).setFilter(path).call();
-        final Iterator<DiffEntry> added = filter(unstaged, new Predicate<DiffEntry>() {
+        try (final AutoCloseableIterator<DiffEntry> unstaged = command(DiffWorkTree.class)
+                .setFilter(path).call()) {
+            final Iterator<DiffEntry> added = filter(unstaged, new Predicate<DiffEntry>() {
 
-            @Override
-            public boolean apply(@Nullable DiffEntry input) {
-                return input.changeType().equals(ChangeType.ADDED);
-            }
-        });
+                @Override
+                public boolean apply(@Nullable DiffEntry input) {
+                    return input.changeType().equals(ChangeType.ADDED);
+                }
+            });
 
-        workingTree().delete(transform(added, (de) -> de.newPath()), getProgressListener());
+            workingTree().delete(transform(added, (de) -> de.newPath()), getProgressListener());
+        }
 
         return workingTree();
 

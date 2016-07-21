@@ -25,6 +25,7 @@ import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevFeatureTypeImpl;
 import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.LsTreeOp;
 import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
@@ -167,38 +168,40 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
         // with its state just after the mapping was created.
 
         if (entry.isPresent()) {
-            Iterator<DiffEntry> diffs = command(DiffTree.class).setPathFilter(path)
+            try (AutoCloseableIterator<DiffEntry> diffs = command(DiffTree.class).setPathFilter(path)
                     .setNewTree(workingTree().getTree().getId())
-                    .setOldTree(entry.get().getPostMappingId()).call();
+                    .setOldTree(entry.get().getPostMappingId()).call()) {
 
-            while (diffs.hasNext()) {
-                DiffEntry diff = diffs.next();
-                if (diff.changeType().equals(DiffEntry.ChangeType.REMOVED)) {
+                while (diffs.hasNext()) {
+                    DiffEntry diff = diffs.next();
+                    if (diff.changeType().equals(DiffEntry.ChangeType.REMOVED)) {
 
-                    ObjectId featureId = diff.getOldObject().getNode().getObjectId();
-                    RevFeature revFeature = command(RevObjectParse.class).setObjectId(featureId)
-                            .call(RevFeature.class).get();
-                    RevFeatureType revFeatureType = command(RevObjectParse.class)
-                            .setObjectId(diff.getOldObject().getMetadataId())
-                            .call(RevFeatureType.class).get();
-                    List<PropertyDescriptor> descriptors = revFeatureType.descriptors();
-                    SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
-                            (SimpleFeatureType) revFeatureType.type());
-                    String id = null;
-                    for (int i = 0; i < descriptors.size(); i++) {
-                        PropertyDescriptor descriptor = descriptors.get(i);
-                        if (descriptor.getName().getLocalPart().equals("id")) {
-                            id = revFeature.get(i).get().toString();
+                        ObjectId featureId = diff.getOldObject().getNode().getObjectId();
+                        RevFeature revFeature = command(RevObjectParse.class).setObjectId(featureId)
+                                .call(RevFeature.class).get();
+                        RevFeatureType revFeatureType = command(RevObjectParse.class)
+                                .setObjectId(diff.getOldObject().getMetadataId())
+                                .call(RevFeatureType.class).get();
+                        List<PropertyDescriptor> descriptors = revFeatureType.descriptors();
+                        SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
+                                (SimpleFeatureType) revFeatureType.type());
+                        String id = null;
+                        for (int i = 0; i < descriptors.size(); i++) {
+                            PropertyDescriptor descriptor = descriptors.get(i);
+                            if (descriptor.getName().getLocalPart().equals("id")) {
+                                id = revFeature.get(i).get().toString();
+                            }
+                            Optional<Object> value = revFeature.get(i);
+                            featureBuilder.set(descriptor.getName(), value.orNull());
                         }
-                        Optional<Object> value = revFeature.get(i);
-                        featureBuilder.set(descriptor.getName(), value.orNull());
+                        Preconditions.checkNotNull(id, "No 'id' attribute found");
+                        SimpleFeature feature = featureBuilder.buildFeature(id);
+                        Class<?> clazz = feature.getDefaultGeometryProperty().getType()
+                                .getBinding();
+                        String deletePath = clazz.equals(Point.class) ? OSMUtils.NODE_TYPE_NAME
+                                : OSMUtils.WAY_TYPE_NAME;
+                        workingTree().delete(deletePath, id);
                     }
-                    Preconditions.checkNotNull(id, "No 'id' attribute found");
-                    SimpleFeature feature = featureBuilder.buildFeature(id);
-                    Class<?> clazz = feature.getDefaultGeometryProperty().getType().getBinding();
-                    String deletePath = clazz.equals(Point.class) ? OSMUtils.NODE_TYPE_NAME
-                            : OSMUtils.WAY_TYPE_NAME;
-                    workingTree().delete(deletePath, id);
                 }
             }
         }

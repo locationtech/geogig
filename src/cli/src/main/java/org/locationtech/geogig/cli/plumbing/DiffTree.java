@@ -10,10 +10,8 @@
 package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +20,7 @@ import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffFeature;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.AttributeDiff;
@@ -42,7 +41,6 @@ import com.beust.jcommander.Parameters;
 import com.google.common.base.Optional;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -86,54 +84,62 @@ public class DiffTree extends AbstractCommand implements CLICommand {
 
         GeoGIG geogig = cli.getGeogig();
 
-        org.locationtech.geogig.api.plumbing.DiffTree diff = geogig
-                .command(org.locationtech.geogig.api.plumbing.DiffTree.class);
-
-        String oldVersion = resolveOldVersion();
-        String newVersion = resolveNewVersion();
-
-        diff.setOldVersion(oldVersion).setNewVersion(newVersion);
-
-        Iterator<DiffEntry> diffEntries;
-        if (paths.isEmpty()) {
-            diffEntries = diff.setProgressListener(cli.getProgressListener()).call();
-        } else {
-            diffEntries = Collections.emptyIterator();
-            for (String path : paths) {
-                Iterator<DiffEntry> moreEntries = diff.setPathFilter(path)
-                        .setProgressListener(cli.getProgressListener()).call();
-                diffEntries = Iterators.concat(diffEntries, moreEntries);
-            }
-        }
-
         DiffEntry diffEntry;
         HashMap<String, Long[]> stats = Maps.newHashMap();
-        while (diffEntries.hasNext()) {
-            diffEntry = diffEntries.next();
-            StringBuilder sb = new StringBuilder();
-            String path = diffEntry.newPath() != null ? diffEntry.newPath() : diffEntry.oldPath();
+        try (AutoCloseableIterator<DiffEntry> diffEntries = buildDiffEntries(cli)) {
+            while (diffEntries.hasNext()) {
+                diffEntry = diffEntries.next();
+                StringBuilder sb = new StringBuilder();
+                String path = diffEntry.newPath() != null ? diffEntry.newPath()
+                        : diffEntry.oldPath();
 
-            if (describe) {
-                sb.append(diffEntry.changeType().toString().charAt(0)).append(' ').append(path)
-                        .append(LINE_BREAK);
+                if (describe) {
+                    sb.append(diffEntry.changeType().toString().charAt(0)).append(' ').append(path)
+                            .append(LINE_BREAK);
 
-                if (diffEntry.changeType() == ChangeType.MODIFIED) {
-                    FeatureDiff featureDiff = geogig.command(DiffFeature.class)
-                            .setNewVersion(Suppliers.ofInstance(diffEntry.getNewObject()))
-                            .setOldVersion(Suppliers.ofInstance(diffEntry.getOldObject())).call();
-                    Map<PropertyDescriptor, AttributeDiff> diffs = featureDiff.getDiffs();
-                    HashSet<PropertyDescriptor> diffDescriptors = Sets.newHashSet(diffs.keySet());
-                    NodeRef noderef = diffEntry.changeType() != ChangeType.REMOVED
-                            ? diffEntry.getNewObject() : diffEntry.getOldObject();
-                    RevFeatureType featureType = geogig.command(RevObjectParse.class)
-                            .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class).get();
-                    Optional<RevObject> obj = geogig.command(RevObjectParse.class)
-                            .setObjectId(noderef.getObjectId()).call();
-                    RevFeature feature = (RevFeature) obj.get();
-                    ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
-                    int idx = 0;
-                    for (PropertyDescriptor descriptor : descriptors) {
-                        if (diffs.containsKey(descriptor)) {
+                    if (diffEntry.changeType() == ChangeType.MODIFIED) {
+                        FeatureDiff featureDiff = geogig.command(DiffFeature.class)
+                                .setNewVersion(Suppliers.ofInstance(diffEntry.getNewObject()))
+                                .setOldVersion(Suppliers.ofInstance(diffEntry.getOldObject()))
+                                .call();
+                        Map<PropertyDescriptor, AttributeDiff> diffs = featureDiff.getDiffs();
+                        HashSet<PropertyDescriptor> diffDescriptors = Sets
+                                .newHashSet(diffs.keySet());
+                        NodeRef noderef = diffEntry.changeType() != ChangeType.REMOVED
+                                ? diffEntry.getNewObject() : diffEntry.getOldObject();
+                        RevFeatureType featureType = geogig.command(RevObjectParse.class)
+                                .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class)
+                                .get();
+                        Optional<RevObject> obj = geogig.command(RevObjectParse.class)
+                                .setObjectId(noderef.getObjectId()).call();
+                        RevFeature feature = (RevFeature) obj.get();
+                        ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
+                        int idx = 0;
+                        for (PropertyDescriptor descriptor : descriptors) {
+                            if (diffs.containsKey(descriptor)) {
+                                AttributeDiff ad = diffs.get(descriptor);
+                                sb.append(ad.getType().toString().charAt(0) + " "
+                                        + descriptor.getName().toString() + LINE_BREAK);
+                                if (!ad.getType().equals(TYPE.ADDED)) {
+                                    Object value = ad.getOldValue();
+                                    sb.append(TextValueSerializer.asString(value));
+                                    sb.append(LINE_BREAK);
+                                }
+                                if (!ad.getType().equals(TYPE.REMOVED)) {
+                                    Object value = ad.getNewValue();
+                                    sb.append(TextValueSerializer.asString(value));
+                                    sb.append(LINE_BREAK);
+                                }
+                                diffDescriptors.remove(descriptor);
+                            } else {
+                                sb.append("U ").append(descriptor.getName().toString())
+                                        .append(LINE_BREAK);
+                                sb.append(TextValueSerializer.asString(feature.get(idx)))
+                                        .append(LINE_BREAK);
+                            }
+                            idx++;
+                        }
+                        for (PropertyDescriptor descriptor : diffDescriptors) {
                             AttributeDiff ad = diffs.get(descriptor);
                             sb.append(ad.getType().toString().charAt(0) + " "
                                     + descriptor.getName().toString() + LINE_BREAK);
@@ -147,74 +153,53 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                                 sb.append(TextValueSerializer.asString(value));
                                 sb.append(LINE_BREAK);
                             }
-                            diffDescriptors.remove(descriptor);
-                        } else {
-                            sb.append("U ").append(descriptor.getName().toString())
-                                    .append(LINE_BREAK);
-                            sb.append(TextValueSerializer.asString(feature.get(idx)))
-                                    .append(LINE_BREAK);
                         }
-                        idx++;
-                    }
-                    for (PropertyDescriptor descriptor : diffDescriptors) {
-                        AttributeDiff ad = diffs.get(descriptor);
-                        sb.append(ad.getType().toString().charAt(0) + " "
-                                + descriptor.getName().toString() + LINE_BREAK);
-                        if (!ad.getType().equals(TYPE.ADDED)) {
-                            Object value = ad.getOldValue();
+                    } else {
+                        NodeRef noderef = diffEntry.changeType() == ChangeType.ADDED
+                                ? diffEntry.getNewObject() : diffEntry.getOldObject();
+                        RevFeatureType featureType = geogig.command(RevObjectParse.class)
+                                .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class)
+                                .get();
+                        Optional<RevObject> obj = geogig.command(RevObjectParse.class)
+                                .setObjectId(noderef.getObjectId()).call();
+                        RevFeature feature = (RevFeature) obj.get();
+                        for (int i = 0; i < feature.size(); i++) {
+                            Optional<Object> value = feature.get(i);
+                            sb.append(diffEntry.changeType().toString().charAt(0));
+                            sb.append(' ');
+                            sb.append(featureType.descriptors().get(i).getName().toString());
+                            sb.append(LINE_BREAK);
                             sb.append(TextValueSerializer.asString(value));
                             sb.append(LINE_BREAK);
                         }
-                        if (!ad.getType().equals(TYPE.REMOVED)) {
-                            Object value = ad.getNewValue();
-                            sb.append(TextValueSerializer.asString(value));
-                            sb.append(LINE_BREAK);
-                        }
-                    }
-                } else {
-                    NodeRef noderef = diffEntry.changeType() == ChangeType.ADDED
-                            ? diffEntry.getNewObject() : diffEntry.getOldObject();
-                    RevFeatureType featureType = geogig.command(RevObjectParse.class)
-                            .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class).get();
-                    Optional<RevObject> obj = geogig.command(RevObjectParse.class)
-                            .setObjectId(noderef.getObjectId()).call();
-                    RevFeature feature = (RevFeature) obj.get();
-                    for (int i = 0; i < feature.size(); i++) {
-                        Optional<Object> value = feature.get(i);
-                        sb.append(diffEntry.changeType().toString().charAt(0));
-                        sb.append(' ');
-                        sb.append(featureType.descriptors().get(i).getName().toString());
-                        sb.append(LINE_BREAK);
-                        sb.append(TextValueSerializer.asString(value));
                         sb.append(LINE_BREAK);
                     }
                     sb.append(LINE_BREAK);
+                    cli.getConsole().println(sb.toString());
+                } else if (treeStats) {
+                    String parent = NodeRef.parentPath(path);
+                    if (!stats.containsKey(parent)) {
+                        stats.put(parent, new Long[] { 0l, 0l, 0l });
+                    }
+                    Long[] counts = stats.get(parent);
+                    if (diffEntry.changeType() == ChangeType.ADDED) {
+                        counts[0]++;
+                    } else if (diffEntry.changeType() == ChangeType.REMOVED) {
+                        counts[1]++;
+                    } else if (diffEntry.changeType() == ChangeType.MODIFIED) {
+                        counts[2]++;
+                    }
                 }
-                sb.append(LINE_BREAK);
-                cli.getConsole().println(sb.toString());
-            } else if (treeStats) {
-                String parent = NodeRef.parentPath(path);
-                if (!stats.containsKey(parent)) {
-                    stats.put(parent, new Long[] { 0l, 0l, 0l });
-                }
-                Long[] counts = stats.get(parent);
-                if (diffEntry.changeType() == ChangeType.ADDED) {
-                    counts[0]++;
-                } else if (diffEntry.changeType() == ChangeType.REMOVED) {
-                    counts[1]++;
-                } else if (diffEntry.changeType() == ChangeType.MODIFIED) {
-                    counts[2]++;
-                }
-            }
 
-            else {
-                sb.append(path).append(' ');
-                sb.append(diffEntry.oldObjectId().toString());
-                sb.append(' ');
-                sb.append(diffEntry.newObjectId().toString());
-                cli.getConsole().println(sb.toString());
-            }
+                else {
+                    sb.append(path).append(' ');
+                    sb.append(diffEntry.oldObjectId().toString());
+                    sb.append(' ');
+                    sb.append(diffEntry.newObjectId().toString());
+                    cli.getConsole().println(sb.toString());
+                }
 
+            }
         }
         if (treeStats) {
             for (String path : stats.keySet()) {
@@ -227,6 +212,29 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                 cli.getConsole().println(sb.toString());
             }
         }
+    }
+
+    private AutoCloseableIterator<DiffEntry> buildDiffEntries(GeogigCLI cli) {
+        org.locationtech.geogig.api.plumbing.DiffTree diff = cli.getGeogig()
+                .command(org.locationtech.geogig.api.plumbing.DiffTree.class);
+
+        String oldVersion = resolveOldVersion();
+        String newVersion = resolveNewVersion();
+
+        diff.setOldVersion(oldVersion).setNewVersion(newVersion);
+
+        AutoCloseableIterator<DiffEntry> diffEntries;
+        if (paths.isEmpty()) {
+            diffEntries = diff.setProgressListener(cli.getProgressListener()).call();
+        } else {
+            diffEntries = AutoCloseableIterator.emptyIterator();
+            for (String path : paths) {
+                AutoCloseableIterator<DiffEntry> moreEntries = diff.setPathFilter(path)
+                        .setProgressListener(cli.getProgressListener()).call();
+                diffEntries = AutoCloseableIterator.concat(diffEntries, moreEntries);
+            }
+        }
+        return diffEntries;
     }
 
     private String resolveOldVersion() {

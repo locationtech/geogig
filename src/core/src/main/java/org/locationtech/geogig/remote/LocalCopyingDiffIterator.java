@@ -9,27 +9,28 @@
  */
 package org.locationtech.geogig.remote;
 
-import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 
-import com.google.common.collect.AbstractIterator;
-
 /**
  * An iterator that copies all new objects from a source repository to a destination repository.
  */
-class LocalCopyingDiffIterator extends AbstractIterator<DiffEntry> {
+class LocalCopyingDiffIterator implements AutoCloseableIterator<DiffEntry> {
 
-    private Iterator<DiffEntry> source;
+    private AutoCloseableIterator<DiffEntry> source;
 
     private Repository sourceRepo;
 
     private Repository destinationRepo;
+
+    private DiffEntry next;
 
     /**
      * Constructs a new {@code LocalCopyingDiffIterator}.
@@ -38,17 +39,40 @@ class LocalCopyingDiffIterator extends AbstractIterator<DiffEntry> {
      * @param sourceRepo the source repository
      * @param destinationRepo the destination repository
      */
-    public LocalCopyingDiffIterator(Iterator<DiffEntry> source, Repository sourceRepo,
+    public LocalCopyingDiffIterator(AutoCloseableIterator<DiffEntry> source, Repository sourceRepo,
             Repository destinationRepo) {
         this.source = source;
         this.sourceRepo = sourceRepo;
         this.destinationRepo = destinationRepo;
     }
 
+    @Override
+    public boolean hasNext() {
+        if (next == null) {
+            next = computeNext();
+        }
+        return next != null;
+    }
+
+    @Override
+    public DiffEntry next() {
+        if (next == null && !hasNext()) {
+            throw new NoSuchElementException();
+        }
+        DiffEntry returnValue = next;
+        next = null;
+        return returnValue;
+    }
+
+    @Override
+    public void close() {
+        source.close();
+    }
+
     /**
      * @return the next {@link DiffEntry}
      */
-    protected DiffEntry computeNext() {
+    private DiffEntry computeNext() {
         if (source.hasNext()) {
             DiffEntry next = source.next();
             if (next.getNewObject() != null) {
@@ -71,6 +95,6 @@ class LocalCopyingDiffIterator extends AbstractIterator<DiffEntry> {
             }
             return next;
         }
-        return endOfData();
+        return null;
     }
 }

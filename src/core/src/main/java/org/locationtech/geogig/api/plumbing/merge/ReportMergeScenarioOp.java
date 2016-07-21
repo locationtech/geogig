@@ -22,6 +22,7 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -79,20 +80,23 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
 
         final ObjectId ancestor = ancestorOpt.get();
 
-        Iterator<DiffEntry> mergeIntoDiffs = command(DiffTree.class).setOldTree(ancestor)
-                .setReportTrees(true).setNewTree(mergeInto.getId()).setPreserveIterationOrder(true)
-                .call();
+        MergeScenarioReport report = null;
 
-        Iterator<DiffEntry> toMergeDiffs = command(DiffTree.class).setOldTree(ancestor)
-                .setReportTrees(true).setNewTree(toMerge.getId()).setPreserveIterationOrder(true)
-                .call();
+        try (AutoCloseableIterator<DiffEntry> mergeIntoDiffs = command(DiffTree.class)
+                .setOldTree(ancestor).setReportTrees(true).setNewTree(mergeInto.getId())
+                .setPreserveIterationOrder(true).call();
+                AutoCloseableIterator<DiffEntry> toMergeDiffs = command(DiffTree.class)
+                        .setOldTree(ancestor).setReportTrees(true).setNewTree(toMerge.getId())
+                        .setPreserveIterationOrder(true).call();) {
 
-        Iterator<MergeDiffRef> tupleIterator = new MergeDiffIterator(mergeIntoDiffs, toMergeDiffs);
+            Iterator<MergeDiffRef> tupleIterator = new MergeDiffIterator(mergeIntoDiffs,
+                    toMergeDiffs);
 
-        final RevCommit ancestorCommit = objectDatabase().getCommit(ancestor);
-        final RevTree ancestorTree = objectDatabase().getTree(ancestorCommit.getTreeId());
+            final RevCommit ancestorCommit = objectDatabase().getCommit(ancestor);
+            final RevTree ancestorTree = objectDatabase().getTree(ancestorCommit.getTreeId());
 
-        MergeScenarioReport report = process(tupleIterator, ancestorTree);
+            report = process(tupleIterator, ancestorTree);
+        }
 
         return report;
 
@@ -104,7 +108,8 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
 
         private PeekingIterator<DiffEntry> theirs;
 
-        MergeDiffIterator(Iterator<DiffEntry> ours, Iterator<DiffEntry> theirs) {
+        MergeDiffIterator(AutoCloseableIterator<DiffEntry> ours,
+                AutoCloseableIterator<DiffEntry> theirs) {
             this.ours = Iterators.peekingIterator(ours);
             this.theirs = Iterators.peekingIterator(theirs);
         }

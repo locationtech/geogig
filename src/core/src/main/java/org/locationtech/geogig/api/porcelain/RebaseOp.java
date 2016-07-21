@@ -27,6 +27,7 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.SymRef;
 import org.locationtech.geogig.api.hooks.Hookable;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.CatObject;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.RefParse;
@@ -470,8 +471,10 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                         public void merged(FeatureInfo featureInfo) {
                             // Stage it
                             workingTree().insert(featureInfo);
-                            Iterator<DiffEntry> unstaged = workingTree().getUnstaged(null);
-                            index().stage(getProgressListener(), unstaged, 0);
+                            try (AutoCloseableIterator<DiffEntry> unstaged = workingTree()
+                                    .getUnstaged(null)) {
+                                index().stage(getProgressListener(), unstaged, 0);
+                            }
                         }
 
                         @Override

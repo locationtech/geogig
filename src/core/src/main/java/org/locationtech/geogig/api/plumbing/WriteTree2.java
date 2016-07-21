@@ -312,31 +312,33 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
                 .setOldTree(leftTreeId).setNewTree(rightTreeId).setPathFilter(strippedPathFilters)
                 .setCustomFilter(null);
 
-        Iterator<DiffEntry> iterator = diffs.get();
-        if (!strippedPathFilters.isEmpty()) {
-            final Set<String> expected = Sets.newHashSet(strippedPathFilters);
-            iterator = Iterators.filter(iterator, new Predicate<DiffEntry>() {
-                @Override
-                public boolean apply(DiffEntry input) {
-                    boolean applies;
-                    if (input.isDelete()) {
-                        applies = expected.contains(input.oldName());
-                    } else {
-                        applies = expected.contains(input.newName());
+        try (AutoCloseableIterator<DiffEntry> sourceIterator = diffs.get()) {
+            Iterator<DiffEntry> updatedIterator = sourceIterator;
+            if (!strippedPathFilters.isEmpty()) {
+                final Set<String> expected = Sets.newHashSet(strippedPathFilters);
+                updatedIterator = Iterators.filter(updatedIterator, new Predicate<DiffEntry>() {
+                    @Override
+                    public boolean apply(DiffEntry input) {
+                        boolean applies;
+                        if (input.isDelete()) {
+                            applies = expected.contains(input.oldName());
+                        } else {
+                            applies = expected.contains(input.newName());
+                        }
+                        return applies;
                     }
-                    return applies;
-                }
-            });
-        }
+                });
+            }
 
-        for (; iterator.hasNext();) {
-            final DiffEntry diff = iterator.next();
-            if (diff.isDelete()) {
-                builder.remove(diff.oldName());
-            } else {
-                NodeRef newObject = diff.getNewObject();
-                Node node = newObject.getNode();
-                builder.put(node);
+            for (; updatedIterator.hasNext();) {
+                final DiffEntry diff = updatedIterator.next();
+                if (diff.isDelete()) {
+                    builder.remove(diff.oldName());
+                } else {
+                    NodeRef newObject = diff.getNewObject();
+                    Node node = newObject.getNode();
+                    builder.put(node);
+                }
             }
         }
 

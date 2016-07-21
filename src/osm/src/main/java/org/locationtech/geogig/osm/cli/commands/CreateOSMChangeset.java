@@ -13,10 +13,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -60,21 +60,21 @@ public class CreateOSMChangeset extends AbstractCommand implements CLICommand {
 
         op.setOldVersion(oldVersion).setNewVersion(newVersion).setId(id);
 
-        Iterator<ChangeContainer> entries;
-        entries = op.setProgressListener(cli.getProgressListener()).call();
-
-        if (!entries.hasNext()) {
-            cli.getConsole().println("No differences found");
-            return;
+        try (AutoCloseableIterator<ChangeContainer> entries = op
+                .setProgressListener(cli.getProgressListener()).call()) {
+            if (!entries.hasNext()) {
+                cli.getConsole().println("No differences found");
+                return;
+            }
+            BufferedWriter bufWriter = new BufferedWriter(new FileWriter(new File(file)));
+            XmlChangeWriter writer = new XmlChangeWriter(bufWriter);
+            while (entries.hasNext()) {
+                ChangeContainer change = entries.next();
+                writer.process(change);
+            }
+            writer.complete();
+            bufWriter.flush();
         }
-        BufferedWriter bufWriter = new BufferedWriter(new FileWriter(new File(file)));
-        XmlChangeWriter writer = new XmlChangeWriter(bufWriter);
-        while (entries.hasNext()) {
-            ChangeContainer change = entries.next();
-            writer.process(change);
-        }
-        writer.complete();
-        bufWriter.flush();
 
     }
 

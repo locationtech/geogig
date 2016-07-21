@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,6 +18,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.WriteTree2;
@@ -128,8 +128,10 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                     public void merged(FeatureInfo featureInfo) {
                         // Stage it
                         workingTree().insert(featureInfo);
-                        Iterator<DiffEntry> unstaged = workingTree().getUnstaged(null);
-                        index().stage(getProgressListener(), unstaged, 0);
+                        try (AutoCloseableIterator<DiffEntry> unstaged = workingTree()
+                                .getUnstaged(null)) {
+                            index().stage(getProgressListener(), unstaged, 0);
+                        }
                     }
 
                     @Override

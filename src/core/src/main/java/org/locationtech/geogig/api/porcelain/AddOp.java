@@ -20,6 +20,7 @@ import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.plumbing.UpdateRef;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -102,29 +103,31 @@ public class AddOp extends AbstractGeoGigOp<WorkingTree> {
 
         final long numChanges = workingTree().countUnstaged(pathFilter).count();
 
-        Iterator<DiffEntry> unstaged = workingTree().getUnstaged(pathFilter);
-
-        if (updateOnly) {
-            unstaged = Iterators.filter(unstaged, new Predicate<DiffEntry>() {
-                @Override
-                public boolean apply(@Nullable DiffEntry input) {
-                    // HACK: avoid reporting changed trees
-                    if (input.isChange() && input.getOldObject().getType().equals(TYPE.TREE)) {
-                        return false;
+        try (AutoCloseableIterator<DiffEntry> sourceIterator = workingTree()
+                .getUnstaged(pathFilter)) {
+            Iterator<DiffEntry> updatedIterator = sourceIterator;
+            if (updateOnly) {
+                updatedIterator = Iterators.filter(updatedIterator, new Predicate<DiffEntry>() {
+                    @Override
+                    public boolean apply(@Nullable DiffEntry input) {
+                        // HACK: avoid reporting changed trees
+                        if (input.isChange() && input.getOldObject().getType().equals(TYPE.TREE)) {
+                            return false;
+                        }
+                        return input.getOldObject() != null;
                     }
-                    return input.getOldObject() != null;
-                }
-            });
+                });
+            }
+
+            index.stage(progress, updatedIterator, numChanges);
+
+            // if we are staging unmerged files, the conflict should get solved. However, if the
+            // working index object is the same as the staging area one (for instance, after running
+            // checkout --ours), it will not be reported by the getUnstaged method. We solve that
+            // here.
+            ConflictsDatabase conflictsDatabase = conflictsDatabase();
+            conflictsDatabase.removeByPrefix(null, pathFilter);
         }
-
-        index.stage(progress, unstaged, numChanges);
-
-        // if we are staging unmerged files, the conflict should get solved. However, if the
-        // working index object is the same as the staging area one (for instance, after running
-        // checkout --ours), it will not be reported by the getUnstaged method. We solve that
-        // here.
-        ConflictsDatabase conflictsDatabase = conflictsDatabase();
-        conflictsDatabase.removeByPrefix(null, pathFilter);
     }
 
     /**

@@ -463,6 +463,8 @@ public class PGObjectDatabase implements ObjectDatabase {
         }
 
         private Iterator<RevObject> nextPartition() {
+            checkState(db.isOpen(), "Database is closed");
+
             List<Future<List<RevObject>>> list = new ArrayList<>();
 
             Iterator<ObjectId> ids = this.ids;
@@ -473,6 +475,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                 for (int i = 0; i < getAllPartitionSize && ids.hasNext(); i++) {
                     idList.add(ids.next());
                 }
+                checkState(db.isOpen(), "Database is closed");
                 Future<List<RevObject>> objects = db.getAll(idList, dataSource, listener, type);
                 list.add(objects);
             }
@@ -636,6 +639,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
     private Future<List<RevObject>> getAll(final List<ObjectId> ids, final DataSource ds,
             final BulkOpListener listener, final @Nullable TYPE type) {
+        checkState(isOpen(), "Database is closed");
 
         GetAllOp getAllOp = new GetAllOp(ids, listener, this, type);
         Future<List<RevObject>> future = executor.submit(getAllOp);
@@ -666,6 +670,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
         @Override
         public List<RevObject> call() throws Exception {
+            checkState(db.isOpen(), "Database is closed");
             final TableNames tables = db.config.getTables();
             final String tableName;
             if (type == null) {

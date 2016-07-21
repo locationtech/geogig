@@ -14,12 +14,12 @@ import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.List;
 
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.restlet.Context;
@@ -73,16 +73,17 @@ public class AffectedFeaturesResource extends Resource {
 
             if (revCommit.getParentIds() != null && revCommit.getParentIds().size() > 0) {
                 ObjectId parentId = revCommit.getParentIds().get(0);
-                final Iterator<DiffEntry> diff = ggit.command(DiffOp.class).setOldVersion(parentId)
-                        .setNewVersion(commitId).call();
-
-                while (diff.hasNext()) {
-                    DiffEntry diffEntry = diff.next();
-                    if (diffEntry.getOldObject() != null) {
-                        w.write(diffEntry.getOldObject().getNode().getObjectId().toString() + "\n");
+                try (final AutoCloseableIterator<DiffEntry> diff = ggit.command(DiffOp.class)
+                        .setOldVersion(parentId).setNewVersion(commitId).call()) {
+                    while (diff.hasNext()) {
+                        DiffEntry diffEntry = diff.next();
+                        if (diffEntry.getOldObject() != null) {
+                            w.write(diffEntry.getOldObject().getNode().getObjectId().toString()
+                                    + "\n");
+                        }
                     }
+                    w.flush();
                 }
-                w.flush();
             }
         }
     }

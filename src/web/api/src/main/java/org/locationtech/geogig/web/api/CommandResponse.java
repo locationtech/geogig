@@ -23,6 +23,13 @@ public abstract class CommandResponse {
     public abstract void write(ResponseWriter out) throws Exception;
 
     /**
+     * Allow an operation to do some cleanup after the response has been written.
+     */
+    public void close() {
+        // Do nothing by default
+    }
+
+    /**
      * @param message the warning message
      * @return a {@code CommandResponse} with the given warning message
      */

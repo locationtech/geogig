@@ -10,13 +10,13 @@
 package org.locationtech.geogig.api.plumbing.merge;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevObject.TYPE;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -66,11 +66,12 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
             Preconditions.checkState(ancestor.isPresent(), "No ancestor commit could be found.");
         }
 
-        List<Iterator<DiffEntry>> commitDiffs = new ArrayList<Iterator<DiffEntry>>();
+        List<AutoCloseableIterator<DiffEntry>> commitDiffs = new ArrayList<AutoCloseableIterator<DiffEntry>>();
 
         // we organize the changes made for each path
         for (RevCommit commit : commits) {
-            Iterator<DiffEntry> toMergeDiffs = command(DiffTree.class).setReportTrees(true)
+            AutoCloseableIterator<DiffEntry> toMergeDiffs = command(DiffTree.class)
+                    .setReportTrees(true)
                     .setOldTree(ancestor.get()).setNewTree(commit.getId())
                     .setPreserveIterationOrder(true).call();
             commitDiffs.add(toMergeDiffs);
@@ -82,6 +83,9 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
         while (merged.hasNext()) {
             List<DiffEntry> nextPath = nextPath(merged);
             if (hasConflicts(nextPath)) {
+                for (AutoCloseableIterator<DiffEntry> iter : commitDiffs) {
+                    iter.close();
+                }
                 return true;
             }
         }

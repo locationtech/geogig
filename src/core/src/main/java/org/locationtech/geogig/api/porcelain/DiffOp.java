@@ -11,11 +11,10 @@ package org.locationtech.geogig.api.porcelain;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.Iterator;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffIndex;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.DiffWorkTree;
@@ -50,7 +49,8 @@ import org.locationtech.geogig.di.CanRunDuringConflict;
  * @see DiffTree
  */
 @CanRunDuringConflict
-public class DiffOp extends AbstractGeoGigOp<Iterator<DiffEntry>> implements Iterable<DiffEntry> {
+public class DiffOp extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
+        implements Iterable<DiffEntry> {
 
     private String oldRefSpec;
 
@@ -120,14 +120,14 @@ public class DiffOp extends AbstractGeoGigOp<Iterator<DiffEntry>> implements Ite
      * @see DiffEntry
      */
     @Override
-    protected  Iterator<DiffEntry> _call() {
+    protected AutoCloseableIterator<DiffEntry> _call() {
         checkArgument(cached && oldRefSpec == null || !cached, String.format(
                 "compare index allows only one revision to check against, got %s / %s", oldRefSpec,
                 newRefSpec));
         checkArgument(newRefSpec == null || oldRefSpec != null,
                 "If new rev spec is specified then old rev spec is mandatory");
 
-        Iterator<DiffEntry> iterator;
+        AutoCloseableIterator<DiffEntry> iterator;
         if (cached) {
             // compare the tree-ish (default to HEAD) and the index
             DiffIndex diffIndex = command(DiffIndex.class).addFilter(this.pathFilter)
@@ -163,7 +163,7 @@ public class DiffOp extends AbstractGeoGigOp<Iterator<DiffEntry>> implements Ite
     }
 
     @Override
-    public Iterator<DiffEntry> iterator() {
+    public AutoCloseableIterator<DiffEntry> iterator() {
         return call();
     }
 

@@ -55,6 +55,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -175,6 +176,10 @@ public class PreOrderDiffWalk {
 
     private ForkJoinPool forkJoinPool;
 
+    private CancellableConsumer walkConsumer = null;
+
+    private AtomicBoolean finished = new AtomicBoolean(false);
+
     public PreOrderDiffWalk(RevTree left, RevTree right, ObjectStore leftSource,
             ObjectStore rightSource) {
         this(left, right, leftSource, rightSource, false);
@@ -249,10 +254,39 @@ public class PreOrderDiffWalk {
         NodeRef leftRef = NodeRef.createRoot(lnode);
         NodeRef rightRef = NodeRef.createRoot(rnode);
 
-        TraverseTree task = new TraverseTree(new CancellableConsumer(consumer), leftSource,
-                rightSource, leftRef, rightRef);
-        forkJoinPool.invoke(task);
+        this.walkConsumer = new CancellableConsumer(consumer);
 
+        TraverseTree task = new TraverseTree(walkConsumer, leftSource, rightSource, leftRef,
+                rightRef);
+
+        try {
+            forkJoinPool.invoke(task);
+        } catch (Exception e) {
+            if (!(leftSource.isOpen() && rightSource.isOpen())) {
+                // someone closed the repo, we're ok.
+            } else {
+                System.err.println("Excaption caught executing task: ");
+                e.printStackTrace();
+                Throwables.propagate(e);
+            }
+        } finally {
+            finished.set(true);
+        }
+    }
+
+    /**
+     * Abort the traversal in the consumer.
+     */
+    public void abortTraversal() {
+        if (walkConsumer != null) {
+            walkConsumer.abortTraversal();
+        }
+    }
+
+    public void awaitTermination() {
+        while (!finished.get()) {
+            // wait.
+        }
     }
 
     @SuppressWarnings("serial")
@@ -475,7 +509,9 @@ public class PreOrderDiffWalk {
                 task = bucketLeaf(left, rightc, bucketIndex);
             }
 
-            invokeAll(task);
+            if (!consumer.isCancelled()) {
+                invokeAll(task);
+            }
         }
     }
 
@@ -557,7 +593,9 @@ public class PreOrderDiffWalk {
                 }
             }
 
-            invokeAll(tasks);
+            if (!consumer.isCancelled()) {
+                invokeAll(tasks);
+            }
         }
 
         private NodeRef newRef(NodeRef parent, Node lnode) {
@@ -630,8 +668,13 @@ public class PreOrderDiffWalk {
                         (i) -> this.bucketIndex.append(i));
                 availableIndexes = newTreeSet(indexes);
             }
-            final Map<ObjectId, RevTree> trees = loadTrees(lb, rb);
-
+            final Map<ObjectId, RevTree> trees;
+            try {
+                trees = loadTrees(lb, rb);
+            } catch (RuntimeException e) {
+                consumer.abortTraversal();
+                return;
+            }
             @Nullable
             Bucket lbucket, rbucket;
             RevTree ltree, rtree;
@@ -657,6 +700,9 @@ public class PreOrderDiffWalk {
                 }
             }
 
+            if (consumer.isCancelled()) {
+                return;
+            }
             // fork()
             invokeAll(tasks);
             // after all tasks join()
@@ -665,6 +711,9 @@ public class PreOrderDiffWalk {
                 rbucket = rb.get(index.lastIndex());
                 if (Objects.equal(lbucket, rbucket)) {
                     continue;
+                }
+                if (consumer.isCancelled()) {
+                    return;
                 }
                 consumer.endBucket(leftParent, rightParent, index, lbucket, rbucket);
             }
@@ -749,6 +798,9 @@ public class PreOrderDiffWalk {
             final Map<ObjectId, RevTree> bucketTrees;
             {
                 Iterable<ObjectId> ids = transform(leftBuckets.values(), (b) -> b.getObjectId());
+                if (consumer.isCancelled()) {
+                    return;
+                }
                 bucketTrees = uniqueIndex(leftSource.getAll(ids, NOOP_LISTENER, RevTree.class),
                         (t) -> t.getId());
             }
@@ -846,6 +898,9 @@ public class PreOrderDiffWalk {
             {
 
                 Iterable<ObjectId> ids = transform(rightBuckets.values(), (b) -> b.getObjectId());
+                if (consumer.isCancelled()) {
+                    return;
+                }
                 bucketTrees = uniqueIndex(rightSource.getAll(ids, NOOP_LISTENER, RevTree.class),
                         (t) -> t.getId());
             }

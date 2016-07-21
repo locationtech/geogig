@@ -10,7 +10,6 @@
 package org.locationtech.geogig.osm.cli.commands;
 
 import java.io.File;
-import java.util.Iterator;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,6 +19,7 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.TestPlatform;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -99,9 +99,10 @@ public class OSMExportTest extends Assert {
                 .call(RevTree.class);
         assertTrue(tree.isPresent());
         assertTrue(tree.get().size() > 0);
-        Iterator<DiffEntry> diffs = cli.getGeogig().command(DiffOp.class).setNewVersion("HEAD")
-                .setOldVersion("HEAD~2").call();
-        assertFalse(diffs.hasNext());
+        try (AutoCloseableIterator<DiffEntry> diffs = cli.getGeogig().command(DiffOp.class)
+                .setNewVersion("HEAD").setOldVersion("HEAD~2").call()) {
+            assertFalse(diffs.hasNext());
+        }
     }
 
     @Test

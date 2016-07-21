@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -20,6 +19,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevObject.TYPE;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffIndex;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.DiffWorkTree;
@@ -54,9 +54,10 @@ public class DiffOpTest extends RepositoryTestCase {
 
     @Test
     public void testDiffPreconditions() throws Exception {
-        Iterator<DiffEntry> difflist = geogig.command(DiffOp.class).call();
-        assertNotNull(difflist);
-        assertFalse(difflist.hasNext());
+        try (AutoCloseableIterator<DiffEntry> difflist = geogig.command(DiffOp.class).call()) {
+            assertNotNull(difflist);
+            assertFalse(difflist.hasNext());
+        }
 
         final ObjectId oid1 = insertAndAdd(points1);
         final RevCommit commit1_1 = geogig.command(CommitOp.class).call();
@@ -81,9 +82,11 @@ public class DiffOpTest extends RepositoryTestCase {
 
     @Test
     public void testEmptyRepo() throws Exception {
-        Iterator<DiffEntry> difflist = diffOp.setOldVersion(ObjectId.NULL.toString()).call();
-        assertNotNull(difflist);
-        assertFalse(difflist.hasNext());
+        try (AutoCloseableIterator<DiffEntry> difflist = diffOp
+                .setOldVersion(ObjectId.NULL.toString()).call()) {
+            assertNotNull(difflist);
+            assertFalse(difflist.hasNext());
+        }
     }
 
     @Test
@@ -241,8 +244,9 @@ public class DiffOpTest extends RepositoryTestCase {
         diffOp.setOldVersion(commit1.getId()).setNewVersion(commit2.getId());
         diffOp.setFilter(pointsName);
 
-        Iterator<DiffEntry> diffs = diffOp.call();
-        assertFalse(diffs.hasNext());
+        try (AutoCloseableIterator<DiffEntry> diffs = diffOp.call()) {
+            assertFalse(diffs.hasNext());
+        }
     }
 
     @Test
@@ -258,8 +262,9 @@ public class DiffOpTest extends RepositoryTestCase {
         diffOp.setOldVersion(commit1.getId()).setNewVersion(commit2.getId());
         diffOp.setFilter(pointsName);
 
-        Iterator<DiffEntry> diffs = diffOp.call();
-        assertFalse(diffs.hasNext());
+        try (AutoCloseableIterator<DiffEntry> diffs = diffOp.call()) {
+            assertFalse(diffs.hasNext());
+        }
     }
 
     @Test
@@ -277,9 +282,10 @@ public class DiffOpTest extends RepositoryTestCase {
         diffOp.setOldVersion(commit1.getId()).setNewVersion(commit2.getId());
         diffOp.setFilter(NodeRef.appendChild(pointsName, "nonExistentId"));
 
-        Iterator<DiffEntry> diffs = diffOp.call();
-        assertNotNull(diffs);
-        assertFalse(diffs.hasNext());
+        try (AutoCloseableIterator<DiffEntry> diffs = diffOp.call()) {
+            assertNotNull(diffs);
+            assertFalse(diffs.hasNext());
+        }
     }
 
     @Test
@@ -297,8 +303,9 @@ public class DiffOpTest extends RepositoryTestCase {
         diffOp.setOldVersion(commit1.getId()).setNewVersion(commit2.getId());
         diffOp.setFilter(NodeRef.appendChild(pointsName, points1.getIdentifier().getID()));
 
-        Iterator<DiffEntry> diffs = diffOp.call();
-        assertFalse(diffs.hasNext());
+        try (AutoCloseableIterator<DiffEntry> diffs = diffOp.call()) {
+            assertFalse(diffs.hasNext());
+        }
     }
 
     @Test

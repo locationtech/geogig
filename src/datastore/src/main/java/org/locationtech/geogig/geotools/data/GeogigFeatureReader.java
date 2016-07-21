@@ -40,6 +40,7 @@ import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
@@ -84,6 +85,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
     private SimpleFeatureType schema;
 
     private Iterator<SimpleFeature> features;
+
+    private AutoCloseableIterator<DiffEntry> sourceIterator;
 
     @Nullable
     private Integer offset;
@@ -167,9 +170,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         }
         diffOp.setChangeTypeFilter(changeType(changeType));
 
-        Iterator<DiffEntry> diffs = diffOp.call();
-
-        Iterator<NodeRef> featureRefs = toFeatureRefs(diffs, changeType);
+        sourceIterator = diffOp.call();
+        Iterator<NodeRef> featureRefs = toFeatureRefs(sourceIterator, changeType);
 
         final boolean filterSupportedByRefs = Filter.INCLUDE.equals(filter)
                 || filter instanceof BBOX || filter instanceof Id;
@@ -184,9 +186,11 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         function = new FetchFunction(context.objectDatabase(), schema);
         final int fetchSize = 1000;
         Iterator<List<NodeRef>> partition = Iterators.partition(featureRefs, fetchSize);
-        Iterator<Iterator<SimpleFeature>> transformed = Iterators.transform(partition, function);
+        Iterator<Iterator<SimpleFeature>> transformed = Iterators.transform(partition,
+                function);
 
-        // final Iterator<SimpleFeature> featuresUnfiltered = transform(featureRefs, refToFeature);
+        // final Iterator<SimpleFeature> featuresUnfiltered = transform(featureRefs,
+        // refToFeature);
         final Iterator<SimpleFeature> featuresUnfiltered = Iterators.concat(transformed);
 
         FilterPredicate filterPredicate = new FilterPredicate(filter);
@@ -211,10 +215,10 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         }
     }
 
-    private Iterator<NodeRef> toFeatureRefs(final Iterator<DiffEntry> diffs,
+    private AutoCloseableIterator<NodeRef> toFeatureRefs(final AutoCloseableIterator<DiffEntry> diffs,
             final ChangeType changeType) {
 
-        return Iterators.transform(diffs, (e) -> {
+        return AutoCloseableIterator.transform(diffs, (e) -> {
             if (e.isAdd()) {
                 return e.getNewObject();
             }
@@ -251,6 +255,9 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
 
     @Override
     public void close() throws IOException {
+        if (sourceIterator != null) {
+            sourceIterator.close();
+        }
         if (screenMapFilter != null) {
             ScreenMapFilter.Stats stats = screenMapFilter.stats();
             Stopwatch stopwatch = stats.sw.stop();

@@ -19,6 +19,7 @@ import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.TransactionBegin;
 import org.locationtech.geogig.api.plumbing.TransactionEnd;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -100,7 +101,7 @@ public class TransactionStagingArea implements StagingArea {
      * Pass through to the original {@link StagingArea}.
      */
     @Override
-    public Iterator<DiffEntry> getStaged(@Nullable List<String> pathFilters) {
+    public AutoCloseableIterator<DiffEntry> getStaged(@Nullable List<String> pathFilters) {
         return index.getStaged(pathFilters);
     }
 

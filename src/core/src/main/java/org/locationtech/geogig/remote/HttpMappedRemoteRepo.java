@@ -19,7 +19,6 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,6 +29,7 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.CheckSparsePath;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
@@ -346,55 +346,56 @@ class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
             if (newParents.size() > 0) {
                 parent = from.graphDatabase().getMapping(newParents.get(0));
             }
-            Iterator<DiffEntry> diffIter = from.command(DiffOp.class).setNewVersion(commitId)
-                    .setOldVersion(parent).setReportTrees(true).call();
+            try (AutoCloseableIterator<DiffEntry> diffIter = from.command(DiffOp.class)
+                    .setNewVersion(commitId).setOldVersion(parent).setReportTrees(true).call()) {
 
-            // connect and send packed changes
-            final URL resourceURL;
-            try {
-                resourceURL = new URL(repositoryURL.toString() + "/repo/applychanges");
-            } catch (MalformedURLException e) {
-                throw Throwables.propagate(e);
-            }
-
-            final HttpURLConnection connection;
-            final OutputStream out;
-            try {
-                connection = (HttpURLConnection) resourceURL.openConnection();
-                connection.setDoOutput(true);
-                connection.setDoInput(true);
-                out = connection.getOutputStream();
-                // pack the commit object
-                final ObjectSerializingFactory writer = DataStreamSerializationFactoryV1.INSTANCE;
-                writer.write(commit, out);
-
-                // write the new parents
-                out.write(newParents.size());
-                for (ObjectId parentId : newParents) {
-                    out.write(parentId.getRawValue());
+                // connect and send packed changes
+                final URL resourceURL;
+                try {
+                    resourceURL = new URL(repositoryURL.toString() + "/repo/applychanges");
+                } catch (MalformedURLException e) {
+                    throw Throwables.propagate(e);
                 }
 
-                // pack the changes
-                BinaryPackedChanges changes = new BinaryPackedChanges(from);
-                changes.write(out, diffIter);
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
+                final HttpURLConnection connection;
+                final OutputStream out;
+                try {
+                    connection = (HttpURLConnection) resourceURL.openConnection();
+                    connection.setDoOutput(true);
+                    connection.setDoInput(true);
+                    out = connection.getOutputStream();
+                    // pack the commit object
+                    final ObjectSerializingFactory writer = DataStreamSerializationFactoryV1.INSTANCE;
+                    writer.write(commit, out);
 
-            final InputStream in;
-            try {
-                in = connection.getInputStream();
-                BufferedReader rd = new BufferedReader(new InputStreamReader(in));
+                    // write the new parents
+                    out.write(newParents.size());
+                    for (ObjectId parentId : newParents) {
+                        out.write(parentId.getRawValue());
+                    }
 
-                String line = rd.readLine();
-                if (line != null) {
-                    ObjectId remoteCommitId = ObjectId.valueOf(line);
-                    from.graphDatabase().map(commit.getId(), remoteCommitId);
-                    from.graphDatabase().map(remoteCommitId, commit.getId());
+                    // pack the changes
+                    BinaryPackedChanges changes = new BinaryPackedChanges(from);
+                    changes.write(out, diffIter);
+                } catch (IOException e) {
+                    throw Throwables.propagate(e);
                 }
 
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
+                final InputStream in;
+                try {
+                    in = connection.getInputStream();
+                    BufferedReader rd = new BufferedReader(new InputStreamReader(in));
+
+                    String line = rd.readLine();
+                    if (line != null) {
+                        ObjectId remoteCommitId = ObjectId.valueOf(line);
+                        from.graphDatabase().map(commit.getId(), remoteCommitId);
+                        from.graphDatabase().map(remoteCommitId, commit.getId());
+                    }
+
+                } catch (IOException e) {
+                    throw Throwables.propagate(e);
+                }
             }
 
         }

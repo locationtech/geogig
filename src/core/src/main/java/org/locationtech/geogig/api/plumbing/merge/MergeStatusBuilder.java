@@ -12,8 +12,6 @@ package org.locationtech.geogig.api.plumbing.merge;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,6 +25,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevFeature;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.ResolveBranchId;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.repository.StagingArea;
@@ -37,7 +36,6 @@ import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactory
 import org.locationtech.geogig.storage.datastream.FormatCommonV2;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Iterators;
 
 public class MergeStatusBuilder extends MergeScenarioConsumer {
 
@@ -160,7 +158,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         progress.complete();
         progress.started();
         try {
-            Iterator<DiffEntry> unstaged = Collections.emptyIterator();
+            AutoCloseableIterator<DiffEntry> unstaged = AutoCloseableIterator.emptyIterator();
             if (mergedBuffer.size() > 0) {
                 progress.setDescription(
                         String.format("Saving %,d merged features...", mergedBuffer.size()));
@@ -173,7 +171,8 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
                                 unconflictedBuffer.size(), mergedBuffer.size()));
 
                 long size = unconflictedBuffer.size() + mergedBuffer.size();
-                unstaged = Iterators.concat(unstaged, unconflictedBuffer.iterator());
+                unstaged = AutoCloseableIterator.concat(unstaged,
+                        AutoCloseableIterator.fromIterator(unconflictedBuffer.iterator()));
                 // Stage it
                 index.stage(progress, unstaged, size);
             }

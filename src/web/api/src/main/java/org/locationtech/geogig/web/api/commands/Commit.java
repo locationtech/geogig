@@ -9,12 +9,11 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import java.util.Iterator;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.api.porcelain.DiffOp;
@@ -101,8 +100,8 @@ public class Commit extends AbstractWebAPICommand {
 
         final RevCommit commitToWrite = commit;
         final ObjectId parentId = commit.parentN(0).or(ObjectId.NULL);
-        final Iterator<DiffEntry> diff = geogig.command(DiffOp.class).setOldVersion(parentId)
-                .setNewVersion(commit.getId()).call();
+        final AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                .setOldVersion(parentId).setNewVersion(commit.getId()).call();
 
         context.setResponseContent(new CommandResponse() {
             @Override
@@ -110,6 +109,11 @@ public class Commit extends AbstractWebAPICommand {
                 out.start();
                 out.writeCommitResponse(commitToWrite, diff);
                 out.finish();
+            }
+
+            @Override
+            public void close() {
+                diff.close();
             }
         });
     }

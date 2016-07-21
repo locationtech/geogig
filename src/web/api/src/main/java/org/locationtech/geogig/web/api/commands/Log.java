@@ -29,6 +29,7 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.ParseTimestamp;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
@@ -295,18 +296,18 @@ public class Log extends AbstractWebAPICommand {
 
                     // If it's a shallow clone, the commit may not exist
                     if (parent.equals(ObjectId.NULL) || geogig.objectDatabase().exists(parent)) {
-                        final Iterator<DiffEntry> diff = geogig.command(DiffOp.class)
-                                .setOldVersion(parent).setNewVersion(input.getId())
-                                .setFilter(pathFilter).call();
-
-                        while (diff.hasNext()) {
-                            DiffEntry entry = diff.next();
-                            if (entry.changeType() == DiffEntry.ChangeType.ADDED) {
-                                added++;
-                            } else if (entry.changeType() == DiffEntry.ChangeType.MODIFIED) {
-                                modified++;
-                            } else {
-                                removed++;
+                        try (final AutoCloseableIterator<DiffEntry> diff = geogig
+                                .command(DiffOp.class).setOldVersion(parent)
+                                .setNewVersion(input.getId()).setFilter(pathFilter).call()) {
+                            while (diff.hasNext()) {
+                                DiffEntry entry = diff.next();
+                                if (entry.changeType() == DiffEntry.ChangeType.ADDED) {
+                                    added++;
+                                } else if (entry.changeType() == DiffEntry.ChangeType.MODIFIED) {
+                                    modified++;
+                                } else {
+                                    removed++;
+                                }
                             }
                         }
                     }
@@ -383,100 +384,101 @@ public class Log extends AbstractWebAPICommand {
                 commit = log.next();
                 String parentId = commit.getParentIds().size() >= 1 ? commit.getParentIds().get(0)
                         .toString() : ObjectId.NULL.toString();
-                Iterator<DiffEntry> diff = geogig.command(DiffOp.class).setOldVersion(parentId)
-                        .setNewVersion(commit.getId().toString()).setFilter(path).call();
-                while (diff.hasNext()) {
-                    DiffEntry entry = diff.next();
-                    response += entry.changeType().toString() + ",";
-                    String fid = "";
-                    if (entry.newPath() != null) {
-                        if (entry.oldPath() != null) {
-                            fid = entry.oldPath() + " -> " + entry.newPath();
-                        } else {
-                            fid = entry.newPath();
-                        }
-                    } else if (entry.oldPath() != null) {
-                        fid = entry.oldPath();
-                    }
-                    response += fid + ",";
-                    response += commit.getId().toString() + ",";
-                    response += parentId;
-                    if (commit.getParentIds().size() > 1) {
-                        for (int index = 1; index < commit.getParentIds().size(); index++) {
-                            response += " " + commit.getParentIds().get(index).toString();
-                        }
-                    }
-                    response += ",";
-                    if (commit.getAuthor().getName().isPresent()) {
-                        response += escapeCsv(commit.getAuthor().getName().get());
-                    }
-                    response += ",";
-                    if (commit.getAuthor().getEmail().isPresent()) {
-                        response += escapeCsv(commit.getAuthor().getEmail().get());
-                    }
-                    response += ","
-                            + new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z").format(new Date(commit
-                                    .getAuthor().getTimestamp())) + ",";
-                    if (commit.getCommitter().getName().isPresent()) {
-                        response += escapeCsv(commit.getCommitter().getName().get());
-                    }
-                    response += ",";
-                    if (commit.getCommitter().getEmail().isPresent()) {
-                        response += escapeCsv(commit.getCommitter().getEmail().get());
-                    }
-                    response += ","
-                            + new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z").format(new Date(commit
-                                    .getCommitter().getTimestamp())) + ",";
-                    String message = escapeCsv(commit.getMessage());
-                    response += message;
-                    if (entry.newObjectId() == ObjectId.NULL) {
-                        // Feature was removed so we need to fill out blank attribute values
-                        for (int index = 0; index < attributeLength; index++) {
-                            response += ",";
-                        }
-                    } else {
-                        // Feature was added or modified so we need to write out the
-                        // attribute
-                        // values from the feature
-                        Optional<RevObject> feature = geogig.command(RevObjectParse.class)
-                                .setObjectId(entry.newObjectId()).call();
-                        RevFeature revFeature = (RevFeature) feature.get();
-                        for (int index = 0; index < revFeature.size(); index++) {
-                            Optional<Object> value = revFeature.get(index);
-                            PropertyDescriptor attrib = (PropertyDescriptor) attribs.toArray()[index];
-                            String stringValue = "";
-                            if (value.isPresent()) {
-                                FieldType attributeType = FieldType.forBinding(attrib.getType()
-                                        .getBinding());
-                                switch (attributeType) {
-                                case DATE:
-                                    stringValue = new SimpleDateFormat("MM/dd/yyyy z")
-                                            .format((java.sql.Date) value.get());
-                                    break;
-                                case DATETIME:
-                                    stringValue = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z")
-                                            .format((Date) value.get());
-                                    break;
-                                case TIME:
-                                    stringValue = new SimpleDateFormat("HH:mm:ss z")
-                                            .format((Time) value.get());
-                                    break;
-                                case TIMESTAMP:
-                                    stringValue = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z")
-                                            .format((Timestamp) value.get());
-                                    break;
-                                default:
-                                    stringValue = escapeCsv(value.get().toString());
-                                }
-                                response += "," + stringValue;
+                try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                        .setOldVersion(parentId).setNewVersion(commit.getId().toString())
+                        .setFilter(path).call()) {
+                    while (diff.hasNext()) {
+                        DiffEntry entry = diff.next();
+                        response += entry.changeType().toString() + ",";
+                        String fid = "";
+                        if (entry.newPath() != null) {
+                            if (entry.oldPath() != null) {
+                                fid = entry.oldPath() + " -> " + entry.newPath();
                             } else {
-                                response += ",";
+                                fid = entry.newPath();
+                            }
+                        } else if (entry.oldPath() != null) {
+                            fid = entry.oldPath();
+                        }
+                        response += fid + ",";
+                        response += commit.getId().toString() + ",";
+                        response += parentId;
+                        if (commit.getParentIds().size() > 1) {
+                            for (int index = 1; index < commit.getParentIds().size(); index++) {
+                                response += " " + commit.getParentIds().get(index).toString();
                             }
                         }
+                        response += ",";
+                        if (commit.getAuthor().getName().isPresent()) {
+                            response += escapeCsv(commit.getAuthor().getName().get());
+                        }
+                        response += ",";
+                        if (commit.getAuthor().getEmail().isPresent()) {
+                            response += escapeCsv(commit.getAuthor().getEmail().get());
+                        }
+                        response += "," + new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z")
+                                .format(new Date(commit.getAuthor().getTimestamp())) + ",";
+                        if (commit.getCommitter().getName().isPresent()) {
+                            response += escapeCsv(commit.getCommitter().getName().get());
+                        }
+                        response += ",";
+                        if (commit.getCommitter().getEmail().isPresent()) {
+                            response += escapeCsv(commit.getCommitter().getEmail().get());
+                        }
+                        response += "," + new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z")
+                                .format(new Date(commit.getCommitter().getTimestamp())) + ",";
+                        String message = escapeCsv(commit.getMessage());
+                        response += message;
+                        if (entry.newObjectId() == ObjectId.NULL) {
+                            // Feature was removed so we need to fill out blank attribute values
+                            for (int index = 0; index < attributeLength; index++) {
+                                response += ",";
+                            }
+                        } else {
+                            // Feature was added or modified so we need to write out the
+                            // attribute
+                            // values from the feature
+                            Optional<RevObject> feature = geogig.command(RevObjectParse.class)
+                                    .setObjectId(entry.newObjectId()).call();
+                            RevFeature revFeature = (RevFeature) feature.get();
+                            for (int index = 0; index < revFeature.size(); index++) {
+                                Optional<Object> value = revFeature.get(index);
+                                PropertyDescriptor attrib = (PropertyDescriptor) attribs
+                                        .toArray()[index];
+                                String stringValue = "";
+                                if (value.isPresent()) {
+                                    FieldType attributeType = FieldType
+                                            .forBinding(attrib.getType().getBinding());
+                                    switch (attributeType) {
+                                    case DATE:
+                                        stringValue = new SimpleDateFormat("MM/dd/yyyy z")
+                                                .format((java.sql.Date) value.get());
+                                        break;
+                                    case DATETIME:
+                                        stringValue = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z")
+                                                .format((Date) value.get());
+                                        break;
+                                    case TIME:
+                                        stringValue = new SimpleDateFormat("HH:mm:ss z")
+                                                .format((Time) value.get());
+                                        break;
+                                    case TIMESTAMP:
+                                        stringValue = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z")
+                                                .format((Timestamp) value.get());
+                                        break;
+                                    default:
+                                        stringValue = escapeCsv(value.get().toString());
+                                    }
+                                    response += "," + stringValue;
+                                } else {
+                                    response += ",";
+                                }
+                            }
+                        }
+                        response += '\n';
+                        out.write(response);
+                        response = "";
                     }
-                    response += '\n';
-                    out.write(response);
-                    response = "";
                 }
             }
         } else {

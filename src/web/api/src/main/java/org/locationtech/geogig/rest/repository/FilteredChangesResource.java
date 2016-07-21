@@ -17,13 +17,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RepositoryFilter;
 import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.remote.BinaryPackedChanges;
@@ -154,20 +154,20 @@ public class FilteredChangesResource extends Finder {
                     parent = commit.getParentIds().get(0);
                 }
 
-                Iterator<DiffEntry> changes = ggit.command(DiffOp.class)
+                try (AutoCloseableIterator<DiffEntry> changes = ggit.command(DiffOp.class)
                         .setNewVersion(commit.getId()).setOldVersion(parent).setReportTrees(true)
-                        .call();
-                FilteredDiffIterator filteredChanges = new FilteredDiffIterator(changes,
-                        repository, filter) {
-                    @Override
-                    protected boolean trackingObject(ObjectId objectId) {
-                        return tracked.contains(objectId);
-                    }
-                };
+                        .call()) {
+                    FilteredDiffIterator filteredChanges = new FilteredDiffIterator(changes,
+                            repository, filter) {
+                        @Override
+                        protected boolean trackingObject(ObjectId objectId) {
+                            return tracked.contains(objectId);
+                        }
+                    };
 
-                getResponse().setEntity(
-                        new FilteredDiffIteratorRepresentation(new BinaryPackedChanges(repository),
-                                filteredChanges));
+                    getResponse().setEntity(new FilteredDiffIteratorRepresentation(
+                            new BinaryPackedChanges(repository), filteredChanges));
+                }
 
             } catch (Exception e) {
                 throw new RuntimeException(e);

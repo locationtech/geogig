@@ -19,6 +19,7 @@ import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject.TYPE;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffFeature;
 import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.api.plumbing.ResolveObjectType;
@@ -99,33 +100,33 @@ public class BlameOp extends AbstractGeoGigOp<BlameReport> {
                 break;
             }
             RevCommit commitB = log.next();
-            Iterator<DiffEntry> diffs = diffOp.setNewVersion(commit.getId())
-                    .setOldVersion(commitB.getId()).setReportTrees(false).call();
+            try (AutoCloseableIterator<DiffEntry> diffs = diffOp.setNewVersion(commit.getId())
+                    .setOldVersion(commitB.getId()).setReportTrees(false).call()) {
+                while (diffs.hasNext()) {
+                    DiffEntry diff = diffs.next();
+                    if (path.equals(diff.newPath())) {
+                        if (diff.isAdd()) {
+                            String refSpec = commit.getId().toString() + ":" + path;
+                            RevFeature feature = revObjectParse.setRefSpec(refSpec)
+                                    .call(RevFeature.class).get();
+                            report.setFirstVersion(feature, commit);
+                            break;
+                        }
+                        FeatureDiff featureDiff = diffFeature
+                                .setNewVersion(Suppliers.ofInstance(diff.getNewObject()))
+                                .setOldVersion(Suppliers.ofInstance(diff.getOldObject())).call();
+                        Map<PropertyDescriptor, AttributeDiff> attribDiffs = featureDiff.getDiffs();
+                        Iterator<PropertyDescriptor> iter = attribDiffs.keySet().iterator();
+                        while (iter.hasNext()) {
+                            PropertyDescriptor key = iter.next();
+                            Optional<?> value = Optional
+                                    .fromNullable(attribDiffs.get(key).getNewValue());
+                            String attribute = key.getName().toString();
+                            report.addDiff(attribute, value, commit);
+                        }
+                    }
 
-            while (diffs.hasNext()) {
-                DiffEntry diff = diffs.next();
-                if (path.equals(diff.newPath())) {
-                    if (diff.isAdd()) {
-                        String refSpec = commit.getId().toString() + ":" + path;
-                        RevFeature feature = revObjectParse.setRefSpec(refSpec)
-                                .call(RevFeature.class).get();
-                        report.setFirstVersion(feature, commit);
-                        break;
-                    }
-                    FeatureDiff featureDiff = diffFeature
-                            .setNewVersion(Suppliers.ofInstance(diff.getNewObject()))
-                            .setOldVersion(Suppliers.ofInstance(diff.getOldObject())).call();
-                    Map<PropertyDescriptor, AttributeDiff> attribDiffs = featureDiff.getDiffs();
-                    Iterator<PropertyDescriptor> iter = attribDiffs.keySet().iterator();
-                    while (iter.hasNext()) {
-                        PropertyDescriptor key = iter.next();
-                        Optional<?> value = Optional
-                                .fromNullable(attribDiffs.get(key).getNewValue());
-                        String attribute = key.getName().toString();
-                        report.addDiff(attribute, value, commit);
-                    }
                 }
-
             }
             commit = commitB;
         }

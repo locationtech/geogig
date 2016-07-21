@@ -52,7 +52,7 @@ public class HttpFilteredDiffIterator extends FilteredDiffIterator {
         if (objects.peek() != null) {
             return objects.poll();
         }
-        return endOfData();
+        return null;
     }
 
     @Override

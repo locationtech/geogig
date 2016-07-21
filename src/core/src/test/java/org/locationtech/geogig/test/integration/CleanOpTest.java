@@ -10,11 +10,11 @@
 package org.locationtech.geogig.test.integration;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffWorkTree;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.porcelain.CleanOp;
@@ -36,10 +36,11 @@ public class CleanOpTest extends RepositoryTestCase {
         insert(points1, points2, points3);
 
         geogig.command(CleanOp.class).call();
-        Iterator<DiffEntry> deleted = geogig.command(DiffWorkTree.class).call();
-        ArrayList<DiffEntry> list = Lists.newArrayList(deleted);
-        // Check that all the features have been deleted
-        assertEquals(0, list.size());
+        try (AutoCloseableIterator<DiffEntry> deleted = geogig.command(DiffWorkTree.class).call()) {
+            ArrayList<DiffEntry> list = Lists.newArrayList(deleted);
+            // Check that all the features have been deleted
+            assertEquals(0, list.size());
+        }
     }
 
     @Test
@@ -48,10 +49,11 @@ public class CleanOpTest extends RepositoryTestCase {
         insert(points1, points2, points3, lines1);
 
         geogig.command(CleanOp.class).setPath(pointsName).call();
-        Iterator<DiffEntry> deleted = geogig.command(DiffWorkTree.class).call();
-        ArrayList<DiffEntry> list = Lists.newArrayList(deleted);
-        // Check that all the point features have been deleted but not the line one
-        assertEquals(1, list.size());
+        try (AutoCloseableIterator<DiffEntry> deleted = geogig.command(DiffWorkTree.class).call()) {
+            ArrayList<DiffEntry> list = Lists.newArrayList(deleted);
+            // Check that all the point features have been deleted but not the line one
+            assertEquals(1, list.size());
+        }
 
     }
 

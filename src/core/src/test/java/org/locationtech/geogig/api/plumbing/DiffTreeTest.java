@@ -12,7 +12,6 @@ package org.locationtech.geogig.api.plumbing;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.List;
 
 import org.geotools.data.DataUtilities;
@@ -120,9 +119,10 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testNullTrees() {
-        Iterator<DiffEntry> diffs = diffTree.setOldTree(ObjectId.NULL).setNewTree(ObjectId.NULL)
-                .call();
-        assertFalse(diffs.hasNext());
+        try (AutoCloseableIterator<DiffEntry> diffs = diffTree.setOldTree(ObjectId.NULL)
+                .setNewTree(ObjectId.NULL).call()) {
+            assertFalse(diffs.hasNext());
+        }
     }
 
     @Test

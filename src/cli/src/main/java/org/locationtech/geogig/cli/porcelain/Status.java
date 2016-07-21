@@ -18,6 +18,7 @@ import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
@@ -99,7 +100,9 @@ public class Status extends AbstractCommand implements CLICommand {
             console.println("# Changes to be committed:");
             console.println("#   (use \"geogig reset HEAD <path/to/fid>...\" to unstage)");
             console.println("#");
-            print(console, summary.getStaged().get(), Color.GREEN, countStaged);
+            try (AutoCloseableIterator<DiffEntry> iter = summary.getStaged().get()) {
+                print(console, iter, Color.GREEN, countStaged);
+            }
             console.println("#");
         }
 
@@ -118,7 +121,9 @@ public class Status extends AbstractCommand implements CLICommand {
             console.println(
                     "#   (use \"geogig checkout -- <path/to/fid>...\" to discard changes in working directory");
             console.println("#");
-            print(console, summary.getUnstaged().get(), Color.RED, countUnstaged);
+            try (AutoCloseableIterator<DiffEntry> iter = summary.getUnstaged().get()) {
+                print(console, iter, Color.RED, countUnstaged);
+            }
         }
 
     }
@@ -133,7 +138,8 @@ public class Status extends AbstractCommand implements CLICommand {
      * @throws IOException
      * @see DiffEntry
      */
-    private void print(final Console console, final Iterator<DiffEntry> changes, final Color color,
+    private void print(final Console console, final AutoCloseableIterator<DiffEntry> changes,
+            final Color color,
             final long total) throws IOException {
 
         final int limit = all || this.limit == null ? Integer.MAX_VALUE : this.limit.intValue();
@@ -147,7 +153,7 @@ public class Status extends AbstractCommand implements CLICommand {
         String path;
         int cnt = 0;
         if (limit > 0) {
-            Iterator<DiffEntry> changesIterator = changes;
+            AutoCloseableIterator<DiffEntry> changesIterator = changes;
             while (changesIterator.hasNext() && cnt < limit) {
                 ++cnt;
 

@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.api.plumbing;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -27,8 +26,9 @@ import com.google.common.collect.Lists;
 /**
  * Compares content and metadata links of blobs between the index and repository
  */
-public class DiffIndex extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
-        Supplier<Iterator<DiffEntry>> {
+public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
+        implements
+ Supplier<AutoCloseableIterator<DiffEntry>> {
 
     private String refSpec;
 
@@ -75,7 +75,7 @@ public class DiffIndex extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
      * @see DiffEntry
      */
     @Override
-    protected Iterator<DiffEntry> _call() {
+    protected AutoCloseableIterator<DiffEntry> _call() {
         final String oldVersion = Optional.fromNullable(refSpec).or(Ref.HEAD);
         final Optional<ObjectId> rootTreeId;
         rootTreeId = command(ResolveTreeish.class).setTreeish(oldVersion).call();
@@ -111,7 +111,7 @@ public class DiffIndex extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
      * @see #call()
      */
     @Override
-    public Iterator<DiffEntry> get() {
+    public AutoCloseableIterator<DiffEntry> get() {
         return call();
     }
 

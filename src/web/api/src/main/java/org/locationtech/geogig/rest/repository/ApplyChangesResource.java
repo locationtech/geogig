@@ -14,7 +14,6 @@ import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,6 +22,7 @@ import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.ResolveTreeish;
 import org.locationtech.geogig.api.plumbing.WriteTree;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -93,34 +93,34 @@ public class ApplyChangesResource extends Finder {
 
                 // read in the changes
                 BinaryPackedChanges unpacker = new BinaryPackedChanges(repository);
-                Iterator<DiffEntry> changes = new HttpFilteredDiffIterator(input, unpacker);
+                try (AutoCloseableIterator<DiffEntry> changes = new HttpFilteredDiffIterator(input,
+                        unpacker)) {
+                    RevTree rootTree = RevTree.EMPTY;
 
-                RevTree rootTree = RevTree.EMPTY;
+                    if (newParents.size() > 0) {
+                        ObjectId mappedCommit = newParents.get(0);
 
-                if (newParents.size() > 0) {
-                    ObjectId mappedCommit = newParents.get(0);
-
-                    Optional<ObjectId> treeId = repository.command(ResolveTreeish.class)
-                            .setTreeish(mappedCommit).call();
-                    if (treeId.isPresent()) {
-                        rootTree = repository.getTree(treeId.get());
+                        Optional<ObjectId> treeId = repository.command(ResolveTreeish.class)
+                                .setTreeish(mappedCommit).call();
+                        if (treeId.isPresent()) {
+                            rootTree = repository.getTree(treeId.get());
+                        }
                     }
+
+                    // Create new commit
+                    ObjectId newTreeId = repository.command(WriteTree.class)
+                            .setOldRoot(Suppliers.ofInstance(rootTree))
+                            .setDiffSupplier(Suppliers.ofInstance(changes)).call();
+
+                    CommitBuilder builder = new CommitBuilder(commit);
+
+                    builder.setParentIds(newParents);
+                    builder.setTreeId(newTreeId);
+
+                    RevCommit mapped = builder.build();
+                    repository.objectDatabase().put(mapped);
+                    newCommitId = mapped.getId();
                 }
-
-                // Create new commit
-                ObjectId newTreeId = repository.command(WriteTree.class)
-                        .setOldRoot(Suppliers.ofInstance(rootTree))
-                        .setDiffSupplier(Suppliers.ofInstance((Iterator<DiffEntry>) changes))
-                        .call();
-
-                CommitBuilder builder = new CommitBuilder(commit);
-
-                builder.setParentIds(newParents);
-                builder.setTreeId(newTreeId);
-
-                RevCommit mapped = builder.build();
-                repository.objectDatabase().put(mapped);
-                newCommitId = mapped.getId();
 
             } catch (IOException e) {
                 throw new RuntimeException(e);

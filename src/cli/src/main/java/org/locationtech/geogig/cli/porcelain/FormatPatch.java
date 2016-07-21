@@ -12,11 +12,10 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.Patch;
 import org.locationtech.geogig.api.plumbing.diff.PatchSerializer;
@@ -29,7 +28,6 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 /**
@@ -66,35 +64,40 @@ public class FormatPatch extends AbstractCommand implements CLICommand {
         GeoGIG geogig = cli.getGeogig();
         checkParameter(file != null, "Patch file not specified");
 
-        DiffOp diff = geogig.command(DiffOp.class).setReportTrees(true);
+        try (AutoCloseableIterator<DiffEntry> entries = buildEntries(cli)) {
+            if (!entries.hasNext()) {
+                cli.getConsole().println("No differences found");
+                return;
+            }
+
+            Patch patch = geogig.command(CreatePatchOp.class).setDiffs(entries).call();
+            FileOutputStream fos = new FileOutputStream(file);
+            OutputStreamWriter out = new OutputStreamWriter(fos, "UTF-8");
+            PatchSerializer.write(out, patch);
+        }
+
+    }
+
+    private AutoCloseableIterator<DiffEntry> buildEntries(GeogigCLI cli) {
+        DiffOp diff = cli.getGeogig().command(DiffOp.class).setReportTrees(true);
 
         String oldVersion = resolveOldVersion();
         String newVersion = resolveNewVersion();
 
         diff.setOldVersion(oldVersion).setNewVersion(newVersion).setCompareIndex(cached);
 
-        Iterator<DiffEntry> entries;
+        AutoCloseableIterator<DiffEntry> entries;
         if (paths.isEmpty()) {
             entries = diff.setProgressListener(cli.getProgressListener()).call();
         } else {
-            entries = Collections.emptyIterator();
+            entries = AutoCloseableIterator.emptyIterator();
             for (String path : paths) {
-                Iterator<DiffEntry> moreEntries = diff.setFilter(path)
+                AutoCloseableIterator<DiffEntry> moreEntries = diff.setFilter(path)
                         .setProgressListener(cli.getProgressListener()).call();
-                entries = Iterators.concat(entries, moreEntries);
+                entries = AutoCloseableIterator.concat(entries, moreEntries);
             }
         }
-
-        if (!entries.hasNext()) {
-            cli.getConsole().println("No differences found");
-            return;
-        }
-
-        Patch patch = geogig.command(CreatePatchOp.class).setDiffs(entries).call();
-        FileOutputStream fos = new FileOutputStream(file);
-        OutputStreamWriter out = new OutputStreamWriter(fos, "UTF-8");
-        PatchSerializer.write(out, patch);
-
+        return entries;
     }
 
     private String resolveOldVersion() {

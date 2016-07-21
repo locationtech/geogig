@@ -9,14 +9,13 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import java.util.Iterator;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -119,27 +118,20 @@ public class Pull extends AbstractWebAPICommand {
                 .setAll(fetchAll).addRefSpec(refSpec);
         try {
             final PullResult result = command.call();
-            final Iterator<DiffEntry> iter;
-            if (result.getOldRef() != null && result.getOldRef().equals(result.getNewRef())) {
-                iter = null;
-            } else {
-                if (result.getOldRef() == null) {
-                    iter = geogig.command(DiffOp.class)
-                            .setNewVersion(result.getNewRef().getObjectId())
-                            .setOldVersion(ObjectId.NULL).call();
-                } else {
-                    iter = geogig.command(DiffOp.class)
-                            .setNewVersion(result.getNewRef().getObjectId())
-                            .setOldVersion(result.getOldRef().getObjectId()).call();
-                }
-            }
-
+            final AutoCloseableIterator<DiffEntry> iter = resolveDiff(geogig, result);
             context.setResponseContent(new CommandResponse() {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
                     out.writePullResponse(result, iter);
                     out.finish();
+                }
+
+                @Override
+                public void close() {
+                    if (iter != null) {
+                        iter.close();
+                    }
                 }
             });
         } catch (SynchronizationException e) {
@@ -182,5 +174,21 @@ public class Pull extends AbstractWebAPICommand {
                 }
             });
         }
+    }
+
+    private AutoCloseableIterator<DiffEntry> resolveDiff(Context geogig, PullResult result) {
+        AutoCloseableIterator<DiffEntry> iter;
+        if (result.getOldRef() != null && result.getOldRef().equals(result.getNewRef())) {
+            iter = null;
+        } else {
+            if (result.getOldRef() == null) {
+                iter = geogig.command(DiffOp.class).setNewVersion(result.getNewRef().getObjectId())
+                        .setOldVersion(ObjectId.NULL).call();
+            } else {
+                iter = geogig.command(DiffOp.class).setNewVersion(result.getNewRef().getObjectId())
+                        .setOldVersion(result.getOldRef().getObjectId()).call();
+            }
+        }
+        return iter;
     }
 }

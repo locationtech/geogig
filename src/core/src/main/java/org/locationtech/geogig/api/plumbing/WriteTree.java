@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.api.plumbing;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,7 +58,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
 
     private Supplier<RevTree> oldRoot;
 
-    private Supplier<Iterator<DiffEntry>> diffSupplier = null;
+    private Supplier<AutoCloseableIterator<DiffEntry>> diffSupplier = null;
 
     /**
      * Where to copy objects from, if at all.
@@ -76,7 +75,8 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         return this;
     }
 
-    public WriteTree setDiffSupplier(@Nullable Supplier<Iterator<DiffEntry>> diffSupplier) {
+    public WriteTree setDiffSupplier(
+            @Nullable Supplier<AutoCloseableIterator<DiffEntry>> diffSupplier) {
         this.diffSupplier = diffSupplier;
         return this;
     }
@@ -106,15 +106,6 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         final RevTree oldRootTree = resolveRootTree();
         final ObjectDatabase repositoryDatabase = objectDatabase();
 
-        final Iterator<DiffEntry> diffs = diffSupplier.get();
-
-        if (!diffs.hasNext()) {
-            return oldRootTree.getId();
-        }
-        if (progress.isCanceled()) {
-            return null;
-        }
-
         Map<String, RevTreeBuilder> repositoryChangedTrees = Maps.newHashMap();
         Map<String, NodeRef> indexChangedTrees = Maps.newHashMap();
         Map<String, ObjectId> changedTreesMetadataId = Maps.newHashMap();
@@ -122,64 +113,75 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         final boolean copyObjects = this.fromDb != null;
         NodeRef ref;
         RevTree stageHead = index().getTree();
-        while (diffs.hasNext()) {
+        try (final AutoCloseableIterator<DiffEntry> diffs = diffSupplier.get()) {
+            if (!diffs.hasNext()) {
+                return oldRootTree.getId();
+            }
             if (progress.isCanceled()) {
                 return null;
             }
 
-            DiffEntry diff = diffs.next();
-            // ignore the root entry
-            if (NodeRef.ROOT.equals(diff.newName()) || NodeRef.ROOT.equals(diff.oldName())) {
-                continue;
-            }
-            ref = diff.getNewObject();
-
-            if (ref == null) {
-                ref = diff.getOldObject();
-            }
-
-            final String parentPath = ref.getParentPath();
-            final boolean isDelete = ChangeType.REMOVED.equals(diff.changeType());
-            final TYPE type = ref.getType();
-            if (isDelete && deletedTrees.contains(parentPath)) {
-                // this is to avoid re-creating the parentTree for a feature delete after its parent
-                // tree delete entry was processed
-                continue;
-            }
-            RevTreeBuilder parentTree = resolveTargetTree(oldRootTree, parentPath,
-                    repositoryChangedTrees, changedTreesMetadataId, ObjectId.NULL,
-                    repositoryDatabase);
-            if (type == TYPE.TREE && !isDelete) {
-                // cache the tree
-                resolveTargetTree(oldRootTree, ref.name(), repositoryChangedTrees,
-                        changedTreesMetadataId, ref.getMetadataId(), repositoryDatabase);
-            }
-
-            resolveSourceTreeRef(parentPath, indexChangedTrees, changedTreesMetadataId, stageHead);
-
-            Preconditions.checkState(parentTree != null);
-
-            if (isDelete) {
-                String oldName = diff.getOldObject().getNode().getName();
-                parentTree.remove(oldName);
-                if (TYPE.TREE.equals(type)) {
-                    deletedTrees.add(ref.path());
+            while (diffs.hasNext()) {
+                if (progress.isCanceled()) {
+                    return null;
                 }
-            } else {
-                if (copyObjects && ref.getType().equals(TYPE.TREE)) {
-                    RevTree tree = fromDb.getTree(ref.getObjectId());
-                    if (!ref.getMetadataId().isNull()) {
-                        repositoryDatabase.put(fromDb.getFeatureType(ref.getMetadataId()));
-                    }
-                    if (tree.isEmpty()) {
-                        repositoryDatabase.put(tree);
-                    } else {
-                        continue;
-                    }
-                } else if (copyObjects) {
-                    deepCopy(ref.getNode());
+
+                DiffEntry diff = diffs.next();
+                // ignore the root entry
+                if (NodeRef.ROOT.equals(diff.newName()) || NodeRef.ROOT.equals(diff.oldName())) {
+                    continue;
                 }
-                parentTree.put(ref.getNode());
+                ref = diff.getNewObject();
+
+                if (ref == null) {
+                    ref = diff.getOldObject();
+                }
+
+                final String parentPath = ref.getParentPath();
+                final boolean isDelete = ChangeType.REMOVED.equals(diff.changeType());
+                final TYPE type = ref.getType();
+                if (isDelete && deletedTrees.contains(parentPath)) {
+                    // this is to avoid re-creating the parentTree for a feature delete after its
+                    // parent
+                    // tree delete entry was processed
+                    continue;
+                }
+                RevTreeBuilder parentTree = resolveTargetTree(oldRootTree, parentPath,
+                        repositoryChangedTrees, changedTreesMetadataId, ObjectId.NULL,
+                        repositoryDatabase);
+                if (type == TYPE.TREE && !isDelete) {
+                    // cache the tree
+                    resolveTargetTree(oldRootTree, ref.name(), repositoryChangedTrees,
+                            changedTreesMetadataId, ref.getMetadataId(), repositoryDatabase);
+                }
+
+                resolveSourceTreeRef(parentPath, indexChangedTrees, changedTreesMetadataId,
+                        stageHead);
+
+                Preconditions.checkState(parentTree != null);
+
+                if (isDelete) {
+                    String oldName = diff.getOldObject().getNode().getName();
+                    parentTree.remove(oldName);
+                    if (TYPE.TREE.equals(type)) {
+                        deletedTrees.add(ref.path());
+                    }
+                } else {
+                    if (copyObjects && ref.getType().equals(TYPE.TREE)) {
+                        RevTree tree = fromDb.getTree(ref.getObjectId());
+                        if (!ref.getMetadataId().isNull()) {
+                            repositoryDatabase.put(fromDb.getFeatureType(ref.getMetadataId()));
+                        }
+                        if (tree.isEmpty()) {
+                            repositoryDatabase.put(tree);
+                        } else {
+                            continue;
+                        }
+                    } else if (copyObjects) {
+                        deepCopy(ref.getNode());
+                    }
+                    parentTree.put(ref.getNode());
+                }
             }
         }
 

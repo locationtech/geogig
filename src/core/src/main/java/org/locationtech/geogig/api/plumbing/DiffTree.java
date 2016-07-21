@@ -11,10 +11,9 @@ package org.locationtech.geogig.api.plumbing;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +44,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
-import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -53,9 +51,8 @@ import com.google.common.collect.Lists;
  * Compares the content and metadata links of blobs found via two tree objects on the repository's
  * {@link ObjectDatabase}
  */
-public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>>
-        implements
-        Supplier<Iterator<DiffEntry>> {
+public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
+        implements Supplier<AutoCloseableIterator<DiffEntry>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DiffTree.class);
 
@@ -184,7 +181,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>>
      * Implements {@link Supplier#get()} by delegating to {@link #call()}.
      */
     @Override
-    public Iterator<DiffEntry> get() {
+    public AutoCloseableIterator<DiffEntry> get() {
         return call();
     }
 
@@ -195,7 +192,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>>
      * @see DiffEntry
      */
     @Override
-    protected Iterator<DiffEntry> _call() throws IllegalArgumentException {
+    protected AutoCloseableIterator<DiffEntry> _call() throws IllegalArgumentException {
         checkArgument(oldRefSpec != null || oldTreeId != null, "old version not specified");
         checkArgument(newRefSpec != null || oldTreeId != null, "new version not specified");
         final ObjectStore leftSource;
@@ -208,7 +205,7 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>>
         final RevTree newTree = resolveTree(newRefSpec, this.newTreeId, rightSource);
 
         if (oldTree.equals(newTree)) {
-            return Collections.emptyIterator();
+            return AutoCloseableIterator.emptyIterator();
         }
 
         final PreOrderDiffWalk visitor = new PreOrderDiffWalk(oldTree, newTree, leftSource,
@@ -257,9 +254,11 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>>
         producerThread.setDaemon(true);
         producerThread.start();
 
-        Iterator<DiffEntry> consumerIterator = new AbstractIterator<DiffEntry>() {
-            @Override
-            protected DiffEntry computeNext() {
+        AutoCloseableIterator<DiffEntry> consumerIterator = new AutoCloseableIterator<DiffEntry>() {
+
+            private DiffEntry next = null;
+
+            private DiffEntry computeNext() {
                 if (!producerErrors.isEmpty()) {
                     throw new RuntimeException("Error in producer thread", producerErrors.get(0));
                 }
@@ -278,12 +277,39 @@ public class DiffTree extends AbstractGeoGigOp<Iterator<DiffEntry>>
                         throw Throwables.propagate(e);
                     }
                 }
-                return endOfData();
+                return null;
             }
 
             @Override
             protected void finalize() {
                 diffProducer.finished = true;
+            }
+
+            @Override
+            public void close() {
+                visitor.abortTraversal();
+                // free up any threads waiting for the queue to be unblocked
+                queue.clear();
+                // in case any threads are in the middle of reading
+                visitor.awaitTermination();
+            }
+
+            @Override
+            public boolean hasNext() {
+                if (next == null) {
+                    next = computeNext();
+                }
+                return next != null;
+            }
+
+            @Override
+            public DiffEntry next() {
+                if (next == null && !hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                DiffEntry returnValue = next;
+                next = null;
+                return returnValue;
             }
         };
         return consumerIterator;

@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
@@ -20,6 +19,7 @@ import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevFeatureTypeImpl;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevObject.TYPE;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RefParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -33,7 +33,6 @@ import org.locationtech.geogig.api.porcelain.MergeOp;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -70,13 +69,15 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points2);
         insert(points3);
         geogig.command(AddOp.class).call();
-        Iterator<DiffEntry> iterator = repo.workingTree().getUnstaged(null);
-        assertFalse(iterator.hasNext());
+        try (AutoCloseableIterator<DiffEntry> iterator = repo.workingTree().getUnstaged(null)) {
+            assertFalse(iterator.hasNext());
+        }
         insert(lines1);
         insert(lines2);
         geogig.command(AddOp.class).call();
-        iterator = repo.workingTree().getUnstaged(null);
-        assertFalse(iterator.hasNext());
+        try (AutoCloseableIterator<DiffEntry> iterator = repo.workingTree().getUnstaged(null)) {
+            assertFalse(iterator.hasNext());
+        }
     }
 
     @Test

@@ -38,6 +38,7 @@ import org.locationtech.geogig.api.RevFeatureTypeImpl;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.api.data.ForwardingFeatureSource;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.repository.FeatureToDelete;
@@ -565,10 +566,10 @@ public class WorkingTreeTest extends RepositoryTestCase {
         assertEquals(3, workTree.countUnstaged(null).featureCount());
         assertEquals(1, workTree.countUnstaged(null).treeCount());
 
-        Iterator<DiffEntry> changes = workTree.getUnstaged(null);
-
-        assertNotNull(changes);
-        assertEquals(4, Iterators.size(changes));
+        try (AutoCloseableIterator<DiffEntry> changes = workTree.getUnstaged(null)) {
+            assertNotNull(changes);
+            assertEquals(4, Iterators.size(changes));
+        }
     }
 
     @Test

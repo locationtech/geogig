@@ -26,6 +26,7 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevPerson;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.ForEachRef;
 import org.locationtech.geogig.api.plumbing.ParseTimestamp;
@@ -310,14 +311,16 @@ public class Log extends AbstractCommand implements CLICommand {
             ansi.a("Subject: ").a(commit.getMessage()).newline();
             if ((detail.equals(LOG_DETAIL.NAMES_ONLY)) && commit.getParentIds().size() == 1) {
                 ansi.a("Affected paths:").newline();
-                Iterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
                         .setOldVersion(commit.parentN(0).get()).setNewVersion(commit.getId())
-                        .call();
-                DiffEntry diffEntry;
-                while (diff.hasNext()) {
-                    diffEntry = diff.next();
-                    String path = diffEntry.isDelete() ? diffEntry.oldPath() : diffEntry.newPath();
-                    ansi.a("\t" + path).newline();
+                        .call()) {
+                    DiffEntry diffEntry;
+                    while (diff.hasNext()) {
+                        diffEntry = diff.next();
+                        String path = diffEntry.isDelete() ? diffEntry.oldPath()
+                                : diffEntry.newPath();
+                        ansi.a("\t" + path).newline();
+                    }
                 }
             }
             if (detail.equals(LOG_DETAIL.STATS)) {
@@ -341,16 +344,17 @@ public class Log extends AbstractCommand implements CLICommand {
             console.println(ansi.toString());
             if (detail.equals(LOG_DETAIL.SUMMARY) && commit.getParentIds().size() == 1) {
                 ansi.a("Changes:").newline();
-                Iterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
                         .setOldVersion(commit.parentN(0).get()).setNewVersion(commit.getId())
-                        .call();
-                DiffEntry diffEntry;
-                while (diff.hasNext()) {
-                    diffEntry = diff.next();
-                    if (detail.equals(LOG_DETAIL.SUMMARY)) {
-                        new FullDiffPrinter(true, false).print(geogig, console, diffEntry);
-                    }
+                        .call()) {
+                    DiffEntry diffEntry;
+                    while (diff.hasNext()) {
+                        diffEntry = diff.next();
+                        if (detail.equals(LOG_DETAIL.SUMMARY)) {
+                            new FullDiffPrinter(true, false).print(geogig, console, diffEntry);
+                        }
 
+                    }
                 }
             }
         }

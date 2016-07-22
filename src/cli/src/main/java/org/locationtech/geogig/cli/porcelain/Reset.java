@@ -10,11 +10,11 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffWorkTree;
 import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -122,22 +122,23 @@ public class Reset extends AbstractCommand implements CLICommand {
 
         if (!geogig.getRepository().workingTree().isClean()) {
             try {
-                Iterator<DiffEntry> unstaged = geogig.command(DiffWorkTree.class).setFilter(null)
-                        .call();
-                cli.getConsole().println("Unstaged changes after reset:");
-                while (unstaged.hasNext()) {
-                    DiffEntry entry = unstaged.next();
-                    ChangeType type = entry.changeType();
-                    switch (type) {
-                    case ADDED:
-                        cli.getConsole().println("A\t" + entry.newPath());
-                        break;
-                    case MODIFIED:
-                        cli.getConsole().println("M\t" + entry.newPath());
-                        break;
-                    case REMOVED:
-                        cli.getConsole().println("D\t" + entry.oldPath());
-                        break;
+                try (AutoCloseableIterator<DiffEntry> unstaged = geogig.command(DiffWorkTree.class)
+                        .setFilter(null).call()) {
+                    cli.getConsole().println("Unstaged changes after reset:");
+                    while (unstaged.hasNext()) {
+                        DiffEntry entry = unstaged.next();
+                        ChangeType type = entry.changeType();
+                        switch (type) {
+                        case ADDED:
+                            cli.getConsole().println("A\t" + entry.newPath());
+                            break;
+                        case MODIFIED:
+                            cli.getConsole().println("M\t" + entry.newPath());
+                            break;
+                        case REMOVED:
+                            cli.getConsole().println("D\t" + entry.oldPath());
+                            break;
+                        }
                     }
                 }
             } catch (IOException e) {

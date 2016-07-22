@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.api.porcelain;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
@@ -19,6 +18,7 @@ import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevObject;
 import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffFeature;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -39,9 +39,9 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
      * The differences between the two version of the repository that are to be stored in a patch
      * object
      */
-    private Iterator<DiffEntry> diffs;
+    private AutoCloseableIterator<DiffEntry> diffs;
 
-    public CreatePatchOp setDiffs(Iterator<DiffEntry> diffs) {
+    public CreatePatchOp setDiffs(AutoCloseableIterator<DiffEntry> diffs) {
         this.diffs = diffs;
         return this;
     }

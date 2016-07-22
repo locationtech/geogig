@@ -11,7 +11,6 @@ package org.locationtech.geogig.api.hooks;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +19,7 @@ import org.locationtech.geogig.api.FeatureBuilder;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevFeature;
 import org.locationtech.geogig.api.RevFeatureType;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -72,36 +72,39 @@ public class GeoGigAPI {
         DiffOp diffOp = repository.command(DiffOp.class);
         diffOp.setCompareIndex(true);
         diffOp.setFilter(path);
-        Iterator<DiffEntry> diffs = diffOp.call();
+
         List<Feature> list = Lists.newArrayList();
-        while (diffs.hasNext()) {
-            DiffEntry diff = diffs.next();
-            if (!diff.changeType().equals(ChangeType.REMOVED) || !noDeletions) {
-                RevFeature revFeature = repository.command(RevObjectParse.class)
-                        .setObjectId(diff.newObjectId()).call(RevFeature.class).get();
-                RevFeatureType revFeatureType = repository.command(RevObjectParse.class)
-                        .setObjectId(diff.getNewObject().getMetadataId())
-                        .call(RevFeatureType.class).get();
-                FeatureBuilder builder = new FeatureBuilder(revFeatureType);
-                list.add(builder.build(diff.getNewObject().name(), revFeature));
+        try (AutoCloseableIterator<DiffEntry> diffs = diffOp.call()) {
+            while (diffs.hasNext()) {
+                DiffEntry diff = diffs.next();
+                if (!diff.changeType().equals(ChangeType.REMOVED) || !noDeletions) {
+                    RevFeature revFeature = repository.command(RevObjectParse.class)
+                            .setObjectId(diff.newObjectId()).call(RevFeature.class).get();
+                    RevFeatureType revFeatureType = repository.command(RevObjectParse.class)
+                            .setObjectId(diff.getNewObject().getMetadataId())
+                            .call(RevFeatureType.class).get();
+                    FeatureBuilder builder = new FeatureBuilder(revFeatureType);
+                    list.add(builder.build(diff.getNewObject().name(), revFeature));
+                }
             }
         }
         return list.toArray(new Feature[0]);
     }
 
     public Feature[] getUnstagedFeatures(String path, boolean noDeletions) {
-        Iterator<DiffEntry> diffs = repository.workingTree().getUnstaged(path);
         List<Feature> list = Lists.newArrayList();
-        while (diffs.hasNext()) {
-            DiffEntry diff = diffs.next();
-            if (!diff.changeType().equals(ChangeType.REMOVED) || !noDeletions) {
-                RevFeature revFeature = repository.command(RevObjectParse.class)
-                        .setObjectId(diff.newObjectId()).call(RevFeature.class).get();
-                RevFeatureType revFeatureType = repository.command(RevObjectParse.class)
-                        .setObjectId(diff.getNewObject().getMetadataId())
-                        .call(RevFeatureType.class).get();
-                FeatureBuilder builder = new FeatureBuilder(revFeatureType);
-                list.add(builder.build(diff.getNewObject().name(), revFeature));
+        try (AutoCloseableIterator<DiffEntry> diffs = repository.workingTree().getUnstaged(path)) {
+            while (diffs.hasNext()) {
+                DiffEntry diff = diffs.next();
+                if (!diff.changeType().equals(ChangeType.REMOVED) || !noDeletions) {
+                    RevFeature revFeature = repository.command(RevObjectParse.class)
+                            .setObjectId(diff.newObjectId()).call(RevFeature.class).get();
+                    RevFeatureType revFeatureType = repository.command(RevObjectParse.class)
+                            .setObjectId(diff.getNewObject().getMetadataId())
+                            .call(RevFeatureType.class).get();
+                    FeatureBuilder builder = new FeatureBuilder(revFeatureType);
+                    list.add(builder.build(diff.getNewObject().name(), revFeature));
+                }
             }
         }
         return list.toArray(new Feature[0]);

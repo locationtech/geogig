@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.api.plumbing;
 
-import java.util.Iterator;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.api.ObjectId;
@@ -29,8 +27,8 @@ import com.google.common.collect.ImmutableList;
  * Compares the features in the {@link WorkingTree working tree} and the {@link StagingArea index}
  * or a given root tree-ish.
  */
-public class DiffWorkTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implements
-        Supplier<Iterator<DiffEntry>> {
+public class DiffWorkTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
+        implements Supplier<AutoCloseableIterator<DiffEntry>> {
 
     private String pathFilter;
 
@@ -68,7 +66,7 @@ public class DiffWorkTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implemen
      * @see DiffEntry
      */
     @Override
-    protected Iterator<DiffEntry> _call() {
+    protected AutoCloseableIterator<DiffEntry> _call() {
 
         final Optional<String> ref = Optional.fromNullable(refSpec);
 
@@ -122,7 +120,7 @@ public class DiffWorkTree extends AbstractGeoGigOp<Iterator<DiffEntry>> implemen
      * @see #call()
      */
     @Override
-    public Iterator<DiffEntry> get() {
+    public AutoCloseableIterator<DiffEntry> get() {
         return call();
     }
 

@@ -10,7 +10,6 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.Transaction;
@@ -19,6 +18,7 @@ import org.geotools.data.store.ContentEntry;
 import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.api.GeogigTransaction;
 import org.locationtech.geogig.api.Ref;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.DiffIndex;
 import org.locationtech.geogig.api.plumbing.TransactionBegin;
@@ -156,12 +156,14 @@ class GeogigTransactionState implements State {
 
         StringBuilder msg = new StringBuilder();
         if (count > 0) {
-            Iterator<DiffEntry> indexDiffs = this.geogigTx.command(DiffIndex.class).setMaxDiffs(10L)
-                    .call();
-            while (indexDiffs.hasNext()) {
-                DiffEntry entry = indexDiffs.next();
-                msg.append("\n ").append(entry.changeType().toString().toLowerCase()).append(' ')
-                        .append(entry.newPath() == null ? entry.oldName() : entry.newPath());
+            try (AutoCloseableIterator<DiffEntry> indexDiffs = this.geogigTx.command(DiffIndex.class)
+                    .setMaxDiffs(10L).call()) {
+                while (indexDiffs.hasNext()) {
+                    DiffEntry entry = indexDiffs.next();
+                    msg.append("\n ").append(entry.changeType().toString().toLowerCase())
+                            .append(' ')
+                            .append(entry.newPath() == null ? entry.oldName() : entry.newPath());
+                }
             }
         }
         if (count > 10) {

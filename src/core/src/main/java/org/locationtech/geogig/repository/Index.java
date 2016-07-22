@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.repository;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -26,6 +25,7 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.DiffIndex;
 import org.locationtech.geogig.api.plumbing.FindOrCreateSubtree;
@@ -350,8 +350,9 @@ public class Index implements StagingArea {
      *         filter.
      */
     @Override
-    public Iterator<DiffEntry> getStaged(final @Nullable List<String> pathFilters) {
-        Iterator<DiffEntry> unstaged = context.command(DiffIndex.class).setFilter(pathFilters)
+    public AutoCloseableIterator<DiffEntry> getStaged(final @Nullable List<String> pathFilters) {
+        AutoCloseableIterator<DiffEntry> unstaged = context.command(DiffIndex.class)
+                .setFilter(pathFilters)
                 .setReportTrees(true).call();
         return unstaged;
     }

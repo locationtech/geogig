@@ -11,12 +11,12 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.api.NodeRef;
 import org.locationtech.geogig.api.RevObject.TYPE;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffWorkTree;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
@@ -64,12 +64,13 @@ public class Clean extends AbstractCommand {
                 checkParameter(ref.get().getType() == TYPE.TREE,
                         "pathspec '%s' did not resolve to a tree", pathFilter);
             }
-            Iterator<DiffEntry> unstaged = geogig.command(DiffWorkTree.class).setFilter(pathFilter)
-                    .call();
-            while (unstaged.hasNext()) {
-                DiffEntry entry = unstaged.next();
-                if (entry.changeType() == ChangeType.ADDED) {
-                    console.println("Would remove " + entry.newPath());
+            try (AutoCloseableIterator<DiffEntry> unstaged = geogig.command(DiffWorkTree.class)
+                    .setFilter(pathFilter).call()) {
+                while (unstaged.hasNext()) {
+                    DiffEntry entry = unstaged.next();
+                    if (entry.changeType() == ChangeType.ADDED) {
+                        console.println("Would remove " + entry.newPath());
+                    }
                 }
             }
         } else {

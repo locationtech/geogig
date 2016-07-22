@@ -15,7 +15,6 @@ import static org.locationtech.geogig.storage.Blobs.readLines;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
@@ -26,6 +25,7 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RefParse;
@@ -281,46 +281,48 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
             parentTreeId = repository.getCommit(parentCommitId).getTreeId();
         }
 
-        // get changes (in reverse)
-        Iterator<DiffEntry> reverseDiff = command(DiffTree.class).setNewTree(parentTreeId)
-                .setOldTree(commit.getTreeId()).setReportTrees(false).call();
-
-        ObjectId headTreeId = repository.getCommit(revertHead).getTreeId();
-        final RevTree headTree = repository.getTree(headTreeId);
-
         ArrayList<Conflict> conflicts = new ArrayList<Conflict>();
-        DiffEntry diff;
-        while (reverseDiff.hasNext()) {
-            diff = reverseDiff.next();
-            if (diff.isAdd()) {
-                // Feature was deleted
-                Optional<NodeRef> node = command(FindTreeChild.class).setChildPath(diff.newPath())
-                        .setParent(headTree).call();
-                // make sure it is still deleted
-                if (node.isPresent()) {
-                    conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(),
-                            node.get().getObjectId(), diff.newObjectId()));
-                } else {
-                    index().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
-                }
-            } else {
-                // Feature was added or modified
-                Optional<NodeRef> node = command(FindTreeChild.class).setChildPath(diff.oldPath())
-                        .setParent(headTree).call();
-                ObjectId nodeId = node.get().getNode().getObjectId();
-                // Make sure it wasn't changed
-                if (node.isPresent() && nodeId.equals(diff.oldObjectId())) {
-                    index().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
-                } else {
-                    // do not mark as conflict if reverting to the same feature currently in HEAD
-                    if (!nodeId.equals(diff.newObjectId())) {
-                        conflicts.add(new Conflict(diff.oldPath(), diff.oldObjectId(),
+        // get changes (in reverse)
+        try (AutoCloseableIterator<DiffEntry> reverseDiff = command(DiffTree.class)
+                .setNewTree(parentTreeId)
+                .setOldTree(commit.getTreeId()).setReportTrees(false).call()) {
+
+            ObjectId headTreeId = repository.getCommit(revertHead).getTreeId();
+            final RevTree headTree = repository.getTree(headTreeId);
+            DiffEntry diff;
+            while (reverseDiff.hasNext()) {
+                diff = reverseDiff.next();
+                if (diff.isAdd()) {
+                    // Feature was deleted
+                    Optional<NodeRef> node = command(FindTreeChild.class)
+                            .setChildPath(diff.newPath()).setParent(headTree).call();
+                    // make sure it is still deleted
+                    if (node.isPresent()) {
+                        conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(),
                                 node.get().getObjectId(), diff.newObjectId()));
+                    } else {
+                        index().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
                     }
+                } else {
+                    // Feature was added or modified
+                    Optional<NodeRef> node = command(FindTreeChild.class)
+                            .setChildPath(diff.oldPath()).setParent(headTree).call();
+                    ObjectId nodeId = node.get().getNode().getObjectId();
+                    // Make sure it wasn't changed
+                    if (node.isPresent() && nodeId.equals(diff.oldObjectId())) {
+                        index().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
+                    } else {
+                        // do not mark as conflict if reverting to the same feature currently in
+                        // HEAD
+                        if (!nodeId.equals(diff.newObjectId())) {
+                            conflicts.add(new Conflict(diff.oldPath(), diff.oldObjectId(),
+                                    node.get().getObjectId(), diff.newObjectId()));
+                        }
+                    }
+
                 }
 
             }
-
         }
 
         return conflicts;

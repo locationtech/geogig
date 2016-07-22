@@ -50,6 +50,7 @@ import org.locationtech.geogig.api.RevObject.TYPE;
 import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.api.RevTreeBuilder;
 import org.locationtech.geogig.api.data.FindFeatureTypeTrees;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffCount;
 import org.locationtech.geogig.api.plumbing.DiffWorkTree;
 import org.locationtech.geogig.api.plumbing.FindOrCreateSubtree;
@@ -978,8 +979,9 @@ public class WorkingTree {
      * @return an iterator for all of the differences between the work tree and the index based on
      *         the path filter.
      */
-    public Iterator<DiffEntry> getUnstaged(final @Nullable String pathFilter) {
-        Iterator<DiffEntry> unstaged = context.command(DiffWorkTree.class).setFilter(pathFilter)
+    public AutoCloseableIterator<DiffEntry> getUnstaged(final @Nullable String pathFilter) {
+        AutoCloseableIterator<DiffEntry> unstaged = context.command(DiffWorkTree.class)
+                .setFilter(pathFilter)
                 .setReportTrees(true).call();
         return unstaged;
     }

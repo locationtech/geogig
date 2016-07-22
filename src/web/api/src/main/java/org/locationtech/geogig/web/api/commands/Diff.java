@@ -9,9 +9,8 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import java.util.Iterator;
-
 import org.locationtech.geogig.api.Context;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
@@ -120,8 +119,8 @@ public class Diff extends AbstractWebAPICommand {
 
         final Context geogig = this.getCommandLocator(context);
 
-        final Iterator<DiffEntry> diff = geogig.command(DiffOp.class).setOldVersion(oldRefSpec)
-                .setNewVersion(newRefSpec).setFilter(pathFilter).call();
+        final AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                .setOldVersion(oldRefSpec).setNewVersion(newRefSpec).setFilter(pathFilter).call();
 
         context.setResponseContent(new CommandResponse() {
             @Override
@@ -133,6 +132,11 @@ public class Diff extends AbstractWebAPICommand {
                     out.writeDiffEntries("diff", page * elementsPerPage, elementsPerPage, diff);
                 }
                 out.finish();
+            }
+
+            @Override
+            public void close() {
+                diff.close();
             }
         });
     }

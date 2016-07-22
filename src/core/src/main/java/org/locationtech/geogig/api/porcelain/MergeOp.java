@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -25,6 +24,7 @@ import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.SubProgressListener;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.api.plumbing.RefParse;
@@ -311,15 +311,17 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 }
 
                 // get changes
-                Iterator<DiffEntry> diff = command(DiffTree.class).setOldTree(ancestorCommit.get())
-                        .setNewTree(targetCommit.getId()).setReportTrees(true).call();
-                // stage changes
-                index().stage(new SubProgressListener(subProgress, 100.f), diff, 0);
-                mergeStatusBuilder.setChanged(true);
-                mergeStatusBuilder.setFastFoward(false);
-                workingTree().updateWorkHead(index().getTree().getId());
+                try (AutoCloseableIterator<DiffEntry> diff = command(DiffTree.class)
+                        .setOldTree(ancestorCommit.get()).setNewTree(targetCommit.getId())
+                        .setReportTrees(true).call()) {
+                    // stage changes
+                    index().stage(new SubProgressListener(subProgress, 100.f), diff, 0);
+                    mergeStatusBuilder.setChanged(true);
+                    mergeStatusBuilder.setFastFoward(false);
+                    workingTree().updateWorkHead(index().getTree().getId());
 
-                subProgress.complete();
+                    subProgress.complete();
+                }
 
             }
 

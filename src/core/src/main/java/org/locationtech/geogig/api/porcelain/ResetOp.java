@@ -10,7 +10,6 @@
 package org.locationtech.geogig.api.porcelain;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.locationtech.geogig.api.AbstractGeoGigOp;
@@ -18,6 +17,7 @@ import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.Ref;
 import org.locationtech.geogig.api.RevCommit;
 import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.CleanRefsOp;
 import org.locationtech.geogig.api.plumbing.DiffTree;
 import org.locationtech.geogig.api.plumbing.RefParse;
@@ -134,17 +134,17 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
                         .setOldTree(repository.index().getTree().getId())
                         .setNewTree(oldCommit.getTreeId()).setPathFilter(pattern);
 
-                Iterator<DiffEntry> diff = diffOp.call();
-
-                final long numChanges = Iterators.size(diffOp.call());
-                if (numChanges == 0) {
-                    // We are reseting to the current version, so there is nothing to do. However,
-                    // if we are in a conflict state, the conflict should be removed and calling
-                    // stage() will not do it, so we do it here
-                    conflictsDatabase().removeConflict(null, pattern);
-                } else {
-                    repository.index().stage(subProgress((1.f / patterns.size()) * 100.f), diff,
-                            numChanges);
+                try (AutoCloseableIterator<DiffEntry> diff = diffOp.call()) {
+                    final long numChanges = Iterators.size(diffOp.call());
+                    if (numChanges == 0) {
+                        // We are reseting to the current version, so there is nothing to do.
+                        // However, if we are in a conflict state, the conflict should be removed
+                        // and calling stage() will not do it, so we do it here
+                        conflictsDatabase().removeConflict(null, pattern);
+                    } else {
+                        repository.index().stage(subProgress((1.f / patterns.size()) * 100.f), diff,
+                                numChanges);
+                    }
                 }
             }
         } else {

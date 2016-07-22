@@ -11,7 +11,6 @@ package org.locationtech.geogig.geotools.geopkg;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,6 +20,7 @@ import org.geotools.data.DataStore;
 import org.geotools.factory.Hints;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.api.ProgressListener;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 import org.locationtech.geogig.api.porcelain.DiffOp;
@@ -88,15 +88,15 @@ public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
 
         changedNodes.clear();
 
-        final Iterator<DiffEntry> diff = context.command(DiffOp.class).setOldVersion(oldRef)
-                .setNewVersion(newRef).setFilter(targetTableName).call();
-
         InterchangeFormat format = new InterchangeFormat(geopackage, context());
 
-        while (diff.hasNext()) {
-            DiffEntry entry = diff.next();
-            changedNodes.put(entry.newName() != null ? entry.newName() : entry.oldName(),
-                    entry.changeType());
+        try (final AutoCloseableIterator<DiffEntry> diff = context.command(DiffOp.class)
+                .setOldVersion(oldRef).setNewVersion(newRef).setFilter(targetTableName).call()) {
+            while (diff.hasNext()) {
+                DiffEntry entry = diff.next();
+                changedNodes.put(entry.newName() != null ? entry.newName() : entry.oldName(),
+                        entry.changeType());
+            }
         }
 
         super.export(refSpec, targetStore, targetTableName, progress);

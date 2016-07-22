@@ -10,7 +10,6 @@
 package org.locationtech.geogig.test.integration;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.junit.Test;
@@ -21,6 +20,7 @@ import org.locationtech.geogig.api.RevFeatureBuilder;
 import org.locationtech.geogig.api.RevFeatureType;
 import org.locationtech.geogig.api.RevFeatureTypeImpl;
 import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.FindTreeChild;
 import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.api.plumbing.diff.AttributeDiff;
@@ -102,9 +102,11 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         RevTree root = repo.workingTree().getTree();
         Optional<Node> featureBlobId = findTreeChild(root, path);
         assertTrue(featureBlobId.isPresent());
-        Iterator<DiffEntry> unstaged = repo.workingTree().getUnstaged(pointsName);
-        ArrayList<DiffEntry> diffs = Lists.newArrayList(unstaged);
-        assertEquals(2, diffs.size());
+        try (AutoCloseableIterator<DiffEntry> unstaged = repo.workingTree()
+                .getUnstaged(pointsName)) {
+            ArrayList<DiffEntry> diffs = Lists.newArrayList(unstaged);
+            assertEquals(2, diffs.size());
+        }
         Optional<RevFeature> feature = geogig.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:" + path).call(RevFeature.class);
         assertTrue(feature.isPresent());

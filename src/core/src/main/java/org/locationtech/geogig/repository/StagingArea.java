@@ -17,6 +17,7 @@ import org.locationtech.geogig.api.Node;
 import org.locationtech.geogig.api.ObjectId;
 import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
 import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
 import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.api.plumbing.merge.Conflict;
@@ -76,7 +77,8 @@ public interface StagingArea {
      * @return an iterator for all of the differences between STAGE_HEAD and HEAD based on the path
      *         filter.
      */
-    public abstract Iterator<DiffEntry> getStaged(final @Nullable List<String> pathFilters);
+    public abstract AutoCloseableIterator<DiffEntry> getStaged(
+            final @Nullable List<String> pathFilters);
 
     /**
      * @param pathFilter

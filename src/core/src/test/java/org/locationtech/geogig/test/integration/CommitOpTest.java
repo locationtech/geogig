@@ -566,6 +566,129 @@ public class CommitOpTest extends RepositoryTestCase {
     }
 
     @Test
+    public void testAmendCommitMessage() throws Exception {
+
+        final ObjectId id = insertAndAdd(points1);
+        final RevCommit commit1 = geogig.command(CommitOp.class).setMessage("Message").call();
+        {
+            assertCommit(commit1, null, null, null);
+            assertEquals(id,
+                    repo.getRootTreeChild(appendChild(pointsName, idP1)).get().getObjectId());
+            assertNotNull(repo.objectDatabase().get(id));
+        }
+
+        final RevCommit commit2 = geogig.command(CommitOp.class).setAmend(true)
+                .setMessage("Updated Message").call();
+        {
+            assertCommit(commit2, null, "groldan", "Updated Message");
+            Optional<RevFeature> p1 = geogig.command(RevObjectParse.class)
+                    .setRefSpec("HEAD:" + appendChild(pointsName, idP1)).call(RevFeature.class);
+            assertTrue(p1.isPresent());
+            assertEquals(id, p1.get().getId());
+            assertEquals(commit1.getAuthor().getName(), commit2.getAuthor().getName());
+            assertEquals(commit1.getAuthor().getEmail(), commit2.getAuthor().getEmail());
+            assertEquals(commit1.getCommitter().getName(), commit2.getCommitter().getName());
+            assertEquals(commit1.getCommitter().getEmail(), commit2.getCommitter().getEmail());
+            assertEquals(commit1.getParentIds(), commit2.getParentIds());
+            assertEquals(commit1.getTreeId(), commit2.getTreeId());
+        }
+        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        assertTrue(log.hasNext());
+        log.next();
+        assertFalse(log.hasNext());
+
+    }
+
+    @Test
+    public void testAmendTimestamp() throws Exception {
+
+        final ObjectId id = insertAndAdd(points1);
+        final RevCommit commit1 = geogig.command(CommitOp.class).setMessage("Message").call();
+        {
+            assertCommit(commit1, null, null, null);
+            assertEquals(id,
+                    repo.getRootTreeChild(appendChild(pointsName, idP1)).get().getObjectId());
+            assertNotNull(repo.objectDatabase().get(id));
+        }
+
+        final Long newTimestamp = 5L;
+
+        final RevCommit commit2 = geogig.command(CommitOp.class).setAmend(true)
+                .setCommitterTimestamp(newTimestamp).call();
+        {
+            assertCommit(commit2, null, "groldan", "Message");
+            Optional<RevFeature> p1 = geogig.command(RevObjectParse.class)
+                    .setRefSpec("HEAD:" + appendChild(pointsName, idP1)).call(RevFeature.class);
+            assertTrue(p1.isPresent());
+            assertEquals(id, p1.get().getId());
+            assertEquals(commit1.getAuthor().getName(), commit2.getAuthor().getName());
+            assertEquals(commit1.getAuthor().getEmail(), commit2.getAuthor().getEmail());
+            assertEquals(commit1.getCommitter().getName(), commit2.getCommitter().getName());
+            assertEquals(commit1.getCommitter().getEmail(), commit2.getCommitter().getEmail());
+            assertEquals(newTimestamp.longValue(), commit2.getCommitter().getTimestamp());
+            assertEquals(commit1.getMessage(), commit2.getMessage());
+            assertEquals(commit1.getParentIds(), commit2.getParentIds());
+            assertEquals(commit1.getTreeId(), commit2.getTreeId());
+        }
+        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        assertTrue(log.hasNext());
+        log.next();
+        assertFalse(log.hasNext());
+
+    }
+
+    @Test
+    public void testAmendReUseCommit() throws Exception {
+
+        final ObjectId id = insertAndAdd(points1);
+        final RevCommit commit1 = geogig.command(CommitOp.class).setMessage("Message").call();
+        {
+            assertCommit(commit1, null, null, null);
+            assertEquals(id,
+                    repo.getRootTreeChild(appendChild(pointsName, idP1)).get().getObjectId());
+            assertNotNull(repo.objectDatabase().get(id));
+        }
+
+        final RevCommit commit2 = geogig.command(CommitOp.class).setAmend(true).setCommit(commit1)
+                .call();
+        {
+            assertCommit(commit2, null, "groldan", "Message");
+            Optional<RevFeature> p1 = geogig.command(RevObjectParse.class)
+                    .setRefSpec("HEAD:" + appendChild(pointsName, idP1)).call(RevFeature.class);
+            assertTrue(p1.isPresent());
+            assertEquals(id, p1.get().getId());
+            assertEquals(commit1.getAuthor(), commit2.getAuthor());
+            assertEquals(commit1.getCommitter().getName(), commit2.getCommitter().getName());
+            assertEquals(commit1.getCommitter().getEmail(), commit2.getCommitter().getEmail());
+            assertEquals(commit1.getMessage(), commit2.getMessage());
+            assertEquals(commit1.getParentIds(), commit2.getParentIds());
+            assertEquals(commit1.getTreeId(), commit2.getTreeId());
+        }
+        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        assertTrue(log.hasNext());
+        log.next();
+        assertFalse(log.hasNext());
+    }
+
+    @Test
+    public void testAmendNoChanges() throws Exception {
+
+        final ObjectId id = insertAndAdd(points1);
+        final RevCommit commit1 = geogig.command(CommitOp.class).setMessage("Message").call();
+        {
+            assertCommit(commit1, null, null, null);
+            assertEquals(id,
+                    repo.getRootTreeChild(appendChild(pointsName, idP1)).get().getObjectId());
+            assertNotNull(repo.objectDatabase().get(id));
+        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "You must specify a new commit message, timestamp, or commit to reuse when amending a commit with no changes.");
+        geogig.command(CommitOp.class).setAmend(true).call();
+
+    }
+
+    @Test
     public void testCannotAmend() throws Exception {
 
         insertAndAdd(points1);

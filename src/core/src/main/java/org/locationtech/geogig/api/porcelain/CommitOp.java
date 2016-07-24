@@ -258,6 +258,8 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         final Integer authorTimeZoneOffset = getAuthorTimeZoneOffset();
         final Integer committerTimeZoneOffset = getCommitterTimeZoneOffset();
 
+        String commitMessage = message;
+
         getProgressListener().started();
         float writeTreeProgress = 99f;
         if (all) {
@@ -287,8 +289,8 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
                 RevCommit headCommit = command(RevObjectParse.class).setObjectId(currHeadCommitId)
                         .call(RevCommit.class).get();
                 parents.addAll(headCommit.getParentIds());
-                if (message == null || message.isEmpty()) {
-                    message = headCommit.getMessage();
+                if (commitMessage == null || commitMessage.isEmpty()) {
+                    commitMessage = headCommit.getMessage();
                 }
                 RevTree commitTree = command(RevObjectParse.class)
                         .setObjectId(headCommit.getTreeId()).call(RevTree.class).get();
@@ -308,8 +310,8 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
             if (!mergeCommitId.isNull()) {
                 parents.add(mergeCommitId);
             }
-            if (message == null) {
-                message = command(ReadMergeCommitMessageOp.class).call();
+            if (commitMessage == null) {
+                commitMessage = command(ReadMergeCommitMessageOp.class).call();
             }
         }
 
@@ -330,8 +332,15 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         final ObjectId currentRootTreeId = command(ResolveTreeish.class)
                 .setTreeish(currHeadCommitId).call().or(RevTree.EMPTY_TREE_ID);
         if (currentRootTreeId.equals(newTreeId)) {
-            if (!allowEmpty) {
+            if (!allowEmpty && !amend) {
                 throw new NothingToCommitException("Nothing to commit after " + currHeadCommitId);
+            }
+            if (amend) {
+                boolean hasMessage = message != null && !message.isEmpty();
+                boolean hasTimestamp = committerTimeStamp != null;
+                boolean hasCommitToReuse = commit != null;
+                Preconditions.checkArgument(hasMessage || hasTimestamp || hasCommitToReuse,
+                        "You must specify a new commit message, timestamp, or commit to reuse when amending a commit with no changes.");
             }
         }
 
@@ -342,7 +351,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
             cb.setAuthorEmail(authorEmail);
             cb.setCommitter(committer);
             cb.setCommitterEmail(committerEmail);
-            cb.setMessage(message);
+            cb.setMessage(commitMessage);
             cb.setParentIds(parents);
             cb.setTreeId(newTreeId);
             cb.setCommitterTimestamp(committerTime);
@@ -356,8 +365,8 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
             cb.setTreeId(newTreeId);
             cb.setCommitterTimestamp(committerTime);
             cb.setCommitterTimeZoneOffset(committerTimeZoneOffset);
-            if (message != null) {
-                cb.setMessage(message);
+            if (commitMessage != null) {
+                cb.setMessage(commitMessage);
             }
             commit = cb.build();
         }
@@ -410,7 +419,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
      */
     public long getCommitterTimeStamp() {
         if (committerTimeStamp == null) {
-            committerTimeStamp = platform().currentTimeMillis();
+            return platform().currentTimeMillis();
         }
         return committerTimeStamp.longValue();
     }
@@ -420,7 +429,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
      */
     public int getCommitterTimeZoneOffset() {
         if (committerTimeZoneOffset == null) {
-            committerTimeZoneOffset = platform().timeZoneOffset(getCommitterTimeStamp());
+            return platform().timeZoneOffset(getCommitterTimeStamp());
         }
         return committerTimeZoneOffset.intValue();
     }
@@ -437,7 +446,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
      */
     public int getAuthorTimeZoneOffset() {
         if (authorTimeZoneOffset == null) {
-            authorTimeZoneOffset = getCommitterTimeZoneOffset();
+            return getCommitterTimeZoneOffset();
         }
         return authorTimeZoneOffset.intValue();
     }

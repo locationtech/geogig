@@ -18,7 +18,7 @@ import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.util.Converters;
-import org.locationtech.geogig.api.FieldType;
+import org.locationtech.geogig.model.FieldType;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;

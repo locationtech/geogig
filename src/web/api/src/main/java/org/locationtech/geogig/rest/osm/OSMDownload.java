@@ -14,12 +14,12 @@ import java.net.URI;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.osm.internal.OSMDownloadOp;
 import org.locationtech.geogig.osm.internal.OSMReport;
 import org.locationtech.geogig.osm.internal.OSMUpdateOp;
 import org.locationtech.geogig.osm.internal.OSMUtils;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.TransactionalResource;

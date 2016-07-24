@@ -13,9 +13,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.Remote;
-import org.locationtech.geogig.api.porcelain.RemoteAddOp;
-import org.locationtech.geogig.api.porcelain.RemoteException;
+import org.locationtech.geogig.porcelain.RemoteAddOp;
+import org.locationtech.geogig.porcelain.RemoteException;
+import org.locationtech.geogig.repository.Remote;
 
 public class RemoteAddOpTest extends RepositoryTestCase {
 

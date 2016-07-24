@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.api.plumbing.ResolveRepositoryName;
+import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;

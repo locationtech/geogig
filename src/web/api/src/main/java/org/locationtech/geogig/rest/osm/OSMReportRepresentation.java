@@ -12,11 +12,11 @@ package org.locationtech.geogig.rest.osm;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.osm.internal.OSMDownloadOp;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
 import org.locationtech.geogig.osm.internal.OSMReport;
 import org.locationtech.geogig.osm.internal.OSMUpdateOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;

@@ -12,6 +12,8 @@ package org.locationtech.geogig.di;
 import java.util.Map;
 import java.util.Set;
 
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
@@ -50,18 +52,7 @@ public class DecoratorProvider {
     }
 
     private boolean isSingleton(Class<? extends Object> c) {
-        if (c.isAnnotationPresent(Singleton.class)) {
-            return true;
-        }
-        Class<?> s = c.getSuperclass();
-        if (s != null && isSingleton(s)) {
-            return true;
-        }
-        Class<?>[] interfaces = c.getInterfaces();
-        for (Class<?> i : interfaces) {
-            return isSingleton(i);
-        }
-        return false;
+        return !AbstractGeoGigOp.class.isAssignableFrom(c);
     }
 
 }

@@ -14,17 +14,17 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.Patch;
-import org.locationtech.geogig.api.plumbing.diff.PatchSerializer;
-import org.locationtech.geogig.api.porcelain.CreatePatchOp;
-import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.plumbing.diff.Patch;
+import org.locationtech.geogig.plumbing.diff.PatchSerializer;
+import org.locationtech.geogig.porcelain.CreatePatchOp;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

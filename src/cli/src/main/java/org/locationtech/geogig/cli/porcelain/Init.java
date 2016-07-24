@@ -17,14 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
-import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.porcelain.InitOp;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryResolver;

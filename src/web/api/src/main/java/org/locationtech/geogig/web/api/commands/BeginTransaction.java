@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;

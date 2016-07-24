@@ -12,8 +12,8 @@ package org.locationtech.geogig.storage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.api.ObjectId.NULL;
-import static org.locationtech.geogig.api.ObjectId.forString;
+import static org.locationtech.geogig.model.ObjectId.NULL;
+import static org.locationtech.geogig.model.ObjectId.forString;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,9 +28,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.Conflict;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;

@@ -15,15 +15,15 @@ import static org.junit.Assert.assertTrue;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
-import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -57,7 +57,7 @@ public class EndTransactionTest extends AbstractWebOpTest {
         TestData testData = new TestData(geogig);
         testData.init();
 
-        Ref master = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
@@ -65,7 +65,7 @@ public class EndTransactionTest extends AbstractWebOpTest {
 
         testData.loadDefaultData();
 
-        Ref txMaster = transaction.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref txMaster = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
 
         assertFalse(master.getObjectId().equals(txMaster.getObjectId()));
@@ -74,7 +74,7 @@ public class EndTransactionTest extends AbstractWebOpTest {
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
 
-        Ref newMaster = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref newMaster = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
 
         assertEquals(master, newMaster);
@@ -92,7 +92,7 @@ public class EndTransactionTest extends AbstractWebOpTest {
         TestData testData = new TestData(geogig);
         testData.init();
 
-        Ref master = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
@@ -100,7 +100,7 @@ public class EndTransactionTest extends AbstractWebOpTest {
 
         testData.loadDefaultData();
 
-        Ref txMaster = transaction.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref txMaster = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
 
         assertFalse(master.getObjectId().equals(txMaster.getObjectId()));
@@ -109,7 +109,7 @@ public class EndTransactionTest extends AbstractWebOpTest {
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
 
-        Ref newMaster = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref newMaster = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
 
         assertEquals(txMaster, newMaster);

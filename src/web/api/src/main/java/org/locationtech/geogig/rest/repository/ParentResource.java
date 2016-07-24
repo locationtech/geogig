@@ -16,8 +16,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;

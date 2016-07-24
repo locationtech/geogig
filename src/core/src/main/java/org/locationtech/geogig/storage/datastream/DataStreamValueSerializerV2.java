@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.FieldType;
+import org.locationtech.geogig.model.FieldType;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.remote;
 
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Repository;
 
 import com.google.common.base.Optional;

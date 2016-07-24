@@ -15,13 +15,13 @@ import java.util.List;
 import java.util.Locale;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.LogOp;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Stopwatch;

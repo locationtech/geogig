@@ -14,8 +14,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.Ref;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -73,7 +73,7 @@ public class RefParseTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Ref branch1 = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call().get();
 
         ParameterSet options = TestParams.of("name", "branch1");

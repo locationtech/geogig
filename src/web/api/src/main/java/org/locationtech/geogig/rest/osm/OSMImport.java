@@ -11,10 +11,10 @@ package org.locationtech.geogig.rest.osm;
 
 import java.net.URI;
 
-import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.osm.internal.Mapping;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
 import org.locationtech.geogig.osm.internal.OSMReport;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.TransactionalResource;

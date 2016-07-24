@@ -15,10 +15,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
-import org.locationtech.geogig.api.plumbing.TransactionEnd;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.plumbing.TransactionEnd;
+import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.GeogigTransaction;
 
 import com.google.common.base.Optional;
 

@@ -11,12 +11,12 @@ package org.locationtech.geogig.storage.bdbje;
 
 import java.io.File;
 
-import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.GraphDatabaseStressTest;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Preconditions;
 

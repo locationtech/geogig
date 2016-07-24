@@ -21,14 +21,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.Closeables;
@@ -110,7 +110,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
      * @param id the id of the object to read
      * @param reader the reader of the object
      * @return the object, as read in from the {@link ObjectReader}
-     * @see org.locationtech.geogig.storage.ObjectDatabase#get(org.locationtech.geogig.api.ObjectId,
+     * @see org.locationtech.geogig.storage.ObjectDatabase#get(org.locationtech.geogig.model.ObjectId,
      *      org.locationtech.geogig.storage.ObjectReader)
      */
     @Override

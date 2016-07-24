@@ -13,18 +13,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.DiffWorkTree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
-import org.locationtech.geogig.api.porcelain.CleanOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.plumbing.DiffWorkTree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.porcelain.CleanOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
 
 import com.beust.jcommander.Parameter;
@@ -37,7 +37,8 @@ public class Clean extends AbstractCommand {
     @Parameter(description = "<path>")
     private List<String> path = new ArrayList<String>();
 
-    @Parameter(names = { "--dry-run", "-n" }, description = "Don't actually remove anything, just show what would be done.")
+    @Parameter(names = { "--dry-run",
+            "-n" }, description = "Don't actually remove anything, just show what would be done.")
     private boolean dryRun;
 
     @Override

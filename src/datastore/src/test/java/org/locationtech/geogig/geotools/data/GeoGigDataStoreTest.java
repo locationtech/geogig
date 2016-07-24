@@ -27,14 +27,14 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.NameImpl;
 import org.geotools.geometry.jts.GeometryBuilder;
 import org.junit.Test;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -212,7 +212,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
     }
 
     private ObjectId commit() {
-        org.locationtech.geogig.api.RevCommit c = geogig.command(CommitOp.class).call();
+        org.locationtech.geogig.model.RevCommit c = geogig.command(CommitOp.class).call();
         return c.getId();
     }
 

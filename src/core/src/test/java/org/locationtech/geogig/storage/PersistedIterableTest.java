@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.storage;
 
-import static org.locationtech.geogig.storage.PersistedIterable.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.locationtech.geogig.storage.PersistedIterable.newStringIterable;
 
 import java.util.ArrayList;
 import java.util.Iterator;

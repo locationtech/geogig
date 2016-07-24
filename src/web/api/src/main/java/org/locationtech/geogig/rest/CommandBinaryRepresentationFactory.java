@@ -11,7 +11,7 @@ package org.locationtech.geogig.rest;
 
 import java.io.File;
 
-import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.restlet.data.MediaType;
 
 /**

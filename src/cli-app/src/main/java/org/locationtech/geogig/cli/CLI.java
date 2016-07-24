@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.cli;
 
-import org.locationtech.geogig.api.GlobalContextBuilder;
+import org.locationtech.geogig.repository.GlobalContextBuilder;
 
 public class CLI {
     /**

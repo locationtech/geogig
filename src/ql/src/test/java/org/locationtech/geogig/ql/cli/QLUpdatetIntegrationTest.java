@@ -12,9 +12,9 @@ package org.locationtech.geogig.ql.cli;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.ql.porcelain.QLUpdate;
+import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class QLUpdatetIntegrationTest extends RepositoryTestCase {

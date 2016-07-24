@@ -9,29 +9,29 @@
  */
 package org.locationtech.geogig.test.integration.repository;
 
-import static org.locationtech.geogig.api.NodeRef.appendChild;
+import static org.locationtech.geogig.model.NodeRef.appendChild;
 
 import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.plumbing.WriteTree2;
-import org.locationtech.geogig.api.porcelain.AddOp;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.WriteTree2;
+import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -202,7 +202,7 @@ public class IndexTest extends RepositoryTestCase {
             @Override
             public RevTree get() {
                 if (treeId.isNull()) {
-                    return RevTree.EMPTY;
+                    return RevTreeBuilder.EMPTY;
                 }
                 return geogig.command(RevObjectParse.class).setObjectId(treeId).call(RevTree.class)
                         .get();
@@ -287,13 +287,12 @@ public class IndexTest extends RepositoryTestCase {
         final ObjectId oId2_1 = insertAndAdd(lines1);
 
         {// simulate a commit so the repo head points to this new tree
-            ObjectInserter objectInserter = repo.newObjectInserter();
             List<ObjectId> parents = ImmutableList.of();
 
             RevCommit commit = new CommitBuilder().setTreeId(newRepoTreeId1).setParentIds(parents)
                     .build();
             ObjectId commitId = commit.getId();
-            objectInserter.insert(commit);
+            repo.objectDatabase().put(commit);
             Optional<Ref> newHead = geogig.command(UpdateRef.class).setName("refs/heads/master")
                     .setNewValue(commitId).call();
             assertTrue(newHead.isPresent());
@@ -325,13 +324,12 @@ public class IndexTest extends RepositoryTestCase {
         }
 
         {// simulate a commit so the repo head points to this new tree
-            ObjectInserter objectInserter = repo.newObjectInserter();
             List<ObjectId> parents = ImmutableList.of();
             RevCommit commit = new CommitBuilder().setTreeId(newRepoTreeId2).setParentIds(parents)
                     .build();
             ObjectId commitId = commit.getId();
-
-            objectInserter.insert(commit);
+            
+            repo.objectDatabase().put(commit);
             Optional<Ref> newHead = geogig.command(UpdateRef.class).setName("refs/heads/master")
                     .setNewValue(commitId).call();
             assertTrue(newHead.isPresent());

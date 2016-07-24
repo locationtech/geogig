@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.collect.ImmutableList;
 

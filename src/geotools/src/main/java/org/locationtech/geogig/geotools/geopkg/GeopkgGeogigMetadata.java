@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.merge.ReportMergeScenarioOp;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.merge.ReportMergeScenarioOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;

@@ -25,11 +25,10 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.TestPlatform;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;

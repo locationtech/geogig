@@ -18,8 +18,8 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.plumbing.ResolveRepositoryName;
+import org.locationtech.geogig.plumbing.ResolveRepositoryName;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.rest.JettisonRepresentation;
 import org.locationtech.geogig.web.api.StreamResponse;
 import org.locationtech.geogig.web.api.StreamWriterRepresentation;

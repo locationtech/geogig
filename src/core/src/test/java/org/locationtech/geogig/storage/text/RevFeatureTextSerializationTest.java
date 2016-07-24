@@ -17,9 +17,9 @@ import java.math.BigInteger;
 import java.util.UUID;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.FieldType;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject.TYPE;
+import org.locationtech.geogig.model.FieldType;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.RevFeatureSerializationTest;
 import org.opengis.feature.Feature;

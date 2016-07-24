@@ -13,13 +13,13 @@ import java.io.IOException;
 import java.util.List;
 
 import org.geotools.data.DataStore;
-import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.opengis.feature.type.AttributeDescriptor;
 
 import com.beust.jcommander.Parameter;

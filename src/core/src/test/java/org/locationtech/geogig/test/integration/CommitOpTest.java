@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import static org.locationtech.geogig.api.NodeRef.appendChild;
+import static org.locationtech.geogig.model.NodeRef.appendChild;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -23,24 +23,24 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.api.porcelain.NothingToCommitException;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.NothingToCommitException;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 
@@ -114,7 +114,7 @@ public class CommitOpTest extends RepositoryTestCase {
     @Test
     public void testCommitAddsFeatureTypeToObjectDatabase() throws Exception {
         insertAndAdd(points1);
-        ObjectId id = RevFeatureTypeImpl.build(pointsType).getId();
+        ObjectId id = RevFeatureTypeBuilder.build(pointsType).getId();
         geogig.command(AddOp.class).addPattern(".").call();
         RevCommit commit = geogig.command(CommitOp.class).call();
         assertNotNull(commit);

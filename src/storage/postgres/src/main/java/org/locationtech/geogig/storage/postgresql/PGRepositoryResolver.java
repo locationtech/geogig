@@ -11,9 +11,9 @@ package org.locationtech.geogig.storage.postgresql;
 
 import java.net.URI;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GlobalContextBuilder;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;

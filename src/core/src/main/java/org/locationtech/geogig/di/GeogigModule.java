@@ -12,17 +12,18 @@ package org.locationtech.geogig.di;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.DefaultPlatform;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.hooks.CommandHooksDecorator;
+import org.locationtech.geogig.hooks.CommandHooksDecorator;
+import org.locationtech.geogig.model.DefaultPlatform;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Index;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryImpl;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.repository.WorkingTreeImpl;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.DeduplicationService;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
@@ -31,7 +32,6 @@ import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactory
 import org.locationtech.geogig.storage.fs.FileObjectDatabase;
 import org.locationtech.geogig.storage.fs.FileRefDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
-import org.locationtech.geogig.storage.memory.HeapDeduplicationService;
 import org.locationtech.geogig.storage.memory.HeapGraphDatabase;
 
 import com.google.inject.AbstractModule;
@@ -48,13 +48,12 @@ import com.google.inject.multibindings.Multibinder;
  * @see Repository
  * @see ConfigDatabase
  * @see StagingArea
- * @see WorkingTree
+ * @see WorkingTreeImpl
  * @see ObjectDatabase
  * @see StagingDatabase
  * @see RefDatabase
  * @see GraphDatabase
  * @see ObjectSerializingFactory
- * @see DeduplicationService
  */
 
 public class GeogigModule extends AbstractModule {
@@ -84,10 +83,10 @@ public class GeogigModule extends AbstractModule {
         bind(Platform.class).toProvider(new PlatformProvider(binder().getProvider(Hints.class)))
                 .in(Scopes.SINGLETON);
 
-        bind(Repository.class).in(Scopes.SINGLETON);
+        bind(Repository.class).to(RepositoryImpl.class).in(Scopes.SINGLETON);
         bind(ConfigDatabase.class).to(IniFileConfigDatabase.class).in(Scopes.SINGLETON);
         bind(StagingArea.class).to(Index.class).in(Scopes.SINGLETON);
-        bind(WorkingTree.class).in(Scopes.SINGLETON);
+        bind(WorkingTree.class).to(WorkingTreeImpl.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).to(HeapGraphDatabase.class).in(Scopes.SINGLETON);
 
         bind(ObjectDatabase.class).to(FileObjectDatabase.class).in(Scopes.SINGLETON);
@@ -95,8 +94,6 @@ public class GeogigModule extends AbstractModule {
 
         bind(ObjectSerializingFactory.class).to(DataStreamSerializationFactoryV2.class)
                 .in(Scopes.SINGLETON);
-
-        bind(DeduplicationService.class).to(HeapDeduplicationService.class).in(Scopes.SINGLETON);
 
         bindCommitGraphInterceptor();
 

@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.plumbing.UpdateSymRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -111,13 +111,13 @@ public class UpdateRef extends AbstractWebAPICommand {
 
         } else {
             if (delete) {
-                ref = geogig.command(org.locationtech.geogig.api.plumbing.UpdateRef.class)
+                ref = geogig.command(org.locationtech.geogig.plumbing.UpdateRef.class)
                         .setDelete(delete).setName(ref.get().getName()).call();
             } else {
                 Optional<ObjectId> target = geogig.command(RevParse.class).setRefSpec(newValue)
                         .call();
                 if (target.isPresent()) {
-                    ref = geogig.command(org.locationtech.geogig.api.plumbing.UpdateRef.class)
+                    ref = geogig.command(org.locationtech.geogig.plumbing.UpdateRef.class)
                             .setName(ref.get().getName()).setNewValue(target.get()).call();
                 } else {
                     throw new CommandSpecException("Invalid new value: " + newValue);

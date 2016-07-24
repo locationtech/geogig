@@ -11,7 +11,7 @@ package org.locationtech.geogig.remote;
 
 import java.net.URL;
 
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;

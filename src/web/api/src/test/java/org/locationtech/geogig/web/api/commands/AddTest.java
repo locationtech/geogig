@@ -16,10 +16,10 @@ import java.util.UUID;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;

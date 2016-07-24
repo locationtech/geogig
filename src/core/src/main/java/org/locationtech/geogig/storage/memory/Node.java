@@ -12,7 +12,7 @@ package org.locationtech.geogig.storage.memory;
 import java.util.List;
 import java.util.Map;
 
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;

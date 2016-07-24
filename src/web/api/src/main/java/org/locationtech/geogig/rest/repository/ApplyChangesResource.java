@@ -17,17 +17,18 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.WriteTree;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.WriteTree;
 import org.locationtech.geogig.remote.BinaryPackedChanges;
 import org.locationtech.geogig.remote.HttpFilteredDiffIterator;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
@@ -80,8 +81,10 @@ public class ApplyChangesResource extends Finder {
 
                 // read in commit object
                 final ObjectSerializingFactory serializer = DataStreamSerializationFactoryV1.INSTANCE;
-                RevCommit commit = (RevCommit) serializer.read(ObjectId.NULL, input); // I don't need to know the
-                                                                      // original ObjectId
+                RevCommit commit = (RevCommit) serializer.read(ObjectId.NULL, input); // I don't
+                                                                                      // need to
+                                                                                      // know the
+                // original ObjectId
 
                 // read in parents
                 List<ObjectId> newParents = new LinkedList<ObjectId>();
@@ -95,7 +98,7 @@ public class ApplyChangesResource extends Finder {
                 BinaryPackedChanges unpacker = new BinaryPackedChanges(repository);
                 try (AutoCloseableIterator<DiffEntry> changes = new HttpFilteredDiffIterator(input,
                         unpacker)) {
-                    RevTree rootTree = RevTree.EMPTY;
+                RevTree rootTree = RevTreeBuilder.EMPTY;
 
                     if (newParents.size() > 0) {
                         ObjectId mappedCommit = newParents.get(0);

@@ -11,9 +11,9 @@ package org.locationtech.geogig.di;
 
 import java.util.Iterator;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;

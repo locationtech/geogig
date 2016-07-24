@@ -14,11 +14,11 @@ import static org.junit.Assert.assertTrue;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -75,18 +75,18 @@ public class CheckoutTest extends AbstractWebOpTest {
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
-        Ref head = transaction.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref head = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.HEAD).call().get();
-        Ref master = transaction.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref master = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
-        Ref branch1 = transaction.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref branch1 = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call().get();
         assertEquals(head.getObjectId(), master.getObjectId());
         ParameterSet options = TestParams.of("branch", branch1.getName(), "transactionId",
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
 
-        head = transaction.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        head = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.HEAD).call().get();
 
         assertEquals(head.getObjectId(), branch1.getObjectId());

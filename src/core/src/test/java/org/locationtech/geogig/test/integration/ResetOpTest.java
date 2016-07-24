@@ -9,24 +9,24 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import static org.locationtech.geogig.api.NodeRef.appendChild;
+import static org.locationtech.geogig.model.NodeRef.appendChild;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.MergeConflictsException;
-import org.locationtech.geogig.api.porcelain.MergeOp;
-import org.locationtech.geogig.api.porcelain.ResetOp;
-import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.porcelain.ResetOp;
+import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.opengis.feature.Feature;

@@ -17,26 +17,26 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.locationtech.geogig.api.Bounded;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
+import org.locationtech.geogig.model.Bounded;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.osm.internal.EntityConverter;
 import org.locationtech.geogig.osm.internal.OSMUtils;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -167,7 +167,7 @@ public class OSMExport extends AbstractCommand implements CLICommand {
                 featureType = OSMUtils.wayType();
             }
             SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(featureType);
-            RevFeatureType revFeatureType = RevFeatureTypeImpl.build(featureType);
+            RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(featureType);
             List<PropertyDescriptor> descriptors = revFeatureType.descriptors();
             for (int i = 0; i < descriptors.size(); i++) {
                 PropertyDescriptor descriptor = descriptors.get(i);

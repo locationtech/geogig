@@ -15,7 +15,6 @@ import static com.google.common.base.Throwables.propagate;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.geotools.data.DataUtilities;
@@ -27,10 +26,10 @@ import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;

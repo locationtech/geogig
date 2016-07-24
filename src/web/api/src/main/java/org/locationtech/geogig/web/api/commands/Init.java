@@ -11,10 +11,10 @@ package org.locationtech.geogig.web.api.commands;
 
 import java.net.URI;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.api.plumbing.ResolveRepositoryName;
-import org.locationtech.geogig.api.porcelain.InitOp;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.plumbing.ResolveRepositoryName;
+import org.locationtech.geogig.porcelain.InitOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;

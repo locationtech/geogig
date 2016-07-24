@@ -15,14 +15,13 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.api.porcelain.InitOp;
-import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.cli.test.functional.CLITestContextBuilder;
+import org.locationtech.geogig.porcelain.InitOp;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Preconditions;
 

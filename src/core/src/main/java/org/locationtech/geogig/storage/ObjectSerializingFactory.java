@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
 
 /**
  * The ObjectSerializingFactory is used to create instances of the various writers and readers used

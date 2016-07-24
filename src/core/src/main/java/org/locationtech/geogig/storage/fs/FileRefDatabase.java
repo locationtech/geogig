@@ -12,7 +12,7 @@ package org.locationtech.geogig.storage.fs;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.locationtech.geogig.api.Ref.append;
+import static org.locationtech.geogig.model.Ref.append;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -22,11 +22,11 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.AbstractRefDatabase;
 import org.locationtech.geogig.storage.ConfigDatabase;

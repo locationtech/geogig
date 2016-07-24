@@ -11,7 +11,7 @@ package org.locationtech.geogig.rest.repository;
 
 import java.util.Iterator;
 
-import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.restlet.data.Request;
 
 import com.google.common.base.Optional;

@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ContextBuilder;
-import org.locationtech.geogig.api.MemoryModule;
-import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.ContextBuilder;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.test.MemoryModule;
 
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;

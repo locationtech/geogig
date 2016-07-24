@@ -9,23 +9,23 @@
  */
 package org.locationtech.geogig.cli;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.locationtech.geogig.api.DefaultPlatform;
-import org.locationtech.geogig.api.DefaultProgressListener;
-import org.locationtech.geogig.api.ProgressListener;
-
-import py4j.GatewayServer;
+import org.locationtech.geogig.model.DefaultPlatform;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.ProgressListener;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
+
+import py4j.GatewayServer;
 
 /**
  * Provides an entry point using the py4j library, to expose GeoGig functionality to python

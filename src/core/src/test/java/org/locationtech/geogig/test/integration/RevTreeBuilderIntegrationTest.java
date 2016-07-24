@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import static org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy.FEATURES_ONLY;
+import static org.locationtech.geogig.plumbing.LsTreeOp.Strategy.FEATURES_ONLY;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,26 +19,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeBuilder;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator;
-import org.locationtech.geogig.api.plumbing.diff.DepthTreeIterator.Strategy;
+import org.locationtech.geogig.model.CanonicalNodeNameOrder;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
+import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.repository.SpatialOps;
-import org.locationtech.geogig.storage.NodePathStorageOrder;
-import org.locationtech.geogig.storage.NodeStorageOrder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
@@ -105,7 +103,7 @@ public class RevTreeBuilderIntegrationTest extends RepositoryTestCase {
 
     @Test
     public void testPutRandomGet() throws Exception {
-        final int numEntries = 2 * NodePathStorageOrder.normalizedSizeLimit(0) + 1500;
+        final int numEntries = 2 * CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1500;
         final ObjectId treeId;
 
         treeId = createAndSaveTree(numEntries, true);
@@ -187,7 +185,7 @@ public class RevTreeBuilderIntegrationTest extends RepositoryTestCase {
 
     @Test
     public void testRemoveSplittedTree() throws Exception {
-        final int numEntries = (int) (1.5 * NodePathStorageOrder.normalizedSizeLimit(0));
+        final int numEntries = (int) (1.5 * CanonicalNodeNameOrder.normalizedSizeLimit(0));
         final ObjectId treeId = createAndSaveTree(numEntries, true);
         final RevTree tree = odb.getTree(treeId);
 
@@ -233,7 +231,7 @@ public class RevTreeBuilderIntegrationTest extends RepositoryTestCase {
     @Test
     public void testEquality() throws Exception {
         testEquality(100);
-        testEquality(100 + NodePathStorageOrder.normalizedSizeLimit(0));
+        testEquality(100 + CanonicalNodeNameOrder.normalizedSizeLimit(0));
     }
 
     private void testEquality(final int numEntries) throws Exception {
@@ -281,9 +279,9 @@ public class RevTreeBuilderIntegrationTest extends RepositoryTestCase {
 
     @Test
     public void testNodeOrderPassSplitThreshold() {
-        final int splitThreshold = NodePathStorageOrder.normalizedSizeLimit(0);
+        final int splitThreshold = CanonicalNodeNameOrder.normalizedSizeLimit(0);
         List<Node> expectedOrder = nodes(splitThreshold + 1);
-        Collections.sort(expectedOrder, new NodeStorageOrder());
+        Collections.sort(expectedOrder, new CanonicalNodeOrder());
 
         final List<Node> flat = expectedOrder.subList(0, splitThreshold);
         RevTreeBuilder flatTreeBuilder = new RevTreeBuilder(odb);

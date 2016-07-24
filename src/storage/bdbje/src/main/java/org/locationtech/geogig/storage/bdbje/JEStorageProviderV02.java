@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.bdbje;
 
-import org.locationtech.geogig.di.StorageProvider;
-import org.locationtech.geogig.di.VersionedFormat;
+import org.locationtech.geogig.repository.VersionedFormat;
+import org.locationtech.geogig.storage.StorageProvider;
 import org.locationtech.geogig.storage.fs.FileRefDatabase;
 
 public class JEStorageProviderV02 extends StorageProvider {

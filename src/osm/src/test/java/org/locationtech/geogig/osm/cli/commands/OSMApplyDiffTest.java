@@ -16,13 +16,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Optional;
 

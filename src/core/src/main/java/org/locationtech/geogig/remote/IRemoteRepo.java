@@ -10,11 +10,11 @@
 package org.locationtech.geogig.remote;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.ReceivePack;
-import org.locationtech.geogig.api.plumbing.SendPack;
-import org.locationtech.geogig.api.porcelain.SynchronizationException;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.ReceivePack;
+import org.locationtech.geogig.plumbing.SendPack;
+import org.locationtech.geogig.porcelain.SynchronizationException;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Optional;

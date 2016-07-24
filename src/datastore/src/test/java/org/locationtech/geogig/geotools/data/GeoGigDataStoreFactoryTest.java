@@ -22,10 +22,10 @@ import java.util.Map;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.junit.Test;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.geogig.test.integration.TestContextBuilder;
 

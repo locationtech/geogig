@@ -18,23 +18,23 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.DiffTree;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.osm.internal.MappingRule.DefaultField;
 import org.locationtech.geogig.osm.internal.log.OSMMappingLogEntry;
 import org.locationtech.geogig.osm.internal.log.ReadOSMMapping;
 import org.locationtech.geogig.osm.internal.log.ReadOSMMappingLogEntry;
+import org.locationtech.geogig.plumbing.DiffTree;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -64,9 +64,9 @@ public class OSMUnmapOp extends AbstractGeoGigOp<RevTree> {
      * corresponding to the "way" and "node" types
      */
 
-    private static final RevFeatureType nodeType = RevFeatureTypeImpl.build(OSMUtils.nodeType());
+    private static final RevFeatureType nodeType = RevFeatureTypeBuilder.build(OSMUtils.nodeType());
 
-    private static final RevFeatureType wayType = RevFeatureTypeImpl.build(OSMUtils.wayType());
+    private static final RevFeatureType wayType = RevFeatureTypeBuilder.build(OSMUtils.wayType());
 
     private static final int NODE_TAGS_FIELD_INDEX = getPropertyIndex(nodeType, "tags");
 

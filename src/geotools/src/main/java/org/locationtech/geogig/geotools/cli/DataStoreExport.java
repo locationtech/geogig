@@ -20,17 +20,6 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeImpl;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.ResolveObjectType;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
@@ -39,6 +28,17 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.ResolveObjectType;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.repository.Repository;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -63,13 +63,16 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
     @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output table")
     public boolean overwrite;
 
-    @Parameter(names = { "--defaulttype" }, description = "Export only features with the tree default feature type if several types are found")
+    @Parameter(names = {
+            "--defaulttype" }, description = "Export only features with the tree default feature type if several types are found")
     public boolean defaultType;
 
-    @Parameter(names = { "--alter" }, description = "Export all features if several types are found, altering them to adapt to the output feature type")
+    @Parameter(names = {
+            "--alter" }, description = "Export all features if several types are found, altering them to adapt to the output feature type")
     public boolean alter;
 
-    @Parameter(names = { "--featuretype" }, description = "Export only features with the specified feature type if several types are found")
+    @Parameter(names = {
+            "--featuretype" }, description = "Export only features with the specified feature type if several types are found")
     @Nullable
     public String sFeatureTypeId;
 
@@ -217,8 +220,8 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
             featureTreePath = split[1];
             rootTreeId = repository.command(ResolveTreeish.class).setTreeish(headTreeish).call();
 
-            checkParameter(rootTreeId.isPresent(), "Couldn't resolve '" + refspec
-                    + "' to a treeish object");
+            checkParameter(rootTreeId.isPresent(),
+                    "Couldn't resolve '" + refspec + "' to a treeish object");
 
         }
 
@@ -226,8 +229,8 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
         Optional<NodeRef> featureTypeTree = repository.command(FindTreeChild.class)
                 .setChildPath(featureTreePath).setParent(rootTree).call();
 
-        checkParameter(featureTypeTree.isPresent(), "pathspec '" + featureTreePath
-                + "' did not match any valid path");
+        checkParameter(featureTypeTree.isPresent(),
+                "pathspec '" + featureTreePath + "' did not match any valid path");
 
         Optional<RevObject> revObject = repository.command(RevObjectParse.class)
                 .setObjectId(featureTypeTree.get().getMetadataId()).call();

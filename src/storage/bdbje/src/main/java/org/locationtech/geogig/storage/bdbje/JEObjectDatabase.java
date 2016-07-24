@@ -35,8 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.AbstractObjectDatabase;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
@@ -335,7 +335,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     /**
-     * @see org.locationtech.geogig.storage.ObjectDatabase#exists(org.locationtech.geogig.api.ObjectId)
+     * @see org.locationtech.geogig.storage.ObjectDatabase#exists(org.locationtech.geogig.model.ObjectId)
      */
     @Override
     public boolean exists(final ObjectId id) {

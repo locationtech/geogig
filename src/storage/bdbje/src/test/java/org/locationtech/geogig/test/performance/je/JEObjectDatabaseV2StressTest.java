@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.performance.je;
 
-import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectDatabaseStressTest;

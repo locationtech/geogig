@@ -14,8 +14,8 @@ import java.io.File;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;

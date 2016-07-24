@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.rest.geotools;
 
-import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp.DataStoreSupplier;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.ParameterSet;
 
 /**

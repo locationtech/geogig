@@ -12,13 +12,13 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.List;
 
-import org.locationtech.geogig.api.porcelain.PushOp;
-import org.locationtech.geogig.api.porcelain.SynchronizationException;
-import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.porcelain.PushOp;
+import org.locationtech.geogig.porcelain.SynchronizationException;
+import org.locationtech.geogig.porcelain.TransferSummary;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

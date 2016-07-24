@@ -15,11 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
-import org.locationtech.geogig.api.porcelain.NothingToCommitException;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
@@ -28,6 +23,11 @@ import org.locationtech.geogig.osm.internal.OSMDownloadOp;
 import org.locationtech.geogig.osm.internal.OSMReport;
 import org.locationtech.geogig.osm.internal.OSMUpdateOp;
 import org.locationtech.geogig.osm.internal.OSMUtils;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.porcelain.NothingToCommitException;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GeogigTransaction;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

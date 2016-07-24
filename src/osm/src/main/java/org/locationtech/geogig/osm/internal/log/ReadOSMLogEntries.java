@@ -12,7 +12,7 @@ package org.locationtech.geogig.osm.internal.log;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.Blobs;
 

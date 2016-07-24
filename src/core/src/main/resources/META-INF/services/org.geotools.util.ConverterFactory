@@ -1,2 +1,2 @@
-org.locationtech.geogig.api.data.PrimitiveArrayToStringConverterFactory
-org.locationtech.geogig.api.data.MapToStringConverterFactory
+org.locationtech.geogig.data.PrimitiveArrayToStringConverterFactory
+org.locationtech.geogig.data.MapToStringConverterFactory

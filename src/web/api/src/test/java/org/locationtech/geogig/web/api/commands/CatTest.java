@@ -15,19 +15,19 @@ import static org.junit.Assert.assertTrue;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevPerson;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
-import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.api.porcelain.TagCreateOp;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.ResolveFeatureType;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.TagCreateOp;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -186,7 +186,7 @@ public class CatTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Ref branch1Ref = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref branch1Ref = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call().get();
         RevTag tag = geogig.command(TagCreateOp.class).setCommitId(branch1Ref.getObjectId())
                 .setMessage("new tag at branch1").setName("testTag").call();

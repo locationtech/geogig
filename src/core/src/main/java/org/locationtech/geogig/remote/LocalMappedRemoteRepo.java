@@ -13,26 +13,27 @@ import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.CheckSparsePath;
-import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
-import org.locationtech.geogig.api.plumbing.ForEachRef;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.plumbing.UpdateSymRef;
-import org.locationtech.geogig.api.plumbing.WriteTree;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.DiffOp;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.CheckSparsePath;
+import org.locationtech.geogig.plumbing.FindCommonAncestor;
+import org.locationtech.geogig.plumbing.ForEachRef;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.plumbing.WriteTree;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
@@ -131,8 +132,8 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
             Ref newRef = remoteRef;
             if (!(newRef instanceof SymRef)
                     && localRepository.graphDatabase().exists(remoteRef.getObjectId())) {
-                ObjectId mappedCommit = localRepository.graphDatabase().getMapping(
-                        remoteRef.getObjectId());
+                ObjectId mappedCommit = localRepository.graphDatabase()
+                        .getMapping(remoteRef.getObjectId());
                 if (mappedCommit != null) {
                     newRef = new Ref(remoteRef.getName(), mappedCommit);
                 }
@@ -235,7 +236,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                     .setNewVersion(commitId).setOldVersion(parent).setReportTrees(true).call()) {
                 LocalCopyingDiffIterator changes = new LocalCopyingDiffIterator(diffIter, from, to);
 
-                RevTree rootTree = RevTree.EMPTY;
+                RevTree rootTree = RevTreeBuilder.EMPTY;
 
                 if (newParents.size() > 0) {
                     ObjectId mappedCommit = newParents.get(0);

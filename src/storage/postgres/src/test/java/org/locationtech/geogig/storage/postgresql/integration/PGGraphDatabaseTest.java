@@ -13,7 +13,7 @@ import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Rule;
-import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.GraphDatabaseTest;

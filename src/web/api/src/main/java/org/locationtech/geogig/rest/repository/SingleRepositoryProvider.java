@@ -12,9 +12,9 @@ package org.locationtech.geogig.rest.repository;
 import java.net.URI;
 import java.util.Iterator;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.api.plumbing.ResolveRepositoryName;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.plumbing.ResolveRepositoryName;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.restlet.data.Request;
 
 import com.google.common.base.Optional;

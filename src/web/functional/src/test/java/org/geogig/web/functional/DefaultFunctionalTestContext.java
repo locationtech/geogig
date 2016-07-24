@@ -15,11 +15,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Set;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.TestPlatform;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.web.DirectoryRepositoryProvider;
 import org.locationtech.geogig.web.Main;
 import org.locationtech.geogig.web.api.TestData;

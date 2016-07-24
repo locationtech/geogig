@@ -14,9 +14,9 @@ import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.remote.BinaryPackedObjects;
 import org.locationtech.geogig.remote.BinaryPackedObjects.IngestResults;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.rest.RestletException;
 import org.restlet.data.Request;
 import org.restlet.data.Status;

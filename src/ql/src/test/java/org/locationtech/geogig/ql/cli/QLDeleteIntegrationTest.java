@@ -16,12 +16,12 @@ import java.util.Set;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.ql.porcelain.QLDelete;
+import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Supplier;

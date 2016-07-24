@@ -12,13 +12,13 @@ package org.locationtech.geogig.storage;
 import java.util.Iterator;
 import java.util.List;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.inject.Provider;
@@ -125,12 +125,6 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     @Override
     public boolean put(RevObject object) {
         return subject.get().put(object);
-    }
-
-    @Override
-    @Deprecated
-    public ObjectInserter newObjectInserter() {
-        return new ObjectInserter(this);
     }
 
     @Override

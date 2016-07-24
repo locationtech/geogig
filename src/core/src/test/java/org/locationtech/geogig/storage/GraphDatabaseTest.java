@@ -23,12 +23,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.TestPlatform;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.GraphDatabase.Direction;
 import org.locationtech.geogig.storage.GraphDatabase.GraphEdge;
 import org.locationtech.geogig.storage.GraphDatabase.GraphNode;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.collect.ImmutableList;
 

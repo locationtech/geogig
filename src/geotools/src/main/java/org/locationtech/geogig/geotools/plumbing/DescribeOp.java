@@ -16,8 +16,8 @@ import java.util.Map;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;

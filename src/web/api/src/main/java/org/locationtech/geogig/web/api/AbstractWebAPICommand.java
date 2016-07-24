@@ -11,8 +11,8 @@ package org.locationtech.geogig.web.api;
 
 import java.util.UUID;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeogigTransaction;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.rest.RestletException;
 import org.restlet.data.Method;
 import org.restlet.data.Status;

@@ -19,8 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.AbstractObjectDatabase;
 import org.locationtech.geogig.storage.AbstractObjectStore;
 import org.locationtech.geogig.storage.BulkOpListener;

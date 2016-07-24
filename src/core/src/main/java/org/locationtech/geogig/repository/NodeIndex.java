@@ -12,16 +12,16 @@ package org.locationtech.geogig.repository;
 import java.io.Closeable;
 import java.util.Iterator;
 
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeBuilder;
-import org.locationtech.geogig.storage.NodePathStorageOrder;
-import org.locationtech.geogig.storage.NodeStorageOrder;
+import org.locationtech.geogig.model.CanonicalNodeNameOrder;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
 
 /**
  * Represents a temporary storage of {@link Node} instances to assist {@link RevTreeBuilder2} in
  * creating large {@link RevTree} instances by first building an index of Nodes and then adding all
- * nodes to the {@link RevTreeBuilder} in {@link NodePathStorageOrder}'s order.
+ * nodes to the {@link RevTreeBuilder} in {@link CanonicalNodeNameOrder}'s order.
  */
 interface NodeIndex extends Closeable {
 
@@ -31,7 +31,7 @@ interface NodeIndex extends Closeable {
     public abstract void add(Node node);
 
     /**
-     * @return the list of added nodes sorted according to the {@link NodeStorageOrder} comparator.
+     * @return the list of added nodes sorted according to the {@link CanonicalNodeOrder} comparator.
      */
     public abstract Iterator<Node> nodes();
 

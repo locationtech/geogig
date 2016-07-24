@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.test.integration.je;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ContextBuilder;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.ContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 
 import com.google.inject.Guice;

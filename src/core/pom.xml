@@ -17,6 +17,11 @@
     mvn -Ponline Corertura is configured for a test coverage report: mvn cobertura:cobertura open target/site/cobertura/index.html -->
   <dependencies>
     <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>

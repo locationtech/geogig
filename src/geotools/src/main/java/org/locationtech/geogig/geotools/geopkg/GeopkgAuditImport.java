@@ -14,9 +14,9 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.ProgressListener;
 
 import com.google.common.base.Throwables;
 

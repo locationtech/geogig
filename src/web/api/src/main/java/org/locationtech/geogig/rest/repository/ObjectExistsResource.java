@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.WriterRepresentation;
 import org.restlet.Context;

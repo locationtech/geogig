@@ -16,12 +16,12 @@ import javax.sql.DataSource;
 
 import org.geotools.data.DataStore;
 import org.geotools.geopkg.GeoPackage;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvider;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.WorkingTree;
 
 import com.google.common.base.Throwables;

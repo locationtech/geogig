@@ -12,14 +12,14 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.porcelain.VersionInfo;
-import org.locationtech.geogig.api.porcelain.VersionOp;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.porcelain.VersionInfo;
+import org.locationtech.geogig.porcelain.VersionOp;
+import org.locationtech.geogig.repository.GeoGIG;
 
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Throwables;

@@ -15,10 +15,10 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.RefParse;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.rest.WriterRepresentation;
 import org.restlet.Context;
 import org.restlet.data.ClientInfo;

@@ -15,9 +15,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.SymRef;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -82,7 +82,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Optional<Ref> branch1 = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Optional<Ref> branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call();
 
         assertTrue(branch1.isPresent());
@@ -93,7 +93,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("name", "branch1", "delete", "true");
         buildCommand(options).run(testContext.get());
 
-        branch1 = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call();
         assertFalse(branch1.isPresent());
 
@@ -111,7 +111,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Optional<Ref> head = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Optional<Ref> head = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("HEAD").call();
 
         assertTrue(head.isPresent());
@@ -124,7 +124,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("name", "HEAD", "delete", "true");
         buildCommand(options).run(testContext.get());
 
-        head = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class).setName("HEAD")
+        head = geogig.command(org.locationtech.geogig.plumbing.RefParse.class).setName("HEAD")
                 .call();
         assertFalse(head.isPresent());
 
@@ -157,16 +157,16 @@ public class UpdateRefTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Ref branch1 = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call().get();
-        Ref master = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("master").call().get();
 
         ParameterSet options = TestParams.of("name", "branch1", "newValue",
                 master.getObjectId().toString());
         buildCommand(options).run(testContext.get());
 
-        branch1 = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call().get();
 
         assertEquals(master.getObjectId(), branch1.getObjectId());
@@ -200,11 +200,11 @@ public class UpdateRefTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Ref branch1 = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call().get();
-        Ref master = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("master").call().get();
-        SymRef head = (SymRef) geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        SymRef head = (SymRef) geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("HEAD").call().get();
 
         assertEquals(master.getName(), head.getTarget());
@@ -213,7 +213,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("name", "HEAD", "newValue", "branch1");
         buildCommand(options).run(testContext.get());
 
-        head = (SymRef) geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        head = (SymRef) geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("HEAD").call().get();
 
         assertEquals(branch1.getName(), head.getTarget());

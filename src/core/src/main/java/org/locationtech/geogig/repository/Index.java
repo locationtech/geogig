@@ -16,27 +16,20 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeBuilder;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.DiffCount;
-import org.locationtech.geogig.api.plumbing.DiffIndex;
-import org.locationtech.geogig.api.plumbing.FindOrCreateSubtree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.plumbing.WriteBack;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.di.Singleton;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.plumbing.DiffCount;
+import org.locationtech.geogig.plumbing.DiffIndex;
+import org.locationtech.geogig.plumbing.FindOrCreateSubtree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.WriteBack;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.PersistedIterable;
@@ -67,7 +60,6 @@ import com.google.inject.Inject;
  * repository's head tree.
  * 
  */
-@Singleton
 public class Index implements StagingArea {
 
     private Context context;
@@ -102,10 +94,10 @@ public class Index implements StagingArea {
         Optional<ObjectId> stageTreeId = context.command(ResolveTreeish.class)
                 .setTreeish(Ref.STAGE_HEAD).call();
 
-        RevTree stageTree = RevTree.EMPTY;
+        RevTree stageTree = RevTreeBuilder.EMPTY;
 
         if (stageTreeId.isPresent()) {
-            if (!stageTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
+            if (!stageTreeId.get().equals(RevTreeBuilder.EMPTY_TREE_ID)) {
                 stageTree = context.objectDatabase().getTree(stageTreeId.get());
             }
         } else {
@@ -113,7 +105,7 @@ public class Index implements StagingArea {
             Optional<ObjectId> headTreeId = context.command(ResolveTreeish.class)
                     .setTreeish(Ref.HEAD).call();
 
-            if (headTreeId.isPresent() && !headTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
+            if (headTreeId.isPresent() && !headTreeId.get().equals(RevTreeBuilder.EMPTY_TREE_ID)) {
                 stageTree = context.objectDatabase().getTree(headTreeId.get());
                 updateStageHead(stageTree.getId());
             }

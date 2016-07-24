@@ -12,12 +12,12 @@ package org.locationtech.geogig.test.integration;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.BranchListOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CloneOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.BranchListOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CloneOp;
+import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.remote.RemoteRepositoryTestCase;
 
 import com.google.common.collect.ImmutableList;

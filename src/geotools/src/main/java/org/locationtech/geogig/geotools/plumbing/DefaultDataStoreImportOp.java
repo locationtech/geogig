@@ -1,9 +1,9 @@
 package org.locationtech.geogig.geotools.plumbing;
 
 import org.geotools.data.DataStore;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.WorkingTree;
 
 public class DefaultDataStoreImportOp extends DataStoreImportOp<RevCommit> {

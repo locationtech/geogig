@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.GraphDatabaseStressTest;
+import org.locationtech.geogig.test.TestPlatform;
 
 public class HeapGraphDatabaseStressTest extends GraphDatabaseStressTest {
 

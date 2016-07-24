@@ -24,15 +24,15 @@ import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.test.TestPlatform;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.Name;
 

@@ -13,17 +13,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.FeatureInfo;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.MergeScenarioConsumer;
-import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
-import org.locationtech.geogig.api.plumbing.merge.ReportCommitConflictsOp;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
+import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
+import org.locationtech.geogig.plumbing.merge.ReportCommitConflictsOp;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.FeatureInfo;
 import org.opengis.feature.Feature;
 
 public class ReportCommitConflictsOpTest extends RepositoryTestCase {

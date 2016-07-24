@@ -19,14 +19,4 @@ public abstract class AbstractObjectDatabase extends AbstractObjectStore impleme
     public AbstractObjectDatabase(final ObjectSerializingFactory serializer) {
         super(serializer);
     }
-
-    /**
-     * @return a newly constructed {@link ObjectInserter} for this database
-     * @see org.locationtech.geogig.storage.ObjectDatabase#newObjectInserter()
-     * @deprecated
-     */
-    @Override
-    public ObjectInserter newObjectInserter() {
-        return new ObjectInserter(this);
-    }
 }

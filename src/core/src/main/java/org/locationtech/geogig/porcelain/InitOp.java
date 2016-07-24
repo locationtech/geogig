@@ -29,14 +29,14 @@ import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.PluginDefaults;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
-import org.locationtech.geogig.repository.VersionedFormat;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.PluginDefaults;
+import org.locationtech.geogig.storage.VersionedFormat;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

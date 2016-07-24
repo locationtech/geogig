@@ -11,8 +11,8 @@ package org.locationtech.geogig.di;
 
 import java.util.Map;
 
-import org.locationtech.geogig.repository.VersionedFormat;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.VersionedFormat;
 
 import com.google.common.base.Optional;
 import com.google.inject.Provider;

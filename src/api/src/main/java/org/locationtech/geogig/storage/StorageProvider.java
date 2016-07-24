@@ -11,8 +11,6 @@ package org.locationtech.geogig.storage;
 
 import java.util.ServiceLoader;
 
-import org.locationtech.geogig.repository.VersionedFormat;
-
 import com.google.common.collect.ImmutableList;
 
 /**

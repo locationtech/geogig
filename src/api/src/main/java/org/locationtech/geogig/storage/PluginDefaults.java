@@ -7,9 +7,7 @@
  * Contributors:
  * David Winslow (Boundless) - initial implementation
  */
-package org.locationtech.geogig.repository;
-
-import org.locationtech.geogig.storage.StorageProvider;
+package org.locationtech.geogig.storage;
 
 import com.google.common.base.Optional;
 

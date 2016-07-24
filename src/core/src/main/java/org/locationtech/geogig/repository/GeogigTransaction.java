@@ -23,6 +23,7 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.TransactionBlobStore;
 import org.locationtech.geogig.storage.TransactionBlobStoreImpl;

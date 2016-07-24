@@ -7,7 +7,7 @@
  * Contributors:
  * David Winslow (Boundless) - initial implementation
  */
-package org.locationtech.geogig.repository;
+package org.locationtech.geogig.storage;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

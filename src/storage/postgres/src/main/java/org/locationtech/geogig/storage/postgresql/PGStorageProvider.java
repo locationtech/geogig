@@ -1,7 +1,7 @@
 package org.locationtech.geogig.storage.postgresql;
 
-import org.locationtech.geogig.repository.VersionedFormat;
 import org.locationtech.geogig.storage.StorageProvider;
+import org.locationtech.geogig.storage.VersionedFormat;
 
 public class PGStorageProvider extends StorageProvider {
 

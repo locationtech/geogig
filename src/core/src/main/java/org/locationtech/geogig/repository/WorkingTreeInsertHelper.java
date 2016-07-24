@@ -16,18 +16,16 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.FindOrCreateSubtree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindOrCreateSubtree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
@@ -141,7 +139,7 @@ class WorkingTreeInsertHelper {
 
         ObjectId metadataId = ObjectId.NULL;
         if (type != null) {
-            RevFeatureType revFeatureType = RevFeatureTypeImpl.build(type);
+            RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(type);
             if (tree.isEmpty()) {
                 db.put(revFeatureType);
             }

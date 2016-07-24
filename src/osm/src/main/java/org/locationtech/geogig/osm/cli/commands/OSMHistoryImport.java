@@ -32,40 +32,40 @@ import javax.management.relation.Relation;
 import org.eclipse.jdt.annotation.Nullable;
 import org.fusesource.jansi.Ansi.Color;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.locationtech.geogig.api.DefaultProgressListener;
-import org.locationtech.geogig.api.FeatureBuilder;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.DiffCount;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.osm.internal.history.Change;
 import org.locationtech.geogig.osm.internal.history.Changeset;
 import org.locationtech.geogig.osm.internal.history.HistoryDownloader;
 import org.locationtech.geogig.osm.internal.history.Node;
 import org.locationtech.geogig.osm.internal.history.Primitive;
 import org.locationtech.geogig.osm.internal.history.Way;
+import org.locationtech.geogig.plumbing.DiffCount;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -433,7 +433,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
 
             Iterator<? extends Feature> iterator = features.iterator();
             ProgressListener listener = new DefaultProgressListener();
-            List<org.locationtech.geogig.api.Node> insertedTarget = null;
+            List<org.locationtech.geogig.model.Node> insertedTarget = null;
             Integer collectionSize = Integer.valueOf(features.size());
             workTree.insert(parentPath, iterator, listener, insertedTarget, collectionSize);
         }
@@ -481,7 +481,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
             if (coord == null) {
                 String fid = String.valueOf(nodeId);
                 String path = NodeRef.appendChild(NODE_TYPE_NAME, fid);
-                Optional<org.locationtech.geogig.api.Node> ref = index.findStaged(path);
+                Optional<org.locationtech.geogig.model.Node> ref = index.findStaged(path);
                 if (!ref.isPresent()) {
                     Optional<NodeRef> nodeRef = findTreeChild.setChildPath(path).call();
                     if (nodeRef.isPresent()) {
@@ -491,7 +491,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
                     }
                 }
                 if (ref.isPresent()) {
-                    org.locationtech.geogig.api.Node nodeRef = ref.get();
+                    org.locationtech.geogig.model.Node nodeRef = ref.get();
 
                     RevFeature revFeature = objectDatabase.getFeature(nodeRef.getObjectId());
                     String id = NodeRef.nodeFromPath(nodeRef.getName());
@@ -530,7 +530,7 @@ public class OSMHistoryImport extends AbstractCommand implements CLICommand {
         return NodeRef.appendChild(WAY_TYPE_NAME, fid);
     }
 
-    private static final RevFeatureType NODE_REV_TYPE = RevFeatureTypeImpl.build(nodeType());
+    private static final RevFeatureType NODE_REV_TYPE = RevFeatureTypeBuilder.build(nodeType());
 
     private static SimpleFeature toFeature(Primitive feature, Geometry geom) {
 

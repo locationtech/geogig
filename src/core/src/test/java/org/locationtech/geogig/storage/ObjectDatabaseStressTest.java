@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.storage;
 
-import static org.locationtech.geogig.api.plumbing.diff.RevObjectTestSupport.featureForceId;
+import static org.locationtech.geogig.model.RevObjectTestSupport.featureForceId;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,12 +34,12 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.TestPlatform;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;

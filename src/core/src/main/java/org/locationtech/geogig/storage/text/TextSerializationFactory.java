@@ -30,24 +30,24 @@ import java.util.TreeMap;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.FieldType;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevPerson;
-import org.locationtech.geogig.api.RevPersonImpl;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTagImpl;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeImpl;
+import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.FieldType;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevPersonBuilder;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTagBuilder;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectReader;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.ObjectWriter;
@@ -503,8 +503,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             ObjectId metadataId = ObjectId.valueOf(tokens.get(4));
             Envelope bbox = parseBBox(tokens.get(5));
 
-            org.locationtech.geogig.api.Node ref = org.locationtech.geogig.api.Node.create(name, id,
-                    metadataId, type, bbox);
+            org.locationtech.geogig.model.Node ref = org.locationtech.geogig.model.Node.create(name,
+                    id, metadataId, type, bbox);
 
             return ref;
 
@@ -602,7 +602,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String email = tokens[2].trim().isEmpty() ? null : tokens[2];
             long timestamp = Long.parseLong(tokens[3]);
             int offset = Integer.parseInt(tokens[4]);
-            return new RevPersonImpl(name, email, timestamp, offset);
+            return RevPersonBuilder.build(name, email, timestamp, offset);
         }
 
         private String parseMessage(BufferedReader reader) throws IOException {
@@ -710,7 +710,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
                 builder.add(parseAttributeDescriptor(line));
             }
             SimpleFeatureType sft = builder.buildFeatureType();
-            return RevFeatureTypeImpl.build(sft);
+            return RevFeatureTypeBuilder.build(sft);
 
         }
 
@@ -814,9 +814,9 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
 
             RevTree tree;
             if (subtrees.isEmpty()) {
-                tree = RevTreeImpl.createLeafTree(id, size, features.build(), trees.build());
+                tree = RevTreeBuilder.createLeafTree(id, size, features.build(), trees.build());
             } else {
-                tree = RevTreeImpl.createNodeTree(id, size, numTrees, subtrees);
+                tree = RevTreeBuilder.createNodeTree(id, size, numTrees, subtrees);
             }
             return tree;
         }
@@ -845,7 +845,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String message = parseLine(requireLine(reader), "message");
             String commitId = parseLine(requireLine(reader), "commitid");
             RevPerson tagger = parsePerson(requireLine(reader));
-            RevTag tag = new RevTagImpl(id, name, ObjectId.valueOf(commitId), message, tagger);
+            RevTag tag = RevTagBuilder.build(id, name, ObjectId.valueOf(commitId), message, tagger);
             return tag;
         }
 
@@ -858,7 +858,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String email = tokens[2].trim().isEmpty() ? null : tokens[2];
             long timestamp = Long.parseLong(tokens[3]);
             int offset = Integer.parseInt(tokens[4]);
-            return new RevPersonImpl(name, email, timestamp, offset);
+            return RevPersonBuilder.build(name, email, timestamp, offset);
         }
 
     };

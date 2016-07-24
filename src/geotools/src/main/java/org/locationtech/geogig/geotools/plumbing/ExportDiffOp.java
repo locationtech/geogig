@@ -24,21 +24,21 @@ import org.geotools.feature.collection.BaseFeatureCollection;
 import org.geotools.feature.collection.DelegateFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -160,7 +160,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
 
         final SimpleFeatureType featureType = addChangeTypeAttribute(
                 database.getFeatureType(metadataId));
-        final RevFeatureType revFeatureType = RevFeatureTypeImpl.build(featureType);
+        final RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(featureType);
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(featureType);
 
         final Function<DiffEntry, SimpleFeature> asFeature = (de) -> {

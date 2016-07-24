@@ -14,7 +14,7 @@ import java.util.Map;
 
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.locationtech.geogig.api.data.ForwardingFeatureIterator;
+import org.locationtech.geogig.data.ForwardingFeatureIterator;
 import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvider;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;

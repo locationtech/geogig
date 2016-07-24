@@ -10,9 +10,9 @@
 package org.locationtech.geogig.storage;
 
 import static org.junit.Assert.assertEquals;
-import static org.locationtech.geogig.storage.NodePathStorageOrder.INSTANCE;
-import static org.locationtech.geogig.storage.NodePathStorageOrder.maxBucketsForLevel;
-import static org.locationtech.geogig.storage.NodePathStorageOrder.normalizedSizeLimit;
+import static org.locationtech.geogig.model.CanonicalNodeNameOrder.INSTANCE;
+import static org.locationtech.geogig.model.CanonicalNodeNameOrder.maxBucketsForLevel;
+import static org.locationtech.geogig.model.CanonicalNodeNameOrder.normalizedSizeLimit;
 
 import org.junit.Rule;
 import org.junit.Test;

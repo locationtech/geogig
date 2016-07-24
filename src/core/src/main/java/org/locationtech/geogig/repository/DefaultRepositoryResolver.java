@@ -16,12 +16,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.hooks.Hookables;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.hooks.Hookables;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 

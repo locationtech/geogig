@@ -19,13 +19,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.porcelain.ConfigGet;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.porcelain.ConfigGet;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;

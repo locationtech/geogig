@@ -51,14 +51,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.BulkOpListener;
@@ -344,8 +345,8 @@ public class PGObjectDatabase implements ObjectDatabase {
         config.checkRepositoryExists();
 
         final RevObject obj;
-        if (RevTree.EMPTY_TREE_ID.equals(id)) {
-            return type.isAssignableFrom(RevTree.class) ? type.cast(RevTree.EMPTY) : null;
+        if (RevTreeBuilder.EMPTY_TREE_ID.equals(id)) {
+            return type.isAssignableFrom(RevTree.class) ? type.cast(RevTreeBuilder.EMPTY) : null;
         }
 
         @Nullable

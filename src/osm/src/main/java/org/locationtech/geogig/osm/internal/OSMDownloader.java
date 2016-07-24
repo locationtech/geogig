@@ -25,7 +25,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ProgressListener;
+import org.locationtech.geogig.repository.ProgressListener;
 
 import com.google.common.io.Closeables;
 

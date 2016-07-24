@@ -19,14 +19,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.plumbing.diff.Patch;
-import org.locationtech.geogig.api.plumbing.diff.PatchSerializer;
-import org.locationtech.geogig.api.plumbing.diff.VerifyPatchOp;
-import org.locationtech.geogig.api.plumbing.diff.VerifyPatchResults;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.plumbing.diff.Patch;
+import org.locationtech.geogig.plumbing.diff.PatchSerializer;
+import org.locationtech.geogig.plumbing.diff.VerifyPatchOp;
+import org.locationtech.geogig.plumbing.diff.VerifyPatchResults;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

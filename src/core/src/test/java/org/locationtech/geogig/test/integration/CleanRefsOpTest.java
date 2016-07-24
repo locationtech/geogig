@@ -10,12 +10,12 @@
 package org.locationtech.geogig.test.integration;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.CleanRefsOp;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.porcelain.MergeOp;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.CleanRefsOp;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.porcelain.MergeOp;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;

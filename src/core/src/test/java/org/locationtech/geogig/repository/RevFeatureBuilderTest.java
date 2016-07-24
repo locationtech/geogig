@@ -9,12 +9,12 @@
  */
 package org.locationtech.geogig.repository;
 
-import static org.locationtech.geogig.api.RevFeatureBuilder.builder;
+import static org.locationtech.geogig.model.RevFeatureBuilder.builder;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;

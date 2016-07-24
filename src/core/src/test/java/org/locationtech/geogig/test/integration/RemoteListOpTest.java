@@ -13,11 +13,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.Remote;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.RemoteAddOp;
-import org.locationtech.geogig.api.porcelain.RemoteListOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.RemoteAddOp;
+import org.locationtech.geogig.porcelain.RemoteListOp;
+import org.locationtech.geogig.repository.Remote;
 
 import com.google.common.collect.ImmutableList;
 

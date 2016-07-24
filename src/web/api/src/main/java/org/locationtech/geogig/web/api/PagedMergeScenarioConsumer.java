@@ -4,10 +4,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.locationtech.geogig.api.FeatureInfo;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.MergeScenarioConsumer;
+import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
+import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.web.api.commands.ReportMergeScenario;
 
 /**

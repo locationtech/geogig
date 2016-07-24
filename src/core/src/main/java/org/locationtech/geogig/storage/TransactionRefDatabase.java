@@ -10,8 +10,8 @@
 package org.locationtech.geogig.storage;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.locationtech.geogig.api.Ref.TRANSACTIONS_PREFIX;
-import static org.locationtech.geogig.api.Ref.append;
+import static org.locationtech.geogig.model.Ref.TRANSACTIONS_PREFIX;
+import static org.locationtech.geogig.model.Ref.append;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,11 +19,11 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
-import org.locationtech.geogig.api.plumbing.TransactionEnd;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.plumbing.TransactionEnd;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Index;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.slf4j.Logger;
@@ -90,8 +90,8 @@ public class TransactionRefDatabase implements RefDatabase {
         refDb.create();
 
         // copy HEADS
-        copyIfPresent(Ref.HEAD, Ref.WORK_HEAD, Ref.STAGE_HEAD, Ref.CHERRY_PICK_HEAD,
-                Ref.MERGE_HEAD, Ref.ORIG_HEAD);
+        copyIfPresent(Ref.HEAD, Ref.WORK_HEAD, Ref.STAGE_HEAD, Ref.CHERRY_PICK_HEAD, Ref.MERGE_HEAD,
+                Ref.ORIG_HEAD);
 
         copyAll(refDb.getAll(Ref.HEADS_PREFIX));
         copyAll(refDb.getAll(Ref.REMOTES_PREFIX));

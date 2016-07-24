@@ -23,11 +23,11 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.AbstractObjectDatabase;
 import org.locationtech.geogig.storage.BlobStore;
@@ -196,7 +196,7 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     /**
-     * @see org.locationtech.geogig.storage.AbstractObjectDatabase#putInternal(org.locationtech.geogig.api.ObjectId,
+     * @see org.locationtech.geogig.storage.AbstractObjectDatabase#putInternal(org.locationtech.geogig.model.ObjectId,
      *      byte[])
      */
     @Override

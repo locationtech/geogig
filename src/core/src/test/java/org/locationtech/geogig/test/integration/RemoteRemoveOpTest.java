@@ -13,16 +13,16 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.Remote;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.RemoteAddOp;
-import org.locationtech.geogig.api.porcelain.RemoteException;
-import org.locationtech.geogig.api.porcelain.RemoteRemoveOp;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.RemoteAddOp;
+import org.locationtech.geogig.porcelain.RemoteException;
+import org.locationtech.geogig.porcelain.RemoteRemoveOp;
+import org.locationtech.geogig.repository.Remote;
 
 import com.google.common.base.Optional;
 

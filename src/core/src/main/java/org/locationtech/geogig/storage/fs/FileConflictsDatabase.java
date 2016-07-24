@@ -33,8 +33,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.annotations.VisibleForTesting;

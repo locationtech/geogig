@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import org.locationtech.geogig.storage.DeduplicationService;
-import org.locationtech.geogig.storage.Deduplicator;
+import org.locationtech.geogig.repository.DeduplicationService;
+import org.locationtech.geogig.repository.Deduplicator;
 
 public class HeapDeduplicationService implements DeduplicationService {
     @Override

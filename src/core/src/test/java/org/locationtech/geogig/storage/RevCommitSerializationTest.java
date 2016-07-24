@@ -19,10 +19,10 @@ import java.util.TimeZone;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;

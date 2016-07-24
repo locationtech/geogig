@@ -14,9 +14,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;

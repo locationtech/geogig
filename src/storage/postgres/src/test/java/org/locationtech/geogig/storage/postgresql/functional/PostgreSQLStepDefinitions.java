@@ -12,9 +12,9 @@ package org.locationtech.geogig.storage.postgresql.functional;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
 import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 
 import com.google.common.base.Throwables;

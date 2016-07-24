@@ -13,8 +13,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.storage.Deduplicator;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.Deduplicator;
 
 public class HeapDeduplicator implements Deduplicator {
     private Set<ObjectId> seen = new HashSet<ObjectId>();

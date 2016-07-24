@@ -12,7 +12,7 @@ package org.locationtech.geogig.cli.test.functional;
 import java.io.File;
 import java.net.URI;
 
-import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.repository.Platform;
 
 /**
  * A repository URI builder for functional tests to create repos of a specific storage backend kind.

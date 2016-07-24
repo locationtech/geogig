@@ -14,10 +14,10 @@ import java.util.ArrayList;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.DiffWorkTree;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.CleanOp;
+import org.locationtech.geogig.plumbing.DiffWorkTree;
+import org.locationtech.geogig.porcelain.CleanOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
 
 import com.google.common.collect.Lists;
 

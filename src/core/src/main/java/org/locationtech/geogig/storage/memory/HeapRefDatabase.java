@@ -10,13 +10,13 @@
 package org.locationtech.geogig.storage.memory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.locationtech.geogig.api.Ref.TRANSACTIONS_PREFIX;
+import static org.locationtech.geogig.model.Ref.TRANSACTIONS_PREFIX;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.storage.AbstractRefDatabase;
 
 import com.google.common.base.Preconditions;

@@ -9,15 +9,15 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -148,7 +148,7 @@ public class FeatureDiff extends AbstractWebAPICommand {
                     .call(RevFeature.class).get();
         }
 
-        org.locationtech.geogig.api.plumbing.diff.FeatureDiff diff = new org.locationtech.geogig.api.plumbing.diff.FeatureDiff(
+        org.locationtech.geogig.plumbing.diff.FeatureDiff diff = new org.locationtech.geogig.plumbing.diff.FeatureDiff(
                 path, newFeature, oldFeature, newFeatureType, oldFeatureType, all);
 
         context.setResponseContent(new CommandResponse() {

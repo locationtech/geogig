@@ -24,25 +24,25 @@ import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.geotools.referencing.CRS;
-import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.FieldType;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevCommitImpl;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevPerson;
-import org.locationtech.geogig.api.RevPersonImpl;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTagImpl;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeImpl;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.FieldType;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevPersonBuilder;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTagBuilder;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.repository.DiffEntry;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
@@ -122,7 +122,7 @@ public class FormatCommonV1 {
         final String message = in.readUTF();
         final RevPerson tagger = readRevPerson(in);
 
-        return new RevTagImpl(id, name, commitId, message, tagger);
+        return RevTagBuilder.build(id, name, commitId, message, tagger);
     }
 
     public static void writeTag(RevTag tag, DataOutput out) throws IOException {
@@ -171,7 +171,8 @@ public class FormatCommonV1 {
 
         final String message = in.readUTF();
 
-        return new RevCommitImpl(id, treeId, parentListBuilder.build(), author, committer, message);
+        return CommitBuilder.build(id, treeId, parentListBuilder.build(), author, committer,
+                message);
     }
 
     public static final RevPerson readRevPerson(DataInput in) throws IOException {
@@ -179,7 +180,7 @@ public class FormatCommonV1 {
         final String email = in.readUTF();
         final long timestamp = in.readLong();
         final int tzOffset = in.readInt();
-        return new RevPersonImpl(name.length() == 0 ? null : name,
+        return RevPersonBuilder.build(name.length() == 0 ? null : name,
                 email.length() == 0 ? null : email, timestamp, tzOffset);
     }
 
@@ -225,11 +226,11 @@ public class FormatCommonV1 {
         ImmutableList<Node> trees = treesBuilder.build();
         ImmutableList<Node> features = featuresBuilder.build();
         if (nTrees == 0 && nFeatures == 0 && nBuckets == 0) {
-            return RevTree.EMPTY;
+            return RevTreeBuilder.EMPTY;
         } else if (trees.isEmpty() && features.isEmpty()) {
-            return RevTreeImpl.createNodeTree(id, size, treeCount, buckets);
+            return RevTreeBuilder.createNodeTree(id, size, treeCount, buckets);
         } else if (buckets.isEmpty()) {
-            return RevTreeImpl.createLeafTree(id, size, features, trees);
+            return RevTreeBuilder.createLeafTree(id, size, features, trees);
         } else {
             throw new IllegalArgumentException(
                     "Tree has mixed buckets and nodes; this is not supported.");
@@ -322,7 +323,7 @@ public class FormatCommonV1 {
         }
         SimpleFeatureType ftype = typeFactory.createSimpleFeatureType(name, attributes, null, false,
                 Collections.<Filter> emptyList(), BasicFeatureTypes.FEATURE, null);
-        return new RevFeatureTypeImpl(id, ftype);
+        return RevFeatureTypeBuilder.build(id, ftype);
     }
 
     private static Name readName(DataInput in) throws IOException {

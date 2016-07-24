@@ -22,13 +22,13 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.repository.Deduplicator;
 import org.locationtech.geogig.repository.PostOrderIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
-import org.locationtech.geogig.storage.Deduplicator;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;

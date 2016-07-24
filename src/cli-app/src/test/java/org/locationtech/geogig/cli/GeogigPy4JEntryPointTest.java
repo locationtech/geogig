@@ -18,12 +18,11 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.cli.GeogigPy4JEntryPoint;
 import org.locationtech.geogig.cli.test.functional.CLIContext;
 import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
 import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
 
 import py4j.GatewayServer;
 

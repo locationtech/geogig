@@ -9,12 +9,12 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.porcelain.BlameException;
-import org.locationtech.geogig.api.porcelain.BlameOp;
-import org.locationtech.geogig.api.porcelain.BlameReport;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.BlameException;
+import org.locationtech.geogig.porcelain.BlameOp;
+import org.locationtech.geogig.porcelain.BlameReport;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;

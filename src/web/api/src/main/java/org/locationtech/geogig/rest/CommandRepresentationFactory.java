@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.rest;
 
-import org.locationtech.geogig.api.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.restlet.data.MediaType;
 import org.restlet.resource.Representation;

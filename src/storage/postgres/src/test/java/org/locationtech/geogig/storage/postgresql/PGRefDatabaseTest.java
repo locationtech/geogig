@@ -21,7 +21,7 @@ import java.util.concurrent.TimeoutException;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.test.integration.repository.RefDatabaseTest;

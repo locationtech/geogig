@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.collect.ImmutableList;
 

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.osm.internal;
 
-import org.locationtech.geogig.api.FieldType;
+import org.locationtech.geogig.model.FieldType;
 
 import com.google.gson.annotations.Expose;
 

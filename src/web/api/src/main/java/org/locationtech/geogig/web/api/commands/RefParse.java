@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.Ref;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -58,7 +58,7 @@ public class RefParse extends AbstractWebAPICommand {
         }
 
         final Context geogig = this.getCommandLocator(context);
-        Optional<Ref> ref = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Optional<Ref> ref = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                     .setName(refSpec).call();
 
         if (!ref.isPresent()) {

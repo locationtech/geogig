@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.storage;
 
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.collect.ImmutableList;

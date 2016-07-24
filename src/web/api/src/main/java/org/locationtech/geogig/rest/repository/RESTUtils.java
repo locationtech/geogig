@@ -15,7 +15,7 @@ import java.net.URLDecoder;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 

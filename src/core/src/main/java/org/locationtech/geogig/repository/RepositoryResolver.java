@@ -13,7 +13,6 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.base.Preconditions;
@@ -32,8 +31,8 @@ public abstract class RepositoryResolver {
 
         Preconditions.checkNotNull(repoURI, "Repository URI is null");
 
-        Iterator<RepositoryResolver> initializers = ServiceLoader.load(
-                RepositoryResolver.class).iterator();
+        Iterator<RepositoryResolver> initializers = ServiceLoader.load(RepositoryResolver.class)
+                .iterator();
 
         while (initializers.hasNext()) {
             RepositoryResolver initializer = initializers.next();
@@ -65,8 +64,8 @@ public abstract class RepositoryResolver {
      * @param repositoryLocation the URI with the location of the repository to load
      * @return a {@link Repository} loaded from the given URI, already {@link Repository#open()
      *         open}
-     * @throws IllegalArgumentException if no registered {@link RepositoryResolver}
-     *         implementation can load the repository at the given location
+     * @throws IllegalArgumentException if no registered {@link RepositoryResolver} implementation
+     *         can load the repository at the given location
      * @throws RepositoryConnectionException if the repository can't be opened
      */
     public static Repository load(URI repositoryLocation) throws RepositoryConnectionException {

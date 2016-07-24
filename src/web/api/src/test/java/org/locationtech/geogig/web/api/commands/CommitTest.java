@@ -14,10 +14,10 @@ import static org.junit.Assert.assertTrue;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -67,7 +67,7 @@ public class CommitTest extends AbstractWebOpTest {
 
         JSONObject response = getJSONResponse().getJSONObject("response");
         assertTrue(response.getBoolean("success"));
-        Ref head = transaction.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref head = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.HEAD).call().get();
         assertEquals(head.getObjectId().toString(), response.get("commitId"));
         assertEquals(1, response.get("added"));

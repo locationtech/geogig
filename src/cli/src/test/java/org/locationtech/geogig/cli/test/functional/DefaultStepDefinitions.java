@@ -36,22 +36,22 @@ import java.util.Map;
 
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Assert;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.plumbing.diff.AttributeDiff;
-import org.locationtech.geogig.api.plumbing.diff.FeatureDiff;
-import org.locationtech.geogig.api.plumbing.diff.GenericAttributeDiffImpl;
-import org.locationtech.geogig.api.plumbing.diff.Patch;
-import org.locationtech.geogig.api.plumbing.diff.PatchSerializer;
-import org.locationtech.geogig.api.porcelain.MergeConflictsException;
-import org.locationtech.geogig.api.porcelain.MergeOp;
-import org.locationtech.geogig.api.porcelain.TagCreateOp;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.diff.AttributeDiff;
+import org.locationtech.geogig.plumbing.diff.FeatureDiff;
+import org.locationtech.geogig.plumbing.diff.GenericAttributeDiffImpl;
+import org.locationtech.geogig.plumbing.diff.Patch;
+import org.locationtech.geogig.plumbing.diff.PatchSerializer;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.porcelain.TagCreateOp;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -62,7 +62,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
@@ -322,7 +321,7 @@ public class DefaultStepDefinitions {
         File repoDir = new File(uri);
         File hooksDir = new File(repoDir, ".geogig/hooks");
         File hook = new File(hooksDir, "pre_commit.js");
-        String script = "exception = Packages.org.locationtech.geogig.api.hooks.CannotRunGeogigOperationException;\n"
+        String script = "exception = Packages.org.locationtech.geogig.hooks.CannotRunGeogigOperationException;\n"
                 + "msg = params.get(\"message\");\n" + "if (msg.length() < 5){\n"
                 + "\tthrow new exception(\"Commit messages must have at least 5 letters\");\n"
                 + "}\n" + "params.put(\"message\", msg.toLowerCase());";
@@ -558,8 +557,8 @@ public class DefaultStepDefinitions {
         Object oldValue = points1.getProperty("sp").getValue();
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
         map.put(pointsType.getDescriptor("sp"), diff);
-        FeatureDiff feaureDiff = new FeatureDiff(path, map, RevFeatureTypeImpl.build(pointsType),
-                RevFeatureTypeImpl.build(pointsType));
+        FeatureDiff feaureDiff = new FeatureDiff(path, map, RevFeatureTypeBuilder.build(pointsType),
+                RevFeatureTypeBuilder.build(pointsType));
         patch.addModifiedFeature(feaureDiff);
         File file = new File(localRepo.platform.pwd(), "test.patch");
         BufferedWriter writer = Files.newWriter(file, Charsets.UTF_8);

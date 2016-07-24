@@ -12,8 +12,6 @@ package org.locationtech.geogig.geotools.cli.geopkg;
 import java.io.File;
 import java.io.IOException;
 
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.porcelain.MergeConflictsException;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -21,6 +19,8 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditImport;
 import org.locationtech.geogig.geotools.geopkg.GeopkgImportResult;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 
 import com.beust.jcommander.Parameter;
@@ -54,18 +54,18 @@ public class GeopkgPull extends AbstractCommand {
     final GeopkgSupport support = new GeopkgSupport();
 
     @Override
-    protected void runInternal(GeogigCLI cli) throws InvalidParameterException,
-            CommandFailedException, IOException {
+    protected void runInternal(GeogigCLI cli)
+            throws InvalidParameterException, CommandFailedException, IOException {
         Repository repository = cli.getGeogig().getRepository();
         File databaseFile = new File(commonArgs.database);
         Preconditions.checkArgument(databaseFile.exists(), "Database file not found.");
 
         ProgressListener listener = cli.getProgressListener();
         try {
-            GeopkgImportResult result = repository.command(GeopkgAuditImport.class).setDatabase(databaseFile)
-                    .setCommitMessage(commitMessage).setTable(table)
+            GeopkgImportResult result = repository.command(GeopkgAuditImport.class)
+                    .setDatabase(databaseFile).setCommitMessage(commitMessage).setTable(table)
                     .setProgressListener(listener).call();
-            
+
             cli.getConsole().println("Import successful.");
             cli.getConsole().println("Changes committed and merge at " + result.newCommit.getId());
 

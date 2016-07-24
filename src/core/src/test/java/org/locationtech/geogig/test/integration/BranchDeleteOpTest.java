@@ -12,14 +12,14 @@ package org.locationtech.geogig.test.integration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.BranchDeleteOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.BranchDeleteOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
 
 import com.google.common.base.Optional;
 

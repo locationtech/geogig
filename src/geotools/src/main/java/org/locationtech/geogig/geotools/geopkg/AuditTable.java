@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.geotools.geopkg;
 
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
 
 public class AuditTable {
     private final String tableName, featureTreePath, auditTable;

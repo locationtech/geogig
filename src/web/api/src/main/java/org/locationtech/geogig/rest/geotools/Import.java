@@ -11,11 +11,11 @@ package org.locationtech.geogig.rest.geotools;
 
 import java.util.function.Function;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Representations;

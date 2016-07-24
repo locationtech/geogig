@@ -9,16 +9,16 @@
  */
 package org.locationtech.geogig.cli.test.functional;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ContextBuilder;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.di.PluginsModule;
 import org.locationtech.geogig.di.caching.CachingModule;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.ContextBuilder;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;

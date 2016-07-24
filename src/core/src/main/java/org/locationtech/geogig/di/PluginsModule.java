@@ -12,15 +12,18 @@ package org.locationtech.geogig.di;
 import java.net.URI;
 import java.util.Map;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.PluginDefaults;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.VersionedFormat;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.storage.StorageProvider;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
 import com.google.common.base.Optional;

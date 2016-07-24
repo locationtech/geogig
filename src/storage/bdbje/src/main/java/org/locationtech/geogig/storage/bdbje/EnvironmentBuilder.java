@@ -15,9 +15,9 @@ import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

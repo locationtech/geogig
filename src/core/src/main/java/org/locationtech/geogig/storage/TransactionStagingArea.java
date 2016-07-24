@@ -14,17 +14,17 @@ import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
-import org.locationtech.geogig.api.plumbing.TransactionEnd;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.plumbing.TransactionEnd;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 
 import com.google.common.base.Optional;

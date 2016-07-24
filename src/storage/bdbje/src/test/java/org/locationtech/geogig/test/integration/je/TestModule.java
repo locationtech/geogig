@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration.je;
 
-import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.repository.Platform;
 
 import com.google.inject.AbstractModule;
 

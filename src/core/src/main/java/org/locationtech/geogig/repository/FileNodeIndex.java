@@ -34,11 +34,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.RevTreeBuilder;
-import org.locationtech.geogig.storage.NodePathStorageOrder;
-import org.locationtech.geogig.storage.NodeStorageOrder;
+import org.locationtech.geogig.model.CanonicalNodeNameOrder;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +63,7 @@ import sun.nio.ch.DirectBuffer;
 /**
  * A {@link NodeIndex} that saves nodes to a set of temporary files based on a threshold and returns
  * a mergesorted {@link #nodes() iterator} that provides a good enough sorting (based on node's
- * {@link NodePathStorageOrder#hashCodeLong unsigned long hash}) to alleviate the work of the
+ * {@link CanonicalNodeNameOrder#hashCodeLong unsigned long hash}) to alleviate the work of the
  * {@link RevTreeBuilder}.
  *
  */
@@ -73,9 +72,9 @@ class FileNodeIndex implements Closeable, NodeIndex {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileNodeIndex.class);
 
-    private static final NodePathStorageOrder PATH_STORAGE_ORDER = NodePathStorageOrder.INSTANCE;
+    private static final CanonicalNodeNameOrder PATH_STORAGE_ORDER = CanonicalNodeNameOrder.INSTANCE;
 
-    private static final NodeStorageOrder NODE_STORAGE_ORDER = new NodeStorageOrder();
+    private static final CanonicalNodeOrder NODE_STORAGE_ORDER = new CanonicalNodeOrder();
 
     private static final Random random = new Random();
 

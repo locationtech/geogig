@@ -33,14 +33,14 @@ import java.io.OutputStream;
 import java.util.EnumMap;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectReader;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.ObjectWriter;
@@ -125,7 +125,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
 
         /**
          * Writers must call
-         * {@link FormatCommonV2#writeHeader(java.io.DataOutput, org.locationtech.geogig.api.RevObject.TYPE)}
+         * {@link FormatCommonV2#writeHeader(java.io.DataOutput, org.locationtech.geogig.model.RevObject.TYPE)}
          * , readers must not, in order for {@link ObjectReaderV2} to be able of parsing the header
          * and call the appropriate read method.
          */

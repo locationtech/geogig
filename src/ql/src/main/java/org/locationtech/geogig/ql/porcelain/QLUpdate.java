@@ -16,13 +16,13 @@ import java.io.IOException;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.DiffCount;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.DiffCount;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.DiffObjectCount;
 import org.opengis.filter.Filter;
 
 import com.google.common.base.Optional;

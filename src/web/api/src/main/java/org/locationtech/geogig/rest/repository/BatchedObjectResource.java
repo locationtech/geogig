@@ -19,14 +19,14 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.plumbing.CreateDeduplicator;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.plumbing.CreateDeduplicator;
 import org.locationtech.geogig.remote.BinaryPackedObjects;
 import org.locationtech.geogig.remote.ObjectFunnel;
 import org.locationtech.geogig.remote.ObjectFunnels;
+import org.locationtech.geogig.repository.Deduplicator;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.Deduplicator;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.restlet.Context;
 import org.restlet.Finder;

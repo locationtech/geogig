@@ -15,15 +15,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GeogigTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

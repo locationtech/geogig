@@ -15,9 +15,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;

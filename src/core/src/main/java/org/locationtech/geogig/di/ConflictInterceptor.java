@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.di;
 
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsCheckOp;
-import org.locationtech.geogig.api.porcelain.ConflictsException;
+import org.locationtech.geogig.plumbing.merge.ConflictsCheckOp;
+import org.locationtech.geogig.porcelain.ConflictsException;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
 

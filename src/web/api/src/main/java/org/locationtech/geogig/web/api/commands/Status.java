@@ -9,14 +9,13 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.DiffIndex;
-import org.locationtech.geogig.api.plumbing.DiffWorkTree;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsQueryOp;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.DiffIndex;
+import org.locationtech.geogig.plumbing.DiffWorkTree;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.merge.ConflictsQueryOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;

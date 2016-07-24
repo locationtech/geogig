@@ -16,14 +16,13 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeBuilder;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
@@ -152,7 +151,7 @@ public class RevTreeBuilder2 {
         }
         RevFeatureType revFeatureType = revFeatureTypes.get(type.getName());
         if (null == revFeatureType) {
-            revFeatureType = RevFeatureTypeImpl.build(type);
+            revFeatureType = RevFeatureTypeBuilder.build(type);
             revFeatureTypes.put(type.getName(), revFeatureType);
         }
         ObjectId metadataId = revFeatureType.getId().equals(defaultMetadataId) ? ObjectId.NULL

@@ -16,8 +16,8 @@ import java.io.OutputStream;
 import java.util.concurrent.ExecutionException;
 
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.rest.AsyncCommandBinaryRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandBinaryRepresentationFactory;

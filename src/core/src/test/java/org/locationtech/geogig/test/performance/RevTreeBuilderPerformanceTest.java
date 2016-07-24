@@ -16,11 +16,11 @@ import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTreeBuilder;
-import org.locationtech.geogig.storage.NodeStorageOrder;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
@@ -108,7 +108,7 @@ public class RevTreeBuilderPerformanceTest extends RepositoryTestCase {
         Stopwatch sw = Stopwatch.createStarted();
         while (partitions.hasNext()) {
             List<Node> partition = new ArrayList<Node>(partitions.next());
-            Collections.sort(partition, new NodeStorageOrder());
+            Collections.sort(partition, new CanonicalNodeOrder());
             createTree(partition, builder, false);
         }
         System.err.println("Calling RevTreeBuilder.build()...");

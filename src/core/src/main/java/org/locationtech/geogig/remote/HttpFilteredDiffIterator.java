@@ -13,9 +13,9 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.repository.DiffEntry;
 
 /**
  * Iterates over all changes from a {@link BinaryPackedChanges} object.

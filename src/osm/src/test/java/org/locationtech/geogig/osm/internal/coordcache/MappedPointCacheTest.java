@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.osm.internal.coordcache;
 
-import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.repository.Platform;
 
 public class MappedPointCacheTest extends PointCacheTest {
 

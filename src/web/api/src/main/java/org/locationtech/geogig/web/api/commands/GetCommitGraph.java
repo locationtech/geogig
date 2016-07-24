@@ -12,9 +12,9 @@ package org.locationtech.geogig.web.api.commands;
 import java.util.Iterator;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;

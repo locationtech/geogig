@@ -18,13 +18,13 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.locationtech.geogig.api.Bounded;
-import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeImpl;
+import org.locationtech.geogig.model.Bounded;
+import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -50,15 +50,15 @@ public abstract class RevTreeSerializationTest extends Assert {
 
     @Before
     public void initialize() {
-        ImmutableList<Node> features = ImmutableList.of(Node.create("foo",
-                ObjectId.forString("nodeid"), ObjectId.forString("metadataid"),
-                RevObject.TYPE.FEATURE, null));
+        ImmutableList<Node> features = ImmutableList
+                .of(Node.create("foo", ObjectId.forString("nodeid"),
+                        ObjectId.forString("metadataid"), RevObject.TYPE.FEATURE, null));
         ImmutableList<Node> spatialFeatures = ImmutableList.of(Node.create("foo",
                 ObjectId.forString("nodeid"), ObjectId.forString("metadataid"),
                 RevObject.TYPE.FEATURE, new Envelope(0.0000001, 0.0000002, 0.0000001, 0.0000002)));
-        ImmutableList<Node> trees = ImmutableList.of(Node.create("bar",
-                ObjectId.forString("barnodeid"), ObjectId.forString("barmetadataid"),
-                RevObject.TYPE.TREE, null));
+        ImmutableList<Node> trees = ImmutableList
+                .of(Node.create("bar", ObjectId.forString("barnodeid"),
+                        ObjectId.forString("barmetadataid"), RevObject.TYPE.TREE, null));
         ImmutableList<Node> spatialTrees = ImmutableList.of(Node.create("bar",
                 ObjectId.forString("barnodeid"), ObjectId.forString("barmetadataid"),
                 RevObject.TYPE.TREE, new Envelope(1, 2, 1, 2)));
@@ -69,16 +69,16 @@ public abstract class RevTreeSerializationTest extends Assert {
         ImmutableMap<Integer, Bucket> buckets = ImmutableMap.of(1,
                 Bucket.create(ObjectId.forString("buckettree"), new Envelope(1, 2, 1, 2)));
 
-        tree1_leaves = RevTreeImpl.createLeafTree(ObjectId.forString("leaves"), 1, features,
+        tree1_leaves = RevTreeBuilder.createLeafTree(ObjectId.forString("leaves"), 1, features,
                 ImmutableList.<Node> of());
-        tree2_internal = RevTreeImpl.createLeafTree(ObjectId.forString("internal"), 1,
+        tree2_internal = RevTreeBuilder.createLeafTree(ObjectId.forString("internal"), 1,
                 ImmutableList.<Node> of(), trees);
-        tree3_buckets = RevTreeImpl.createNodeTree(ObjectId.forString("buckets"), 1, 1, buckets);
-        tree4_spatial_leaves = RevTreeImpl.createLeafTree(ObjectId.forString("leaves"), 1,
+        tree3_buckets = RevTreeBuilder.createNodeTree(ObjectId.forString("buckets"), 1, 1, buckets);
+        tree4_spatial_leaves = RevTreeBuilder.createLeafTree(ObjectId.forString("leaves"), 1,
                 spatialFeatures, ImmutableList.<Node> of());
-        tree5_spatial_internal = RevTreeImpl.createLeafTree(ObjectId.forString("internal"), 1,
+        tree5_spatial_internal = RevTreeBuilder.createLeafTree(ObjectId.forString("internal"), 1,
                 ImmutableList.<Node> of(), spatialTrees);
-        tree6_spatial_buckets = RevTreeImpl.createNodeTree(ObjectId.forString("buckets"), 1, 1,
+        tree6_spatial_buckets = RevTreeBuilder.createNodeTree(ObjectId.forString("buckets"), 1, 1,
                 spatialBuckets);
     }
 
@@ -108,7 +108,7 @@ public abstract class RevTreeSerializationTest extends Assert {
         int childTreeCount = 0;
         Map<Integer, Bucket> bucketTrees = createBuckets(32);
 
-        final RevTreeImpl tree = RevTreeImpl.createNodeTree(id, size, childTreeCount, bucketTrees);
+        final RevTree tree = RevTreeBuilder.createNodeTree(id, size, childTreeCount, bucketTrees);
 
         RevTree roundTripped = read(tree.getId(), write(tree));
         assertTreesAreEqual(tree, roundTripped);
@@ -118,8 +118,8 @@ public abstract class RevTreeSerializationTest extends Assert {
     private Map<Integer, Bucket> createBuckets(int count) {
         Map<Integer, Bucket> buckets = Maps.newHashMap();
         for (int i = 0; i < count; i++) {
-            Bucket bucket = Bucket.create(ObjectId.forString("b" + i), new Envelope(i, i * 2, i,
-                    i * 2));
+            Bucket bucket = Bucket.create(ObjectId.forString("b" + i),
+                    new Envelope(i, i * 2, i, i * 2));
             buckets.put(i, bucket);
         }
         return buckets;

@@ -16,17 +16,17 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Optional;
 

@@ -15,7 +15,7 @@ import java.util.function.Function;
 
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
-import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.restlet.data.MediaType;

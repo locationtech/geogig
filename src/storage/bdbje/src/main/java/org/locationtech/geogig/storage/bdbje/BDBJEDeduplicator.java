@@ -12,8 +12,8 @@ package org.locationtech.geogig.storage.bdbje;
 import java.util.Iterator;
 import java.util.List;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.storage.Deduplicator;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.Deduplicator;
 
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseEntry;

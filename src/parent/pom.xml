@@ -644,6 +644,7 @@
   </reporting>
 
   <modules>
+   <module>../api</module>
    <module>../core</module>
    <module>../datastore</module>
    <module>../storage</module>

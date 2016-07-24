@@ -12,7 +12,7 @@ package org.locationtech.geogig.geotools.geopkg;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.model.RevCommit;
 
 /**
  * Contains the results of a geopackage import.

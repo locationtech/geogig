@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.storage;
 
-import static org.locationtech.geogig.api.RevFeatureBuilder.build;
+import static org.locationtech.geogig.model.RevFeatureBuilder.build;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,9 +27,9 @@ import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;

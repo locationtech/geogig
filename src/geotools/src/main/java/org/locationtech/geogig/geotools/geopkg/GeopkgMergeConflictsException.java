@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.geotools.geopkg;
 
-import org.locationtech.geogig.api.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
 
 /**
  * During a geopackage import, a merge may happen after the import occurs. This exception provides

@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.porcelain.VersionInfo;
-import org.locationtech.geogig.api.porcelain.VersionOp;
+import org.locationtech.geogig.porcelain.VersionInfo;
+import org.locationtech.geogig.porcelain.VersionOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;

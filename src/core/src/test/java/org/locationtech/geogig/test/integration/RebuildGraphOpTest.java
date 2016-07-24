@@ -10,14 +10,14 @@
 package org.locationtech.geogig.test.integration;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.RebuildGraphOp;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.RebuildGraphOp;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.collect.ImmutableList;

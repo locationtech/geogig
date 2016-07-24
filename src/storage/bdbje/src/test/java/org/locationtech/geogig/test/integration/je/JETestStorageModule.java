@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration.je;
 
-import org.locationtech.geogig.storage.DeduplicationService;
+import org.locationtech.geogig.repository.DeduplicationService;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.bdbje.BDBJEDeduplicationService;

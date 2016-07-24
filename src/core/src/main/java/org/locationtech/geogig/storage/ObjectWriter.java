@@ -12,7 +12,7 @@ package org.locationtech.geogig.storage;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.RevObject;
 
 /**
  * Provides an interface for writing objects to a given output stream.

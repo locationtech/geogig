@@ -16,23 +16,23 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.DefaultPlatform;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.model.DefaultPlatform;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.spi.JoranException;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 
 /**
  * Utility class for the CLI applications to configure logging using the default logback logger

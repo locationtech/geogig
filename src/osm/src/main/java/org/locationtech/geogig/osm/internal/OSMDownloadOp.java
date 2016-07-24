@@ -13,8 +13,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.porcelain.NothingToCommitException;
+import org.locationtech.geogig.porcelain.NothingToCommitException;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;

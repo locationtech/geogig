@@ -11,14 +11,14 @@ package org.locationtech.geogig.repository;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.junit.Test;
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
 
 import com.google.common.collect.ImmutableList;
+
+import junit.framework.TestCase;
 
 public class CommitBuilderTest extends TestCase {
 

@@ -25,9 +25,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.TestPlatform;
 import org.locationtech.geogig.osm.internal.OSMCoordinateSequence;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;

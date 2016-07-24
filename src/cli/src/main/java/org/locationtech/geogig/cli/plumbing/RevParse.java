@@ -14,13 +14,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
 
 import com.beust.jcommander.Parameter;
@@ -65,7 +65,7 @@ public class RevParse extends AbstractCommand {
             Console console = cli.getConsole();
             for (String refSpec : this.refSpecs) {
                 Optional<ObjectId> resolved = geogig
-                        .command(org.locationtech.geogig.api.plumbing.RevParse.class)
+                        .command(org.locationtech.geogig.plumbing.RevParse.class)
                         .setRefSpec(refSpec).call();
                 checkParameter(resolved.isPresent(), "fatal: ambiguous argument '%s': "
                         + "unknown revision or path not in the working tree.", refSpec);

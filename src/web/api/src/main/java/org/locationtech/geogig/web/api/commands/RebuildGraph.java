@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.plumbing.RebuildGraphOp;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.plumbing.RebuildGraphOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;

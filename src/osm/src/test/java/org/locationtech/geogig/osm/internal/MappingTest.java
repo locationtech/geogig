@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.FieldType;
+import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.osm.cli.commands.OSMMap;
 import org.locationtech.geogig.osm.internal.MappingRule.DefaultField;
 import org.opengis.feature.simple.SimpleFeatureType;

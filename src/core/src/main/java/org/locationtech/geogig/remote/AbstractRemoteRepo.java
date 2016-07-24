@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.remote;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
-import org.locationtech.geogig.api.porcelain.SynchronizationException;
-import org.locationtech.geogig.api.porcelain.SynchronizationException.StatusCode;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.FindCommonAncestor;
+import org.locationtech.geogig.porcelain.SynchronizationException;
+import org.locationtech.geogig.porcelain.SynchronizationException.StatusCode;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 
 import com.google.common.base.Optional;
@@ -115,8 +115,8 @@ abstract class AbstractRemoteRepo implements IRemoteRepo {
             boolean exists = destination.objectExists(commitNode.getObjectId());
             if (!limit.isPresent() && exists) {
                 // calculate the new fetch limit
-                limit = Optional.of(destination.getDepth(commitNode.getObjectId())
-                        + commitNode.getDepth() - 1);
+                limit = Optional.of(
+                        destination.getDepth(commitNode.getObjectId()) + commitNode.getDepth() - 1);
             }
             if (exists) {
                 return Evaluation.EXCLUDE_AND_CONTINUE;

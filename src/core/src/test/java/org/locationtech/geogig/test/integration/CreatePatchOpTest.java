@@ -10,16 +10,16 @@
 package org.locationtech.geogig.test.integration;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.Patch;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.CreatePatchOp;
-import org.locationtech.geogig.api.porcelain.DiffOp;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.plumbing.diff.Patch;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.CreatePatchOp;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -49,7 +49,7 @@ public class CreatePatchOpTest extends RepositoryTestCase {
             assertEquals(1, patch.getAddedFeatures().size());
             assertEquals(1, patch.getRemovedFeatures().size());
             assertEquals(1, patch.getModifiedFeatures().size());
-            assertEquals(RevFeatureTypeImpl.build(pointsType), patch.getFeatureTypes().get(0));
+            assertEquals(RevFeatureTypeBuilder.build(pointsType), patch.getFeatureTypes().get(0));
             assertEquals(NodeRef.appendChild(pointsName, idP2),
                     patch.getRemovedFeatures().get(0).getPath());
             assertEquals(NodeRef.appendChild(pointsName, idP3),
@@ -80,7 +80,7 @@ public class CreatePatchOpTest extends RepositoryTestCase {
             assertEquals(1, patch.getAddedFeatures().size());
             assertEquals(1, patch.getRemovedFeatures().size());
             assertEquals(1, patch.getModifiedFeatures().size());
-            assertEquals(RevFeatureTypeImpl.build(pointsType), patch.getFeatureTypes().get(0));
+            assertEquals(RevFeatureTypeBuilder.build(pointsType), patch.getFeatureTypes().get(0));
             assertEquals(NodeRef.appendChild(pointsName, idP2),
                     patch.getRemovedFeatures().get(0).getPath());
             assertEquals(NodeRef.appendChild(pointsName, idP3),
@@ -117,7 +117,7 @@ public class CreatePatchOpTest extends RepositoryTestCase {
             Patch patch = geogig.command(CreatePatchOp.class).setDiffs(diffs).call();
             assertEquals(1, patch.getAlteredTrees().size());
             assertEquals(ObjectId.NULL, patch.getAlteredTrees().get(0).getOldFeatureType());
-            assertEquals(RevFeatureTypeImpl.build(linesType).getId(),
+            assertEquals(RevFeatureTypeBuilder.build(linesType).getId(),
                     patch.getAlteredTrees().get(0).getNewFeatureType());
             assertEquals(1, patch.getFeatureTypes().size());
         }
@@ -133,7 +133,7 @@ public class CreatePatchOpTest extends RepositoryTestCase {
         try (AutoCloseableIterator<DiffEntry> diffs = op.call()) {
             Patch patch = geogig.command(CreatePatchOp.class).setDiffs(diffs).call();
             assertEquals(1, patch.getAlteredTrees().size());
-            assertEquals(RevFeatureTypeImpl.build(linesType).getId(),
+            assertEquals(RevFeatureTypeBuilder.build(linesType).getId(),
                     patch.getAlteredTrees().get(0).getOldFeatureType());
             assertEquals(ObjectId.NULL, patch.getAlteredTrees().get(0).getNewFeatureType());
             assertEquals(1, patch.getFeatureTypes().size());
@@ -150,9 +150,9 @@ public class CreatePatchOpTest extends RepositoryTestCase {
         try (AutoCloseableIterator<DiffEntry> diffs = op.call()) {
             Patch patch = geogig.command(CreatePatchOp.class).setDiffs(diffs).call();
             assertEquals(1, patch.getAlteredTrees().size());
-            assertEquals(RevFeatureTypeImpl.build(pointsType).getId(),
+            assertEquals(RevFeatureTypeBuilder.build(pointsType).getId(),
                     patch.getAlteredTrees().get(0).getOldFeatureType());
-            assertEquals(RevFeatureTypeImpl.build(modifiedPointsType).getId(),
+            assertEquals(RevFeatureTypeBuilder.build(modifiedPointsType).getId(),
                     patch.getAlteredTrees().get(0).getNewFeatureType());
             assertEquals(2, patch.getFeatureTypes().size());
         }

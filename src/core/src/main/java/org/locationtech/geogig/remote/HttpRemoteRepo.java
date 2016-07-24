@@ -26,19 +26,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.porcelain.ConfigGet;
-import org.locationtech.geogig.api.porcelain.SynchronizationException;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.porcelain.ConfigGet;
+import org.locationtech.geogig.porcelain.SynchronizationException;
 import org.locationtech.geogig.remote.BinaryPackedObjects.IngestResults;
 import org.locationtech.geogig.remote.HttpUtils.ReportingOutputStream;
+import org.locationtech.geogig.repository.DeduplicationService;
+import org.locationtech.geogig.repository.Deduplicator;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.DeduplicationService;
-import org.locationtech.geogig.storage.Deduplicator;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
@@ -248,8 +248,8 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
             originalRemoteRefValue = remoteRef.get().getObjectId();
         }
 
-        String nameToSet = remoteRef.isPresent() ? remoteRef.get().getName() : Ref.HEADS_PREFIX
-                + refspec;
+        String nameToSet = remoteRef.isPresent() ? remoteRef.get().getName()
+                : Ref.HEADS_PREFIX + refspec;
 
         endPush(nameToSet, ref.getObjectId(), originalRemoteRefValue.toString());
     }
@@ -293,9 +293,9 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
 
                 long compressedSize = outFactory.compressedSize;
                 long uncompressedSize = outFactory.uncompressedSize;
-                LOGGER.info(String.format("HttpRemoteRepo: Written %,d objects."
-                        + " Time to process: %s."
-                        + " Compressed size: %,d bytes. Uncompressed size: %,d bytes.",
+                LOGGER.info(String.format(
+                        "HttpRemoteRepo: Written %,d objects." + " Time to process: %s."
+                                + " Compressed size: %,d bytes. Uncompressed size: %,d bytes.",
                         writtenObjectsCount, sw, compressedSize, uncompressedSize));
             } catch (IOException e) {
                 Throwables.propagate(e);
@@ -456,10 +456,10 @@ class HttpRemoteRepo extends AbstractRemoteRepo {
         IngestResults ingestResults = unpacker.ingest(in, callback);
         sw.stop();
 
-        String msg = String
-                .format("Processed %,d objects. Inserted: %,d. Existing: %,d. Time: %s. Compressed size: %,d bytes. Uncompressed size: %,d bytes.",
-                        ingestResults.total(), ingestResults.getInserted(),
-                        ingestResults.getExisting(), sw, in.compressedSize(), in.unCompressedSize());
+        String msg = String.format(
+                "Processed %,d objects. Inserted: %,d. Existing: %,d. Time: %s. Compressed size: %,d bytes. Uncompressed size: %,d bytes.",
+                ingestResults.total(), ingestResults.getInserted(), ingestResults.getExisting(), sw,
+                in.compressedSize(), in.unCompressedSize());
         LOGGER.info(msg);
         progress.setDescription(msg);
     }

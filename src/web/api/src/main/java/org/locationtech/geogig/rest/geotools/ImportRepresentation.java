@@ -12,9 +12,9 @@ package org.locationtech.geogig.rest.geotools;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.RevTree;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;

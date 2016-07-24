@@ -57,7 +57,8 @@ public class GeopkgExport extends DataStoreExport implements CLICommand {
     final GeopkgSupport support = new GeopkgSupport();
 
     @VisibleForTesting
-    @Parameter(names = { "-i", "--interchange" }, description = "Export as geogig mobile interchange format")
+    @Parameter(names = { "-i",
+            "--interchange" }, description = "Export as geogig mobile interchange format")
     boolean interchangeFormat;
 
     @Override

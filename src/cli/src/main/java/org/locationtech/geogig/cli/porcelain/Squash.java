@@ -11,14 +11,14 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.porcelain.SquashOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.SquashOp;
+import org.locationtech.geogig.repository.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -28,14 +28,14 @@ import com.google.common.collect.Lists;
 /**
  * Squashes a set of commits into a single one.
  * <p>
- * CLI proxy for {@link org.locationtech.geogig.api.porcelain.SquashOp}
+ * CLI proxy for {@link org.locationtech.geogig.porcelain.SquashOp}
  * <p>
  * Usage:
  * <ul>
  * <li> {@code geogig squash [<message>] <since_commit> <until_commit>
  * </ul>
  * 
- * @see org.locationtech.geogig.api.porcelain.LogOp
+ * @see org.locationtech.geogig.porcelain.LogOp
  */
 @Parameters(commandNames = "squash", commandDescription = "Squash commits")
 public class Squash extends AbstractCommand implements CLICommand {

@@ -15,8 +15,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.DeleteRepository;
 import org.locationtech.geogig.storage.BlobStore;

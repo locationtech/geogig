@@ -11,10 +11,10 @@ package org.locationtech.geogig.web.api.commands;
 
 import java.util.List;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.BranchListOp;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.BranchListOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;

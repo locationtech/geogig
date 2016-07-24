@@ -15,9 +15,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.TestPlatform;
+import org.locationtech.geogig.repository.GlobalContextBuilder;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Preconditions;
 

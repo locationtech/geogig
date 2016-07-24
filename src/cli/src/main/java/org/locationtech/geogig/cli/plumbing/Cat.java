@@ -13,14 +13,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.plumbing.CatObject;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.plumbing.CatObject;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 

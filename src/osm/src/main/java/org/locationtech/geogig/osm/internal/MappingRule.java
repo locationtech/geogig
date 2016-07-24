@@ -20,7 +20,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
-import org.locationtech.geogig.api.FieldType;
+import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.Feature;
 import org.opengis.feature.GeometryAttribute;

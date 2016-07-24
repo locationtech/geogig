@@ -13,8 +13,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.locationtech.geogig.storage.DeduplicationService;
-import org.locationtech.geogig.storage.Deduplicator;
+import org.locationtech.geogig.repository.DeduplicationService;
+import org.locationtech.geogig.repository.Deduplicator;
 
 import com.google.inject.Inject;
 import com.sleepycat.je.Database;

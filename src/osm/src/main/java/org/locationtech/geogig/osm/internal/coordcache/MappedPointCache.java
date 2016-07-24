@@ -16,8 +16,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
-import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.osm.internal.OSMCoordinateSequence;
+import org.locationtech.geogig.repository.Platform;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;

@@ -28,7 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.repository.Platform;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;

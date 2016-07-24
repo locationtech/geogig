@@ -22,7 +22,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;

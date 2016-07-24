@@ -12,13 +12,13 @@ package org.locationtech.geogig.web.api.commands;
 
 import java.util.List;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.porcelain.TagCreateOp;
-import org.locationtech.geogig.api.porcelain.TagListOp;
-import org.locationtech.geogig.api.porcelain.TagRemoveOp;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.TagCreateOp;
+import org.locationtech.geogig.porcelain.TagListOp;
+import org.locationtech.geogig.porcelain.TagRemoveOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;

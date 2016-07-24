@@ -21,10 +21,10 @@ import java.util.TreeSet;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.FeatureIteratorIterator;
-import org.locationtech.geogig.api.GeoGIG;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.ql.porcelain.QLSelect;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Throwables;

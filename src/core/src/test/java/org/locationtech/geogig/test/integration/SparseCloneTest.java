@@ -31,23 +31,23 @@ import org.geotools.feature.NameImpl;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CloneOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigScope;
-import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.api.porcelain.MergeOp;
-import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
-import org.locationtech.geogig.api.porcelain.PullOp;
-import org.locationtech.geogig.api.porcelain.PushOp;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CloneOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.porcelain.PullOp;
+import org.locationtech.geogig.porcelain.PushOp;
 import org.locationtech.geogig.remote.AbstractMappedRemoteRepo;
 import org.locationtech.geogig.remote.LocalMappedRemoteRepo;
 import org.locationtech.geogig.remote.RemoteRepositoryTestCase;
@@ -56,6 +56,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 
 public class SparseCloneTest extends RemoteRepositoryTestCase {
 
@@ -254,32 +255,28 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         }
 
         // Make sure the remote has all of the commits
-        Iterator<RevCommit> logs = remoteGeogig.geogig.command(LogOp.class).call();
-        List<RevCommit> logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
+        List<RevCommit> logged = Lists
+                .newArrayList(remoteGeogig.geogig.command(LogOp.class).call());
 
         assertEquals(expected, logged);
 
         // Make sure the local repository has no commits prior to clone
-        logs = localGeogig.geogig.command(LogOp.class).call();
-        assertNotNull(logs);
-        assertFalse(logs.hasNext());
+        logged = Lists.newArrayList(localGeogig.geogig.command(LogOp.class).call());
+        assertTrue(logged.isEmpty());
 
         // clone from the remote
         CloneOp clone = clone();
-        clone.setDepth(0);
+        // clone.setDepth(0);
         clone.setRepositoryURL(remoteGeogig.envHome.getCanonicalPath()).setBranch("master").call();
 
         // Because all features match the filter, the history should be identical
 
         // Make sure the local repository got the correct commits
-        logs = localGeogig.geogig.command(LogOp.class).call();
-        logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
+        logged = Lists.newArrayList(localGeogig.geogig.command(LogOp.class).call());
+
+        List<ObjectId> expectedTrees = Lists.transform(expected, (c) -> c.getTreeId());
+        List<ObjectId> actualTrees = Lists.transform(logged, (c) -> c.getTreeId());
+        assertEquals(expectedTrees, actualTrees);
 
         assertEquals(expected, logged);
 

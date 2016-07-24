@@ -13,14 +13,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.porcelain.RemoveOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.porcelain.RemoveOp;
+import org.locationtech.geogig.repository.DiffObjectCount;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

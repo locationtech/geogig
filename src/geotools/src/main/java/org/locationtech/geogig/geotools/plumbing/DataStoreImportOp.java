@@ -11,13 +11,13 @@ package org.locationtech.geogig.geotools.plumbing;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
@@ -102,7 +102,7 @@ public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
      *
      * @return A reference to this operation.
      *
-     * @see org.locationtech.geogig.api.porcelain.CommitOp#setAuthor(java.lang.String,
+     * @see org.locationtech.geogig.porcelain.CommitOp#setAuthor(java.lang.String,
      *      java.lang.String)
      */
     public DataStoreImportOp<T> setAuthorEmail(String authorEmail) {
@@ -123,7 +123,7 @@ public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
      *
      * @return A reference to this operation.
      *
-     * @see org.locationtech.geogig.api.porcelain.CommitOp#setAuthor(java.lang.String,
+     * @see org.locationtech.geogig.porcelain.CommitOp#setAuthor(java.lang.String,
      *      java.lang.String)
      */
     public DataStoreImportOp<T> setAuthorName(String authorName) {
@@ -144,7 +144,7 @@ public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
      *
      * @return A reference to this operation.
      *
-     * @see org.locationtech.geogig.api.porcelain.CommitOp#setMessage(java.lang.String)
+     * @see org.locationtech.geogig.porcelain.CommitOp#setMessage(java.lang.String)
      */
     public DataStoreImportOp<T> setCommitMessage(String commitMessage) {
         this.commitMessage = commitMessage;

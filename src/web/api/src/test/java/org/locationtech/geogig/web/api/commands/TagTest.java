@@ -14,11 +14,11 @@ import static org.junit.Assert.assertTrue;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.porcelain.TagCreateOp;
-import org.locationtech.geogig.api.porcelain.TagListOp;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.porcelain.TagCreateOp;
+import org.locationtech.geogig.porcelain.TagListOp;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -65,9 +65,9 @@ public class TagTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Ref master = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
-        Ref branch1 = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call().get();
 
         RevTag branch1Tag = geogig.command(TagCreateOp.class).setCommitId(branch1.getObjectId())
@@ -95,9 +95,9 @@ public class TagTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Ref master = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
-        Ref branch1 = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call().get();
 
         geogig.command(TagCreateOp.class).setCommitId(branch1.getObjectId()).setName("Branch1Tag")
@@ -119,9 +119,9 @@ public class TagTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Ref master = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
-        Ref branch1 = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call().get();
 
         geogig.command(TagCreateOp.class).setCommitId(branch1.getObjectId()).setName("Branch1Tag")
@@ -143,9 +143,9 @@ public class TagTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Ref master = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
-        Ref branch1 = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch1").call().get();
 
         RevTag branch1Tag = geogig.command(TagCreateOp.class).setCommitId(branch1.getObjectId())
@@ -217,7 +217,7 @@ public class TagTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Ref master = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
 
         ParameterSet options = TestParams.of("name", "MasterTag", "commit", "master");
@@ -244,7 +244,7 @@ public class TagTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        Ref master = geogig.command(org.locationtech.geogig.api.plumbing.RefParse.class)
+        Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
 
         ParameterSet options = TestParams.of("name", "MasterTag", "commit", "master", "message",

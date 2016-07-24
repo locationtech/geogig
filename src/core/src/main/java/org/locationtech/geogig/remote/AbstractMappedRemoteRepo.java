@@ -19,28 +19,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.IniRepositoryFilter;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RepositoryFilter;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.AutoCloseableIterator;
-import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.WriteTree;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.SynchronizationException;
-import org.locationtech.geogig.api.porcelain.SynchronizationException.StatusCode;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.FindCommonAncestor;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.WriteTree;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.SynchronizationException;
+import org.locationtech.geogig.porcelain.SynchronizationException.StatusCode;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.IniRepositoryFilter;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryFilter;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -138,7 +139,8 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
 
         @Override
         protected Evaluation evaluate(CommitNode commitNode) {
-            if (!source.graphDatabase().getMapping(commitNode.getObjectId()).equals(ObjectId.NULL)) {
+            if (!source.graphDatabase().getMapping(commitNode.getObjectId())
+                    .equals(ObjectId.NULL)) {
                 return Evaluation.EXCLUDE_AND_PRUNE;
             }
             return Evaluation.INCLUDE_AND_CONTINUE;
@@ -169,7 +171,8 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param fetchLimit the maximum depth to fetch, note, a sparse clone cannot be a shallow clone
      */
     @Override
-    public final void fetchNewData(Ref ref, Optional<Integer> fetchLimit, ProgressListener progress) {
+    public final void fetchNewData(Ref ref, Optional<Integer> fetchLimit,
+            ProgressListener progress) {
         Preconditions.checkState(!fetchLimit.isPresent(), "A sparse clone cannot be shallow.");
         FetchCommitGatherer gatherer = new FetchCommitGatherer(getRemoteWrapper(), localRepository);
 
@@ -208,7 +211,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
                 ObjectStore objectDatabase = localRepository.objectDatabase();
                 graphDatabase.put(commit.getId(), commit.getParentIds());
 
-                RevTree rootTree = RevTree.EMPTY;
+            RevTree rootTree = RevTreeBuilder.EMPTY;
 
                 if (commit.getParentIds().size() > 0) {
                     // Map this commit to the last "sparse" commit in my ancestry
@@ -409,8 +412,8 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
             if (remoteRef.get() instanceof SymRef) {
                 throw new SynchronizationException(StatusCode.CANNOT_PUSH_TO_SYMBOLIC_REF);
             }
-            ObjectId mappedId = localRepository.graphDatabase().getMapping(
-                    remoteRef.get().getObjectId());
+            ObjectId mappedId = localRepository.graphDatabase()
+                    .getMapping(remoteRef.get().getObjectId());
             if (mappedId.equals(ref.getObjectId())) {
                 // The branches are equal, no need to push.
                 throw new SynchronizationException(StatusCode.NOTHING_TO_PUSH);

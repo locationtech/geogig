@@ -66,7 +66,7 @@ public class EnvironmentBuilder implements Provider<Environment> {
         return this;
     }
 
-    public File getGeoGigDirectory() {
+    File getGeoGigDirectory() {
         final Optional<URI> repoUrl = new ResolveGeogigURI(platform, hints).call();
         if (!repoUrl.isPresent()) {
             throw new IllegalStateException("Can't find geogig repository home");
@@ -186,10 +186,6 @@ public class EnvironmentBuilder implements Provider<Environment> {
     public EnvironmentBuilder setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
         return this;
-    }
-
-    public Platform getPlatform() {
-        return platform;
     }
 
 }

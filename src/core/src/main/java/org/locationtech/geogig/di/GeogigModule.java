@@ -15,7 +15,6 @@ import java.util.concurrent.Executors;
 import org.locationtech.geogig.hooks.CommandHooksDecorator;
 import org.locationtech.geogig.model.DefaultPlatform;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.DeduplicationService;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Index;
 import org.locationtech.geogig.repository.Platform;
@@ -33,7 +32,6 @@ import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactory
 import org.locationtech.geogig.storage.fs.FileObjectDatabase;
 import org.locationtech.geogig.storage.fs.FileRefDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
-import org.locationtech.geogig.storage.memory.HeapDeduplicationService;
 import org.locationtech.geogig.storage.memory.HeapGraphDatabase;
 
 import com.google.inject.AbstractModule;
@@ -56,7 +54,6 @@ import com.google.inject.multibindings.Multibinder;
  * @see RefDatabase
  * @see GraphDatabase
  * @see ObjectSerializingFactory
- * @see DeduplicationService
  */
 
 public class GeogigModule extends AbstractModule {
@@ -97,8 +94,6 @@ public class GeogigModule extends AbstractModule {
 
         bind(ObjectSerializingFactory.class).to(DataStreamSerializationFactoryV2.class)
                 .in(Scopes.SINGLETON);
-
-        bind(DeduplicationService.class).to(HeapDeduplicationService.class).in(Scopes.SINGLETON);
 
         bindCommitGraphInterceptor();
 

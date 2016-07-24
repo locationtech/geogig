@@ -9,17 +9,16 @@
  */
 package org.locationtech.geogig.storage.bdbje;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.File;
+import java.io.IOException;
 
+import org.locationtech.geogig.model.DefaultPlatform;
 import org.locationtech.geogig.repository.DeduplicationService;
 import org.locationtech.geogig.repository.Deduplicator;
 
-import com.google.inject.Inject;
-import com.sleepycat.je.Database;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.sleepycat.je.DatabaseConfig;
-import com.sleepycat.je.Environment;
 
 /**
  * A {@link DeduplicationService} that creates {@link DatabaseConfig#setTemporary(boolean)
@@ -34,53 +33,22 @@ import com.sleepycat.je.Environment;
  * @see BDBJEDeduplicator
  */
 public class BDBJEDeduplicationService implements DeduplicationService {
-    private EnvironmentBuilder environmentBuilder;
 
-    private Set<BDBJEDeduplicator> openDeduplicators = new HashSet<BDBJEDeduplicator>();
-
-    private volatile Environment environment;
-
-    private volatile AtomicInteger tick = new AtomicInteger();
-
-    @Inject
-    public BDBJEDeduplicationService(EnvironmentBuilder environmentBuilder) {
-        this.environmentBuilder = environmentBuilder;
-    }
-
-    private synchronized Environment getEnvironment() {
-        if (this.environment == null) {
-            this.environment = environmentBuilder.setRelativePath("seen").get();
-        }
-        return this.environment;
-    }
-
-    private Database createDatabase() {
-        DatabaseConfig dbConfig = new DatabaseConfig();
-        dbConfig.setAllowCreate(true);
-        dbConfig.setDeferredWrite(false);
-        dbConfig.setTransactional(false);
-        dbConfig.setTemporary(true);
-
-        return getEnvironment().openDatabase(null, "seen" + tick.incrementAndGet(), dbConfig);
+    public BDBJEDeduplicationService() {
+        // default public constructor
     }
 
     @Override
     public Deduplicator createDeduplicator() {
-        Database database = createDatabase();
-        BDBJEDeduplicator deduplicator = new BDBJEDeduplicator(database, this);
-        this.openDeduplicators.add(deduplicator);
-        return deduplicator;
-    }
-
-    protected void reset(BDBJEDeduplicator deduplicator) {
-        deduplicator.setDatabase(createDatabase());
-    }
-
-    public synchronized void deregister(BDBJEDeduplicator deduplicator) {
-        this.openDeduplicators.remove(deduplicator);
-        if (this.openDeduplicators.size() == 0) {
-            this.environment.close();
-            this.environment = null;
+        DefaultPlatform platform = new DefaultPlatform();
+        File tmpDb;
+        try {
+            tmpDb = File.createTempFile("geogig-deduplicator", ".db", platform.getTempDir());
+            Preconditions.checkState(tmpDb.delete());
+            Preconditions.checkState(tmpDb.mkdirs());
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
+        return new BDBJEDeduplicator(tmpDb);
     }
 }

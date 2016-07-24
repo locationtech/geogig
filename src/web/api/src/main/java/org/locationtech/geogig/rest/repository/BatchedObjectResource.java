@@ -24,6 +24,7 @@ import org.locationtech.geogig.plumbing.CreateDeduplicator;
 import org.locationtech.geogig.remote.BinaryPackedObjects;
 import org.locationtech.geogig.remote.ObjectFunnel;
 import org.locationtech.geogig.remote.ObjectFunnels;
+import org.locationtech.geogig.repository.DeduplicationService;
 import org.locationtech.geogig.repository.Deduplicator;
 import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
@@ -114,12 +115,14 @@ public class BatchedObjectResource extends Finder {
             }
 
             Request request = getRequest();
-            final GeoGIG ggit = getGeogig(request).get();
-            final Repository repository = ggit.getRepository();
-            final Deduplicator deduplicator = ggit.command(CreateDeduplicator.class).call();
-
+            final GeoGIG ggig = getGeogig(request).get();
+            final Repository repository = ggig.getRepository();
+            final DeduplicationService deduplicatorService = ggig.command(CreateDeduplicator.class)
+                    .call();
+            final Deduplicator deduplicator = deduplicatorService.createDeduplicator();
             BinaryPackedObjects packer = new BinaryPackedObjects(repository.objectDatabase());
-            Representation rep = new RevObjectBinaryRepresentation(packer, want, have, deduplicator);
+            Representation rep = new RevObjectBinaryRepresentation(packer, want, have,
+                    deduplicator);
             Response response = getResponse();
             response.setEntity(rep);
         }

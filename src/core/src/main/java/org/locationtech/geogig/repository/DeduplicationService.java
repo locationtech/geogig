@@ -9,8 +9,13 @@
  */
 package org.locationtech.geogig.repository;
 
+import java.util.ServiceLoader;
+
 /**
  * A service for providing deduplicators.
+ * <p>
+ * Implementations are to be looked up through the standard Java {@link ServiceLoader SPI mechanism}
+ * under {@code META-INF/services/org.locationtech.geogig.repository.DeduplicationService}
  */
 public interface DeduplicationService {
     /**

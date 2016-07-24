@@ -189,11 +189,6 @@ public class GeogigTransaction implements Context {
     }
 
     @Override
-    public DeduplicationService deduplicationService() {
-        return context.deduplicationService();
-    }
-
-    @Override
     public PluginDefaults pluginDefaults() {
         return context.pluginDefaults();
     }

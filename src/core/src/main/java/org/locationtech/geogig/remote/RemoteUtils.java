@@ -15,6 +15,7 @@ import java.net.PasswordAuthentication;
 import java.net.URI;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.plumbing.CreateDeduplicator;
 import org.locationtech.geogig.repository.DeduplicationService;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
@@ -69,7 +70,7 @@ public class RemoteUtils {
                     remoteRepo = new HttpMappedRemoteRepo(fetchURI.toURL(), localRepository);
                 } else {
                     DeduplicationService deduplicationService;
-                    deduplicationService = localRepository.deduplicationService();
+                    deduplicationService = localRepository.command(CreateDeduplicator.class).call();
                     remoteRepo = new HttpRemoteRepo(fetchURI.toURL(), localRepository,
                             deduplicationService);
                 }

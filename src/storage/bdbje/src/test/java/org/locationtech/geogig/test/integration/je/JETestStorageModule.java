@@ -9,10 +9,8 @@
  */
 package org.locationtech.geogig.test.integration.je;
 
-import org.locationtech.geogig.repository.DeduplicationService;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.bdbje.BDBJEDeduplicationService;
 import org.locationtech.geogig.storage.bdbje.EnvironmentBuilder;
 import org.locationtech.geogig.storage.bdbje.JEGraphDatabase_v0_2;
 import org.locationtech.geogig.storage.bdbje.JEObjectDatabase_v0_2;
@@ -29,7 +27,6 @@ public class JETestStorageModule extends AbstractModule {
     protected void configure() {
         // BDB JE bindings for the different kinds of databases
         bind(ObjectDatabase.class).to(JEObjectDatabase_v0_2.class).in(Scopes.SINGLETON);
-        bind(DeduplicationService.class).to(BDBJEDeduplicationService.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).to(JEGraphDatabase_v0_2.class).in(Scopes.SINGLETON);
 
         // this module's specific. Used by the JE*Databases to set up the db environment

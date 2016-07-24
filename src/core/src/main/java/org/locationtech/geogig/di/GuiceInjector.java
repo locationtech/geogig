@@ -11,7 +11,6 @@ package org.locationtech.geogig.di;
 
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.DeduplicationService;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.PluginDefaults;
 import org.locationtech.geogig.repository.Repository;
@@ -122,11 +121,6 @@ public class GuiceInjector implements Context {
     @Override
     public Repository repository() {
         return getDecoratedInstance(Repository.class);
-    }
-
-    @Override
-    public DeduplicationService deduplicationService() {
-        return getDecoratedInstance(DeduplicationService.class);
     }
 
     @Override

@@ -187,9 +187,6 @@ public interface Repository {
     // @Override
     GraphDatabase graphDatabase();
 
-    // @Override
-    DeduplicationService deduplicationService();
-
     BlobStore blobStore();
 
 }

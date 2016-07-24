@@ -54,8 +54,6 @@ public interface Context {
 
     public Repository repository();
 
-    public DeduplicationService deduplicationService();
-
     /**
      * @TODO find a better way of accessing plugins and defaults. This method is currently here for
      *       the sake of {@link InitOp} and to get rid of the {@code getInstance(Class anyClass)}

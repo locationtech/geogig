@@ -410,12 +410,6 @@ public class RepositoryImpl implements Repository {
         return context.graphDatabase();
     }
 
-    // @Override
-    @Override
-    public DeduplicationService deduplicationService() {
-        return context.deduplicationService();
-    }
-
     @Override
     public BlobStore blobStore() {
         return context().blobStore();

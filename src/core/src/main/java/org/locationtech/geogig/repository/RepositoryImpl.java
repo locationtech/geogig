@@ -37,7 +37,6 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -245,15 +244,6 @@ public class RepositoryImpl implements Repository {
                 .call(RevCommit.class).get();
         ObjectId treeId = commit.getTreeId();
         return treeId;
-    }
-
-    /**
-     * @return an {@link ObjectInserter} to insert objects into the object database
-     */
-    @Override
-    @Deprecated
-    public ObjectInserter newObjectInserter() {
-        return context().objectDatabase().newObjectInserter();
     }
 
     /**

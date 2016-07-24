@@ -128,12 +128,6 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     }
 
     @Override
-    @Deprecated
-    public ObjectInserter newObjectInserter() {
-        return new ObjectInserter(this);
-    }
-
-    @Override
     public boolean delete(ObjectId objectId) {
         return subject.get().delete(objectId);
     }

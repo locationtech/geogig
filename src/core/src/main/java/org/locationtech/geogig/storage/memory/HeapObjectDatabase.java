@@ -18,7 +18,6 @@ import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConnectionManager;
 import org.locationtech.geogig.storage.ForwardingObjectStore;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.ObjectInserter;
 
 /**
  * Provides an implementation of a GeoGig object database that utilizes the heap for the storage of
@@ -91,12 +90,6 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     @Override
     public BlobStore getBlobStore() {
         return blobs;
-    }
-
-    @Deprecated
-    @Override
-    public ObjectInserter newObjectInserter() {
-        return new ObjectInserter(this);
     }
 
     @Override

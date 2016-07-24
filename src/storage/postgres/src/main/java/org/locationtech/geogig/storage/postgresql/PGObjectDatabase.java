@@ -66,7 +66,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -539,11 +538,6 @@ public class PGObjectDatabase implements ObjectDatabase {
     @Override
     public long deleteAll(Iterator<ObjectId> ids) {
         return deleteAll(ids, BulkOpListener.NOOP_LISTENER);
-    }
-
-    @Override
-    public ObjectInserter newObjectInserter() {
-        return new ObjectInserter(this);
     }
 
     /**

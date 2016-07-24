@@ -32,11 +32,5 @@ public interface ObjectDatabase extends ObjectStore {
 
     public ConflictsDatabase getConflictsDatabase();
 
-    /**
-     * @return a newly constructed {@link ObjectInserter} for this database
-     */
-    @Deprecated
-    public ObjectInserter newObjectInserter();
-
     public BlobStore getBlobStore();
 }

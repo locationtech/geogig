@@ -32,7 +32,6 @@ import org.locationtech.geogig.plumbing.WriteTree2;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -288,13 +287,12 @@ public class IndexTest extends RepositoryTestCase {
         final ObjectId oId2_1 = insertAndAdd(lines1);
 
         {// simulate a commit so the repo head points to this new tree
-            ObjectInserter objectInserter = repo.newObjectInserter();
             List<ObjectId> parents = ImmutableList.of();
 
             RevCommit commit = new CommitBuilder().setTreeId(newRepoTreeId1).setParentIds(parents)
                     .build();
             ObjectId commitId = commit.getId();
-            objectInserter.insert(commit);
+            repo.objectDatabase().put(commit);
             Optional<Ref> newHead = geogig.command(UpdateRef.class).setName("refs/heads/master")
                     .setNewValue(commitId).call();
             assertTrue(newHead.isPresent());
@@ -326,13 +324,12 @@ public class IndexTest extends RepositoryTestCase {
         }
 
         {// simulate a commit so the repo head points to this new tree
-            ObjectInserter objectInserter = repo.newObjectInserter();
             List<ObjectId> parents = ImmutableList.of();
             RevCommit commit = new CommitBuilder().setTreeId(newRepoTreeId2).setParentIds(parents)
                     .build();
             ObjectId commitId = commit.getId();
-
-            objectInserter.insert(commit);
+            
+            repo.objectDatabase().put(commit);
             Optional<Ref> newHead = geogig.command(UpdateRef.class).setName("refs/heads/master")
                     .setNewValue(commitId).call();
             assertTrue(newHead.isPresent());

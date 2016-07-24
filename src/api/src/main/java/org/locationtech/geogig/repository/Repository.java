@@ -13,7 +13,6 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Optional;
@@ -108,11 +107,6 @@ public interface Repository {
      * @return the {@link ObjectId} of the root tree
      */
     ObjectId getRootTreeId();
-
-    /**
-     * @return an {@link ObjectInserter} to insert objects into the object database
-     */
-    ObjectInserter newObjectInserter();
 
     /**
      * @param contentId the {@link ObjectId} of the feature to get

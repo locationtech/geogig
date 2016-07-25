@@ -20,6 +20,9 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
+
 public class RevFeatureBuilderTest extends RepositoryTestCase {
 
     @Override
@@ -123,27 +126,62 @@ public class RevFeatureBuilderTest extends RepositoryTestCase {
         }
     }
 
-    // @Test
-    // public void testEnforcesPolygonNormalization() throws Exception {
-    // // outer ring in cw order, inner rings in ccw order
-    // String normalizedWKT = "POLYGON((0 0, 0 9, 9 9, 9 0, 0 0), (3 3, 6 3, 6 6, 3 6, 3 3))";
-    // // outer ring in ccw order, inner rings in cc order
-    // String reversedWKT = "POLYGON((0 0, 9 0, 9 9, 0 9, 0 0), (3 3, 3 6, 6 6, 6 3, 3 3))";
-    //
-    // Geometry normalized = new WKTReader().read(normalizedWKT);
-    // Geometry reversed = new WKTReader().read(reversedWKT);
-    //
-    // assertTrue(normalized.equalsExact(normalized.norm()));
-    // assertFalse(reversed.equalsExact(reversed.norm()));
-    //
-    // RevFeatureBuilder builder = builder();
-    // RevFeature norm = builder.addValue(normalized).build();
-    // RevFeature rev = builder.reset().addValue(reversed).build();
-    //
-    // Geometry expected = (Geometry) norm.getValues().get(0).get();
-    // Geometry actual = (Geometry) rev.getValues().get(0).get();
-    //
-    // assertTrue(normalized.equalsExact(expected));
-    // assertTrue(normalized.equalsExact(actual));
-    // }
+    @Test
+    public void testEnforcesPolygonNormalization() throws Exception {
+        // outer ring in cw order, inner rings in ccw order
+        String normalizedWKT = "POLYGON((0 0, 0 9, 9 9, 9 0, 0 0), (3 3, 6 3, 6 6, 3 6, 3 3))";
+        // outer ring in ccw order, inner rings in cc order
+        String reversedWKT = "POLYGON((0 0, 9 0, 9 9, 0 9, 0 0), (3 3, 3 6, 6 6, 6 3, 3 3))";
+
+        Geometry normalized = new WKTReader().read(normalizedWKT);
+        Geometry reversed = new WKTReader().read(reversedWKT);
+
+        assertTrue(normalized.equalsExact(normalized.norm()));
+        assertFalse(reversed.equalsExact(reversed.norm()));
+
+        RevFeatureBuilder builder = builder();
+        RevFeature norm = builder.addValue(normalized).build();
+        RevFeature rev = builder.reset().addValue(reversed).build();
+
+        Geometry expected = (Geometry) norm.getValues().get(0).get();
+        Geometry actual = (Geometry) rev.getValues().get(0).get();
+
+        assertTrue(normalized.equalsExact(expected));
+        assertTrue(normalized.equalsExact(actual));
+    }
+
+    @Test
+    public void testEnforcesPolygonNormalization2() throws Exception {
+        // outer ring in cw order, inner rings in ccw order
+        String normalizedWKT = "GEOMETRYCOLLECTION("//
+                + " POINT(2 2), LINESTRING(5 0, 0 0),"//
+                + " POLYGON((0 0, 0 9, 9 9, 9 0, 0 0), (3 3, 6 3, 6 6, 3 6, 3 3))"//
+                + ")";
+        // outer ring in ccw order, inner rings in cc order
+        String reversedWKT = "GEOMETRYCOLLECTION("//
+                + " POINT(2 2), LINESTRING(5 0, 0 0),"//
+                + " POLYGON((0 0, 9 0, 9 9, 0 9, 0 0), (3 3, 3 6, 6 6, 6 3, 3 3))"//
+                + ")";
+
+        Geometry normalized = new WKTReader().read(normalizedWKT);
+        Geometry reversed = new WKTReader().read(reversedWKT);
+
+        // preflight assertions
+        assertFalse(normalized.equalsExact(normalized.norm()));// the linestring is not normalized
+        // but the polygon is
+        assertTrue(normalized.getGeometryN(2).equalsExact(normalized.getGeometryN(2).norm()));
+
+        assertFalse(reversed.getGeometryN(2).equalsExact(reversed.getGeometryN(2).norm()));
+
+        // make sure RevFeatureBuilder normalized only the polygon
+        RevFeatureBuilder builder = builder();
+        RevFeature norm = builder.addValue(normalized).build();
+        RevFeature rev = builder.reset().addValue(reversed).build();
+
+        Geometry expected = (Geometry) norm.getValues().get(0).get();
+        Geometry actual = (Geometry) rev.getValues().get(0).get();
+
+        assertTrue(normalized.equalsExact(expected));
+        assertTrue(normalized.equalsExact(actual));
+    }
 }

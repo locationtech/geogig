@@ -19,5 +19,6 @@
    <module>bdbje</module>
    <!--module>sqlite</module-->
    <module>postgres</module>
+   <!--module>rocksdb</module-->
   </modules>
 </project>

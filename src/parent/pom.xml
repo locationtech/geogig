@@ -140,6 +140,13 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- https://mvnrepository.com/artifact/org.rocksdb/rocksdbjni -->
+      <dependency>
+        <groupId>org.rocksdb</groupId>
+        <artifactId>rocksdbjni</artifactId>
+        <version>4.8.0</version>
+      </dependency>
+
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
@@ -626,6 +633,7 @@
      <id>experimental</id>
      <modules>
        <module>../ql</module>
+       <module>../storage/rocksdb</module>
      </modules>
     </profile>
   </profiles>

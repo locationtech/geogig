@@ -66,7 +66,7 @@ public abstract class ConnectionManager<A, C> {
         return entry.connection;
     }
 
-    public final synchronized void release(C connection) {
+    public final synchronized boolean release(C connection) {
         Map.Entry<A, PoolEntry<C>> record = lookupConnection(connection);
         A address = record.getKey();
         PoolEntry<C> poolentry = record.getValue();
@@ -79,6 +79,8 @@ public abstract class ConnectionManager<A, C> {
             } finally {
                 pool.remove(address);
             }
+            return true;
         }
+        return false;
     }
 }

@@ -30,10 +30,13 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
+import org.junit.runners.MethodSorters;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.repository.Platform;
@@ -48,13 +51,17 @@ import com.google.common.collect.Iterators;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 
-public abstract class ObjectDatabaseStressTest {
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public abstract class ObjectStoreStressTest {
     private static final MemoryMXBean MEMORY_MX_BEAN = ManagementFactory.getMemoryMXBean();
+
+    @Rule
+    public TestName testName = new TestName();
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    ObjectDatabase db;
+    ObjectStore db;
 
     @Before
     public void setUp() throws IOException {
@@ -66,7 +73,7 @@ public abstract class ObjectDatabaseStressTest {
         db.open();
     }
 
-    protected abstract ObjectDatabase createDb(Platform platform, ConfigDatabase config);
+    protected abstract ObjectStore createDb(Platform platform, ConfigDatabase config);
 
     @After
     public void tearDown() {
@@ -91,45 +98,48 @@ public abstract class ObjectDatabaseStressTest {
     }
 
     @Test
-    public void testPutAll_1K() throws Exception {
+    public void test01_PutAll_1K() throws Exception {
         testPutAll(1000);
     }
 
     @Test
-    public void testPutAll_10K() throws Exception {
+    public void test02_PutAll_10K() throws Exception {
         testPutAll(10_000);
     }
 
     @Test
-    public void testPutAll_100K() throws Exception {
+    public void test03_PutAll_100K() throws Exception {
         testPutAll(100_000);
     }
 
     @Ignore
     @Test
-    public void testPutAll_1M() throws Exception {
+    public void test04_PutAll_1M() throws Exception {
         testPutAll(1000_000);
     }
 
     @Ignore
     @Test
-    public void testPutAll_5M() throws Exception {
+    public void test05_PutAll_5M() throws Exception {
         testPutAll(5000_000);
     }
 
     @Ignore
     @Test
-    public void testPutAll_10M() throws Exception {
+    public void test06_PutAll_10M() throws Exception {
         testPutAll(10_000_000);
     }
 
     @Ignore
     @Test
-    public void testPutAll_50M() throws Exception {
+    public void test07_PutAll_50M() throws Exception {
         testPutAll(50_000_000);
     }
 
     private void testPutAll(final int count) throws Exception {
+        System.err.printf("### test: %s, dir: %s\n", testName.getMethodName(),
+                tmp.getRoot().getAbsolutePath());
+
         MemoryUsage initialMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
 
         Stopwatch sw = Stopwatch.createStarted();

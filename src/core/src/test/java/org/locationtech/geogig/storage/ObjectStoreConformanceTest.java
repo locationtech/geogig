@@ -140,7 +140,7 @@ public abstract class ObjectStoreConformanceTest {
         RevObject obj = RevTreeBuilder.EMPTY;
         try {
             db.put(obj);
-            fail("Expected UOE on read only hint");
+            fail("Expected ISE on read only hint");
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("read only"));
         }

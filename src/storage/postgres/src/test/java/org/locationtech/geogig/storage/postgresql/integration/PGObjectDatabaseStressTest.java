@@ -13,13 +13,13 @@ import org.junit.Rule;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.ObjectDatabaseStressTest;
+import org.locationtech.geogig.storage.ObjectStoreStressTest;
 import org.locationtech.geogig.storage.postgresql.Environment;
 import org.locationtech.geogig.storage.postgresql.PGObjectDatabase;
 import org.locationtech.geogig.storage.postgresql.PGStorage;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 
-public class PGObjectDatabaseStressTest extends ObjectDatabaseStressTest {
+public class PGObjectDatabaseStressTest extends ObjectStoreStressTest {
 
     @Rule
     public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
@@ -32,29 +32,4 @@ public class PGObjectDatabaseStressTest extends ObjectDatabaseStressTest {
         PGObjectDatabase db = new PGObjectDatabase(configDb, config, false);
         return db;
     }
-
-    // @Override
-    // protected Iterator<RevObject> getAll(Iterable<ObjectId> ids, CountingListener getAllListener)
-    // {
-    // return ((PGObjectDatabase)db).getAll(ids, RevObject.TYPE.FEATURE, getAllListener);
-    // }
-
-    public static void main(String[] args) {
-        PGObjectDatabaseStressTest test = new PGObjectDatabaseStressTest();
-        try {
-            test.tmp.create();
-            test.testConfig.before();
-            test.setUp();
-
-            test.testPutAll_1M();
-
-        } catch (Throwable e) {
-            e.printStackTrace();
-        } finally {
-            test.tearDown();
-            test.testConfig.after();
-            System.exit(0);
-        }
-    }
-
 }

@@ -267,8 +267,8 @@ public abstract class AbstractObjectStore implements ObjectStore {
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids) {
+    public void deleteAll(Iterator<ObjectId> ids) {
         checkState(isOpen(), "db is closed");
-        return deleteAll(ids, BulkOpListener.NOOP_LISTENER);
+        deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 }

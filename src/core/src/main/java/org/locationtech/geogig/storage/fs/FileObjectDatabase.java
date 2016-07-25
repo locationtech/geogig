@@ -237,10 +237,9 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
      * @return true if the object was deleted, false if it was not found
      */
     @Override
-    public boolean delete(ObjectId objectId) {
+    public void delete(ObjectId objectId) {
         File filePath = filePath(objectId);
-        boolean delete = filePath.delete();
-        return delete;
+        filePath.delete();
     }
 
     private File filePath(final ObjectId id) {
@@ -300,7 +299,7 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
+    public void deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
         throw new UnsupportedOperationException("This method is not yet implemented");
     }
 

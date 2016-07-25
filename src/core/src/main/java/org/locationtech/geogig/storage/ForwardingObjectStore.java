@@ -126,9 +126,9 @@ public class ForwardingObjectStore implements ObjectStore {
     }
 
     @Override
-    public boolean delete(ObjectId objectId) {
+    public void delete(ObjectId objectId) {
         checkWritable();
-        return subject.get().delete(objectId);
+        subject.get().delete(objectId);
     }
 
     @Override
@@ -160,15 +160,15 @@ public class ForwardingObjectStore implements ObjectStore {
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids) {
+    public void deleteAll(Iterator<ObjectId> ids) {
         checkWritable();
-        return subject.get().deleteAll(ids);
+        subject.get().deleteAll(ids);
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
+    public void deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
         checkWritable();
-        return subject.get().deleteAll(ids, listener);
+        subject.get().deleteAll(ids, listener);
     }
 
     @Override

@@ -528,16 +528,16 @@ public class PGObjectDatabase implements ObjectDatabase {
     }
 
     @Override
-    public boolean delete(ObjectId objectId) {
+    public void delete(ObjectId objectId) {
         checkNotNull(objectId, "argument objectId is null");
         checkWritable();
         config.checkRepositoryExists();
-        return delete(objectId, dataSource);
+        delete(objectId, dataSource);
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids) {
-        return deleteAll(ids, BulkOpListener.NOOP_LISTENER);
+    public void deleteAll(Iterator<ObjectId> ids) {
+        deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
     /**
@@ -777,7 +777,7 @@ public class PGObjectDatabase implements ObjectDatabase {
      * @return Flag indicating if object was actually removed.
      */
 
-    private boolean delete(final ObjectId id, DataSource ds) {
+    private void delete(final ObjectId id, DataSource ds) {
         String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
                 config.getTables().objects());
 
@@ -785,10 +785,8 @@ public class PGObjectDatabase implements ObjectDatabase {
             cx.setAutoCommit(true);
             try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG, id))) {
                 PGId.valueOf(id).setArgs(stmt, 1);
-                int updateCount = stmt.executeUpdate();
+                stmt.executeUpdate();
                 byteCache.invalidate(id);
-                boolean deleted = updateCount > 0;
-                return deleted;
             }
         } catch (SQLException e) {
             throw propagate(e);
@@ -1032,7 +1030,7 @@ public class PGObjectDatabase implements ObjectDatabase {
      * Override to optimize batch delete.
      */
     @Override
-    public long deleteAll(final Iterator<ObjectId> ids, final BulkOpListener listener) {
+    public void deleteAll(final Iterator<ObjectId> ids, final BulkOpListener listener) {
         checkNotNull(ids, "argument objectId is null");
         checkNotNull(listener, "argument listener is null");
         checkWritable();
@@ -1066,7 +1064,6 @@ public class PGObjectDatabase implements ObjectDatabase {
         } catch (SQLException connectEx) {
             throw propagate(connectEx);
         }
-        return count;
     }
 
     long notifyDeleted(int[] deleted, List<ObjectId> ids, BulkOpListener listener) {

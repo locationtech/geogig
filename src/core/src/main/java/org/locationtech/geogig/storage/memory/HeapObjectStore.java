@@ -96,13 +96,12 @@ public class HeapObjectStore extends AbstractObjectStore {
      * Deletes the object with the provided {@link ObjectId id} from the database.
      * 
      * @param objectId the id of the object to delete
-     * @return true if the object was deleted, false if it was not found
      */
     @Override
-    public boolean delete(ObjectId objectId) {
+    public void delete(ObjectId objectId) {
         checkNotNull(objectId, "objectId is null");
         checkState(isOpen(), "db is closed");
-        return objects.remove(objectId) != null;
+        objects.remove(objectId);
     }
 
     @Override
@@ -153,23 +152,20 @@ public class HeapObjectStore extends AbstractObjectStore {
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
+    public void deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
         checkNotNull(ids, "ids is null");
         checkNotNull(listener, "listener is null");
         checkState(isOpen(), "db is closed");
 
-        long count = 0;
         while (ids.hasNext()) {
             ObjectId id = ids.next();
             byte[] removed = this.objects.remove(id);
             if (removed != null) {
-                count++;
                 listener.deleted(id);
             } else {
                 listener.notFound(id);
             }
         }
-        return count;
     }
 
     @Override

@@ -120,9 +120,8 @@ public interface ObjectStore extends Closeable {
      * Deletes the object with the provided {@link ObjectId id} from the database.
      * 
      * @param objectId the id of the object to delete
-     * @return true if the object was deleted, false if it was not found
      */
-    public boolean delete(ObjectId objectId);
+    public void delete(ObjectId objectId);
 
     /**
      * Shorthand for {@link #getAll(Iterable, BulkOpListener)} with
@@ -210,7 +209,7 @@ public interface ObjectStore extends Closeable {
      * Shorthand for {@link #deleteAll(Iterator, BulkOpListener)} with
      * {@link BulkOpListener#NOOP_LISTENER} as second argument
      */
-    public long deleteAll(Iterator<ObjectId> ids);
+    public void deleteAll(Iterator<ObjectId> ids);
 
     /**
      * Requests to delete all objects in the argument list of object ids from the object database.
@@ -223,8 +222,7 @@ public interface ObjectStore extends Closeable {
      * 
      * @param ids the identifiers of objects to delete
      * @param listener a listener to receive notifications of deleted and not found objects
-     * @return the number of objects actually deleted
      */
-    public long deleteAll(Iterator<ObjectId> ids, BulkOpListener listener);
+    public void deleteAll(Iterator<ObjectId> ids, BulkOpListener listener);
 
 }

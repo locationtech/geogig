@@ -151,18 +151,18 @@ class ObjectDatabaseCacheInterceptor {
         }
 
         @Override
-        public boolean delete(ObjectId objectId) {
-            return cache.delete(objectId, super.subject.get());
+        public void delete(ObjectId objectId) {
+            cache.delete(objectId, super.subject.get());
         }
 
         @Override
-        public long deleteAll(Iterator<ObjectId> ids) {
-            return deleteAll(ids, BulkOpListener.NOOP_LISTENER);
+        public void deleteAll(Iterator<ObjectId> ids) {
+            deleteAll(ids, BulkOpListener.NOOP_LISTENER);
         }
 
         @Override
-        public long deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
-            return cache.deleteAll(ids, listener, super.subject.get());
+        public void deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
+            cache.deleteAll(ids, listener, super.subject.get());
         }
     }
 
@@ -281,16 +281,13 @@ class ObjectDatabaseCacheInterceptor {
             return Iterators.concat(iterators.iterator());
         }
 
-        public boolean delete(ObjectId objectId, ObjectStore db) {
-            boolean deleted = db.delete(objectId);
-            if (deleted) {
-                final Cache<ObjectId, RevObject> cache = cacheProvider.get().get();
-                cache.invalidate(objectId);
-            }
-            return deleted;
+        public void delete(ObjectId objectId, ObjectStore db) {
+            db.delete(objectId);
+            final Cache<ObjectId, RevObject> cache = cacheProvider.get().get();
+            cache.invalidate(objectId);
         }
 
-        public long deleteAll(Iterator<ObjectId> ids, BulkOpListener listener, ObjectStore db) {
+        public void deleteAll(Iterator<ObjectId> ids, BulkOpListener listener, ObjectStore db) {
 
             final BulkOpListener invalidatingListener = new BulkOpListener() {
 
@@ -302,7 +299,7 @@ class ObjectDatabaseCacheInterceptor {
                 }
             };
 
-            return db.deleteAll(ids, BulkOpListener.composite(listener, invalidatingListener));
+            db.deleteAll(ids, BulkOpListener.composite(listener, invalidatingListener));
         }
 
         private final boolean isCacheable(Object object, boolean cacheFeatures) {

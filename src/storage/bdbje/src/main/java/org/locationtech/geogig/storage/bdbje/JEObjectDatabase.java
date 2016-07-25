@@ -652,7 +652,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     @Override
-    public boolean delete(final ObjectId id) {
+    public void delete(final ObjectId id) {
         Preconditions.checkNotNull(id, "argument id is null");
         checkWritable();
         final byte[] rawKey = id.getRawValue();
@@ -660,15 +660,13 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
         final Transaction transaction = newTransaction();
 
-        final OperationStatus status;
         try {
-            status = objectDb.delete(transaction, key);
+            objectDb.delete(transaction, key);
             commit(transaction);
         } catch (RuntimeException e) {
             abort(transaction);
             throw e;
         }
-        return SUCCESS.equals(status);
     }
 
     private void abort(@Nullable Transaction transaction) {
@@ -692,12 +690,10 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
+    public void deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
         Preconditions.checkNotNull(ids, "argument ids is null");
         Preconditions.checkNotNull(listener, "argument listener is null");
         checkWritable();
-
-        long count = 0;
 
         UnmodifiableIterator<List<ObjectId>> partition = partition(ids, getBulkPartitionSize());
 
@@ -724,7 +720,6 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
                         OperationStatus delete = cursor.delete();
                         if (OperationStatus.SUCCESS.equals(delete)) {
                             listener.deleted(id);
-                            count++;
                         } else {
                             listener.notFound(id);
                         }
@@ -740,7 +735,6 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
             }
             commit(transaction);
         }
-        return count;
     }
 
     @Override

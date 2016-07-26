@@ -39,6 +39,8 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.WKTReader;
 
 public class OSMMapOpTest extends RepositoryTestCase {
     @Rule
@@ -95,8 +97,8 @@ public class OSMMapOpTest extends RepositoryTestCase {
         BlobStore blobStore = getRepository().blobStore();
         Optional<String> blob = Blobs.getBlobAsString(blobStore, "osm/map/onewaystreets");
         assertTrue(blob.isPresent());
-        blob = Blobs.getBlobAsString(blobStore, "osm/map/"
-                + getRepository().workingTree().getTree().getId());
+        blob = Blobs.getBlobAsString(blobStore,
+                "osm/map/" + getRepository().workingTree().getTree().getId());
         assertTrue(blob.isPresent());
     }
 
@@ -184,7 +186,8 @@ public class OSMMapOpTest extends RepositoryTestCase {
         ImmutableList<Optional<Object>> values = revFeature.get().getValues();
         assertEquals(4, values.size());
         String wkt = "POLYGON ((7.1923367 50.7395887, 7.1923127 50.7396946, 7.1923444 50.7397419, 7.1924199 50.7397781, 7.1923367 50.7395887))";
-        assertEquals(wkt, values.get(2).get().toString());
+        Polygon expected = (Polygon) new WKTReader().read(wkt).norm();// geogig normalizes polygons
+        assertEquals(expected, values.get(2).get());
         assertEquals("yes", values.get(1).get());
         revFeature = geogig.command(RevObjectParse.class).setRefSpec("HEAD:polygons/24777894")
                 .call(RevFeature.class);
@@ -289,7 +292,8 @@ public class OSMMapOpTest extends RepositoryTestCase {
         fields.put("geom", new AttributeDefinition("geom", FieldType.POINT));
         fields.put("name", new AttributeDefinition("name", FieldType.STRING));
         Map<String, List<String>> filterExclude = Maps.newHashMap();
-        MappingRule mappingRule = new MappingRule("busstops", mappings, filterExclude, fields, null);
+        MappingRule mappingRule = new MappingRule("busstops", mappings, filterExclude, fields,
+                null);
         List<MappingRule> mappingRules = Lists.newArrayList();
         mappingRules.add(mappingRule);
         Mapping mapping = new Mapping(mappingRules);
@@ -312,8 +316,8 @@ public class OSMMapOpTest extends RepositoryTestCase {
         BlobStore blobStore = getRepository().blobStore();
         Optional<String> blob = Blobs.getBlobAsString(blobStore, "osm/map/busstops");
         assertTrue(blob.isPresent());
-        blob = Blobs.getBlobAsString(blobStore, "osm/map/"
-                + getRepository().workingTree().getTree().getId());
+        blob = Blobs.getBlobAsString(blobStore,
+                "osm/map/" + getRepository().workingTree().getTree().getId());
         assertTrue(blob.isPresent());
     }
 
@@ -381,7 +385,8 @@ public class OSMMapOpTest extends RepositoryTestCase {
         fields.put("geom", new AttributeDefinition("the_geometry", FieldType.POINT));
         fields.put("name", new AttributeDefinition("the_name", FieldType.STRING));
         Map<String, List<String>> filterExclude = Maps.newHashMap();
-        MappingRule mappingRule = new MappingRule("busstops", mappings, filterExclude, fields, null);
+        MappingRule mappingRule = new MappingRule("busstops", mappings, filterExclude, fields,
+                null);
         List<MappingRule> mappingRules = Lists.newArrayList();
         mappingRules.add(mappingRule);
         Mapping mapping = new Mapping(mappingRules);
@@ -433,8 +438,8 @@ public class OSMMapOpTest extends RepositoryTestCase {
             geogig.command(OSMMapOp.class).setMapping(mapping).call();
             fail();
         } catch (NullPointerException e) {
-            assertTrue(e.getMessage().startsWith(
-                    "The mapping rule does not define a geometry field"));
+            assertTrue(
+                    e.getMessage().startsWith("The mapping rule does not define a geometry field"));
         }
     }
 

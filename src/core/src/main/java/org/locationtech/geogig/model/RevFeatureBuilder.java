@@ -21,6 +21,11 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
+
 /**
  * Builder for {@link RevFeature} instances.
  * 
@@ -71,8 +76,31 @@ public final class RevFeatureBuilder {
      */
     public RevFeatureBuilder addValue(@Nullable Object value) {
         value = safeCopy(value);
+        if (value instanceof Geometry) {
+            value = normalizeIfNeeded((Geometry) value);
+        }
         this.values.add(value);
         return this;
+    }
+
+    Geometry normalizeIfNeeded(Geometry value) {
+        if (value instanceof Polygon) {
+            value.normalize();
+        } else if (value instanceof MultiPolygon
+                || GeometryCollection.class.equals(value.getClass())) {// ignore
+                                                                       // multipoint/linestring
+            normalize((GeometryCollection) value);
+        }
+
+        return value;
+    }
+
+    private void normalize(GeometryCollection col) {
+        for (int i = 0; i < col.getNumGeometries(); i++) {
+            Geometry geometryN = col.getGeometryN(i);
+            normalizeIfNeeded(geometryN);
+        }
+
     }
 
     private Object safeCopy(@Nullable Object value) {

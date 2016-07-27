@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoGig tutorial &mdash; GeoGig 1.0-RC2 User Manual</title>
+  <title>GeoGig tutorial &mdash; GeoGig 1.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,12 +20,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC2 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.0 User Manual" href="../index.html" />
       <link rel="up" title="Starting out with GeoGig" href="index.html" />
       <link rel="next" title="Working with repositories" href="../repo/index.html" />
       <link rel="prev" title="Installation" href="installation.html" />
@@ -81,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC2 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Starting out with GeoGig</a> &raquo;</li>
   <li>GeoGig tutorial</li>
 </ul>
@@ -114,11 +114,11 @@
 <p>This tutorial assumes no prior experience with GeoGig. More details can be found in later sections.</p>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>Follow the instructions on the <a class="reference internal" href="installation.html#start-installation"><em>Installation</em></a> page to install GeoGig.</p>
+<p>Follow the instructions on the <a class="reference internal" href="installation.html#start-installation"><span>Installation</span></a> page to install GeoGig.</p>
 </div>
 <div class="section" id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
-<p>Before we start working with geospatial data in GeoGig, you have to provide GeoGig with an user name and email, using the <tt class="docutils literal"><span class="pre">config</span></tt> command, substituting your name and email:</p>
+<p>Before we start working with geospatial data in GeoGig, you have to provide GeoGig with an user name and email, using the <code class="docutils literal"><span class="pre">config</span></code> command, substituting your name and email:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config --global user.name &quot;Author&quot;</span>
 <span class="go">geogig config --global user.email &quot;author@example.com&quot;</span>
 </pre></div>
@@ -130,18 +130,18 @@
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig init</span>
 </pre></div>
 </div>
-<p>Now your GeoGig repository is ready to manage and version your geospatial data. Note that a <tt class="file docutils literal"><span class="pre">.geogig</span></tt> directory was created.</p>
+<p>Now your GeoGig repository is ready to manage and version your geospatial data. Note that a <code class="file docutils literal"><span class="pre">.geogig</span></code> directory was created.</p>
 </div>
 <div class="section" id="sample-data">
 <h2>Sample data<a class="headerlink" href="#sample-data" title="Permalink to this headline">¶</a></h2>
-<p><tt class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">the</span> <span class="pre">tutorial</span> <span class="pre">sample</span> <span class="pre">data</span></tt></p>
-<p>This archive contains multiple directories, named <tt class="docutils literal"><span class="pre">snapshot1</span></tt> through <tt class="docutils literal"><span class="pre">snapshot5</span></tt>. Each directory contains a single shapefile, that all contain slight variations. For the purposes of this tutorial, each shapefile will be considered a &#8220;snapshot&#8221; of the data in time. We will use these snapshots to simulate the creation and editing of the data in GeoGig.</p>
+<p><a class="reference external" href="http://s3.amazonaws.com/geogig-test-data/tutorial/tutorial_data.zip">Download the tutorial sample data</a></p>
+<p>This archive contains multiple directories, named <code class="docutils literal"><span class="pre">snapshot1</span></code> through <code class="docutils literal"><span class="pre">snapshot5</span></code>. Each directory contains a single shapefile, that all contain slight variations. For the purposes of this tutorial, each shapefile will be considered a &#8220;snapshot&#8221; of the data in time. We will use these snapshots to simulate the creation and editing of the data in GeoGig.</p>
 <p>Extract the archive into the repository directory created in the previous step.</p>
 </div>
 <div class="section" id="importing-data">
 <h2>Importing data<a class="headerlink" href="#importing-data" title="Permalink to this headline">¶</a></h2>
 <p>To work with data in GeoGig, it has to first be imported into the repository <strong>working tree</strong>.</p>
-<p>We will start by importing the <tt class="docutils literal"><span class="pre">snapshot1/parks.shp</span></tt> shapefile, using the following command</p>
+<p>We will start by importing the <code class="docutils literal"><span class="pre">snapshot1/parks.shp</span></code> shapefile, using the following command</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig shp import snapshot1/parks.shp</span>
 </pre></div>
 </div>
@@ -165,8 +165,8 @@
 <span class="go">        3</span>
 </pre></div>
 </div>
-<p>Features from the shapefile are added to the working tree under a tree named <tt class="docutils literal"><span class="pre">Root</span> <span class="pre">tree</span></tt>. A <strong>tree</strong> in a GeoGig repository is analogous to a directory in a filesystem. Features are named as numbers, reflecting the order in which they are found in the source data. It is not necesarily the same order in which they are listed by the <tt class="docutils literal"><span class="pre">ls</span></tt> command.</p>
-<p>Running the <tt class="docutils literal"><span class="pre">status</span></tt> command will give you information about the data you have that is not already versioned.</p>
+<p>Features from the shapefile are added to the working tree under a tree named <code class="docutils literal"><span class="pre">Root</span> <span class="pre">tree</span></code>. A <strong>tree</strong> in a GeoGig repository is analogous to a directory in a filesystem. Features are named as numbers, reflecting the order in which they are found in the source data. It is not necesarily the same order in which they are listed by the <code class="docutils literal"><span class="pre">ls</span></code> command.</p>
+<p>Running the <code class="docutils literal"><span class="pre">status</span></code> command will give you information about the data you have that is not already versioned.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig status</span>
 </pre></div>
 </div>
@@ -198,7 +198,7 @@
 </pre></div>
 </div>
 <p>Now your data is ready to be used to create a snapshot (a <strong>commit</strong> in GeoGig terminology).</p>
-<p>If you run the <tt class="docutils literal"><span class="pre">status</span></tt> command again, you will see a different output, since your data has now been added and is ready to be versioned.</p>
+<p>If you run the <code class="docutils literal"><span class="pre">status</span></code> command again, you will see a different output, since your data has now been added and is ready to be versioned.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig status</span>
 </pre></div>
 </div>
@@ -229,16 +229,16 @@
 <span class="go">Committed, counting objects...3 features added, 0 changed, 0 deleted.</span>
 </pre></div>
 </div>
-<p>The text between quotes after the <tt class="docutils literal"><span class="pre">-m</span></tt> option is the commit message, which describes the snapshot in a human-readable format.</p>
+<p>The text between quotes after the <code class="docutils literal"><span class="pre">-m</span></code> option is the commit message, which describes the snapshot in a human-readable format.</p>
 </div>
 <div class="section" id="making-edits">
 <h2>Making edits<a class="headerlink" href="#making-edits" title="Permalink to this headline">¶</a></h2>
 <p>To create a new version, follow the same procedure as before: import new data, add it, and then commit. All editing of data must be done externally to GeoGig. We&#8217;ll see this next.</p>
-<p>The <tt class="file docutils literal"><span class="pre">snapshot2/parks.shp</span></tt> file contains the same data as the first file, but with an extra feature. Import this file.</p>
+<p>The <code class="file docutils literal"><span class="pre">snapshot2/parks.shp</span></code> file contains the same data as the first file, but with an extra feature. Import this file.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig shp import snapshot2/parks.shp</span>
 </pre></div>
 </div>
-<p>If you run the <tt class="docutils literal"><span class="pre">status</span></tt> command after importing (and before adding), you will see it reports one added element. GeoGig will only report modifications to features that have been changed.</p>
+<p>If you run the <code class="docutils literal"><span class="pre">status</span></code> command after importing (and before adding), you will see it reports one added element. GeoGig will only report modifications to features that have been changed.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig status</span>
 </pre></div>
 </div>
@@ -275,7 +275,7 @@
 </div>
 <div class="section" id="viewing-repository-history">
 <h2>Viewing repository history<a class="headerlink" href="#viewing-repository-history" title="Permalink to this headline">¶</a></h2>
-<p>You can use the <tt class="docutils literal"><span class="pre">log</span></tt> command to see the history of your repository. The history consists of the listing of commits, ordered in reverse chronological order (most recent first).</p>
+<p>You can use the <code class="docutils literal"><span class="pre">log</span></code> command to see the history of your repository. The history consists of the listing of commits, ordered in reverse chronological order (most recent first).</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig log</span>
 </pre></div>
 </div>
@@ -302,18 +302,18 @@
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Created branch refs/heads/myedits</span>
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">-c</span></tt> option tells GeoGig to not only create the branch, but also switch the repository to be working on that branch. Everything done now will be added to this new history line.</p>
+<p>The <code class="docutils literal"><span class="pre">-c</span></code> option tells GeoGig to not only create the branch, but also switch the repository to be working on that branch. Everything done now will be added to this new history line.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The default branch is named <tt class="docutils literal"><span class="pre">master</span></tt>.</p>
+<p class="last">The default branch is named <code class="docutils literal"><span class="pre">master</span></code>.</p>
 </div>
-<p>Now use the <tt class="file docutils literal"><span class="pre">snapshot3/parks.shp</span></tt> file to create a new snapshot (once again, import it, add it and then commit it). It contains the same data of the last version, but with another new feature.</p>
+<p>Now use the <code class="file docutils literal"><span class="pre">snapshot3/parks.shp</span></code> file to create a new snapshot (once again, import it, add it and then commit it). It contains the same data of the last version, but with another new feature.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig shp import snapshot3/parks.shp</span>
 <span class="go">geogig add</span>
 <span class="go">geogig commit -m &quot;added new feature&quot;</span>
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">log</span></tt> command will show a history like this:</p>
+<p>The <code class="docutils literal"><span class="pre">log</span></code> command will show a history like this:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Commit:  c04d0a968696744bdc32bf865f9675a2e55bf447</span>
 <span class="go">Author:  Author &lt;author@example.com&gt;</span>
 <span class="go">Date:    (26 minutes ago) 2013-04-11 15:27:15 +0300</span>
@@ -333,9 +333,9 @@
 </div>
 <div class="section" id="merging-commits-from-a-branch">
 <h2>Merging commits from a branch<a class="headerlink" href="#merging-commits-from-a-branch" title="Permalink to this headline">¶</a></h2>
-<p>Our repository has now two branches: the one we have created (<tt class="docutils literal"><span class="pre">myedits</span></tt>) and the main history branch (<tt class="docutils literal"><span class="pre">master</span></tt>).</p>
-<p>Let&#8217;s merge the changes we have just added from the <tt class="docutils literal"><span class="pre">myedits</span></tt> branch into the <tt class="docutils literal"><span class="pre">master</span></tt> branch.</p>
-<p>First <strong>move to the branch where you want the changes to go</strong>, in this case <tt class="docutils literal"><span class="pre">master</span></tt>. The <tt class="docutils literal"><span class="pre">checkout</span></tt> command, followed by the name of the branch, will switch to this branch.</p>
+<p>Our repository has now two branches: the one we have created (<code class="docutils literal"><span class="pre">myedits</span></code>) and the main history branch (<code class="docutils literal"><span class="pre">master</span></code>).</p>
+<p>Let&#8217;s merge the changes we have just added from the <code class="docutils literal"><span class="pre">myedits</span></code> branch into the <code class="docutils literal"><span class="pre">master</span></code> branch.</p>
+<p>First <strong>move to the branch where you want the changes to go</strong>, in this case <code class="docutils literal"><span class="pre">master</span></code>. The <code class="docutils literal"><span class="pre">checkout</span></code> command, followed by the name of the branch, will switch to this branch.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig checkout master</span>
 </pre></div>
 </div>
@@ -343,7 +343,7 @@
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Switched to branch &#39;master&#39;</span>
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">log</span></tt> command will show the following history. Use the <tt class="docutils literal"><span class="pre">--oneline</span></tt> option to compact the output:</p>
+<p>The <code class="docutils literal"><span class="pre">log</span></code> command will show the following history. Use the <code class="docutils literal"><span class="pre">--oneline</span></code> option to compact the output:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig log --oneline</span>
 </pre></div>
 </div>
@@ -352,8 +352,8 @@
 <span class="go">592006f6b541557a203279be7b4a127fb9dbb2d9 first version</span>
 </pre></div>
 </div>
-<p>Notice that the most recent commit (with the message &#8220;added new feature&#8221;) is missing. This is because it was added to the <tt class="docutils literal"><span class="pre">myedits</span></tt> branch, not the <tt class="docutils literal"><span class="pre">master</span></tt> branch.</p>
-<p>To merge the work done in the <tt class="docutils literal"><span class="pre">myedits</span></tt> branch into the current <tt class="docutils literal"><span class="pre">master</span></tt> branch, enter the following command:</p>
+<p>Notice that the most recent commit (with the message &#8220;added new feature&#8221;) is missing. This is because it was added to the <code class="docutils literal"><span class="pre">myedits</span></code> branch, not the <code class="docutils literal"><span class="pre">master</span></code> branch.</p>
+<p>To merge the work done in the <code class="docutils literal"><span class="pre">myedits</span></code> branch into the current <code class="docutils literal"><span class="pre">master</span></code> branch, enter the following command:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig merge myedits</span>
 </pre></div>
 </div>
@@ -363,7 +363,7 @@
 <span class="go">Committed, counting objects...1 features added, 0 changed, 0 deleted.</span>
 </pre></div>
 </div>
-<p>Now the commit introduced in the <tt class="docutils literal"><span class="pre">myedits</span></tt> branch is now present in <tt class="docutils literal"><span class="pre">master</span></tt>, as the <tt class="docutils literal"><span class="pre">log</span></tt> operation will display.</p>
+<p>Now the commit introduced in the <code class="docutils literal"><span class="pre">myedits</span></code> branch is now present in <code class="docutils literal"><span class="pre">master</span></code>, as the <code class="docutils literal"><span class="pre">log</span></code> operation will display.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig log --oneline</span>
 </pre></div>
 </div>
@@ -376,7 +376,7 @@
 <div class="section" id="handling-merge-conflicts">
 <h2>Handling merge conflicts<a class="headerlink" href="#handling-merge-conflicts" title="Permalink to this headline">¶</a></h2>
 <p>We just saw that the work done on one branch could be merged to another branch without problems. This is not always possible.</p>
-<p>To see this in action, create a new branch named <tt class="docutils literal"><span class="pre">fix</span></tt>, and create a commit based in the <tt class="docutils literal"><span class="pre">snapshot4/parks.shp</span></tt> shapefile.</p>
+<p>To see this in action, create a new branch named <code class="docutils literal"><span class="pre">fix</span></code>, and create a commit based in the <code class="docutils literal"><span class="pre">snapshot4/parks.shp</span></code> shapefile.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig branch fix -c</span>
 <span class="go">geogig shp import snapshot4/parks.shp</span>
 <span class="go">geogig add</span>
@@ -384,14 +384,14 @@
 </pre></div>
 </div>
 <p>This new shapefile changes a geometry, and updates the corresponding area field to reflect that change.</p>
-<p>Now go back to the <tt class="docutils literal"><span class="pre">master</span></tt> branch and create a new commit with the data in <tt class="file docutils literal"><span class="pre">snapshot5/parks.data</span></tt>. This is the same data as <tt class="docutils literal"><span class="pre">snapshot3/parks.data</span></tt>, but it changes the units in the area field.</p>
+<p>Now go back to the <code class="docutils literal"><span class="pre">master</span></code> branch and create a new commit with the data in <code class="file docutils literal"><span class="pre">snapshot5/parks.data</span></code>. This is the same data as <code class="docutils literal"><span class="pre">snapshot3/parks.data</span></code>, but it changes the units in the area field.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig checkout master</span>
 <span class="go">geogig shp import snapshot5/parks.shp</span>
 <span class="go">geogig add</span>
 <span class="go">geogig commit -m &quot;master branch edits&quot;</span>
 </pre></div>
 </div>
-<p>This is a conflict situation, as the same data has been changed differently in two branches. If you try to merge the <tt class="docutils literal"><span class="pre">fix</span></tt> branch into <tt class="docutils literal"><span class="pre">master</span></tt>, GeoGig cannot automatically resolve this situation and so will fail.</p>
+<p>This is a conflict situation, as the same data has been changed differently in two branches. If you try to merge the <code class="docutils literal"><span class="pre">fix</span></code> branch into <code class="docutils literal"><span class="pre">master</span></code>, GeoGig cannot automatically resolve this situation and so will fail.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig merge fix</span>
 </pre></div>
 </div>
@@ -400,7 +400,7 @@
 <span class="go">Automatic merge failed. Fix conflicts and then commit the result.</span>
 </pre></div>
 </div>
-<p>You can see that there is a conflict by running the <tt class="docutils literal"><span class="pre">status</span></tt> command:</p>
+<p>You can see that there is a conflict by running the <code class="docutils literal"><span class="pre">status</span></code> command:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig status</span>
 </pre></div>
 </div>
@@ -414,7 +414,7 @@
 </pre></div>
 </div>
 <p>An <strong>unmerged path</strong> represents a element with a conflict.</p>
-<p>You can get more details about the conflict by running the <tt class="docutils literal"><span class="pre">conflicts</span></tt> command:</p>
+<p>You can get more details about the conflict by running the <code class="docutils literal"><span class="pre">conflicts</span></code> command:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig conflicts --diff</span>
 </pre></div>
 </div>
@@ -429,9 +429,9 @@
 <span class="go">the_geom: MultiPolygon -122.8559991285487,42.3325881068491 ...</span>
 </pre></div>
 </div>
-<p>The output indicates that the value in the <tt class="docutils literal"><span class="pre">area</span></tt> attribute of the <tt class="docutils literal"><span class="pre">parks.5</span></tt> feature is causing the conflict.</p>
+<p>The output indicates that the value in the <code class="docutils literal"><span class="pre">area</span></code> attribute of the <code class="docutils literal"><span class="pre">parks.5</span></code> feature is causing the conflict.</p>
 <p>The conflict has to be solved manually. You will have to merge both versions yourself, or just select one of the versions to be used.</p>
-<p>Assume we want to use the changed feature in the <tt class="docutils literal"><span class="pre">fix</span></tt> branch. Since we are in the <tt class="docutils literal"><span class="pre">master</span></tt> branch, the <tt class="docutils literal"><span class="pre">fix</span></tt> branch is considered &#8220;theirs.&#8221; Run the following command:</p>
+<p>Assume we want to use the changed feature in the <code class="docutils literal"><span class="pre">fix</span></code> branch. Since we are in the <code class="docutils literal"><span class="pre">master</span></code> branch, the <code class="docutils literal"><span class="pre">fix</span></code> branch is considered &#8220;theirs.&#8221; Run the following command:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig checkout -p parks/5 --theirs</span>
 </pre></div>
 </div>
@@ -439,7 +439,7 @@
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Objects in the working tree were updated to the specifed version.</span>
 </pre></div>
 </div>
-<p>That puts the <tt class="docutils literal"><span class="pre">fix</span></tt> branch version in the working tree, overwriting what was there. Add this to remove the conflict.</p>
+<p>That puts the <code class="docutils literal"><span class="pre">fix</span></code> branch version in the working tree, overwriting what was there. Add this to remove the conflict.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig add</span>
 </pre></div>
 </div>
@@ -458,7 +458,7 @@
 <div class="section" id="tagging-a-version">
 <h2>Tagging a version<a class="headerlink" href="#tagging-a-version" title="Permalink to this headline">¶</a></h2>
 <p>You can add a &#8220;tag&#8221; to a version to easily identify a snapshot with something more descriptive than the identifier associated with each commit.</p>
-<p>To do so, use the <tt class="docutils literal"><span class="pre">tag</span></tt> command:</p>
+<p>To do so, use the <code class="docutils literal"><span class="pre">tag</span></code> command:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig tag -m &quot;First official version&quot;</span>
 </pre></div>
 </div>
@@ -467,7 +467,7 @@
 <div class="section" id="exporting-from-a-geogig-repository">
 <h2>Exporting from a GeoGig repository<a class="headerlink" href="#exporting-from-a-geogig-repository" title="Permalink to this headline">¶</a></h2>
 <p>Data can be exported from a GeoGig repository into several formats, ready to be used by external applications.</p>
-<p>To export a given tree to a shapefile, use the <tt class="docutils literal"><span class="pre">shp</span> <span class="pre">export</span></tt> command.</p>
+<p>To export a given tree to a shapefile, use the <code class="docutils literal"><span class="pre">shp</span> <span class="pre">export</span></code> command.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig shp export parks parks.shp</span>
 </pre></div>
 </div>
@@ -476,12 +476,12 @@
 <span class="go">parks exported successfully to parks.shp</span>
 </pre></div>
 </div>
-<p>That will create a file named <tt class="docutils literal"><span class="pre">parks.shp</span></tt> in the current directory that contains the current state of the repository.</p>
+<p>That will create a file named <code class="docutils literal"><span class="pre">parks.shp</span></code> in the current directory that contains the current state of the repository.</p>
 <p>Past/other versions can be exported by prefixing the tree name with a commit ID and a colon, as in the following example:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig shp export c04d0a968696744bdc32bf865f9675a2e55bf447:parks parks.shp</span>
 </pre></div>
 </div>
-<p>Use &#8220;HEAD&#8221; notation to export changes relative to the current working revision. For example, <tt class="docutils literal"><span class="pre">HEAD~1</span></tt> refers to the second-most recent commit, <tt class="docutils literal"><span class="pre">HEAD~2</span></tt> refers to the commit prior to that, etc.</p>
+<p>Use &#8220;HEAD&#8221; notation to export changes relative to the current working revision. For example, <code class="docutils literal"><span class="pre">HEAD~1</span></code> refers to the second-most recent commit, <code class="docutils literal"><span class="pre">HEAD~2</span></code> refers to the commit prior to that, etc.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig shp export HEAD~1:parks parks.shp</span>
 </pre></div>
 </div>
@@ -489,7 +489,7 @@
 <div class="section" id="synchronizing-repositories">
 <h2>Synchronizing repositories<a class="headerlink" href="#synchronizing-repositories" title="Permalink to this headline">¶</a></h2>
 <p>A GeoGig repository can interact with other GeoGig repositories that are working with the same data. Other GeoGig repositories are know as <strong>remotes</strong>.</p>
-<p>In our situation, we created a new repository from scratch using the <tt class="docutils literal"><span class="pre">init</span></tt> command. But if we wanted to start with a copy of an existing repository (referred to as the <tt class="docutils literal"><span class="pre">origin</span></tt>), use the <tt class="docutils literal"><span class="pre">clone</span></tt> command.</p>
+<p>In our situation, we created a new repository from scratch using the <code class="docutils literal"><span class="pre">init</span></code> command. But if we wanted to start with a copy of an existing repository (referred to as the <code class="docutils literal"><span class="pre">origin</span></code>), use the <code class="docutils literal"><span class="pre">clone</span></code> command.</p>
 <p>Let&#8217;s clone the repository we have been working on. Create a new directory in your file system, move into it and run the following command (replacing the path with the location of the original GeoGig repository):</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">mkdir /path/to/newrepo</span>
 <span class="go">cd /path/to/newrepo</span>
@@ -503,11 +503,11 @@
 </pre></div>
 </div>
 <p>With the repository cloned, you can work here as you would normally do, and the changes will be placed on top of the changes that already exist from the original repository.</p>
-<p>You can merge commits from the <tt class="docutils literal"><span class="pre">origin</span></tt> repository to this new repository by using the <tt class="docutils literal"><span class="pre">pull</span></tt> command. This will update the current branch with changes that have been made on that branch in the remote repository since the last time both repositories were synchronized.</p>
+<p>You can merge commits from the <code class="docutils literal"><span class="pre">origin</span></code> repository to this new repository by using the <code class="docutils literal"><span class="pre">pull</span></code> command. This will update the current branch with changes that have been made on that branch in the remote repository since the last time both repositories were synchronized.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig pull origin</span>
 </pre></div>
 </div>
-<p>To move your local changes from your repository into <tt class="docutils literal"><span class="pre">origin</span></tt>, use the <tt class="docutils literal"><span class="pre">push</span></tt> command:</p>
+<p>To move your local changes from your repository into <code class="docutils literal"><span class="pre">origin</span></code>, use the <code class="docutils literal"><span class="pre">push</span></code> command:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig push origin</span>
 </pre></div>
 </div>

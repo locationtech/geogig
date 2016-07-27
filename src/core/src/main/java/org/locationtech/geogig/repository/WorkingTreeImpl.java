@@ -22,6 +22,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.FeatureSource;
@@ -670,7 +671,7 @@ public class WorkingTreeImpl implements WorkingTree {
             }
             sw.stop();
             listener.setDescription(
-                    String.format("%,d distinct features inserted in %s", insertedCount, sw));
+                    String.format("%,d features inserted in %s", insertedCount, sw));
 
             listener.setDescription("Building final tree...");
 
@@ -717,29 +718,14 @@ public class WorkingTreeImpl implements WorkingTree {
             final ExecutorService executorService, final ProgressListener listener,
             final @Nullable Long collectionSize, int nTasks, RevTreeBuilder2 builder) {
 
+        listener.setMaxProgress(0);
         int partitionSize = 0;
-        BulkOpListener bulkOpListener;
         if (collectionSize == null) {
             nTasks = 1;
             partitionSize = Integer.MAX_VALUE;
-            bulkOpListener = BulkOpListener.NOOP_LISTENER;
         } else {
             final int total = collectionSize.intValue();
             partitionSize = total / nTasks;
-            bulkOpListener = new BulkOpListener() {
-                int inserted = 0;
-
-                @Override
-                public void found(ObjectId object, @Nullable Integer storageSizeBytes) {
-                    listener.setProgress((float) (++inserted * 100) / total);
-                }
-
-                @Override
-                public synchronized void inserted(ObjectId object,
-                        @Nullable Integer storageSizeBytes) {
-                    listener.setProgress((float) (++inserted * 100) / total);
-                }
-            };
         }
 
         List<Future<Integer>> results = Lists.newArrayList();
@@ -751,14 +737,14 @@ public class WorkingTreeImpl implements WorkingTree {
                              // feature
             }
             results.add(executorService
-                    .submit(new BlobInsertTask(source, offset, limit, bulkOpListener, builder)));
+                    .submit(new BlobInsertTask(source, offset, limit, listener, builder)));
         }
         return results;
     }
 
     private final class BlobInsertTask implements Callable<Integer> {
 
-        private final BulkOpListener listener;
+        private final ProgressListener listener;
 
         @SuppressWarnings("rawtypes")
         private FeatureSource source;
@@ -770,7 +756,7 @@ public class WorkingTreeImpl implements WorkingTree {
         private RevTreeBuilder2 builder;
 
         private BlobInsertTask(@SuppressWarnings("rawtypes") FeatureSource source,
-                @Nullable Integer offset, @Nullable Integer limit, BulkOpListener listener,
+                @Nullable Integer offset, @Nullable Integer limit, ProgressListener listener,
                 RevTreeBuilder2 builder) {
             this.source = source;
             this.offset = offset;
@@ -796,6 +782,8 @@ public class WorkingTreeImpl implements WorkingTree {
             FeatureIterator features = collection.features();
             Iterator<Feature> fiterator = new FeatureIteratorIterator<Feature>(features);
 
+            AtomicInteger count = new AtomicInteger();
+
             Iterator<RevObject> objects = Iterators.transform(fiterator, (feature) -> {
                 final RevFeature revFeature = RevFeatureBuilder.build(feature);
 
@@ -805,17 +793,17 @@ public class WorkingTreeImpl implements WorkingTree {
                 FeatureType type = feature.getType();
 
                 builder.putFeature(id, name, bounds, type);
+                count.incrementAndGet();
+                listener.setProgress(1f + listener.getProgress());
                 return revFeature;
-
             });
 
-            CountingListener countingListener = BulkOpListener.newCountingListener();
             try {
-                indexDatabase.putAll(objects, BulkOpListener.composite(listener, countingListener));
+                indexDatabase.putAll(objects);
             } finally {
                 features.close();
             }
-            return countingListener.inserted();
+            return Integer.valueOf(count.get());
         }
     }
 
@@ -990,8 +978,7 @@ public class WorkingTreeImpl implements WorkingTree {
     @Override
     public AutoCloseableIterator<DiffEntry> getUnstaged(final @Nullable String pathFilter) {
         AutoCloseableIterator<DiffEntry> unstaged = context.command(DiffWorkTree.class)
-                .setFilter(pathFilter)
-                .setReportTrees(true).call();
+                .setFilter(pathFilter).setReportTrees(true).call();
         return unstaged;
     }
 

@@ -26,6 +26,9 @@ public abstract class RepositoryResolver {
      * The lookup method uses the standard JAVA SPI (Service Provider Interface) mechanism, by which
      * all the {@code META-INF/services/org.locationtech.geogig.repository.RepositoryResolver} files
      * in the classpath will be scanned for fully qualified names of implementing classes.
+     * 
+     * @throws IllegalArgumentException if no repository resolver is found capable of handling the
+     *         given URI
      */
     public static RepositoryResolver lookup(URI repoURI) throws IllegalArgumentException {
 

@@ -19,11 +19,9 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStoreFactorySpi;
-import org.geotools.util.KVP;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GlobalContextBuilder;
-//import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
@@ -56,10 +54,6 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         }
     }
 
-    public static final Param RESOLVER_CLASS_NAME = new Param("resolver", String.class,
-            "Fully qualified class name for the RepositoryLookup that resolves the REPOSITORY parameter to an actual path",
-            false, DefaultRepositoryLookup.class.getName(), new KVP(Param.LEVEL, "advanced"));
-
     public static final Param REPOSITORY = new Param("geogig_repository", String.class,
             "Repository URI", true, "/path/to/repository") {
 
@@ -86,9 +80,6 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             "Optional namespace for feature types that do not declare a Namespace themselves",
             false);
 
-    public static final Param CREATE = new Param("create", Boolean.class,
-            "Optional flag to enable creation of a new repository if it does not exist", false);
-
     @Override
     public String getDisplayName() {
         return DISPLAY_NAME;
@@ -101,24 +92,15 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
 
     @Override
     public Param[] getParametersInfo() {
-        return new Param[] { RESOLVER_CLASS_NAME, REPOSITORY, BRANCH, HEAD, DEFAULT_NAMESPACE,
-                CREATE };
+        return new Param[] { REPOSITORY, BRANCH, HEAD, DEFAULT_NAMESPACE };
     }
 
     @Override
     public boolean canProcess(Map<String, Serializable> params) {
         try {
             final String repoParam = (String) REPOSITORY.lookUp(params);
-            final String resolverClass = (String) RESOLVER_CLASS_NAME.lookUp(params);
-            if (resolverClass != null) {
-                return true;
-            }
 
             final URI repository = URI.create(repoParam);
-
-            if (Boolean.TRUE.equals(CREATE.lookUp(params))) {
-                return true;
-            }
 
             try {
                 RepositoryResolver.lookup(repository);
@@ -152,11 +134,6 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
     @Override
     public GeoGigDataStore createDataStore(Map<String, Serializable> params) throws IOException {
 
-        @Nullable
-        final String lookUpClass = (String) RESOLVER_CLASS_NAME.lookUp(params);
-
-        RepositoryLookup resolver = resolver(lookUpClass);
-
         final String repositoryLocation = (String) REPOSITORY.lookUp(params);
 
         @Nullable
@@ -171,26 +148,18 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         @Nullable
         final String effectiveHead = (head == null) ? branch : head;
 
-        @Nullable
-        final Boolean create = (Boolean) CREATE.lookUp(params);
-
-        final URI repositoryDirectory = resolver.resolve(repositoryLocation);
+        final URI repositoryUri = URI.create(repositoryLocation);
 
         final RepositoryResolver initializer;
         try {
-            initializer = RepositoryResolver.lookup(repositoryDirectory);
+            initializer = RepositoryResolver.lookup(repositoryUri);
         } catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage(), e);
-        }
-        if (create != null && create.booleanValue()) {
-            if (!initializer.repoExists(repositoryDirectory)) {
-                return createNewDataStore(params);
-            }
         }
 
         Repository repo;
         try {
-            repo = initializer.open(repositoryDirectory);
+            repo = initializer.open(repositoryUri);
         } catch (RepositoryConnectionException | RuntimeException e) {
             throw new IOException(e.getMessage(), e);
         }
@@ -203,23 +172,6 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             store.setHead(effectiveHead);
         }
         return store;
-    }
-
-    private RepositoryLookup resolver(@Nullable String lookUpClass) throws IOException {
-        if (null == lookUpClass) {
-            return new DefaultRepositoryLookup();
-        }
-        try {
-            Class<?> clazz = Class.forName(lookUpClass);
-            Object instance = clazz.newInstance();
-            Preconditions.checkArgument(instance instanceof RepositoryLookup);
-            return RepositoryLookup.class.cast(instance);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                | ClassCastException e) {
-            throw new IOException(String.format(
-                    "Parameter '%s' ('%s') can't be instantiated as a %s", RESOLVER_CLASS_NAME.key,
-                    lookUpClass, RepositoryLookup.class.getName()));
-        }
     }
 
     /**

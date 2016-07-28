@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.geotools.data;
 
-import static org.locationtech.geogig.geotools.data.GeoGigDataStoreFactory.CREATE;
 import static org.locationtech.geogig.geotools.data.GeoGigDataStoreFactory.REPOSITORY;
 
 import java.io.File;
@@ -148,31 +147,6 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         params = ImmutableMap.of(REPOSITORY.key, (Serializable) newRepoDir);
 
         GeoGigDataStore store = factory.createNewDataStore(params);
-        assertNotNull(store);
-        store.dispose();
-    }
-
-    @Test
-    public void testCreateOption() throws Exception {
-        String newRepoDir = repositoryTempFolder.newFolder("datastore").getAbsolutePath();
-
-        Map<String, Serializable> params = ImmutableMap.of(REPOSITORY.key,
-                (Serializable) newRepoDir, CREATE.key, true);
-
-        assertTrue(factory.canProcess(params));
-        GeoGigDataStore store = factory.createDataStore(params);
-        assertNotNull(store);
-        store.dispose();
-    }
-
-    @Test
-    public void testCreateOptionDirectoryExists() throws Exception {
-        File newRepoDir = repositoryTempFolder.newFolder("datastore");
-
-        Map<String, Serializable> params = ImmutableMap.of(REPOSITORY.key,
-                (Serializable) newRepoDir, CREATE.key, true);
-        assertTrue(factory.canProcess(params));
-        GeoGigDataStore store = factory.createDataStore(params);
         assertNotNull(store);
         store.dispose();
     }

@@ -88,6 +88,8 @@ public class IniFileConfigDatabase implements ConfigDatabase {
                 if (home == null) {
                     throw new ConfigException(StatusCode.USERHOME_NOT_SET);
                 }
+                Preconditions.checkState(home.exists(), "user home does not exist: %s", home);
+                Preconditions.checkState(home.isDirectory(), "user home is not a directory: %s", home);
 
                 File globalConfig = new File(home, ".geogigconfig");
                 try {

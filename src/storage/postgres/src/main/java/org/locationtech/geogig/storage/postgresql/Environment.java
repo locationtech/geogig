@@ -59,8 +59,16 @@ public class Environment {
 
     public static final String KEY_ODB_BYTE_CACHE_INITIAL_CAPACITY = "postgres.bytecache.initialCapacity";
 
+    /**
+     * Initial value for {@link #getRepositoryId()}, indicates it has not been set and needs to be
+     * looked up in the database by means of the {@code repo.name} config property.
+     * 
+     * @see PGConfigDatabase#resolveRepositoryPK(String)
+     */
+    static final int REPOSITORY_ID_UNSET = Integer.MIN_VALUE;
+
     static class ConnectionConfig {
-        
+
         private final String user;
 
         private final String password;
@@ -128,9 +136,11 @@ public class Environment {
 
     final ConnectionConfig connectionConfig;
 
-    private final String repositoryId;
+    private final String repositoryName;
 
     private final TableNames tables;
+
+    private int repositoryId = REPOSITORY_ID_UNSET;
 
     /**
      * @param server postgres server name
@@ -139,16 +149,16 @@ public class Environment {
      * @param schema database schema name
      * @param user postgres connection user name
      * @param password postgres user password
-     * @param repositoryId repository id, optional. If not given this config can only be used by
+     * @param repositoryName repository id, optional. If not given this config can only be used by
      *        {@link PGConfigDatabase} to access the "global" configuration.
      */
     Environment(final String server, final int portNumber, final String databaseName,
             final String schema, final String user, final String password,
-            final @Nullable String repositoryId, final @Nullable String tablePrefix) {
+            final @Nullable String repositoryName, final @Nullable String tablePrefix) {
 
-        this.connectionConfig = new ConnectionConfig(server, portNumber, databaseName, schema,
-                user, password);
-        this.repositoryId = repositoryId;
+        this.connectionConfig = new ConnectionConfig(server, portNumber, databaseName, schema, user,
+                password);
+        this.repositoryName = repositoryName;
         this.tables = new TableNames(schema == null ? TableNames.DEFAULT_SCHEMA : schema,
                 tablePrefix == null ? TableNames.DEFAULT_TABLE_PREFIX : tablePrefix);
     }
@@ -162,12 +172,13 @@ public class Environment {
             return false;
         }
         Environment d = (Environment) o;
-        return equal(connectionConfig, d.connectionConfig) && equal(repositoryId, d.repositoryId);
+        return equal(connectionConfig, d.connectionConfig)
+                && equal(repositoryName, d.repositoryName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(connectionConfig, repositoryId);
+        return Objects.hashCode(connectionConfig, repositoryName);
     }
 
     public TableNames getTables() {
@@ -181,7 +192,7 @@ public class Environment {
             return;
         }
         Preconditions.checkState(PGStorage.repoExists(this), "Repository %s does not exist",
-                this.repositoryId);
+                this.repositoryName);
         repositoryExistsChecked.set(true);
     }
 
@@ -197,7 +208,6 @@ public class Environment {
         return new EnvironmentBuilder(repoURI).build();
     }
 
-    
     public String getDatabaseName() {
         return connectionConfig.getDatabaseName();
     }
@@ -223,7 +233,19 @@ public class Environment {
     }
 
     @Nullable
-    public String getRepositoryId() {
+    public String getRepositoryName() {
+        return repositoryName;
+    }
+
+    public int getRepositoryId() {
         return repositoryId;
+    }
+
+    public void setRepositoryId(int repoPK) {
+        this.repositoryId = repoPK;
+    }
+
+    public boolean isRepositorySet() {
+        return repositoryId != REPOSITORY_ID_UNSET;
     }
 }

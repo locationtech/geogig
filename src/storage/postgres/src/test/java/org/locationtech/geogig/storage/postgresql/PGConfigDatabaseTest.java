@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql.integration;
+package org.locationtech.geogig.storage.postgresql;
 
 import static org.junit.Assert.assertEquals;
 
@@ -20,11 +20,6 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabaseTest;
 import org.locationtech.geogig.storage.ConfigException;
-import org.locationtech.geogig.storage.postgresql.Environment;
-import org.locationtech.geogig.storage.postgresql.PGConfigDatabase;
-import org.locationtech.geogig.storage.postgresql.PGStorage;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestProperties;
 
 public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
 
@@ -75,8 +70,8 @@ public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
         hints.set(Hints.REPOSITORY_URL, repoURI);
 
         try (PGConfigDatabase db = new PGConfigDatabase(hints)) {
-            db.put("testSection.testKey", "testValue");
-            assertEquals("testValue", db.get("testSection.testKey").get());
+            db.putGlobal("testSection.testKey", "testValue");
+            assertEquals("testValue", db.getGlobal("testSection.testKey").get());
         }
     }
 

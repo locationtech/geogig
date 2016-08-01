@@ -10,6 +10,7 @@
 package org.locationtech.geogig.storage.postgresql;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
@@ -39,6 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
@@ -49,24 +52,29 @@ import com.google.inject.Inject;
  * 
  * <pre>
  * <code>
- *  CREATE TABLE IF NOT EXISTS geogig_config (repository TEXT, section TEXT, key TEXT, value TEXT,
+ *  CREATE TABLE IF NOT EXISTS geogig_config (repository INTEGER, section TEXT, key TEXT, value TEXT,
  *  PRIMARY KEY (repository, section, key) 
  *  FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)
  * </code>
  * </pre>
  * <p>
- * The {@code repository} column holds the value given by {@link Environment#repositoryId}, which in
- * turn comes from the repository URI: {@code postgresql://<host>[:port]/<database>/<repositoryId>}.
- * <p>
- * {@link #putGlobal(String, Object) global} values are stored under the {@code __GLOBAL__} key for
- * the {@code repository} column, and hence {@code __GLOBAL__} it's invalid to provide
- * {@code __GLOBAL__} as repository id.
+ * The {@code repository} column holds the value given by {@link Environment#getRepositoryId()},
+ * which is the repository's primary key in the {@code geogig_repository} table. The mapping from
+ * repository id and name is given by the config property {@code repo.name}, and matches the {@code 
+ * <repositoryName>} in a postgresql repository URI (i.e. {@code postgresql:// <host>[:port]/
+ * <database>/<repositoryName>}).
+ * 
+ * @implNote this {@link ConfigDatabase} implementation enforces uniqueness of the {@code repo.name}
+ *           config property, and it is assigned when a repository is first created.
+ * 
+ * @implNote {@link #putGlobal(String, Object) global} values are stored under the {@code -1} key
+ *           for the {@code repository} column.
  */
 public class PGConfigDatabase implements ConfigDatabase {
 
     static final Logger LOG = LoggerFactory.getLogger(PGConfigDatabase.class);
 
-    static final String GLOBAL_KEY = "__GLOBAL__";
+    static final int GLOBAL_KEY = -1;
 
     private final Environment config;
 
@@ -79,8 +87,6 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     public PGConfigDatabase(Environment environment) {
         this.config = environment;
-        checkArgument(!GLOBAL_KEY.equals(config.getRepositoryId()),
-                "%s is a reserved key. No repo can be named like that.", GLOBAL_KEY);
     }
 
     @Override
@@ -137,6 +143,11 @@ public class PGConfigDatabase implements ConfigDatabase {
         return list(section, global());
     }
 
+    /**
+     * @implNote if {@code key} equals {@code repo.name} (i.e. the repository name is being
+     *           changed), this method ensures no other repository in the same database is named the
+     *           same as {@code value}, and throws an {@link IllegalArgumentException} if there is.
+     */
     @Override
     public void put(String key, Object value) {
         put(new Entry(key), value, local());
@@ -162,14 +173,27 @@ public class PGConfigDatabase implements ConfigDatabase {
         removeSection(key, local());
     }
 
-    private String local() {
-        if (null == config.getRepositoryId()) {
-            throw new ConfigException(ConfigException.StatusCode.INVALID_LOCATION);
+    private int local() {
+        if (!config.isRepositorySet()) {
+            String repositoryName = config.getRepositoryName();
+            if (null == repositoryName) {
+                throw new ConfigException(ConfigException.StatusCode.INVALID_LOCATION);
+            }
+            Optional<Integer> pk;
+            try {
+                pk = resolveRepositoryPK(repositoryName);
+            } catch (SQLException e) {
+                throw Throwables.propagate(e);
+            }
+            if (!pk.isPresent()) {
+                throw new ConfigException(ConfigException.StatusCode.INVALID_LOCATION);
+            }
+            config.setRepositoryId(pk.get());
         }
         return config.getRepositoryId();
     }
 
-    private String global() {
+    private int global() {
         return GLOBAL_KEY;
     }
 
@@ -178,8 +202,8 @@ public class PGConfigDatabase implements ConfigDatabase {
         removeSection(key, global());
     }
 
-    <T> Optional<T> get(Entry entry, Class<T> clazz, final String repositoryId) {
-        String raw = get(entry, repositoryId);
+    <T> Optional<T> get(Entry entry, Class<T> clazz, final int repositoryPK) {
+        String raw = get(entry, repositoryPK);
         if (raw != null) {
             return Optional.of(convert(raw, clazz));
         }
@@ -192,8 +216,8 @@ public class PGConfigDatabase implements ConfigDatabase {
         return clazz.cast(v);
     }
 
-    void put(Entry entry, Object value, final String repositoryId) {
-        put(entry, (String) (value != null ? value.toString() : null), repositoryId);
+    void put(Entry entry, Object value, final int repositoryPK) {
+        put(entry, (String) (value != null ? value.toString() : null), repositoryPK);
     }
 
     protected static class Entry {
@@ -214,7 +238,7 @@ public class PGConfigDatabase implements ConfigDatabase {
     }
 
     @Nullable
-    protected String get(final Entry entry, final String repositoryId) {
+    protected String get(final Entry entry, final int repositoryPK) {
         checkArgument(!Strings.isNullOrEmpty(entry.section), "Section name required");
         checkArgument(!Strings.isNullOrEmpty(entry.key), "Key required");
 
@@ -226,8 +250,8 @@ public class PGConfigDatabase implements ConfigDatabase {
         final String k = entry.key;
 
         try (Connection cx = connect(config).getConnection()) {
-            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, s, k))) {
-                ps.setString(1, repositoryId);
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK, s, k))) {
+                ps.setInt(1, repositoryPK);
                 ps.setString(2, s);
                 ps.setString(3, k);
 
@@ -240,14 +264,14 @@ public class PGConfigDatabase implements ConfigDatabase {
         }
     }
 
-    protected Map<String, String> all(final String repositoryId) {
+    protected Map<String, String> all(final int repositoryPK) {
 
         final String sql = format("SELECT section,key,value FROM %s WHERE repository = ?",
                 config.getTables().config());
 
         try (Connection cx = connect(config).getConnection()) {
-            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId))) {
-                ps.setString(1, repositoryId);
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK))) {
+                ps.setInt(1, repositoryPK);
                 Map<String, String> all = new LinkedHashMap<>();
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
@@ -262,13 +286,13 @@ public class PGConfigDatabase implements ConfigDatabase {
         }
     }
 
-    protected Map<String, String> all(final String section, final String repositoryId) {
+    protected Map<String, String> all(final String section, final int repositoryPK) {
         final String sql = format("SELECT key,value FROM %s WHERE repository = ? AND section = ?",
                 config.getTables().config());
 
         try (Connection cx = connect(config).getConnection()) {
-            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, section))) {
-                ps.setString(1, repositoryId);
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK, section))) {
+                ps.setInt(1, repositoryPK);
                 ps.setString(2, section);
                 Map<String, String> all = Maps.newLinkedHashMap();
 
@@ -286,7 +310,7 @@ public class PGConfigDatabase implements ConfigDatabase {
         }
     }
 
-    protected List<String> list(final String section, final String repositoryId) {
+    protected List<String> list(final String section, final int repositoryPK) {
         String sql = format(
                 "SELECT DISTINCT section FROM %s WHERE repository = ? AND section LIKE ?",
                 config.getTables().config());
@@ -296,8 +320,8 @@ public class PGConfigDatabase implements ConfigDatabase {
 
             final String sectionPrefix = section + (section.endsWith(".") ? "" : ".");
 
-            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, section))) {
-                ps.setString(1, repositoryId);
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK, section))) {
+                ps.setInt(1, repositoryPK);
                 ps.setString(2, sectionPrefix + "%");
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
@@ -313,21 +337,34 @@ public class PGConfigDatabase implements ConfigDatabase {
         }
     }
 
-    protected void put(final Entry entry, final String value, final String repositoryId) {
+    protected void put(final Entry entry, final String value, final int repositoryPK) {
 
+        if ("repo".equals(entry.section) && "name".equals(entry.key)) {
+            try {
+                Optional<Integer> pk = resolveRepositoryPK(value);
+                if (pk.isPresent() && pk.get() != repositoryPK) {
+                    String msg = format(
+                            "A repsitory named '%s' already exists with primary key value: %d",
+                            value, pk.get());
+                    throw new IllegalArgumentException(msg);
+                }
+            } catch (SQLException e) {
+                throw Throwables.propagate(e);
+            }
+        }
         final String sql = format(
                 "insert into %s (repository, section, key, value) values(?, ?, ?, ?)",
                 config.getTables().config());
 
         try (Connection cx = connect(config).getConnection()) {
             cx.setAutoCommit(false);
-            doRemove(entry, cx, repositoryId);
+            doRemove(entry, cx, repositoryPK);
             String s = entry.section;
             String k = entry.key;
 
             try (PreparedStatement ps = cx
-                    .prepareStatement(log(sql, LOG, repositoryId, s, k, value))) {
-                ps.setString(1, repositoryId);
+                    .prepareStatement(log(sql, LOG, repositoryPK, s, k, value))) {
+                ps.setInt(1, repositoryPK);
                 ps.setString(2, s);
                 ps.setString(3, k);
                 ps.setString(4, value);
@@ -344,15 +381,15 @@ public class PGConfigDatabase implements ConfigDatabase {
         }
     }
 
-    private void remove(final Entry entry, final String repositoryId) {
+    private void remove(final Entry entry, final int repositoryPK) {
         try (Connection cx = connect(config).getConnection()) {
-            doRemove(entry, cx, repositoryId);
+            doRemove(entry, cx, repositoryPK);
         } catch (SQLException e) {
             throw propagate(e);
         }
     }
 
-    private void doRemove(final Entry entry, Connection cx, final String repositoryId)
+    private void doRemove(final Entry entry, Connection cx, final int repositoryPK)
             throws SQLException {
 
         final String sql = format("DELETE FROM %s WHERE repository = ? AND section = ? AND key = ?",
@@ -361,8 +398,8 @@ public class PGConfigDatabase implements ConfigDatabase {
         final String s = entry.section;
         final String k = entry.key;
 
-        try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, s, k))) {
-            ps.setString(1, repositoryId);
+        try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK, s, k))) {
+            ps.setInt(1, repositoryPK);
             ps.setString(2, s);
             ps.setString(3, k);
 
@@ -371,13 +408,13 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     }
 
-    protected void removeSection(final String section, final String repositoryId) {
+    protected void removeSection(final String section, final int repositoryId) {
         final String sql = format("DELETE FROM %s WHERE repository = ? AND section = ?",
                 config.getTables().config());
 
         try (Connection cx = connect(config).getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, section))) {
-                ps.setString(1, repositoryId);
+                ps.setInt(1, repositoryId);
                 ps.setString(2, section);
                 int updateCount = ps.executeUpdate();
                 if (0 == updateCount) {
@@ -417,5 +454,51 @@ public class PGConfigDatabase implements ConfigDatabase {
             PGStorage.closeDataSource(dataSource);
             dataSource = null;
         }
+    }
+
+    /**
+     * Given a repository name (as per the {@code repo.name} config property, looks up the
+     * repository primary key.
+     * 
+     * 
+     * @param repositoryName the repository name, that's stored as the {@code repo.name} config
+     *        property
+     * @return the repository primary key as assigned to the {@code repository} serial field in the
+     *         {@code geogig_repository} table and that's a foreign key in {@code geogig_config}
+     * @throws SQLException if such is thrown by the JDBC driver
+     * @throws {@link IllegalStateException} if there are more than one repository with its
+     *         {@code repo.name} config property set to the {@code repositoryName} value
+     */
+    public Optional<Integer> resolveRepositoryPK(String repositoryName) throws SQLException {
+        checkNotNull(repositoryName, "provided null repository name");
+        final String configTable = config.getTables().config();
+        final String sql = format(
+                "SELECT repository FROM %s WHERE section = ? and key = ? and value = ?",
+                configTable);
+
+        Integer repoPK = null;
+        try (Connection cx = connect(config).getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(sql)) {
+                ps.setString(1, "repo");
+                ps.setString(2, "name");
+                ps.setString(3, repositoryName);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        repoPK = rs.getInt(1);
+                        List<Integer> all = Lists.newArrayList(repoPK);
+                        while (rs.next()) {
+                            all.add(rs.getInt(1));
+                        }
+                        if (all.size() > 1) {
+                            throw new IllegalStateException(format(
+                                    "There're more than one repository named '%s'. "
+                                            + "Check the repo.name config property for the following repository ids: %s",
+                                    repositoryName, all.toString()));
+                        }
+                    }
+                }
+            }
+        }
+        return Optional.fromNullable(repoPK);
     }
 }

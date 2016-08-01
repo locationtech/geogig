@@ -172,7 +172,9 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         Map<String, String> expected = ImmutableMap.of("section1.int", "1",
                 "section1.subsection.string", "2", "section1.subsection.subsub.int", "1",
                 "section2.int", "3", "section2.subsection.string", "4");
-        assertEquals(expected, all);
+        // check key by key instead of equals on the maps in case the backend adds some extra config
+        // as part of its initialization process
+        expected.entrySet().forEach((e) -> assertEquals(e.getValue(), all.get(e.getKey())));
     }
 
     @Test

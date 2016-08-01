@@ -136,7 +136,9 @@ public class PGObjectDatabase implements ObjectDatabase {
             final boolean readOnly) {
         Preconditions.checkNotNull(configdb);
         Preconditions.checkNotNull(config);
-        Preconditions.checkNotNull(config.getRepositoryId(), "Repository id not provided");
+        Preconditions.checkNotNull(config.getRepositoryName(), "Repository id not provided");
+        Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
+                config.getRepositoryName());
         this.configdb = configdb;
         this.config = config;
         this.readOnly = readOnly;
@@ -176,7 +178,7 @@ public class PGObjectDatabase implements ObjectDatabase {
             this.putAllBatchSize = batchSize;
         }
 
-        final String repositoryId = config.getRepositoryId();
+        final int repositoryId = config.getRepositoryId();
         final String conflictsTable = config.getTables().conflicts();
         final String blobsTable = config.getTables().blobs();
 

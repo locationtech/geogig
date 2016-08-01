@@ -66,8 +66,9 @@ public class PGRefDatabase implements RefDatabase {
     public PGRefDatabase(ConfigDatabase configDB, Environment config) {
         Preconditions.checkNotNull(configDB);
         Preconditions.checkNotNull(config);
-        // Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
-        // config.repositoryId);
+        Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
+                config.getRepositoryName());
+        Preconditions.checkState(config.isRepositorySet());
         this.configDB = configDB;
         this.config = config;
         this.refsTableName = config.getTables().refs();
@@ -102,10 +103,6 @@ public class PGRefDatabase implements RefDatabase {
         }
     }
 
-    private static final String TABLE_STMT = "CREATE TABLE %s ("
-            + "repository TEXT, path TEXT, name TEXT, value TEXT, "
-            + "PRIMARY KEY(repository, path, name))";
-
     @Override
     public void lock() throws TimeoutException {
         lockWithTimeout(30);
@@ -113,7 +110,7 @@ public class PGRefDatabase implements RefDatabase {
 
     @VisibleForTesting
     void lockWithTimeout(int timeout) throws TimeoutException {
-        final String repo = config.getRepositoryId();
+        final int repo = config.getRepositoryId();
         Connection c = LockConnection.get();
         if (c == null) {
             c = newConnection(dataSource);
@@ -121,9 +118,10 @@ public class PGRefDatabase implements RefDatabase {
         }
         final String repoTable = config.getTables().repositories();
         final String sql = format(
-                "SELECT pg_advisory_lock((SELECT lock_id FROM %s WHERE repository=?));", repoTable);
+                "SELECT pg_advisory_lock((SELECT repository FROM %s WHERE repository=?));",
+                repoTable);
         try (PreparedStatement st = c.prepareStatement(log(sql, LOG, repo))) {
-            st.setString(1, repo);
+            st.setInt(1, repo);
             st.setQueryTimeout(timeout);
             st.executeQuery();
         } catch (SQLException e) {
@@ -144,15 +142,15 @@ public class PGRefDatabase implements RefDatabase {
 
     @Override
     public void unlock() {
-        final String repo = config.getRepositoryId();
+        final int repo = config.getRepositoryId();
         Connection c = LockConnection.get();
         if (c != null) {
             final String repoTable = config.getTables().repositories();
             final String sql = format(
-                    "SELECT pg_advisory_unlock((SELECT lock_id FROM %s WHERE repository=?));",
+                    "SELECT pg_advisory_unlock((SELECT repository FROM %s WHERE repository=?));",
                     repoTable);
             try (PreparedStatement st = c.prepareStatement(log(sql, LOG, repo))) {
-                st.setString(1, repo);
+                st.setInt(1, repo);
                 st.executeQuery();
             } catch (SQLException e) {
                 Throwables.propagate(e);
@@ -206,14 +204,14 @@ public class PGRefDatabase implements RefDatabase {
     }
 
     private String doGet(final String refPath, final Connection cx) throws SQLException {
-        final String repo = config.getRepositoryId();
+        final int repo = config.getRepositoryId();
         final String path = Ref.parentPath(refPath) + "/";
         final String localName = Ref.simpleName(refPath);
         final String refsTable = refsTableName;
         final String sql = format(
                 "SELECT value FROM %s WHERE repository = ? AND path = ? AND name = ?", refsTable);
         try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repo, path, localName))) {
-            st.setString(1, repo);
+            st.setInt(1, repo);
             st.setString(2, path);
             st.setString(3, localName);
             try (ResultSet rs = st.executeQuery()) {
@@ -242,7 +240,8 @@ public class PGRefDatabase implements RefDatabase {
     }
 
     private void putInternal(final String name, final String value) {
-        final String repo = config.getRepositoryId();
+        Preconditions.checkState(config.isRepositorySet());
+        final int repo = config.getRepositoryId();
         final String path = Ref.parentPath(name) + "/";
         final String localName = Ref.simpleName(name);
         final String refsTable = refsTableName;
@@ -257,14 +256,14 @@ public class PGRefDatabase implements RefDatabase {
             try {
                 try (PreparedStatement ds = cx
                         .prepareStatement(log(delete, LOG, repo, path, localName))) {
-                    ds.setString(1, repo);
+                    ds.setInt(1, repo);
                     ds.setString(2, path);
                     ds.setString(3, localName);
                     ds.executeUpdate();
                 }
                 try (PreparedStatement is = cx
                         .prepareStatement(log(insert, LOG, repo, path, localName, value))) {
-                    is.setString(1, repo);
+                    is.setInt(1, repo);
                     is.setString(2, path);
                     is.setString(3, localName);
                     is.setString(4, value);
@@ -284,7 +283,7 @@ public class PGRefDatabase implements RefDatabase {
 
     @Override
     public String remove(final String refName) {
-        final String repo = config.getRepositoryId();
+        final int repo = config.getRepositoryId();
         final String path = Ref.parentPath(refName) + "/";
         final String localName = Ref.simpleName(refName);
         final String refsTable = refsTableName;
@@ -304,7 +303,7 @@ public class PGRefDatabase implements RefDatabase {
                             "DELETE FROM %s WHERE repository = ? AND path = ? AND name = ?",
                             refsTable);
                     try (PreparedStatement st = cx.prepareStatement(sql)) {
-                        st.setString(1, repo);
+                        st.setInt(1, repo);
                         st.setString(2, path);
                         st.setString(3, localName);
                         updateCount = st.executeUpdate();
@@ -344,12 +343,12 @@ public class PGRefDatabase implements RefDatabase {
 
     private Map<String, String> doGetall(Connection cx, final String... prefixes)
             throws SQLException {
-        final String repo = config.getRepositoryId();
+        final int repo = config.getRepositoryId();
         final String refsTable = refsTableName;
 
         StringBuilder sql = new StringBuilder("SELECT path, name, value FROM ")//
                 .append(refsTable)//
-                .append(" WHERE repository = '").append(repo).append("' AND (");
+                .append(" WHERE repository = ").append(repo).append(" AND (");
         for (int i = 0; i < prefixes.length; i++) {
             String prefix = prefixes[i];
             sql.append("path LIKE '").append(prefix).append("%' ");
@@ -386,12 +385,12 @@ public class PGRefDatabase implements RefDatabase {
                 if (oldvalues.isEmpty()) {
                     cx.rollback();
                 } else {
-                    final String repo = config.getRepositoryId();
+                    final int repo = config.getRepositoryId();
                     final String refsTable = refsTableName;
                     String sql = "DELETE FROM " + refsTable
                             + " WHERE repository = ? AND path LIKE '" + prefix + "%'";
                     try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repo, prefix))) {
-                        st.setString(1, repo);
+                        st.setInt(1, repo);
                         st.executeUpdate();
                     }
                     cx.commit();

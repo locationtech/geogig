@@ -23,7 +23,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
@@ -54,9 +54,9 @@ public class LogTest extends AbstractWebOpTest {
     @Test
     public void testBuildParameters() {
         String timestamp1 = Long
-                .toString(testContext.get().getGeoGIG().getPlatform().currentTimeMillis());
+                .toString(testContext.get().getRepository().platform().currentTimeMillis());
         String timestamp2 = Long
-                .toString(testContext.get().getGeoGIG().getPlatform().currentTimeMillis() / 2);
+                .toString(testContext.get().getRepository().platform().currentTimeMillis() / 2);
         ParameterSet options = TestParams.of("limit", "100", "offset", "10", "path", "the/path",
                 "since", "master~1", "until", "master", "sinceTime", timestamp1, "untilTime",
                 timestamp2, "page", "3", "show", "11", "firstParentOnly", "true", "countChanges",
@@ -80,7 +80,7 @@ public class LogTest extends AbstractWebOpTest {
 
     @Test
     public void testLog() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -126,7 +126,7 @@ public class LogTest extends AbstractWebOpTest {
 
     @Test
     public void testLogRange() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -169,7 +169,7 @@ public class LogTest extends AbstractWebOpTest {
 
     @Test
     public void testLogTimestampRange() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.insert(TestData.point1, TestData.line1, TestData.poly1);
@@ -201,7 +201,7 @@ public class LogTest extends AbstractWebOpTest {
 
     @Test
     public void testLogPath() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -243,7 +243,7 @@ public class LogTest extends AbstractWebOpTest {
 
     @Test
     public void testCountChanges() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -295,7 +295,7 @@ public class LogTest extends AbstractWebOpTest {
 
     @Test
     public void testSummary() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -349,7 +349,7 @@ public class LogTest extends AbstractWebOpTest {
 
     @Test
     public void testSummaryNoPath() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();

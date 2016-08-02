@@ -55,7 +55,7 @@ import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.geotools.ExportDiff;
@@ -113,7 +113,7 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
 
     @Test
     public void testExportDiff() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");

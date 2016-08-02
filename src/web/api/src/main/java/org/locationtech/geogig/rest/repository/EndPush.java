@@ -18,7 +18,7 @@ import java.util.List;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.WriterRepresentation;
 import org.restlet.Context;
 import org.restlet.data.ClientInfo;
@@ -59,11 +59,11 @@ public class EndPush extends Resource {
             Request request = getRequest();
             try {
                 ClientInfo info = request.getClientInfo();
-                Optional<GeoGIG> ggit = getGeogig(request);
-                Preconditions.checkState(ggit.isPresent());
+                Optional<Repository> ggig = getGeogig(request);
+                Preconditions.checkState(ggig.isPresent());
                 Form options = request.getResourceRef().getQueryAsForm();
 
-                final GeoGIG geogig = ggit.get();
+                final Repository geogig = ggig.get();
 
                 // make a combined ip address to handle requests from multiple machines in the same
                 // external network.
@@ -73,10 +73,10 @@ public class EndPush extends Resource {
                 LOGGER.debug("Initiating EndPush for '{}'", ipAddress);
 
                 String refspec = options.getFirstValue("refspec", null);
-                final ObjectId oid = ObjectId.valueOf(options.getFirstValue("objectId",
-                        ObjectId.NULL.toString()));
-                final ObjectId originalRefValue = ObjectId.valueOf(options.getFirstValue(
-                        "originalRefValue", ObjectId.NULL.toString()));
+                final ObjectId oid = ObjectId
+                        .valueOf(options.getFirstValue("objectId", ObjectId.NULL.toString()));
+                final ObjectId originalRefValue = ObjectId.valueOf(
+                        options.getFirstValue("originalRefValue", ObjectId.NULL.toString()));
 
                 Optional<Ref> currentRef = geogig.command(RefParse.class).setName(refspec).call();
                 ObjectId currentRefId = currentRef.isPresent() ? currentRef.get().getObjectId()

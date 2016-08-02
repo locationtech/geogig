@@ -16,7 +16,7 @@ import java.io.InputStream;
 
 import org.locationtech.geogig.remote.BinaryPackedObjects;
 import org.locationtech.geogig.remote.BinaryPackedObjects.IngestResults;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.RestletException;
 import org.restlet.data.Request;
 import org.restlet.data.Status;
@@ -50,9 +50,8 @@ public class SendObjectResource extends Resource {
             LOGGER.info("Receiving objects from {}", request.getClientInfo().getAddress());
             Representation representation = request.getEntity();
             input = representation.getStream();
-            final GeoGIG ggit = getGeogig(request).get();
-            final BinaryPackedObjects unpacker = new BinaryPackedObjects(ggit.getRepository()
-                    .objectDatabase());
+            final Repository repo = getGeogig(request).get();
+            final BinaryPackedObjects unpacker = new BinaryPackedObjects(repo.objectDatabase());
 
             CountingInputStream countingStream = new CountingInputStream(input);
 
@@ -60,14 +59,14 @@ public class SendObjectResource extends Resource {
             IngestResults ingestResults = unpacker.ingest(countingStream);
             sw.stop();
 
-            LOGGER.info(String
-                    .format("SendObjectResource: Processed %,d objects.\nInserted: %,d.\nExisting: %,d.\nTime to process: %s.\nStream size: %,d bytes.\n",
-                            ingestResults.total(), ingestResults.getInserted(),
-                            ingestResults.getExisting(), sw, countingStream.getCount()));
+            LOGGER.info(String.format(
+                    "SendObjectResource: Processed %,d objects.\nInserted: %,d.\nExisting: %,d.\nTime to process: %s.\nStream size: %,d bytes.\n",
+                    ingestResults.total(), ingestResults.getInserted(), ingestResults.getExisting(),
+                    sw, countingStream.getCount()));
 
         } catch (IOException e) {
-            LOGGER.warn("Error processing incoming objects from {}", request.getClientInfo()
-                    .getAddress(), e);
+            LOGGER.warn("Error processing incoming objects from {}",
+                    request.getClientInfo().getAddress(), e);
             throw new RestletException(e.getMessage(), Status.SERVER_ERROR_INTERNAL, e);
         } finally {
             if (input != null)

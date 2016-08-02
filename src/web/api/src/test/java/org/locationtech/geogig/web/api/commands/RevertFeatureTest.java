@@ -21,8 +21,8 @@ import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -63,7 +63,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
     @Test
     public void testRevertFeature() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 
@@ -96,7 +96,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
     @Test
     public void testRevertAddedFeature() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 
@@ -131,7 +131,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
     @Test
     public void testRevertRemovedFeature() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 
@@ -164,7 +164,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
     @Test
     public void testRevertNonExistentFeature() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 
@@ -191,7 +191,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
     @Test
     public void testRevertFeatureConflict() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 

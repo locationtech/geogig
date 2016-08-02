@@ -17,7 +17,6 @@ import java.util.List;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
@@ -44,17 +43,16 @@ public class ObjectFinder extends Finder {
     public Resource findTarget(Request request, Response response) {
 
         if (request.getAttributes().containsKey("id")) {
-            final Optional<GeoGIG> ggit = getGeogig(request);
-            Preconditions.checkState(ggit.isPresent());
+            final Optional<Repository> ggig = getGeogig(request);
+            Preconditions.checkState(ggig.isPresent());
 
             final String id = (String) request.getAttributes().get("id");
             final ObjectId oid = ObjectId.valueOf(id);
 
-            GeoGIG geogig = ggit.get();
-            Repository repository = geogig.getRepository();
+            Repository repository = ggig.get();
             boolean blobExists = repository.blobExists(oid);
             if (blobExists) {
-                ObjectResource objectResource = new ObjectResource(oid, geogig);
+                ObjectResource objectResource = new ObjectResource(oid, repository);
                 objectResource.init(getContext(), request, response);
                 return objectResource;
             }
@@ -67,9 +65,9 @@ public class ObjectFinder extends Finder {
 
         private ObjectId oid;
 
-        private GeoGIG geogig;
+        private Repository geogig;
 
-        public ObjectResource(ObjectId oid, GeoGIG geogig) {
+        public ObjectResource(ObjectId oid, Repository geogig) {
             this.oid = oid;
             this.geogig = geogig;
         }
@@ -88,17 +86,16 @@ public class ObjectFinder extends Finder {
 
         private static final ObjectSerializingFactory serialFac = DataStreamSerializationFactoryV1.INSTANCE;
 
-        private final GeoGIG ggit;
+        private final Repository repository;
 
-        public RevObjectBinaryRepresentation(ObjectId oid, GeoGIG ggit) {
+        public RevObjectBinaryRepresentation(ObjectId oid, Repository repository) {
             super(MediaType.APPLICATION_OCTET_STREAM);
             this.oid = oid;
-            this.ggit = ggit;
+            this.repository = repository;
         }
 
         @Override
         public void write(OutputStream out) throws IOException {
-            Repository repository = ggit.getRepository();
             RevObject rawObject = repository.objectDatabase().get(oid);
             serialFac.write(rawObject, out);
         }

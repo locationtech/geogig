@@ -22,7 +22,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -145,6 +145,7 @@ public class CommandResource extends Resource {
 
     /**
      * Handles GET requests, called by {@link #handleGet()}
+     * 
      * @return a Representation of this CommandResource request.
      */
     @Override
@@ -158,7 +159,8 @@ public class CommandResource extends Resource {
         return new FormParams(options);
     }
 
-    protected Optional<GeoGIG> geogig = null;
+    protected Optional<Repository> geogig = null;
+
     protected Representation runCommand(Variant variant, Request request) {
         geogig = getGeogig(request);
         Preconditions.checkState(geogig.isPresent());
@@ -249,20 +251,25 @@ public class CommandResource extends Resource {
 
         StreamResponse streamContent = null;
 
-        final GeoGIG geogig;
+        final Repository geogig;
 
         private final Request request;
 
         private Function<MediaType, Representation> representation;
 
-        RestletContext(GeoGIG geogig, Request request) {
+        RestletContext(Repository geogig, Request request) {
             this.geogig = geogig;
             this.request = request;
         }
 
         @Override
-        public GeoGIG getGeoGIG() {
+        public Repository getRepository() {
             return geogig;
+        }
+
+        @Override
+        public org.locationtech.geogig.repository.Context context() {
+            return geogig.context();
         }
 
         @Override

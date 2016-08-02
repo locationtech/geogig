@@ -40,8 +40,8 @@ import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.Status;
 import org.locationtech.geogig.rest.geotools.Import;
@@ -93,7 +93,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
 
     @Test()
     public void testFormatArgumentRquired() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
@@ -109,7 +109,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
 
     @Test
     public void testImportAllMissingFileUpload() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
@@ -127,7 +127,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
 
     @Test
     public void testImportAllInvalidFileUpload() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
@@ -146,7 +146,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
     @Test
     public void testImportTable() throws Throwable {
         // setup and empty repo
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         final File dbFile = generateDbFile();
 
         GeogigTransaction transaction = repo.command(TransactionBegin.class).call();
@@ -178,7 +178,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
     @Test
     public void testImportTableWithDest() throws Throwable {
         // setup and empty repo
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         final File dbFile = generateDbFile();
 
         GeogigTransaction transaction = repo.command(TransactionBegin.class).call();
@@ -209,7 +209,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
     @Test
     public void testImportToBranch() throws Throwable {
         // setup and empty repo
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         final File dbFile = generateDbFile();
 
         TestData testData = new TestData(repo);
@@ -249,7 +249,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
     @Test
     public void testImportTableWithDestDuplicate() throws Throwable {
         // setup and empty repo
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         final File dbFile = generateDbFile();
 
         GeogigTransaction transaction = repo.command(TransactionBegin.class).call();
@@ -305,7 +305,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         // get a DB file to import
         final File dbFile = generateDbFile();
         // setup and empty repo
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         testData.init();
         // verify there are no nodes in the repository
@@ -352,7 +352,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         }
 
         // setup and empty repo
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         testData.init();
         testData.addAndCommit("Initial commit", point1);
@@ -412,7 +412,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         repo.command(TransactionEnd.class).setTransaction(transaction).call();
 
         // verify both points are in the repo.
-        Iterator<NodeRef> nodeIterator = context.getGeoGIG().command(LsTreeOp.class)
+        Iterator<NodeRef> nodeIterator = context.getRepository().command(LsTreeOp.class)
                 .setReference("Points").setStrategy(Strategy.FEATURES_ONLY).call();
 
         List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
@@ -440,7 +440,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         }
 
         // setup and empty repo
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         testData.init();
         repo.command(CommitOp.class).setAllowEmpty(true).setMessage("Initial Commit").call();
@@ -507,7 +507,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
 
         // verify both points are in the repo under branch1.
         testData.checkout("branch1");
-        Iterator<NodeRef> nodeIterator = context.getGeoGIG().command(LsTreeOp.class)
+        Iterator<NodeRef> nodeIterator = context.getRepository().command(LsTreeOp.class)
                 .setReference("Points").setStrategy(Strategy.FEATURES_ONLY).call();
 
         List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
@@ -535,7 +535,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         }
 
         // setup and empty repo
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         testData.init();
         testData.addAndCommit("Initial commit", TestData.point1);
@@ -602,7 +602,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
 
     private void verifyImport(Set<String> layerNames) {
         // get the list
-        Iterator<NodeRef> nodeIterator = context.getGeoGIG().command(LsTreeOp.class).call();
+        Iterator<NodeRef> nodeIterator = context.getRepository().command(LsTreeOp.class).call();
         Assert.assertTrue("Expected repo to have some nodes, but was empty",
                 nodeIterator.hasNext());
         List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
@@ -614,7 +614,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
     }
 
     private void verifyNoCommitedNodes() {
-        Iterator<NodeRef> nodeIterator = context.getGeoGIG().command(LsTreeOp.class).call();
+        Iterator<NodeRef> nodeIterator = context.getRepository().command(LsTreeOp.class).call();
         Assert.assertFalse("Expected repo to be empty, but has nodes", nodeIterator.hasNext());
     }
 

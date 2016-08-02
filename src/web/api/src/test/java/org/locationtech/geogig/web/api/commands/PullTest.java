@@ -27,8 +27,8 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.RemoteAddOp;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Remote;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -39,7 +39,7 @@ import org.locationtech.geogig.web.api.TestParams;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class PullTest extends AbstractWebOpTest {
-    
+
     @Rule
     public TestContext remoteTestContext = new TestContext();
 
@@ -60,11 +60,11 @@ public class PullTest extends AbstractWebOpTest {
     protected boolean requiresTransaction() {
         return false;
     }
-    
+
     @Test
     public void testBuildParameters() {
-        ParameterSet options = TestParams.of("all", "true", "ref", "master", "remoteName", "origin", "authorName",
-                "Tester", "authorEmail", "tester@example.com");
+        ParameterSet options = TestParams.of("all", "true", "ref", "master", "remoteName", "origin",
+                "authorName", "Tester", "authorEmail", "tester@example.com");
 
         Pull op = (Pull) buildCommand(options);
         assertEquals("master", op.refSpec);
@@ -73,14 +73,14 @@ public class PullTest extends AbstractWebOpTest {
         assertEquals("tester@example.com", op.authorEmail.get());
         assertTrue(op.fetchAll);
     }
-    
+
     @Test
     public void testPull() throws Exception {
-        GeoGIG remoteGeogig = remoteTestContext.get().getGeoGIG();
+        Repository remoteGeogig = remoteTestContext.get().getRepository();
         TestData remoteTestData = new TestData(remoteGeogig);
         remoteTestData.init();
         remoteTestData.loadDefaultData();
-        
+
         Ref remoteMaster = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
         Ref remoteBranch1 = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
@@ -88,7 +88,7 @@ public class PullTest extends AbstractWebOpTest {
         Ref remoteBranch2 = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("branch2").call().get();
 
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -100,14 +100,14 @@ public class PullTest extends AbstractWebOpTest {
 
         ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master");
         buildCommand(options).run(testContext.get());
-        
+
         Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
         Ref branch1 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/branch1").call().get();
         Ref branch2 = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName("refs/remotes/origin/branch2").call().get();
-        
+
         assertEquals(remoteMaster.getObjectId(), master.getObjectId());
         assertEquals(remoteBranch1.getObjectId(), branch1.getObjectId());
         assertEquals(remoteBranch2.getObjectId(), branch2.getObjectId());
@@ -134,21 +134,19 @@ public class PullTest extends AbstractWebOpTest {
 
     @Test
     public void testPullNewBranch() throws Exception {
-        GeoGIG remoteGeogig = remoteTestContext.get().getGeoGIG();
+        Repository remoteGeogig = remoteTestContext.get().getRepository();
         TestData remoteTestData = new TestData(remoteGeogig);
         remoteTestData.init();
         remoteTestData.loadDefaultData();
 
         Ref remoteMaster = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
-        Ref remoteBranch1 = remoteGeogig
-                .command(org.locationtech.geogig.plumbing.RefParse.class).setName("branch1")
-                .call().get();
-        Ref remoteBranch2 = remoteGeogig
-                .command(org.locationtech.geogig.plumbing.RefParse.class).setName("branch2")
-                .call().get();
+        Ref remoteBranch1 = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("branch1").call().get();
+        Ref remoteBranch2 = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("branch2").call().get();
 
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -158,8 +156,7 @@ public class PullTest extends AbstractWebOpTest {
         Remote remote = geogig.command(RemoteAddOp.class).setName("origin")
                 .setURL(remoteURI.toURL().toString()).call();
 
-        ParameterSet options = TestParams.of("remoteName", "origin", "ref",
- "branch1:newbranch");
+        ParameterSet options = TestParams.of("remoteName", "origin", "ref", "branch1:newbranch");
         buildCommand(options).run(testContext.get());
 
         Ref master = geogig.command(org.locationtech.geogig.plumbing.RefParse.class)
@@ -198,21 +195,19 @@ public class PullTest extends AbstractWebOpTest {
 
     @Test
     public void testPullNoUpdates() throws Exception {
-        GeoGIG remoteGeogig = remoteTestContext.get().getGeoGIG();
+        Repository remoteGeogig = remoteTestContext.get().getRepository();
         TestData remoteTestData = new TestData(remoteGeogig);
         remoteTestData.init();
         remoteTestData.loadDefaultData();
 
         Ref remoteMaster = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.MASTER).call().get();
-        Ref remoteBranch1 = remoteGeogig
-                .command(org.locationtech.geogig.plumbing.RefParse.class).setName("branch1")
-                .call().get();
-        Ref remoteBranch2 = remoteGeogig
-                .command(org.locationtech.geogig.plumbing.RefParse.class).setName("branch2")
-                .call().get();
+        Ref remoteBranch1 = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("branch1").call().get();
+        Ref remoteBranch2 = remoteGeogig.command(org.locationtech.geogig.plumbing.RefParse.class)
+                .setName("branch2").call().get();
 
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -244,7 +239,7 @@ public class PullTest extends AbstractWebOpTest {
 
     @Test
     public void testPullFromTooShallowClone() throws Exception {
-        GeoGIG originalGeogig = originalTestContext.get().getGeoGIG();
+        Repository originalGeogig = originalTestContext.get().getRepository();
         TestData originalTestData = new TestData(originalGeogig);
         originalTestData.init();
         originalTestData.loadDefaultData();
@@ -252,11 +247,11 @@ public class PullTest extends AbstractWebOpTest {
         URI originalURI = originalGeogig.command(ResolveGeogigURI.class).call().get();
 
         // Set up the shallow clone
-        GeoGIG remoteGeogig = remoteTestContext.get().getGeoGIG();
+        Repository remoteGeogig = remoteTestContext.get().getRepository();
         remoteGeogig.command(CloneOp.class).setDepth(1)
                 .setRepositoryURL(originalURI.toURL().toString()).call();
 
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -275,7 +270,7 @@ public class PullTest extends AbstractWebOpTest {
 
     @Test
     public void testPullConflicts() throws Exception {
-        GeoGIG remoteGeogig = remoteTestContext.get().getGeoGIG();
+        Repository remoteGeogig = remoteTestContext.get().getRepository();
         TestData remoteTestData = new TestData(remoteGeogig);
         remoteTestData.init();
 
@@ -284,7 +279,7 @@ public class PullTest extends AbstractWebOpTest {
         remoteTestData.add();
         RevCommit ancestor = remoteGeogig.command(CommitOp.class).setMessage("point1").call();
 
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -323,7 +318,7 @@ public class PullTest extends AbstractWebOpTest {
 
     @Test
     public void testPullConflictsDifferentBranch() throws Exception {
-        GeoGIG remoteGeogig = remoteTestContext.get().getGeoGIG();
+        Repository remoteGeogig = remoteTestContext.get().getRepository();
         TestData remoteTestData = new TestData(remoteGeogig);
         remoteTestData.init();
 
@@ -332,7 +327,7 @@ public class PullTest extends AbstractWebOpTest {
         remoteTestData.add();
         RevCommit ancestor = remoteGeogig.command(CommitOp.class).setMessage("point1").call();
 
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");

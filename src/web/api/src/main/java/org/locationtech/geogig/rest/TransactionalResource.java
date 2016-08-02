@@ -16,8 +16,8 @@ import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 import java.util.UUID;
 
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.restlet.data.Form;
 import org.restlet.data.Request;
 import org.restlet.resource.Resource;
@@ -40,10 +40,10 @@ public class TransactionalResource extends Resource {
     }
 
     protected Context getContext(Request request) {
-        Optional<GeoGIG> geogig = getGeogig(request);
+        Optional<Repository> geogig = getGeogig(request);
         checkState(geogig.isPresent());
 
-        Context geogigContext = geogig.get().getContext();
+        Context geogigContext = geogig.get().context();
 
         Form options = getRequest().getResourceRef().getQueryAsForm();
         String txId = options.getFirstValue("transactionId");

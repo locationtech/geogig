@@ -41,6 +41,7 @@ import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -141,15 +142,19 @@ public class TestData {
 
     }
 
-    private GeoGIG repo;
+    private Repository repo;
 
     private GeogigTransaction transaction = null;
 
     public TestData(final GeoGIG repo) throws Exception {
+        this.repo = repo.getOrCreateRepository();
+    }
+
+    public TestData(final Repository repo) throws Exception {
         this.repo = repo;
     }
 
-    public GeoGIG getRepo() {
+    public Repository getRepo() {
         return repo;
     }
 
@@ -165,7 +170,7 @@ public class TestData {
         if (transaction != null) {
             return transaction;
         }
-        return repo.getContext();
+        return repo.context();
     }
 
     public TestData init() {

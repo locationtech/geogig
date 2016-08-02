@@ -17,8 +17,8 @@ import org.junit.Test;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -52,7 +52,7 @@ public class CheckoutTest extends AbstractWebOpTest {
 
     @Test
     public void testCheckoutNoBranchOrPath() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -68,7 +68,7 @@ public class CheckoutTest extends AbstractWebOpTest {
 
     @Test
     public void testCheckoutBranch() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -99,7 +99,7 @@ public class CheckoutTest extends AbstractWebOpTest {
 
     @Test
     public void testCheckoutPathNoOursOrTheirs() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -118,7 +118,7 @@ public class CheckoutTest extends AbstractWebOpTest {
 
     @Test
     public void testCheckoutPathBothOursAndTheirs() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -137,7 +137,7 @@ public class CheckoutTest extends AbstractWebOpTest {
 
     @Test
     public void testCheckoutPathOurs() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -157,7 +157,7 @@ public class CheckoutTest extends AbstractWebOpTest {
 
     @Test
     public void testCheckoutPathTheirs() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();

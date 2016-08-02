@@ -37,11 +37,12 @@ import com.google.common.base.Optional;
 public class EndTransaction extends AbstractWebAPICommand {
 
     boolean cancel;
-    
-    public EndTransaction (ParameterSet options) {
+
+    public EndTransaction(ParameterSet options) {
         super(options);
         setCancel(Boolean.valueOf(options.getFirstValue("cancel", "false")));
     }
+
     /**
      * Mutator for the cancel variable
      * 
@@ -66,7 +67,7 @@ public class EndTransaction extends AbstractWebAPICommand {
 
         final Context transaction = this.getCommandLocator(context);
 
-        TransactionEnd endTransaction = context.getGeoGIG().command(TransactionEnd.class);
+        TransactionEnd endTransaction = context.getRepository().command(TransactionEnd.class);
         try {
             endTransaction.setCancel(cancel).setTransaction((GeogigTransaction) transaction).call();
 
@@ -79,8 +80,8 @@ public class EndTransaction extends AbstractWebAPICommand {
                 }
             });
         } catch (MergeConflictsException m) {
-            final RevCommit ours = context.getGeoGIG().getRepository().getCommit(m.getOurs());
-            final RevCommit theirs = context.getGeoGIG().getRepository().getCommit(m.getTheirs());
+            final RevCommit ours = context.getRepository().getCommit(m.getOurs());
+            final RevCommit theirs = context.getRepository().getCommit(m.getTheirs());
             final Optional<ObjectId> ancestor = transaction.command(FindCommonAncestor.class)
                     .setLeft(ours).setRight(theirs).call();
             final PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);

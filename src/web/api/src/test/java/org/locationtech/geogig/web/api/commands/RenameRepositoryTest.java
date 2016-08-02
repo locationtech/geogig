@@ -54,7 +54,7 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
     @Test
     public void testRename() throws Exception {
 
-        String repoName = testContext.get().getGeoGIG().command(ResolveRepositoryName.class).call();
+        String repoName = testContext.get().getRepository().command(ResolveRepositoryName.class).call();
 
         assertEquals(TestRepository.REPO_NAME, repoName);
 
@@ -63,7 +63,7 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
         testContext.setRequestMethod(Method.POST);
         cmd.run(testContext.get());
 
-        repoName = testContext.get().getGeoGIG().command(ResolveRepositoryName.class).call();
+        repoName = testContext.get().getRepository().command(ResolveRepositoryName.class).call();
 
         assertEquals("newRepoName", repoName);
 

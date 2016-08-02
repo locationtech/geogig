@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.repository.Context;
@@ -39,6 +38,7 @@ import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.restlet.data.Request;
 import org.slf4j.Logger;
@@ -64,7 +64,7 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(DirectoryRepositoryProvider.class);
 
-    private LoadingCache<String, GeoGIG> repositories;
+    private LoadingCache<String, Repository> repositories;
 
     private final File repositoriesDirectory;
 
@@ -122,14 +122,12 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
         for (Path dir : subdirs) {
             try {
                 final String repoId = dir.getFileName().toString();
-                GeoGIG repo = repositories.get(repoId);
-                @Nullable
-                Repository repository = repo.getRepository();
-                if (repository == null) {
+                Repository repository = repositories.get(repoId);
+                if (repository == null || !repository.isOpen()) {
                     LOG.info("Ignoring non repository directory " + dir.getFileName());
                     repositories.invalidate(repoId);
                 } else {
-                    String repoName = repo.command(ResolveRepositoryName.class).call();
+                    String repoName = repository.command(ResolveRepositoryName.class).call();
                     Preconditions.checkState(!nameToRepoId.containsKey(repoName),
                             "Duplicate repo name found: " + repoName);
                     nameToRepoId.put(repoName, repoId);
@@ -152,7 +150,7 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
     }
 
     @Override
-    public Optional<GeoGIG> getGeogig(Request request) {
+    public Optional<Repository> getGeogig(Request request) {
         final String repositoryName = getStringAttribute(request, "repository");
         if (null == repositoryName) {
             return Optional.absent();
@@ -161,12 +159,12 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
         return Optional.of(getGeogig(repositoryName));
     }
 
-    public GeoGIG getGeogig(final String repositoryName) {
+    public Repository getGeogig(final String repositoryName) {
         try {
             if (!nameToRepoId.containsKey(repositoryName)) {
                 loadRepositories();
             }
-            GeoGIG repo = null;
+            Repository repo = null;
             if (nameToRepoId.containsKey(repositoryName)) {
                 String repoId = nameToRepoId.get(repositoryName);
                 repo = repositories.getIfPresent(repoId);
@@ -195,15 +193,17 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
         }
     }
 
-    private static final RemovalListener<String, GeoGIG> removalListener = new RemovalListener<String, GeoGIG>() {
+    private static final RemovalListener<String, Repository> removalListener = new RemovalListener<String, Repository>() {
         @Override
-        public void onRemoval(RemovalNotification<String, GeoGIG> notification) {
+        public void onRemoval(RemovalNotification<String, Repository> notification) {
             final RemovalCause cause = notification.getCause();
             final String repositoryId = notification.getKey();
-            final GeoGIG repo = notification.getValue();
+            final Repository repo = notification.getValue();
             LOG.info("Disposing repository {}. Cause: " + cause(cause));
             try {
-                repo.close();
+                if (repo != null) {
+                    repo.close();
+                }
             } catch (RuntimeException e) {
                 LOG.warn("Error closing repository {}", repositoryId, e);
             }
@@ -227,22 +227,22 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
         }
     };
 
-    private LoadingCache<String, GeoGIG> buildCache(final File baseDir) throws IOException {
+    private LoadingCache<String, Repository> buildCache(final File baseDir) throws IOException {
 
-        CacheLoader<String, GeoGIG> loader = new CacheLoader<String, GeoGIG>() {
+        CacheLoader<String, Repository> loader = new CacheLoader<String, Repository>() {
 
             private final Path directory = baseDir.toPath();
 
             @Override
-            public GeoGIG load(final String repoId) throws Exception {
+            public Repository load(final String repoId) throws Exception {
                 Path repoPath = directory.resolve(repoId);
-                GeoGIG repo = loadGeoGIG(repoId, repoPath);
+                Repository repo = loadGeoGIG(repoId, repoPath);
                 return repo;
             }
 
         };
 
-        LoadingCache<String, GeoGIG> cache = CacheBuilder.newBuilder()//
+        LoadingCache<String, Repository> cache = CacheBuilder.newBuilder()//
                 .concurrencyLevel(1)//
                 .expireAfterAccess(1, TimeUnit.MINUTES)//
                 .maximumSize(1024)//
@@ -253,7 +253,7 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
     }
 
     @VisibleForTesting
-    GeoGIG loadGeoGIG(final String repoId, final Path repo) {
+    Repository loadGeoGIG(final String repoId, final Path repo) {
         LOG.info("Loading repository " + repo);
         Hints hints = new Hints();
         final URI repoURI = repo.toUri();
@@ -267,21 +267,25 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
 
         Context context = GlobalContextBuilder.builder().build(hints);
 
-        GeoGIG geogig;
-        if (repo.toFile().exists()) {
-            try {
-                geogig = new GeoGIG(context);
-            } catch (Exception e) {
-                geogig = new GeoGIG(context);
-            }
-        } else {
-            geogig = new GeoGIG(context);
-        }
+        Repository repository = context.repository();
+        // if (repo.toFile().exists()) {
+        // try {
+        // repository.open();
+        // } catch (Exception e) {
+        // throw Throwables.propagate(e);
+        // }
+        // }
 
-        Optional<URI> resolvedRepoURI = geogig.command(ResolveGeogigURI.class).call();
+        Optional<URI> resolvedRepoURI = repository.command(ResolveGeogigURI.class).call();
 
         if (resolvedRepoURI.isPresent() && new File(resolvedRepoURI.get()).exists()) {
-            Repository repository = geogig.getRepository();
+            if (!repository.isOpen()) {
+                try {
+                    repository.open();
+                } catch (RepositoryConnectionException e) {
+                    throw Throwables.propagate(e);
+                }
+            }
             URI location = repository.getLocation();
             Preconditions.checkNotNull(location);
             LOG.info("Loaded existing repository " + repo);
@@ -290,17 +294,17 @@ public class DirectoryRepositoryProvider implements RepositoryProvider {
                     + ". Init will be the only command supported");
         }
 
-        return geogig;
+        return repository;
     }
 
     @Override
     public void delete(Request request) {
-        Optional<GeoGIG> geogig = getGeogig(request);
+        Optional<Repository> geogig = getGeogig(request);
         Preconditions.checkState(geogig.isPresent(), "No repository to delete.");
 
         final String repositoryName = getStringAttribute(request, "repository");
         final String repoId = nameToRepoId.get(repositoryName);
-        GeoGIG ggig = geogig.get();
+        Repository ggig = geogig.get();
         Optional<URI> repoUri = ggig.command(ResolveGeogigURI.class).call();
         Preconditions.checkState(repoUri.isPresent(), "No repository to delete.");
 

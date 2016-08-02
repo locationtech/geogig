@@ -22,6 +22,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.TestData;
 import org.restlet.data.Method;
 import org.w3c.dom.Document;
@@ -82,7 +83,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
      * @param name the repository to get
      * @return the repository
      */
-    public abstract GeoGIG getRepo(String name);
+    public abstract Repository getRepo(String name);
 
     public File getTempFolder() {
         return tempFolder.getRoot();
@@ -96,7 +97,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
      * @return a multimap that contains all of the feature types and their features
      */
     public SetMultimap<String, String> listRepo(final String repoName, final String headRef) {
-        GeoGIG repo = getRepo(repoName);
+        Repository repo = getRepo(repoName);
         Iterator<NodeRef> featureRefs = repo.command(LsTreeOp.class).setReference(headRef)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
 

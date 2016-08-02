@@ -24,6 +24,7 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.locationtech.geogig.web.DirectoryRepositoryProvider;
@@ -95,7 +96,7 @@ public class Serve extends AbstractCommand {
         }
     }
 
-    GeoGIG loadGeoGIG(String repo, GeogigCLI cli) {
+    Repository loadGeoGIG(String repo, GeogigCLI cli) {
         Platform platform = new DefaultPlatform();
         platform.setWorkingDir(new File(repo));
 
@@ -104,6 +105,6 @@ public class Serve extends AbstractCommand {
             geogig.getRepository();
         }
 
-        return geogig;
+        return geogig.getRepository();
     }
 }

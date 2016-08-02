@@ -36,7 +36,7 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -244,12 +244,12 @@ public class Log extends AbstractWebAPICommand {
             Date since = new Date(0);
             Date until = new Date();
             if (this.sinceTime != null) {
-                since = new Date(geogig.command(ParseTimestamp.class).setString(this.sinceTime)
-                        .call());
+                since = new Date(
+                        geogig.command(ParseTimestamp.class).setString(this.sinceTime).call());
             }
             if (this.untilTime != null) {
-                until = new Date(geogig.command(ParseTimestamp.class).setString(this.untilTime)
-                        .call());
+                until = new Date(
+                        geogig.command(ParseTimestamp.class).setString(this.untilTime).call());
             }
             op.setTimeRange(new Range<Date>(Date.class, since, until));
         }
@@ -332,7 +332,7 @@ public class Log extends AbstractWebAPICommand {
 
                     @Override
                     public void write(Writer out) throws Exception {
-                        writeCSV(context.getGeoGIG(), out, log);
+                        writeCSV(context.getRepository(), out, log);
                     }
                 });
             } else {
@@ -353,14 +353,14 @@ public class Log extends AbstractWebAPICommand {
 
     }
 
-    private void writeCSV(GeoGIG geogig, Writer out, Iterator<RevCommit> log) throws Exception {
+    private void writeCSV(Repository geogig, Writer out, Iterator<RevCommit> log) throws Exception {
         String response = "ChangeType,FeatureId,CommitId,Parent CommitIds,Author Name,Author Email,Author Commit Time,Committer Name,Committer Email,Committer Commit Time,Commit Message";
         out.write(response);
         response = "";
         String path = paths.get(0);
         // This is the feature type object
         Optional<NodeRef> ref = geogig.command(FindTreeChild.class).setChildPath(path)
-                .setParent(geogig.getRepository().workingTree().getTree()).call();
+                .setParent(geogig.workingTree().getTree()).call();
         Optional<RevObject> type = Optional.absent();
         if (ref.isPresent()) {
             type = geogig.command(RevObjectParse.class)
@@ -382,8 +382,8 @@ public class Log extends AbstractWebAPICommand {
 
             while (log.hasNext()) {
                 commit = log.next();
-                String parentId = commit.getParentIds().size() >= 1 ? commit.getParentIds().get(0)
-                        .toString() : ObjectId.NULL.toString();
+                String parentId = commit.getParentIds().size() >= 1
+                        ? commit.getParentIds().get(0).toString() : ObjectId.NULL.toString();
                 try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
                         .setOldVersion(parentId).setNewVersion(commit.getId().toString())
                         .setFilter(path).call()) {

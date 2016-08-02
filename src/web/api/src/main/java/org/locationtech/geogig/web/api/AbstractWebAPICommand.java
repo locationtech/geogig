@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.RestletException;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
@@ -93,13 +94,14 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
      */
     public Context getCommandLocator(CommandContext context) {
         if (transactionId != null) {
-            return new GeogigTransaction(context.getGeoGIG().getContext(), transactionId);
+            return new GeogigTransaction(context.context(), transactionId);
         }
-        return context.getGeoGIG().getContext();
+        return context.context();
     }
 
     public void run(CommandContext context) {
-        if (requiresOpenRepo() && !context.getGeoGIG().isOpen()) {
+        Repository repo = context.getRepository();
+        if (requiresOpenRepo() && (null == repo || !repo.isOpen())) {
             throw new RestletException("Repository not found.",
                     org.restlet.data.Status.CLIENT_ERROR_NOT_FOUND);
         }

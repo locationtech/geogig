@@ -53,7 +53,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.geotools.Export;
@@ -113,7 +113,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
 
     @Test
     public void testExportDefaults() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
@@ -132,7 +132,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
 
     @Test
     public void testExportDefaultsIntechangeExtension() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
@@ -154,7 +154,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
 
     @Test
     public void testExportBranch() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         // HEAD is at branch1
         testData.init().loadDefaultData().checkout("branch1");
@@ -175,7 +175,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
 
     @Test
     public void testExportLayernameFilter() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         new TestData(repo).init().loadDefaultData();
 
         // but we request branch2
@@ -197,7 +197,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
 
     @Test
     public void testExportBranchBBoxFilter() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         // HEAD is at branch1
         testData.init().loadDefaultData().checkout("branch1");
@@ -221,7 +221,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
 
     @Test
     public void testExportBranchBBoxAndLayerFilter() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         // HEAD is at branch1
         testData.init().loadDefaultData().checkout("branch1");
@@ -249,7 +249,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
 
     @Test
     public void testExportBranchBBoxAndLayerFilterInterchangeExtension() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         // HEAD is at branch1
         testData.init().loadDefaultData().checkout("branch1");

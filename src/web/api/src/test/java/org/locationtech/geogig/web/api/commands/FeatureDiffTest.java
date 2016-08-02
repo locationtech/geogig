@@ -18,7 +18,7 @@ import org.junit.Test;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -78,7 +78,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
 
     @Test
     public void testFeatureDiff() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -107,7 +107,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
 
     @Test
     public void testFeatureDiffAll() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -139,7 +139,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
 
     @Test
     public void testFeatureDiffAddedFeature() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -171,7 +171,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
 
     @Test
     public void testFeatureDiffRemovedFeature() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -203,7 +203,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
 
     @Test
     public void testFeatureDiffAddedNoOldRef() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");

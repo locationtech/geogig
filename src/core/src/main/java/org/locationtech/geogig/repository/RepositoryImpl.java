@@ -123,11 +123,15 @@ public class RepositoryImpl implements Repository {
         close(context.refDatabase());
         close(context.objectDatabase());
         close(context.graphDatabase());
-        for (RepositoryListener l : listeners) {
-            l.closed();
-        }
         executor.shutdownNow();
         close(context.configDatabase());
+        for (RepositoryListener l : listeners) {
+            try {// don't let a broken listener mess us up
+                l.closed();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void close(Closeable db) {

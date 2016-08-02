@@ -10,8 +10,8 @@
 package org.locationtech.geogig.web.api.commands;
 
 import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -43,7 +43,7 @@ public class BeginTransaction extends AbstractWebAPICommand {
         if (this.getTransactionId() != null) {
             throw new CommandSpecException("Tried to start a transaction within a transaction.");
         }
-        final GeoGIG geogig = context.getGeoGIG();
+        final Repository geogig = context.getRepository();
 
         final GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 

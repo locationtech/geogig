@@ -28,7 +28,6 @@ import org.locationtech.geogig.remote.BinaryPackedChanges;
 import org.locationtech.geogig.remote.HttpFilteredDiffIterator;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
@@ -75,9 +74,7 @@ public class ApplyChangesResource extends Finder {
             ObjectId newCommitId = ObjectId.NULL;
             try {
                 input = getRequest().getEntity().getStream();
-                final GeoGIG ggit = getGeogig(getRequest()).get();
-
-                final Repository repository = ggit.getRepository();
+                final Repository repository = getGeogig(getRequest()).get();
 
                 // read in commit object
                 final ObjectSerializingFactory serializer = DataStreamSerializationFactoryV1.INSTANCE;
@@ -98,7 +95,7 @@ public class ApplyChangesResource extends Finder {
                 BinaryPackedChanges unpacker = new BinaryPackedChanges(repository);
                 try (AutoCloseableIterator<DiffEntry> changes = new HttpFilteredDiffIterator(input,
                         unpacker)) {
-                RevTree rootTree = RevTreeBuilder.EMPTY;
+                    RevTree rootTree = RevTreeBuilder.EMPTY;
 
                     if (newParents.size() > 0) {
                         ObjectId mappedCommit = newParents.get(0);

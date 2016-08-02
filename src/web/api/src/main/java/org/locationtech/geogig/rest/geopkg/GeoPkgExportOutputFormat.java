@@ -146,7 +146,7 @@ public class GeoPkgExportOutputFormat extends Export.OutputFormat {
     @Override
     public DataStoreExportOp<File> createCommand(final CommandContext context) {
         boolean enableInterchangeFormat = this.enableInterchangeExtension;
-        return context.getGeoGIG().command(GeopkgDataStoreExportOp.class)
+        return context.getRepository().command(GeopkgDataStoreExportOp.class)
                 .setInterchangeFormat(enableInterchangeFormat)
                 .setDatabaseFile(dataStore.getTargetFile());
     }

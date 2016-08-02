@@ -26,7 +26,7 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -90,7 +90,7 @@ public class BranchTest extends AbstractWebOpTest {
 
     @Test
     public void createBranch() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         // have a commit to allow creating branch
@@ -116,7 +116,7 @@ public class BranchTest extends AbstractWebOpTest {
 
     @Test
     public void listBranches() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -136,12 +136,12 @@ public class BranchTest extends AbstractWebOpTest {
 
     @Test
     public void listBranchesIncludingRemoteBranches() throws Exception {
-        GeoGIG remoteGeogig = remoteTestContext.get().getGeoGIG();
+        Repository remoteGeogig = remoteTestContext.get().getRepository();
         TestData remoteTestData = new TestData(remoteGeogig);
         remoteTestData.init();
         remoteTestData.loadDefaultData();
 
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.checkout("master");
@@ -169,7 +169,7 @@ public class BranchTest extends AbstractWebOpTest {
 
     @Test
     public void testNothingToDo() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();

@@ -15,7 +15,8 @@ import java.util.function.Function;
 
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.restlet.data.MediaType;
@@ -105,8 +106,13 @@ public class TestContext extends ExternalResource {
         }
 
         @Override
-        public GeoGIG getGeoGIG() {
-            return repo.getGeogig();
+        public Repository getRepository() {
+            return repo.getGeogig().getRepository();
+        }
+
+        @Override
+        public Context context() {
+            return repo.getGeogig().getContext();
         }
 
         public void setRequestMethod(Method method) {
@@ -165,7 +171,7 @@ public class TestContext extends ExternalResource {
         @Override
         public RepositoryProvider getRepositoryProvider() {
             if (repoProvider == null) {
-                repoProvider = new SingleRepositoryProvider(repo.getGeogig());
+                repoProvider = new SingleRepositoryProvider(repo.getGeogig().getRepository());
             }
             return repoProvider;
         }

@@ -11,7 +11,7 @@ package org.locationtech.geogig.rest.repository;
 
 import java.util.Iterator;
 
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.restlet.data.Request;
 
 import com.google.common.base.Optional;
@@ -26,7 +26,7 @@ public interface RepositoryProvider {
      */
     String KEY = "__REPOSITORY_PROVIDER_KEY__";
 
-    public Optional<GeoGIG> getGeogig(Request request);
+    public Optional<Repository> getGeogig(Request request);
 
     /**
      * Deletes the repository that resolved from the request argument.

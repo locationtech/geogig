@@ -17,7 +17,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -77,7 +77,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
     @Test
     public void testDeleteRef() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -106,7 +106,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
     @Test
     public void testDeleteSymRef() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -138,7 +138,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
     @Test
     public void testUpdateInvalidRef() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -152,7 +152,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
     @Test
     public void testUpdateRef() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -181,7 +181,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
     @Test
     public void testUpdateRefInvalidTarget() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -195,7 +195,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
     @Test
     public void testUpdateSymRef() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -229,7 +229,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
     @Test
     public void testUpdateSymRefInvalidTarget() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();

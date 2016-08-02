@@ -48,8 +48,8 @@ import org.geotools.geopkg.GeoPackage;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.TransactionEnd;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.geopkg.GeoPackageWebAPITestSupport;
@@ -128,11 +128,9 @@ public class WebAPICucumberHooks {
         String urlSpec = repoUri + "/init";
         context.call(Method.PUT, urlSpec);
         assertStatusCode(Status.SUCCESS_CREATED.getCode());
-        
-        context.call(Method.POST,
-                repoUri + "/config?name=user.name&value=webuser");
-        context.call(Method.POST,
-                repoUri + "/config?name=user.email&value=webuser@test.com");
+
+        context.call(Method.POST, repoUri + "/config?name=user.name&value=webuser");
+        context.call(Method.POST, repoUri + "/config?name=user.email&value=webuser@test.com");
     }
 
     /**
@@ -232,8 +230,7 @@ public class WebAPICucumberHooks {
      */
     @Given("^I have a transaction as \"([^\"]*)\" on the \"([^\"]*)\" repo$")
     public void beginTransactionAsVariable(final String variableName, final String repoName) {
-        GeogigTransaction transaction = context.getRepo(repoName)
-                .command(TransactionBegin.class)
+        GeogigTransaction transaction = context.getRepo(repoName).command(TransactionBegin.class)
                 .call();
 
         context.setVariable(variableName, transaction.getTransactionId().toString());
@@ -247,8 +244,8 @@ public class WebAPICucumberHooks {
      */
     @When("^I end the transaction with id \"([^\"]*)\" on the \"([^\"]*)\" repo$")
     public void endTransaction(final String variableName, final String repoName) {
-        GeoGIG repo = context.getRepo(repoName);
-        GeogigTransaction transaction = new GeogigTransaction(repo.getContext(),
+        Repository repo = context.getRepo(repoName);
+        GeogigTransaction transaction = new GeogigTransaction(repo.context(),
                 UUID.fromString(context.getVariable(variableName)));
         repo.command(TransactionEnd.class).setTransaction(transaction).call();
     }
@@ -260,7 +257,7 @@ public class WebAPICucumberHooks {
      */
     @When("^I remove Points/1 from \"([^\"]*)\"$")
     public void removeFeature(final String repoName) throws Exception {
-        GeoGIG repo = context.getRepo(repoName);
+        Repository repo = context.getRepo(repoName);
         TestData data = new TestData(repo);
         data.remove(TestData.point1);
         data.add();
@@ -524,8 +521,7 @@ public class WebAPICucumberHooks {
     public void gpkg_CheckResponseIsGeoPackage() throws Throwable {
         checkContentType(Variants.GEOPKG_MEDIA_TYPE.getName());
 
-        File tmp = File.createTempFile("gpkg_functional_test", ".gpkg",
- context.getTempFolder());
+        File tmp = File.createTempFile("gpkg_functional_test", ".gpkg", context.getTempFolder());
         tmp.deleteOnExit();
 
         try (InputStream stream = context.getLastResponseInputStream()) {
@@ -568,7 +564,7 @@ public class WebAPICucumberHooks {
             throws Throwable {
         GeoPackageWebAPITestSupport support = new GeoPackageWebAPITestSupport(
                 context.getTempFolder());
-        GeoGIG geogig = context.getRepo(repoName);
+        Repository geogig = context.getRepo(repoName);
         File file = support.createDefaultTestData();
         geogig.command(GeopkgAuditExport.class).setDatabase(file).setTargetTableName("Points")
                 .setSourcePathspec("Points").call();

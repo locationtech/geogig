@@ -27,7 +27,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.TagCreateOp;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -81,11 +81,11 @@ public class CatTest extends AbstractWebOpTest {
 
     @Test
     public void testCatCommit() throws Exception {
-        TestData testData = new TestData(testContext.get().getGeoGIG());
+        TestData testData = new TestData(testContext.get().getRepository());
         testData.init();
         testData.loadDefaultData();
 
-        RevCommit lastCommit = testContext.get().getGeoGIG().command(LogOp.class).call().next();
+        RevCommit lastCommit = testContext.get().getRepository().command(LogOp.class).call().next();
         ParameterSet options = TestParams.of("objectid", lastCommit.getId().toString());
         buildCommand(options).run(testContext.get());
         JSONObject response = getJSONResponse().getJSONObject("response");
@@ -115,12 +115,12 @@ public class CatTest extends AbstractWebOpTest {
 
     @Test
     public void testCatTree() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
-        TestData testData = new TestData(testContext.get().getGeoGIG());
+        Repository geogig = testContext.get().getRepository();
+        TestData testData = new TestData(testContext.get().getRepository());
         testData.init();
         testData.loadDefaultData();
 
-        RevTree tree = geogig.getRepository().index().getTree();
+        RevTree tree = geogig.index().getTree();
         ParameterSet options = TestParams.of("objectid", tree.getId().toString());
         buildCommand(options).run(testContext.get());
         JSONObject response = getJSONResponse().getJSONObject("response");
@@ -135,7 +135,7 @@ public class CatTest extends AbstractWebOpTest {
 
     @Test
     public void testCatFeature() throws Exception {
-        TestData testData = new TestData(testContext.get().getGeoGIG());
+        TestData testData = new TestData(testContext.get().getRepository());
         testData.init();
         testData.loadDefaultData();
 
@@ -157,11 +157,11 @@ public class CatTest extends AbstractWebOpTest {
 
     @Test
     public void testCatFeatureType() throws Exception {
-        TestData testData = new TestData(testContext.get().getGeoGIG());
+        TestData testData = new TestData(testContext.get().getRepository());
         testData.init();
         testData.loadDefaultData();
 
-        RevFeatureType pointType = testContext.get().getGeoGIG().command(ResolveFeatureType.class)
+        RevFeatureType pointType = testContext.get().getRepository().command(ResolveFeatureType.class)
                 .setRefSpec("Points").call().get();
         ParameterSet options = TestParams.of("objectid", pointType.getId().toString());
         buildCommand(options).run(testContext.get());
@@ -181,8 +181,8 @@ public class CatTest extends AbstractWebOpTest {
 
     @Test
     public void testCatTag() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
-        TestData testData = new TestData(testContext.get().getGeoGIG());
+        Repository geogig = testContext.get().getRepository();
+        TestData testData = new TestData(testContext.get().getRepository());
         testData.init();
         testData.loadDefaultData();
 

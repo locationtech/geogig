@@ -21,6 +21,7 @@ import org.locationtech.geogig.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -136,9 +137,9 @@ public class Merge extends AbstractWebAPICommand {
                 }
             });
         } catch (Exception e) {
-            final RevCommit ours = context.getGeoGIG().getRepository()
-                    .getCommit(currHead.get().getObjectId());
-            final RevCommit theirs = context.getGeoGIG().getRepository().getCommit(oid.get());
+            Repository repository = context.getRepository();
+            final RevCommit ours = repository.getCommit(currHead.get().getObjectId());
+            final RevCommit theirs = repository.getCommit(oid.get());
             final Optional<ObjectId> ancestor = transaction.command(FindCommonAncestor.class)
                     .setLeft(ours).setRight(theirs).call();
             final PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);

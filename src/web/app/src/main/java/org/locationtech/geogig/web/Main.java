@@ -18,10 +18,11 @@ import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.model.DefaultPlatform;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.rest.TaskResultDownloadResource;
 import org.locationtech.geogig.rest.TaskStatusResource;
 import org.locationtech.geogig.rest.osm.OSMRouter;
@@ -41,6 +42,7 @@ import org.restlet.data.Protocol;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 
+import com.google.common.base.Throwables;
 import com.noelios.restlet.application.Decoder;
 
 /**
@@ -74,9 +76,9 @@ public class Main extends Application {
 
         Map<String, Object> attributes = context.getAttributes();
 
-        GeoGIG geogig;
+        Repository geogig;
         if (attributes.containsKey("geogig")) {
-            geogig = (GeoGIG) attributes.get("geogig");
+            geogig = (Repository) attributes.get("geogig");
         } else {
             // revisit, not used at all
             // ServletContext sc = (ServletContext) dispatcher.getContext()
@@ -156,14 +158,17 @@ public class Main extends Application {
         return decoder;
     }
 
-    static GeoGIG loadGeoGIG(String repo) {
+    static Repository loadGeoGIG(String repo) {
         Platform platform = new DefaultPlatform();
         platform.setWorkingDir(new File(repo));
         Context inj = GlobalContextBuilder.builder().build(new Hints().platform(platform));
-        GeoGIG geogig = new GeoGIG(inj);
-
+        Repository geogig = inj.repository();
         if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
-            geogig.getRepository();
+            try {
+                geogig.open();
+            } catch (RepositoryConnectionException e) {
+                throw Throwables.propagate(e);
+            }
             return geogig;
         }
 

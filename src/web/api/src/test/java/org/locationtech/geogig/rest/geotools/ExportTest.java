@@ -43,7 +43,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
@@ -99,7 +99,7 @@ public class ExportTest extends AbstractWebOpTest {
 
     @Test
     public void testExportDefaults() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         testData.init().loadDefaultData();
 
@@ -119,7 +119,7 @@ public class ExportTest extends AbstractWebOpTest {
 
     @Test
     public void testExportBranch() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         // HEAD is at branch1
         testData.init().loadDefaultData().checkout("branch1");
@@ -142,7 +142,7 @@ public class ExportTest extends AbstractWebOpTest {
 
     @Test
     public void testExportLayernameFilter() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         new TestData(repo).init().loadDefaultData();
 
         // but we request branch2
@@ -165,7 +165,7 @@ public class ExportTest extends AbstractWebOpTest {
 
     @Test
     public void testExportBranchBBoxFilter() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         // HEAD is at branch1
         testData.init().loadDefaultData().checkout("branch1");
@@ -190,7 +190,7 @@ public class ExportTest extends AbstractWebOpTest {
 
     @Test
     public void testExportBranchBBoxAndLayerFilter() throws Exception {
-        GeoGIG repo = context.getGeoGIG();
+        Repository repo = context.getRepository();
         TestData testData = new TestData(repo);
         // HEAD is at branch1
         testData.init().loadDefaultData().checkout("branch1");
@@ -279,7 +279,7 @@ public class ExportTest extends AbstractWebOpTest {
 
         @Override
         public DataStoreExportOp<MemoryDataStore> createCommand(CommandContext context) {
-            return context.getGeoGIG().command(TestOutputFormat.Command.class);
+            return context.getRepository().command(TestOutputFormat.Command.class);
         }
 
         static class Command extends DataStoreExportOp<MemoryDataStore> {

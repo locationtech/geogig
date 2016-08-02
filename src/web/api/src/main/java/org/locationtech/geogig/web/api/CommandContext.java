@@ -11,7 +11,8 @@ package org.locationtech.geogig.web.api;
 
 import java.util.function.Function;
 
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
@@ -24,10 +25,12 @@ public interface CommandContext {
 
     String getBaseURL();
 
+    Context context();
+
     /**
-     * @return the {@link GeoGIG} for this context.
+     * @return the {@link Repository} for this context, or {@code null} if not set.
      */
-    GeoGIG getGeoGIG();
+    Repository getRepository();
 
     Method getMethod();
 

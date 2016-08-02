@@ -23,8 +23,8 @@ import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.RemoteAddOp;
 import org.locationtech.geogig.porcelain.RemoteException;
 import org.locationtech.geogig.porcelain.RemoteResolve;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Remote;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -64,14 +64,14 @@ public class RemoteManagementTest extends AbstractWebOpTest {
     }
 
     private void setupRemotes(boolean addFirst, boolean addSecond) throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
 
         URI localURI = geogig.command(ResolveGeogigURI.class).call().get();
 
-        GeoGIG remote1Geogig = remote1TestContext.get().getGeoGIG();
+        Repository remote1Geogig = remote1TestContext.get().getRepository();
         remote1Geogig.command(CloneOp.class).setRepositoryURL(localURI.toURL().toString()).call();
         remote1URI = remote1Geogig.command(ResolveGeogigURI.class).call().get();
         if (addFirst) {
@@ -79,7 +79,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
                     .setURL(remote1URI.toURL().toString()).call();
         }
 
-        GeoGIG remote2Geogig = remote2TestContext.get().getGeoGIG();
+        Repository remote2Geogig = remote2TestContext.get().getRepository();
         remote2Geogig.command(CloneOp.class).setRepositoryURL(localURI.toURL().toString()).call();
         remote2URI = remote1Geogig.command(ResolveGeogigURI.class).call().get();
         if (addSecond) {
@@ -165,7 +165,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("remove", "true", "remoteName", "remote1");
         buildCommand(options).run(testContext.get());
 
-        Optional<Remote> remote = testContext.get().getGeoGIG().command(RemoteResolve.class)
+        Optional<Remote> remote = testContext.get().getRepository().command(RemoteResolve.class)
                 .setName("remote1").call();
 
         assertFalse(remote.isPresent());
@@ -213,7 +213,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
                 "remote1_new", "remoteURL", "new/url", "username", "Tester", "password", "pass");
         buildCommand(options).run(testContext.get());
 
-        Remote remote = testContext.get().getGeoGIG().command(RemoteResolve.class)
+        Remote remote = testContext.get().getRepository().command(RemoteResolve.class)
                 .setName("remote1_new").call().get();
 
         assertEquals("remote1_new", remote.getName());
@@ -234,7 +234,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
                 "new/url", "username", "Tester", "password", "pass");
         buildCommand(options).run(testContext.get());
 
-        Remote remote = testContext.get().getGeoGIG().command(RemoteResolve.class)
+        Remote remote = testContext.get().getRepository().command(RemoteResolve.class)
                 .setName("remote1").call().get();
 
         assertEquals("remote1", remote.getName());
@@ -255,7 +255,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
                 "", "remoteURL", "new/url", "username", "Tester", "password", "pass");
         buildCommand(options).run(testContext.get());
 
-        Remote remote = testContext.get().getGeoGIG().command(RemoteResolve.class)
+        Remote remote = testContext.get().getRepository().command(RemoteResolve.class)
                 .setName("remote1").call().get();
 
         assertEquals("remote1", remote.getName());
@@ -276,7 +276,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
                 "remote1", "remoteURL", "new/url", "username", "Tester", "password", "pass");
         buildCommand(options).run(testContext.get());
 
-        Remote remote = testContext.get().getGeoGIG().command(RemoteResolve.class)
+        Remote remote = testContext.get().getRepository().command(RemoteResolve.class)
                 .setName("remote1").call().get();
 
         assertEquals("remote1", remote.getName());
@@ -341,7 +341,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
                 remote2URI.toURL().toString());
         buildCommand(options).run(testContext.get());
 
-        Remote remote = testContext.get().getGeoGIG().command(RemoteResolve.class)
+        Remote remote = testContext.get().getRepository().command(RemoteResolve.class)
                 .setName("remote2").call().get();
 
         assertEquals("remote2", remote.getName());
@@ -403,7 +403,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
                 remote2URI.toURL().toString());
         buildCommand(options).run(testContext.get());
 
-        Remote remote = testContext.get().getGeoGIG().command(RemoteResolve.class)
+        Remote remote = testContext.get().getRepository().command(RemoteResolve.class)
                 .setName("remote2").call().get();
         assertEquals("remote2", remote.getName());
         assertEquals(remote2URI.toURL().toString(), remote.getFetchURL());

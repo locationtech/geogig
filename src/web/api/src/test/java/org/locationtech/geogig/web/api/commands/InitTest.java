@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -68,8 +67,7 @@ public class InitTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of();
         WebAPICommand cmd = buildCommand(options);
 
-        assertNull(testContext.get().getGeoGIG().getRepository());
-        assertFalse(testContext.get().getGeoGIG().isOpen());
+        assertNull(testContext.get().getRepository());
 
         testContext.setRequestMethod(Method.PUT);
         cmd.run(testContext.get());
@@ -78,12 +76,11 @@ public class InitTest extends AbstractWebOpTest {
                 RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + TestRepository.REPO_NAME,
                 MediaType.APPLICATION_JSON);
 
-        assertNotNull(testContext.get().getGeoGIG().getRepository());
-        assertTrue(testContext.get().getGeoGIG().isOpen());
+        assertNotNull(testContext.get().getRepository());
+        assertTrue(testContext.get().getRepository().isOpen());
         JSONObject response = getJSONResponse().getJSONObject("response");
         JSONAssert.assertEquals("{'success':true, 'repo': {'name': '" + TestRepository.REPO_NAME
-                + "', 'href': '" + expectedURL + "'}}",
-                response.toString(), true);
+                + "', 'href': '" + expectedURL + "'}}", response.toString(), true);
 
     }
 }

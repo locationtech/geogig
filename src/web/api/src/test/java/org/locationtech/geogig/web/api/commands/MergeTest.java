@@ -24,8 +24,8 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -59,7 +59,7 @@ public class MergeTest extends AbstractWebOpTest {
 
     @Test
     public void testMergeNoCommit() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
         ParameterSet options = TestParams.of("transactionId",
@@ -71,7 +71,7 @@ public class MergeTest extends AbstractWebOpTest {
 
     @Test
     public void testMergeNoHead() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -88,7 +88,7 @@ public class MergeTest extends AbstractWebOpTest {
 
     @Test
     public void testMergeInvalidCommit() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -104,7 +104,7 @@ public class MergeTest extends AbstractWebOpTest {
 
     @Test
     public void testMerge() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 
@@ -152,7 +152,7 @@ public class MergeTest extends AbstractWebOpTest {
 
     @Test
     public void testMergeConflict() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 

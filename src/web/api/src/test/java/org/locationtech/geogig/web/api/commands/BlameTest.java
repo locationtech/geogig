@@ -51,7 +51,7 @@ public class BlameTest extends AbstractWebOpTest {
 
     @Test
     public void testInvalidBranch() throws Exception {
-        TestData testData = new TestData(testContext.get().getGeoGIG());
+        TestData testData = new TestData(testContext.get().getRepository());
         testData.init();
         testData.loadDefaultData();
 
@@ -64,7 +64,7 @@ public class BlameTest extends AbstractWebOpTest {
     
     @Test
     public void testBlameNoPath() throws Exception {
-        TestData testData = new TestData(testContext.get().getGeoGIG());
+        TestData testData = new TestData(testContext.get().getRepository());
         testData.init();
         testData.loadDefaultData();
 
@@ -77,7 +77,7 @@ public class BlameTest extends AbstractWebOpTest {
 
     @Test
     public void testBlameNonexistentFeature() throws Exception {
-        TestData testData = new TestData(testContext.get().getGeoGIG());
+        TestData testData = new TestData(testContext.get().getRepository());
         testData.init();
         testData.loadDefaultData();
 
@@ -89,7 +89,7 @@ public class BlameTest extends AbstractWebOpTest {
 
     @Test
     public void testBlameNotAFeature() throws Exception {
-        TestData testData = new TestData(testContext.get().getGeoGIG());
+        TestData testData = new TestData(testContext.get().getRepository());
         testData.init();
         testData.loadDefaultData();
 
@@ -102,7 +102,7 @@ public class BlameTest extends AbstractWebOpTest {
 
     @Test
     public void testBlame() throws Exception {
-        TestData testData = new TestData(testContext.get().getGeoGIG());
+        TestData testData = new TestData(testContext.get().getRepository());
         testData.init("User", "user@example.com");
         testData.loadDefaultData();
 

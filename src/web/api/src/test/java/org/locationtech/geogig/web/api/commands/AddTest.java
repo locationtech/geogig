@@ -18,8 +18,8 @@ import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
@@ -41,20 +41,19 @@ public class AddTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ParameterSet options = TestParams.of("path", "points", "transactionId", UUID.randomUUID()
-                .toString());
+        ParameterSet options = TestParams.of("path", "points", "transactionId",
+                UUID.randomUUID().toString());
 
         Add op = (Add) buildCommand(options);
         assertEquals("points", op.path);
     }
-    
+
     @Test
     public void testAddAll() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
-        GeogigTransaction transaction = geogig
-                .command(TransactionBegin.class).call();
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
         testData.setTransaction(transaction);
         StagingArea staging = transaction.index();
         testData.insert(TestData.point1);
@@ -68,18 +67,18 @@ public class AddTest extends AbstractWebOpTest {
     }
 
     @Test
-    public void testAddPath() throws Exception{
-        GeoGIG geogig = testContext.get().getGeoGIG();
+    public void testAddPath() throws Exception {
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
-        GeogigTransaction transaction = geogig
-                .command(TransactionBegin.class).call();
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
         testData.setTransaction(transaction);
         StagingArea staging = transaction.index();
         testData.insert(TestData.point1);
         testData.insert(TestData.point2);
         assertEquals(0, staging.countStaged(null).featureCount());
-        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(), TestData.point1.getID());
+        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
+                TestData.point1.getID());
         ParameterSet options = TestParams.of("path", path, "transactionId",
                 transaction.getTransactionId().toString());
 

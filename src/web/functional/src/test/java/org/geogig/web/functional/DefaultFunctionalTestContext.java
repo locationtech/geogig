@@ -19,6 +19,7 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.web.DirectoryRepositoryProvider;
 import org.locationtech.geogig.web.Main;
@@ -79,13 +80,13 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     }
 
     /**
-     * Return the {@link GeoGIG} that corresponds to the given repository name.
+     * Return the {@link Repository} that corresponds to the given repository name.
      * 
      * @param name the repository to get
      * @return the repository
      */
     @Override
-    public GeoGIG getRepo(String name) {
+    public Repository getRepo(String name) {
         return repoProvider.getGeogig(name);
     }
 

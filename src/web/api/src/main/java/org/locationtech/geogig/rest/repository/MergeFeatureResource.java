@@ -35,7 +35,7 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.opengis.feature.simple.SimpleFeature;
@@ -74,7 +74,7 @@ public class MergeFeatureResource extends Resource {
         return true;
     }
 
-    private Optional<NodeRef> parseID(ObjectId commitId, String path, GeoGIG geogig) {
+    private Optional<NodeRef> parseID(ObjectId commitId, String path, Repository geogig) {
         Optional<RevObject> object = geogig.command(RevObjectParse.class).setObjectId(commitId)
                 .call();
         RevCommit commit = null;
@@ -100,7 +100,7 @@ public class MergeFeatureResource extends Resource {
 
         try {
             input = getRequest().getEntity().getStream();
-            final GeoGIG ggit = getGeogig(getRequest()).get();
+            final Repository ggig = getGeogig(getRequest()).get();
             final Reader body = new InputStreamReader(input);
             final JsonParser parser = new JsonParser();
             final JsonElement conflictJson = parser.parse(body);
@@ -121,16 +121,16 @@ public class MergeFeatureResource extends Resource {
                 if (conflict.has("ours") && conflict.get("ours").isJsonPrimitive()) {
                     String ourCommit = conflict.get("ours").getAsJsonPrimitive().getAsString();
                     Optional<NodeRef> ourNode = parseID(ObjectId.valueOf(ourCommit), featureId,
-                            ggit);
+                            ggig);
                     if (ourNode.isPresent()) {
-                        Optional<RevObject> object = ggit.command(RevObjectParse.class)
+                        Optional<RevObject> object = ggig.command(RevObjectParse.class)
                                 .setObjectId(ourNode.get().getObjectId()).call();
                         Preconditions.checkState(
                                 object.isPresent() && object.get() instanceof RevFeature);
 
                         ourFeature = (RevFeature) object.get();
 
-                        object = ggit.command(RevObjectParse.class)
+                        object = ggig.command(RevObjectParse.class)
                                 .setObjectId(ourNode.get().getMetadataId()).call();
                         Preconditions.checkState(
                                 object.isPresent() && object.get() instanceof RevFeatureType);
@@ -142,16 +142,16 @@ public class MergeFeatureResource extends Resource {
                 if (conflict.has("theirs") && conflict.get("theirs").isJsonPrimitive()) {
                     String theirCommit = conflict.get("theirs").getAsJsonPrimitive().getAsString();
                     Optional<NodeRef> theirNode = parseID(ObjectId.valueOf(theirCommit), featureId,
-                            ggit);
+                            ggig);
                     if (theirNode.isPresent()) {
-                        Optional<RevObject> object = ggit.command(RevObjectParse.class)
+                        Optional<RevObject> object = ggig.command(RevObjectParse.class)
                                 .setObjectId(theirNode.get().getObjectId()).call();
                         Preconditions.checkState(
                                 object.isPresent() && object.get() instanceof RevFeature);
 
                         theirFeature = (RevFeature) object.get();
 
-                        object = ggit.command(RevObjectParse.class)
+                        object = ggig.command(RevObjectParse.class)
                                 .setObjectId(theirNode.get().getMetadataId()).call();
                         Preconditions.checkState(
                                 object.isPresent() && object.get() instanceof RevFeatureType);
@@ -238,7 +238,7 @@ public class MergeFeatureResource extends Resource {
                 SimpleFeature feature = featureBuilder
                         .buildFeature(NodeRef.nodeFromPath(featureId));
                 RevFeature revFeature = RevFeatureBuilder.build(feature);
-                ggit.getRepository().objectDatabase().put(revFeature);
+                ggig.objectDatabase().put(revFeature);
 
                 getResponse().setEntity(new StringRepresentation(revFeature.getId().toString(),
                         MediaType.TEXT_PLAIN));

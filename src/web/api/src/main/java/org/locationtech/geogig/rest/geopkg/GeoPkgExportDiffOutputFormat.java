@@ -52,7 +52,7 @@ public class GeoPkgExportDiffOutputFormat extends GeoPkgExportOutputFormat {
 
     @Override
     public DataStoreExportOp<File> createCommand(final CommandContext context) {
-        return context.getGeoGIG().command(GeopkgDataStoreExportDiffOp.class)
+        return context.getRepository().command(GeopkgDataStoreExportDiffOp.class)
                 .setDatabaseFile(dataStore.getTargetFile()).setOldRef(oldRef).setNewRef(newRef);
     }
 

@@ -22,8 +22,8 @@ import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +79,7 @@ public class PushManager {
      * @param geogig the geogig of the local repository
      * @param ipAddress the remote machine that is pushing objects
      */
-    public void connectionSucceeded(final GeoGIG geogig, final String ipAddress,
+    public void connectionSucceeded(final Repository geogig, final String ipAddress,
             final String refspec, final ObjectId newCommit) {
 
         if (!incomingIPs.remove(ipAddress)) {// remove and check for existence in one shot

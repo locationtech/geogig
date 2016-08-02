@@ -15,6 +15,7 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
@@ -61,7 +62,8 @@ public class Init extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (context.getGeoGIG().isOpen()) {
+        Repository repository = context.getRepository();
+        if (repository != null && repository.isOpen()) {
             throw new CommandSpecException("Cannot run init on an already initialized repository.",
                     Status.CLIENT_ERROR_CONFLICT);
         }

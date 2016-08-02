@@ -31,6 +31,7 @@ import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -226,7 +227,8 @@ public class RevertFeature extends AbstractWebAPICommand {
                 .or("Reverted changes made to " + featurePath + " at " + newCommitId.toString()));
 
         RevCommit mapped = builder.build();
-        context.getGeoGIG().getRepository().objectDatabase().put(mapped);
+        Repository repository = context.getRepository();
+        repository.objectDatabase().put(mapped);
 
         // merge commit into current branch
         final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.HEAD).call();
@@ -254,9 +256,8 @@ public class RevertFeature extends AbstractWebAPICommand {
                 }
             });
         } catch (Exception e) {
-            final RevCommit ours = context.getGeoGIG().getRepository()
-                    .getCommit(currHead.get().getObjectId());
-            final RevCommit theirs = context.getGeoGIG().getRepository().getCommit(mapped.getId());
+            final RevCommit ours = repository.getCommit(currHead.get().getObjectId());
+            final RevCommit theirs = repository.getCommit(mapped.getId());
             final Optional<ObjectId> ancestor = geogig.command(FindCommonAncestor.class)
                     .setLeft(ours).setRight(theirs).call();
             final PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);

@@ -15,7 +15,7 @@ import static org.junit.Assert.assertTrue;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -55,7 +55,7 @@ public class LsTreeTest extends AbstractWebOpTest {
 
     @Test
     public void testRecursiveIncludeTrees() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -74,7 +74,7 @@ public class LsTreeTest extends AbstractWebOpTest {
 
     @Test
     public void testRecursiveOnlyTrees() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -91,7 +91,7 @@ public class LsTreeTest extends AbstractWebOpTest {
 
     @Test
     public void testRecursiveOnlyFeatures() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -109,7 +109,7 @@ public class LsTreeTest extends AbstractWebOpTest {
 
     @Test
     public void testOnlyTrees() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -126,7 +126,7 @@ public class LsTreeTest extends AbstractWebOpTest {
 
     @Test
     public void testLsTree() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -143,7 +143,7 @@ public class LsTreeTest extends AbstractWebOpTest {
 
     @Test
     public void testPath() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();

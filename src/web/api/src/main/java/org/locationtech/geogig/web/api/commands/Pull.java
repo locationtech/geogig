@@ -26,6 +26,7 @@ import org.locationtech.geogig.porcelain.SynchronizationException;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -154,10 +155,9 @@ public class Pull extends AbstractWebAPICommand {
             }
 
             Optional<Ref> destRef = geogig.command(RefParse.class).setName(destinationref).call();
-            final RevCommit theirs = context.getGeoGIG().getRepository()
-                    .getCommit(sourceRef.get().getObjectId());
-            final RevCommit ours = context.getGeoGIG().getRepository()
-                    .getCommit(destRef.get().getObjectId());
+            Repository repository = context.getRepository();
+            final RevCommit theirs = repository.getCommit(sourceRef.get().getObjectId());
+            final RevCommit ours = repository.getCommit(destRef.get().getObjectId());
             final Optional<ObjectId> ancestor = geogig.command(FindCommonAncestor.class)
                     .setLeft(ours).setRight(theirs).call();
             final PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);

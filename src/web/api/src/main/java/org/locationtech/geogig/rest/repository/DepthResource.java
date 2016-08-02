@@ -17,7 +17,7 @@ import java.io.PrintWriter;
 import java.util.List;
 
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -59,17 +59,16 @@ public class DepthResource extends Resource {
             Optional<String> commit = Optional
                     .fromNullable(options.getFirstValue("commitId", null));
 
-            Optional<GeoGIG> geogig = getGeogig(request);
+            Optional<Repository> geogig = getGeogig(request);
             Preconditions.checkState(geogig.isPresent());
-            GeoGIG ggit = geogig.get();
+            Repository repo = geogig.get();
 
             Optional<Integer> depth = Optional.absent();
 
             if (commit.isPresent()) {
-                depth = Optional.of(ggit.getRepository().graphDatabase()
-                        .getDepth(ObjectId.valueOf(commit.get())));
+                depth = Optional.of(repo.graphDatabase().getDepth(ObjectId.valueOf(commit.get())));
             } else {
-                depth = ggit.getRepository().getDepth();
+                depth = repo.getDepth();
             }
 
             if (depth.isPresent()) {

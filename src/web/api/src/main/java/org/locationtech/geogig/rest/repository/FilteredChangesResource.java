@@ -26,7 +26,6 @@ import org.locationtech.geogig.remote.BinaryPackedChanges;
 import org.locationtech.geogig.remote.FilteredDiffIterator;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryFilter;
 import org.restlet.Context;
@@ -101,8 +100,8 @@ public class FilteredChangesResource extends Finder {
                         trackedArray = new JsonArray();
                     }
                     if (message.has("commitId") && message.get("commitId").isJsonPrimitive()) {
-                        commitId = ObjectId.valueOf(message.get("commitId").getAsJsonPrimitive()
-                                .getAsString());
+                        commitId = ObjectId.valueOf(
+                                message.get("commitId").getAsJsonPrimitive().getAsString());
                     } else {
                         commitId = ObjectId.NULL;
                     }
@@ -135,7 +134,8 @@ public class FilteredChangesResource extends Finder {
                                     filterText = filterObject.get("filter").getAsJsonPrimitive()
                                             .getAsString();
                                 }
-                                if (featureType != null && filterType != null && filterText != null) {
+                                if (featureType != null && filterType != null
+                                        && filterText != null) {
                                     filter.addFilter(featureType, filterType, filterText);
                                 }
                             }
@@ -144,8 +144,7 @@ public class FilteredChangesResource extends Finder {
                     }
                 }
 
-                final GeoGIG ggit = getGeogig(getRequest()).get();
-                final Repository repository = ggit.getRepository();
+                final Repository repository = getGeogig(getRequest()).get();
 
                 RevCommit commit = repository.getCommit(commitId);
 
@@ -154,7 +153,7 @@ public class FilteredChangesResource extends Finder {
                     parent = commit.getParentIds().get(0);
                 }
 
-                try (AutoCloseableIterator<DiffEntry> changes = ggit.command(DiffOp.class)
+                try (AutoCloseableIterator<DiffEntry> changes = repository.command(DiffOp.class)
                         .setNewVersion(commit.getId()).setOldVersion(parent).setReportTrees(true)
                         .call()) {
                     FilteredDiffIterator filteredChanges = new FilteredDiffIterator(changes,
@@ -174,7 +173,8 @@ public class FilteredChangesResource extends Finder {
             }
         }
 
-        private static final MediaType PACKED_OBJECTS = new MediaType("application/x-geogig-packed");
+        private static final MediaType PACKED_OBJECTS = new MediaType(
+                "application/x-geogig-packed");
 
         private class FilteredDiffIteratorRepresentation extends OutputRepresentation {
 

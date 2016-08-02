@@ -14,8 +14,8 @@ import java.util.UUID;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -54,7 +54,7 @@ public class BeginTransactionTest extends AbstractWebOpTest {
 
     @Test
     public void testBeginTransactionWithinTransaction() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
         ParameterSet options = TestParams.of("transactionId",
                 transaction.getTransactionId().toString());

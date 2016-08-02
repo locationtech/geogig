@@ -95,7 +95,7 @@ public class TestRepository extends ExternalResource {
     public GeoGIG getGeogig(boolean initialized) {
         if (this.geogig == null) {
             this.geogig = createGeoGIG(REPO_NAME);
-            if (initialized) {
+            if (initialized && null == geogig.getRepository()) {
                 initializeRpository();
             }
         }

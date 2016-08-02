@@ -21,7 +21,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -65,15 +65,15 @@ public class AffectedFeaturesResource extends Resource {
 
             Preconditions.checkState(commit.isPresent(), "No commit specified.");
 
-            GeoGIG ggit = getGeogig(request).get();
+            Repository repo = getGeogig(request).get();
 
             ObjectId commitId = ObjectId.valueOf(commit.get());
 
-            RevCommit revCommit = ggit.getRepository().getCommit(commitId);
+            RevCommit revCommit = repo.getCommit(commitId);
 
             if (revCommit.getParentIds() != null && revCommit.getParentIds().size() > 0) {
                 ObjectId parentId = revCommit.getParentIds().get(0);
-                try (final AutoCloseableIterator<DiffEntry> diff = ggit.command(DiffOp.class)
+                try (final AutoCloseableIterator<DiffEntry> diff = repo.command(DiffOp.class)
                         .setOldVersion(parentId).setNewVersion(commitId).call()) {
                     while (diff.hasNext()) {
                         DiffEntry diffEntry = diff.next();

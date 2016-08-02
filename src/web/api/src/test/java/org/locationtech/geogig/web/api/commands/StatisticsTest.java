@@ -16,7 +16,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -54,7 +54,7 @@ public class StatisticsTest extends AbstractWebOpTest {
 
     @Test
     public void testStatistics() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 
@@ -98,7 +98,7 @@ public class StatisticsTest extends AbstractWebOpTest {
 
     @Test
     public void testStatisticsSince() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 
@@ -141,7 +141,7 @@ public class StatisticsTest extends AbstractWebOpTest {
 
     @Test
     public void testStatisticsRootPath() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 

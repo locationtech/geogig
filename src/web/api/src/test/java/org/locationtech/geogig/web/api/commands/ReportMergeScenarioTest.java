@@ -19,7 +19,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -74,7 +74,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
 
     @Test
     public void testInvalidOurCommit() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -87,7 +87,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
 
     @Test
     public void testInvalidTheirCommit() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
         testData.loadDefaultData();
@@ -100,7 +100,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
 
     @Test
     public void testMergeScenario() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 
@@ -135,7 +135,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
 
     @Test
     public void testMergeScenarioConflicts() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 
@@ -172,7 +172,7 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
 
     @Test
     public void testMergeScenarioPaging() throws Exception {
-        GeoGIG geogig = testContext.get().getGeoGIG();
+        Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
         testData.init();
 

@@ -61,16 +61,30 @@ public class DefaultRepositoryResolver extends RepositoryResolver {
 
     @Override
     public String getName(URI repoURI) {
-        File file = toFile(repoURI);
+        String repoName = null;
         try {
-            file = file.getCanonicalFile();
-            if (file.getName().equals(".geogig")) {
-                file = file.getParentFile();
+            // if the repo exists, get the name from it
+            if (repoExists(repoURI)) {
+                // it exists, load it and fetch the name
+                Hints hints = Hints.readOnly().uri(repoURI);
+                Context context = GlobalContextBuilder.builder().build(hints);
+                ConfigDatabase configDatabase = context.configDatabase();
+                repoName = configDatabase.get("repo.name").orNull();
+            }
+            if (repoName == null) {
+                // the repo doesn't exist or name is not configured, derive the name from the
+                // location
+                File file = toFile(repoURI);
+                file = file.getCanonicalFile();
+                if (file.getName().equals(".geogig")) {
+                    file = file.getParentFile();
+                }
+                repoName = file.getName();
             }
         } catch (IOException e) {
             Throwables.propagate(e);
         }
-        return file.getName();
+        return repoName;
     }
 
     @Override
@@ -84,9 +98,6 @@ public class DefaultRepositoryResolver extends RepositoryResolver {
             throw new IllegalArgumentException(
                     "Can't create directory " + targetDir.getAbsolutePath());
         }
-
-        Platform platform = repoContext.platform();
-        ///platform.setWorkingDir(targetDir);
 
         final File envHome;
         if (repoExisted) {

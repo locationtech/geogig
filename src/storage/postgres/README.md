@@ -1,3 +1,7 @@
+This is the GeoGig storage backend for PostgreSQL databases.
+
+
+
 USAGE:
 ------
 Repository URL must be provided. From the command line, use ``geogig <command> <args> --repo <url>`` for every command
@@ -17,11 +21,6 @@ Initializes a repository named ``myrepo`` in the PG instance running on localhos
 
 Initializes a repository named ``myrepo`` in the PG instance running on pg.test.com at port 1701, on the "geogig" database's public "geogig_test" schema.
 
-TODO:
---------------
-
-* (x) Revisit use of .geogig/osm folder in OSMHistoryImport.getBranchTrackingFile(), ResolveOSMLogfile, ResolveOSMMappingLogFolder
-* (x) Revisit AbstractMappedRemoteRepo. Contains a check for "Sparse clone works only against file system repositories."
 
 Tests
 -----

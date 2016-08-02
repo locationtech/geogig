@@ -35,7 +35,7 @@ public class PGConflictsDatabaseConformanceTest
         DataSource dataSource = PGStorage.newDataSource(environment);
 
         String conflictsTable = environment.getTables().conflicts();
-        String repositoryId = environment.getRepositoryId();
+        int repositoryId = environment.getRepositoryId();
         PGConflictsDatabase conflicts = new PGConflictsDatabase(dataSource, conflictsTable,
                 repositoryId);
         return conflicts;

@@ -10,6 +10,8 @@
 package org.locationtech.geogig.storage.postgresql;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 
@@ -28,6 +30,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -98,39 +101,34 @@ public class PGStorage {
     }
 
     public static boolean repoExists(final Environment config) throws IllegalArgumentException {
-        Preconditions.checkNotNull(config);
-        Preconditions.checkArgument(config.getRepositoryId() != null, "no repository id provided");
+        checkNotNull(config);
+        checkArgument(config.getRepositoryName() != null, "no repository name provided");
 
-        final DataSource dataSource = PGStorage.newDataSource(config);
-
-        final boolean exists;
-
-        try (Connection cx = dataSource.getConnection()) {
-            final String reposTable = config.getTables().repositories();
-            DatabaseMetaData md = cx.getMetaData();
-
-            final String schema = schema(reposTable);
-            final String table = stripSchema(reposTable);
-            try (ResultSet rs = md.getTables(null, schema, table, null)) {
-                if (!rs.next()) {
-                    return false;
+        Optional<Integer> repoPK;
+        try (PGConfigDatabase configdb = new PGConfigDatabase(config)) {
+            if (config.isRepositorySet()) {
+                String configuredName = configdb.get("repo.name").orNull();
+                Preconditions.checkState(config.getRepositoryName().equals(configuredName));
+                return true;
+            } else {
+                repoPK = configdb.resolveRepositoryPK(config.getRepositoryName());
+                if (repoPK.isPresent()) {
+                    if (config.isRepositorySet()) {
+                        if (repoPK.get() != config.getRepositoryId()) {
+                            String msg = format("The provided primary key for the repository '%s' "
+                                    + "does not match the one in the database. Provided: %d, returned: %d. "
+                                    + "Check the consistency of the repo.name config property for those repository ids");
+                            throw new IllegalStateException(msg);
+                        }
+                    } else {
+                        config.setRepositoryId(repoPK.get());
+                    }
                 }
-            }
-            String sql = String.format(
-                    "SELECT TRUE WHERE EXISTS(SELECT 1 FROM %s WHERE repository = ?)", reposTable);
-            try (PreparedStatement st = cx.prepareStatement(sql)) {
-                String repositoryId = config.getRepositoryId();
-                st.setString(1, repositoryId);
-                try (ResultSet rs = st.executeQuery()) {
-                    exists = rs.next();
-                }
+                return repoPK.isPresent();
             }
         } catch (SQLException e) {
-            throw propagate(e);
-        } finally {
-            PGStorage.closeDataSource(dataSource);
+            throw Throwables.propagate(e);
         }
-        return exists;
     }
 
     /**
@@ -143,53 +141,56 @@ public class PGStorage {
      * @return {@code true} if the repository was created, {@code false} if it already exists
      */
     public static boolean createNewRepo(final Environment config) throws IllegalArgumentException {
-        Preconditions.checkNotNull(config);
-        Preconditions.checkArgument(config.getRepositoryId() != null, "no repository id provided");
-        checkArgument(!PGConfigDatabase.GLOBAL_KEY.equals(config.getRepositoryId()),
-                "%s is a reserved key. No repo can be named like that.",
-                PGConfigDatabase.GLOBAL_KEY);
+        checkNotNull(config);
+        checkArgument(config.getRepositoryName() != null, "no repository name provided");
         createTables(config);
 
-        final boolean created;
+        final String argRepoName = config.getRepositoryName();
+        if (config.isRepositorySet()) {
+            return false;
+        }
 
         final DataSource dataSource = PGStorage.newDataSource(config);
-        try (Connection cx = dataSource.getConnection()) {
-            final String reposTable = config.getTables().repositories();
-            String sql = String.format(
-                    "SELECT TRUE WHERE EXISTS(SELECT 1 FROM %s WHERE repository = ?)", reposTable);
 
-            final String repositoryId = config.getRepositoryId();
-            final boolean exists;
-            cx.setAutoCommit(false);
-            try {
-                try (PreparedStatement st = cx.prepareStatement(sql)) {
-                    st.setString(1, repositoryId);
-                    try (ResultSet rs = st.executeQuery()) {
-                        exists = rs.next();
-                    }
-                }
-                if (!exists) {
-                    sql = format("INSERT INTO %s (repository, created) VALUES (?, NOW())",
-                            reposTable);
-                    try (PreparedStatement st = cx.prepareStatement(sql)) {
-                        st.setString(1, repositoryId);
-                        int updCnt = st.executeUpdate();
-                        Preconditions.checkState(updCnt == 1);
-                    }
-                }
-                cx.commit();
-            } catch (SQLException | RuntimeException e) {
-                throw rollbackAndRethrow(cx, e);
-            } finally {
-                cx.setAutoCommit(true);
+        try (PGConfigDatabase configdb = new PGConfigDatabase(config)) {
+            final Optional<Integer> repositoryPK = configdb.resolveRepositoryPK(argRepoName);
+            if (repositoryPK.isPresent()) {
+                return false;
             }
-            created = !exists;
+            try (Connection cx = dataSource.getConnection()) {
+                final String reposTable = config.getTables().repositories();
+                cx.setAutoCommit(false);
+                final int pk;
+                try {
+                    String sql = format("INSERT INTO %s (created) VALUES (NOW())", reposTable);
+                    try (Statement st = cx.createStatement()) {
+                        int updCnt = st.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+                        checkState(updCnt == 1);
+                        try (ResultSet generatedKeys = st.getGeneratedKeys()) {
+                            checkState(generatedKeys.next());
+                            pk = generatedKeys.getInt(1);
+                        }
+                        config.setRepositoryId(pk);
+                    }
+                    cx.commit();
+                } catch (SQLException | RuntimeException e) {
+                    throw rollbackAndRethrow(cx, e);
+                } finally {
+                    cx.setAutoCommit(true);
+                }
+
+                configdb.put("repo.name", argRepoName);
+                checkState(pk == configdb.resolveRepositoryPK(argRepoName)
+                        .or(Environment.REPOSITORY_ID_UNSET));
+            }
         } catch (SQLException e) {
             throw propagate(e);
         } finally {
             PGStorage.closeDataSource(dataSource);
         }
-        return created;
+
+        checkState(config.isRepositorySet());
+        return true;
     }
 
     public static void createTables(final Environment config) {
@@ -228,6 +229,7 @@ public class PGStorage {
                 PGStorage.createObjectIdCompositeType(cx);
                 PGStorage.run(cx, "SET constraint_exclusion=ON");
 
+                createRepositoriesTable(cx, tables);
                 createConfigTable(cx, tables);
                 cx.commit();
                 cx.setAutoCommit(false);
@@ -253,7 +255,12 @@ public class PGStorage {
 
     }
 
-    private static void run(Connection cx, String sql) throws SQLException {
+    private static void run(final Connection cx, final String sql) throws SQLException {
+        // String s = sql;
+        // if (!s.endsWith(";")) {
+        // s += ";";
+        // }
+        // System.out.println(s);
         try (Statement st = cx.createStatement()) {
             st.execute(log(sql, LOG));
         }
@@ -264,7 +271,7 @@ public class PGStorage {
         cx.setAutoCommit(false);
 
         // There's no CREATE TYPE IF NOT EXIST, so use this trick
-        final String func = "-- All of this to create a type if it does not exist\n"//
+        final String func = "-- This function is to create a type if it does not exist since there's no support for IF NOT EXISTS for CREATE TYPE\n"//
                 + "CREATE OR REPLACE FUNCTION create_objectid_type() RETURNS integer AS $$\n"//
                 + "DECLARE v_exists INTEGER;\n"//
 
@@ -278,12 +285,12 @@ public class PGStorage {
                 + "$$ LANGUAGE plpgsql;";
 
         try (Statement st = cx.createStatement()) {
-            st.execute(log(func, LOG));
+            PGStorage.run(cx, func);
             // Call the function you just created
-            st.execute(log("SELECT create_objectid_type()", LOG));
+            PGStorage.run(cx, "SELECT create_objectid_type()");
 
             // Remove the function you just created
-            st.execute(log("DROP function create_objectid_type()", LOG));
+            PGStorage.run(cx, "DROP function create_objectid_type()");
             cx.commit();
             cx.setAutoCommit(autoCommit);
         } catch (SQLException e) {
@@ -294,21 +301,23 @@ public class PGStorage {
 
     private static void createRepositoriesTable(Connection cx, TableNames tables)
             throws SQLException {
-        String sql = format(
-                "CREATE TABLE %s (repository TEXT PRIMARY KEY, created TIMESTAMP, lock_id SERIAL);"
-                        + "INSERT INTO %s (repository, created) VALUES ( '"
-                        + PGConfigDatabase.GLOBAL_KEY + "', NOW())",
-                tables.repositories(), tables.repositories());
+        final String repositories = tables.repositories();
+
+        String sql = format("CREATE TABLE %s (repository serial PRIMARY KEY, created TIMESTAMP)",
+                repositories);
         run(cx, sql);
+        // create an entry for global config to have a matching entry in repositories
+        sql = format("INSERT INTO %s (repository, created) VALUES (%d, NOW())", repositories,
+                PGConfigDatabase.GLOBAL_KEY);
+        run(cx, sql);
+
     }
 
     private static void createConfigTable(Connection cx, TableNames tables) throws SQLException {
-
-        createRepositoriesTable(cx, tables);
-
+        final String repositories = tables.repositories();
         String configTable = tables.config();
         String sql = format(
-                "CREATE TABLE IF NOT EXISTS %s (repository TEXT, section TEXT, key TEXT, value TEXT,"
+                "CREATE TABLE IF NOT EXISTS %s (repository INTEGER, section TEXT, key TEXT, value TEXT,"
                         + " PRIMARY KEY (repository, section, key)"
                         + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
                 configTable, tables.repositories());
@@ -317,6 +326,10 @@ public class PGStorage {
                 stripSchema(configTable), configTable);
         try {
             run(cx, sql);
+            sql = format(
+                    "CREATE VIEW %s_name " + "AS SELECT r.*, c.value AS name FROM "
+                            + "%s r INNER JOIN %s c ON r.repository = c.repository WHERE c.section = 'repo' AND c.key = 'name'",
+                    repositories, repositories, configTable);
         } catch (SQLException alreadyExists) {
             // ignore
         }
@@ -324,7 +337,7 @@ public class PGStorage {
 
     private static void createRefsTable(Connection cx, TableNames tables) throws SQLException {
         final String TABLE_STMT = format(
-                "CREATE TABLE %s (" + "repository TEXT, path TEXT, name TEXT, value TEXT, "
+                "CREATE TABLE %s (" + "repository INTEGER, path TEXT, name TEXT, value TEXT, "
                         + "PRIMARY KEY(repository, path, name), "
                         + "FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
                 tables.refs(), tables.repositories());
@@ -334,7 +347,7 @@ public class PGStorage {
     private static void createConflictsTable(Connection cx, TableNames tables) throws SQLException {
         String conflictsTable = tables.conflicts();
         String sql = format(
-                "CREATE TABLE %s (repository TEXT, namespace TEXT, path TEXT, ancestor bytea, ours bytea NOT NULL, theirs bytea NOT NULL"
+                "CREATE TABLE %s (repository INTEGER, namespace TEXT, path TEXT, ancestor bytea, ours bytea NOT NULL, theirs bytea NOT NULL"
                         + ", PRIMARY KEY(repository, namespace, path)"
                         + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
                 conflictsTable, tables.repositories());
@@ -344,7 +357,7 @@ public class PGStorage {
     private static void createBlobsTable(Connection cx, TableNames tables) throws SQLException {
         String blobsTable = tables.blobs();
         String sql = format(
-                "CREATE TABLE %s (repository TEXT, namespace TEXT, path TEXT, blob BYTEA"
+                "CREATE TABLE %s (repository INTEGER, namespace TEXT, path TEXT, blob BYTEA"
                         + ", PRIMARY KEY(repository,namespace,path)"
                         + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
                 blobsTable, tables.repositories());
@@ -503,7 +516,6 @@ public class PGStorage {
 
     private static void createGraphTables(Connection cx, TableNames tables) throws SQLException {
 
-        final String commits = tables.commits();
         final String edges = tables.graphEdges();
         final String properties = tables.graphProperties();
         final String mappings = tables.graphMappings();
@@ -530,10 +542,26 @@ public class PGStorage {
         run(cx, sql);
     }
 
-    public static boolean deleteRepository(Environment env) {
-        Preconditions.checkArgument(env.getRepositoryId() != null, "No repository id provided");
+    public static boolean deleteRepository(final Environment env) {
+        checkArgument(env.getRepositoryName() != null, "No repository name provided");
 
-        final String repositoryId = env.getRepositoryId();
+        final String repositoryName = env.getRepositoryName();
+        final int repositoryPK;
+
+        if (env.isRepositorySet()) {
+            repositoryPK = env.getRepositoryId();
+        } else {
+            try (PGConfigDatabase configdb = new PGConfigDatabase(env)) {
+                Optional<Integer> pk = configdb.resolveRepositoryPK(repositoryName);
+                if (pk.isPresent()) {
+                    repositoryPK = pk.get();
+                } else {
+                    return false;
+                }
+            } catch (SQLException e) {
+                throw Throwables.propagate(e);
+            }
+        }
         final TableNames tables = env.getTables();
         final String reposTable = tables.repositories();
         boolean deleted = false;
@@ -543,8 +571,8 @@ public class PGStorage {
 
         try (Connection cx = ds.getConnection()) {
             cx.setAutoCommit(false);
-            try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repositoryId))) {
-                st.setString(1, repositoryId);
+            try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repositoryName))) {
+                st.setInt(1, repositoryPK);
                 int rowCount = st.executeUpdate();
                 deleted = rowCount > 0;
                 cx.commit();

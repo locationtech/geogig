@@ -49,7 +49,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
     public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext) {
         Environment config = parseConfig(repoURI);
         PGConfigDatabase configDb = new PGConfigDatabase(config);
-        if (config.getRepositoryId() != null) {
+        if (config.getRepositoryName() != null) {
             Optional<String> refsFormat = configDb.get("storage.refs");
             if (!refsFormat.isPresent()) {
                 configDb.put(PGStorageProvider.FORMAT_NAME + ".version", PGStorageProvider.VERSION);
@@ -69,7 +69,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
             Throwables.propagateIfInstanceOf(e, IllegalArgumentException.class);
             throw new IllegalArgumentException("Error parsing URI " + repoURI, e);
         }
-        Preconditions.checkArgument(config.getRepositoryId() != null,
+        Preconditions.checkArgument(config.getRepositoryName() != null,
                 "No repository id provided in repo URI: '" + repoURI + "'");
         return config;
     }
@@ -89,7 +89,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
     @Override
     public String getName(URI repoURI) {
         Environment env = parseConfig(repoURI);
-        String repositoryId = env.getRepositoryId();
+        String repositoryId = env.getRepositoryName();
         return repositoryId;
     }
 

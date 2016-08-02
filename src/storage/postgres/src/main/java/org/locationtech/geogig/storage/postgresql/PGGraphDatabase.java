@@ -74,8 +74,8 @@ public class PGGraphDatabase implements GraphDatabase {
     public PGGraphDatabase(ConfigDatabase configdb, Environment config) {
         Preconditions.checkNotNull(configdb);
         Preconditions.checkNotNull(config);
-        // Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
-        // config.repositoryId);
+        Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
+                config.getRepositoryName());
         this.configdb = configdb;
         this.config = config;
         this.formatVersion = PGStorageProvider.VERSION;

@@ -46,11 +46,14 @@ public class PGStorageTest {
         final TableNames tables = config.getTables();
         final List<String> tableNames = tables.all();
         final DataSource dataSource = PGStorage.newDataSource(config);
+        assertFalse(config.isRepositorySet());
         try {
             for (String table : tableNames) {
                 assertTableDoesntExist(dataSource, table);
             }
             PGStorage.createNewRepo(config);
+            assertTrue(config.isRepositorySet());
+
             for (String table : tableNames) {
                 assertTableExist(dataSource, table);
             }
@@ -58,9 +61,9 @@ public class PGStorageTest {
             try (Connection cx = dataSource.getConnection()) {
                 String repositories = tables.repositories();
                 String sql = format("SELECT * from %s WHERE repository = ?", repositories);
-                String repositoryId = config.getRepositoryId();
+                int repositoryId = config.getRepositoryId();
                 try (PreparedStatement st = cx.prepareStatement(sql)) {
-                    st.setString(1, repositoryId);
+                    st.setInt(1, repositoryId);
                     try (ResultSet rs = st.executeQuery()) {
                         assertTrue(format("repository '%s' not found in table '%s'", repositoryId,
                                 repositories), rs.next());

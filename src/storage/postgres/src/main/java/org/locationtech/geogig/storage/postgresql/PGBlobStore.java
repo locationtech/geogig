@@ -42,9 +42,9 @@ class PGBlobStore implements TransactionBlobStore {
 
     private String blobsTable;
 
-    private String repositoryId;
+    private int repositoryId;
 
-    PGBlobStore(final DataSource dataSource, final String blobsTable, final String repositoryId) {
+    PGBlobStore(final DataSource dataSource, final String blobsTable, final int repositoryId) {
         this.dataSource = dataSource;
         this.blobsTable = blobsTable;
         this.repositoryId = repositoryId;
@@ -87,7 +87,7 @@ class PGBlobStore implements TransactionBlobStore {
         try (Connection cx = dataSource.getConnection()) {
             try (PreparedStatement ps = cx
                     .prepareStatement(log(sql, LOG, repositoryId, namespace, path))) {
-                ps.setString(1, repositoryId);
+                ps.setInt(1, repositoryId);
                 ps.setString(2, namespace);
                 ps.setString(3, path);
 
@@ -128,13 +128,13 @@ class PGBlobStore implements TransactionBlobStore {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement d = cx.prepareStatement(delete)) {
-                    d.setString(1, repositoryId);
+                    d.setInt(1, repositoryId);
                     d.setString(2, namespace);
                     d.setString(3, path);
                     d.executeUpdate();
                 }
                 try (PreparedStatement i = cx.prepareStatement(insert)) {
-                    i.setString(1, repositoryId);
+                    i.setInt(1, repositoryId);
                     i.setString(2, namespace);
                     i.setString(3, path);
                     i.setBytes(4, blob);
@@ -176,7 +176,7 @@ class PGBlobStore implements TransactionBlobStore {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement d = cx.prepareStatement(delete)) {
-                    d.setString(1, repositoryId);
+                    d.setInt(1, repositoryId);
                     d.setString(2, namespace);
                     d.setString(3, path);
                     d.executeUpdate();
@@ -203,7 +203,7 @@ class PGBlobStore implements TransactionBlobStore {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement d = cx.prepareStatement(delete)) {
-                    d.setString(1, repositoryId);
+                    d.setInt(1, repositoryId);
                     d.setString(2, namespace);
                     d.executeUpdate();
                 }

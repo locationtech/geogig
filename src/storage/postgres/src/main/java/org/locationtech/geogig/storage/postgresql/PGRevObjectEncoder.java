@@ -34,9 +34,9 @@ import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
  * this encoder delegates to.
  * <p>
  * When deserializing a byte array from postgres, the header is used to identify which serializer
- * "version" the object was encoded with, and delegate to the proper serialiser. This way, there can
+ * "version" the object was encoded with, and delegate to the proper serializer. This way, there can
  * be objects of mixed serialization formats in the same database transparently, so upgrading the
- * serialization format requires no extra maintainance.
+ * serialization format requires no extra maintenance.
  */
 public class PGRevObjectEncoder {
     /**

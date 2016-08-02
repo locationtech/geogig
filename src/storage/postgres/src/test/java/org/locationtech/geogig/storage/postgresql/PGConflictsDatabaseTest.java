@@ -61,7 +61,7 @@ public class PGConflictsDatabaseTest {
     @Before
     public void beforeMocks() throws SQLException {
         when(mockSource.getConnection()).thenReturn(mockConnection);
-        mockSourceConflicts = new PGConflictsDatabase(mockSource, "geogig_conflicts", "mockRepoId");
+        mockSourceConflicts = new PGConflictsDatabase(mockSource, "geogig_conflicts", 1);
     }
 
     @Test

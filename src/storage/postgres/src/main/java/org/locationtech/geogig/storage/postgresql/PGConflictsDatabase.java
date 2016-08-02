@@ -76,13 +76,13 @@ class PGConflictsDatabase implements ConflictsDatabase {
 
     private final String conflictsTable;
 
-    private final String repositoryId;
+    private final int repositoryId;
 
     @VisibleForTesting
     final DataSource dataSource;
 
     public PGConflictsDatabase(final DataSource dataSource, final String conflictsTable,
-            final String repositoryId) {
+            final int repositoryId) {
         this.dataSource = dataSource;
         this.conflictsTable = conflictsTable;
         this.repositoryId = repositoryId;
@@ -103,7 +103,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
             cx.setAutoCommit(false);
             log(sql, LOG, namespace, path, conflict);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setString(1, repositoryId);
+                ps.setInt(1, repositoryId);
                 ps.setString(2, namespace);
                 ps.setString(3, path);
                 ObjectId ancestor = conflict.getAncestor();
@@ -144,7 +144,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
                     final String path = conflict.getPath();
                     Preconditions.checkNotNull(path);
 
-                    ps.setString(1, repositoryId);
+                    ps.setInt(1, repositoryId);
                     ps.setString(2, namespace);
                     ps.setString(3, path);
                     ObjectId ancestor = conflict.getAncestor();
@@ -186,7 +186,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
 
         try (Connection cx = dataSource.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setString(1, repositoryId);
+                ps.setInt(1, repositoryId);
                 ps.setString(2, namespace(namespace));
                 ps.setString(3, path);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -216,7 +216,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
         boolean hasConflicts;
         try (Connection cx = dataSource.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, namespace))) {
-                ps.setString(1, repositoryId);
+                ps.setInt(1, repositoryId);
                 ps.setString(2, namespace(namespace));
                 try (ResultSet rs = ps.executeQuery()) {
                     hasConflicts = rs.next();
@@ -248,7 +248,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
         List<Conflict> conflicts = new ArrayList<>();
         try (Connection cx = dataSource.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setString(1, repositoryId);
+                ps.setInt(1, repositoryId);
                 ps.setString(2, namespace);
                 if (pathFilter != null) {
                     ps.setString(3, pathFilter + "%");
@@ -303,7 +303,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
         List<Conflict> batch = new ArrayList<>();
         try (Connection cx = dataSource.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setString(1, repositoryId);
+                ps.setInt(1, repositoryId);
                 ps.setString(2, namespace(namespace));
                 if (treePath != null) {
                     ps.setString(3, treePath);
@@ -392,7 +392,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
         int count;
         try (Connection cx = dataSource.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, namespace))) {
-                ps.setString(1, repositoryId);
+                ps.setInt(1, repositoryId);
                 ps.setString(2, namespace);
                 if (null != treePath) {
                     String likeArg = treePath + "/%";
@@ -427,7 +427,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
         try (Connection cx = dataSource.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setString(1, repositoryId);
+                ps.setInt(1, repositoryId);
                 ps.setString(2, namespace);
                 ps.setString(3, path);
                 ps.executeUpdate();
@@ -462,7 +462,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
                     Array array = cx.createArrayOf("varchar", pathsArg);
 
                     ps.clearParameters();
-                    ps.setString(1, repositoryId);
+                    ps.setInt(1, repositoryId);
                     ps.setString(2, namespace);
                     ps.setArray(3, array);
                     ps.executeUpdate();
@@ -489,7 +489,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
         try (Connection cx = dataSource.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setString(1, repositoryId);
+                ps.setInt(1, repositoryId);
                 ps.setString(2, namespace);
                 ps.executeUpdate();
                 cx.commit();
@@ -527,7 +527,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
                     Array array = cx.createArrayOf("varchar", pathsArg);
 
                     ps.clearParameters();
-                    ps.setString(1, repositoryId);
+                    ps.setInt(1, repositoryId);
                     ps.setString(2, namespace);
                     ps.setArray(3, array);
                     try (ResultSet rs = ps.executeQuery()) {
@@ -563,7 +563,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
 
         try (Connection cx = dataSource.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setString(1, repositoryId);
+                ps.setInt(1, repositoryId);
                 ps.setString(2, namespace(namespace));
                 if (pathPrefix != null) {
                     ps.setString(3, pathPrefix);

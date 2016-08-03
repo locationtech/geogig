@@ -12,7 +12,6 @@ This section will discuss alternate ways of interacting with GeoGig, both local 
    web-repository-management
    geoserver_ui
    geoserver_web-api
-   geoserver_web-api-init
    web-api
    async-tasks
    osm

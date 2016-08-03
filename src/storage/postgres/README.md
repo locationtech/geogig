@@ -5,7 +5,7 @@ This is the GeoGig storage backend for PostgreSQL databases.
 USAGE:
 ------
 Repository URL must be provided. From the command line, use ``geogig <command> <args> --repo <url>`` for every command
-``<url>`` is of the form: ``postgresql://<server>[:<port>]/database[/<schema>]/<repoid>?user=<username>&password=<pwd>``
+``<url>`` is of the form: ``postgresql://<server>[:<port>]/database[/<schema>]/<reponame>?user=<username>&password=<pwd>``
 
 ``port`` is optional, and defaults to ``5432`` if not given.
 ``schema`` is optional, and defaults to ``public`` if not given.

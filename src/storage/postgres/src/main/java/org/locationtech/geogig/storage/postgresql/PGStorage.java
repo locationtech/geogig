@@ -324,12 +324,13 @@ public class PGStorage {
         run(cx, sql);
         sql = format("CREATE INDEX %s_section_idx ON %s (repository, section)",
                 stripSchema(configTable), configTable);
+        run(cx, sql);
         try {
-            run(cx, sql);
             sql = format(
                     "CREATE VIEW %s_name " + "AS SELECT r.*, c.value AS name FROM "
                             + "%s r INNER JOIN %s c ON r.repository = c.repository WHERE c.section = 'repo' AND c.key = 'name'",
                     repositories, repositories, configTable);
+            run(cx, sql);
         } catch (SQLException alreadyExists) {
             // ignore
         }

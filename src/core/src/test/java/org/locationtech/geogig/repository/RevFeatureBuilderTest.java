@@ -9,14 +9,19 @@
  */
 package org.locationtech.geogig.repository;
 
-import org.junit.Test;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.Property;
+import static org.locationtech.geogig.model.RevFeatureBuilder.builder;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import org.junit.Test;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.opengis.feature.Feature;
+import org.opengis.feature.Property;
+import org.opengis.feature.simple.SimpleFeature;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 
 public class RevFeatureBuilderTest extends RepositoryTestCase {
 
@@ -26,9 +31,9 @@ public class RevFeatureBuilderTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testBuildEmpty() throws Exception {
+    public void testNullFeature() throws Exception {
         try {
-            RevFeatureBuilder.build(null);
+            RevFeatureBuilder.build((Feature) null);
             fail("expected IllegalStateException on null feature");
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("No feature set"));
@@ -36,26 +41,147 @@ public class RevFeatureBuilderTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testBuildFull() throws Exception {
-        RevFeature feature = RevFeatureBuilder.build(points1);
+    public void testBuildEmpty() throws Exception {
 
-        ImmutableList<Optional<Object>> values = feature.getValues();
+        RevFeature emptyFeature = RevFeatureBuilder.builder().build();
+        assertNotNull(emptyFeature);
+        assertTrue(emptyFeature.getValues().isEmpty());
 
-        assertEquals(values.size(), points1.getProperties().size());
+        assertEquals(ObjectId.valueOf("0aaf76f425c6e0f43a36197de768e67d9e035abb"),
+                emptyFeature.getId());
+    }
 
-        for (Property prop : points1.getProperties()) {
-            assertTrue(values.contains(Optional.fromNullable(prop.getValue())));
+    @Test
+    public void testBuildWithAddValue() throws Exception {
+        SimpleFeature f = (SimpleFeature) points1;
+        RevFeature feature = RevFeatureBuilder.build(f);
+
+        RevFeatureBuilder b = builder();
+        for (int i = 0; i < f.getAttributeCount(); i++) {
+            b.addValue(f.getAttribute(i));
         }
+        RevFeature built = b.build();
+        assertEquals(feature, built);
 
-        RevFeature feature2 = RevFeatureBuilder.build(lines1);
-
-        values = feature2.getValues();
-
-        assertEquals(values.size(), lines1.getProperties().size());
-
-        for (Property prop : lines1.getProperties()) {
-            assertTrue(values.contains(Optional.fromNullable(prop.getValue())));
+        for (int i = 0; i < f.getAttributeCount(); i++) {
+            assertEquals(f.getAttribute(i), built.getValues().get(i).orNull());
         }
+    }
 
+    @Test
+    public void testBuildWithAddProperty() throws Exception {
+        SimpleFeature f = (SimpleFeature) points1;
+        RevFeature feature = RevFeatureBuilder.build(f);
+
+        RevFeatureBuilder b = builder();
+        for (Property p : f.getProperties()) {
+            b.addProperty(p);
+        }
+        RevFeature built = b.build();
+        assertEquals(feature, built);
+
+        for (int i = 0; i < f.getAttributeCount(); i++) {
+            assertEquals(f.getAttribute(i), built.getValues().get(i).orNull());
+        }
+    }
+
+    @Test
+    public void testReset() {
+        SimpleFeature f = (SimpleFeature) points1;
+        RevFeature feature = RevFeatureBuilder.build(f);
+
+        RevFeatureBuilder b = builder();
+        b.addValue(1000);
+        b.addValue("str");
+        b.reset();
+        for (Property p : f.getProperties()) {
+            b.addProperty(p);
+        }
+        RevFeature built = b.build();
+        assertEquals(feature, built);
+
+        for (int i = 0; i < f.getAttributeCount(); i++) {
+            assertEquals(f.getAttribute(i), built.getValues().get(i).orNull());
+        }
+    }
+
+    @Test
+    public void testAddAll() {
+        SimpleFeature f = (SimpleFeature) points1;
+        RevFeature feature = RevFeatureBuilder.build(f);
+
+        RevFeatureBuilder b = builder();
+        b.addAll(f.getAttributes());
+
+        RevFeature builtWithList = b.build();
+        assertEquals(feature, builtWithList);
+
+        b.reset();
+        b.addAll(f.getAttributes().toArray(new Object[f.getAttributeCount()]));
+        RevFeature builtWithArray = b.build();
+        assertEquals(feature, builtWithArray);
+
+        for (int i = 0; i < f.getAttributeCount(); i++) {
+            assertEquals(f.getAttribute(i), builtWithList.getValues().get(i).orNull());
+        }
+    }
+
+    @Test
+    public void testEnforcesPolygonNormalization() throws Exception {
+        // outer ring in cw order, inner rings in ccw order
+        String normalizedWKT = "POLYGON((0 0, 0 9, 9 9, 9 0, 0 0), (3 3, 6 3, 6 6, 3 6, 3 3))";
+        // outer ring in ccw order, inner rings in cc order
+        String reversedWKT = "POLYGON((0 0, 9 0, 9 9, 0 9, 0 0), (3 3, 3 6, 6 6, 6 3, 3 3))";
+
+        Geometry normalized = new WKTReader().read(normalizedWKT);
+        Geometry reversed = new WKTReader().read(reversedWKT);
+
+        assertTrue(normalized.equalsExact(normalized.norm()));
+        assertFalse(reversed.equalsExact(reversed.norm()));
+
+        RevFeatureBuilder builder = builder();
+        RevFeature norm = builder.addValue(normalized).build();
+        RevFeature rev = builder.reset().addValue(reversed).build();
+
+        Geometry expected = (Geometry) norm.getValues().get(0).get();
+        Geometry actual = (Geometry) rev.getValues().get(0).get();
+
+        assertTrue(normalized.equalsExact(expected));
+        assertTrue(normalized.equalsExact(actual));
+    }
+
+    @Test
+    public void testEnforcesPolygonNormalization2() throws Exception {
+        // outer ring in cw order, inner rings in ccw order
+        String normalizedWKT = "GEOMETRYCOLLECTION("//
+                + " POINT(2 2), LINESTRING(5 0, 0 0),"//
+                + " POLYGON((0 0, 0 9, 9 9, 9 0, 0 0), (3 3, 6 3, 6 6, 3 6, 3 3))"//
+                + ")";
+        // outer ring in ccw order, inner rings in cc order
+        String reversedWKT = "GEOMETRYCOLLECTION("//
+                + " POINT(2 2), LINESTRING(5 0, 0 0),"//
+                + " POLYGON((0 0, 9 0, 9 9, 0 9, 0 0), (3 3, 3 6, 6 6, 6 3, 3 3))"//
+                + ")";
+
+        Geometry normalized = new WKTReader().read(normalizedWKT);
+        Geometry reversed = new WKTReader().read(reversedWKT);
+
+        // preflight assertions
+        assertFalse(normalized.equalsExact(normalized.norm()));// the linestring is not normalized
+        // but the polygon is
+        assertTrue(normalized.getGeometryN(2).equalsExact(normalized.getGeometryN(2).norm()));
+
+        assertFalse(reversed.getGeometryN(2).equalsExact(reversed.getGeometryN(2).norm()));
+
+        // make sure RevFeatureBuilder normalized only the polygon
+        RevFeatureBuilder builder = builder();
+        RevFeature norm = builder.addValue(normalized).build();
+        RevFeature rev = builder.reset().addValue(reversed).build();
+
+        Geometry expected = (Geometry) norm.getValues().get(0).get();
+        Geometry actual = (Geometry) rev.getValues().get(0).get();
+
+        assertTrue(normalized.equalsExact(expected));
+        assertTrue(normalized.equalsExact(actual));
     }
 }

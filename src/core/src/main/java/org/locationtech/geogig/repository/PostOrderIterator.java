@@ -16,14 +16,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.storage.Deduplicator;
+import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.collect.AbstractIterator;

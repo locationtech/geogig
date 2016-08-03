@@ -11,16 +11,16 @@ package org.locationtech.geogig.repository;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.locationtech.geogig.api.NodeRef.PATH_SEPARATOR;
+import static org.locationtech.geogig.model.NodeRef.PATH_SEPARATOR;
 
 import java.util.List;
 
-import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.storage.NodePathStorageOrder;
+import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CanonicalNodeNameOrder;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -41,7 +41,7 @@ public class DepthSearch {
 
     private final ObjectStore objectDb;
 
-    private NodePathStorageOrder refOrder = new NodePathStorageOrder();
+    private CanonicalNodeNameOrder refOrder = CanonicalNodeNameOrder.INSTANCE;
 
     /**
      * Constructs a new {@code DepthSearch} with the given parameters.

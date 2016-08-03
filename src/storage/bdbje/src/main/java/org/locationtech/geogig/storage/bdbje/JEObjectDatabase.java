@@ -35,8 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.AbstractObjectDatabase;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
@@ -58,7 +58,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.ning.compress.lzf.LZFInputStream;
 import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.CursorConfig;
@@ -130,8 +129,9 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
         this.envProvider = envProvider;
         this.readOnly = readOnly;
         this.envName = envName;
-        this.conflicts = new FileConflictsDatabase(envProvider.getPlatform());
-        this.blobStore = new FileBlobStore(envProvider.getPlatform());
+        File geoGigDirectory = envProvider.getGeoGigDirectory();
+        this.conflicts = new FileConflictsDatabase(geoGigDirectory);
+        this.blobStore = new FileBlobStore(geoGigDirectory);
     }
 
     /**
@@ -264,9 +264,6 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
             environment = createEnvironment(readOnly);
         }
 
-        // System.err.println("Opened ObjectDatabase at " + env.getHome()
-        // + ". Environment read-only: " + environment.getConfig().getReadOnly()
-        // + " database read only: " + this.readOnly);
         Database database;
         try {
             LOGGER.debug("Opening ObjectDatabase at {}", environment.getHome());
@@ -338,7 +335,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     /**
-     * @see org.locationtech.geogig.storage.ObjectDatabase#exists(org.locationtech.geogig.api.ObjectId)
+     * @see org.locationtech.geogig.storage.ObjectDatabase#exists(org.locationtech.geogig.model.ObjectId)
      */
     @Override
     public boolean exists(final ObjectId id) {
@@ -655,7 +652,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     @Override
-    public boolean delete(final ObjectId id) {
+    public void delete(final ObjectId id) {
         Preconditions.checkNotNull(id, "argument id is null");
         checkWritable();
         final byte[] rawKey = id.getRawValue();
@@ -663,15 +660,13 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
 
         final Transaction transaction = newTransaction();
 
-        final OperationStatus status;
         try {
-            status = objectDb.delete(transaction, key);
+            objectDb.delete(transaction, key);
             commit(transaction);
         } catch (RuntimeException e) {
             abort(transaction);
             throw e;
         }
-        return SUCCESS.equals(status);
     }
 
     private void abort(@Nullable Transaction transaction) {
@@ -695,12 +690,10 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
+    public void deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
         Preconditions.checkNotNull(ids, "argument ids is null");
         Preconditions.checkNotNull(listener, "argument listener is null");
         checkWritable();
-
-        long count = 0;
 
         UnmodifiableIterator<List<ObjectId>> partition = partition(ids, getBulkPartitionSize());
 
@@ -727,7 +720,6 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
                         OperationStatus delete = cursor.delete();
                         if (OperationStatus.SUCCESS.equals(delete)) {
                             listener.deleted(id);
-                            count++;
                         } else {
                             listener.notFound(id);
                         }
@@ -743,7 +735,6 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
             }
             commit(transaction);
         }
-        return count;
     }
 
     @Override
@@ -839,8 +830,7 @@ abstract class JEObjectDatabase extends AbstractObjectDatabase implements Object
                     OperationStatus status;
                     status = cursor.getSearchKey(key, data, LockMode.READ_UNCOMMITTED);
                     if (SUCCESS.equals(status)) {
-                        InputStream rawData;
-                        rawData = new LZFInputStream(new ByteArrayInputStream(data.getData()));
+                        InputStream rawData = new ByteArrayInputStream(data.getData());
                         found = reader.read(id, rawData);
                         if (filter.isAssignableFrom(found.getClass())) {
                             listener.found(found.getId(), data.getSize());

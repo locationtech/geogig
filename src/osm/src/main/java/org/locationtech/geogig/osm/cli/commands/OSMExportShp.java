@@ -18,12 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -34,6 +32,7 @@ import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.osm.internal.Mapping;
 import org.locationtech.geogig.osm.internal.MappingRule;
 import org.locationtech.geogig.osm.internal.OSMUtils;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -101,15 +100,7 @@ public class OSMExportShp extends AbstractShpCommand implements CLICommand {
                     "The selected shapefile already exists. Use -o to overwrite");
         }
 
-        Function<Feature, Optional<Feature>> function = new Function<Feature, Optional<Feature>>() {
-
-            @Override
-            @Nullable
-            public Optional<Feature> apply(@Nullable Feature feature) {
-                Optional<Feature> mapped = rule.apply(feature);
-                return mapped;
-            }
-        };
+        final Function<Feature, Optional<Feature>> function = (feature) -> rule.apply(feature);
 
         final ProgressListener progressListener = cli.getProgressListener();
         

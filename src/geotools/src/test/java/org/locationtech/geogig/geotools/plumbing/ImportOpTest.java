@@ -24,20 +24,20 @@ import org.geotools.referencing.CRS;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.geotools.cli.TestHelper;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.plumbing.ResolveFeatureType;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;
@@ -68,7 +68,8 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testNullTableNotAll() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
+        importOp.setDataStore(
+                TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(false);
         exception.expect(GeoToolsOpException.class);
         importOp.call();
@@ -79,7 +80,8 @@ public class ImportOpTest extends RepositoryTestCase {
         ImportOp importOp = geogig.command(ImportOp.class);
         importOp.setTable("");
         importOp.setAll(false);
-        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
+        importOp.setDataStore(
+                TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
         exception.expect(GeoToolsOpException.class);
         importOp.call();
     }
@@ -98,7 +100,8 @@ public class ImportOpTest extends RepositoryTestCase {
         ImportOp importOp = geogig.command(ImportOp.class);
         importOp.setTable("table1");
         importOp.setAll(true);
-        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
+        importOp.setDataStore(
+                TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
         exception.expect(GeoToolsOpException.class);
         importOp.call();
     }
@@ -106,7 +109,8 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testTableNotFound() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
+        importOp.setDataStore(
+                TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(false);
         importOp.setTable("table1");
         exception.expect(GeoToolsOpException.class);
@@ -116,7 +120,8 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testNoFeaturesFound() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
+        importOp.setDataStore(
+                TestHelper.createEmptyTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(true);
         exception.expect(GeoToolsOpException.class);
         importOp.call();
@@ -125,7 +130,8 @@ public class ImportOpTest extends RepositoryTestCase {
     @Test
     public void testTypeNameException() throws Exception {
         ImportOp importOp = geogig.command(ImportOp.class);
-        importOp.setDataStore(TestHelper.createFactoryWithGetNamesException().createDataStore(ImmutableMap.of()));
+        importOp.setDataStore(
+                TestHelper.createFactoryWithGetNamesException().createDataStore(ImmutableMap.of()));
         importOp.setAll(false);
         importOp.setTable("table1");
         exception.expect(GeoToolsOpException.class);
@@ -170,8 +176,8 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.call();
 
         geogig.command(AddOp.class).call();
-        Optional<RevObject> ft = geogig.command(RevObjectParse.class)
-                .setRefSpec("WORK_HEAD:table4").call();
+        Optional<RevObject> ft = geogig.command(RevObjectParse.class).setRefSpec("WORK_HEAD:table4")
+                .call();
         assertTrue(ft.isPresent());
     }
 
@@ -307,7 +313,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 .setObjectId(set.iterator().next()).call(RevFeatureType.class);
         assertTrue(featureType.isPresent());
         assertEquals("table1", featureType.get().getName().getLocalPart());
-        assertEquals("name", featureType.get().sortedDescriptors().get(1).getName().getLocalPart());
+        assertEquals("name", featureType.get().descriptors().get(1).getName().getLocalPart());
     }
 
     @Test
@@ -325,8 +331,8 @@ public class ImportOpTest extends RepositoryTestCase {
                 .setObjectId(list.get(0).getMetadataId()).call(RevFeatureType.class);
         assertTrue(featureType.isPresent());
         assertEquals("table1", featureType.get().getName().getLocalPart());
-        assertEquals("my_geom_name", featureType.get().sortedDescriptors().get(0).getName()
-                .getLocalPart());
+        assertEquals("my_geom_name",
+                featureType.get().descriptors().get(0).getName().getLocalPart());
     }
 
     @Test

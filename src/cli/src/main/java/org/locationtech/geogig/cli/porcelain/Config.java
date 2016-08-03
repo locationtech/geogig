@@ -15,10 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
@@ -26,6 +22,10 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
@@ -149,7 +149,7 @@ public class Config extends AbstractCommand implements CLICommand {
             switch (e.statusCode) {
             case INVALID_LOCATION:
                 // TODO: This could probably be more descriptive.
-                throw new CommandFailedException("The config location is invalid", e);
+                throw new CommandFailedException("The config location is invalid", true);
             case CANNOT_WRITE:
                 throw new CommandFailedException("Cannot write to the config", e);
             case SECTION_OR_NAME_NOT_PROVIDED:

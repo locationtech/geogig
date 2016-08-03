@@ -28,7 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.Platform;
+import org.locationtech.geogig.repository.Platform;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -172,7 +172,9 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         Map<String, String> expected = ImmutableMap.of("section1.int", "1",
                 "section1.subsection.string", "2", "section1.subsection.subsub.int", "1",
                 "section2.int", "3", "section2.subsection.string", "4");
-        assertEquals(expected, all);
+        // check key by key instead of equals on the maps in case the backend adds some extra config
+        // as part of its initialization process
+        expected.entrySet().forEach((e) -> assertEquals(e.getValue(), all.get(e.getKey())));
     }
 
     @Test

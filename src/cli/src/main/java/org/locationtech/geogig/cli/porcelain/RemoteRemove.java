@@ -11,13 +11,14 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.util.List;
 
-import org.locationtech.geogig.api.porcelain.RemoteException;
-import org.locationtech.geogig.api.porcelain.RemoteRemoveOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
+import org.locationtech.geogig.porcelain.RemoteException;
+import org.locationtech.geogig.porcelain.RemoteRemoveOp;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -31,7 +32,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig rm <name>}
+ * <li>{@code geogig rm <name>}
  * </ul>
  * 
  * @see RemoteRemoveOp
@@ -58,8 +59,8 @@ public class RemoteRemove extends AbstractCommand implements CLICommand {
         } catch (RemoteException e) {
             switch (e.statusCode) {
             case REMOTE_NOT_FOUND:
-                throw new CommandFailedException("Could not find a remote called '" + params.get(0)
-                        + "'.", e);
+                throw new InvalidParameterException(
+                        "Could not find a remote called '" + params.get(0) + "'.", e);
             default:
                 throw new CommandFailedException(e.getMessage(), e);
             }

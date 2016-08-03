@@ -15,30 +15,32 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CheckoutResult;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.api.porcelain.RebaseConflictsException;
-import org.locationtech.geogig.api.porcelain.RebaseOp;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.merge.ConflictsCheckOp;
+import org.locationtech.geogig.plumbing.merge.ConflictsQueryOp;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CheckoutResult;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.RebaseConflictsException;
+import org.locationtech.geogig.porcelain.RebaseOp;
+import org.locationtech.geogig.repository.Conflict;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 
 public class RebaseOpTest extends RepositoryTestCase {
     @Rule
@@ -103,14 +105,16 @@ public class RebaseOpTest extends RepositoryTestCase {
         result = geogig.command(CheckoutOp.class).setSource("branch1").call();
         assertEquals(c2.getTreeId(), result.getNewTree());
         assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
-        assertEquals(branch1.getName(), ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD)
-                .call().get()).getTarget());
+        assertEquals(branch1.getName(),
+                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
+                        .getTarget());
 
         result = geogig.command(CheckoutOp.class).setSource("branch2").call();
         assertFalse(c4.getTreeId().equals(result.getNewTree()));
         assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
-        assertEquals(branch2.getName(), ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD)
-                .call().get()).getTarget());
+        assertEquals(branch2.getName(),
+                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
+                        .getTarget());
 
         Iterator<RevCommit> log = geogig.command(LogOp.class).call();
 
@@ -122,8 +126,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(c4.getMessage(), logC4.getMessage());
         assertEquals(c4.getAuthor().getTimeZoneOffset(), logC4.getAuthor().getTimeZoneOffset());
         assertEquals(c4.getAuthor().getTimestamp(), logC4.getAuthor().getTimestamp());
-        assertEquals(c4.getCommitter().getTimeZoneOffset(), logC4.getCommitter()
-                .getTimeZoneOffset());
+        assertEquals(c4.getCommitter().getTimeZoneOffset(),
+                logC4.getCommitter().getTimeZoneOffset());
         assertFalse(c4.getCommitter().getTimestamp() == logC4.getCommitter().getTimestamp());
         assertFalse(c4.getTreeId().equals(logC4.getTreeId()));
 
@@ -135,8 +139,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(c3.getMessage(), logC3.getMessage());
         assertEquals(c3.getAuthor().getTimeZoneOffset(), logC3.getAuthor().getTimeZoneOffset());
         assertEquals(c3.getAuthor().getTimestamp(), logC3.getAuthor().getTimestamp());
-        assertEquals(c3.getCommitter().getTimeZoneOffset(), logC3.getCommitter()
-                .getTimeZoneOffset());
+        assertEquals(c3.getCommitter().getTimeZoneOffset(),
+                logC3.getCommitter().getTimeZoneOffset());
         assertFalse(c3.getCommitter().getTimestamp() == logC3.getCommitter().getTimestamp());
         assertFalse(c3.getTreeId().equals(logC3.getTreeId()));
 
@@ -147,8 +151,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(c2.getMessage(), logC2.getMessage());
         assertEquals(c2.getAuthor().getTimeZoneOffset(), logC2.getAuthor().getTimeZoneOffset());
         assertEquals(c2.getAuthor().getTimestamp(), logC2.getAuthor().getTimestamp());
-        assertEquals(c2.getCommitter().getTimeZoneOffset(), logC2.getCommitter()
-                .getTimeZoneOffset());
+        assertEquals(c2.getCommitter().getTimeZoneOffset(),
+                logC2.getCommitter().getTimeZoneOffset());
         assertEquals(c2.getCommitter().getTimestamp(), logC2.getCommitter().getTimestamp());
         assertEquals(c2.getTreeId(), logC2.getTreeId());
 
@@ -159,8 +163,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(c1.getMessage(), logC1.getMessage());
         assertEquals(c1.getAuthor().getTimeZoneOffset(), logC1.getAuthor().getTimeZoneOffset());
         assertEquals(c1.getAuthor().getTimestamp(), logC1.getAuthor().getTimestamp());
-        assertEquals(c1.getCommitter().getTimeZoneOffset(), logC1.getCommitter()
-                .getTimeZoneOffset());
+        assertEquals(c1.getCommitter().getTimeZoneOffset(),
+                logC1.getCommitter().getTimeZoneOffset());
         assertEquals(c1.getCommitter().getTimestamp(), logC1.getCommitter().getTimestamp());
         assertEquals(c1.getTreeId(), logC1.getTreeId());
 
@@ -203,14 +207,16 @@ public class RebaseOpTest extends RepositoryTestCase {
         result = geogig.command(CheckoutOp.class).setSource("branch1").call();
         assertEquals(c2.getTreeId(), result.getNewTree());
         assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
-        assertEquals(branch1.getName(), ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD)
-                .call().get()).getTarget());
+        assertEquals(branch1.getName(),
+                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
+                        .getTarget());
 
         result = geogig.command(CheckoutOp.class).setSource("branch2").call();
         assertFalse(c4.getTreeId().equals(result.getNewTree()));
         assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
-        assertEquals(branch2.getName(), ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD)
-                .call().get()).getTarget());
+        assertEquals(branch2.getName(),
+                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
+                        .getTarget());
 
         Iterator<RevCommit> log = geogig.command(LogOp.class).call();
 
@@ -222,8 +228,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals("squashed commit", logC4.getMessage());
         assertEquals(c4.getAuthor().getTimeZoneOffset(), logC4.getAuthor().getTimeZoneOffset());
         assertEquals(c4.getAuthor().getTimestamp(), logC4.getAuthor().getTimestamp());
-        assertEquals(c4.getCommitter().getTimeZoneOffset(), logC4.getCommitter()
-                .getTimeZoneOffset());
+        assertEquals(c4.getCommitter().getTimeZoneOffset(),
+                logC4.getCommitter().getTimeZoneOffset());
         assertFalse(c4.getCommitter().getTimestamp() == logC4.getCommitter().getTimestamp());
         assertFalse(c4.getTreeId().equals(logC4.getTreeId()));
 
@@ -243,8 +249,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(c2.getMessage(), logC2.getMessage());
         assertEquals(c2.getAuthor().getTimeZoneOffset(), logC2.getAuthor().getTimeZoneOffset());
         assertEquals(c2.getAuthor().getTimestamp(), logC2.getAuthor().getTimestamp());
-        assertEquals(c2.getCommitter().getTimeZoneOffset(), logC2.getCommitter()
-                .getTimeZoneOffset());
+        assertEquals(c2.getCommitter().getTimeZoneOffset(),
+                logC2.getCommitter().getTimeZoneOffset());
         assertEquals(c2.getCommitter().getTimestamp(), logC2.getCommitter().getTimestamp());
         assertEquals(c2.getTreeId(), logC2.getTreeId());
 
@@ -255,8 +261,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(c1.getMessage(), logC1.getMessage());
         assertEquals(c1.getAuthor().getTimeZoneOffset(), logC1.getAuthor().getTimeZoneOffset());
         assertEquals(c1.getAuthor().getTimestamp(), logC1.getAuthor().getTimestamp());
-        assertEquals(c1.getCommitter().getTimeZoneOffset(), logC1.getCommitter()
-                .getTimeZoneOffset());
+        assertEquals(c1.getCommitter().getTimeZoneOffset(),
+                logC1.getCommitter().getTimeZoneOffset());
         assertEquals(c1.getCommitter().getTimestamp(), logC1.getCommitter().getTimestamp());
         assertEquals(c1.getTreeId(), logC1.getTreeId());
 
@@ -324,14 +330,16 @@ public class RebaseOpTest extends RepositoryTestCase {
         result = geogig.command(CheckoutOp.class).setSource("branch1").call();
         assertEquals(c3.getTreeId(), result.getNewTree());
         assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
-        assertEquals(branch1.getName(), ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD)
-                .call().get()).getTarget());
+        assertEquals(branch1.getName(),
+                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
+                        .getTarget());
 
         result = geogig.command(CheckoutOp.class).setSource("branch2").call();
         assertFalse(c4.getTreeId().equals(result.getNewTree()));
         assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
-        assertEquals(branch2.getName(), ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD)
-                .call().get()).getTarget());
+        assertEquals(branch2.getName(),
+                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
+                        .getTarget());
 
         Iterator<RevCommit> log = geogig.command(LogOp.class).call();
 
@@ -342,8 +350,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(c4.getMessage(), logC3.getMessage());
         assertEquals(c4.getAuthor().getTimeZoneOffset(), logC3.getAuthor().getTimeZoneOffset());
         assertEquals(c4.getAuthor().getTimestamp(), logC3.getAuthor().getTimestamp());
-        assertEquals(c4.getCommitter().getTimeZoneOffset(), logC3.getCommitter()
-                .getTimeZoneOffset());
+        assertEquals(c4.getCommitter().getTimeZoneOffset(),
+                logC3.getCommitter().getTimeZoneOffset());
         assertFalse(c4.getCommitter().getTimestamp() == logC3.getCommitter().getTimestamp());
         assertFalse(c4.getTreeId().equals(logC3.getTreeId()));
 
@@ -376,8 +384,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         Optional<Ref> master = geogig.command(RefParse.class).setName("master").call();
 
         geogig.command(CheckoutOp.class).setSource("branch1").call();
-        geogig.command(RebaseOp.class)
-                .setUpstream(Suppliers.ofInstance(master.get().getObjectId())).call();
+        geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
+                .call();
 
         Iterator<RevCommit> log = geogig.command(LogOp.class).call();
         assertEquals(c2.getMessage(), log.next().getMessage());
@@ -395,8 +403,8 @@ public class RebaseOpTest extends RepositoryTestCase {
     public void testRebaseNoCommits() throws Exception {
         Optional<Ref> master = geogig.command(RefParse.class).setName("master").call();
         exception.expect(IllegalStateException.class);
-        geogig.command(RebaseOp.class)
-                .setUpstream(Suppliers.ofInstance(master.get().getObjectId())).call();
+        geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
+                .call();
     }
 
     @Test
@@ -407,8 +415,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         exception.expect(IllegalStateException.class);
-        geogig.command(RebaseOp.class)
-                .setUpstream(Suppliers.ofInstance(master.get().getObjectId())).call();
+        geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
+                .call();
     }
 
     @Test
@@ -459,13 +467,14 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertTrue(ref.isPresent());
         assertEquals(masterCommit.getId(), ref.get().getObjectId());
 
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
+        List<Conflict> conflicts = Lists
+                .newArrayList(geogig.command(ConflictsQueryOp.class).call());
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
         assertEquals(conflicts.get(0).getOurs(), RevFeatureBuilder.build(points1Modified).getId());
-        assertEquals(conflicts.get(0).getTheirs(), RevFeatureBuilder.build(points1ModifiedB)
-                .getId());
+        assertEquals(conflicts.get(0).getTheirs(),
+                RevFeatureBuilder.build(points1ModifiedB).getId());
 
         // solve, and continue
         Feature points1Merged = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
@@ -479,13 +488,14 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(masterCommit.getAuthor(), logCommit1.getAuthor());
         assertEquals(masterCommit.getCommitter().getName(), logCommit1.getCommitter().getName());
         assertEquals(masterCommit.getMessage(), logCommit1.getMessage());
-        assertEquals(masterCommit.getAuthor().getTimeZoneOffset(), logCommit1.getAuthor()
-                .getTimeZoneOffset());
-        assertEquals(masterCommit.getAuthor().getTimestamp(), logCommit1.getAuthor().getTimestamp());
-        assertEquals(masterCommit.getCommitter().getTimeZoneOffset(), logCommit1.getCommitter()
-                .getTimeZoneOffset());
-        assertNotSame(masterCommit.getCommitter().getTimestamp(), logCommit1.getCommitter()
-                .getTimestamp());
+        assertEquals(masterCommit.getAuthor().getTimeZoneOffset(),
+                logCommit1.getAuthor().getTimeZoneOffset());
+        assertEquals(masterCommit.getAuthor().getTimestamp(),
+                logCommit1.getAuthor().getTimestamp());
+        assertEquals(masterCommit.getCommitter().getTimeZoneOffset(),
+                logCommit1.getCommitter().getTimeZoneOffset());
+        assertNotSame(masterCommit.getCommitter().getTimestamp(),
+                logCommit1.getCommitter().getTimestamp());
         assertNotSame(masterCommit.getTreeId(), logCommit1.getTreeId());
 
         RevCommit logCommit2 = log.next();
@@ -555,13 +565,14 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertTrue(ref.isPresent());
         assertEquals(masterCommit.getId(), ref.get().getObjectId());
 
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
+        List<Conflict> conflicts = Lists
+                .newArrayList(geogig.command(ConflictsQueryOp.class).call());
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
         assertEquals(conflicts.get(0).getOurs(), RevFeatureBuilder.build(points1Modified).getId());
-        assertEquals(conflicts.get(0).getTheirs(), RevFeatureBuilder.build(points1ModifiedB)
-                .getId());
+        assertEquals(conflicts.get(0).getTheirs(),
+                RevFeatureBuilder.build(points1ModifiedB).getId());
 
         // solve, and continue
         Feature points1Merged = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
@@ -575,13 +586,14 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(masterCommit.getAuthor(), logCommit1.getAuthor());
         assertEquals(masterCommit.getCommitter().getName(), logCommit1.getCommitter().getName());
         assertEquals("squashed commit", logCommit1.getMessage());
-        assertEquals(masterCommit.getAuthor().getTimeZoneOffset(), logCommit1.getAuthor()
-                .getTimeZoneOffset());
-        assertEquals(masterCommit.getAuthor().getTimestamp(), logCommit1.getAuthor().getTimestamp());
-        assertEquals(masterCommit.getCommitter().getTimeZoneOffset(), logCommit1.getCommitter()
-                .getTimeZoneOffset());
-        assertNotSame(masterCommit.getCommitter().getTimestamp(), logCommit1.getCommitter()
-                .getTimestamp());
+        assertEquals(masterCommit.getAuthor().getTimeZoneOffset(),
+                logCommit1.getAuthor().getTimeZoneOffset());
+        assertEquals(masterCommit.getAuthor().getTimestamp(),
+                logCommit1.getAuthor().getTimestamp());
+        assertEquals(masterCommit.getCommitter().getTimeZoneOffset(),
+                logCommit1.getCommitter().getTimeZoneOffset());
+        assertNotSame(masterCommit.getCommitter().getTimestamp(),
+                logCommit1.getCommitter().getTimestamp());
         assertNotSame(masterCommit.getTreeId(), logCommit1.getTreeId());
 
         RevCommit logCommit3 = log.next();
@@ -680,26 +692,27 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertTrue(points.isPresent());
         assertEquals(RevFeatureBuilder.build(points1ModifiedB), points.get());
 
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
-        assertFalse(conflicts.isEmpty());
+        boolean hasConflicts = geogig.command(ConflictsCheckOp.class).call().booleanValue();
+        assertTrue(hasConflicts);
 
         geogig.command(RebaseOp.class).setSkip(true).call();
 
-        conflicts = geogig.command(ConflictsReadOp.class).call();
-        assertTrue(conflicts.isEmpty());
+        hasConflicts = geogig.command(ConflictsCheckOp.class).call().booleanValue();
+        assertFalse(hasConflicts);
 
         Iterator<RevCommit> log = geogig.command(LogOp.class).call();
         RevCommit logCommit1 = log.next();
         assertEquals(masterCommit.getAuthor(), logCommit1.getAuthor());
         assertEquals(masterCommit.getCommitter().getName(), logCommit1.getCommitter().getName());
         assertEquals(masterCommit.getMessage(), logCommit1.getMessage());
-        assertEquals(masterCommit.getAuthor().getTimeZoneOffset(), logCommit1.getAuthor()
-                .getTimeZoneOffset());
-        assertEquals(masterCommit.getAuthor().getTimestamp(), logCommit1.getAuthor().getTimestamp());
-        assertEquals(masterCommit.getCommitter().getTimeZoneOffset(), logCommit1.getCommitter()
-                .getTimeZoneOffset());
-        assertNotSame(masterCommit.getCommitter().getTimestamp(), logCommit1.getCommitter()
-                .getTimestamp());
+        assertEquals(masterCommit.getAuthor().getTimeZoneOffset(),
+                logCommit1.getAuthor().getTimeZoneOffset());
+        assertEquals(masterCommit.getAuthor().getTimestamp(),
+                logCommit1.getAuthor().getTimestamp());
+        assertEquals(masterCommit.getCommitter().getTimeZoneOffset(),
+                logCommit1.getCommitter().getTimeZoneOffset());
+        assertNotSame(masterCommit.getCommitter().getTimestamp(),
+                logCommit1.getCommitter().getTimestamp());
         assertNotSame(masterCommit.getTreeId(), logCommit1.getTreeId());
 
         RevCommit logCommit2 = log.next();

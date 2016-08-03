@@ -9,18 +9,14 @@
  */
 package org.locationtech.geogig.test.integration.je;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.di.GeogigModule;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Hints;
 
-import com.google.inject.Guice;
-import com.google.inject.util.Modules;
-
-public class JECheckSparsePathTest extends
-        org.locationtech.geogig.test.integration.CheckSparsePathTest {
+public class JECheckSparsePathTest
+        extends org.locationtech.geogig.test.integration.CheckSparsePathTest {
     @Override
     protected Context createInjector() {
-        return Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new JETestStorageModule())).getInstance(
-                Context.class);
+        Hints hints = new Hints().uri(repositoryDirectory.toURI()).platform(createPlatform());
+        return new JETestContextBuilder().build(hints);
     }
 }

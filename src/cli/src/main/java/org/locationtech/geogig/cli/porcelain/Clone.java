@@ -16,18 +16,21 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.porcelain.CloneOp;
-import org.locationtech.geogig.api.porcelain.InitOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.porcelain.CloneOp;
+import org.locationtech.geogig.porcelain.InitOp;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.beust.jcommander.Parameter;
@@ -50,7 +53,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig clone [--branch <name>] <repository> [<directory>]}
+ * <li>{@code geogig clone [--branch <name>] <repository> [<directory>]}
  * </ul>
  * 
  * @see CloneOp
@@ -60,10 +63,12 @@ import com.beust.jcommander.Parameters;
 @Parameters(commandNames = "clone", commandDescription = "Clone a repository into a new directory")
 public class Clone extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = { "-b", "--branch" }, description = "Branch to checkout when clone is finished.")
+    @Parameter(names = { "-b",
+            "--branch" }, description = "Branch to checkout when clone is finished.")
     private String branch;
 
-    @Parameter(names = { "--depth" }, description = "Depth of the clone.  If depth is less than 1, a full clone will be performed.")
+    @Parameter(names = {
+            "--depth" }, description = "Depth of the clone.  If depth is less than 1, a full clone will be performed.")
     private int depth = 0;
 
     @Parameter(names = { "-u", "--username" }, description = "user name")
@@ -72,10 +77,12 @@ public class Clone extends AbstractCommand implements CLICommand {
     @Parameter(names = { "-p", "--password" }, description = "password")
     private String password = null;
 
-    @Parameter(names = { "--filter" }, description = "Ini filter file.  This will create a sparse clone.")
+    @Parameter(names = {
+            "--filter" }, description = "Ini filter file.  This will create a sparse clone.")
     private String filterFile;
 
-    @Parameter(names = { "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=bdbje:bdbje.version=0.1")
+    @Parameter(names = {
+            "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=bdbje:bdbje.version=0.1")
     private String config;
 
     @Parameter(description = "<repository> [<directory>|<clone URI>]")
@@ -96,11 +103,11 @@ public class Clone extends AbstractCommand implements CLICommand {
         final URI remoteURI;
         final URI cloneURI;
         final Platform platform = cli.getPlatform();
+        final String remoteArg = args.get(0);
         try {
-            String remoteArg = args.get(0);
             remoteURI = checkAbsolute(remoteArg, platform);
         } catch (URISyntaxException e) {
-            throw new CommandFailedException("Can't parse remote URI", e);
+            throw new CommandFailedException("Can't parse remote URI '" + remoteArg + "'", true);
         }
 
         final String targetArg;
@@ -109,7 +116,8 @@ public class Clone extends AbstractCommand implements CLICommand {
             try {
                 cloneURI = checkAbsolute(targetArg, platform);
             } catch (URISyntaxException e) {
-                throw new CommandFailedException("Can't parse target URI", e);
+                throw new CommandFailedException("Can't parse target URI '" + targetArg + "'",
+                        true);
             }
         } else {
             cloneURI = platform.pwd().toURI();
@@ -117,8 +125,15 @@ public class Clone extends AbstractCommand implements CLICommand {
         }
 
         RepositoryResolver cloneInitializer = RepositoryResolver.lookup(cloneURI);
-        checkParameter(!cloneInitializer.repoExists(cloneURI),
-                "Destination path already exists and is not an empty directory.");
+
+        if (cloneInitializer.repoExists(cloneURI)) {
+            URI resolvedURI = cloneURI;
+            if ("file".equals(cloneURI.getScheme())) {
+                resolvedURI = ResolveGeogigURI.lookup(new File(cloneURI)).or(cloneURI);
+            }
+            String msg = "Destination repository already exists: " + resolvedURI;
+            throw new InvalidParameterException(msg);
+        }
 
         cli.setRepositoryURI(cloneURI.toString());
         Context cloneContext = cli.getGeogigInjector();
@@ -140,6 +155,11 @@ public class Clone extends AbstractCommand implements CLICommand {
             clone.setDepth(depth);
 
             clone.call();
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof RepositoryConnectionException) {
+                throw new CommandFailedException(e.getMessage(), true);
+            }
+            throw e;
         } finally {
             cloneRepo.close();
         }

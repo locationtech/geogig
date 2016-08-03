@@ -22,10 +22,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.DefaultProgressListener;
-import org.locationtech.geogig.api.GeogigTransaction;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.GeogigTransaction;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
@@ -166,6 +166,10 @@ public class AsyncContext {
                 return Optional.of(txId);
             }
             return Optional.absent();
+        }
+
+        public Context getContext() {
+            return command.command.context();
         }
 
         public Status getStatus() {

@@ -1,0 +1,41 @@
+/* Copyright (c) 2012-2014 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Gabriel Roldan (Boundless) - initial implementation
+ */
+package org.locationtech.geogig.model;
+
+import java.io.Serializable;
+
+import com.google.common.collect.Ordering;
+
+/**
+ * Implements storage order of {@link Node} based on its name using a {@link CanonicalNodeNameOrder}
+ * comparator.
+ * 
+ * @see CanonicalNodeNameOrder
+ */
+public final class CanonicalNodeOrder extends Ordering<Node> implements Serializable {
+
+    private static final long serialVersionUID = -2860468212633430368L;
+
+    private final CanonicalNodeNameOrder nameOrder = new CanonicalNodeNameOrder();
+
+    public static final CanonicalNodeOrder INSTANCE = new CanonicalNodeOrder();
+
+    @Override
+    public int compare(Node nr1, Node nr2) {
+        return nameOrder.compare(nr1.getName(), nr2.getName());
+    }
+
+    /**
+     * @see CanonicalNodeNameOrder#bucket(String, int)
+     */
+    public Integer bucket(final Node ref, final int depth) {
+        return CanonicalNodeNameOrder.bucket(ref.getName(), depth);
+    }
+}

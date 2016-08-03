@@ -13,8 +13,8 @@ import static org.fusesource.jansi.Ansi.Color.BLUE;
 import static org.fusesource.jansi.Ansi.Color.GREEN;
 import static org.fusesource.jansi.Ansi.Color.RED;
 import static org.fusesource.jansi.Ansi.Color.YELLOW;
-import static org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType.ADDED;
-import static org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType.MODIFIED;
+import static org.locationtech.geogig.repository.DiffEntry.ChangeType.ADDED;
+import static org.locationtech.geogig.repository.DiffEntry.ChangeType.MODIFIED;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -23,28 +23,27 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.fusesource.jansi.Ansi;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.plumbing.DiffFeature;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.diff.AttributeDiff;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
-import org.locationtech.geogig.api.plumbing.diff.FeatureDiff;
-import org.locationtech.geogig.api.plumbing.diff.GeometryAttributeDiff;
-import org.locationtech.geogig.api.plumbing.diff.LCSGeometryDiffImpl;
 import org.locationtech.geogig.cli.AnsiDecorator;
 import org.locationtech.geogig.cli.Console;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.plumbing.DiffFeature;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.diff.AttributeDiff;
+import org.locationtech.geogig.plumbing.diff.FeatureDiff;
+import org.locationtech.geogig.plumbing.diff.GeometryAttributeDiff;
+import org.locationtech.geogig.plumbing.diff.LCSGeometryDiffImpl;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 
 interface DiffPrinter {
 
@@ -80,8 +79,8 @@ class SummaryDiffPrinter implements DiffPrinter {
         ansi.a(oldId).a(" ");
         ansi.a(newId).a(" ");
 
-        ansi.fg(entry.changeType() == ADDED ? GREEN : (entry.changeType() == MODIFIED ? YELLOW
-                : RED));
+        ansi.fg(entry.changeType() == ADDED ? GREEN
+                : (entry.changeType() == MODIFIED ? YELLOW : RED));
         char type = entry.changeType().toString().charAt(0);
         ansi.a("  ").a(type).reset();
         ansi.a("  ").a(formatPath(entry));
@@ -149,7 +148,7 @@ class FullDiffPrinter implements DiffPrinter {
                 PropertyDescriptor pd = entry.getKey();
                 AttributeDiff ad = entry.getValue();
                 if (ad instanceof GeometryAttributeDiff
-                        && ad.getType() == org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.MODIFIED
+                        && ad.getType() == org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.MODIFIED
                         && !noGeom) {
                     GeometryAttributeDiff gd = (GeometryAttributeDiff) ad;
                     ansi.fg(YELLOW);
@@ -180,9 +179,11 @@ class FullDiffPrinter implements DiffPrinter {
                     ansi.reset();
                     ansi.newline();
                 } else {
-                    ansi.fg(ad.getType() == org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.ADDED ? GREEN
-                            : (ad.getType() == org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE.REMOVED ? RED
-                                    : YELLOW));
+                    ansi.fg(ad
+                            .getType() == org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.ADDED
+                                    ? GREEN
+                                    : (ad.getType() == org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.REMOVED
+                                            ? RED : YELLOW));
                     ansi.a(pd.getName()).a(": ").a(ad.toString());
                     ansi.reset();
                     ansi.newline();
@@ -196,13 +197,11 @@ class FullDiffPrinter implements DiffPrinter {
             Optional<RevObject> obj = geogig.command(RevObjectParse.class)
                     .setObjectId(noderef.getObjectId()).call();
             RevFeature feature = (RevFeature) obj.get();
-            ImmutableList<Optional<Object>> values = feature.getValues();
-            int i = 0;
-            for (Optional<Object> value : values) {
-                console.println(featureType.sortedDescriptors().get(i).getName() + "\t"
+            for (int i = 0; i < feature.size(); i++) {
+                Optional<Object> value = feature.get(i);
+                console.println(featureType.descriptors().get(i).getName() + "\t"
                         + TextValueSerializer.asString(value));
 
-                i++;
             }
             console.println();
         }

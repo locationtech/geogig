@@ -15,20 +15,21 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.geotools.util.Range;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevPerson;
-import org.locationtech.geogig.api.plumbing.ParseTimestamp;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.DiffOp;
-import org.locationtech.geogig.api.porcelain.LogOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.plumbing.ParseTimestamp;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.GeoGIG;
 
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
@@ -39,7 +40,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * Shows list of commits.
  * 
- * @see org.locationtech.geogig.api.porcelain.LogOp
+ * @see org.locationtech.geogig.porcelain.LogOp
  */
 @ReadOnly
 @Parameters(commandNames = "rev-list", commandDescription = "Show list of commits")
@@ -168,18 +169,19 @@ public class RevList extends AbstractCommand implements CLICommand {
                 sb.append('\n');
             }
             if (showChanges) {
-                Iterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
                         .setOldVersion(commit.parentN(0).or(ObjectId.NULL))
-                        .setNewVersion(commit.getId()).call();
-                DiffEntry diffEntry;
-                sb.append("changes\n");
-                while (diff.hasNext()) {
-                    diffEntry = diff.next();
-                    String path = diffEntry.newPath() != null ? diffEntry.newPath() : diffEntry
-                            .oldPath();
-                    sb.append('\t').append(path).append(' ')
-                            .append(diffEntry.oldObjectId().toString()).append(' ')
-                            .append(diffEntry.newObjectId().toString()).append('\n');
+                        .setNewVersion(commit.getId()).call()) {
+                    DiffEntry diffEntry;
+                    sb.append("changes\n");
+                    while (diff.hasNext()) {
+                        diffEntry = diff.next();
+                        String path = diffEntry.newPath() != null ? diffEntry.newPath()
+                                : diffEntry.oldPath();
+                        sb.append('\t').append(path).append(' ')
+                                .append(diffEntry.oldObjectId().toString()).append(' ')
+                                .append(diffEntry.newObjectId().toString()).append('\n');
+                    }
                 }
             }
             console.println(sb.toString());

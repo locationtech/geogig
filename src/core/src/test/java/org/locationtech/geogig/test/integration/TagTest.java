@@ -9,21 +9,26 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import org.junit.Rule;
 import org.junit.Test;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.TagCreateOp;
-import org.locationtech.geogig.api.porcelain.TagRemoveOp;
+import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.TagCreateOp;
+import org.locationtech.geogig.porcelain.TagRemoveOp;
 
 import com.google.common.base.Optional;
 
 public class TagTest extends RepositoryTestCase {
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Override
     protected void setUpInternal() throws Exception {
@@ -31,6 +36,17 @@ public class TagTest extends RepositoryTestCase {
                 .setValue("groldan").call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
                 .setValue("groldan@boundlessgeo.com").call();
+    }
+
+    @Test
+    public void testInvalidTagName() throws Exception {
+        insertAndAdd(points1);
+        RevCommit commit = geogig.command(CommitOp.class).call();
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
+        geogig.command(TagCreateOp.class).setCommitId(commit.getId()).setName("Tag..1")
+                .call();
     }
 
     @Test

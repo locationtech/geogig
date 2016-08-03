@@ -15,11 +15,13 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.api.porcelain.InitOp;
-import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
+import org.locationtech.geogig.cli.test.functional.CLITestContextBuilder;
+import org.locationtech.geogig.porcelain.InitOp;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GlobalContextBuilder;
+import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Preconditions;
 
@@ -39,10 +41,13 @@ public class TestRepository extends ExternalResource {
 
     private File repoDir;
 
+    private File homeDir;
+
     @Override
     protected void before() throws Throwable {
         tmpFolder = new TemporaryFolder();
         tmpFolder.create();
+        homeDir = tmpFolder.newFolder("home");
     }
 
     @Override
@@ -56,15 +61,16 @@ public class TestRepository extends ExternalResource {
             tmpFolder.delete();
         }
     }
-    
+
     public GeoGIG createGeoGIG(String name) {
         File dataDirectory = tmpFolder.getRoot();
         repoDir = new File(dataDirectory, name);
         Assert.assertTrue(repoDir.mkdir());
 
-        TestPlatform testPlatform = new TestPlatform(dataDirectory);
-        GlobalContextBuilder.builder = new CLITestContextBuilder(testPlatform);
-        GeoGIG geogig = new GeoGIG(repoDir);
+        TestPlatform testPlatform = new TestPlatform(repoDir, homeDir);
+        GlobalContextBuilder.builder(new CLITestContextBuilder(testPlatform));
+        Context context = GlobalContextBuilder.builder().build(new Hints().platform(testPlatform));
+        GeoGIG geogig = new GeoGIG(context);
         return geogig;
     }
 
@@ -81,7 +87,7 @@ public class TestRepository extends ExternalResource {
     public File repoDirectory() {
         return repoDir;
     }
-    
+
     public GeoGIG getGeogig() {
         return getGeogig(true);
     }
@@ -89,7 +95,7 @@ public class TestRepository extends ExternalResource {
     public GeoGIG getGeogig(boolean initialized) {
         if (this.geogig == null) {
             this.geogig = createGeoGIG(REPO_NAME);
-            if (initialized) {
+            if (initialized && null == geogig.getRepository()) {
                 initializeRpository();
             }
         }

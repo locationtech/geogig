@@ -18,16 +18,16 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.SubProgressListener;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.osm.internal.coordcache.MapdbPointCache;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.osm.internal.coordcache.MappedPointCache;
 import org.locationtech.geogig.osm.internal.coordcache.PointCache;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.FeatureToDelete;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.SubProgressListener;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -132,12 +132,8 @@ public class OSMApplyDiffOp extends AbstractGeoGigOp<Optional<OSMReport>> {
             }
         };
 
-        Function<Feature, String> parentTreePathResolver = new Function<Feature, String>() {
-            @Override
-            public String apply(Feature input) {
-                return input.getType().getName().getLocalPart();
-            }
-        };
+        final Function<Feature, String> parentTreePathResolver = (f) -> f.getType().getName()
+                .getLocalPart();
 
         workTree.insert(parentTreePathResolver, target, noProgressReportingListener, null, null);
 
@@ -162,12 +158,8 @@ public class OSMApplyDiffOp extends AbstractGeoGigOp<Optional<OSMReport>> {
      */
     static class ConvertAndImportSink implements ChangeSink {
 
-        private static final Function<WayNode, Long> NODELIST_TO_ID_LIST = new Function<WayNode, Long>() {
-            @Override
-            public Long apply(WayNode input) {
-                return Long.valueOf(input.getNodeId());
-            }
-        };
+        private static final Function<WayNode, Long> NODELIST_TO_ID_LIST = (wn) -> Long
+                .valueOf(wn.getNodeId());
 
         private int count = 0;
 
@@ -201,7 +193,7 @@ public class OSMApplyDiffOp extends AbstractGeoGigOp<Optional<OSMReport>> {
             this.progressListener = progressListener;
             this.latestChangeset = 0;
             this.latestTimestamp = 0;
-            this.pointCache = new MapdbPointCache(platform);
+            this.pointCache = new MappedPointCache(platform);// new MapdbPointCache(platform);
             Optional<NodeRef> waysNodeRef = cmdLocator.command(FindTreeChild.class)
                     .setChildPath(OSMUtils.WAY_TYPE_NAME).setParent(workTree.getTree()).call();
             Optional<NodeRef> nodesNodeRef = cmdLocator.command(FindTreeChild.class)
@@ -275,7 +267,7 @@ public class OSMApplyDiffOp extends AbstractGeoGigOp<Optional<OSMReport>> {
                 SimpleFeatureType ft = entity instanceof Node ? OSMUtils.nodeType() : OSMUtils
                         .wayType();
                 String path = ft.getName().getLocalPart();
-                Optional<org.locationtech.geogig.api.Node> opt = workTree.findUnstaged(path);
+                Optional<org.locationtech.geogig.model.Node> opt = workTree.findUnstaged(path);
                 if (!opt.isPresent()) {
                     return;
                 }

@@ -37,26 +37,27 @@ import org.geotools.feature.type.BasicFeatureTypes;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.CRS.AxisOrder;
 import org.geotools.referencing.wkt.Formattable;
-import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevCommitImpl;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevPerson;
-import org.locationtech.geogig.api.RevPersonImpl;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTagImpl;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeImpl;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.storage.FieldType;
+import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.FieldType;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevPersonBuilder;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTagBuilder;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.plumbing.HashObject;
+import org.locationtech.geogig.repository.DiffEntry;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
@@ -122,13 +123,19 @@ public class FormatCommonV2 {
     private static final FeatureTypeFactory DEFAULT_FEATURETYPE_FACTORY = new SimpleFeatureTypeBuilder()
             .getFeatureTypeFactory();
 
-    public static RevTag readTag(ObjectId id, DataInput in) throws IOException {
+    public static RevTag readTag(@Nullable ObjectId id, DataInput in) throws IOException {
         final ObjectId commitId = readObjectId(in);
         final String name = in.readUTF();
         final String message = in.readUTF();
         final RevPerson tagger = readRevPerson(in);
 
-        return new RevTagImpl(id, name, commitId, message, tagger);
+        RevTag tag;
+        if (id == null) {
+            tag = RevTagBuilder.build(ObjectId.NULL, name, commitId, message, tagger);
+            id = new HashObject().setObject(tag).call();
+        }
+        tag = RevTagBuilder.build(id, name, commitId, message, tagger);
+        return tag;
     }
 
     public static void writeTag(RevTag tag, DataOutput out) throws IOException {
@@ -151,7 +158,7 @@ public class FormatCommonV2 {
         data.writeUTF(commit.getMessage());
     }
 
-    public static RevCommit readCommit(ObjectId id, DataInput in) throws IOException {
+    public static RevCommit readCommit(@Nullable ObjectId id, DataInput in) throws IOException {
         final ObjectId treeId = readObjectId(in);
         final int nParents = readUnsignedVarInt(in);
         final Builder<ObjectId> parentListBuilder = ImmutableList.builder();
@@ -164,7 +171,18 @@ public class FormatCommonV2 {
         final RevPerson committer = readRevPerson(in);
         final String message = in.readUTF();
 
-        return new RevCommitImpl(id, treeId, parentListBuilder.build(), author, committer, message);
+        ObjectId commitId = id;
+        if (id == null) {
+            commitId = ObjectId.NULL;
+        }
+        RevCommit commit = CommitBuilder.build(commitId, treeId, parentListBuilder.build(), author,
+                committer, message);
+        if (id == null) {
+            commitId = new HashObject().setObject(commit).call();
+            commit = CommitBuilder.build(commitId, treeId, parentListBuilder.build(), author,
+                    committer, message);
+        }
+        return commit;
     }
 
     public static final RevPerson readRevPerson(DataInput in) throws IOException {
@@ -172,8 +190,8 @@ public class FormatCommonV2 {
         final String email = in.readUTF();
         final long timestamp = readUnsignedVarLong(in);
         final int tzOffset = readUnsignedVarInt(in);
-        return new RevPersonImpl(name.length() == 0 ? null : name, email.length() == 0 ? null
-                : email, timestamp, tzOffset);
+        return RevPersonBuilder.build(name.length() == 0 ? null : name,
+                email.length() == 0 ? null : email, timestamp, tzOffset);
     }
 
     public static final void writePerson(RevPerson person, DataOutput data) throws IOException {
@@ -215,7 +233,7 @@ public class FormatCommonV2 {
         }
     }
 
-    public static RevTree readTree(ObjectId id, DataInput in) throws IOException {
+    public static RevTree readTree(@Nullable ObjectId id, DataInput in) throws IOException {
         final long size = readUnsignedVarLong(in);
         final int treeCount = readUnsignedVarInt(in);
 
@@ -258,10 +276,13 @@ public class FormatCommonV2 {
         checkArgument(buckets.isEmpty() || (trees.isEmpty() && features.isEmpty()),
                 "Tree has mixed buckets and nodes; this is not supported.");
 
-        if (trees.isEmpty() && features.isEmpty()) {
-            return RevTreeImpl.createNodeTree(id, size, treeCount, buckets);
+        if (id == null) {
+            id = HashObject.hashTree(trees, features, ImmutableSortedMap.copyOf(buckets));
         }
-        return RevTreeImpl.createLeafTree(id, size, features, trees);
+        if (trees.isEmpty() && features.isEmpty()) {
+            return RevTreeBuilder.createNodeTree(id, size, treeCount, buckets);
+        }
+        return RevTreeBuilder.createLeafTree(id, size, features, trees);
     }
 
     public static DiffEntry readDiff(DataInput in) throws IOException {
@@ -287,11 +308,11 @@ public class FormatCommonV2 {
     }
 
     public static void writeFeature(RevFeature feature, DataOutput data) throws IOException {
-        ImmutableList<Optional<Object>> values = feature.getValues();
 
-        writeUnsignedVarInt(values.size(), data);
+        writeUnsignedVarInt(feature.size(), data);
 
-        for (Optional<Object> field : values) {
+        for (int i = 0; i < feature.size(); i++) {
+            Optional<Object> field = feature.get(i);
             FieldType type = FieldType.forValue(field);
             data.writeByte(type.getTag());
             if (type != FieldType.NULL) {
@@ -300,18 +321,19 @@ public class FormatCommonV2 {
         }
     }
 
-    public static RevFeature readFeature(ObjectId id, DataInput in) throws IOException {
+    public static RevFeature readFeature(@Nullable ObjectId id, DataInput in) throws IOException {
         final int count = readUnsignedVarInt(in);
-        final ImmutableList.Builder<Optional<Object>> builder = ImmutableList.builder();
+        final RevFeatureBuilder builder = RevFeatureBuilder.builder();
 
         for (int i = 0; i < count; i++) {
             final byte fieldTag = in.readByte();
             final FieldType fieldType = FieldType.valueOf(fieldTag);
             Object value = DataStreamValueSerializerV2.read(fieldType, in);
-            builder.add(Optional.fromNullable(value));
+            builder.addValue(value);
         }
 
-        return new RevFeatureImpl(id, builder.build());
+        RevFeature built = builder.build();
+        return built;
     }
 
     public static void writeHeader(DataOutput data, RevObject.TYPE header) throws IOException {
@@ -543,10 +565,10 @@ public class FormatCommonV2 {
         } else if (boundsMask == BOUNDS_BOX2D_MASK) {
             bbox = readBoundingBox(in);
         } else {
-            throw new IllegalStateException(String.format(
-                    "Illegal bounds mask: %s, expected one of %s, %s, %s",
-                    toBinaryString(boundsMask), toBinaryString(BOUNDS_NULL_MASK),
-                    toBinaryString(BOUNDS_POINT_MASK), toBinaryString(BOUNDS_BOX2D_MASK)));
+            throw new IllegalStateException(
+                    String.format("Illegal bounds mask: %s, expected one of %s, %s, %s",
+                            toBinaryString(boundsMask), toBinaryString(BOUNDS_NULL_MASK),
+                            toBinaryString(BOUNDS_POINT_MASK), toBinaryString(BOUNDS_BOX2D_MASK)));
         }
         Map<String, Object> extraData = null;
         if (extraDataMask == EXTRA_DATA_PRESENT_MASK) {
@@ -584,7 +606,7 @@ public class FormatCommonV2 {
     public static void writeFeatureType(RevFeatureType object, DataOutput data) throws IOException {
         writeName(object.getName(), data);
 
-        ImmutableList<PropertyDescriptor> descriptors = object.sortedDescriptors();
+        ImmutableList<PropertyDescriptor> descriptors = object.descriptors();
         writeUnsignedVarInt(descriptors.size(), data);
 
         for (PropertyDescriptor desc : object.type().getDescriptors()) {
@@ -592,11 +614,12 @@ public class FormatCommonV2 {
         }
     }
 
-    public static RevFeatureType readFeatureType(ObjectId id, DataInput in) throws IOException {
+    public static RevFeatureType readFeatureType(@Nullable ObjectId id, DataInput in)
+            throws IOException {
         return readFeatureType(id, in, DEFAULT_FEATURETYPE_FACTORY);
     }
 
-    public static RevFeatureType readFeatureType(ObjectId id, DataInput in,
+    public static RevFeatureType readFeatureType(@Nullable ObjectId id, DataInput in,
             FeatureTypeFactory typeFactory) throws IOException {
 
         Name name = readName(in);
@@ -605,9 +628,12 @@ public class FormatCommonV2 {
         for (int i = 0; i < propertyCount; i++) {
             attributes.add(readAttributeDescriptor(in, typeFactory));
         }
-        SimpleFeatureType ftype = typeFactory.createSimpleFeatureType(name, attributes, null,
-                false, Collections.<Filter> emptyList(), BasicFeatureTypes.FEATURE, null);
-        return new RevFeatureTypeImpl(id, ftype);
+        SimpleFeatureType ftype = typeFactory.createSimpleFeatureType(name, attributes, null, false,
+                Collections.<Filter> emptyList(), BasicFeatureTypes.FEATURE, null);
+        RevFeatureType revtype;
+        revtype = RevFeatureTypeBuilder.build(id, ftype);
+
+        return revtype;
     }
 
     private static Name readName(DataInput in) throws IOException {
@@ -659,8 +685,8 @@ public class FormatCommonV2 {
             return typeFactory.createGeometryDescriptor((GeometryType) type, name, minOccurs,
                     maxOccurs, nillable, null);
         else
-            return typeFactory.createAttributeDescriptor(type, name, minOccurs, maxOccurs,
-                    nillable, null);
+            return typeFactory.createAttributeDescriptor(type, name, minOccurs, maxOccurs, nillable,
+                    null);
     }
 
     private static void writeName(Name name, DataOutput data) throws IOException {

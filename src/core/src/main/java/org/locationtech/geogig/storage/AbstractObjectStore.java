@@ -21,19 +21,17 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.Closeables;
-import com.ning.compress.lzf.LZFInputStream;
-import com.ning.compress.lzf.LZFOutputStream;
 
 /**
  * Provides a base implementation for different representations of the {@link ObjectStore}.
@@ -112,7 +110,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
      * @param id the id of the object to read
      * @param reader the reader of the object
      * @return the object, as read in from the {@link ObjectReader}
-     * @see org.locationtech.geogig.storage.ObjectDatabase#get(org.locationtech.geogig.api.ObjectId,
+     * @see org.locationtech.geogig.storage.ObjectDatabase#get(org.locationtech.geogig.model.ObjectId,
      *      org.locationtech.geogig.storage.ObjectReader)
      */
     @Override
@@ -126,9 +124,9 @@ public abstract class AbstractObjectStore implements ObjectStore {
             obj = get(id, true);
             return clazz.cast(obj);
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException(String.format(
-                    "object %s does not exist as a %s (%s)", id, clazz.getSimpleName(),
-                    obj.getType()));
+            throw new IllegalArgumentException(
+                    String.format("object %s does not exist as a %s (%s)", id,
+                            clazz.getSimpleName(), obj.getType()));
         }
     }
 
@@ -159,9 +157,6 @@ public abstract class AbstractObjectStore implements ObjectStore {
         } finally {
             Closeables.closeQuietly(raw);
         }
-        checkState(id.equals(object.getId()),
-                "Expected id doesn't match parsed id %s, %s. Object: %s", id, object.getId(),
-                object);
         return object;
     }
 
@@ -198,14 +193,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
     private InputStream getRaw(final ObjectId id, boolean failIfNotFound)
             throws IllegalArgumentException {
         InputStream in = getRawInternal(id, failIfNotFound);
-        if (null == in) {
-            return null;
-        }
-        try {
-            return new LZFInputStream(in);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        return in;
     }
 
     protected abstract InputStream getRawInternal(ObjectId id, boolean failIfNotFound)
@@ -254,22 +242,11 @@ public abstract class AbstractObjectStore implements ObjectStore {
     }
 
     protected void writeObject(RevObject object, OutputStream target) {
-
-        LZFOutputStream cOut = new LZFOutputStream(target);
         try {
-            serializer.write(object, cOut);
+            serializer.write(object, target);
         } catch (IOException e) {
             throw Throwables.propagate(e);
-        } finally {
-            try {
-                cOut.flush();
-                cOut.close();
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
-            }
         }
-        // int size = ((ByteArrayOutputStream) target).size();
-        // System.err.printf("%d,%s,%s\n", size, object.getId(), object.getType());
     }
 
     /**
@@ -290,8 +267,8 @@ public abstract class AbstractObjectStore implements ObjectStore {
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids) {
+    public void deleteAll(Iterator<ObjectId> ids) {
         checkState(isOpen(), "db is closed");
-        return deleteAll(ids, BulkOpListener.NOOP_LISTENER);
+        deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 }

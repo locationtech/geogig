@@ -9,20 +9,24 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ContextBuilder;
-import org.locationtech.geogig.api.MemoryModule;
-import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.ContextBuilder;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.test.MemoryModule;
 
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
 public class TestContextBuilder extends ContextBuilder {
 
-    Platform platform;
+    private Platform platform;
+
+    public TestContextBuilder() {
+        super();
+    }
 
     public TestContextBuilder(Platform platform) {
         this.platform = platform;
@@ -30,9 +34,11 @@ public class TestContextBuilder extends ContextBuilder {
 
     @Override
     public Context build(Hints hints) {
-        return Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new MemoryModule(platform),
-                        new HintsModule(hints))).getInstance(Context.class);
+        if (!hints.get(Hints.PLATFORM).isPresent() && this.platform != null) {
+            hints = hints.platform(platform);
+        }
+        return Guice.createInjector(Modules.override(new GeogigModule()).with(new MemoryModule(),
+                new HintsModule(hints))).getInstance(Context.class);
     }
 
 }

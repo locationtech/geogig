@@ -19,13 +19,13 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.api.porcelain.NothingToCommitException;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.osm.internal.log.OSMLogEntry;
 import org.locationtech.geogig.osm.internal.log.ReadOSMLogEntries;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.Blobs;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
@@ -179,7 +179,7 @@ public class OSMDownloadOpTest extends RepositoryTestCase {
         try {
             OSMDownloadOp download = geogig.command(OSMDownloadOp.class);
             download.setBbox(Arrays.asList("50.79", "7.19", "50.8", "7.20"))
-                    .setOsmAPIUrl("http://wrongurl.com").call();
+                    .setOsmAPIUrl("http://invalidurl.com").call();
             fail();
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("Did you try to use a standard OSM server instead?"));

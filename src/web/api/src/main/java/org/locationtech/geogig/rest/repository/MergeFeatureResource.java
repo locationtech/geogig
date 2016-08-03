@@ -24,19 +24,19 @@ import java.util.UUID;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
+import org.locationtech.geogig.model.FieldType;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.RestletException;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -74,15 +74,15 @@ public class MergeFeatureResource extends Resource {
         return true;
     }
 
-    private Optional<NodeRef> parseID(ObjectId commitId, String path, GeoGIG geogig) {
+    private Optional<NodeRef> parseID(ObjectId commitId, String path, Repository geogig) {
         Optional<RevObject> object = geogig.command(RevObjectParse.class).setObjectId(commitId)
                 .call();
         RevCommit commit = null;
         if (object.isPresent() && object.get() instanceof RevCommit) {
             commit = (RevCommit) object.get();
         } else {
-            throw new CommandSpecException("Couldn't resolve id: " + commitId.toString()
-                    + " to a commit");
+            throw new CommandSpecException(
+                    "Couldn't resolve id: " + commitId.toString() + " to a commit");
         }
 
         object = geogig.command(RevObjectParse.class).setObjectId(commit.getTreeId()).call();
@@ -100,7 +100,7 @@ public class MergeFeatureResource extends Resource {
 
         try {
             input = getRequest().getEntity().getStream();
-            final GeoGIG ggit = getGeogig(getRequest()).get();
+            final Repository ggig = getGeogig(getRequest()).get();
             final Reader body = new InputStreamReader(input);
             final JsonParser parser = new JsonParser();
             final JsonElement conflictJson = parser.parse(body);
@@ -121,19 +121,19 @@ public class MergeFeatureResource extends Resource {
                 if (conflict.has("ours") && conflict.get("ours").isJsonPrimitive()) {
                     String ourCommit = conflict.get("ours").getAsJsonPrimitive().getAsString();
                     Optional<NodeRef> ourNode = parseID(ObjectId.valueOf(ourCommit), featureId,
-                            ggit);
+                            ggig);
                     if (ourNode.isPresent()) {
-                        Optional<RevObject> object = ggit.command(RevObjectParse.class)
+                        Optional<RevObject> object = ggig.command(RevObjectParse.class)
                                 .setObjectId(ourNode.get().getObjectId()).call();
-                        Preconditions.checkState(object.isPresent()
-                                && object.get() instanceof RevFeature);
+                        Preconditions.checkState(
+                                object.isPresent() && object.get() instanceof RevFeature);
 
                         ourFeature = (RevFeature) object.get();
 
-                        object = ggit.command(RevObjectParse.class)
+                        object = ggig.command(RevObjectParse.class)
                                 .setObjectId(ourNode.get().getMetadataId()).call();
-                        Preconditions.checkState(object.isPresent()
-                                && object.get() instanceof RevFeatureType);
+                        Preconditions.checkState(
+                                object.isPresent() && object.get() instanceof RevFeatureType);
 
                         ourFeatureType = (RevFeatureType) object.get();
                     }
@@ -142,19 +142,19 @@ public class MergeFeatureResource extends Resource {
                 if (conflict.has("theirs") && conflict.get("theirs").isJsonPrimitive()) {
                     String theirCommit = conflict.get("theirs").getAsJsonPrimitive().getAsString();
                     Optional<NodeRef> theirNode = parseID(ObjectId.valueOf(theirCommit), featureId,
-                            ggit);
+                            ggig);
                     if (theirNode.isPresent()) {
-                        Optional<RevObject> object = ggit.command(RevObjectParse.class)
+                        Optional<RevObject> object = ggig.command(RevObjectParse.class)
                                 .setObjectId(theirNode.get().getObjectId()).call();
-                        Preconditions.checkState(object.isPresent()
-                                && object.get() instanceof RevFeature);
+                        Preconditions.checkState(
+                                object.isPresent() && object.get() instanceof RevFeature);
 
                         theirFeature = (RevFeature) object.get();
 
-                        object = ggit.command(RevObjectParse.class)
+                        object = ggig.command(RevObjectParse.class)
                                 .setObjectId(theirNode.get().getMetadataId()).call();
-                        Preconditions.checkState(object.isPresent()
-                                && object.get() instanceof RevFeatureType);
+                        Preconditions.checkState(
+                                object.isPresent() && object.get() instanceof RevFeatureType);
 
                         theirFeatureType = (RevFeatureType) object.get();
                     }
@@ -171,8 +171,8 @@ public class MergeFeatureResource extends Resource {
                         (SimpleFeatureType) (ourFeatureType != null ? ourFeatureType.type()
                                 : theirFeatureType.type()));
 
-                ImmutableList<PropertyDescriptor> descriptors = (ourFeatureType == null ? theirFeatureType
-                        : ourFeatureType).sortedDescriptors();
+                ImmutableList<PropertyDescriptor> descriptors = (ourFeatureType == null
+                        ? theirFeatureType : ourFeatureType).descriptors();
 
                 for (Entry<String, JsonElement> entry : merges.entrySet()) {
                     int descriptorIndex = getDescriptorIndex(entry.getKey(), descriptors);
@@ -183,12 +183,12 @@ public class MergeFeatureResource extends Resource {
                                 && attributeObject.get("ours").isJsonPrimitive()
                                 && attributeObject.get("ours").getAsBoolean()) {
                             featureBuilder.set(descriptor.getName(), ourFeature == null ? null
-                                    : ourFeature.getValues().get(descriptorIndex).orNull());
+                                    : ourFeature.get(descriptorIndex).orNull());
                         } else if (attributeObject.has("theirs")
                                 && attributeObject.get("theirs").isJsonPrimitive()
                                 && attributeObject.get("theirs").getAsBoolean()) {
                             featureBuilder.set(descriptor.getName(), theirFeature == null ? null
-                                    : theirFeature.getValues().get(descriptorIndex).orNull());
+                                    : theirFeature.get(descriptorIndex).orNull());
                         } else if (attributeObject.has("value")
                                 && attributeObject.get("value").isJsonPrimitive()) {
                             JsonPrimitive primitive = attributeObject.get("value")
@@ -238,11 +238,10 @@ public class MergeFeatureResource extends Resource {
                 SimpleFeature feature = featureBuilder
                         .buildFeature(NodeRef.nodeFromPath(featureId));
                 RevFeature revFeature = RevFeatureBuilder.build(feature);
-                ggit.getRepository().objectDatabase().put(revFeature);
+                ggig.objectDatabase().put(revFeature);
 
-                getResponse().setEntity(
-                        new StringRepresentation(revFeature.getId().toString(),
-                                MediaType.TEXT_PLAIN));
+                getResponse().setEntity(new StringRepresentation(revFeature.getId().toString(),
+                        MediaType.TEXT_PLAIN));
             }
 
         } catch (Exception e) {

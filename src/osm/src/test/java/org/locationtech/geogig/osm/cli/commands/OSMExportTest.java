@@ -10,25 +10,23 @@
 package org.locationtech.geogig.osm.cli.commands;
 
 import java.io.File;
-import java.util.Iterator;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Optional;
 
@@ -42,10 +40,9 @@ public class OSMExportTest extends Assert {
     @Before
     public void setUp() throws Exception {
         Console consoleReader = new Console().disableAnsi();
-        cli = new GeogigCLI(consoleReader);
+        cli = new GeogigCLI(consoleReader).disableProgressListener();
         File workingDirectory = tempFolder.getRoot();
         TestPlatform platform = new TestPlatform(workingDirectory);
-        GlobalContextBuilder.builder = new CLITestContextBuilder(platform);
         cli.setPlatform(platform);
         cli.execute("init");
         cli.execute("config", "user.name", "Gabriel Roldan");
@@ -102,9 +99,10 @@ public class OSMExportTest extends Assert {
                 .call(RevTree.class);
         assertTrue(tree.isPresent());
         assertTrue(tree.get().size() > 0);
-        Iterator<DiffEntry> diffs = cli.getGeogig().command(DiffOp.class).setNewVersion("HEAD")
-                .setOldVersion("HEAD~2").call();
-        assertFalse(diffs.hasNext());
+        try (AutoCloseableIterator<DiffEntry> diffs = cli.getGeogig().command(DiffOp.class)
+                .setNewVersion("HEAD").setOldVersion("HEAD~2").call()) {
+            assertFalse(diffs.hasNext());
+        }
     }
 
     @Test

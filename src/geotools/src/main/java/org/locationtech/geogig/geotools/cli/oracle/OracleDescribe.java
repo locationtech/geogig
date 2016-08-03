@@ -11,7 +11,6 @@ package org.locationtech.geogig.geotools.cli.oracle;
 
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
-import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.cli.DataStoreDescribe;
 import org.locationtech.geogig.geotools.plumbing.DescribeOp;
 
@@ -25,7 +24,6 @@ import com.beust.jcommander.ParametersDelegate;
  * 
  * @see DescribeOp
  */
-@ReadOnly
 @Parameters(commandNames = "describe", commandDescription = "Describe an Oracle table")
 public class OracleDescribe extends DataStoreDescribe implements CLICommand {
 

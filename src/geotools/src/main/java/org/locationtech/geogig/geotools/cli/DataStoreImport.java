@@ -12,13 +12,14 @@ package org.locationtech.geogig.geotools.cli;
 import java.io.IOException;
 
 import org.geotools.data.DataStore;
-import org.locationtech.geogig.api.ProgressListener;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvider;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
+import org.locationtech.geogig.repository.ProgressListener;
 
 import com.beust.jcommander.Parameter;
 
@@ -89,10 +90,16 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
 
             ProgressListener progressListener = cli.getProgressListener();
 
-            cli.getGeogig().command(ImportOp.class).setAll(all).setTable(table).setAlter(alter)
-                    .setDestinationPath(destTable).setOverwrite(!add).setDataStore(dataStore)
-                    .setAdaptToDefaultFeatureType(!forceFeatureType).setFidAttribute(fidAttribute)
-                    .setProgressListener(progressListener).call();
+            ImportOp op = cli.getGeogig().command(ImportOp.class).setAll(all).setTable(table)
+                    .setAlter(alter).setDestinationPath(destTable).setOverwrite(!add)
+                    .setDataStore(dataStore).setAdaptToDefaultFeatureType(!forceFeatureType)
+                    .setFidAttribute(fidAttribute);
+            ForwardingFeatureIteratorProvider transformer = getForwardingFeatureIteratorProvider();
+            if (transformer != null) {
+                op.setForwardingFeatureIteratorProvider(transformer);
+            }
+
+            op.setProgressListener(progressListener).call();
 
             cli.getConsole().println("Import successful.");
 
@@ -100,14 +107,14 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
             switch (e.statusCode) {
             case TABLE_NOT_DEFINED:
                 throw new CommandFailedException(
-                        "No tables specified for import. Specify --all or --table <table>.", e);
+                        "No tables specified for import. Specify --all or --table <table>.", true);
             case ALL_AND_TABLE_DEFINED:
                 throw new CommandFailedException(
-                        "Specify --all or --table <table>, both cannot be set.", e);
+                        "Specify --all or --table <table>, both cannot be set.", true);
             case NO_FEATURES_FOUND:
-                throw new CommandFailedException("No features were found in the database.", e);
+                throw new CommandFailedException("No features were found in the database.", true);
             case TABLE_NOT_FOUND:
-                throw new CommandFailedException("Could not find the specified table.", e);
+                throw new CommandFailedException("Could not find the specified table.", true);
             case UNABLE_TO_GET_NAMES:
                 throw new CommandFailedException("Unable to get feature types from the database.",
                         e);
@@ -120,10 +127,10 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
                 throw new CommandFailedException(
                         "The feature type of the data to import does not match the feature type of the destination tree and cannot be imported\n"
                                 + "USe the --force-featuretype switch to import using the original featuretype and crete a mixed type tree",
-                        e);
+                                true);
             case ALTER_AND_ALL_DEFINED:
                 throw new CommandFailedException(
-                        "Alter cannot be used with --all option and more than one table.", e);
+                        "Alter cannot be used with --all option and more than one table.", true);
             default:
                 throw new CommandFailedException("Import failed with exception: "
                         + e.statusCode.name(), e);
@@ -132,5 +139,15 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
             dataStore.dispose();
             cli.getConsole().flush();
         }
+    }
+
+    /**
+     * Returns a {@link ForwardingFeatureIteratorProvider}. It can be used to transform incoming
+     * features. If the function returns {@code null}, the features will not be transformed.
+     * 
+     * @return the forwarding feature iterator provider
+     */
+    protected ForwardingFeatureIteratorProvider getForwardingFeatureIteratorProvider() {
+        return null;
     }
 }

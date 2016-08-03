@@ -9,12 +9,19 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Rule;
-import org.locationtech.geogig.api.Platform;
+import org.junit.Test;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.ObjectStoreConformanceTest;
@@ -52,5 +59,23 @@ public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
             }
             configdb = null;
         }
+    }
+
+    /**
+     * This tests the concurrency within the PGObjectDatabase by attempting to add the same object
+     * many times with a small batch size. This causes the same object to be added by multiple
+     * threads and should bring to light any concurrency issues with putting duplicate objects.
+     */
+    @Test
+    public void testPutAllConcurrency() {
+        RevObject object = RevObjectTestSupport.feature(0, null, "some value");
+        List<RevObject> objects = new LinkedList<RevObject>();
+        for (int i = 0; i < 100; i++) {
+            objects.add(object);
+        }
+
+        ((PGObjectDatabase) db).setPutAllBatchSize(1);
+        db.putAll(objects.iterator());
+        assertEquals(object, db.get(object.getId()));
     }
 }

@@ -9,32 +9,30 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.MergeConflictsException;
-import org.locationtech.geogig.api.porcelain.MergeOp;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -71,13 +69,15 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points2);
         insert(points3);
         geogig.command(AddOp.class).call();
-        Iterator<DiffEntry> iterator = repo.workingTree().getUnstaged(null);
-        assertFalse(iterator.hasNext());
+        try (AutoCloseableIterator<DiffEntry> iterator = repo.workingTree().getUnstaged(null)) {
+            assertFalse(iterator.hasNext());
+        }
         insert(lines1);
         insert(lines2);
         geogig.command(AddOp.class).call();
-        iterator = repo.workingTree().getUnstaged(null);
-        assertFalse(iterator.hasNext());
+        try (AutoCloseableIterator<DiffEntry> iterator = repo.workingTree().getUnstaged(null)) {
+            assertFalse(iterator.hasNext());
+        }
     }
 
     @Test
@@ -91,7 +91,7 @@ public class AddOpTest extends RepositoryTestCase {
         assertEquals(ChangeType.ADDED, unstaged.get(0).changeType());
         assertEquals(RevObject.TYPE.TREE, unstaged.get(0).getNewObject().getType());
         assertEquals("Points", unstaged.get(0).newName());
-        RevFeatureType ft = RevFeatureTypeImpl.build(pointsType);
+        RevFeatureType ft = RevFeatureTypeBuilder.build(pointsType);
         ObjectId expectedTreeMdId = ft.getId();
         assertEquals(expectedTreeMdId, unstaged.get(0).getNewObject().getMetadataId());
 
@@ -203,17 +203,14 @@ public class AddOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
         }
         insert(points1);
         geogig.command(AddOp.class).call();
-        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
-                .getConflicts(null, null);
-        assertTrue(conflicts.isEmpty());
+        assertFalse(geogig.getRepository().conflictsDatabase().hasConflicts(null));
         geogig.command(CommitOp.class).call();
         Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());
@@ -238,16 +235,13 @@ public class AddOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(true);
         }
         geogig.command(AddOp.class).call();
-        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
-                .getConflicts(null, null);
-        assertTrue(conflicts.isEmpty());
+        assertFalse(geogig.getRepository().conflictsDatabase().hasConflicts(null));
         geogig.command(CommitOp.class).call();
         Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());

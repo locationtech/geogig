@@ -14,8 +14,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
 
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;

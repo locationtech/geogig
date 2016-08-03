@@ -12,14 +12,14 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.porcelain.VersionInfo;
-import org.locationtech.geogig.api.porcelain.VersionOp;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.porcelain.VersionInfo;
+import org.locationtech.geogig.porcelain.VersionOp;
+import org.locationtech.geogig.repository.GeoGIG;
 
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Throwables;
@@ -29,12 +29,13 @@ import com.google.common.base.Throwables;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig [--]version}
+ * <li>{@code geogig [--]version}
  * </ul>
  */
 @ReadOnly
 @RequiresRepository(false)
-@Parameters(commandNames = { "--version", "version" }, commandDescription = "Display GeoGig version information")
+@Parameters(commandNames = { "--version",
+        "version" }, commandDescription = "Display GeoGig version information")
 public class Version implements CLICommand {
 
     private Console console;
@@ -50,7 +51,7 @@ public class Version implements CLICommand {
     public void run(GeogigCLI cli) {
         GeoGIG geogig = cli.getGeogig();
         if (geogig == null) {
-            geogig = new GeoGIG();
+            geogig = cli.newGeoGIG();
         }
         this.console = cli.getConsole();
         VersionInfo info = geogig.command(VersionOp.class).call();

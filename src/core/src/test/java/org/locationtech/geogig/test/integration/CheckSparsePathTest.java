@@ -12,17 +12,15 @@ package org.locationtech.geogig.test.integration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.CheckSparsePath;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.MergeOp;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.CheckSparsePath;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.storage.GraphDatabase;
-
-import com.google.common.base.Suppliers;
 
 public class CheckSparsePathTest extends RepositoryTestCase {
     @Rule
@@ -76,13 +74,13 @@ public class CheckSparsePathTest extends RepositoryTestCase {
         geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch3").call();
         insertAndAdd(poly1);
         RevCommit commit5 = geogig.command(CommitOp.class).setMessage("commit5").call();
-        geogig.getRepository().graphDatabase()
-                .setProperty(commit5.getId(), GraphDatabase.SPARSE_FLAG, "true");
+        geogig.getRepository().graphDatabase().setProperty(commit5.getId(),
+                GraphDatabase.SPARSE_FLAG, "true");
         geogig.command(CheckoutOp.class).setSource("branch2").call();
         insertAndAdd(poly2);
         RevCommit commit6 = geogig.command(CommitOp.class).setMessage("commit6").call();
         RevCommit commit7 = geogig.command(MergeOp.class).setMessage("commit7")
-                .addCommit(Suppliers.ofInstance(commit5.getId())).call().getMergeCommit();
+                .addCommit(commit5.getId()).call().getMergeCommit();
 
         geogig.command(CheckoutOp.class).setSource("branch1").call();
         insertAndAdd(lines3);
@@ -94,7 +92,7 @@ public class CheckSparsePathTest extends RepositoryTestCase {
         RevCommit commit8 = geogig.command(CommitOp.class).setMessage("commit8").call();
 
         RevCommit commit10 = geogig.command(MergeOp.class).setMessage("commit10")
-                .addCommit(Suppliers.ofInstance(commit9.getId())).call().getMergeCommit();
+                .addCommit(commit9.getId()).call().getMergeCommit();
 
         CheckSparsePath command = geogig.command(CheckSparsePath.class);
 
@@ -138,8 +136,8 @@ public class CheckSparsePathTest extends RepositoryTestCase {
         geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
         RevCommit commit2 = geogig.command(CommitOp.class).setMessage("commit2").call();
-        geogig.getRepository().graphDatabase()
-                .setProperty(commit2.getId(), GraphDatabase.SPARSE_FLAG, "true");
+        geogig.getRepository().graphDatabase().setProperty(commit2.getId(),
+                GraphDatabase.SPARSE_FLAG, "true");
         insertAndAdd(points3);
         RevCommit commit3 = geogig.command(CommitOp.class).setMessage("commit3").call();
         geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
@@ -148,13 +146,13 @@ public class CheckSparsePathTest extends RepositoryTestCase {
         geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch3").call();
         insertAndAdd(poly1);
         RevCommit commit5 = geogig.command(CommitOp.class).setMessage("commit5").call();
-        geogig.getRepository().graphDatabase()
-                .setProperty(commit5.getId(), GraphDatabase.SPARSE_FLAG, "true");
+        geogig.getRepository().graphDatabase().setProperty(commit5.getId(),
+                GraphDatabase.SPARSE_FLAG, "true");
         geogig.command(CheckoutOp.class).setSource("branch2").call();
         insertAndAdd(poly2);
         RevCommit commit6 = geogig.command(CommitOp.class).setMessage("commit6").call();
         RevCommit commit7 = geogig.command(MergeOp.class).setMessage("commit7")
-                .addCommit(Suppliers.ofInstance(commit5.getId())).call().getMergeCommit();
+                .addCommit(commit5.getId()).call().getMergeCommit();
 
         geogig.command(CheckoutOp.class).setSource("branch1").call();
         insertAndAdd(lines3);
@@ -166,7 +164,7 @@ public class CheckSparsePathTest extends RepositoryTestCase {
         RevCommit commit8 = geogig.command(CommitOp.class).setMessage("commit8").call();
 
         RevCommit commit10 = geogig.command(MergeOp.class).setMessage("commit10")
-                .addCommit(Suppliers.ofInstance(commit9.getId())).call().getMergeCommit();
+                .addCommit(commit9.getId()).call().getMergeCommit();
 
         CheckSparsePath command = geogig.command(CheckSparsePath.class);
 

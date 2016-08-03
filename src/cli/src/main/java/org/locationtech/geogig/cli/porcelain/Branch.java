@@ -14,20 +14,20 @@ import java.util.List;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.BranchDeleteOp;
-import org.locationtech.geogig.api.porcelain.BranchListOp;
-import org.locationtech.geogig.api.porcelain.BranchRenameOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.BranchDeleteOp;
+import org.locationtech.geogig.porcelain.BranchListOp;
+import org.locationtech.geogig.porcelain.BranchRenameOp;
+import org.locationtech.geogig.repository.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -199,7 +199,7 @@ public class Branch extends AbstractCommand implements CLICommand {
 
             if (verbose) {
                 ansi.a(Strings.repeat(" ", 1 + (largest - branchName.length())));
-                ansi.a(branchRef.getObjectId().toString().substring(0, 7)).a(" ");
+                ansi.a(branchRef.getObjectId().toString().substring(0, 8)).a(" ");
 
                 Optional<RevCommit> commit = findCommit(geogig, branchRef);
                 if (commit.isPresent()) {

@@ -10,10 +10,23 @@
 package org.locationtech.geogig.geotools.geopkg;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.geotools.data.DataStore;
-import org.locationtech.geogig.api.ProgressListener;
+import org.geotools.factory.Hints;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
+import org.locationtech.geogig.repository.ProgressListener;
+import org.opengis.feature.Feature;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 
 /**
  * Exports layers from a repository snapshot to a GeoPackage file.
@@ -34,6 +47,10 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
 
     private File geopackage;
 
+    private final ConcurrentMap<String, String> fidMappings = new ConcurrentHashMap<String, String>();
+
+    private final AtomicLong nextId = new AtomicLong(1);
+
     public GeopkgDataStoreExportOp setInterchangeFormat(boolean enable) {
         this.enableInterchangeFormat = enable;
         return this;
@@ -49,13 +66,21 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
      * after the data has been exported for the given layer. {@inheritDoc}
      */
     @Override
-    protected void export(final String treeSpec, final DataStore targetStore,
+    protected void export(final String refSpec, final DataStore targetStore,
             final String targetTableName, final ProgressListener progress) {
 
-        super.export(treeSpec, targetStore, targetTableName, progress);
+        super.export(refSpec, targetStore, targetTableName, progress);
+        
+        InterchangeFormat format = new InterchangeFormat(geopackage, context());
+
+        try {
+            format.createFIDMappingTable(fidMappings, targetTableName);
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
 
         if (enableInterchangeFormat) {
-            command(GeopkgAuditExport.class).setSourceTreeish(treeSpec)
+            command(GeopkgAuditExport.class).setSourcePathspec(refSpec)
                     .setTargetTableName(targetTableName).setDatabase(geopackage).call();
         }
     }
@@ -63,5 +88,27 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
     @Override
     protected File buildResult(DataStore targetStore) {
         return geopackage;
+    }
+
+    /**
+     * @param featureType the feature type of the features to transform
+     * @return a transform function to update and keep track of feature id mappings of exported
+     *         features
+     */
+    @Override
+    protected Function<Feature, Optional<Feature>> getTransformingFunction(
+            final SimpleFeatureType featureType) {
+        Function<Feature, Optional<Feature>> function = (feature) -> {
+
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+            builder.init((SimpleFeature) feature);
+            long fidValue = nextId.incrementAndGet();
+            builder.featureUserData(Hints.PROVIDED_FID, Long.valueOf(fidValue));
+            fidMappings.put(Long.toString(fidValue), feature.getIdentifier().getID());
+            Feature modifiedFeature = builder.buildFeature(Long.toString(fidValue));
+            return Optional.fromNullable(modifiedFeature);
+        };
+
+        return function;
     }
 }

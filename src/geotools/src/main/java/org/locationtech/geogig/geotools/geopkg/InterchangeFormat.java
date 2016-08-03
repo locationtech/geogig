@@ -13,9 +13,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
-import static org.locationtech.geogig.geotools.geopkg.GeogigMetadata.AUDIT_OP_DELETE;
-import static org.locationtech.geogig.geotools.geopkg.GeogigMetadata.AUDIT_OP_INSERT;
-import static org.locationtech.geogig.geotools.geopkg.GeogigMetadata.AUDIT_OP_UPDATE;
+import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_DELETE;
+import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_INSERT;
+import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_UPDATE;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,10 +25,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.sql.DataSource;
 
@@ -37,21 +39,27 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.geom.GeoPkgGeomReader;
-import org.locationtech.geogig.api.DefaultProgressListener;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeBuilder;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
-import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.porcelain.ConfigGet;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
@@ -71,19 +79,24 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-class InterchangeFormat {
+/**
+ * Class for augmenting a geopackage with additional tables to enable smooth import/export
+ * functionality with GeoGig. Extra tables keep track of which commit an export came from as well as
+ * which features have been modified since the export so that they can be properly merged on import.
+ */
+public class InterchangeFormat {
 
-    private Repository repository;
+    private Context context;
 
     private ProgressListener progressListener = DefaultProgressListener.NULL;
 
     private File geopackageDbFile;
 
-    public InterchangeFormat(final File geopackageDbFile, final Repository repository) {
+    public InterchangeFormat(final File geopackageDbFile, final Context context) {
         checkNotNull(geopackageDbFile);
-        checkNotNull(repository);
+        checkNotNull(context);
         this.geopackageDbFile = geopackageDbFile;
-        this.repository = repository;
+        this.context = context;
     }
 
     public InterchangeFormat setProgressListener(ProgressListener progressListener) {
@@ -96,42 +109,64 @@ class InterchangeFormat {
         progressListener.setDescription(format(msgFormat, args));
     }
 
+    public void createFIDMappingTable(ConcurrentMap<String, String> fidMappings,
+            String targetTableName) throws IOException {
+        final GeoPackage geopackage = new GeoPackage(geopackageDbFile);
+        try {
+            final DataSource dataSource = geopackage.getDataSource();
+
+            try (Connection connection = dataSource.getConnection()) {
+                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+                metadata.createFidMappingTable(targetTableName, fidMappings);
+            } catch (SQLException e) {
+                throw Throwables.propagate(e);
+            }
+        } finally {
+            geopackage.close();
+        }
+    }
+
     /**
-     * @param sourceTreeIsh tree-ish from which features have been exported (supports format
-     *        {@code <[<tree-ish>:]<treePath>>}. e.g. {@code buildings}, {@code HEAD~2:buildings},
+     * Creates an audit table for a table in the geopackage. This function requires that the
+     * features have already been exported to the geopackage.
+     * 
+     * @param sourcePathspec path from which features have been exported (supports format
+     *        {@code <[<commit-ish>:]<treePath>>}. e.g. {@code buildings}, {@code HEAD~2:buildings},
      *        {@code abc123fg:buildings}, {@code origin/master:buildings} ). {@code buildings}
-     *        resolves to {@code WORK_HEAD:buildings}.
-     * @param targetTableName name of table where features from {@code sourceTreeIsh} have been
+     *        resolves to {@code HEAD:buildings}.
+     * @param targetTableName name of table where features from {@code sourceCommitIsh} have been
      *        exported
      */
-    public void export(final String sourceTreeIsh, final String targetTableName) throws IOException {
+    public void export(final String sourcePathspec, final String targetTableName)
+            throws IOException {
 
         final String refspec;
-        final String headTreeish;
+        final String headCommitish;
         final String featureTreePath;
-        final ObjectId rootTreeId;
+        final ObjectId commitId;
 
         {
-            if (sourceTreeIsh.contains(":")) {
-                refspec = sourceTreeIsh;
+            if (sourcePathspec.contains(":")) {
+                refspec = sourcePathspec;
             } else {
-                refspec = "WORK_HEAD:" + sourceTreeIsh;
+                refspec = "HEAD:" + sourcePathspec;
             }
 
             checkArgument(!refspec.endsWith(":"), "No path specified.");
 
             String[] split = refspec.split(":");
-            headTreeish = split[0];
+            headCommitish = split[0];
             featureTreePath = split[1];
-            Optional<ObjectId> rootId = repository.command(ResolveTreeish.class)
-                    .setTreeish(headTreeish).call();
 
-            checkArgument(rootId.isPresent(), "Couldn't resolve '" + refspec
-                    + "' to a treeish object");
-            rootTreeId = rootId.get();
+            Optional<RevCommit> commit = context.command(RevObjectParse.class)
+                    .setRefSpec(headCommitish).call(RevCommit.class);
+
+            checkArgument(commit.isPresent(),
+                    "Couldn't resolve '" + refspec + "' to a commitish object");
+            commitId = commit.get().getId();
         }
 
-        info("Exporting repository metadata from '%s' (tree %s)...", refspec, rootTreeId);
+        info("Exporting repository metadata from '%s' (commit %s)...", refspec, commitId);
 
         final GeoPackage geopackage = new GeoPackage(geopackageDbFile);
         try {
@@ -139,7 +174,7 @@ class InterchangeFormat {
             checkState(featureEntry != null, "Table '%s' does not exist", targetTableName);
 
             try {
-                createAuditLog(geopackage, featureTreePath, featureEntry, rootTreeId);
+                createAuditLog(geopackage, featureTreePath, featureEntry, commitId);
             } catch (SQLException e) {
                 throw Throwables.propagate(e);
             }
@@ -149,28 +184,65 @@ class InterchangeFormat {
         }
     }
 
+    /**
+     * Create the audit tables for the specified feature type.
+     * 
+     * @param geopackage the geopackage to add the tables to
+     * @param mappedPath the feature tree path
+     * @param fe the feature entry to add audit logs too
+     * @param commitId the commit that the exported features came from
+     * @throws SQLException
+     */
     private void createAuditLog(final GeoPackage geopackage, final String mappedPath,
-            final FeatureEntry fe, final ObjectId rootTreeId) throws SQLException {
+            final FeatureEntry fe, final ObjectId commitId) throws SQLException {
 
         info("Creating audit metadata for table '%s'", fe.getIdentifier());
 
         final DataSource dataSource = geopackage.getDataSource();
 
         try (Connection connection = dataSource.getConnection()) {
-            GeogigMetadata metadata = new GeogigMetadata(connection);
-            URI repoURI = repository.getLocation();
+            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+            URI repoURI = context.repository().getLocation();
             metadata.init(repoURI);
 
             final String auditedTable = fe.getIdentifier();
 
-            metadata.createAudit(auditedTable, mappedPath, rootTreeId);
+            metadata.createAudit(auditedTable, mappedPath, commitId);
         }
     }
 
-    public List<AuditReport> importAuditLog(@Nullable String... tableNames) {
+    public void createChangeLog(final String targetTableName, Map<String, ChangeType> changedNodes)
+            throws IOException, SQLException {
+        final GeoPackage geopackage = new GeoPackage(geopackageDbFile);
+        final DataSource dataSource = geopackage.getDataSource();
+        try (Connection connection = dataSource.getConnection()) {
+            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+            metadata.createChangeLog(targetTableName);
+            metadata.populateChangeLog(targetTableName, changedNodes);
+        }
 
-        final Set<String> importTables = tableNames == null ? ImmutableSet.of() : Sets
-                .newHashSet(tableNames);
+    }
+
+    /**
+     * Imports the features from the geopackage based on the existing audit table onto the current
+     * branch. If the head commit of the current branch is different from the commit that the
+     * features were exported from, the features will be merged into the current branch. The calling
+     * function should anticipate the possibility of merge conflicts.
+     * 
+     * @param commitMessage commit message for the imported features
+     * @param authorName author name to use for the commit
+     * @param authorEmail author email to use for the commit
+     * @param tableNames a list of tables to import from the geopackage, if none are specified, all
+     *        tables will be imported
+     * @return the commit with the imported features, or the merge commit if it was not a
+     *         fast-forward merge
+     */
+    public GeopkgImportResult importAuditLog(@Nullable String commitMessage,
+            @Nullable String authorName, @Nullable String authorEmail,
+            @Nullable String... tableNames) {
+
+        final Set<String> importTables = tableNames == null ? ImmutableSet.of()
+                : Sets.newHashSet(tableNames);
 
         List<AuditReport> reports = new ArrayList<>();
         GeoPackage geopackage;
@@ -181,27 +253,106 @@ class InterchangeFormat {
         }
         final DataSource dataSource = geopackage.getDataSource();
 
+        RevCommit importCommit = null;
+        GeopkgImportResult importResult = null;
+
         try (Connection connection = dataSource.getConnection()) {
-            GeogigMetadata metadata = new GeogigMetadata(connection);
+            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
 
             final Map<String, AuditTable> tables = Maps.filterKeys(
                     Maps.uniqueIndex(metadata.getAuditTables(), t -> t.getTableName()),
                     k -> importTables.isEmpty() || importTables.contains(k));
 
+            checkState(tables.size() > 0, "No table to import.");
+            Iterator<AuditTable> iter = tables.values().iterator();
+            ObjectId commitId = iter.next().getCommitId();
+            while (iter.hasNext()) {
+                checkState(commitId.equals(iter.next().getCommitId()),
+                        "Unable to simultaneously import tables with different source commit ids.");
+            }
+
+            RevCommit commit = context.objectDatabase().getCommit(commitId);
+            RevTree baseTree = context.objectDatabase().getTree(commit.getTreeId());
+            RevTreeBuilder newTreeBuilder = new RevTreeBuilder(context.objectDatabase(), baseTree);
+
+            Map<String, String> fidMappings = null;
             for (AuditTable t : tables.values()) {
-                AuditReport report = importAuditLog(geopackage, t);
+                fidMappings = metadata.getFidMappings(t.getTableName());
+                AuditReport report = importAuditLog(geopackage, t, baseTree, newTreeBuilder,
+                        fidMappings);
                 reports.add(report);
             }
 
+            RevTree newTree = newTreeBuilder.build();
+            context.objectDatabase().put(newTree);
+
+            if (authorName == null) {
+                authorName = context.command(ConfigGet.class).setName("user.name").call().orNull();
+            }
+            if (authorEmail == null) {
+                authorEmail = context.command(ConfigGet.class).setName("user.email").call()
+                        .orNull();
+            }
+
+            CommitBuilder builder = new CommitBuilder();
+            long timestamp = context.platform().currentTimeMillis();
+
+            builder.setParentIds(Arrays.asList(commitId));
+            builder.setTreeId(newTree.getId());
+            builder.setCommitterTimestamp(timestamp);
+            builder.setCommitter(authorName);
+            builder.setCommitterEmail(authorEmail);
+            builder.setAuthorTimestamp(timestamp);
+            builder.setAuthor(authorName);
+            builder.setAuthorEmail(authorEmail);
+            if (commitMessage != null) {
+                builder.setMessage(commitMessage);
+            } else {
+                builder.setMessage("Imported features from geopackage.");
+            }
+
+            importCommit = builder.build();
+            importResult = new GeopkgImportResult(importCommit);
+            for (AuditReport auditReport : reports) {
+                importResult.newMappings.put(auditReport.table.getFeatureTreePath(),
+                        auditReport.newMappings);
+            }
+
+            context.objectDatabase().put(importCommit);
+
+            MergeOp merge = context.command(MergeOp.class).setAuthor(authorName, authorEmail)
+                    .addCommit(importCommit.getId());
+
+            if (commitMessage != null) {
+                merge.setMessage("Merge: " + commitMessage);
+            }
+
+            MergeReport report = merge.call();
+            RevCommit newCommit = report.getMergeCommit();
+            importResult.newCommit = newCommit;
+
+        } catch (MergeConflictsException e) {
+            throw new GeopkgMergeConflictsException(e, importResult);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
             geopackage.close();
         }
-        return reports;
+        return importResult;
     }
 
-    private AuditReport importAuditLog(GeoPackage geopackage, AuditTable auditTable)
+    /**
+     * Import the specified table and update the tree builder with the updated features.
+     * 
+     * @param geopackage the geopackage to import from
+     * @param auditTable the audit table for the feature type
+     * @param baseTree the tree that the features were originally exported from
+     * @param newTreeBuilder the tree builder for the updated features
+     * @return the audit report for the table
+     * @throws SQLException
+     */
+    private AuditReport importAuditLog(GeoPackage geopackage, AuditTable auditTable,
+            RevTree baseTree, RevTreeBuilder newTreeBuilder, Map<String, String> fidMappings)
             throws SQLException {
         info("Importing changes to table %s onto feature tree %s...", auditTable.getTableName(),
                 auditTable.getFeatureTreePath());
@@ -213,43 +364,47 @@ class InterchangeFormat {
             try (Statement st = cx.createStatement()) {
                 try (ResultSet rs = st.executeQuery(sql)) {
 
-                    final RevTree worktree = repository.workingTree().getTree();
+                    final Optional<NodeRef> currentTreeRef = context.command(FindTreeChild.class)
+                            .setParent(baseTree).setChildPath(auditTable.getFeatureTreePath())
+                            .call();
 
-                    final Optional<NodeRef> currentTreeRef = repository
-                            .command(FindTreeChild.class).setParent(worktree)
-                            .setChildPath(auditTable.getFeatureTreePath()).call();
+                    Preconditions.checkState(currentTreeRef.isPresent(),
+                            baseTree.toString() + auditTable.getFeatureTreePath());
 
-                    Preconditions.checkState(currentTreeRef.isPresent());
-
-                    final ObjectStore store = repository.objectDatabase();
+                    final ObjectStore store = context.objectDatabase();
 
                     final NodeRef featureTreeRef = currentTreeRef.get();
                     final RevTree currentFeatureTree = store.getTree(featureTreeRef.getObjectId());
-                    final RevFeatureType featureType = store.getFeatureType(featureTreeRef
-                            .getMetadataId());
+                    final RevFeatureType featureType = store
+                            .getFeatureType(featureTreeRef.getMetadataId());
 
                     final Iterator<Change> changes = asChanges(rs, featureType, tableReport);
                     final RevTree newFeatureTree = importAuditLog(store, currentFeatureTree,
-                            changes);
-
-                    RevTreeBuilder workTreeBuilder = new RevTreeBuilder(store, worktree);
+                            changes, fidMappings, tableReport);
 
                     Node featureTreeNode = Node.create(featureTreeRef.name(),
                             newFeatureTree.getId(), featureTreeRef.getMetadataId(), TYPE.TREE,
                             SpatialOps.boundsOf(newFeatureTree));
 
-                    workTreeBuilder.put(featureTreeNode);
-                    RevTree newWorkTree = workTreeBuilder.build();
-                    store.put(newWorkTree);
-                    repository.workingTree().updateWorkHead(newWorkTree.getId());
+                    newTreeBuilder.put(featureTreeNode);
                 }
             }
         }
         return tableReport;
     }
 
+    /**
+     * Builds a new feature type tree based on the changes in the audit logs.
+     * 
+     * @param store the object store
+     * @param currentFeatureTree the original feature tree
+     * @param changes all of the changes from the audit log
+     * @return the newly built tree
+     * @throws SQLException
+     */
     private RevTree importAuditLog(ObjectStore store, RevTree currentFeatureTree,
-            Iterator<Change> changes) throws SQLException {
+            Iterator<Change> changes, Map<String, String> fidMappings, AuditReport report)
+            throws SQLException {
 
         RevTreeBuilder builder = new RevTreeBuilder(store, currentFeatureTree);
 
@@ -266,17 +421,23 @@ class InterchangeFormat {
                 @Nullable
                 RevFeature feature = change.getFeature();
 
-                String feautreId = change.getFeautreId();
+                String featureId = null;
+                if (fidMappings.containsKey(change.getFeautreId())) {
+                    featureId = fidMappings.get(change.getFeautreId());
+                } else {
+                    featureId = newFeatureId();
+                    report.newMappings.put(change.getFeautreId(), featureId);
+                }
 
                 ChangeType type = change.getType();
                 switch (type) {
                 case REMOVED:
-                    builder.remove(feautreId);
+                    builder.remove(featureId);
                     break;
                 case ADDED:
                 case MODIFIED:
-                    Node node = Node.create(feautreId, feature.getId(), ObjectId.NULL,
-                            TYPE.FEATURE, SpatialOps.boundsOf(feature));
+                    Node node = Node.create(featureId, feature.getId(), ObjectId.NULL, TYPE.FEATURE,
+                            SpatialOps.boundsOf(feature));
                     builder.put(node);
                     return feature;
                 default:
@@ -296,6 +457,15 @@ class InterchangeFormat {
         return newTree;
     }
 
+    /**
+     * Converts the audit log into an iterator for all of the changes and updates an audit report
+     * with a summary of the changes.
+     * 
+     * @param rs the rows from the audit log
+     * @param featureType the feature type for the features in the table
+     * @param report the audit report to update
+     * @return
+     */
     private Iterator<Change> asChanges(final ResultSet rs, RevFeatureType featureType,
             AuditReport report) {
 
@@ -344,15 +514,21 @@ class InterchangeFormat {
                 case AUDIT_OP_DELETE:
                     return ChangeType.REMOVED;
                 default:
-                    throw new IllegalArgumentException(
-                            String.format(
-                                    "Geopackage audit log record contains an invalid audit op code: %d. Expected one if %d(INSERT), %d(UPDATE), %d(DELETE)",
-                                    auditOp, AUDIT_OP_INSERT, AUDIT_OP_UPDATE, AUDIT_OP_DELETE));
+                    throw new IllegalArgumentException(String.format(
+                            "Geopackage audit log record contains an invalid audit op code: %d. Expected one if %d(INSERT), %d(UPDATE), %d(DELETE)",
+                            auditOp, AUDIT_OP_INSERT, AUDIT_OP_UPDATE, AUDIT_OP_DELETE));
                 }
             }
         };
     }
 
+    private String newFeatureId() {
+        return SimpleFeatureBuilder.createDefaultFeatureId();
+    }
+
+    /**
+     * Helper function to convert a row from an audit log into a feature.
+     */
     private static class RecordToFeature implements Function<ResultSet, RevFeature> {
 
         private SimpleFeatureBuilder builder;
@@ -367,8 +543,8 @@ class InterchangeFormat {
             List<AttributeDescriptor> descriptors = type.getAttributeDescriptors();
             this.attNames = Lists.transform(descriptors, at -> at.getLocalName());
             GeometryDescriptor geometryDescriptor = type.getGeometryDescriptor();
-            this.geometryAttribute = geometryDescriptor == null ? null : geometryDescriptor
-                    .getLocalName();
+            this.geometryAttribute = geometryDescriptor == null ? null
+                    : geometryDescriptor.getLocalName();
         }
 
         @Override
@@ -392,6 +568,9 @@ class InterchangeFormat {
         }
     }
 
+    /**
+     * Helper class for a change from an audit log.
+     */
     private static class Change {
 
         private final String featureId;

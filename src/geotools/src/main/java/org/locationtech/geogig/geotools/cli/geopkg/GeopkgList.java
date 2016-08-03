@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.geotools.cli.geopkg;
 
+import java.io.File;
+
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
@@ -17,6 +19,7 @@ import org.locationtech.geogig.geotools.plumbing.ListOp;
 
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
+import com.google.common.base.Preconditions;
 
 /**
  * Geopackage CLI proxy for {@link ListOp}
@@ -37,6 +40,8 @@ public class GeopkgList extends DataStoreList implements CLICommand {
 
     @Override
     protected DataStore getDataStore() {
+        File databaseFile = new File(commonArgs.database);
+        Preconditions.checkArgument(databaseFile.exists(), "Database file not found.");
         return support.getDataStore(commonArgs);
     }
 

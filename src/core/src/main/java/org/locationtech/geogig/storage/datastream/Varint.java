@@ -25,8 +25,8 @@ import java.io.IOException;
 
 /**
  * <p>
- * Encodes signed and unsigned values using a common variable-length scheme, found for example in <a
- * href="http://code.google.com/apis/protocolbuffers/docs/encoding.html"> Google's Protocol
+ * Encodes signed and unsigned values using a common variable-length scheme, found for example in
+ * <a href="http://code.google.com/apis/protocolbuffers/docs/encoding.html"> Google's Protocol
  * Buffers</a>. It uses fewer bytes to encode smaller values, but will use slightly more bytes to
  * encode large values.
  * </p>
@@ -42,8 +42,8 @@ public final class Varint {
     }
 
     /**
-     * Encodes a value using the variable-length encoding from <a
-     * href="http://code.google.com/apis/protocolbuffers/docs/encoding.html"> Google Protocol
+     * Encodes a value using the variable-length encoding from
+     * <a href="http://code.google.com/apis/protocolbuffers/docs/encoding.html"> Google Protocol
      * Buffers</a>. It uses zig-zag encoding to efficiently encode signed values. If values are
      * known to be nonnegative, {@link #writeUnsignedVarLong(long, DataOutput)} should be used.
      *
@@ -51,14 +51,14 @@ public final class Varint {
      * @param out to write bytes to
      * @throws IOException if {@link DataOutput} throws {@link IOException}
      */
-    public static void writeSignedVarLong(long value, DataOutput out) throws IOException {
+    public static int writeSignedVarLong(long value, DataOutput out) throws IOException {
         // Great trick from http://code.google.com/apis/protocolbuffers/docs/encoding.html#types
-        writeUnsignedVarLong((value << 1) ^ (value >> 63), out);
+        return writeUnsignedVarLong((value << 1) ^ (value >> 63), out);
     }
 
     /**
-     * Encodes a value using the variable-length encoding from <a
-     * href="http://code.google.com/apis/protocolbuffers/docs/encoding.html"> Google Protocol
+     * Encodes a value using the variable-length encoding from
+     * <a href="http://code.google.com/apis/protocolbuffers/docs/encoding.html"> Google Protocol
      * Buffers</a>. Zig-zag is not used, so input must not be negative. If values can be negative,
      * use {@link #writeSignedVarLong(long, DataOutput)} instead. This method treats negative input
      * as like a large unsigned value.
@@ -67,41 +67,44 @@ public final class Varint {
      * @param out to write bytes to
      * @throws IOException if {@link DataOutput} throws {@link IOException}
      */
-    public static void writeUnsignedVarLong(long value, DataOutput out) throws IOException {
+    public static int writeUnsignedVarLong(long value, DataOutput out) throws IOException {
         byte[] buff = new byte[10];
         int cnt = 0;
         while ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
-            //out.writeByte(((int) value & 0x7F) | 0x80);
+            // out.writeByte(((int) value & 0x7F) | 0x80);
             buff[cnt++] = (byte) (((int) value & 0x7F) | 0x80);
             value >>>= 7;
         }
-        //out.writeByte((int) value & 0x7F);
+        // out.writeByte((int) value & 0x7F);
         buff[cnt++] = (byte) ((int) value & 0x7F);
         out.write(buff, 0, cnt);
+        return cnt;
     }
 
     /**
      * @see #writeSignedVarLong(long, DataOutput)
      */
-    public static void writeSignedVarInt(int value, DataOutput out) throws IOException {
+    public static int writeSignedVarInt(int value, DataOutput out) throws IOException {
         // Great trick from http://code.google.com/apis/protocolbuffers/docs/encoding.html#types
-        writeUnsignedVarInt((value << 1) ^ (value >> 31), out);
+        return writeUnsignedVarInt((value << 1) ^ (value >> 31), out);
     }
 
     /**
+     * @return how many bytes have been written
      * @see #writeUnsignedVarLong(long, DataOutput)
      */
-    public static void writeUnsignedVarInt(int value, DataOutput out) throws IOException {
+    public static int writeUnsignedVarInt(int value, DataOutput out) throws IOException {
         byte[] buff = new byte[5];
         int cnt = 0;
         while ((value & 0xFFFFFF80) != 0L) {
-            //out.writeByte((value & 0x7F) | 0x80);
+            // out.writeByte((value & 0x7F) | 0x80);
             buff[cnt++] = (byte) ((value & 0x7F) | 0x80);
             value >>>= 7;
         }
-        //out.writeByte(value & 0x7F);
+        // out.writeByte(value & 0x7F);
         buff[cnt++] = (byte) (value & 0x7F);
         out.write(buff, 0, cnt);
+        return cnt;
     }
 
     /**

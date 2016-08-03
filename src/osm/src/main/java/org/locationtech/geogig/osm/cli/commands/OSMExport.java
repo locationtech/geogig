@@ -16,28 +16,27 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.locationtech.geogig.api.Bounded;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
+import org.locationtech.geogig.model.Bounded;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.osm.internal.EntityConverter;
 import org.locationtech.geogig.osm.internal.OSMUtils;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -56,7 +55,6 @@ import com.beust.jcommander.Parameters;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -77,7 +75,8 @@ public class OSMExport extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output file")
     public boolean overwrite;
 
-    @Parameter(names = { "--bbox", "-b" }, description = "The bounding box to use as filter (S W N E).", arity = 4)
+    @Parameter(names = { "--bbox",
+            "-b" }, description = "The bounding box to use as filter (S W N E).", arity = 4)
     private List<String> bbox;
 
     private GeoGIG geogig;
@@ -142,9 +141,8 @@ public class OSMExport extends AbstractCommand implements CLICommand {
         if (bbox != null) {
             final Envelope env;
             try {
-                env = new Envelope(Double.parseDouble(bbox.get(0)),
-                        Double.parseDouble(bbox.get(2)), Double.parseDouble(bbox.get(1)),
-                        Double.parseDouble(bbox.get(3)));
+                env = new Envelope(Double.parseDouble(bbox.get(0)), Double.parseDouble(bbox.get(2)),
+                        Double.parseDouble(bbox.get(1)), Double.parseDouble(bbox.get(3)));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Wrong bbox definition");
             }
@@ -159,41 +157,33 @@ public class OSMExport extends AbstractCommand implements CLICommand {
         }
         Iterator<NodeRef> iterator = op.call();
         final EntityConverter converter = new EntityConverter();
-        Function<NodeRef, EntityContainer> function = new Function<NodeRef, EntityContainer>() {
-
-            @Override
-            @Nullable
-            public EntityContainer apply(@Nullable NodeRef ref) {
-                RevFeature revFeature = geogig.command(RevObjectParse.class)
-                        .setObjectId(ref.getObjectId()).call(RevFeature.class).get();
-                SimpleFeatureType featureType;
-                if (ref.path().startsWith(OSMUtils.NODE_TYPE_NAME)) {
-                    featureType = OSMUtils.nodeType();
-                } else {
-                    featureType = OSMUtils.wayType();
-                }
-                SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(featureType);
-                RevFeatureType revFeatureType = RevFeatureTypeImpl.build(featureType);
-                List<PropertyDescriptor> descriptors = revFeatureType.sortedDescriptors();
-                ImmutableList<Optional<Object>> values = revFeature.getValues();
-                for (int i = 0; i < descriptors.size(); i++) {
-                    PropertyDescriptor descriptor = descriptors.get(i);
-                    Optional<Object> value = values.get(i);
-                    featureBuilder.set(descriptor.getName(), value.orNull());
-                }
-                SimpleFeature feature = featureBuilder.buildFeature(ref.name());
-                Entity entity = converter.toEntity(feature, null);
-                EntityContainer container;
-                if (entity instanceof Node) {
-                    container = new NodeContainer((Node) entity);
-                } else {
-                    container = new WayContainer((Way) entity);
-                }
-
-                return container;
-
+        final Function<NodeRef, EntityContainer> function = (nr) -> {
+            RevFeature revFeature = geogig.command(RevObjectParse.class)
+                    .setObjectId(nr.getObjectId()).call(RevFeature.class).get();
+            SimpleFeatureType featureType;
+            if (nr.path().startsWith(OSMUtils.NODE_TYPE_NAME)) {
+                featureType = OSMUtils.nodeType();
+            } else {
+                featureType = OSMUtils.wayType();
+            }
+            SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(featureType);
+            RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(featureType);
+            List<PropertyDescriptor> descriptors = revFeatureType.descriptors();
+            for (int i = 0; i < descriptors.size(); i++) {
+                PropertyDescriptor descriptor = descriptors.get(i);
+                Optional<Object> value = revFeature.get(i);
+                featureBuilder.set(descriptor.getName(), value.orNull());
+            }
+            SimpleFeature feature = featureBuilder.buildFeature(nr.name());
+            Entity entity = converter.toEntity(feature, null);
+            EntityContainer container;
+            if (entity instanceof Node) {
+                container = new NodeContainer((Node) entity);
+            } else {
+                container = new WayContainer((Way) entity);
             }
 
+            return container;
         };
         return Iterators.transform(iterator, function);
     }

@@ -11,8 +11,8 @@ package org.locationtech.geogig.storage;
 
 import java.io.InputStream;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
 
 import com.vividsolutions.jts.geom.GeometryFactory;
 

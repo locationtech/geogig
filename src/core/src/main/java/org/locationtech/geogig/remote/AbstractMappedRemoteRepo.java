@@ -14,33 +14,34 @@ import static com.google.common.base.Preconditions.checkState;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.IniRepositoryFilter;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RepositoryFilter;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.WriteTree;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.SynchronizationException;
-import org.locationtech.geogig.api.porcelain.SynchronizationException.StatusCode;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.FindCommonAncestor;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.WriteTree;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.SynchronizationException;
+import org.locationtech.geogig.porcelain.SynchronizationException.StatusCode;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.IniRepositoryFilter;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryFilter;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -50,7 +51,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 
 /**
  * Abstract base implementation for mapped (sparse) clone.
@@ -139,7 +139,8 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
 
         @Override
         protected Evaluation evaluate(CommitNode commitNode) {
-            if (!source.graphDatabase().getMapping(commitNode.getObjectId()).equals(ObjectId.NULL)) {
+            if (!source.graphDatabase().getMapping(commitNode.getObjectId())
+                    .equals(ObjectId.NULL)) {
                 return Evaluation.EXCLUDE_AND_PRUNE;
             }
             return Evaluation.INCLUDE_AND_CONTINUE;
@@ -170,7 +171,8 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param fetchLimit the maximum depth to fetch, note, a sparse clone cannot be a shallow clone
      */
     @Override
-    public final void fetchNewData(Ref ref, Optional<Integer> fetchLimit, ProgressListener progress) {
+    public final void fetchNewData(Ref ref, Optional<Integer> fetchLimit,
+            ProgressListener progress) {
         Preconditions.checkState(!fetchLimit.isPresent(), "A sparse clone cannot be shallow.");
         FetchCommitGatherer gatherer = new FetchCommitGatherer(getRemoteWrapper(), localRepository);
 
@@ -204,83 +206,85 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
         if (object.isPresent() && object.get().getType().equals(TYPE.COMMIT)) {
             RevCommit commit = (RevCommit) object.get();
 
-            FilteredDiffIterator changes = getFilteredChanges(commit);
+            try (FilteredDiffIterator changes = getFilteredChanges(commit)) {
+                GraphDatabase graphDatabase = localRepository.graphDatabase();
+                ObjectStore objectDatabase = localRepository.objectDatabase();
+                graphDatabase.put(commit.getId(), commit.getParentIds());
 
-            GraphDatabase graphDatabase = localRepository.graphDatabase();
-            ObjectStore objectDatabase = localRepository.objectDatabase();
-            graphDatabase.put(commit.getId(), commit.getParentIds());
+            RevTree rootTree = RevTreeBuilder.EMPTY;
 
-            RevTree rootTree = RevTree.EMPTY;
+                if (commit.getParentIds().size() > 0) {
+                    // Map this commit to the last "sparse" commit in my ancestry
+                    ObjectId mappedCommit = graphDatabase.getMapping(commit.getParentIds().get(0));
+                    graphDatabase.map(commit.getId(), mappedCommit);
+                    Optional<ObjectId> treeId = localRepository.command(ResolveTreeish.class)
+                            .setTreeish(mappedCommit).call();
+                    if (treeId.isPresent()) {
+                        rootTree = localRepository.getTree(treeId.get());
+                    }
 
-            if (commit.getParentIds().size() > 0) {
-                // Map this commit to the last "sparse" commit in my ancestry
-                ObjectId mappedCommit = graphDatabase.getMapping(commit.getParentIds().get(0));
-                graphDatabase.map(commit.getId(), mappedCommit);
-                Optional<ObjectId> treeId = localRepository.command(ResolveTreeish.class)
-                        .setTreeish(mappedCommit).call();
-                if (treeId.isPresent()) {
-                    rootTree = localRepository.getTree(treeId.get());
+                } else {
+                    graphDatabase.map(commit.getId(), ObjectId.NULL);
                 }
 
-            } else {
-                graphDatabase.map(commit.getId(), ObjectId.NULL);
-            }
+                AutoCloseableIterator<DiffEntry> it = AutoCloseableIterator.filter(changes,
+                        new Predicate<DiffEntry>() {
+                            @Override
+                            public boolean apply(DiffEntry e) {
+                                return true;
+                            }
+                        });
 
-            Iterator<DiffEntry> it = Iterators.filter(changes, new Predicate<DiffEntry>() {
-                @Override
-                public boolean apply(DiffEntry e) {
-                    return true;
-                }
-            });
+                if (it.hasNext()) {
+                    // Create new commit
+                    WriteTree writeTree = localRepository.command(WriteTree.class)
+                            .setOldRoot(Suppliers.ofInstance(rootTree)).setDiffSupplier(
+                                    Suppliers.ofInstance((AutoCloseableIterator<DiffEntry>) it));
 
-            if (it.hasNext()) {
-                // Create new commit
-                WriteTree writeTree = localRepository.command(WriteTree.class)
-                        .setOldRoot(Suppliers.ofInstance(rootTree))
-                        .setDiffSupplier(Suppliers.ofInstance((Iterator<DiffEntry>) it));
+                    ObjectId newTreeId = writeTree.call();
 
-                ObjectId newTreeId = writeTree.call();
+                    CommitBuilder builder = new CommitBuilder(commit);
+                    List<ObjectId> newParents = new LinkedList<ObjectId>();
+                    for (ObjectId parentCommitId : commit.getParentIds()) {
+                        newParents.add(graphDatabase.getMapping(parentCommitId));
+                    }
+                    builder.setParentIds(newParents);
+                    builder.setTreeId(newTreeId);
 
-                CommitBuilder builder = new CommitBuilder(commit);
-                List<ObjectId> newParents = new LinkedList<ObjectId>();
-                for (ObjectId parentCommitId : commit.getParentIds()) {
-                    newParents.add(graphDatabase.getMapping(parentCommitId));
-                }
-                builder.setParentIds(newParents);
-                builder.setTreeId(newTreeId);
+                    RevCommit mapped = builder.build();
+                    objectDatabase.put(mapped);
 
-                RevCommit mapped = builder.build();
-                objectDatabase.put(mapped);
+                    if (changes.wasFiltered()) {
+                        graphDatabase.setProperty(mapped.getId(), GraphDatabase.SPARSE_FLAG,
+                                "true");
+                    }
 
-                if (changes.wasFiltered()) {
+                    graphDatabase.map(mapped.getId(), commit.getId());
+                    // Replace the old mapping with the new commit Id.
+                    graphDatabase.map(commit.getId(), mapped.getId());
+                } else if (allowEmpty) {
+                    CommitBuilder builder = new CommitBuilder(commit);
+                    List<ObjectId> newParents = new LinkedList<ObjectId>();
+                    for (ObjectId parentCommitId : commit.getParentIds()) {
+                        newParents.add(graphDatabase.getMapping(parentCommitId));
+                    }
+                    builder.setParentIds(newParents);
+                    builder.setTreeId(rootTree.getId());
+                    builder.setMessage(PLACEHOLDER_COMMIT_MESSAGE);
+
+                    RevCommit mapped = builder.build();
+                    objectDatabase.put(mapped);
+
                     graphDatabase.setProperty(mapped.getId(), GraphDatabase.SPARSE_FLAG, "true");
+
+                    graphDatabase.map(mapped.getId(), commit.getId());
+                    // Replace the old mapping with the new commit Id.
+                    graphDatabase.map(commit.getId(), mapped.getId());
+                } else {
+                    // Mark the mapped commit as sparse, since it wont have these changes
+                    graphDatabase.setProperty(graphDatabase.getMapping(commit.getId()),
+                            GraphDatabase.SPARSE_FLAG, "true");
                 }
-
-                graphDatabase.map(mapped.getId(), commit.getId());
-                // Replace the old mapping with the new commit Id.
-                graphDatabase.map(commit.getId(), mapped.getId());
-            } else if (allowEmpty) {
-                CommitBuilder builder = new CommitBuilder(commit);
-                List<ObjectId> newParents = new LinkedList<ObjectId>();
-                for (ObjectId parentCommitId : commit.getParentIds()) {
-                    newParents.add(graphDatabase.getMapping(parentCommitId));
-                }
-                builder.setParentIds(newParents);
-                builder.setTreeId(rootTree.getId());
-                builder.setMessage(PLACEHOLDER_COMMIT_MESSAGE);
-
-                RevCommit mapped = builder.build();
-                objectDatabase.put(mapped);
-
-                graphDatabase.setProperty(mapped.getId(), GraphDatabase.SPARSE_FLAG, "true");
-
-                graphDatabase.map(mapped.getId(), commit.getId());
-                // Replace the old mapping with the new commit Id.
-                graphDatabase.map(commit.getId(), mapped.getId());
-            } else {
-                // Mark the mapped commit as sparse, since it wont have these changes
-                graphDatabase.setProperty(graphDatabase.getMapping(commit.getId()),
-                        GraphDatabase.SPARSE_FLAG, "true");
             }
         }
     }
@@ -408,8 +412,8 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
             if (remoteRef.get() instanceof SymRef) {
                 throw new SynchronizationException(StatusCode.CANNOT_PUSH_TO_SYMBOLIC_REF);
             }
-            ObjectId mappedId = localRepository.graphDatabase().getMapping(
-                    remoteRef.get().getObjectId());
+            ObjectId mappedId = localRepository.graphDatabase()
+                    .getMapping(remoteRef.get().getObjectId());
             if (mappedId.equals(ref.getObjectId())) {
                 // The branches are equal, no need to push.
                 throw new SynchronizationException(StatusCode.NOTHING_TO_PUSH);

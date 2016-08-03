@@ -15,9 +15,9 @@ import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -64,6 +64,17 @@ public class EnvironmentBuilder implements Provider<Environment> {
         this.absolutePath = absolutePath;
         this.path = null;
         return this;
+    }
+
+    File getGeoGigDirectory() {
+        final Optional<URI> repoUrl = new ResolveGeogigURI(platform, hints).call();
+        if (!repoUrl.isPresent()) {
+            throw new IllegalStateException("Can't find geogig repository home");
+        }
+        URI uri = repoUrl.get();
+        Preconditions.checkState("file".equals(uri.getScheme()),
+                "Can't create BDB JE Environment on a non file repository URI: %s", uri);
+        return new File(uri);
     }
 
     /**
@@ -175,10 +186,6 @@ public class EnvironmentBuilder implements Provider<Environment> {
     public EnvironmentBuilder setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
         return this;
-    }
-
-    public Platform getPlatform() {
-        return platform;
     }
 
 }

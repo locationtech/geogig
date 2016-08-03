@@ -12,7 +12,7 @@ package org.locationtech.geogig.storage.fs;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.locationtech.geogig.api.Ref.append;
+import static org.locationtech.geogig.model.Ref.append;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -22,10 +22,11 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.AbstractRefDatabase;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -49,7 +50,11 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     private final Platform platform;
 
+    private final Hints hints;
+
     private final ConfigDatabase configDB;
+
+    private File envHome;
 
     /**
      * Constructs a new {@code FileRefDatabase} with the given platform.
@@ -57,9 +62,10 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @param platform the platform to use
      */
     @Inject
-    public FileRefDatabase(Platform platform, ConfigDatabase configDB) {
+    public FileRefDatabase(Platform platform, ConfigDatabase configDB, Hints hints) {
         this.platform = platform;
         this.configDB = configDB;
+        this.hints = hints;
     }
 
     /**
@@ -67,7 +73,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
      */
     @Override
     public void create() {
-        Optional<URI> envHome = new ResolveGeogigURI(platform, null).call();
+        Optional<URI> envHome = new ResolveGeogigURI(platform, hints).call();
         checkState(envHome.isPresent(), "Not inside a geogig directory");
 
         final URI envURL = envHome.get();
@@ -79,9 +85,10 @@ public class FileRefDatabase extends AbstractRefDatabase {
         File repoDir = new File(envURL);
         File refs = new File(repoDir, "refs");
         if (!refs.exists() && !refs.mkdir()) {
-            throw new IllegalStateException("Cannot create refs directory '"
-                    + refs.getAbsolutePath() + "'");
+            throw new IllegalStateException(
+                    "Cannot create refs directory '" + refs.getAbsolutePath() + "'");
         }
+        this.envHome = repoDir;
     }
 
     /**
@@ -188,8 +195,8 @@ public class FileRefDatabase extends AbstractRefDatabase {
                 oldRef = oldRef.substring("ref: ".length());
             }
             if (!refFile.delete()) {
-                throw new RuntimeException("Unable to delete ref file '"
-                        + refFile.getAbsolutePath() + "'");
+                throw new RuntimeException(
+                        "Unable to delete ref file '" + refFile.getAbsolutePath() + "'");
             }
         } else {
             oldRef = null;
@@ -202,12 +209,10 @@ public class FileRefDatabase extends AbstractRefDatabase {
      * @return
      */
     private File toFile(String refPath) {
-        Optional<URI> envHome = new ResolveGeogigURI(platform, null).call();
-
         String[] path = refPath.split("/");
 
         try {
-            File file = new File(envHome.get());
+            File file = this.envHome;
             for (String subpath : path) {
                 file = new File(file, subpath);
             }
@@ -293,13 +298,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
     @Override
     public Map<String, String> getAll(String namespace) {
         Preconditions.checkNotNull(namespace, "namespace can't be null");
-        File refsRoot;
-        try {
-            Optional<URI> envHome = new ResolveGeogigURI(platform, null).call();
-            refsRoot = new File(envHome.get());
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        File refsRoot = this.envHome;
         if (namespace.endsWith("/")) {
             namespace = namespace.substring(0, namespace.length() - 1);
         }
@@ -321,7 +320,8 @@ public class FileRefDatabase extends AbstractRefDatabase {
         addAll(nsDir, namespace, target);
     }
 
-    private void addAll(File nsDir, String prefix, Map<String/* name */, String/* value */> target) {
+    private void addAll(File nsDir, String prefix,
+            Map<String/* name */, String/* value */> target) {
         File[] children = nsDir.listFiles();
         for (File f : children) {
             final String fileName = f.getName();
@@ -386,7 +386,6 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     @Override
     public String toString() {
-        Optional<URI> envHome = new ResolveGeogigURI(platform, null).call();
-        return String.format("%s[geogig dir: %s]", getClass().getSimpleName(), envHome.orNull());
+        return String.format("%s[geogig dir: %s]", getClass().getSimpleName(), envHome);
     }
 }

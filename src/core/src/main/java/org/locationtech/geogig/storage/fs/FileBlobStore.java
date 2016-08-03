@@ -21,8 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.TransactionBlobStore;
 
 import com.google.common.base.Optional;
@@ -40,18 +40,9 @@ public class FileBlobStore implements TransactionBlobStore {
 
     private static final String CURRENT_DIR = ".";
 
-    private Platform platform;
-
     private File repositoryDirectory;
 
     public FileBlobStore(final Platform platform) {
-        this.platform = platform;
-    }
-
-    public synchronized void open() {
-        if (isOpen()) {
-            return;
-        }
         Optional<URI> repoPath = new ResolveGeogigURI(platform, null).call();
         Preconditions.checkState(repoPath.isPresent(), "Not inside a geogig directory");
         URI uri = repoPath.get();
@@ -59,6 +50,16 @@ public class FileBlobStore implements TransactionBlobStore {
                 "Repository URL is not file system based: %s", uri);
         File repoLocation = new File(uri);
         this.repositoryDirectory = repoLocation;
+    }
+
+    public FileBlobStore(File repositoryDirectory) {
+        this.repositoryDirectory = repositoryDirectory;
+    }
+
+    public synchronized void open() {
+        if (isOpen()) {
+            return;
+        }
     }
 
     public void close() {

@@ -11,13 +11,11 @@ package org.locationtech.geogig.geotools.cli.sqlserver;
 
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
-import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.cli.DataStoreDescribe;
 
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
 
-@ReadOnly
 @Parameters(commandNames = "describe", commandDescription = "Describe a SQL Server table")
 public class SQLServerDescribe extends DataStoreDescribe implements CLICommand {
 

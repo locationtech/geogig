@@ -5,7 +5,7 @@ Merging branches
 
 When working on a branch, a typical workflow will eventually involve copying that work onto another branch, most often the ``master`` branch.
 
-Merging is usually done when you have finished working on a given branch and you think the modifications that you have made are ready to become part of the main ``master`` branch. In that case, you will apply all the same changes that you have made to the features and trees in that branch onto the features and trees in the ``master`` branch, so the ``master`` branch will contains changes from both branches.
+Merging is usually done when you have finished working on a given branch and you think the modifications that you have made are ready to become part of the main ``master`` branch. In that case, you will apply all the same changes that you have made to the features and trees in that branch onto the features and trees in the ``master`` branch, so the ``master`` branch will contain changes from both branches.
 
 The following graphic describes this procedure:
 
@@ -64,11 +64,10 @@ Types of conflicts
 
 The following cases will create a merge conflict when the following situations occur on both branches:
 
-* Modifying the same attribute of a feature, setting different values.
+* Modifying the same attribute of a feature (including geometries), setting different values.
 * Modifying an attribute in a feature (on one branch), deleting that attribute (on another branch).
 * Adding different features under the same path.
 * Modifying the default feature type for a given path, setting different values.
-* Modifying the same geometry of a feature differently.
 * One branch has deleted a tree, while the other one has added or modified a feature under that tree.
 * Both branches have modified a feature and at least one of them has changed its feature type, and the resulting feature types are not the same.
 
@@ -77,15 +76,11 @@ The following cases will not produce a merge conflict when the following situati
 
 * Adding the same feature at the same path.
 * Deleting the same feature.
-* Modifying the same attribute in a feature, setting the same new value.
+* Modifying the same attribute in a feature (including geometries), setting the same new value.
 * Setting the same new default feature type for a path.
 * Editing the same feature, but modifying different attributes.
-* Modifying the geometry of a feature, but when changes are compatible and can be both incorporated.
-* Making the same modification to a feature geometry.
 
 In general, whenever the situation doesn't have a clear way of being solved, GeoGig will report a conflict for the sake of safety.
-
-
 
 
 Showing conflicts
@@ -116,13 +111,13 @@ The following situations will cause GeoGig to fail the octopus merge process:
 * A conflict on any type exist, whether it is a conflict between two branches or between many of them at the same time.
 * A feature has been edited by at least two branches, and the changes introduced are not identical. Even if the changes are compatible (for instance, if branches have edited values for different attributes), GeoGig will not perform an automerge in this case, and the merge operation won't be executed.
 
-In these cases, you will have to merge branches individually, solving conflicts for each of them one be on.
+In these cases, you will have to merge branches individually, solving conflicts for each of them one by one.
 
 Unlike a standard two branch merge, where the process will partially complete, a conflict will cause an octopus merge to *not even start*.
 
 
-Staging a merged version of an conflicted element 
--------------------------------------------------
+Staging a merged version of a conflicted element 
+------------------------------------------------
 
 Using the ``geogig add`` command, features can be staged in the usual way. When a feature is staged, it is not in a conflicted state. Running the ``add`` command will solve the conflicted merge. Before this can be done, you must pick which version of the commit to merge.
 

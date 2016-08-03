@@ -19,7 +19,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig shp <command> <args>...}
+ * <li>{@code geogig shp <command> <args>...}
  * </ul>
  * 
  * @see ShpImport
@@ -38,6 +38,7 @@ public class ShpCommandProxy implements CLICommandExtension {
         commander.addCommand("import", new ShpImport());
         commander.addCommand("export", new ShpExport());
         commander.addCommand("export-diff", new ShpExportDiff());
+        commander.addCommand("describe", new ShpDescribe());
         return commander;
     }
 }

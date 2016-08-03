@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 Boundless.
+/* Copyright (c) 2015-2016 Boundless.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
+import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.closeDataSource;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.PGStorage.newDataSource;
 import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,7 +31,7 @@ import java.util.Queue;
 import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -74,8 +74,8 @@ public class PGGraphDatabase implements GraphDatabase {
     public PGGraphDatabase(ConfigDatabase configdb, Environment config) {
         Preconditions.checkNotNull(configdb);
         Preconditions.checkNotNull(config);
-        // Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
-        // config.repositoryId);
+        Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
+                config.getRepositoryName());
         this.configdb = configdb;
         this.config = config;
         this.formatVersion = PGStorageProvider.VERSION;
@@ -113,110 +113,8 @@ public class PGGraphDatabase implements GraphDatabase {
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.GRAPH
-                .verify(configdb, FORMAT_NAME, formatVersion);
-    }
-
-    @Override
-    public boolean exists(ObjectId commitId) {
-        return has(PGId.valueOf(commitId), dataSource);
-    }
-
-    @Override
-    public ImmutableList<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
-        return ImmutableList.copyOf(Iterables.transform(
-                outgoing(PGId.valueOf(commitId), dataSource), (p) -> p.toObjectId()));
-    }
-
-    @Override
-    public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
-        return ImmutableList.copyOf(Iterables.transform(
-                incoming(PGId.valueOf(commitId), dataSource), (p) -> p.toObjectId()));
-    }
-
-    @Override
-    public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
-        PGId node = PGId.valueOf(commitId);
-
-        final boolean exists = has(node, dataSource);
-
-        // TODO: if node was node added should we severe existing parent relationships?
-        for (ObjectId p : parentIds) {
-            relate(node, PGId.valueOf(p), dataSource);
-        }
-        return !exists;
-    }
-
-    @Override
-    public void map(ObjectId mapped, ObjectId original) {
-        map(PGId.valueOf(mapped), PGId.valueOf(original), dataSource);
-    }
-
-    @Override
-    public ObjectId getMapping(ObjectId commitId) {
-        @Nullable
-        PGId mapped = mapping(PGId.valueOf(commitId), dataSource);
-        return mapped == null ? null : mapped.toObjectId();
-    }
-
-    @Override
-    public int getDepth(ObjectId commitId) {
-        int depth = 0;
-
-        Queue<PGId> q = Lists.newLinkedList();
-        Iterables.addAll(q, outgoing(PGId.valueOf(commitId), dataSource));
-
-        List<PGId> next = Lists.newArrayList();
-        while (!q.isEmpty()) {
-            depth++;
-            while (!q.isEmpty()) {
-                PGId n = q.poll();
-                List<PGId> parents = Lists.newArrayList(outgoing(n, dataSource));
-                if (parents.size() == 0) {
-                    return depth;
-                }
-
-                Iterables.addAll(next, parents);
-            }
-
-            q.addAll(next);
-            next.clear();
-        }
-
-        return depth;
-    }
-
-    @Override
-    public void setProperty(ObjectId commitId, String name, String value) {
-        property(PGId.valueOf(commitId), name, value, dataSource);
-    }
-
-    @Override
-    public void truncate() {
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                cx.setAutoCommit(false);
-                try {
-                    try (Statement st = cx.createStatement()) {
-                        st.execute(log(format("TRUNCATE %s", MAPPINGS), LOG));
-                        st.execute(log(format("TRUNCATE %s", PROPS), LOG));
-                        st.execute(log(format("TRUNCATE %s", EDGES), LOG));
-                        // this is a view now. st.execute(format("DELETE FROM %s", NODES));
-                        cx.commit();
-                    }
-                } catch (SQLException e) {
-                    cx.rollback();
-                    throw e;
-                }
-                return null;
-            }
-        }.run(dataSource);
-    }
-
-    @Override
-    public GraphNode getNode(ObjectId id) {
-        return new PGGraphNode(id);
+        RepositoryConnectionException.StorageType.GRAPH.verify(configdb, FORMAT_NAME,
+                formatVersion);
     }
 
     /**
@@ -224,24 +122,60 @@ public class PGGraphDatabase implements GraphDatabase {
      * <p>
      * A node exists if there's at least one relationship pointing to it in the edges table.
      */
-    boolean has(final PGId node, DataSource ds) {
-        return new DbOp<Boolean>() {
-            @Override
-            protected Boolean doRun(Connection cx) throws IOException, SQLException {
-                String sql = format(
-                        "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE src = CAST(ROW(?,?,?) AS OBJECTID) OR dst = CAST(ROW(?,?,?) AS OBJECTID) )",
-                        EDGES);
+    @Override
+    public boolean exists(ObjectId commitId) {
+        final PGId node = PGId.valueOf(commitId);
+        try (Connection cx = dataSource.getConnection()) {
+            return exists(node, cx);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+    }
 
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
-                    node.setArgs(ps, 1);
-                    node.setArgs(ps, 4);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        boolean exists = rs.next();
-                        return exists;
-                    }
-                }
+    private boolean exists(final PGId node, final Connection cx) throws SQLException {
+        final String sql = format(
+                "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE src = CAST(ROW(?,?,?) AS OBJECTID) OR dst = CAST(ROW(?,?,?) AS OBJECTID) )",
+                EDGES);
+
+        boolean exists;
+        try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
+            node.setArgs(ps, 1);
+            node.setArgs(ps, 4);
+            try (ResultSet rs = ps.executeQuery()) {
+                exists = rs.next();
             }
-        }.run(ds);
+        }
+        return exists;
+    }
+
+    @Override
+    public ImmutableList<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
+        final PGId node = PGId.valueOf(commitId);
+        return ImmutableList.copyOf(Iterables.transform(outgoing(node), (p) -> p.toObjectId()));
+    }
+
+    @Override
+    public ImmutableList<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
+        return ImmutableList.copyOf(
+                Iterables.transform(incoming(PGId.valueOf(commitId)), (p) -> p.toObjectId()));
+    }
+
+    @Override
+    public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
+        final PGId node = PGId.valueOf(commitId);
+        final boolean exists;
+        try (Connection cx = dataSource.getConnection()) {
+            exists = exists(node, cx);
+            // NOTE: runs in autoCommit mode to ignore statement failures due to duplicates (?)
+            // TODO: if node was node added should we severe existing parent relationships?
+            for (ObjectId p : parentIds) {
+                relate(node, PGId.valueOf(p), cx);
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+
+        return !exists;
     }
 
     /**
@@ -250,25 +184,19 @@ public class PGGraphDatabase implements GraphDatabase {
      * @param src The source (origin) node of the relationship.
      * @param dst The destination (origin) node of the relationship.
      */
-    void relate(final PGId src, final PGId dst, DataSource ds) {
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                final String insert = format(
-                        "INSERT INTO %s (src, dst) VALUES (ROW(?,?,?), ROW(?,?,?))", EDGES);
+    void relate(final PGId src, final PGId dst, final Connection cx) throws SQLException {
+        final String insert = format("INSERT INTO %s (src, dst) VALUES (ROW(?,?,?), ROW(?,?,?))",
+                EDGES);
 
-                try (PreparedStatement ps = cx.prepareStatement(log(insert, LOG, src, dst))) {
-                    src.setArgs(ps, 1);
-                    dst.setArgs(ps, 4);
-                    try {
-                        ps.executeUpdate();
-                    } catch (SQLException duplicateTuple) {
-                        // ignore
-                    }
-                }
-                return null;
+        try (PreparedStatement ps = cx.prepareStatement(log(insert, LOG, src, dst))) {
+            src.setArgs(ps, 1);
+            dst.setArgs(ps, 4);
+            try {
+                ps.executeUpdate();
+            } catch (SQLException duplicateTuple) {
+                // ignore
             }
-        }.run(ds);
+        }
     }
 
     /**
@@ -277,36 +205,38 @@ public class PGGraphDatabase implements GraphDatabase {
      * @param from The node being mapped from.
      * @param to The node being mapped to.
      */
-    void map(final PGId from, final PGId to, DataSource ds) {
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-                // lacking upsert...
-                String delete = format("DELETE FROM %s where alias = CAST(ROW(?,?,?) AS OBJECTID)",
-                        MAPPINGS);
-                String insert = format(
-                        "INSERT INTO %s (alias, nid) VALUES ( ROW(?,?,?), ROW(?,?,?) )", MAPPINGS);
-                cx.setAutoCommit(false);
-                try {
-                    try (PreparedStatement ds = cx.prepareStatement(log(delete, LOG, from))) {
-                        from.setArgs(ds, 1);
-                        ds.executeUpdate();
-                    }
-
-                    try (PreparedStatement ps = cx.prepareStatement(log(insert, LOG, from))) {
-                        from.setArgs(ps, 1);
-                        to.setArgs(ps, 4);
-
-                        ps.executeUpdate();
-                    }
-                    cx.commit();
-                } catch (SQLException e) {
-                    cx.rollback();
-                    throw e;
+    @Override
+    public void map(ObjectId mapped, ObjectId original) {
+        final PGId from = PGId.valueOf(mapped);
+        final PGId to = PGId.valueOf(original);
+        // lacking upsert...
+        String delete = format("DELETE FROM %s where alias = CAST(ROW(?,?,?) AS OBJECTID)",
+                MAPPINGS);
+        String insert = format("INSERT INTO %s (alias, nid) VALUES ( ROW(?,?,?), ROW(?,?,?) )",
+                MAPPINGS);
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try {
+                try (PreparedStatement deleteSt = cx.prepareStatement(log(delete, LOG, from))) {
+                    from.setArgs(deleteSt, 1);
+                    deleteSt.executeUpdate();
                 }
-                return null;
+                try (PreparedStatement insertSt = cx.prepareStatement(log(insert, LOG, from))) {
+                    from.setArgs(insertSt, 1);
+                    to.setArgs(insertSt, 4);
+
+                    insertSt.executeUpdate();
+                }
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
             }
-        }.run(ds);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     /**
@@ -316,64 +246,123 @@ public class PGGraphDatabase implements GraphDatabase {
      * </p>
      */
     @Nullable
-    PGId mapping(final PGId node, DataSource ds) {
-        return new DbOp<PGId>() {
-            @Override
-            protected PGId doRun(Connection cx) throws IOException, SQLException {
-                String sql = format(
-                        "SELECT ((nid).h1), ((nid).h2), ((nid).h3) FROM %s WHERE alias = CAST(ROW(?,?,?) AS OBJECTID)",
-                        MAPPINGS);
+    @Override
+    public ObjectId getMapping(ObjectId commitId) {
+        final PGId node = PGId.valueOf(commitId);
 
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
-                    node.setArgs(ps, 1);
+        final String sql = format(
+                "SELECT ((nid).h1), ((nid).h2), ((nid).h3) FROM %s WHERE alias = CAST(ROW(?,?,?) AS OBJECTID)",
+                MAPPINGS);
 
-                    try (ResultSet rs = ps.executeQuery()) {
-                        return rs.next() ? PGId.valueOf(rs, 1) : null;
-                    }
+        final ObjectId mapped;
+        try (Connection cx = dataSource.getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
+                node.setArgs(ps, 1);
+                try (ResultSet rs = ps.executeQuery()) {
+                    mapped = rs.next() ? PGId.valueOf(rs, 1).toObjectId() : null;
                 }
             }
-        }.run(ds);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+
+        return mapped;
+    }
+
+    @Override
+    public int getDepth(ObjectId commitId) {
+        int depth = 0;
+
+        Queue<PGId> q = Lists.newLinkedList();
+        try (Connection cx = dataSource.getConnection()) {
+            Iterables.addAll(q, outgoing(PGId.valueOf(commitId), cx));
+
+            List<PGId> next = Lists.newArrayList();
+            while (!q.isEmpty()) {
+                depth++;
+                while (!q.isEmpty()) {
+                    PGId n = q.poll();
+                    List<PGId> parents = Lists.newArrayList(outgoing(n, cx));
+                    if (parents.size() == 0) {
+                        return depth;
+                    }
+
+                    Iterables.addAll(next, parents);
+                }
+
+                q.addAll(next);
+                next.clear();
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+
+        return depth;
     }
 
     /**
      * Assigns a property key/value pair to a node.
-     * 
-     * @param node The node.
-     * @param key The property key.
-     * @param value The property value.
      */
-    void property(final PGId node, final String key, final String val, DataSource ds) {
-        new DbOp<Void>() {
-            @Override
-            protected Void doRun(Connection cx) throws IOException, SQLException {
-
-                final String delete = format(
-                        "DELETE FROM %s WHERE nid = CAST(ROW(?,?,?) AS OBJECTID) AND  key = ?",
-                        PROPS);
-                final String insert = format(
-                        "INSERT INTO %s (nid,key,val) VALUES (ROW(?,?,?), ?, ?)", PROPS);
-                cx.setAutoCommit(false);
-                try {
-                    try (PreparedStatement ds = cx.prepareStatement(log(delete, LOG, node, key))) {
-                        node.setArgs(ds, 1);
-                        ds.setString(4, key);
-                        ds.executeUpdate();
-                    }
-                    try (PreparedStatement is = cx
-                            .prepareStatement(log(insert, LOG, node, key, val))) {
-                        node.setArgs(is, 1);
-                        is.setString(4, key);
-                        is.setString(5, val);
-                        is.executeUpdate();
-                    }
-                    cx.commit();
-                } catch (SQLException e) {
-                    cx.rollback();
-                    throw e;
+    @Override
+    public void setProperty(ObjectId commitId, String name, String value) {
+        final PGId node = PGId.valueOf(commitId);
+        final String delete = format(
+                "DELETE FROM %s WHERE nid = CAST(ROW(?,?,?) AS OBJECTID) AND  key = ?", PROPS);
+        final String insert = format("INSERT INTO %s (nid,key,val) VALUES (ROW(?,?,?), ?, ?)",
+                PROPS);
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try {
+                try (PreparedStatement ds = cx.prepareStatement(log(delete, LOG, node, name))) {
+                    node.setArgs(ds, 1);
+                    ds.setString(4, name);
+                    ds.executeUpdate();
                 }
-                return null;
+                try (PreparedStatement is = cx
+                        .prepareStatement(log(insert, LOG, node, name, value))) {
+                    node.setArgs(is, 1);
+                    is.setString(4, name);
+                    is.setString(5, value);
+                    is.executeUpdate();
+                }
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
             }
-        }.run(ds);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+    }
+
+    @Override
+    public void truncate() {
+        try (Connection cx = dataSource.getConnection()) {
+            cx.setAutoCommit(false);
+            try {
+                try (Statement st = cx.createStatement()) {
+                    st.execute(log(format("TRUNCATE %s", MAPPINGS), LOG));
+                    st.execute(log(format("TRUNCATE %s", PROPS), LOG));
+                    st.execute(log(format("TRUNCATE %s", EDGES), LOG));
+                    // this is a view now. st.execute(format("DELETE FROM %s", NODES));
+                    cx.commit();
+                }
+            } catch (SQLException e) {
+                cx.rollback();
+                throw e;
+            } finally {
+                cx.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+    }
+
+    @Override
+    public GraphNode getNode(ObjectId id) {
+        return new PGGraphNode(id);
     }
 
     /**
@@ -386,80 +375,77 @@ public class PGGraphDatabase implements GraphDatabase {
      */
     @Nullable
     String property(final PGId node, final String key, DataSource ds) {
-        return new DbOp<String>() {
-            @Override
-            protected String doRun(Connection cx) throws IOException, SQLException {
-                String sql = format(
-                        "SELECT val FROM %s WHERE nid = CAST(ROW(?,?,?) AS OBJECTID) AND key = ?",
-                        PROPS);
+        final String sql = format(
+                "SELECT val FROM %s WHERE nid = CAST(ROW(?,?,?) AS OBJECTID) AND key = ?", PROPS);
 
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node, key))) {
-                    node.setArgs(ps, 1);
-                    ps.setString(4, key);
+        try (Connection cx = dataSource.getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node, key))) {
+                node.setArgs(ps, 1);
+                ps.setString(4, key);
 
-                    try (ResultSet rs = ps.executeQuery()) {
-                        return rs.next() ? rs.getString(1) : null;
-                    }
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next() ? rs.getString(1) : null;
                 }
             }
-        }.run(ds);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+    }
+
+    Iterable<PGId> outgoing(final PGId node) {
+        try (Connection cx = dataSource.getConnection()) {
+            return outgoing(node, cx);
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
     }
 
     /**
      * Returns all nodes connected to the specified node through a relationship in which the
      * specified node is the "source" of the relationship.
      */
-    Iterable<PGId> outgoing(final PGId node, DataSource ds) {
-        List<PGId> rs = new DbOp<List<PGId>>() {
-            @Override
-            protected List<PGId> doRun(Connection cx) throws IOException, SQLException {
-                String sql = format(
-                        "SELECT ((dst).h1), ((dst).h2),((dst).h3) FROM %s WHERE src = CAST(ROW(?,?,?) AS OBJECTID)",
-                        EDGES);
+    Iterable<PGId> outgoing(final PGId node, final Connection cx) throws SQLException {
+        final String sql = format(
+                "SELECT ((dst).h1), ((dst).h2),((dst).h3) FROM %s WHERE src = CAST(ROW(?,?,?) AS OBJECTID)",
+                EDGES);
 
-                List<PGId> outgoing = new ArrayList<>(2);
+        List<PGId> outgoing = new ArrayList<>(2);
 
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
-                    node.setArgs(ps, 1);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            outgoing.add(PGId.valueOf(rs, 1));
-                        }
-                    }
+        try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
+            node.setArgs(ps, 1);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    outgoing.add(PGId.valueOf(rs, 1));
                 }
-                return outgoing;
             }
-        }.run(ds);
+        }
 
-        return rs;
+        return outgoing;
     }
 
     /**
      * Returns all nodes connected to the specified node through a relationship in which the
      * specified node is the "destination" of the relationship.
      */
-    Iterable<PGId> incoming(final PGId node, DataSource ds) {
-        List<PGId> rs = new DbOp<List<PGId>>() {
-            @Override
-            protected List<PGId> doRun(Connection cx) throws IOException, SQLException {
-                String sql = format(
-                        "SELECT ((src).h1), ((src).h2),((src).h3) FROM %s WHERE dst = CAST(ROW(?,?,?) AS OBJECTID)",
-                        EDGES);
+    Iterable<PGId> incoming(final PGId node) {
+        final String sql = format(
+                "SELECT ((src).h1), ((src).h2),((src).h3) FROM %s WHERE dst = CAST(ROW(?,?,?) AS OBJECTID)",
+                EDGES);
 
-                List<PGId> incoming = new ArrayList<>(2);
-                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
-                    node.setArgs(ps, 1);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            incoming.add(PGId.valueOf(rs, 1));
-                        }
+        List<PGId> incoming = new ArrayList<>(2);
+        try (Connection cx = dataSource.getConnection()) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
+                node.setArgs(ps, 1);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        incoming.add(PGId.valueOf(rs, 1));
                     }
                 }
-                return incoming;
             }
-        }.run(ds);
-
-        return rs;
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+        return incoming;
     }
 
     private class PGGraphNode extends GraphNode {
@@ -482,14 +468,14 @@ public class PGGraphDatabase implements GraphDatabase {
             final PGId pgId = PGId.valueOf(id);
 
             if (direction == Direction.IN || direction == Direction.BOTH) {
-                Iterator<PGId> nodeEdges = incoming(pgId, dataSource).iterator();
+                Iterator<PGId> nodeEdges = incoming(pgId).iterator();
                 while (nodeEdges.hasNext()) {
                     PGId otherNode = nodeEdges.next();
                     edges.add(new GraphEdge(new PGGraphNode(otherNode.toObjectId()), this));
                 }
             }
             if (direction == Direction.OUT || direction == Direction.BOTH) {
-                Iterator<PGId> nodeEdges = outgoing(pgId, dataSource).iterator();
+                Iterator<PGId> nodeEdges = outgoing(pgId).iterator();
                 while (nodeEdges.hasNext()) {
                     PGId otherNode = nodeEdges.next();
                     edges.add(new GraphEdge(this, new PGGraphNode(otherNode.toObjectId())));

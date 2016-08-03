@@ -9,13 +9,27 @@
  */
 package org.locationtech.geogig.geotools.cli.geopkg;
 
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import javax.sql.DataSource;
+
 import org.geotools.data.DataStore;
+import org.geotools.geopkg.GeoPackage;
 import org.locationtech.geogig.cli.CLICommand;
+import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.geotools.cli.DataStoreImport;
+import org.locationtech.geogig.geotools.geopkg.GeoPkgForwardingFeatureIteratorProvider;
+import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
+import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvider;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 
 /**
  * Imports one or more tables from a Geopackage database.
@@ -42,5 +56,31 @@ public class GeopkgImport extends DataStoreImport implements CLICommand {
     @Override
     protected String getSourceDatabaseName() {
         return commonArgs.database;
+    }
+
+    private GeopkgGeogigMetadata metadata = null;
+
+    @Override
+    protected void runInternal(GeogigCLI cli) throws IOException {
+        File databaseFile = new File(commonArgs.database);
+        Preconditions.checkArgument(databaseFile.exists(), "Database file not found.");
+        final GeoPackage geopackage = new GeoPackage(databaseFile);
+        final DataSource dataSource = geopackage.getDataSource();
+        try (Connection connection = dataSource.getConnection()) {
+            metadata = new GeopkgGeogigMetadata(connection);
+            super.runInternal(cli);
+        } catch (SQLException e) {
+            Throwables.propagate(e);
+        }
+    }
+
+    /**
+     * Returns a provider that provides a forwarding feature iterator to update the feature ids of
+     * incoming features.
+     * 
+     * @return the forwarding feature iterator provider
+     */
+    protected ForwardingFeatureIteratorProvider getForwardingFeatureIteratorProvider() {
+        return new GeoPkgForwardingFeatureIteratorProvider(metadata);
     }
 }

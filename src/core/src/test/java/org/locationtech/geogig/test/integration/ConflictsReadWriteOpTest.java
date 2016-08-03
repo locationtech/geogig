@@ -9,15 +9,15 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import static org.locationtech.geogig.api.ObjectId.forString;
+import static org.locationtech.geogig.model.ObjectId.forString;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsWriteOp;
+import org.locationtech.geogig.plumbing.merge.ConflictsQueryOp;
+import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
+import org.locationtech.geogig.repository.Conflict;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -37,9 +37,10 @@ public class ConflictsReadWriteOpTest extends RepositoryTestCase {
         ArrayList<Conflict> conflicts = Lists.newArrayList(conflict, conflict2);
         geogig.command(ConflictsWriteOp.class).setConflicts(conflicts).call();
 
-        List<Conflict> returnedConflicts = geogig.command(ConflictsReadOp.class).call();
+        Set<Conflict> returnedConflicts = Sets
+                .newHashSet(geogig.command(ConflictsQueryOp.class).call());
 
-        assertEquals(Sets.newHashSet(conflicts), Sets.newHashSet(returnedConflicts));
+        assertEquals(Sets.newHashSet(conflicts), returnedConflicts);
     }
 
 }

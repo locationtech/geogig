@@ -19,9 +19,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.osm.internal.OSMCoordinateSequence;
 import org.locationtech.geogig.osm.internal.OSMCoordinateSequenceFactory;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.datastream.Varint;
 import org.locationtech.geogig.storage.datastream.Varints;
 import org.mapdb.DBMaker;

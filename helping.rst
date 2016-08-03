@@ -20,7 +20,7 @@ You can (and should) use the above for all GeoGig-related subjects, so other peo
 Testing
 ----------
 
-If you are a user, testing is the best and most simple way of helping us improve GeoGig. Use GeoGig with your own datasets, and if you find something that can be improved or doesn't work as expected, `open a new issue <https://www.locationtech.org/projects/technology.geogig/developer>`_. Please, check first that the same problem has not been reported by another user, to avoid duplicated issues. 
+If you are a user, testing is the best and most simple way of helping us improve GeoGig. Use GeoGig with your own datasets, and if you find something that can be improved or doesn't work as expected, `open a new issue <https://github.com/locationtech/geogig/issues/new>`_. Please, check first that the same problem has not been reported by another user, to avoid duplicated issues. 
 
 Documenting
 ------------
@@ -41,7 +41,7 @@ If you want to contribute code to the project, you can do it using the GitHub *f
 
 More information on this workflow and how to remotely collaborate in a project like GeoGig can be found at the `GitHub help page <https://help.github.com/categories/63/articles>`_
 
-Issues to help out on are at our `issue tracker <https://www.locationtech.org/projects/technology.geogig/developer>`_.
+Issues to help out on are at our `issue tracker <https://github.com/locationtech/geogig/issues>`_.
 
 In all cases, please let us know about your work in advance. Write to the GeoGig developers list or talk to someone on the IRC channel, so we can better coordinate all efforts.
 

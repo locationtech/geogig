@@ -11,6 +11,7 @@ package org.locationtech.geogig.test.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,22 +32,21 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.test.TestPlatform;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -54,7 +54,6 @@ import org.opengis.feature.type.Name;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
@@ -178,7 +177,7 @@ public abstract class RepositoryTestCase extends Assert {
 
         injector = createInjector();
 
-        geogig = new GeoGIG(injector, repositoryDirectory);
+        geogig = new GeoGIG(injector);
         repo = geogig.getOrCreateRepository();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("Gabriel Roldan").call();
@@ -222,11 +221,10 @@ public abstract class RepositoryTestCase extends Assert {
     }
 
     protected Context createInjector() {
-        Platform testPlatform = createPlatform();
-        GlobalContextBuilder.builder = new TestContextBuilder(testPlatform);
-        Hints hints = new Hints();
-        hints.set(Hints.REPOSITORY_URL, repositoryDirectory.getAbsoluteFile().toURI());
-        return GlobalContextBuilder.builder.build(hints);
+        Platform platform = createPlatform();
+        URI uri = repositoryDirectory.getAbsoluteFile().toURI();
+        Hints hints = new Hints().uri(uri).platform(platform);
+        return new TestContextBuilder().build(hints);
     }
 
     protected Platform createPlatform() {
@@ -298,13 +296,8 @@ public abstract class RepositoryTestCase extends Assert {
         }
 
         if (!oneCommitPerFeature) {
-            String msg = Joiner.on(',').join(
-                    Lists.transform(features, new Function<Feature, String>() {
-                        @Override
-                        public String apply(Feature input) {
-                            return input.getIdentifier().getID();
-                        }
-                    }));
+            String msg = Joiner.on(',')
+                    .join(Lists.transform(features, (f) -> f.getIdentifier().getID()));
             commits.add(commit(msg));
         }
 
@@ -348,8 +341,8 @@ public abstract class RepositoryTestCase extends Assert {
      * Inserts the feature to the index but does not stages it to be committed
      */
     public ObjectId insert(GeogigTransaction transaction, Feature f) throws Exception {
-        final WorkingTree workTree = (transaction != null ? transaction.workingTree() : repo
-                .workingTree());
+        final WorkingTree workTree = (transaction != null ? transaction.workingTree()
+                : repo.workingTree());
         Name name = f.getType().getName();
         String parentPath = name.getLocalPart();
         Node ref = workTree.insert(parentPath, f);
@@ -412,8 +405,8 @@ public abstract class RepositoryTestCase extends Assert {
     }
 
     public boolean delete(GeogigTransaction transaction, Feature f) throws Exception {
-        final WorkingTree workTree = (transaction != null ? transaction.workingTree() : repo
-                .workingTree());
+        final WorkingTree workTree = (transaction != null ? transaction.workingTree()
+                : repo.workingTree());
         Name name = f.getType().getName();
         String localPart = name.getLocalPart();
         String id = f.getIdentifier().getID();

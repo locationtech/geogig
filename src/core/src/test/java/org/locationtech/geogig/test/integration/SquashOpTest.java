@@ -17,20 +17,19 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.api.porcelain.MergeOp;
-import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
-import org.locationtech.geogig.api.porcelain.SquashOp;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.porcelain.SquashOp;
 import org.opengis.feature.Feature;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -58,8 +57,8 @@ public class SquashOpTest extends RepositoryTestCase {
         RevCommit presquashCommit = logentries.get(2);
         assertEquals(commits.get(5).getTreeId(), headCommit.getTreeId());
         assertEquals(commits.get(1).getMessage(), squashedCommit.getMessage());
-        assertEquals(commits.get(4).getAuthor().getTimestamp(), squashedCommit.getAuthor()
-                .getTimestamp());
+        assertEquals(commits.get(4).getAuthor().getTimestamp(),
+                squashedCommit.getAuthor().getTimestamp());
         assertEquals(commits.get(0).getTreeId(), presquashCommit.getTreeId());
     }
 
@@ -82,8 +81,8 @@ public class SquashOpTest extends RepositoryTestCase {
         RevCommit presquashCommit = logentries.get(2);
         assertEquals(commits.get(5).getTreeId(), headCommit.getTreeId());
         assertEquals("Squashed", squashedCommit.getMessage());
-        assertEquals(commits.get(4).getAuthor().getTimestamp(), squashedCommit.getAuthor()
-                .getTimestamp());
+        assertEquals(commits.get(4).getAuthor().getTimestamp(),
+                squashedCommit.getAuthor().getTimestamp());
         assertEquals(commits.get(0).getTreeId(), presquashCommit.getTreeId());
     }
 
@@ -105,8 +104,8 @@ public class SquashOpTest extends RepositoryTestCase {
         RevCommit presquashCommit = logentries.get(1);
         assertEquals(commits.get(5).getTreeId(), squashedCommit.getTreeId());
         assertEquals(commits.get(1).getMessage(), squashedCommit.getMessage());
-        assertEquals(commits.get(5).getAuthor().getTimestamp(), squashedCommit.getAuthor()
-                .getTimestamp());
+        assertEquals(commits.get(5).getAuthor().getTimestamp(),
+                squashedCommit.getAuthor().getTimestamp());
         assertEquals(commits.get(0).getTreeId(), presquashCommit.getTreeId());
     }
 
@@ -214,12 +213,12 @@ public class SquashOpTest extends RepositoryTestCase {
         insertAndAdd(lines1);
         final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch1.getObjectId()))
+        geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
         geogig.command(SquashOp.class).setSince(c3).setUntil(c4).setMessage("Squashed").call();
         // check that the commit added after the squashed has all the parents
-        ArrayList<RevCommit> log = Lists.newArrayList(geogig.command(LogOp.class)
-                .setFirstParentOnly(true).call());
+        ArrayList<RevCommit> log = Lists
+                .newArrayList(geogig.command(LogOp.class).setFirstParentOnly(true).call());
         assertEquals(3, log.size());
         ImmutableList<ObjectId> parents = log.get(0).getParentIds();
         assertEquals(2, parents.size());
@@ -257,15 +256,14 @@ public class SquashOpTest extends RepositoryTestCase {
         @SuppressWarnings("unused")
         final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1.getObjectId()))
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
         try {
             geogig.command(SquashOp.class).setSince(c2).setUntil(mergeReport.getMergeCommit())
                     .setMessage("Squashed").call();
         } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().equals(
-                    "Cannot reach 'since' from 'until' commit through first parentage"));
+            assertTrue(e.getMessage()
+                    .equals("Cannot reach 'since' from 'until' commit through first parentage"));
         }
 
     }
@@ -296,13 +294,12 @@ public class SquashOpTest extends RepositoryTestCase {
         @SuppressWarnings("unused")
         final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1.getObjectId()))
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
         geogig.command(SquashOp.class).setSince(c3).setUntil(mergeReport.getMergeCommit())
                 .setMessage("Squashed").call();
-        ArrayList<RevCommit> log = Lists.newArrayList(geogig.command(LogOp.class)
-                .setFirstParentOnly(true).call());
+        ArrayList<RevCommit> log = Lists
+                .newArrayList(geogig.command(LogOp.class).setFirstParentOnly(true).call());
         assertEquals(2, log.size());
         ImmutableList<ObjectId> parents = log.get(0).getParentIds();
         assertEquals(c1.getId(), parents.get(0));
@@ -343,17 +340,15 @@ public class SquashOpTest extends RepositoryTestCase {
         @SuppressWarnings("unused")
         final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1.getObjectId()))
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
         try {
             geogig.command(SquashOp.class).setSince(c1).setUntil(mergeReport.getMergeCommit())
                     .setMessage("Squashed").call();
             fail();
         } catch (IllegalArgumentException e) {
-            assertTrue(e
-                    .getMessage()
-                    .equals("The commits to squash include a branch starting point. Squashing that type of commit is not supported."));
+            assertTrue(e.getMessage().equals(
+                    "The commits to squash include a branch starting point. Squashing that type of commit is not supported."));
         }
     }
 
@@ -397,9 +392,8 @@ public class SquashOpTest extends RepositoryTestCase {
             geogig.command(SquashOp.class).setSince(c2).setUntil(c3).setMessage("Squashed").call();
             fail();
         } catch (IllegalArgumentException e) {
-            assertTrue(e
-                    .getMessage()
-                    .equals("The commits after the ones to squash include a branch starting point. This scenario is not supported."));
+            assertTrue(e.getMessage().equals(
+                    "The commits after the ones to squash include a branch starting point. This scenario is not supported."));
         }
     }
 
@@ -424,9 +418,8 @@ public class SquashOpTest extends RepositoryTestCase {
             geogig.command(SquashOp.class).setSince(c2).setUntil(c3).setMessage("Squashed").call();
             fail();
         } catch (IllegalArgumentException e) {
-            assertTrue(e
-                    .getMessage()
-                    .equals("The commits after the ones to squash include a branch starting point. This scenario is not supported."));
+            assertTrue(e.getMessage().equals(
+                    "The commits after the ones to squash include a branch starting point. This scenario is not supported."));
         }
     }
 

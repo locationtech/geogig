@@ -12,13 +12,13 @@ package org.locationtech.geogig.storage;
 import java.util.Iterator;
 import java.util.List;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTree;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.inject.Provider;
@@ -128,14 +128,8 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     }
 
     @Override
-    @Deprecated
-    public ObjectInserter newObjectInserter() {
-        return new ObjectInserter(this);
-    }
-
-    @Override
-    public boolean delete(ObjectId objectId) {
-        return subject.get().delete(objectId);
+    public void delete(ObjectId objectId) {
+        subject.get().delete(objectId);
     }
 
     @Override
@@ -165,13 +159,13 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids) {
-        return deleteAll(ids);
+    public void deleteAll(Iterator<ObjectId> ids) {
+        deleteAll(ids);
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
-        return subject.get().deleteAll(ids, listener);
+    public void deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
+        subject.get().deleteAll(ids, listener);
     }
 
     @Override

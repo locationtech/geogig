@@ -10,6 +10,7 @@
 package org.locationtech.geogig.web.api;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,54 +25,53 @@ import org.codehaus.jettison.AbstractXMLStreamWriter;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.metadata.iso.citation.Citations;
 import org.geotools.referencing.CRS;
-import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.FeatureBuilder;
-import org.locationtech.geogig.api.FeatureInfo;
-import org.locationtech.geogig.api.GeogigSimpleFeature;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.Remote;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevPerson;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.DiffIndex;
-import org.locationtech.geogig.api.plumbing.DiffWorkTree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.diff.AttributeDiff;
-import org.locationtech.geogig.api.plumbing.diff.AttributeDiff.TYPE;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.MergeScenarioReport;
-import org.locationtech.geogig.api.porcelain.BlameReport;
-import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
-import org.locationtech.geogig.api.porcelain.PullResult;
-import org.locationtech.geogig.api.porcelain.TransferSummary;
-import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef;
-import org.locationtech.geogig.api.porcelain.ValueAndCommit;
+import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.data.GeogigSimpleFeature;
+import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.FieldType;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.DiffIndex;
+import org.locationtech.geogig.plumbing.DiffWorkTree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.diff.AttributeDiff;
+import org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE;
+import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
+import org.locationtech.geogig.porcelain.BlameReport;
+import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.porcelain.PullResult;
+import org.locationtech.geogig.porcelain.TransferSummary;
+import org.locationtech.geogig.porcelain.TransferSummary.ChangedRef;
+import org.locationtech.geogig.porcelain.ValueAndCommit;
+import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.rest.repository.RESTUtils;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
-import org.locationtech.geogig.web.api.commands.BranchWebOp;
+import org.locationtech.geogig.web.api.commands.Branch;
 import org.locationtech.geogig.web.api.commands.Commit;
 import org.locationtech.geogig.web.api.commands.Log.CommitWithChangeCounts;
 import org.locationtech.geogig.web.api.commands.LsTree;
-import org.locationtech.geogig.web.api.commands.RefParseWeb;
-import org.locationtech.geogig.web.api.commands.RemoteWebOp;
-import org.locationtech.geogig.web.api.commands.StatisticsWebOp;
-import org.locationtech.geogig.web.api.commands.TagWebOp;
-import org.locationtech.geogig.web.api.commands.UpdateRefWeb;
+import org.locationtech.geogig.web.api.commands.RefParse;
+import org.locationtech.geogig.web.api.commands.RemoteManagement;
+import org.locationtech.geogig.web.api.commands.Statistics;
+import org.locationtech.geogig.web.api.commands.Tag;
+import org.locationtech.geogig.web.api.commands.UpdateRef;
 import org.opengis.feature.type.GeometryType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.feature.type.PropertyType;
@@ -227,16 +227,15 @@ public class ResponseWriter {
         writeDiffEntries("unstaged", start, length, setFilter.call());
     }
 
-    public void writeUnmerged(List<Conflict> conflicts, int start, int length)
+    public void writeUnmerged(Iterator<Conflict> conflicts, int start, int length)
             throws XMLStreamException {
-        Iterator<Conflict> entries = conflicts.iterator();
 
-        Iterators.advance(entries, start);
-        if (length < 0) {
-            length = Integer.MAX_VALUE;
+        Iterators.advance(conflicts, start);
+        if (length >= 0) {
+            conflicts = Iterators.limit(conflicts, length);
         }
-        for (int i = 0; i < length && entries.hasNext(); i++) {
-            Conflict entry = entries.next();
+        while (conflicts.hasNext()) {
+            Conflict entry = conflicts.next();
             out.writeStartElement("unmerged");
             writeElement("changeType", "CONFLICT");
             writeElement("path", entry.getPath());
@@ -345,7 +344,7 @@ public class ResponseWriter {
         if (tree.trees().isPresent()) {
             ImmutableList<Node> trees = tree.trees().get();
             for (Node ref : trees) {
-                writeNode(ref, "tree");
+                writeNode(ref, "subtree");
             }
         }
         if (tree.features().isPresent()) {
@@ -380,10 +379,10 @@ public class ResponseWriter {
     public void writeFeature(RevFeature feature, String tag) throws XMLStreamException {
         out.writeStartElement(tag);
         writeElement("id", feature.getId().toString());
-        ImmutableList<Optional<Object>> values = feature.getValues();
-        for (Optional<Object> opt : values) {
-            final FieldType type = FieldType.forValue(opt);
-            String valueString = TextValueSerializer.asString(opt);
+        for (int i = 0; i < feature.size(); i++) {
+            Object value = feature.get(i).orNull();
+            final FieldType type = FieldType.forValue(value);
+            String valueString = TextValueSerializer.asString(value);
             out.writeStartElement("attribute");
             writeElement("type", type.toString());
             writeElement("value", valueString);
@@ -397,7 +396,7 @@ public class ResponseWriter {
         out.writeStartElement(tag);
         writeElement("id", featureType.getId().toString());
         writeElement("name", featureType.getName().toString());
-        ImmutableList<PropertyDescriptor> descriptors = featureType.sortedDescriptors();
+        ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
         for (PropertyDescriptor descriptor : descriptors) {
             out.writeStartElement("attribute");
             writeElement("name", descriptor.getName().toString());
@@ -425,7 +424,6 @@ public class ResponseWriter {
         writeElement("name", revTag.getName());
         writeElement("message", revTag.getMessage());
         writePerson("tagger", revTag.getTagger());
-
         out.writeEndElement();
     }
 
@@ -559,7 +557,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link UpdateRefWeb} command to the stream.
+     * Writes the response for the {@link UpdateRef} command to the stream.
      * 
      * @param ref the ref returned from the command
      * @throws XMLStreamException
@@ -575,7 +573,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link RefParseWeb} command to the stream.
+     * Writes the response for the {@link RefParse} command to the stream.
      * 
      * @param ref the ref returned from the command
      * @throws XMLStreamException
@@ -601,7 +599,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link BranchWebOp} command to the stream.
+     * Writes the response for the {@link Branch} command to the stream.
      * 
      * @param localBranches the local branches of the repository
      * @param remoteBranches the remote branches of the repository
@@ -622,7 +620,8 @@ public class ResponseWriter {
         for (Ref branch : remoteBranches) {
             if (!(branch instanceof SymRef)) {
                 out.writeStartElement("Branch");
-                writeElement("remoteName", branch.namespace().replace(Ref.REMOTES_PREFIX + "/", ""));
+                writeElement("remoteName",
+                        branch.namespace().replace(Ref.REMOTES_PREFIX + "/", ""));
                 writeElement("name", branch.localName());
                 out.writeEndElement();
             }
@@ -639,7 +638,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link RemoteWebOp} command to the stream.
+     * Writes the response for the {@link RemoteManagement} command to the stream.
      * 
      * @param remotes the list of the {@link Remote}s of this repository
      * @throws XMLStreamException
@@ -660,7 +659,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link RemoteWebOp} command to the stream.
+     * Writes the response for the {@link RemoteManagement} command to the stream.
      * 
      * @param success whether or not the ping was successful
      * @throws XMLStreamException
@@ -672,17 +671,35 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for the {@link TagWebOp} command to the stream.
+     * Writes the list response for the {@link Tag} command to the stream.
      * 
      * @param tags the list of {@link RevTag}s of this repository
      * @throws XMLStreamException
      */
     public void writeTagListResponse(List<RevTag> tags) throws XMLStreamException {
         for (RevTag tag : tags) {
-            out.writeStartElement("Tag");
-            writeElement("name", tag.getName());
-            out.writeEndElement();
+            writeTag(tag, "Tag");
         }
+    }
+
+    /**
+     * Writes the delete response for the {@link Tag} command to the stream.
+     * 
+     * @param tag the removed {@link RevTag}
+     * @throws XMLStreamException
+     */
+    public void writeTagDeleteResponse(RevTag tag) throws XMLStreamException {
+        writeTag(tag, "DeletedTag");
+    }
+
+    /**
+     * Writes the create response for the {@link Tag} command to the stream.
+     * 
+     * @param tag the created {@link RevTag}
+     * @throws XMLStreamException
+     */
+    public void writeTagCreateResponse(RevTag tag) throws XMLStreamException {
+        writeTag(tag, "Tag");
     }
 
     public void writeRebuildGraphResponse(ImmutableList<ObjectId> updatedObjects, boolean quiet)
@@ -709,7 +726,7 @@ public class ResponseWriter {
         if (result.getChangedRefs().entrySet().size() > 0) {
             for (Entry<String, Collection<ChangedRef>> entry : result.getChangedRefs().entrySet()) {
                 out.writeStartElement("Remote");
-                writeElement("remoteName", entry.getKey());
+                writeElement("remoteURL", entry.getKey());
                 for (ChangedRef ref : entry.getValue()) {
                     out.writeStartElement("Branch");
 
@@ -732,7 +749,7 @@ public class ResponseWriter {
         out.writeEndElement();
     }
 
-    public void writePullResponse(PullResult result, Iterator<DiffEntry> iter, Context geogig)
+    public void writePullResponse(PullResult result, Iterator<DiffEntry> iter)
             throws XMLStreamException {
         out.writeStartElement("Pull");
         writeFetchResponse(result.getFetchResult());
@@ -759,9 +776,9 @@ public class ResponseWriter {
         if (result.getMergeReport().isPresent()
                 && result.getMergeReport().get().getReport().isPresent()) {
             MergeReport report = result.getMergeReport().get();
-            writeMergeResponse(Optional.fromNullable(report.getMergeCommit()), report.getReport()
-                    .get(), geogig, report.getOurs(), report.getPairs().get(0).getTheirs(), report
-                    .getPairs().get(0).getAncestor());
+            writeMergeResponse(Optional.fromNullable(report.getMergeCommit()),
+                    report.getReport().get(), report.getOurs(),
+                    report.getPairs().get(0).getTheirs(), report.getPairs().get(0).getAncestor());
         }
         out.writeEndElement();
     }
@@ -799,14 +816,12 @@ public class ResponseWriter {
             }
             writeElement("attributename", entry.getKey().getName().toString());
             writeElement("changetype", entry.getValue().getType().toString());
-            if (entry.getValue().getOldValue() != null
-                    && entry.getValue().getOldValue().isPresent()) {
-                writeElement("oldvalue", entry.getValue().getOldValue().get().toString());
+            if (entry.getValue().getOldValue() != null) {
+                writeElement("oldvalue", entry.getValue().getOldValue().toString());
             }
             if (entry.getValue().getNewValue() != null
-                    && entry.getValue().getNewValue().isPresent()
                     && !entry.getValue().getType().equals(TYPE.NO_CHANGE)) {
-                writeElement("newvalue", entry.getValue().getNewValue().get().toString());
+                writeElement("newvalue", entry.getValue().getNewValue().toString());
             }
             out.writeEndElement();
         }
@@ -937,8 +952,8 @@ public class ResponseWriter {
                         if (object.isPresent() && object.get() instanceof RevCommit) {
                             commit = (RevCommit) object.get();
                         } else {
-                            throw new CommandSpecException("Couldn't resolve id: "
-                                    + commitId.toString() + " to a commit");
+                            throw new CommandSpecException(
+                                    "Couldn't resolve id: " + commitId.toString() + " to a commit");
                         }
 
                         object = geogig.command(RevObjectParse.class)
@@ -1047,11 +1062,19 @@ public class ResponseWriter {
             throws XMLStreamException {
         Iterator<GeometryChange> changeIterator = Iterators.transform(features,
                 new Function<FeatureInfo, GeometryChange>() {
+
+                    private Map<ObjectId, RevFeatureType> typeCache = new HashMap<>();
+
                     @Override
                     public GeometryChange apply(FeatureInfo input) {
                         GeometryChange change = null;
-                        RevFeature revFeature = RevFeatureBuilder.build(input.getFeature());
-                        RevFeatureType featureType = input.getFeatureType();
+                        RevFeature revFeature = input.getFeature();
+                        ObjectId typeId = input.getFeatureTypeId();
+                        RevFeatureType featureType = typeCache.get(typeId);
+                        if (null == featureType) {
+                            featureType = geogig.objectDatabase().getFeatureType(typeId);
+                            typeCache.put(typeId, featureType);
+                        }
                         Collection<PropertyDescriptor> attribs = featureType.type()
                                 .getDescriptors();
                         String crsCode = null;
@@ -1076,10 +1099,10 @@ public class ResponseWriter {
                         }
 
                         FeatureBuilder builder = new FeatureBuilder(featureType);
-                        GeogigSimpleFeature simpleFeature = (GeogigSimpleFeature) builder.build(
-                                revFeature.getId().toString(), revFeature);
-                        change = new GeometryChange(simpleFeature, ChangeType.MODIFIED, input
-                                .getPath(), crsCode);
+                        GeogigSimpleFeature simpleFeature = (GeogigSimpleFeature) builder
+                                .build(revFeature.getId().toString(), revFeature);
+                        change = new GeometryChange(simpleFeature, ChangeType.MODIFIED,
+                                input.getPath(), crsCode);
                         return change;
                     }
                 });
@@ -1107,16 +1130,17 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the response for a merge dry-run, contains unconflicted, conflicted and merged
-     * features.
+     * Writes the response for a merge.
      * 
-     * @param report - the MergeScenarioReport containing all the merge results
-     * @param transaction - a transaction aware injector to call commands from
+     * @param mergeCommit - the merge commit, if the merge was successful
+     * @param report - the MergeScenarioReport containing a summary of the merge results
+     * @param ours - our commit id
+     * @param theirs - their commit id
+     * @param ancestor - the ancestor commit id
      * @throws XMLStreamException
      */
     public void writeMergeResponse(Optional<RevCommit> mergeCommit, MergeScenarioReport report,
-            Context transaction, ObjectId ours, ObjectId theirs, ObjectId ancestor)
-            throws XMLStreamException {
+            ObjectId ours, ObjectId theirs, ObjectId ancestor) throws XMLStreamException {
         out.writeStartElement("Merge");
         writeElement("ours", ours.toString());
         writeElement("theirs", theirs.toString());
@@ -1124,12 +1148,65 @@ public class ResponseWriter {
         if (mergeCommit.isPresent()) {
             writeElement("mergedCommit", mergeCommit.get().getId().toString());
         }
-        if (report.getConflicts().size() > 0) {
-            writeElement("conflicts", Integer.toString(report.getConflicts().size()));
+        if (report.getConflicts() > 0) {
+            writeElement("conflicts", Long.toString(report.getConflicts()));
         }
-        writeGeometryChanges(transaction, report.getUnconflicted().iterator(), 0, 0);
-        writeConflicts(transaction, report.getConflicts().iterator(), ours, theirs);
-        writeMerged(transaction, report.getMerged().iterator());
+        out.writeEndElement();
+    }
+
+    /**
+     * Writes the response for a merge that includes the first page of features from the merge
+     * scenario.
+     * 
+     * @param mergeCommit - the merge commit, if the merge was successful
+     * @param report - the MergeScenarioReport containing a summary of the merge results
+     * @param context - the context that the merge was run on
+     * @param ours - our commit id
+     * @param theirs - their commit id
+     * @param ancestor - the ancestor commit id
+     * @param consumer - the page of features
+     * @throws XMLStreamException
+     */
+    public void writeMergeConflictsResponse(Optional<RevCommit> mergeCommit,
+            MergeScenarioReport report, Context context, ObjectId ours, ObjectId theirs,
+            ObjectId ancestor, PagedMergeScenarioConsumer consumer) throws XMLStreamException {
+        out.writeStartElement("Merge");
+        writeElement("ours", ours.toString());
+        writeElement("theirs", theirs.toString());
+        writeElement("ancestor", ancestor.toString());
+        if (mergeCommit.isPresent()) {
+            writeElement("mergedCommit", mergeCommit.get().getId().toString());
+        }
+        if (report.getConflicts() > 0) {
+            writeElement("conflicts", Long.toString(report.getConflicts()));
+        }
+        writeGeometryChanges(context, consumer.getUnconflicted(), 0, 0);
+        writeConflicts(context, consumer.getConflicted(), ours, theirs);
+        writeMerged(context, consumer.getMerged());
+        if (!consumer.didFinish()) {
+            writeElement("additionalChanges", Boolean.toString(true));
+        }
+        out.writeEndElement();
+    }
+
+    /**
+     * Writes a page of features from a merge scenario.
+     * 
+     * @param context the context that the merge scenario was run on
+     * @param ours our commit id
+     * @param theirs their commit id
+     * @param consumer the page of features
+     * @throws XMLStreamException
+     */
+    public void writeReportMergeScenarioResponse(Context context, ObjectId ours, ObjectId theirs,
+            PagedMergeScenarioConsumer consumer) throws XMLStreamException {
+        out.writeStartElement("Merge");
+        writeGeometryChanges(context, consumer.getUnconflicted(), 0, 0);
+        writeConflicts(context, consumer.getConflicted(), ours, theirs);
+        writeMerged(context, consumer.getMerged());
+        if (!consumer.didFinish()) {
+            writeElement("additionalChanges", Boolean.toString(true));
+        }
         out.writeEndElement();
     }
 
@@ -1173,15 +1250,15 @@ public class ResponseWriter {
         out.writeEndElement();
     }
 
-    public void writeStatistics(List<StatisticsWebOp.FeatureTypeStats> stats,
-            RevCommit firstCommit, RevCommit lastCommit, int totalCommits, List<RevPerson> authors,
-            int totalAdded, int totalModified, int totalRemoved) throws XMLStreamException {
+    public void writeStatistics(List<Statistics.FeatureTypeStats> stats, RevCommit firstCommit,
+            RevCommit lastCommit, int totalCommits, List<RevPerson> authors, int totalAdded,
+            int totalModified, int totalRemoved) throws XMLStreamException {
         out.writeStartElement("Statistics");
         int numFeatureTypes = 0;
         int totalNumFeatures = 0;
         if (!stats.isEmpty()) {
             out.writeStartElement("FeatureTypes");
-            for (StatisticsWebOp.FeatureTypeStats stat : stats) {
+            for (Statistics.FeatureTypeStats stat : stats) {
                 numFeatureTypes++;
                 out.writeStartElement("FeatureType");
                 writeElement("name", stat.getName());

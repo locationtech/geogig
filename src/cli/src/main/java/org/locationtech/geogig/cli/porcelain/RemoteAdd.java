@@ -12,13 +12,14 @@ package org.locationtech.geogig.cli.porcelain;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.porcelain.RemoteAddOp;
-import org.locationtech.geogig.api.porcelain.RemoteException;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.porcelain.RemoteAddOp;
+import org.locationtech.geogig.porcelain.RemoteException;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -71,8 +72,9 @@ public class RemoteAdd extends AbstractCommand implements CLICommand {
         } catch (RemoteException e) {
             switch (e.statusCode) {
             case REMOTE_ALREADY_EXISTS:
-                throw new CommandFailedException("Could not add, a remote called '" + params.get(0)
-                        + "' already exists.", e);
+                throw new InvalidParameterException(
+                        "Could not add, a remote called '" + params.get(0) + "' already exists.",
+                        e);
             default:
                 throw new CommandFailedException(e);
             }

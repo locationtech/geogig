@@ -10,29 +10,30 @@
 package org.locationtech.geogig.remote;
 
 import java.net.URI;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.CheckSparsePath;
-import org.locationtech.geogig.api.plumbing.FindCommonAncestor;
-import org.locationtech.geogig.api.plumbing.ForEachRef;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.plumbing.UpdateSymRef;
-import org.locationtech.geogig.api.plumbing.WriteTree;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.DiffOp;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.CheckSparsePath;
+import org.locationtech.geogig.plumbing.FindCommonAncestor;
+import org.locationtech.geogig.plumbing.ForEachRef;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.plumbing.WriteTree;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
@@ -131,8 +132,8 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
             Ref newRef = remoteRef;
             if (!(newRef instanceof SymRef)
                     && localRepository.graphDatabase().exists(remoteRef.getObjectId())) {
-                ObjectId mappedCommit = localRepository.graphDatabase().getMapping(
-                        remoteRef.getObjectId());
+                ObjectId mappedCommit = localRepository.graphDatabase()
+                        .getMapping(remoteRef.getObjectId());
                 if (mappedCommit != null) {
                     newRef = new Ref(remoteRef.getName(), mappedCommit);
                 }
@@ -231,37 +232,39 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
             if (newParents.size() > 0) {
                 parent = from.graphDatabase().getMapping(newParents.get(0));
             }
-            Iterator<DiffEntry> diffIter = from.command(DiffOp.class).setNewVersion(commitId)
-                    .setOldVersion(parent).setReportTrees(true).call();
+            try (AutoCloseableIterator<DiffEntry> diffIter = from.command(DiffOp.class)
+                    .setNewVersion(commitId).setOldVersion(parent).setReportTrees(true).call()) {
+                LocalCopyingDiffIterator changes = new LocalCopyingDiffIterator(diffIter, from, to);
 
-            LocalCopyingDiffIterator changes = new LocalCopyingDiffIterator(diffIter, from, to);
+                RevTree rootTree = RevTreeBuilder.EMPTY;
 
-            RevTree rootTree = RevTree.EMPTY;
+                if (newParents.size() > 0) {
+                    ObjectId mappedCommit = newParents.get(0);
 
-            if (newParents.size() > 0) {
-                ObjectId mappedCommit = newParents.get(0);
-
-                Optional<ObjectId> treeId = to.command(ResolveTreeish.class)
-                        .setTreeish(mappedCommit).call();
-                if (treeId.isPresent()) {
-                    rootTree = to.getTree(treeId.get());
+                    Optional<ObjectId> treeId = to.command(ResolveTreeish.class)
+                            .setTreeish(mappedCommit).call();
+                    if (treeId.isPresent()) {
+                        rootTree = to.getTree(treeId.get());
+                    }
                 }
+
+                // Create new commit
+                ObjectId newTreeId = to.command(WriteTree.class)
+                        .setOldRoot(Suppliers.ofInstance(rootTree))
+                        .setDiffSupplier(
+                                Suppliers.ofInstance((AutoCloseableIterator<DiffEntry>) changes))
+                        .call();
+
+                CommitBuilder builder = new CommitBuilder(commit);
+                builder.setParentIds(newParents);
+                builder.setTreeId(newTreeId);
+
+                RevCommit mapped = builder.build();
+                to.objectDatabase().put(mapped);
+
+                from.graphDatabase().map(commit.getId(), mapped.getId());
+                from.graphDatabase().map(mapped.getId(), commit.getId());
             }
-
-            // Create new commit
-            ObjectId newTreeId = to.command(WriteTree.class)
-                    .setOldRoot(Suppliers.ofInstance(rootTree))
-                    .setDiffSupplier(Suppliers.ofInstance((Iterator<DiffEntry>) changes)).call();
-
-            CommitBuilder builder = new CommitBuilder(commit);
-            builder.setParentIds(newParents);
-            builder.setTreeId(newTreeId);
-
-            RevCommit mapped = builder.build();
-            to.objectDatabase().put(mapped);
-
-            from.graphDatabase().map(commit.getId(), mapped.getId());
-            from.graphDatabase().map(mapped.getId(), commit.getId());
 
         }
     }
@@ -298,7 +301,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
             parent = commit.getParentIds().get(0);
         }
 
-        Iterator<DiffEntry> changes = remoteRepo.command(DiffOp.class)
+        AutoCloseableIterator<DiffEntry> changes = remoteRepo.command(DiffOp.class)
                 .setNewVersion(commit.getId()).setOldVersion(parent).setReportTrees(true).call();
 
         return new LocalFilteredDiffIterator(changes, remoteRepo, localRepository, filter);

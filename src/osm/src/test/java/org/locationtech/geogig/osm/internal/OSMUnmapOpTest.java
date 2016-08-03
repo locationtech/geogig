@@ -18,15 +18,15 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.model.FieldType;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.osm.internal.MappingRule.DefaultField;
+import org.locationtech.geogig.plumbing.ResolveFeatureType;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.storage.FieldType;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -39,6 +39,8 @@ import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.WKTReader;
 
 public class OSMUnmapOpTest extends RepositoryTestCase {
 
@@ -85,13 +87,13 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
 
         // modify a mapped feature. We add a new coordinate to the geometry (0,1) and change the
         // value of 'name' tag to "newvalue"
-        ArrayList<Coordinate> coords = Lists.newArrayList(((Geometry) values.get(2).get())
-                .getCoordinates());
+        ArrayList<Coordinate> coords = Lists
+                .newArrayList(((Geometry) values.get(2).get()).getCoordinates());
         coords.add(new Coordinate(0, 1));
         assertEquals(31347480l, values.get(0).get());
         GeometryFactory gf = new GeometryFactory();
-        SimpleFeatureBuilder fb = new SimpleFeatureBuilder((SimpleFeatureType) featureType.get()
-                .type());
+        SimpleFeatureBuilder fb = new SimpleFeatureBuilder(
+                (SimpleFeatureType) featureType.get().type());
         fb.set("geom", gf.createLineString(coords.toArray(new Coordinate[0])));
         fb.set("name", "newname");
         fb.set("id", 31347480l);
@@ -105,7 +107,8 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         assertEquals(
                 "LINESTRING (7.1960069 50.7399033, 7.195868 50.7399081, 7.1950788 50.739912, 7.1949262 50.7399053, "
                         + "7.1942463 50.7398686, 7.1935778 50.7398262, 7.1931011 50.7398018, 7.1929987 50.7398009, 7.1925978 50.7397889, "
-                        + "7.1924199 50.7397781, 0 1)", values.get(2).get().toString());
+                        + "7.1924199 50.7397781, 0 1)",
+                values.get(2).get().toString());
         assertEquals(31347480l, ((Long) values.get(0).get()).longValue());
         assertEquals("newname", values.get(1).get().toString());
 
@@ -121,7 +124,8 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         assertEquals(
                 "LINESTRING (7.1960069 50.7399033, 7.195868 50.7399081, 7.1950788 50.739912, 7.1949262 50.7399053, "
                         + "7.1942463 50.7398686, 7.1935778 50.7398262, 7.1931011 50.7398018, 7.1929987 50.7398009, 7.1925978 50.7397889, "
-                        + "7.1924199 50.7397781, 0 1)", values.get(7).get().toString());
+                        + "7.1924199 50.7397781, 0 1)",
+                values.get(7).get().toString());
 
         Map<String, String> expected = ImmutableMap.of("highway", "residential", "lit", "no",
                 "name", "newname", "oneway", "yes");
@@ -177,7 +181,10 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         ImmutableList<Optional<Object>> values = revFeature.get().getValues();
         assertEquals(4, values.size());
         String wkt = "POLYGON ((7.1923367 50.7395887, 7.1923127 50.7396946, 7.1923444 50.7397419, 7.1924199 50.7397781, 7.1923367 50.7395887))";
-        assertEquals(wkt, values.get(2).get().toString());
+
+        Polygon expected = (Polygon) new WKTReader().read(wkt).norm();
+        assertEquals(expected, values.get(2).get());
+
         assertEquals("yes", values.get(1).get());
         revFeature = geogig.command(RevObjectParse.class).setRefSpec("HEAD:polygons/24777894")
                 .call(RevFeature.class);
@@ -197,9 +204,10 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
                 .setRefSpec("WORK_HEAD:way/31045880").call(RevFeature.class);
         assertTrue(unmapped.isPresent());
         values = unmapped.get().getValues();
-        assertEquals(
-                "LINESTRING (7.1923367 50.7395887, 7.1923127 50.7396946, 7.1923444 50.7397419, 7.1924199 50.7397781, 7.1923367 50.7395887)",
-                values.get(7).get().toString());
+
+        Geometry expectedLine = expected.getExteriorRing();
+        Geometry actual = (Geometry) values.get(7).get();
+        assertEquals(expectedLine, actual);
 
     }
 
@@ -219,7 +227,8 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         fields.put("geom", new AttributeDefinition("geom", FieldType.POINT));
         fields.put("name", new AttributeDefinition("name", FieldType.STRING));
         Map<String, List<String>> filterExclude = Maps.newHashMap();
-        MappingRule mappingRule = new MappingRule("busstops", mappings, filterExclude, fields, null);
+        MappingRule mappingRule = new MappingRule("busstops", mappings, filterExclude, fields,
+                null);
         List<MappingRule> mappingRules = Lists.newArrayList();
         mappingRules.add(mappingRule);
         Mapping mapping = new Mapping(mappingRules);
@@ -239,8 +248,8 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
 
         // Modify a node
         GeometryFactory gf = new GeometryFactory();
-        SimpleFeatureBuilder fb = new SimpleFeatureBuilder((SimpleFeatureType) featureType.get()
-                .type());
+        SimpleFeatureBuilder fb = new SimpleFeatureBuilder(
+                (SimpleFeatureType) featureType.get().type());
         fb.set("geom", gf.createPoint(new Coordinate(0, 1)));
         fb.set("name", "newname");
         fb.set("id", 507464799l);
@@ -296,7 +305,8 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         fields.put("geom", new AttributeDefinition("geom", FieldType.POINT));
         fields.put("name", new AttributeDefinition("name", FieldType.STRING));
         Map<String, List<String>> filterExclude = Maps.newHashMap();
-        MappingRule mappingRule = new MappingRule("busstops", mappings, filterExclude, fields, null);
+        MappingRule mappingRule = new MappingRule("busstops", mappings, filterExclude, fields,
+                null);
         List<MappingRule> mappingRules = Lists.newArrayList();
         mappingRules.add(mappingRule);
         Mapping mapping = new Mapping(mappingRules);
@@ -347,7 +357,8 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         fields.put("geom", new AttributeDefinition("geom", FieldType.POINT));
         fields.put("name", new AttributeDefinition("name_alias", FieldType.STRING));
         Map<String, List<String>> filterExclude = Maps.newHashMap();
-        MappingRule mappingRule = new MappingRule("busstops", mappings, filterExclude, fields, null);
+        MappingRule mappingRule = new MappingRule("busstops", mappings, filterExclude, fields,
+                null);
         List<MappingRule> mappingRules = Lists.newArrayList();
         mappingRules.add(mappingRule);
         Mapping mapping = new Mapping(mappingRules);
@@ -376,8 +387,8 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
 
         // Modify a node
         GeometryFactory gf = new GeometryFactory();
-        SimpleFeatureBuilder fb = new SimpleFeatureBuilder((SimpleFeatureType) featureType.get()
-                .type());
+        SimpleFeatureBuilder fb = new SimpleFeatureBuilder(
+                (SimpleFeatureType) featureType.get().type());
         fb.set("geom", gf.createPoint(new Coordinate(0, 1)));
         fb.set("name_alias", "newname");
         fb.set("id", 507464799l);
@@ -458,8 +469,8 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
 
         // Modify a node
         GeometryFactory gf = new GeometryFactory();
-        SimpleFeatureBuilder fb = new SimpleFeatureBuilder((SimpleFeatureType) featureType.get()
-                .type());
+        SimpleFeatureBuilder fb = new SimpleFeatureBuilder(
+                (SimpleFeatureType) featureType.get().type());
         fb.set("geom", gf.createPoint(new Coordinate(0, 1)));
         fb.set("name_alias", "newname");
         fb.set("id", 507464799l);
@@ -554,13 +565,13 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         assertEquals(0, unstaged);
 
         // modify a mapped feature. We change the value of 'name_alias' tag to "newvalue"
-        ArrayList<Coordinate> coords = Lists.newArrayList(((Geometry) values.get(2).get())
-                .getCoordinates());
+        ArrayList<Coordinate> coords = Lists
+                .newArrayList(((Geometry) values.get(2).get()).getCoordinates());
         coords.add(new Coordinate(0, 1));
         assertEquals(31347480l, values.get(0).get());
         GeometryFactory gf = new GeometryFactory();
-        SimpleFeatureBuilder fb = new SimpleFeatureBuilder((SimpleFeatureType) featureType.get()
-                .type());
+        SimpleFeatureBuilder fb = new SimpleFeatureBuilder(
+                (SimpleFeatureType) featureType.get().type());
         fb.set("geom", gf.createLineString(coords.toArray(new Coordinate[0])));
         fb.set("name_alias", "newname");
         fb.set("id", 31347480l);
@@ -574,7 +585,8 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         assertEquals(
                 "LINESTRING (7.1960069 50.7399033, 7.195868 50.7399081, 7.1950788 50.739912, 7.1949262 50.7399053, "
                         + "7.1942463 50.7398686, 7.1935778 50.7398262, 7.1931011 50.7398018, 7.1929987 50.7398009, 7.1925978 50.7397889, "
-                        + "7.1924199 50.7397781, 0 1)", values.get(2).get().toString());
+                        + "7.1924199 50.7397781, 0 1)",
+                values.get(2).get().toString());
         assertEquals(31347480l, ((Long) values.get(0).get()).longValue());
         assertEquals("newname", values.get(1).get().toString());
 
@@ -590,7 +602,8 @@ public class OSMUnmapOpTest extends RepositoryTestCase {
         assertEquals(
                 "LINESTRING (7.1960069 50.7399033, 7.195868 50.7399081, 7.1950788 50.739912, 7.1949262 50.7399053, "
                         + "7.1942463 50.7398686, 7.1935778 50.7398262, 7.1931011 50.7398018, 7.1929987 50.7398009, 7.1925978 50.7397889, "
-                        + "7.1924199 50.7397781, 0 1)", values.get(7).get().toString());
+                        + "7.1924199 50.7397781, 0 1)",
+                values.get(7).get().toString());
         assertEquals(ImmutableMap.of("highway", "residential", "lit", "no", "name", "newname",
                 "oneway", "yes"), values.get(3).get());
 

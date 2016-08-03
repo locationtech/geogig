@@ -11,8 +11,6 @@ package org.locationtech.geogig.repository;
 
 import java.util.concurrent.ExecutorService;
 
-import org.locationtech.geogig.api.Platform;
-
 public class FileNodeIndexTest extends AbstractNodeIndexTest {
 
     @Override

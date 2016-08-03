@@ -13,11 +13,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map.Entry;
 
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.porcelain.TransferSummary;
-import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef;
-import org.locationtech.geogig.api.porcelain.TransferSummary.ChangedRef.ChangeTypes;
 import org.locationtech.geogig.cli.Console;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.porcelain.TransferSummary;
+import org.locationtech.geogig.porcelain.TransferSummary.ChangedRef;
+import org.locationtech.geogig.porcelain.TransferSummary.ChangedRef.ChangeTypes;
 
 class FetchResultPrinter {
 
@@ -28,8 +28,8 @@ class FetchResultPrinter {
             for (ChangedRef ref : entry.getValue()) {
                 String line;
                 if (ref.getType() == ChangeTypes.CHANGED_REF) {
-                    line = "   " + ref.getOldRef().getObjectId().toString().substring(0, 7) + ".."
-                            + ref.getNewRef().getObjectId().toString().substring(0, 7) + "     "
+                    line = "   " + ref.getOldRef().getObjectId().toString().substring(0, 8) + ".."
+                            + ref.getNewRef().getObjectId().toString().substring(0, 8) + "     "
                             + ref.getOldRef().localName() + " -> " + ref.getOldRef().getName();
                 } else if (ref.getType() == ChangeTypes.ADDED_REF) {
                     String reftype = (ref.getNewRef().getName().startsWith(Ref.TAGS_PREFIX)) ? "tag"

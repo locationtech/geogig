@@ -34,16 +34,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.storage.NodePathStorageOrder;
-import org.locationtech.geogig.storage.NodeStorageOrder;
+import org.locationtech.geogig.model.CanonicalNodeNameOrder;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import sun.misc.Cleaner;
-import sun.nio.ch.DirectBuffer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -60,14 +57,24 @@ import com.google.common.primitives.UnsignedLong;
 import com.ning.compress.lzf.LZFInputStream;
 import com.ning.compress.lzf.LZFOutputStream;
 
+import sun.misc.Cleaner;
+import sun.nio.ch.DirectBuffer;
+
+/**
+ * A {@link NodeIndex} that saves nodes to a set of temporary files based on a threshold and returns
+ * a mergesorted {@link #nodes() iterator} that provides a good enough sorting (based on node's
+ * {@link CanonicalNodeNameOrder#hashCodeLong unsigned long hash}) to alleviate the work of the
+ * {@link RevTreeBuilder}.
+ *
+ */
 @SuppressWarnings("restriction")
 class FileNodeIndex implements Closeable, NodeIndex {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileNodeIndex.class);
 
-    private static final NodePathStorageOrder PATH_STORAGE_ORDER = new NodePathStorageOrder();
+    private static final CanonicalNodeNameOrder PATH_STORAGE_ORDER = CanonicalNodeNameOrder.INSTANCE;
 
-    private static final NodeStorageOrder NODE_STORAGE_ORDER = new NodeStorageOrder();
+    private static final CanonicalNodeOrder NODE_STORAGE_ORDER = new CanonicalNodeOrder();
 
     private static final Random random = new Random();
 
@@ -140,8 +147,8 @@ class FileNodeIndex implements Closeable, NodeIndex {
         return new CompositeNodeIterator(files, unflushed);
     }
 
-    private static class CompositeNodeIterator extends AbstractIterator<Node> implements
-            AutoCloseableIterator<Node> {
+    private static class CompositeNodeIterator extends AbstractIterator<Node>
+            implements AutoCloseableIterator<Node> {
 
         private List<AutoCloseableIterator<Node>> openIterators;
 
@@ -179,8 +186,8 @@ class FileNodeIndex implements Closeable, NodeIndex {
 
     }
 
-    private static class IndexIterator extends AbstractIterator<Node> implements
-            AutoCloseableIterator<Node> {
+    private static class IndexIterator extends AbstractIterator<Node>
+            implements AutoCloseableIterator<Node> {
 
         private DataInputStream in;
 
@@ -369,8 +376,8 @@ class FileNodeIndex implements Closeable, NodeIndex {
 
         }
 
-        private class NodeIterator extends AbstractIterator<Node> implements
-                AutoCloseableIterator<Node> {
+        private class NodeIterator extends AbstractIterator<Node>
+                implements AutoCloseableIterator<Node> {
 
             private Iterator<Node> nodes = Iterators.transform(positionIndex.iterator(),
                     new NodeReader(buffer));
@@ -407,8 +414,8 @@ class FileNodeIndex implements Closeable, NodeIndex {
                 Stopwatch sw = Stopwatch.createStarted();
                 byte[] buff = new byte[1024];
                 int count = 0;
-                try (OutputStream fileOut = new LZFOutputStream(new BufferedOutputStream(
-                        new FileOutputStream(file), 1024 * 1024))) {
+                try (OutputStream fileOut = new LZFOutputStream(
+                        new BufferedOutputStream(new FileOutputStream(file), 1024 * 1024))) {
 
                     for (Entry e : positionIndex) {
                         final int offset = e.offset;

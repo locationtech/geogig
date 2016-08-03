@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.storage.text;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,26 +27,27 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevPerson;
-import org.locationtech.geogig.api.RevPersonImpl;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTagImpl;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeImpl;
-import org.locationtech.geogig.storage.FieldType;
+import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.FieldType;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevPersonBuilder;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTagBuilder;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectReader;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.ObjectWriter;
@@ -59,7 +62,6 @@ import org.opengis.filter.Filter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.InternationalString;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -68,7 +70,6 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
@@ -290,8 +291,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
 
         @Override
         protected void print(RevFeature feature, Writer w) throws IOException {
-            ImmutableList<Optional<Object>> values = feature.getValues();
-            for (Optional<Object> opt : values) {
+            for (int i = 0; i < feature.size(); i++) {
+                Optional<Object> opt = feature.get(i);
                 final FieldType type = FieldType.forValue(opt);
                 String valueString = TextValueSerializer.asString(opt);
                 println(w, type.toString() + "\t" + valueString);
@@ -394,7 +395,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
 
         }
 
-        private void writeChildren(Writer w, ImmutableCollection<Node> children) throws IOException {
+        private void writeChildren(Writer w, ImmutableCollection<Node> children)
+                throws IOException {
             for (Node ref : children) {
                 writeNode(w, ref);
             }
@@ -469,10 +471,9 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
                 T parsed = read(id, reader, type);
                 Preconditions.checkState(parsed != null, "parsed to null");
                 if (id != null) {
-                    Preconditions
-                            .checkState(id.equals(parsed.getId()),
-                                    "Expected and parsed object ids don't match: %s %s", id,
-                                    parsed.getId());
+                    Preconditions.checkState(id.equals(parsed.getId()),
+                            "Expected and parsed object ids don't match: %s %s", id,
+                            parsed.getId());
                 }
                 return parsed;
             } catch (Exception e) {
@@ -481,7 +482,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         }
 
         protected String parseLine(String line, String expectedHeader) throws IOException {
-            List<String> fields = Lists.newArrayList(Splitter.on('\t').split(line));
+            List<String> fields = newArrayList(Splitter.on('\t').split(line));
             Preconditions.checkArgument(fields.size() == 2, "Expected %s\\t<...>, got '%s'",
                     expectedHeader, line);
             Preconditions.checkArgument(expectedHeader.equals(fields.get(0)),
@@ -493,7 +494,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         protected abstract T read(ObjectId id, BufferedReader reader, TYPE type) throws IOException;
 
         protected Node parseNodeLine(String line) {
-            List<String> tokens = Lists.newArrayList(Splitter.on('\t').split(line));
+            List<String> tokens = newArrayList(Splitter.on('\t').split(line));
             Preconditions.checkArgument(tokens.size() == 6, "Wrong tree element definition: %s",
                     line);
             TYPE type = TYPE.valueOf(tokens.get(1));
@@ -502,7 +503,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             ObjectId metadataId = ObjectId.valueOf(tokens.get(4));
             Envelope bbox = parseBBox(tokens.get(5));
 
-            org.locationtech.geogig.api.Node ref = org.locationtech.geogig.api.Node.create(name,
+            org.locationtech.geogig.model.Node ref = org.locationtech.geogig.model.Node.create(name,
                     id, metadataId, type, bbox);
 
             return ref;
@@ -513,7 +514,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             if (s.equals(TextWriter.NULL_BOUNDING_BOX)) {
                 return new Envelope();
             }
-            List<String> tokens = Lists.newArrayList(Splitter.on(';').split(s));
+            List<String> tokens = newArrayList(Splitter.on(';').split(s));
             Preconditions.checkArgument(tokens.size() == 4, "Wrong bounding box definition: %s", s);
 
             double minx = Double.parseDouble(tokens.get(0));
@@ -570,7 +571,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         protected RevCommit read(ObjectId id, BufferedReader reader, TYPE type) throws IOException {
             Preconditions.checkArgument(TYPE.COMMIT.equals(type), "Wrong type: %s", type.name());
             String tree = parseLine(requireLine(reader), "tree");
-            List<String> parents = Lists.newArrayList(Splitter.on(' ').omitEmptyStrings()
+            List<String> parents = newArrayList(Splitter.on(' ').omitEmptyStrings()
                     .split(parseLine(requireLine(reader), "parents")));
             RevPerson author = parsePerson(requireLine(reader), "author");
             RevPerson committer = parsePerson(requireLine(reader), "committer");
@@ -586,15 +587,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             builder.setCommitterTimestamp(committer.getTimestamp());
             builder.setCommitterTimeZoneOffset(committer.getTimeZoneOffset());
             builder.setMessage(message);
-            List<ObjectId> parentIds = Lists.newArrayList(Iterators.transform(parents.iterator(),
-                    new Function<String, ObjectId>() {
-
-                        @Override
-                        public ObjectId apply(String input) {
-                            ObjectId objectId = ObjectId.valueOf(input);
-                            return objectId;
-                        }
-                    }));
+            List<ObjectId> parentIds = Lists.transform(parents, (str) -> ObjectId.valueOf(str));
             builder.setParentIds(parentIds);
             builder.setTreeId(ObjectId.valueOf(tree));
             RevCommit commit = builder.build();
@@ -609,7 +602,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String email = tokens[2].trim().isEmpty() ? null : tokens[2];
             long timestamp = Long.parseLong(tokens[3]);
             int offset = Integer.parseInt(tokens[4]);
-            return new RevPersonImpl(name, email, timestamp, offset);
+            return RevPersonBuilder.build(name, email, timestamp, offset);
         }
 
         private String parseMessage(BufferedReader reader) throws IOException {
@@ -642,23 +635,20 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
     private static final TextReader<RevFeature> FEATURE_READER = new TextReader<RevFeature>() {
 
         @Override
-        protected RevFeature read(ObjectId id, BufferedReader reader, TYPE type) throws IOException {
+        protected RevFeature read(ObjectId id, BufferedReader reader, TYPE type)
+                throws IOException {
             Preconditions.checkArgument(TYPE.FEATURE.equals(type), "Wrong type: %s", type.name());
-            List<Object> values = Lists.newArrayList();
+
+            RevFeatureBuilder builder = RevFeatureBuilder.builder();
             String line;
             while ((line = reader.readLine()) != null) {
-                values.add(parseAttribute(line));
+                builder.addValue(parseAttribute(line));
             }
-
-            ImmutableList.Builder<Optional<Object>> valuesBuilder = new ImmutableList.Builder<Optional<Object>>();
-            for (Object value : values) {
-                valuesBuilder.add(Optional.fromNullable(value));
-            }
-            return RevFeatureImpl.build(valuesBuilder.build());
+            return builder.build();
         }
 
         private Object parseAttribute(String line) {
-            List<String> tokens = Lists.newArrayList(Splitter.on('\t').split(line));
+            List<String> tokens = newArrayList(Splitter.on('\t').split(line));
             Preconditions.checkArgument(tokens.size() == 2, "Wrong attribute definition: %s", line);
             String typeName = tokens.get(0);
             String value = tokens.get(1);
@@ -720,12 +710,12 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
                 builder.add(parseAttributeDescriptor(line));
             }
             SimpleFeatureType sft = builder.buildFeatureType();
-            return RevFeatureTypeImpl.build(sft);
+            return RevFeatureTypeBuilder.build(sft);
 
         }
 
         private AttributeDescriptor parseAttributeDescriptor(String line) {
-            ArrayList<String> tokens = Lists.newArrayList(Splitter.on('\t').split(line));
+            ArrayList<String> tokens = newArrayList(Splitter.on('\t').split(line));
             Preconditions.checkArgument(tokens.size() == 5 || tokens.size() == 6,
                     "Wrong attribute definition: %s", line);
             NameImpl name = new NameImpl(tokens.get(0));
@@ -799,7 +789,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String line;
             while ((line = reader.readLine()) != null) {
                 Preconditions.checkArgument(!line.isEmpty(), "Empty tree element definition");
-                ArrayList<String> tokens = Lists.newArrayList(Splitter.on('\t').split(line));
+                ArrayList<String> tokens = newArrayList(Splitter.on('\t').split(line));
                 String nodeType = tokens.get(0);
                 if (nodeType.equals(TextWriter.TreeNode.REF.name())) {
                     Node entryRef = parseNodeLine(line);
@@ -824,9 +814,9 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
 
             RevTree tree;
             if (subtrees.isEmpty()) {
-                tree = RevTreeImpl.createLeafTree(id, size, features.build(), trees.build());
+                tree = RevTreeBuilder.createLeafTree(id, size, features.build(), trees.build());
             } else {
-                tree = RevTreeImpl.createNodeTree(id, size, numTrees, subtrees);
+                tree = RevTreeBuilder.createNodeTree(id, size, numTrees, subtrees);
             }
             return tree;
         }
@@ -855,7 +845,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String message = parseLine(requireLine(reader), "message");
             String commitId = parseLine(requireLine(reader), "commitid");
             RevPerson tagger = parsePerson(requireLine(reader));
-            RevTag tag = new RevTagImpl(id, name, ObjectId.valueOf(commitId), message, tagger);
+            RevTag tag = RevTagBuilder.build(id, name, ObjectId.valueOf(commitId), message, tagger);
             return tag;
         }
 
@@ -868,7 +858,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             String email = tokens[2].trim().isEmpty() ? null : tokens[2];
             long timestamp = Long.parseLong(tokens[3]);
             int offset = Integer.parseInt(tokens[4]);
-            return new RevPersonImpl(name, email, timestamp, offset);
+            return RevPersonBuilder.build(name, email, timestamp, offset);
         }
 
     };
@@ -892,7 +882,7 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
     }
 
     @Override
-    public RevObject read(ObjectId id, InputStream in) throws IOException {
+    public RevObject read(@Nullable ObjectId id, InputStream in) throws IOException {
         return OBJECT_READER.read(id, in);
     }
 

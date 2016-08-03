@@ -10,22 +10,22 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.plumbing.DiffWorkTree;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
-import org.locationtech.geogig.api.porcelain.ResetOp;
-import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.plumbing.DiffWorkTree;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.ResetOp;
+import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -115,29 +115,30 @@ public class Reset extends AbstractCommand implements CLICommand {
 
             reset.call();
         } catch (IllegalArgumentException iae) {
-            throw new CommandFailedException(iae.getMessage(), iae);
+            throw new InvalidParameterException(iae.getMessage(), iae);
         } catch (IllegalStateException ise) {
             throw new CommandFailedException(ise.getMessage(), ise);
         }
 
         if (!geogig.getRepository().workingTree().isClean()) {
             try {
-                Iterator<DiffEntry> unstaged = geogig.command(DiffWorkTree.class).setFilter(null)
-                        .call();
-                cli.getConsole().println("Unstaged changes after reset:");
-                while (unstaged.hasNext()) {
-                    DiffEntry entry = unstaged.next();
-                    ChangeType type = entry.changeType();
-                    switch (type) {
-                    case ADDED:
-                        cli.getConsole().println("A\t" + entry.newPath());
-                        break;
-                    case MODIFIED:
-                        cli.getConsole().println("M\t" + entry.newPath());
-                        break;
-                    case REMOVED:
-                        cli.getConsole().println("D\t" + entry.oldPath());
-                        break;
+                try (AutoCloseableIterator<DiffEntry> unstaged = geogig.command(DiffWorkTree.class)
+                        .setFilter(null).call()) {
+                    cli.getConsole().println("Unstaged changes after reset:");
+                    while (unstaged.hasNext()) {
+                        DiffEntry entry = unstaged.next();
+                        ChangeType type = entry.changeType();
+                        switch (type) {
+                        case ADDED:
+                            cli.getConsole().println("A\t" + entry.newPath());
+                            break;
+                        case MODIFIED:
+                            cli.getConsole().println("M\t" + entry.newPath());
+                            break;
+                        case REMOVED:
+                            cli.getConsole().println("D\t" + entry.oldPath());
+                            break;
+                        }
                     }
                 }
             } catch (IOException e) {

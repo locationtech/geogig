@@ -19,19 +19,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.AbstractObjectDatabase;
 import org.locationtech.geogig.storage.AbstractObjectStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
+import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.ning.compress.lzf.LZFInputStream;
 
 /**
  * Provides an implementation of a GeoGig object database that utilizes the heap for the storage of
@@ -44,7 +44,7 @@ public class HeapObjectStore extends AbstractObjectStore {
     private ConcurrentMap<ObjectId, byte[]> objects;
 
     public HeapObjectStore() {
-        super(DataStreamSerializationFactoryV2.INSTANCE);
+        super(new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE));
     }
 
     /**
@@ -96,13 +96,12 @@ public class HeapObjectStore extends AbstractObjectStore {
      * Deletes the object with the provided {@link ObjectId id} from the database.
      * 
      * @param objectId the id of the object to delete
-     * @return true if the object was deleted, false if it was not found
      */
     @Override
-    public boolean delete(ObjectId objectId) {
+    public void delete(ObjectId objectId) {
         checkNotNull(objectId, "objectId is null");
         checkState(isOpen(), "db is closed");
-        return objects.remove(objectId) != null;
+        objects.remove(objectId);
     }
 
     @Override
@@ -153,23 +152,20 @@ public class HeapObjectStore extends AbstractObjectStore {
     }
 
     @Override
-    public long deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
+    public void deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
         checkNotNull(ids, "ids is null");
         checkNotNull(listener, "listener is null");
         checkState(isOpen(), "db is closed");
 
-        long count = 0;
         while (ids.hasNext()) {
             ObjectId id = ids.next();
             byte[] removed = this.objects.remove(id);
             if (removed != null) {
-                count++;
                 listener.deleted(id);
             } else {
                 listener.notFound(id);
             }
         }
-        return count;
     }
 
     @Override
@@ -199,8 +195,7 @@ public class HeapObjectStore extends AbstractObjectStore {
                     raw = objects.get(id);
                     if (raw != null) {
                         try {
-                            RevObject obj = serializer.read(id,
-                                    new LZFInputStream(new ByteArrayInputStream(raw)));
+                            RevObject obj = serializer.read(id, new ByteArrayInputStream(raw));
                             found = type.isAssignableFrom(obj.getClass()) ? type.cast(obj) : null;
                         } catch (IOException e) {
                             throw Throwables.propagate(e);

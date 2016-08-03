@@ -10,7 +10,6 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,14 +17,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.fusesource.jansi.Ansi;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.plumbing.DiffBounds;
-import org.locationtech.geogig.api.plumbing.DiffCount;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.plumbing.diff.DiffSummary;
-import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.AnsiDecorator;
 import org.locationtech.geogig.cli.CLICommand;
@@ -33,6 +24,15 @@ import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.DiffBounds;
+import org.locationtech.geogig.plumbing.DiffCount;
+import org.locationtech.geogig.plumbing.diff.DiffSummary;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -40,7 +40,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 /**
@@ -137,38 +136,44 @@ public class Diff extends AbstractCommand implements CLICommand {
             return;
         }
 
-        DiffOp diff = geogig.command(DiffOp.class);
+        try (AutoCloseableIterator<DiffEntry> entries = buildEntries(cli, oldVersion, newVersion)) {
+            if (!entries.hasNext()) {
+                cli.getConsole().println("No differences found");
+                return;
+            }
+
+            DiffPrinter printer;
+            if (summary) {
+                printer = new SummaryDiffPrinter();
+            } else {
+                printer = new FullDiffPrinter(nogeom, false);
+            }
+
+            DiffEntry entry;
+            while (entries.hasNext()) {
+                entry = entries.next();
+                printer.print(geogig, cli.getConsole(), entry);
+            }
+        }
+    }
+
+    private AutoCloseableIterator<DiffEntry> buildEntries(GeogigCLI cli, String oldVersion,
+            String newVersion) {
+        DiffOp diff = cli.getGeogig().command(DiffOp.class);
         diff.setOldVersion(oldVersion).setNewVersion(newVersion).setCompareIndex(cached);
 
-        Iterator<DiffEntry> entries;
+        AutoCloseableIterator<DiffEntry> entries;
         if (paths.isEmpty()) {
             entries = diff.setProgressListener(cli.getProgressListener()).call();
         } else {
-            entries = Collections.emptyIterator();
+            entries = AutoCloseableIterator.emptyIterator();
             for (String path : paths) {
-                Iterator<DiffEntry> moreEntries = diff.setFilter(path)
+                AutoCloseableIterator<DiffEntry> moreEntries = diff.setFilter(path)
                         .setProgressListener(cli.getProgressListener()).call();
-                entries = Iterators.concat(entries, moreEntries);
+                entries = AutoCloseableIterator.concat(entries, moreEntries);
             }
         }
-
-        if (!entries.hasNext()) {
-            cli.getConsole().println("No differences found");
-            return;
-        }
-
-        DiffPrinter printer;
-        if (summary) {
-            printer = new SummaryDiffPrinter();
-        } else {
-            printer = new FullDiffPrinter(nogeom, false);
-        }
-
-        DiffEntry entry;
-        while (entries.hasNext()) {
-            entry = entries.next();
-            printer.print(geogig, cli.getConsole(), entry);
-        }
+        return entries;
     }
 
     private List<String> removeEmptyPaths() {

@@ -15,7 +15,7 @@ import java.net.URLDecoder;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.locationtech.geogig.api.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 
@@ -25,9 +25,9 @@ import com.google.common.base.Throwables;
 
 public class RESTUtils {
 
-    public static Optional<GeoGIG> getGeogig(Request request) {
+    public static Optional<Repository> getGeogig(Request request) {
         RepositoryProvider provider = repositoryProvider(request);
-        Optional<GeoGIG> geogig = provider.getGeogig(request);
+        Optional<Repository> geogig = provider.getGeogig(request);
         return geogig;
     }
 

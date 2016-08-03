@@ -23,12 +23,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.geotools.cli.TestHelper;
+import org.locationtech.geogig.repository.Platform;
 import org.mockito.exceptions.base.MockitoException;
 
 /**

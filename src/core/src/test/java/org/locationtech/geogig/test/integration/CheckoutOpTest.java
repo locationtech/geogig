@@ -16,31 +16,30 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutException;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CheckoutResult;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.MergeConflictsException;
-import org.locationtech.geogig.api.porcelain.MergeOp;
-import org.locationtech.geogig.api.porcelain.RemoveOp;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutException;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CheckoutResult;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.porcelain.RemoveOp;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 
 public class CheckoutOpTest extends RepositoryTestCase {
     @Rule
@@ -136,7 +135,8 @@ public class CheckoutOpTest extends RepositoryTestCase {
         result = geogig.command(CheckoutOp.class).setSource(c1.getId().toString()).call();
         assertEquals(c1.getTreeId(), result.getNewTree());
 
-        assertFalse(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
+        assertFalse(
+                geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
         assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof Ref);
 
         result = geogig.command(CheckoutOp.class).setSource(c2.getId().toString()).call();
@@ -164,20 +164,23 @@ public class CheckoutOpTest extends RepositoryTestCase {
         result = geogig.command(CheckoutOp.class).setSource("branch1").call();
         assertEquals(c1.getTreeId(), result.getNewTree());
         assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
-        assertEquals(branch1.getName(), ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD)
-                .call().get()).getTarget());
+        assertEquals(branch1.getName(),
+                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
+                        .getTarget());
 
         result = geogig.command(CheckoutOp.class).setSource("branch2").call();
         assertEquals(c2.getTreeId(), result.getNewTree());
         assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
-        assertEquals(branch2.getName(), ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD)
-                .call().get()).getTarget());
+        assertEquals(branch2.getName(),
+                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
+                        .getTarget());
 
         result = geogig.command(CheckoutOp.class).setSource("branch3").call();
         assertEquals(c3.getTreeId(), result.getNewTree());
         assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
-        assertEquals(branch3.getName(), ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD)
-                .call().get()).getTarget());
+        assertEquals(branch3.getName(),
+                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
+                        .getTarget());
     }
 
     @Test
@@ -202,7 +205,7 @@ public class CheckoutOpTest extends RepositoryTestCase {
         insertAndAdd(points2);
         insert(points1_modified);
 
-        exception.expect(IllegalStateException.class);
+        exception.expect(IllegalArgumentException.class);
         geogig.command(CheckoutOp.class).addPath("Points/Points.1").call();
 
     }
@@ -295,13 +298,14 @@ public class CheckoutOpTest extends RepositoryTestCase {
         RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
         Ref branch1 = geogig.command(BranchCreateOp.class).setName("branch1").call();
         insertAndAdd(points2);
-        CheckoutResult result = geogig.command(CheckoutOp.class).setSource("branch1")
-                .setForce(true).call();
+        CheckoutResult result = geogig.command(CheckoutOp.class).setSource("branch1").setForce(true)
+                .call();
 
         assertEquals(c1.getTreeId(), result.getNewTree());
         assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
-        assertEquals(branch1.getName(), ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD)
-                .call().get()).getTarget());
+        assertEquals(branch1.getName(),
+                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
+                        .getTarget());
     }
 
     @Test
@@ -477,8 +481,7 @@ public class CheckoutOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
@@ -508,8 +511,7 @@ public class CheckoutOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
@@ -539,8 +541,7 @@ public class CheckoutOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));

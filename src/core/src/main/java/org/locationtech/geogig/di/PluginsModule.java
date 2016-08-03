@@ -12,15 +12,18 @@ package org.locationtech.geogig.di;
 import java.net.URI;
 import java.util.Map;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.storage.StorageProvider;
+import org.locationtech.geogig.storage.VersionedFormat;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
 import com.google.common.base.Optional;
@@ -34,10 +37,10 @@ public class PluginsModule extends AbstractModule {
     @Override
     protected void configure() {
 
-        bind(ConfigDatabase.class).toProvider(PluginConfigDatabaseProvider.class).in(
-                Scopes.SINGLETON);
-        bind(ObjectDatabase.class).toProvider(PluginObjectDatabaseProvider.class).in(
-                Scopes.SINGLETON);
+        bind(ConfigDatabase.class).toProvider(PluginConfigDatabaseProvider.class)
+                .in(Scopes.SINGLETON);
+        bind(ObjectDatabase.class).toProvider(PluginObjectDatabaseProvider.class)
+                .in(Scopes.SINGLETON);
         bind(RefDatabase.class).toProvider(PluginRefDatabaseProvider.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).toProvider(PluginGraphDatabaseProvider.class)
                 .in(Scopes.SINGLETON);
@@ -64,7 +67,8 @@ public class PluginsModule extends AbstractModule {
             if (uri.isPresent()) {
                 config = RepositoryResolver.resolveConfigDatabase(uri.get(), context);
             } else {
-                config = new IniFileConfigDatabase(platform);
+                // if there's no repository URI, then we can only do global operations
+                config = IniFileConfigDatabase.globalOnly(platform);
             }
             return config;
         }
@@ -107,9 +111,9 @@ public class PluginsModule extends AbstractModule {
                     return objectFormat;
                 }
             }
-            throw new IllegalStateException(String.format(
-                    "No storage provider found for %s='%s' and %s='%s'", formatKey, format,
-                    versionKey, version));
+            throw new IllegalStateException(
+                    String.format("No storage provider found for %s='%s' and %s='%s'", formatKey,
+                            format, versionKey, version));
         }
 
     }
@@ -153,9 +157,9 @@ public class PluginsModule extends AbstractModule {
                 }
             }
 
-            throw new IllegalStateException(String.format(
-                    "No storage provider found for %s='%s' and %s='%s'", formatKey, format,
-                    versionKey, version));
+            throw new IllegalStateException(
+                    String.format("No storage provider found for %s='%s' and %s='%s'", formatKey,
+                            format, versionKey, version));
         }
     }
 
@@ -197,9 +201,9 @@ public class PluginsModule extends AbstractModule {
                 }
             }
 
-            throw new IllegalStateException(String.format(
-                    "No storage provider found for %s='%s' and %s='%s'", formatKey, format,
-                    versionKey, version));
+            throw new IllegalStateException(
+                    String.format("No storage provider found for %s='%s' and %s='%s'", formatKey,
+                            format, versionKey, version));
         }
     }
 }

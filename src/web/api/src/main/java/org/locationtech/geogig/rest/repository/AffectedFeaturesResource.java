@@ -14,14 +14,14 @@ import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.DiffOp;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.Repository;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -65,24 +65,25 @@ public class AffectedFeaturesResource extends Resource {
 
             Preconditions.checkState(commit.isPresent(), "No commit specified.");
 
-            GeoGIG ggit = getGeogig(request).get();
+            Repository repo = getGeogig(request).get();
 
             ObjectId commitId = ObjectId.valueOf(commit.get());
 
-            RevCommit revCommit = ggit.getRepository().getCommit(commitId);
+            RevCommit revCommit = repo.getCommit(commitId);
 
             if (revCommit.getParentIds() != null && revCommit.getParentIds().size() > 0) {
                 ObjectId parentId = revCommit.getParentIds().get(0);
-                final Iterator<DiffEntry> diff = ggit.command(DiffOp.class).setOldVersion(parentId)
-                        .setNewVersion(commitId).call();
-
-                while (diff.hasNext()) {
-                    DiffEntry diffEntry = diff.next();
-                    if (diffEntry.getOldObject() != null) {
-                        w.write(diffEntry.getOldObject().getNode().getObjectId().toString() + "\n");
+                try (final AutoCloseableIterator<DiffEntry> diff = repo.command(DiffOp.class)
+                        .setOldVersion(parentId).setNewVersion(commitId).call()) {
+                    while (diff.hasNext()) {
+                        DiffEntry diffEntry = diff.next();
+                        if (diffEntry.getOldObject() != null) {
+                            w.write(diffEntry.getOldObject().getNode().getObjectId().toString()
+                                    + "\n");
+                        }
                     }
+                    w.flush();
                 }
-                w.flush();
             }
         }
     }

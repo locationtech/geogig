@@ -11,16 +11,15 @@ package org.locationtech.geogig.di;
 
 import java.util.Iterator;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.inject.Provider;
@@ -82,24 +81,19 @@ class ObjectDatabasePutInterceptor implements Decorator {
             // final List<RevCommit> addedCommits = Lists.newLinkedList();
 
             final Iterator<? extends RevObject> collectingIterator = Iterators.transform(objects,
-                    new Function<RevObject, RevObject>() {
+                    (obj) -> {
+                        if (obj instanceof RevCommit) {
+                            final GraphDatabase graphDatabase = graphDb.get();
+                            RevCommit commit = (RevCommit) obj;
+                            ObjectId commitId = commit.getId();
+                            ImmutableList<ObjectId> parentIds = commit.getParentIds();
+                            graphDatabase.put(commitId, parentIds);
 
-                        private final GraphDatabase graphDatabase = graphDb.get();
-
-                        @Override
-                        public RevObject apply(RevObject input) {
-                            if (input instanceof RevCommit) {
-                                RevCommit commit = (RevCommit) input;
-                                ObjectId commitId = commit.getId();
-                                ImmutableList<ObjectId> parentIds = commit.getParentIds();
-                                graphDatabase.put(commitId, parentIds);
-
-                                // addedCommits.add((RevCommit) input);
-                            }
-                            return input;
+                            // addedCommits.add((RevCommit) input);
                         }
-                    });
+                        return obj;
 
+                    });
             super.putAll(collectingIterator, listener);
 
             // if (!addedCommits.isEmpty()) {

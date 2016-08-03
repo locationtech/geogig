@@ -12,7 +12,7 @@ package org.locationtech.geogig.remote;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

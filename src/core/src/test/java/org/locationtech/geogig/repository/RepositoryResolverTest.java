@@ -16,7 +16,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.Context;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 public class RepositoryResolverTest {

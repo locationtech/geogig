@@ -9,29 +9,29 @@
  */
 package org.locationtech.geogig.test.integration.repository;
 
-import static org.locationtech.geogig.api.NodeRef.appendChild;
+import static org.locationtech.geogig.model.NodeRef.appendChild;
 
 import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.plumbing.WriteTree2;
-import org.locationtech.geogig.api.porcelain.AddOp;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.WriteTree2;
+import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.storage.ObjectInserter;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -202,7 +202,7 @@ public class IndexTest extends RepositoryTestCase {
             @Override
             public RevTree get() {
                 if (treeId.isNull()) {
-                    return RevTree.EMPTY;
+                    return RevTreeBuilder.EMPTY;
                 }
                 return geogig.command(RevObjectParse.class).setObjectId(treeId).call(RevTree.class)
                         .get();
@@ -217,9 +217,6 @@ public class IndexTest extends RepositoryTestCase {
         // insert and commit feature1_1
         final ObjectId oId1_1 = insertAndAdd(points1);
 
-        System.err.println("++++++++++++ stage 1:  ++++++++++++++++++++");
-        // staged1.accept(new PrintVisitor(index.getDatabase(), new PrintWriter(System.err)));
-
         // check feature1_1 is there
         assertEquals(oId1_1, index.findStaged(appendChild(pointsName, idP1)).get().getObjectId());
 
@@ -227,9 +224,6 @@ public class IndexTest extends RepositoryTestCase {
         final ObjectId oId1_2 = insertAndAdd(points2);
         final ObjectId oId1_3 = insertAndAdd(points3);
         final ObjectId oId2_1 = insertAndAdd(lines1);
-
-        System.err.println("++++++++++++ stage 2: ++++++++++++++++++++");
-        // staged2.accept(new PrintVisitor(index.getDatabase(), new PrintWriter(System.err)));
 
         // check feature1_2, feature1_3 and feature2_1
         Optional<Node> treeChild;
@@ -258,9 +252,6 @@ public class IndexTest extends RepositoryTestCase {
         // and insert feature2_2
         final ObjectId oId2_2 = insertAndAdd(lines2);
 
-        System.err.println("++++++++++++ stage 3: ++++++++++++++++++++");
-        // staged3.accept(new PrintVisitor(index.getDatabase(), new PrintWriter(System.err)));
-
         // and check only points2 and lines2 remain (i.e. its oids are set to NULL)
         assertFalse(index.findStaged(appendChild(pointsName, idP1)).isPresent());
         assertFalse(index.findStaged(appendChild(pointsName, idP3)).isPresent());
@@ -282,11 +273,8 @@ public class IndexTest extends RepositoryTestCase {
             newRepoTreeId1 = geogig.command(WriteTree2.class)
                     .setOldRoot(tree(repo.getHead().get().getObjectId())).call();
 
-            // assertEquals(index.getDatabase().getStagedRootRef().getObjectId(), newRepoTreeId1);
-
             RevTree newRepoTree = repo.getTree(newRepoTreeId1);
 
-            System.err.println("++++++++++ new repo tree 1: " + newRepoTreeId1 + " ++++++++++++");
             // check feature1_1 is there
             assertEquals(oId1_1, repo.getTreeChild(newRepoTree, appendChild(pointsName, idP1))
                     .get().getObjectId());
@@ -299,13 +287,12 @@ public class IndexTest extends RepositoryTestCase {
         final ObjectId oId2_1 = insertAndAdd(lines1);
 
         {// simulate a commit so the repo head points to this new tree
-            ObjectInserter objectInserter = repo.newObjectInserter();
             List<ObjectId> parents = ImmutableList.of();
 
             RevCommit commit = new CommitBuilder().setTreeId(newRepoTreeId1).setParentIds(parents)
                     .build();
             ObjectId commitId = commit.getId();
-            objectInserter.insert(commit);
+            repo.objectDatabase().put(commit);
             Optional<Ref> newHead = geogig.command(UpdateRef.class).setName("refs/heads/master")
                     .setNewValue(commitId).call();
             assertTrue(newHead.isPresent());
@@ -318,9 +305,6 @@ public class IndexTest extends RepositoryTestCase {
             newRepoTreeId2 = geogig.command(WriteTree2.class).setOldRoot(tree(newRepoTreeId1))
                     .call();
 
-            // assertEquals(index.getDatabase().getStagedRootRef().getObjectId(), newRepoTreeId2);
-
-            System.err.println("++++++++ new root 2:" + newRepoTreeId2 + " ++++++++++");
             RevTree newRepoTree = repo.getTree(newRepoTreeId2);
 
             // check feature1_2, feature1_2 and feature2_1
@@ -340,13 +324,12 @@ public class IndexTest extends RepositoryTestCase {
         }
 
         {// simulate a commit so the repo head points to this new tree
-            ObjectInserter objectInserter = repo.newObjectInserter();
             List<ObjectId> parents = ImmutableList.of();
             RevCommit commit = new CommitBuilder().setTreeId(newRepoTreeId2).setParentIds(parents)
                     .build();
             ObjectId commitId = commit.getId();
-
-            objectInserter.insert(commit);
+            
+            repo.objectDatabase().put(commit);
             Optional<Ref> newHead = geogig.command(UpdateRef.class).setName("refs/heads/master")
                     .setNewValue(commitId).call();
             assertTrue(newHead.isPresent());
@@ -366,9 +349,6 @@ public class IndexTest extends RepositoryTestCase {
             newRepoTreeId3 = geogig.command(WriteTree2.class).setOldRoot(tree(newRepoTreeId2))
                     .call();
 
-            // assertEquals(index.getDatabase().getStagedRootRef().getObjectId(), newRepoTreeId3);
-
-            System.err.println("++++++++ new root 3:" + newRepoTreeId3 + " ++++++++++");
             RevTree newRepoTree = repo.getTree(newRepoTreeId3);
 
             // and check only feature1_2 and feature2_2 remain

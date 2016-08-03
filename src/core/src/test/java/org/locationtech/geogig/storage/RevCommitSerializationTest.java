@@ -19,10 +19,10 @@ import java.util.TimeZone;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.locationtech.geogig.api.CommitBuilder;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -100,8 +100,6 @@ public abstract class RevCommitSerializationTest extends Assert {
 
         serializer.write(commit, out);
 
-        // System.err.println(out);
-
         RevObject read = serializer.read(commit.getId(), new ByteArrayInputStream(out.toByteArray()));
         assertEquals(commit, read);
     }
@@ -156,7 +154,6 @@ public abstract class RevCommitSerializationTest extends Assert {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         serializer.write(cmtIn, bout);
 
-        // System.err.println(bout);
         byte[] bytes = bout.toByteArray();
         assertTrue(bytes.length > 0);
 

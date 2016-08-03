@@ -9,13 +9,11 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -37,7 +35,7 @@ public class LsTree extends AbstractWebAPICommand {
 
     boolean verbose;
 
-    List<String> refList;
+    String ref;
 
     public LsTree(ParameterSet options) {
         super(options);
@@ -45,7 +43,7 @@ public class LsTree extends AbstractWebAPICommand {
         setOnlyTrees(Boolean.valueOf(options.getFirstValue("onlyTree", "false")));
         setRecursive(Boolean.valueOf(options.getFirstValue("recursive", "false")));
         setVerbose(Boolean.valueOf(options.getFirstValue("verbose", "false")));
-        setRefList(Arrays.asList(options.getValuesArray("path")));
+        setRef(options.getFirstValue("path", null));
     }
 
     /**
@@ -85,12 +83,12 @@ public class LsTree extends AbstractWebAPICommand {
     }
 
     /**
-     * Mutator for the refList variable (Should this really be a list?)
+     * Mutator for the ref variable
      * 
-     * @param refList - reference to start at
+     * @param ref - reference to start at
      */
-    public void setRefList(List<String> refList) {
-        this.refList = refList;
+    public void setRef(String ref) {
+        this.ref = ref;
     }
 
     /**
@@ -100,10 +98,6 @@ public class LsTree extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        String ref = null;
-        if (refList != null && !refList.isEmpty()) {
-            ref = refList.get(0);
-        }
         LsTreeOp.Strategy lsStrategy = LsTreeOp.Strategy.CHILDREN;
         if (recursive) {
             if (includeTrees) {

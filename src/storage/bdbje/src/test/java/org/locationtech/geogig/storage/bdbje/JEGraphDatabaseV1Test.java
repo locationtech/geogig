@@ -11,8 +11,8 @@ package org.locationtech.geogig.storage.bdbje;
 
 import java.io.File;
 
-import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.GraphDatabaseTest;

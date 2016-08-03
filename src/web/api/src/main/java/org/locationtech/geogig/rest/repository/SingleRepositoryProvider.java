@@ -12,9 +12,10 @@ package org.locationtech.geogig.rest.repository;
 import java.net.URI;
 import java.util.Iterator;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.api.plumbing.ResolveRepositoryName;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.plumbing.ResolveRepositoryName;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Repository;
 import org.restlet.data.Request;
 
 import com.google.common.base.Optional;
@@ -25,28 +26,27 @@ import com.google.common.collect.Iterators;
 
 public class SingleRepositoryProvider implements RepositoryProvider {
 
-    private GeoGIG geogig;
+    private Repository repo;
 
-    public SingleRepositoryProvider(GeoGIG geogig) {
-        this.geogig = geogig;
+    public SingleRepositoryProvider(Repository repo) {
+        this.repo = repo;
     }
 
     @Override
-    public Optional<GeoGIG> getGeogig(Request request) {
-        return Optional.fromNullable(geogig);
+    public Optional<Repository> getGeogig(Request request) {
+        return Optional.of(repo);
     }
 
     @Override
     public void delete(Request request) {
-        Optional<GeoGIG> geogig = getGeogig(request);
-        Preconditions.checkState(geogig.isPresent(), "No repository to delete.");
-        GeoGIG ggig = geogig.get();
-        Optional<URI> repoUri = ggig.command(ResolveGeogigURI.class).call();
+        Repository repo = getGeogig(request).orNull();
+        Preconditions.checkState(repo != null, "No repository to delete.");
+        Optional<URI> repoUri = repo.command(ResolveGeogigURI.class).call();
         Preconditions.checkState(repoUri.isPresent(), "No repository to delete.");
-        ggig.close();
+        repo.close();
         try {
             GeoGIG.delete(repoUri.get());
-            this.geogig = null;
+            this.repo = null;
         } catch (Exception e) {
             Throwables.propagate(e);
         }
@@ -60,10 +60,10 @@ public class SingleRepositoryProvider implements RepositoryProvider {
 
     @Override
     public Iterator<String> findRepositories() {
-        if (geogig == null) {
+        if (repo == null) {
             return ImmutableSet.<String> of().iterator();
         }
-        String repoName = geogig.command(ResolveRepositoryName.class).call();
+        String repoName = repo.command(ResolveRepositoryName.class).call();
         return Iterators.singletonIterator(repoName);
     }
 }

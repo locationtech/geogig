@@ -12,15 +12,15 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.porcelain.CheckoutException;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CheckoutResult;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.porcelain.CheckoutException;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CheckoutResult;
+import org.locationtech.geogig.repository.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -96,7 +96,7 @@ public class Checkout extends AbstractCommand implements CLICommand {
                 break;
             case DETACHED_HEAD:
                 console.println("You are in 'detached HEAD' state. HEAD is now at "
-                        + result.getOid().toString().substring(0, 7) + "...");
+                        + result.getOid().toString().substring(0, 8) + "...");
                 break;
             default:
                 break;
@@ -106,9 +106,9 @@ public class Checkout extends AbstractCommand implements CLICommand {
             case LOCAL_CHANGES_NOT_COMMITTED:
                 throw new CommandFailedException(
                         "Working tree and index are not clean. To overwrite local changes, use the --force option",
-                        e);
+                        true);
             case UNMERGED_PATHS:
-                throw new CommandFailedException(e.getMessage(), e);
+                throw new CommandFailedException(e.getMessage(), true);
             }
         }
     }

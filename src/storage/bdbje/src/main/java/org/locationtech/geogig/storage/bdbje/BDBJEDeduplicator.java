@@ -9,14 +9,21 @@
  */
 package org.locationtech.geogig.storage.bdbje;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.storage.Deduplicator;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.Deduplicator;
 
+import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.Database;
+import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
+import com.sleepycat.je.Durability;
+import com.sleepycat.je.Environment;
+import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 
@@ -28,17 +35,45 @@ import com.sleepycat.je.OperationStatus;
 public class BDBJEDeduplicator implements Deduplicator {
     private static final DatabaseEntry DUMMY_DATA = new DatabaseEntry(new byte[0]);
 
-    private Database objectDb;
+    private static final DatabaseConfig dbConfig;
+    static {
+        dbConfig = new DatabaseConfig();
+        dbConfig.setAllowCreate(true);
+        dbConfig.setDeferredWrite(false);
+        dbConfig.setTransactional(false);
+        dbConfig.setTemporary(true);
+    }
 
-    private final BDBJEDeduplicationService service;
+    final File dbdir;
 
     /**
-     * @param database the database that represents the index of object ids
-     * @param service used by {@link #reset()} and {@link #release()}
+     * Lazily created, to be accessed only through {@link #getDatabase()}
      */
-    public BDBJEDeduplicator(Database database, BDBJEDeduplicationService service) {
-        this.objectDb = database;
-        this.service = service;
+    private Database database;
+
+    private final Environment environment;
+
+    private static final String databaseName = "seen";
+
+    public BDBJEDeduplicator(File dbdir) {
+        this.dbdir = dbdir;
+
+        EnvironmentConfig ec = new EnvironmentConfig();
+        ec.setAllowCreate(true);
+        ec.setCacheMode(CacheMode.DEFAULT);
+        ec.setSharedCache(true);
+        ec.setDurability(Durability.COMMIT_NO_SYNC);
+        ec.setLockTimeout(30, TimeUnit.SECONDS);
+        ec.setTransactional(false);
+
+        this.environment = new Environment(dbdir, ec);
+    }
+
+    private Database getDatabase() {
+        if (this.database == null) {
+            this.database = environment.openDatabase(null, databaseName, dbConfig);
+        }
+        return database;
     }
 
     @Override
@@ -58,33 +93,49 @@ public class BDBJEDeduplicator implements Deduplicator {
 
     @Override
     public void reset() {
-        objectDb.close();
-        service.reset(this);
+        if (this.database != null) {
+            this.database.close();// being a temporary database, there's no need to call truncate
+            this.database = null;
+        }
     }
 
     @Override
     public void release() {
-        objectDb.close();
-        service.deregister(this);
+        try {
+            try {
+                if (database != null) {
+                    database.close();
+                }
+            } finally {
+                try {
+                    this.environment.close();
+                } finally {
+                    deleteRecursive(this.dbdir);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * Assigns a new database to this deduplicator, only to be called by
-     * {@link BDBJEDeduplicationService#reset(BDBJEDeduplicator)}.
-     * 
-     * @param db the database that replaces the current one.
-     */
-    protected void setDatabase(Database db) {
-        this.objectDb = db;
+    private void deleteRecursive(File file) {
+        File[] children = file.listFiles();
+        if (children != null) {
+            for (File each : children) {
+                deleteRecursive(each);
+            }
+        }
+        file.delete();
     }
 
     private boolean destructiveTest(final ObjectId id) {
-        OperationStatus status = objectDb.putNoOverwrite(null, asDatabaseEntry(id), DUMMY_DATA);
+        OperationStatus status = getDatabase().putNoOverwrite(null, asDatabaseEntry(id),
+                DUMMY_DATA);
         return status == OperationStatus.KEYEXIST;
     }
 
     private boolean safeTest(final ObjectId id) {
-        OperationStatus status = objectDb.getSearchBoth(null, asDatabaseEntry(id), DUMMY_DATA,
+        OperationStatus status = getDatabase().getSearchBoth(null, asDatabaseEntry(id), DUMMY_DATA,
                 LockMode.DEFAULT);
         return status == OperationStatus.SUCCESS;
     }

@@ -38,7 +38,7 @@ import java.util.zip.InflaterInputStream;
 import javax.xml.stream.XMLStreamException;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.ProgressListener;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -16,45 +16,80 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
+import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
 public class IniFileConfigDatabase implements ConfigDatabase {
 
+    /**
+     * Access it through {@link #local()}, not directly.
+     */
     private INIFile local;
 
     private INIFile global;
 
-    @Inject
+    @Nullable
+    private final File repoDirectory;
+
+    private final boolean globalOnly;
+
     public IniFileConfigDatabase(final Platform platform) {
-        this.local = new INIFile() {
-            @Override
-            public File iniFile() {
-                final Optional<URI> url = new ResolveGeogigURI(platform, null).call();
+        this(platform, null);
+    }
 
-                if (!url.isPresent()) {
-                    throw new ConfigException(StatusCode.INVALID_LOCATION);
-                }
+    @Inject
+    public IniFileConfigDatabase(final Platform platform, final Hints hints) {
+        this(platform, hints, false);
+    }
 
-                File localConfigFile = new File(new File(url.get()), "config");
-
-                return localConfigFile;
+    private IniFileConfigDatabase(final Platform platform, final Hints hints,
+            final boolean globalOnly) {
+        this.globalOnly = globalOnly;
+        {
+            final Optional<URI> repoURI = new ResolveGeogigURI(platform, hints).call();
+            if (repoURI.isPresent()) {
+                URI uri = repoURI.get();
+                Preconditions.checkState("file".equals(uri.getScheme()));
+                repoDirectory = new File(uri);
+            } else {
+                repoDirectory = null;
             }
-        };
+        }
+
+        if (globalOnly) {
+            this.local = null;
+        } else {
+            this.local = new INIFile() {
+                @Override
+                public File iniFile() {
+                    if (repoDirectory == null) {
+                        throw new ConfigException(StatusCode.INVALID_LOCATION);
+                    }
+
+                    File localConfigFile = new File(repoDirectory, "config");
+
+                    return localConfigFile;
+                }
+            };
+        }
         this.global = new INIFile() {
             @Override
             public File iniFile() {
                 File home = platform.getUserHome();
-
                 if (home == null) {
                     throw new ConfigException(StatusCode.USERHOME_NOT_SET);
                 }
+                Preconditions.checkState(home.exists(), "user home does not exist: %s", home);
+                Preconditions.checkState(home.isDirectory(), "user home is not a directory: %s", home);
 
                 File globalConfig = new File(home, ".geogigconfig");
                 try {
@@ -67,10 +102,17 @@ public class IniFileConfigDatabase implements ConfigDatabase {
         };
     }
 
+    private INIFile local() {
+        if (this.globalOnly) {
+            throw new ConfigException(StatusCode.INVALID_LOCATION);
+        }
+        return this.local;
+    }
+
     public Optional<String> get(String key) {
         try {
             String[] parsed = parse(key);
-            Optional<String> result = local.get(parsed[0], parsed[1]);
+            Optional<String> result = local().get(parsed[0], parsed[1]);
             if (result.isPresent() && result.get().length() > 0) {
                 return result;
             } else {
@@ -123,7 +165,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
 
     public Map<String, String> getAll() {
         try {
-            return local.getAll();
+            return local().getAll();
         } catch (StringIndexOutOfBoundsException e) {
             throw new ConfigException(e, StatusCode.SECTION_OR_KEY_INVALID);
         } catch (IllegalArgumentException e) {
@@ -147,7 +189,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
 
     public Map<String, String> getAllSection(String section) {
         try {
-            return local.getSection(section);
+            return local().getSection(section);
         } catch (StringIndexOutOfBoundsException e) {
             throw new ConfigException(e, StatusCode.SECTION_OR_KEY_INVALID);
         } catch (IllegalArgumentException e) {
@@ -171,7 +213,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
 
     public List<String> getAllSubsections(String section) {
         try {
-            return local.listSubsections(section);
+            return local().listSubsections(section);
         } catch (StringIndexOutOfBoundsException e) {
             throw new ConfigException(e, StatusCode.SECTION_OR_KEY_INVALID);
         } catch (IllegalArgumentException e) {
@@ -196,7 +238,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
     public void put(String key, Object value) {
         String[] parsed = parse(key);
         try {
-            local.set(parsed[0], parsed[1], stringify(value));
+            local().set(parsed[0], parsed[1], stringify(value));
         } catch (StringIndexOutOfBoundsException e) {
             throw new ConfigException(e, StatusCode.SECTION_OR_KEY_INVALID);
         } catch (IllegalArgumentException e) {
@@ -222,7 +264,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
     public void remove(String key) {
         String[] parsed = parse(key);
         try {
-            local.remove(parsed[0], parsed[1]);
+            local().remove(parsed[0], parsed[1]);
         } catch (StringIndexOutOfBoundsException e) {
             throw new ConfigException(e, StatusCode.SECTION_OR_KEY_INVALID);
         } catch (IllegalArgumentException e) {
@@ -247,7 +289,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
 
     public void removeSection(String key) {
         try {
-            local.removeSection(key);
+            local().removeSection(key);
         } catch (NoSuchElementException e) {
             throw new ConfigException(e, StatusCode.MISSING_SECTION);
         } catch (StringIndexOutOfBoundsException e) {
@@ -304,5 +346,13 @@ public class IniFileConfigDatabase implements ConfigDatabase {
     public void close() throws IOException {
         this.local = null;
         this.global = null;
+    }
+
+    /**
+     * @return a file config database that only supports global operations against
+     *         {@code $HOME/.geogigconfig}
+     */
+    public static ConfigDatabase globalOnly(Platform platform) {
+        return new IniFileConfigDatabase(platform, null, true);
     }
 }

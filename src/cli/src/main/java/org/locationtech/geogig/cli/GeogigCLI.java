@@ -28,21 +28,22 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.DefaultPlatform;
-import org.locationtech.geogig.api.DefaultProgressListener;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.hooks.CannotRunGeogigOperationException;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.api.porcelain.ConfigGet;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
+import org.locationtech.geogig.model.DefaultPlatform;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
+import org.locationtech.geogig.porcelain.ConfigGet;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,10 +79,6 @@ import com.google.inject.Module;
 public class GeogigCLI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeogigCLI.class);
-
-    static {
-        GlobalContextBuilder.builder = new CLIContextBuilder();
-    }
 
     private static final com.google.inject.Injector commandsInjector;
     static {
@@ -158,8 +155,9 @@ public class GeogigCLI {
         return repositoryURI;
     }
 
-    public void disableProgressListener() {
+    public GeogigCLI disableProgressListener() {
         this.progressListenerDisabled = true;
+        return this;
     }
 
     /**
@@ -242,8 +240,10 @@ public class GeogigCLI {
         GeoGIG geogig = newGeoGIG(hints);
 
         if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
-            geogig.getRepository();
-            return geogig;
+            Repository repository = geogig.getRepository();
+            if (repository != null) {
+                return geogig;
+            }
         }
         geogig.close();
 
@@ -263,7 +263,7 @@ public class GeogigCLI {
     public GeoGIG newGeoGIG(Hints hints) {
         Context inj = newGeogigInjector(hints);
 
-        GeoGIG geogig = new GeoGIG(inj, platform.pwd());
+        GeoGIG geogig = new GeoGIG(inj);
         try {
             geogig.getRepository();
         } catch (Exception e) {
@@ -282,7 +282,6 @@ public class GeogigCLI {
 
     private Context getGeogigInjector(Hints hints) {
         if (this.geogigInjector == null || !Objects.equal(this.hints, hints)) {
-            // System.err.println("Injector hints: " + hints);
             geogigInjector = newGeogigInjector(hints);
         }
         return geogigInjector;
@@ -290,10 +289,13 @@ public class GeogigCLI {
 
     private Context newGeogigInjector(Hints hints) {
         if (repositoryURI != null) {
-            LOGGER.info("using REPO_URL '{}'", repositoryURI);
+            LOGGER.debug("using REPO_URL '{}'", repositoryURI);
             hints.set(Hints.REPOSITORY_URL, repositoryURI);
         }
-        Context geogigInjector = GlobalContextBuilder.builder.build(hints);
+        if (!hints.get(Hints.PLATFORM).isPresent()) {
+            hints.set(Hints.PLATFORM, this.platform);
+        }
+        Context geogigInjector = GlobalContextBuilder.builder().build(hints);
         return geogigInjector;
     }
 
@@ -324,26 +326,6 @@ public class GeogigCLI {
      */
     public synchronized boolean isRunning() {
         return geogig != null;
-    }
-
-    /**
-     * Entry point for the command line interface.
-     * 
-     * @param args
-     */
-    public static void main(String[] args) {
-        Logging.tryConfigureLogging();
-        Console consoleReader = new Console();
-
-        final GeogigCLI cli = new GeogigCLI(consoleReader);
-        addShutdownHook(cli);
-        int exitCode = cli.execute(args);
-
-        cli.close();
-
-        if (exitCode != 0 || cli.isExitOnFinish()) {
-            System.exit(exitCode);
-        }
     }
 
     /**
@@ -391,7 +373,6 @@ public class GeogigCLI {
         } catch (IllegalArgumentException | InvalidParameterException paramValidationError) {
             exception = paramValidationError;
             consoleMessage = paramValidationError.getMessage();
-
         } catch (CannotRunGeogigOperationException cannotRun) {
 
             consoleMessage = cannotRun.getMessage();
@@ -402,8 +383,11 @@ public class GeogigCLI {
                 // this is intentional, see the javadoc for CommandFailedException
                 printError = false;
             } else {
-                LOGGER.error(consoleMessage, Throwables.getRootCause(cmdFailed));
                 consoleMessage = cmdFailed.getMessage();
+                if (!(cmdFailed instanceof CommandFailedException)
+                        || !((CommandFailedException) cmdFailed).reportOnly) {
+                    LOGGER.error(consoleMessage, Throwables.getRootCause(cmdFailed));
+                }
             }
         } catch (RuntimeException e) {
             exception = e;
@@ -468,7 +452,7 @@ public class GeogigCLI {
                 commandName = args[0];
                 commandParser = mainCommander.getCommands().get(commandName);
             }
-            
+
             if (commandParser == null) {
                 consoleReader.println(args[0] + " is not a geogig command. See geogig --help.");
                 // check for similar commands
@@ -484,8 +468,8 @@ public class GeogigCLI {
                     }
                 }
                 consoleReader.flush();
-                throw new CommandFailedException(String.format("'%s' is not a command.",
-                        commandName));
+                throw new InvalidParameterException(
+                        String.format("'%s' is not a command.", commandName));
             }
 
             Object object = commandParser.getObjects().get(0);
@@ -493,7 +477,7 @@ public class GeogigCLI {
                 args = Arrays.asList(args).subList(1, args.length)
                         .toArray(new String[args.length - 1]);
                 mainCommander = ((CLICommandExtension) object).getCommandParser();
-                if (Lists.newArrayList(args).contains("--help")) {
+                if (args.length == 1 && "--help".equals(args[0])) {
                     printUsage(mainCommander);
                     return;
                 }
@@ -536,7 +520,8 @@ public class GeogigCLI {
                     workingDir = platform.pwd().getAbsolutePath();
                 }
                 if (getGeogig() == null) {
-                    throw new CommandFailedException("Not in a geogig repository: " + workingDir);
+                    throw new InvalidParameterException(
+                            "Not in a geogig repository: " + workingDir);
                 }
             }
 
@@ -704,7 +689,7 @@ public class GeogigCLI {
         }
         Console console = getConsole();
         try {
-            console.println("usage: geogig <command> [<args>]");
+            console.println("usage: geogig [--repo <URI>] <command> [<args>]");
             console.println();
             console.println("The most commonly used geogig commands are:");
             for (String cmd : commandNames) {
@@ -775,7 +760,7 @@ public class GeogigCLI {
 
                 private final NumberFormat numberFormat = NumberFormat.getIntegerInstance();
 
-                private final long delayNanos = TimeUnit.NANOSECONDS.convert(100,
+                private final long delayNanos = TimeUnit.NANOSECONDS.convert(150,
                         TimeUnit.MILLISECONDS);
 
                 // Don't skip the first update
@@ -847,30 +832,6 @@ public class GeogigCLI {
 
         }
         return this.progressListener;
-    }
-
-    static void addShutdownHook(final GeogigCLI cli) {
-        // try to grafefully shutdown upon CTRL+C
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-
-            private GeogigCLI geogig = cli;
-
-            @Override
-            public void run() {
-                if (cli.isRunning()) {
-                    System.err.println("Forced shut down, wait for geogig to be closed...");
-                    System.err.flush();
-                    geogig.close();
-                    System.err.println("geogig closed.");
-                    System.err.flush();
-                }
-            }
-        });
-    }
-
-    @VisibleForTesting
-    public void tryConfigureLogging() {
-        Logging.tryConfigureLogging(getPlatform());
     }
 
 }

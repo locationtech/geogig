@@ -17,23 +17,20 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.GeogigTransaction;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.TransactionBegin;
-import org.locationtech.geogig.api.plumbing.TransactionEnd;
-import org.locationtech.geogig.api.plumbing.UpdateRef;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.api.porcelain.MergeOp;
-import org.locationtech.geogig.api.porcelain.RemoteAddOp;
-
-import com.google.common.base.Suppliers;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.TransactionBegin;
+import org.locationtech.geogig.plumbing.TransactionEnd;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.merge.ConflictsCountOp;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.porcelain.RemoteAddOp;
+import org.locationtech.geogig.repository.GeogigTransaction;
 
 public class GeogigTransactionTest extends RepositoryTestCase {
     @Rule
@@ -281,8 +278,8 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         assertFalse(lastCommit.equals(transaction2Commit));
         assertEquals(lastCommit.getMessage(), transaction2Commit.getMessage());
         assertEquals(lastCommit.getAuthor(), transaction2Commit.getAuthor());
-        assertEquals(lastCommit.getCommitter().getName(), transaction2Commit.getCommitter()
-                .getName());
+        assertEquals(lastCommit.getCommitter().getName(),
+                transaction2Commit.getCommitter().getName());
         assertFalse(lastCommit.getCommitter().getTimestamp() == transaction2Commit.getCommitter()
                 .getTimestamp());
         assertEquals(logs.next(), transaction1Commit);
@@ -303,16 +300,15 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         RevCommit modifiedCommit = geogig.command(CommitOp.class).setMessage("Commit2").call();
         GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
         try {
-            tx.command(MergeOp.class).addCommit(Suppliers.ofInstance(mainCommit.getId())).call();
+            tx.command(MergeOp.class).addCommit(mainCommit.getId()).call();
             fail("Expected a merge conflict!");
-        } catch (org.locationtech.geogig.api.porcelain.MergeConflictsException e) {
+        } catch (org.locationtech.geogig.porcelain.MergeConflictsException e) {
             // expected.
         }
-        List<Conflict> txConflicts = tx.command(ConflictsReadOp.class).call();
-        List<Conflict> baseConflicts = geogig.command(ConflictsReadOp.class).call();
-        assertTrue("There should be no conflicts outside the transaction",
-                baseConflicts.size() == 0);
-        assertTrue("There should be conflicts in the transaction", txConflicts.size() != 0);
+        long txConflicts = tx.command(ConflictsCountOp.class).call().longValue();
+        long baseConflicts = geogig.command(ConflictsCountOp.class).call().longValue();
+        assertTrue("There should be no conflicts outside the transaction", baseConflicts == 0);
+        assertTrue("There should be conflicts in the transaction", txConflicts > 0);
     }
 
     @Test
@@ -389,8 +385,8 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         assertFalse(lastCommit.equals(transaction2Commit));
         assertEquals(lastCommit.getMessage(), transaction2Commit.getMessage());
         assertEquals(lastCommit.getAuthor(), transaction2Commit.getAuthor());
-        assertEquals(lastCommit.getCommitter().getName(), transaction2Commit.getCommitter()
-                .getName());
+        assertEquals(lastCommit.getCommitter().getName(),
+                transaction2Commit.getCommitter().getName());
         assertFalse(lastCommit.getCommitter().getTimestamp() == transaction2Commit.getCommitter()
                 .getTimestamp());
         assertEquals(logs.next(), transaction1Commit);
@@ -528,7 +524,8 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         GeogigTransaction txNew = new GeogigTransaction(geogig.getContext(), tx.getTransactionId());
 
         TransactionEnd endTransaction = geogig.command(TransactionEnd.class);
-        boolean closed = endTransaction.setCancel(false).setTransaction((GeogigTransaction) txNew).call();
+        boolean closed = endTransaction.setCancel(false).setTransaction((GeogigTransaction) txNew)
+                .call();
         assertTrue(closed);
     }
 }

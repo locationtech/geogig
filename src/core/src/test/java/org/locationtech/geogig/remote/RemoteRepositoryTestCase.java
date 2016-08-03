@@ -33,29 +33,28 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.ContextBuilder;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.Remote;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.api.plumbing.LsRemote;
-import org.locationtech.geogig.api.plumbing.SendPack;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CloneOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.FetchOp;
-import org.locationtech.geogig.api.porcelain.PullOp;
-import org.locationtech.geogig.api.porcelain.PushOp;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.LsRemote;
+import org.locationtech.geogig.plumbing.SendPack;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CloneOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.FetchOp;
+import org.locationtech.geogig.porcelain.PullOp;
+import org.locationtech.geogig.porcelain.PushOp;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.ContextBuilder;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GlobalContextBuilder;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.storage.DeduplicationService;
+import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.integration.TestContextBuilder;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -134,10 +133,10 @@ public abstract class RemoteRepositoryTestCase {
             envHome = tempFolder.newFolder(workingDirectory);
 
             ContextBuilder injectorBuilder = createInjectorBuilder();
-            GlobalContextBuilder.builder = injectorBuilder;
+            GlobalContextBuilder.builder(injectorBuilder);
             injector = injectorBuilder.build();
 
-            geogig = new GeoGIG(injector, envHome);
+            geogig = new GeoGIG(injector);
             repo = geogig.getOrCreateRepository();
 
             repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
@@ -192,8 +191,8 @@ public abstract class RemoteRepositoryTestCase {
         localGeogig = new GeogigContainer("localtestrepository");
         remoteGeogig = new GeogigContainer("remotetestrepository");
 
-        LocalRemoteRepo remoteRepo = spy(new LocalRemoteRepo(remoteGeogig.geogig.getRepository(),
-                localGeogig.repo));
+        LocalRemoteRepo remoteRepo = spy(
+                new LocalRemoteRepo(remoteGeogig.geogig.getRepository(), localGeogig.repo));
 
         doNothing().when(remoteRepo).close();
 

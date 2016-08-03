@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.osm.internal.log;
 
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.base.Preconditions;
 

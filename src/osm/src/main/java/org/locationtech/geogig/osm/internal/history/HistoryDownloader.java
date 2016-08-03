@@ -103,24 +103,19 @@ public class HistoryDownloader {
         final int fetchSize = 100;
         Iterator<List<Long>> partitions = Iterators.partition(changesetIds.iterator(), fetchSize);
 
-        Function<List<Long>, Iterator<Changeset>> asChangesets = new Function<List<Long>, Iterator<Changeset>>() {
-            @Override
-            public Iterator<Changeset> apply(List<Long> batchIds) {
+        final Function<List<Long>, Iterator<Changeset>> asChangesets = (batchIds) -> {
+            Iterable<Changeset> changesets = downloader.fetchChangesets(batchIds);
 
-                Iterable<Changeset> changesets = downloader.fetchChangesets(batchIds);
-
-                for (Changeset changeset : changesets) {
-                    if (filter.apply(changeset)) {
-                        Supplier<Optional<File>> changesFile;
-                        changesFile = downloader.fetchChanges(changeset.getId());
-                        Supplier<Optional<Iterator<Change>>> changes = new ChangesSupplier(
-                                changesFile);
-                        changeset.setChanges(changes);
-                    }
+            for (Changeset changeset : changesets) {
+                if (filter.apply(changeset)) {
+                    Supplier<Optional<File>> changesFile;
+                    changesFile = downloader.fetchChanges(changeset.getId());
+                    Supplier<Optional<Iterator<Change>>> changes = new ChangesSupplier(changesFile);
+                    changeset.setChanges(changes);
                 }
-
-                return changesets.iterator();
             }
+
+            return changesets.iterator();
         };
 
         Iterator<Iterator<Changeset>> changesets = Iterators.transform(partitions, asChangesets);

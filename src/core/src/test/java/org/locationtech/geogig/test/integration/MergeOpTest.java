@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import static org.locationtech.geogig.api.NodeRef.appendChild;
+import static org.locationtech.geogig.model.NodeRef.appendChild;
 
 import java.util.Iterator;
 import java.util.List;
@@ -18,49 +18,63 @@ import org.geotools.data.DataUtilities;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.*;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
-import org.locationtech.geogig.api.plumbing.merge.ReadMergeCommitMessageOp;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.api.porcelain.MergeConflictsException;
-import org.locationtech.geogig.api.porcelain.MergeOp;
-import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
-import org.locationtech.geogig.api.porcelain.NothingToCommitException;
-import org.locationtech.geogig.api.porcelain.PullOp;
+import org.junit.rules.TestName;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.plumbing.merge.ConflictsQueryOp;
+import org.locationtech.geogig.plumbing.merge.ReadMergeCommitMessageOp;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.ConflictsException;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.porcelain.NothingToCommitException;
+import org.locationtech.geogig.porcelain.PullOp;
+import org.locationtech.geogig.repository.Conflict;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
-import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 
 public class MergeOpTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    private static final String COMMITTER_NAME = "groldan";
+
+    private static final String COMMITTER_EMAIL = "groldan@boundlessgeo.com";
+
+    @Rule
+    public TestName testName = new TestName();
+
     @Override
     protected void setUpInternal() throws Exception {
+        System.err.println(testName.getMethodName());
         // These values should be used during a commit to set author/committer
         // TODO: author/committer roles need to be defined better, but for
         // now they are the same thing.
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
-                .setValue("groldan").call();
+                .setValue(COMMITTER_NAME).call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
-                .setValue("groldan@boundlessgeo.com").call();
+                .setValue(COMMITTER_EMAIL).call();
     }
 
     @Test
@@ -104,27 +118,26 @@ public class MergeOpTest extends RepositoryTestCase {
         // o - master - HEAD - Merge commit
 
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1.getObjectId()))
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
 
         RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
 
         String path = appendChild(pointsName, points2.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         path = appendChild(pointsName, points1.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         path = appendChild(pointsName, points3.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         path = appendChild(linesName, lines1.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         Iterator<RevCommit> log = geogig.command(LogOp.class).call();
 
@@ -207,8 +220,7 @@ public class MergeOpTest extends RepositoryTestCase {
 
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
         geogig.command(MergeOp.class).setAuthor("Merge Author", "merge@author.com")
-                .addCommit(Suppliers.ofInstance(branch1.getObjectId()))
-                .setMessage("My merge message.").call();
+                .addCommit(branch1.getObjectId()).setMessage("My merge message.").call();
 
         Iterator<RevCommit> log = geogig.command(LogOp.class).call();
 
@@ -274,31 +286,30 @@ public class MergeOpTest extends RepositoryTestCase {
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
         Ref branch2 = geogig.command(RefParse.class).setName("branch2").call().get();
         final MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1.getObjectId()))
-                .addCommit(Suppliers.ofInstance(branch2.getObjectId()))
+                .addCommit(branch1.getObjectId()).addCommit(branch2.getObjectId())
                 .setMessage("My merge message.").call();
 
         RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
 
         String path = appendChild(pointsName, points1.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         path = appendChild(pointsName, points2.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         path = appendChild(pointsName, points3.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         path = appendChild(linesName, lines1.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         path = appendChild(linesName, lines2.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         Iterator<RevCommit> log = geogig.command(LogOp.class).setFirstParentOnly(true).call();
 
@@ -375,25 +386,25 @@ public class MergeOpTest extends RepositoryTestCase {
 
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
         final MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1.getObjectId())).call();
+                .addCommit(branch1.getObjectId()).call();
 
         RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
 
         String path = appendChild(pointsName, points2.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         path = appendChild(pointsName, points1.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         path = appendChild(pointsName, points3.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         path = appendChild(linesName, lines1.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         Iterator<RevCommit> log = geogig.command(LogOp.class).setFirstParentOnly(true).call();
 
@@ -462,10 +473,10 @@ public class MergeOpTest extends RepositoryTestCase {
         // o - master - HEAD - Merge commit
 
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch1.getObjectId())).call();
+        geogig.command(MergeOp.class).addCommit(branch1.getObjectId()).call();
 
         exception.expect(NothingToCommitException.class);
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch1.getObjectId())).call();
+        geogig.command(MergeOp.class).addCommit(branch1.getObjectId()).call();
     }
 
     @Test
@@ -496,17 +507,17 @@ public class MergeOpTest extends RepositoryTestCase {
 
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
         final MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1.getObjectId())).call();
+                .addCommit(branch1.getObjectId()).call();
 
         RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
 
         String path = appendChild(pointsName, points1.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         path = appendChild(pointsName, points2.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         Iterator<RevCommit> log = geogig.command(LogOp.class).call();
 
@@ -552,13 +563,13 @@ public class MergeOpTest extends RepositoryTestCase {
 
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
         final MergeReport mergeReport = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1.getObjectId())).call();
+                .addCommit(branch1.getObjectId()).call();
 
         RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
 
         String path = appendChild(pointsName, points1.getIdentifier().getID());
-        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path)
-                .call().isPresent());
+        assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
+                .isPresent());
 
         Iterator<RevCommit> log = geogig.command(LogOp.class).call();
 
@@ -595,7 +606,7 @@ public class MergeOpTest extends RepositoryTestCase {
         geogig.command(CommitOp.class).call();
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
-        MergeOp mergeOp = geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()));
+        MergeOp mergeOp = geogig.command(MergeOp.class).addCommit(branch.getObjectId());
         mergeOp.setFastForwardOnly(true);
         exception.expect(IllegalStateException.class);
         mergeOp.call();
@@ -606,28 +617,60 @@ public class MergeOpTest extends RepositoryTestCase {
         // Create the following revision graph
         // o
         // |
-        // o - Point 1 added
-        // |\
-        // | o - TestBranch - Point 2 added
+        // o - Master - Point 1 added
         // |
-        // o - master - HEAD - Point 3 added
+        // o - TestBranch - Point 2 added
+
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).call();
-        geogig.command(BranchCreateOp.class).setName("TestBranch").call();
-        insertAndAdd(points3);
         RevCommit masterCommit = geogig.command(CommitOp.class).call();
+        geogig.command(BranchCreateOp.class).setName("TestBranch").call();
         geogig.command(CheckoutOp.class).setSource("TestBranch").call();
         insertAndAdd(points2);
         RevCommit branchCommit = geogig.command(CommitOp.class).call();
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
-        MergeOp mergeOp = geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()));
+        MergeOp mergeOp = geogig.command(MergeOp.class).addCommit(branch.getObjectId());
         mergeOp.setNoFastForward(true).call();
         Iterator<RevCommit> log = geogig.command(LogOp.class).call();
         RevCommit mergeCommit = log.next();
         assertEquals(2, mergeCommit.getParentIds().size());
         assertEquals(masterCommit.getId(), mergeCommit.getParentIds().get(0));
         assertEquals(branchCommit.getId(), mergeCommit.getParentIds().get(1));
+        assertEquals(COMMITTER_NAME, mergeCommit.getAuthor().getName().get());
+        assertEquals(COMMITTER_EMAIL, mergeCommit.getAuthor().getEmail().get());
+        assertEquals(COMMITTER_NAME, mergeCommit.getCommitter().getName().get());
+        assertEquals(COMMITTER_EMAIL, mergeCommit.getCommitter().getEmail().get());
+    }
+
+    @Test
+    public void testNoFastForwardSpecifyAuthor() throws Exception {
+        // Create the following revision graph
+        // o
+        // |
+        // o - Master - Point 1 added
+        // |
+        // o - TestBranch - Point 2 added
+
+        insertAndAdd(points1);
+        RevCommit masterCommit = geogig.command(CommitOp.class).call();
+        geogig.command(BranchCreateOp.class).setName("TestBranch").call();
+        geogig.command(CheckoutOp.class).setSource("TestBranch").call();
+        insertAndAdd(points2);
+        RevCommit branchCommit = geogig.command(CommitOp.class).call();
+        geogig.command(CheckoutOp.class).setSource("master").call();
+        Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
+        MergeOp mergeOp = geogig.command(MergeOp.class).setAuthor("Test Author", "author@test.com")
+                .addCommit(branch.getObjectId());
+        mergeOp.setNoFastForward(true).call();
+        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        RevCommit mergeCommit = log.next();
+        assertEquals(2, mergeCommit.getParentIds().size());
+        assertEquals(masterCommit.getId(), mergeCommit.getParentIds().get(0));
+        assertEquals(branchCommit.getId(), mergeCommit.getParentIds().get(1));
+        assertEquals("Test Author", mergeCommit.getAuthor().getName().get());
+        assertEquals("author@test.com", mergeCommit.getAuthor().getEmail().get());
+        assertEquals(COMMITTER_NAME, mergeCommit.getCommitter().getName().get());
+        assertEquals(COMMITTER_EMAIL, mergeCommit.getCommitter().getEmail().get());
     }
 
     @Test
@@ -639,7 +682,7 @@ public class MergeOpTest extends RepositoryTestCase {
     @Test
     public void testMergeNullCommit() throws Exception {
         exception.expect(IllegalArgumentException.class);
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(ObjectId.NULL)).call();
+        geogig.command(MergeOp.class).addCommit(ObjectId.NULL).call();
     }
 
     @Test
@@ -673,8 +716,7 @@ public class MergeOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
@@ -690,20 +732,22 @@ public class MergeOpTest extends RepositoryTestCase {
         String msg = geogig.command(ReadMergeCommitMessageOp.class).call();
         assertFalse(Strings.isNullOrEmpty(msg));
 
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
+        List<Conflict> conflicts = Lists
+                .newArrayList(geogig.command(ConflictsQueryOp.class).call());
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
         assertEquals(conflicts.get(0).getOurs(), RevFeatureBuilder.build(points1Modified).getId());
-        assertEquals(conflicts.get(0).getTheirs(), RevFeatureBuilder.build(points1ModifiedB)
-                .getId());
+        assertEquals(conflicts.get(0).getTheirs(),
+                RevFeatureBuilder.build(points1ModifiedB).getId());
 
         // try to commit
         try {
             geogig.command(CommitOp.class).call();
             fail();
-        } catch (IllegalStateException e) {
-            assertEquals(e.getMessage(), "Cannot run operation while merge conflicts exist.");
+        } catch (ConflictsException e) {
+            assertEquals(e.getMessage(),
+                    "Cannot run operation while merge or rebase conflicts exist.");
         }
 
         // solve, and commit
@@ -775,14 +819,14 @@ public class MergeOpTest extends RepositoryTestCase {
         Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
         Ref branch2 = geogig.command(RefParse.class).setName("branch2").call().get();
         MergeOp mergeOp = geogig.command(MergeOp.class);
-        mergeOp.addCommit(Suppliers.ofInstance(branch1.getObjectId()));
-        mergeOp.addCommit(Suppliers.ofInstance(branch2.getObjectId()));
+        mergeOp.addCommit(branch1.getObjectId());
+        mergeOp.addCommit(branch2.getObjectId());
         try {
             mergeOp.call();
             fail();
         } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains(
-                    "Cannot merge more than two commits when conflicts exist"));
+            assertTrue(e.getMessage()
+                    .contains("Cannot merge more than two commits when conflicts exist"));
         }
 
     }
@@ -813,8 +857,7 @@ public class MergeOpTest extends RepositoryTestCase {
 
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                .setOurs(true).call();
+        geogig.command(MergeOp.class).addCommit(branch.getObjectId()).setOurs(true).call();
 
         String path = NodeRef.appendChild(pointsName, idP1);
         Optional<RevFeature> revFeature = geogig.command(RevObjectParse.class)
@@ -853,8 +896,7 @@ public class MergeOpTest extends RepositoryTestCase {
 
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                .setTheirs(true).call();
+        geogig.command(MergeOp.class).addCommit(branch.getObjectId()).setTheirs(true).call();
 
         String path = NodeRef.appendChild(pointsName, idP1);
         Optional<RevFeature> revFeature = geogig.command(RevObjectParse.class)
@@ -880,8 +922,8 @@ public class MergeOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .setTheirs(true).setOurs(true).call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).setTheirs(true)
+                    .setOurs(true).call();
             fail();
         } catch (IllegalArgumentException e) {
             assertTrue(true);
@@ -913,8 +955,7 @@ public class MergeOpTest extends RepositoryTestCase {
                 .call();
         Ref branch = geogig.command(RefParse.class).setName("branch1").call().get();
 
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                .setNoCommit(true).call();
+        geogig.command(MergeOp.class).addCommit(branch.getObjectId()).setNoCommit(true).call();
 
         String path = NodeRef.appendChild(pointsName, idP2);
         Optional<RevFeature> revFeature = geogig.command(RevObjectParse.class)
@@ -965,8 +1006,7 @@ public class MergeOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
@@ -975,14 +1015,15 @@ public class MergeOpTest extends RepositoryTestCase {
         try {
             geogig.command(PullOp.class).call();
             fail();
-        } catch (IllegalStateException e) {
-            assertEquals(e.getMessage(), "Cannot run operation while merge conflicts exist.");
+        } catch (ConflictsException e) {
+            assertEquals(e.getMessage(),
+                    "Cannot run operation while merge or rebase conflicts exist.");
         }
 
     }
 
     @Test
-    public void testMergeWithPolygonAutoMerge() throws Exception {
+    public void testMergeConflictingPolygon() throws Exception {
         String polyId = "polyId";
         String polygonTypeSpec = "poly:Polygon:srid=4326";
         SimpleFeatureType polygonType = DataUtilities.createType("http://geogig.polygon",
@@ -1004,15 +1045,10 @@ public class MergeOpTest extends RepositoryTestCase {
 
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId())).call();
 
-        Optional<RevFeature> feature = repo.command(RevObjectParse.class)
-                .setRefSpec("WORK_HEAD:polygons/polyId").call(RevFeature.class);
-        assertTrue(feature.isPresent());
-        RevFeature merged = feature.get();
-        Feature expected = feature(polygonType, polyId,
-                "POLYGON((0 0,1 0,2 0.2,3 0.2,4 0,5 0,5 1,4 1,3 0.8,2 0.8,1 1,1 0,0 0))");
-        assertEquals(expected.getProperty("poly").getValue(), merged.getValues().get(0).get());
+        exception.expect(MergeConflictsException.class);
+        exception.expectMessage("Merge conflict in polygons/polyId");
+        geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
     }
 
     @Test
@@ -1041,7 +1077,7 @@ public class MergeOpTest extends RepositoryTestCase {
 
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId())).call();
+        geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
 
         String path = appendChild(pointsName, points1.getIdentifier().getID());
 
@@ -1069,7 +1105,7 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(poly1);
         RevCommit commit2 = geogig.command(CommitOp.class).call();
         geogig.command(CheckoutOp.class).setSource("master").call();
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(commit2.getId())).call();
+        geogig.command(MergeOp.class).addCommit(commit2.getId()).call();
 
         Optional<NodeRef> ref = geogig.command(FindTreeChild.class).setChildPath(polyName).call();
 
@@ -1106,12 +1142,9 @@ public class MergeOpTest extends RepositoryTestCase {
         ObjectId points1Id = insertAndAdd(points1_modified);
         RevCommit branch6 = geogig.command(CommitOp.class).call();
         geogig.command(CheckoutOp.class).setSource("master").call();
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch1.getId()))
-                .addCommit(Suppliers.ofInstance(branch2.getId()))
-                .addCommit(Suppliers.ofInstance(branch3.getId()))
-                .addCommit(Suppliers.ofInstance(branch4.getId()))
-                .addCommit(Suppliers.ofInstance(branch5.getId()))
-                .addCommit(Suppliers.ofInstance(branch6.getId())).call();
+        geogig.command(MergeOp.class).addCommit(branch1.getId()).addCommit(branch2.getId())
+                .addCommit(branch3.getId()).addCommit(branch4.getId()).addCommit(branch5.getId())
+                .addCommit(branch6.getId()).call();
 
         Optional<NodeRef> ref = geogig.command(FindTreeChild.class)
                 .setChildPath(pointsName + "/" + idP1).call();
@@ -1144,10 +1177,10 @@ public class MergeOpTest extends RepositoryTestCase {
         assertEquals(initialCommit.getMessage(), initial.getMessage());
         assertEquals(initialCommit.getCommitter().getName(), initial.getCommitter().getName());
         assertEquals(initialCommit.getCommitter().getEmail(), initial.getCommitter().getEmail());
-        assertEquals(initialCommit.getAuthor().getTimeZoneOffset(), initial.getAuthor()
-                .getTimeZoneOffset());
-        assertEquals(initialCommit.getCommitter().getTimeZoneOffset(), initial.getCommitter()
-                .getTimeZoneOffset());
+        assertEquals(initialCommit.getAuthor().getTimeZoneOffset(),
+                initial.getAuthor().getTimeZoneOffset());
+        assertEquals(initialCommit.getCommitter().getTimeZoneOffset(),
+                initial.getCommitter().getTimeZoneOffset());
         assertEquals(initialCommit.getTreeId(), initial.getTreeId());
         assertEquals(initialCommit.getId(), initial.getId());
 
@@ -1189,19 +1222,15 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(points1ModifiedB);
         RevCommit branch6 = geogig.command(CommitOp.class).call();
         geogig.command(CheckoutOp.class).setSource("master").call();
-        MergeOp mergeOp = geogig.command(MergeOp.class)
-                .addCommit(Suppliers.ofInstance(branch1.getId()))
-                .addCommit(Suppliers.ofInstance(branch2.getId()))
-                .addCommit(Suppliers.ofInstance(branch3.getId()))
-                .addCommit(Suppliers.ofInstance(branch4.getId()))
-                .addCommit(Suppliers.ofInstance(branch5.getId()))
-                .addCommit(Suppliers.ofInstance(branch6.getId()));
+        MergeOp mergeOp = geogig.command(MergeOp.class).addCommit(branch1.getId())
+                .addCommit(branch2.getId()).addCommit(branch3.getId()).addCommit(branch4.getId())
+                .addCommit(branch5.getId()).addCommit(branch6.getId());
         try {
             mergeOp.call();
             fail();
         } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains(
-                    "Cannot merge more than two commits when conflicts exist"));
+            assertTrue(e.getMessage()
+                    .contains("Cannot merge more than two commits when conflicts exist"));
         }
     }
 
@@ -1224,14 +1253,42 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(points1_modified);
         RevCommit branch3 = geogig.command(CommitOp.class).call();
         geogig.command(CheckoutOp.class).setSource("master").call();
-        geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch1.getId()))
-                .addCommit(Suppliers.ofInstance(branch2.getId()))
-                .addCommit(Suppliers.ofInstance(branch3.getId())).call();
+        geogig.command(MergeOp.class).addCommit(branch1.getId()).addCommit(branch2.getId())
+                .addCommit(branch3.getId()).call();
         String path = NodeRef.appendChild(pointsName, idP1);
         Optional<RevFeature> revFeature = geogig.command(RevObjectParse.class)
                 .setRefSpec(Ref.HEAD + ":" + path).call(RevFeature.class);
         assertTrue(revFeature.isPresent());
         assertEquals(RevFeatureBuilder.build(points1_modified), revFeature.get());
+    }
+
+    @Test
+    public void testBothBranchesSameGeometryChange() throws Exception {
+        String ancestorLine = "LINESTRING (-75.1195282 38.7801263, -75.1195626 38.7806208, -75.1195701 38.780762, -75.1195916 38.7816402, -75.1195154 38.7820072)";
+        String leftLine = "LINESTRING (-75.1195282 38.7801263, -75.1195626 38.7806208, -75.1195645 38.7807768, -75.1195916 38.7816402, -75.1195841 38.7817429, -75.1195702 38.7818159, -75.1195333 38.7819121, -75.119487 38.7819971)";
+        String rightLine = "LINESTRING (-75.1195282 38.7801263, -75.1195626 38.7806208, -75.1195645 38.7807768, -75.1195916 38.7816402, -75.1195841 38.7817429, -75.1195702 38.7818159, -75.1195333 38.7819121, -75.119487 38.7819971)";
+
+        final String fid = "112233";
+        final Feature ancestor = super.feature(linesType, fid, "secondary", 1, ancestorLine);
+        final Feature left = super.feature(linesType, fid, "secondary", 1, leftLine);
+        final Feature right = super.feature(linesType, fid, "primary", 1, rightLine);
+
+        super.insertAndAdd(ancestor);
+        super.commit("common ancestor");
+
+        geogig.command(BranchCreateOp.class).setName("branch").call();
+
+        super.insertAndAdd(left);
+        super.commit("master change");
+
+        assertEquals("branch", geogig.command(CheckoutOp.class).setSource("branch").call()
+                .getNewRef().localName());
+        super.insertAndAdd(right);
+        final RevCommit branchCommit = super.commit("branch change");
+
+        geogig.command(CheckoutOp.class).setSource("master").call();
+
+        geogig.command(MergeOp.class).addCommit(branchCommit.getId()).call();
     }
 
 }

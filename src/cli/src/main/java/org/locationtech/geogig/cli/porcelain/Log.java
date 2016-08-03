@@ -19,28 +19,29 @@ import java.util.Map;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.geotools.util.Range;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevPerson;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.DiffCount;
-import org.locationtech.geogig.api.plumbing.ForEachRef;
-import org.locationtech.geogig.api.plumbing.ParseTimestamp;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.porcelain.DiffOp;
-import org.locationtech.geogig.api.porcelain.LogOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.DiffCount;
+import org.locationtech.geogig.plumbing.ForEachRef;
+import org.locationtech.geogig.plumbing.ParseTimestamp;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Platform;
 
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
@@ -55,14 +56,14 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Shows the commit logs.
  * <p>
- * CLI proxy for {@link org.locationtech.geogig.api.porcelain.LogOp}
+ * CLI proxy for {@link org.locationtech.geogig.porcelain.LogOp}
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig log [<options>]}
+ * <li>{@code geogig log [<options>]}
  * </ul>
  * 
- * @see org.locationtech.geogig.api.porcelain.LogOp
+ * @see org.locationtech.geogig.porcelain.LogOp
  */
 @ReadOnly
 @Parameters(commandNames = "log", commandDescription = "Show commit logs")
@@ -170,8 +171,8 @@ public class Log extends AbstractCommand implements CLICommand {
             op.setTimeRange(new Range<Date>(Date.class, since, until));
         }
         if (!args.sinceUntilPaths.isEmpty()) {
-            List<String> sinceUntil = ImmutableList.copyOf((Splitter.on("..")
-                    .split(args.sinceUntilPaths.get(0))));
+            List<String> sinceUntil = ImmutableList
+                    .copyOf((Splitter.on("..").split(args.sinceUntilPaths.get(0))));
             checkParameter(sinceUntil.size() == 1 || sinceUntil.size() == 2,
                     "Invalid refSpec format, expected [<until>]|[<since>..<until>]: %s",
                     args.sinceUntilPaths.get(0));
@@ -288,7 +289,7 @@ public class Log extends AbstractCommand implements CLICommand {
             if (commit.getParentIds().size() > 1) {
                 ansi.a("Merge: ");
                 for (ObjectId parent : commit.getParentIds()) {
-                    ansi.a(parent.toString().substring(0, 7)).a(" ");
+                    ansi.a(getIdAsString(parent)).a(" ");
                 }
                 ansi.newline();
             }
@@ -310,14 +311,16 @@ public class Log extends AbstractCommand implements CLICommand {
             ansi.a("Subject: ").a(commit.getMessage()).newline();
             if ((detail.equals(LOG_DETAIL.NAMES_ONLY)) && commit.getParentIds().size() == 1) {
                 ansi.a("Affected paths:").newline();
-                Iterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
                         .setOldVersion(commit.parentN(0).get()).setNewVersion(commit.getId())
-                        .call();
-                DiffEntry diffEntry;
-                while (diff.hasNext()) {
-                    diffEntry = diff.next();
-                    String path = diffEntry.isDelete() ? diffEntry.oldPath() : diffEntry.newPath();
-                    ansi.a("\t" + path).newline();
+                        .call()) {
+                    DiffEntry diffEntry;
+                    while (diff.hasNext()) {
+                        diffEntry = diff.next();
+                        String path = diffEntry.isDelete() ? diffEntry.oldPath()
+                                : diffEntry.newPath();
+                        ansi.a("\t" + path).newline();
+                    }
                 }
             }
             if (detail.equals(LOG_DETAIL.STATS)) {
@@ -341,16 +344,17 @@ public class Log extends AbstractCommand implements CLICommand {
             console.println(ansi.toString());
             if (detail.equals(LOG_DETAIL.SUMMARY) && commit.getParentIds().size() == 1) {
                 ansi.a("Changes:").newline();
-                Iterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
                         .setOldVersion(commit.parentN(0).get()).setNewVersion(commit.getId())
-                        .call();
-                DiffEntry diffEntry;
-                while (diff.hasNext()) {
-                    diffEntry = diff.next();
-                    if (detail.equals(LOG_DETAIL.SUMMARY)) {
-                        new FullDiffPrinter(true, false).print(geogig, console, diffEntry);
-                    }
+                        .call()) {
+                    DiffEntry diffEntry;
+                    while (diff.hasNext()) {
+                        diffEntry = diff.next();
+                        if (detail.equals(LOG_DETAIL.SUMMARY)) {
+                            new FullDiffPrinter(true, false).print(geogig, console, diffEntry);
+                        }
 
+                    }
                 }
             }
         }
@@ -424,7 +428,7 @@ public class Log extends AbstractCommand implements CLICommand {
     private String getIdAsString(ObjectId id) {
         StringBuilder sb = new StringBuilder();
         if (args.abbrev) {
-            sb.append(id.toString().substring(0, 7));
+            sb.append(id.toString().substring(0, 8));
         } else {
             sb.append(id.toString());
         }

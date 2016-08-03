@@ -16,8 +16,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.Repository;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -60,12 +60,12 @@ public class ParentResource extends Resource {
             Optional<String> commit = Optional
                     .fromNullable(options.getFirstValue("commitId", null));
 
-            Optional<GeoGIG> geogig = getGeogig(request);
+            Optional<Repository> geogig = getGeogig(request);
             Preconditions.checkState(geogig.isPresent());
-            GeoGIG ggit = geogig.get();
+            Repository repo = geogig.get();
 
             if (commit.isPresent()) {
-                ImmutableList<ObjectId> parents = ggit.getRepository().graphDatabase()
+                ImmutableList<ObjectId> parents = repo.graphDatabase()
                         .getParents(ObjectId.valueOf(commit.get()));
                 for (ObjectId object : parents) {
                     w.write(object.toString() + "\n");

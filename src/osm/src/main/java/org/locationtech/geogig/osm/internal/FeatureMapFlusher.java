@@ -13,8 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.locationtech.geogig.api.DefaultProgressListener;
-import org.locationtech.geogig.api.ProgressListener;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -59,7 +59,7 @@ public class FeatureMapFlusher {
         if (!features.isEmpty()) {
             Iterator<? extends Feature> iterator = features.iterator();
             ProgressListener listener = new DefaultProgressListener();
-            List<org.locationtech.geogig.api.Node> insertedTarget = null;
+            List<org.locationtech.geogig.model.Node> insertedTarget = null;
             Integer collectionSize = Integer.valueOf(features.size());
             workTree.insert(path, iterator, listener, insertedTarget, collectionSize);
         }

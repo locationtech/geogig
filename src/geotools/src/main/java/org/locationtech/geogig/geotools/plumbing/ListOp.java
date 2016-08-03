@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.geotools.data.DataStore;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.opengis.feature.type.Name;
 
 import com.google.common.base.Optional;

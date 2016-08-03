@@ -16,14 +16,14 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.SymRef;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.porcelain.BranchListOp;
-import org.locationtech.geogig.api.porcelain.TagListOp;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.porcelain.BranchListOp;
+import org.locationtech.geogig.porcelain.TagListOp;
+import org.locationtech.geogig.repository.Repository;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -62,19 +62,19 @@ public class ManifestResource extends Resource {
         public void write(OutputStream out) throws IOException {
             PrintWriter w = new PrintWriter(out);
 
-            Optional<GeoGIG> geogig = getGeogig(request);
+            Optional<Repository> geogig = getGeogig(request);
             Preconditions.checkState(geogig.isPresent());
-            GeoGIG ggit = geogig.get();
+            Repository repo = geogig.get();
 
             Form options = request.getResourceRef().getQueryAsForm();
 
             boolean remotes = Boolean.valueOf(options.getFirstValue("remotes", "false"));
 
-            ImmutableList<Ref> refs = ggit.command(BranchListOp.class).setRemotes(remotes).call();
-            ImmutableList<RevTag> tags = ggit.command(TagListOp.class).call();
+            ImmutableList<Ref> refs = repo.command(BranchListOp.class).setRemotes(remotes).call();
+            ImmutableList<RevTag> tags = repo.command(TagListOp.class).call();
 
             // Print out HEAD first
-            final Ref currentHead = ggit.command(RefParse.class).setName(Ref.HEAD).call().get();
+            final Ref currentHead = repo.command(RefParse.class).setName(Ref.HEAD).call().get();
             if (!currentHead.getObjectId().equals(ObjectId.NULL)) {
                 w.write(currentHead.getName() + " ");
                 if (currentHead instanceof SymRef) {

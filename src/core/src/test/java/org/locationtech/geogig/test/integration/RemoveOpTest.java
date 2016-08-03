@@ -16,28 +16,28 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.MergeConflictsException;
-import org.locationtech.geogig.api.porcelain.MergeOp;
-import org.locationtech.geogig.api.porcelain.RemoveOp;
-import org.locationtech.geogig.api.porcelain.ResetOp;
-import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.porcelain.RemoveOp;
+import org.locationtech.geogig.porcelain.ResetOp;
+import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 
 public class RemoveOpTest extends RepositoryTestCase {
 
@@ -141,8 +141,7 @@ public class RemoveOpTest extends RepositoryTestCase {
         geogig.command(CheckoutOp.class).setSource("master").call();
         Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(Suppliers.ofInstance(branch.getObjectId()))
-                    .call();
+            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
@@ -152,9 +151,9 @@ public class RemoveOpTest extends RepositoryTestCase {
         assertEquals(1, result.getFeaturesRemoved());
         assertEquals(0, result.getTreesRemoved());
 
-        List<Conflict> conflicts = geogig.getRepository().conflictsDatabase()
-                .getConflicts(null, null);
-        assertTrue(conflicts.isEmpty());
+        Repository repository = geogig.getRepository();
+        ConflictsDatabase conflicts = repository.conflictsDatabase();
+        assertEquals(0, conflicts.getCountByPrefix(null, null));
         geogig.command(CommitOp.class).call();
         Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());
@@ -193,4 +192,41 @@ public class RemoveOpTest extends RepositoryTestCase {
         }
     }
 
+    @Test
+    public void testPathsPrecondition() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("No paths to remove were indicated");
+        geogig.command(RemoveOp.class).call();
+    }
+
+    @Test
+    public void testTruncateAndRecursivePrecondition() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("recursive and truncate arguments are mutually exclusive");
+        geogig.command(RemoveOp.class).addPathToRemove("tree").setRecursive(true).setTruncate(true)
+                .call();
+    }
+
+    @Test
+    public void testTruncateOrRecursivePrecondition() throws Exception {
+        insertAndAdd(points1);
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Cannot remove tree " + pointsName + " if recursive or truncate is not specified");
+        geogig.command(RemoveOp.class).addPathToRemove(pointsName).setRecursive(false)
+                .setTruncate(false).call();
+    }
+
+    @Test
+    public void testTruncate() throws Exception {
+        insert(points1, points2, points3);
+        insert(lines1, lines2, lines3);
+
+        DiffObjectCount result = geogig.command(RemoveOp.class).addPathToRemove(linesName)
+                .setTruncate(true).call();
+        assertEquals(0, result.getTreesRemoved());
+        assertEquals(1, result.getTreesChanged());
+        assertEquals(3, result.getFeaturesRemoved());
+    }
 }

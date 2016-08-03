@@ -21,17 +21,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.fusesource.jansi.Ansi;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.porcelain.BlameException;
-import org.locationtech.geogig.api.porcelain.BlameOp;
-import org.locationtech.geogig.api.porcelain.BlameReport;
-import org.locationtech.geogig.api.porcelain.ValueAndCommit;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.porcelain.BlameException;
+import org.locationtech.geogig.porcelain.BlameOp;
+import org.locationtech.geogig.porcelain.BlameReport;
+import org.locationtech.geogig.porcelain.ValueAndCommit;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.beust.jcommander.Parameter;
@@ -99,7 +99,7 @@ public class Blame extends AbstractCommand {
                         String s = value.isPresent() ? value.get().toString() : "NULL";
                         ansi.fg(YELLOW).a(s).a(" ").reset();
                     }
-                    ansi.a(commit.getId().toString().substring(0, 7)).a(" ");
+                    ansi.a(commit.getId().toString().substring(0, 8)).a(" ");
                     ansi.a(commit.getAuthor().getName().or("")).a(" ");
                     ansi.a(commit.getAuthor().getEmail().or("")).a(" ");
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");

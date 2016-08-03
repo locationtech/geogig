@@ -9,12 +9,29 @@
  */
 package org.locationtech.geogig.geotools.cli.test.sqlserver.functional;
 
-import static org.locationtech.geogig.cli.test.functional.general.GlobalState.runCommand;
+import org.locationtech.geogig.cli.test.functional.CLIContext;
+import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
+
 import cucumber.api.java.en.When;
 import cucumber.runtime.java.StepDefAnnotation;
 
 @StepDefAnnotation
 public class SQLServerInitSteps {
+
+    private CLIContext state;
+
+    private CLIContextProvider contextProvider;
+
+    @cucumber.api.java.Before
+    public void before() throws Throwable {
+        contextProvider = CLIContextProvider.get();
+        contextProvider.before();
+    }
+
+    @cucumber.api.java.After
+    public void after() {
+        contextProvider.after();
+    }
 
     protected String getSQLServerDatabaseParameters() throws Exception {
         IniSQLServerProperties properties = new IniSQLServerProperties();
@@ -44,7 +61,7 @@ public class SQLServerInitSteps {
     public void I_run_the_command_X_on_the_sqlserver_database(String commandSpec) throws Throwable {
         commandSpec += getSQLServerDatabaseParameters();
         String[] args = commandSpec.split(" ");
-        runCommand(args);
+        state.runCommand(args);
     }
 
 }

@@ -18,8 +18,8 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.plumbing.ResolveRepositoryName;
+import org.locationtech.geogig.plumbing.ResolveRepositoryName;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.JettisonRepresentation;
 import org.locationtech.geogig.web.api.StreamResponse;
 import org.locationtech.geogig.web.api.StreamWriterRepresentation;
@@ -64,8 +64,8 @@ public class DeleteRepository extends Resource {
         Variant variant = getPreferredVariant();
         MediaType mediaType = variant.getMediaType();
 
-        Optional<GeoGIG> geogig = RESTUtils.getGeogig(request);
-        if (!geogig.isPresent() || geogig.get().getRepository() == null) {
+        Optional<Repository> geogig = RESTUtils.getGeogig(request);
+        if (!geogig.isPresent() || !geogig.get().isOpen()) {
             getResponse().setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             getResponse().setEntity(new StreamWriterRepresentation(MediaType.TEXT_PLAIN,
                     StreamResponse.error("No repository to delete.")));
@@ -78,13 +78,13 @@ public class DeleteRepository extends Resource {
             getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             getResponse()
                     .setEntity(new StreamWriterRepresentation(MediaType.TEXT_PLAIN, StreamResponse
-                    .error("You must specify the correct token to delete a repository.")));
+                            .error("You must specify the correct token to delete a repository.")));
             return;
         }
 
         final String deleteKey = deleteKeyForToken(deleteToken);
 
-        Optional<byte[]> blobValue = geogig.get().getRepository().blobStore().getBlob(deleteKey);
+        Optional<byte[]> blobValue = geogig.get().blobStore().getBlob(deleteKey);
         if (!blobValue.isPresent()) {
             getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             getResponse().setEntity(new StreamWriterRepresentation(MediaType.TEXT_PLAIN,

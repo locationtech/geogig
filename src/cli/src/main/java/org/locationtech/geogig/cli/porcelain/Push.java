@@ -12,13 +12,13 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.List;
 
-import org.locationtech.geogig.api.porcelain.PushOp;
-import org.locationtech.geogig.api.porcelain.SynchronizationException;
-import org.locationtech.geogig.api.porcelain.TransferSummary;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.porcelain.PushOp;
+import org.locationtech.geogig.porcelain.SynchronizationException;
+import org.locationtech.geogig.porcelain.TransferSummary;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -30,7 +30,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig push [<options>] [<repository> [<refspec>...]]}
+ * <li>{@code geogig push [<options>] [<repository> [<refspec>...]]}
  * </ul>
  * 
  * @see PushOp
@@ -73,13 +73,14 @@ public class Push extends AbstractCommand implements CLICommand {
             case REMOTE_HAS_CHANGES:
                 throw new CommandFailedException(
                         "Push failed: The remote repository has changes that would be lost in the event of a push.",
-                        e);
+                        true);
             case HISTORY_TOO_SHALLOW:
                 throw new CommandFailedException(
-                        "Push failed: There is not enough local history to complete the push.", e);
+                        "Push failed: There is not enough local history to complete the push.",
+                        true);
             case CANNOT_PUSH_TO_SYMBOLIC_REF:
-                throw new CommandFailedException(
-                        "Push failed: Cannot push to a symbolic reference", e);
+                throw new CommandFailedException("Push failed: Cannot push to a symbolic reference",
+                        true);
             default:
                 break;
             }

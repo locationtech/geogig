@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import org.locationtech.geogig.api.Platform;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.ObjectStoreConformanceTest;
 

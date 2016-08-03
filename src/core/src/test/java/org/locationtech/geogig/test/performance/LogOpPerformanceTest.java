@@ -14,15 +14,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.junit.Ignore;
 import org.junit.Test;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.porcelain.BranchCreateOp;
-import org.locationtech.geogig.api.porcelain.CheckoutOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.LogOp;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Stopwatch;
@@ -34,7 +33,6 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
     protected void setUpInternal() throws Exception {
     }
 
-    @Ignore
     @Test
     public void testCommits() throws Exception {
         System.err.println("############### Warming up....");
@@ -47,10 +45,9 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
         // createAndLogMultipleCommits(1000 * 1000);
     }
 
-    @Ignore
     @Test
     public void testBranches() throws Exception {
-        createAndLogMultipleBranches(200, 200);
+        createAndLogMultipleBranches(50, 100);
     }
 
     private void createAndLogMultipleBranches(int numBranches, int numCommits) throws Exception {
@@ -115,22 +112,11 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
     }
 
     private RevCommit createCommits(int numCommits, String branchName) {
-        int largeStep = numCommits / 10;
-        int smallStep = numCommits / 100;
-
         RevCommit commit = null;
         for (int i = 1; i <= numCommits; i++) {
-            if (i % largeStep == 0) {
-                System.err.print(i);
-                System.err.flush();
-            } else if (i % smallStep == 0) {
-                System.err.print('.');
-                System.err.flush();
-            }
             commit = geogig.command(CommitOp.class).setAllowEmpty(true)
                     .setMessage("Commit " + i + " in branch " + branchName).call();
         }
-        System.err.print('\n');
         return commit;
     }
 
@@ -149,7 +135,6 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
             RevCommit lastCommit = createCommits(numCommits / 2, branchName);
             geogig.command(CheckoutOp.class).setSource(Ref.MASTER).call();
             list.add(lastCommit.getId());
-            // System.err.println("branch " + Integer.toString(i));
         }
         return list;
     }

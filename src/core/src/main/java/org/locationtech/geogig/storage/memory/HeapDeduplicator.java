@@ -9,15 +9,16 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.storage.Deduplicator;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.repository.Deduplicator;
+
+import com.google.common.collect.Sets;
 
 public class HeapDeduplicator implements Deduplicator {
-    private Set<ObjectId> seen = new HashSet<ObjectId>();
+    private Set<ObjectId> seen = Sets.newConcurrentHashSet();
     
     @Override
     public boolean visit(ObjectId id) {

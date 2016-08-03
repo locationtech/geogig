@@ -16,11 +16,11 @@ import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTreeBuilder;
-import org.locationtech.geogig.storage.NodeStorageOrder;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
@@ -40,11 +40,8 @@ public class RevTreeBuilderPerformanceTest extends RepositoryTestCase {
 
     private static Iterable<Node> nodes;
 
-    // private static List<Node> sortedNodes;
-
     @BeforeClass
     public static void beforeClass() {
-        // nodes = createNodes(numNodes);
         nodes = new Iterable<Node>() {
             @Override
             public Iterator<Node> iterator() {
@@ -62,13 +59,6 @@ public class RevTreeBuilderPerformanceTest extends RepositoryTestCase {
                 };
             }
         };
-        // sortedNodes = new ArrayList<Node>(nodes);
-        //
-        // System.err.printf("Sorting %d nodes...", numNodes);
-        // Stopwatch s = new Stopwatch().start();
-        // Collections.sort(sortedNodes, new NodeStorageOrder());
-        // s.stop();
-        // System.err.printf("done in %s\n", s);
     }
 
     @Override
@@ -80,15 +70,7 @@ public class RevTreeBuilderPerformanceTest extends RepositoryTestCase {
     public void testInsertUnordered() {
         System.err.println("testInsertUnordered...");
         createTree(nodes, new RevTreeBuilder(odb), true);
-        // createTree(nodes, new RevTreeBuilder(odb), true);
     }
-
-    // @Test
-    // public void testInsertOrdered() {
-    // System.err.println("testInsertOrdered...");
-    // createTree(sortedNodes, new RevTreeBuilder(odb), true);
-    // // createTree(sortedNodes, new RevTreeBuilder(odb), true);
-    // }
 
     @Test
     public void testInsertOrderedPartitioned10K() {
@@ -126,7 +108,7 @@ public class RevTreeBuilderPerformanceTest extends RepositoryTestCase {
         Stopwatch sw = Stopwatch.createStarted();
         while (partitions.hasNext()) {
             List<Node> partition = new ArrayList<Node>(partitions.next());
-            Collections.sort(partition, new NodeStorageOrder());
+            Collections.sort(partition, new CanonicalNodeOrder());
             createTree(partition, builder, false);
         }
         System.err.println("Calling RevTreeBuilder.build()...");

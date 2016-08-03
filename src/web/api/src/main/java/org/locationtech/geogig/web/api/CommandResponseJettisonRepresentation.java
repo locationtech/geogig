@@ -64,6 +64,7 @@ public class CommandResponseJettisonRepresentation extends WriterRepresentation 
             impl.write(new ResponseWriter(stax));
             stax.flush();
             stax.close();
+            impl.close();
         } catch (Exception ex) {
             throw new IOException(ex);
         }

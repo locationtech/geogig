@@ -9,14 +9,15 @@
  */
 package org.locationtech.geogig.di;
 
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsCheckOp;
+import org.locationtech.geogig.plumbing.merge.ConflictsCheckOp;
+import org.locationtech.geogig.porcelain.ConflictsException;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
 
 /**
  * Intercepts all {@link AbstractGeoGigOp commands} to avoid incompatible running commands while
- * merge conflicts exist
+ * merge or rebase conflicts exist.
  * 
  */
 class ConflictInterceptor implements Decorator {
@@ -39,7 +40,8 @@ class ConflictInterceptor implements Decorator {
 
         Boolean conflicts = operation.command(ConflictsCheckOp.class).call();
         if (conflicts.booleanValue()) {
-            throw new IllegalStateException("Cannot run operation while merge conflicts exist.");
+            throw new ConflictsException(
+                    "Cannot run operation while merge or rebase conflicts exist.");
         }
         return (AbstractGeoGigOp<?>) subject;
     }

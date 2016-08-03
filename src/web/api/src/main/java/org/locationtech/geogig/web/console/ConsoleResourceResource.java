@@ -19,13 +19,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.porcelain.ConfigGet;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.porcelain.ConfigGet;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
@@ -54,7 +55,7 @@ import com.google.gson.JsonParser;
  * <p>
  * Example request body content:
  * <ul>
- * <li> <code>{"jsonrpc":"2.0","method":"status","params":["--help"],"id":3}</code>
+ * <li><code>{"jsonrpc":"2.0","method":"status","params":["--help"],"id":3}</code>
  * <li>
  * <code>{"jsonrpc":"2.0","method":"commit","params":["roads","-m","deleted one road"],"id":8}</code>
  * </ul>
@@ -79,7 +80,8 @@ public class ConsoleResourceResource extends Resource {
     public void handlePost() {
         final Request request = getRequest();
         final String resource = RESTUtils.getStringAttribute(getRequest(), "resource");
-        checkArgument("run-command".equals(resource), "Invalid entry point. Expected: run-command.");
+        checkArgument("run-command".equals(resource),
+                "Invalid entry point. Expected: run-command.");
         JsonParser parser = new JsonParser();
         InputRepresentation entityAsObject = (InputRepresentation) request.getEntity();
         JsonObject json;
@@ -91,11 +93,11 @@ public class ConsoleResourceResource extends Resource {
             throw Throwables.propagate(e);
         }
         Preconditions.checkArgument("2.0".equals(json.get("jsonrpc").getAsString()));
-        Optional<GeoGIG> providedGeogig = RESTUtils.getGeogig(request);
+        Optional<Repository> providedGeogig = RESTUtils.getGeogig(request);
         checkArgument(providedGeogig.isPresent());
-        final GeoGIG geogig = providedGeogig.get();
+        final Repository geogig = providedGeogig.get();
         JsonObject response;
-        if (!checkConsoleEnabled(geogig.getContext())) {
+        if (!checkConsoleEnabled(geogig.context())) {
             response = serviceDisabled(json);
         } else {
             response = processRequest(json, geogig);
@@ -103,7 +105,7 @@ public class ConsoleResourceResource extends Resource {
         getResponse().setEntity(response.toString(), MediaType.APPLICATION_JSON);
     }
 
-    private JsonObject processRequest(JsonObject json, final GeoGIG geogig) {
+    private JsonObject processRequest(JsonObject json, final Repository repo) {
         JsonObject response;
         final String command = json.get("method").getAsString();
         final String queryId = json.get("id").getAsString();
@@ -116,8 +118,9 @@ public class ConsoleResourceResource extends Resource {
         try {
             // pass it a BufferedOutputStream 'cause it doesn't buffer the internal FileOutputStream
             Console console = new Console(in, new BufferedOutputStream(out)).disableAnsi();
-            Platform platform = geogig.getPlatform();
+            Platform platform = repo.platform();
 
+            GeoGIG geogig = new GeoGIG(repo);
             GeogigCLI geogigCLI = new GeogigCLI(geogig, console);
             geogigCLI.setPlatform(platform);
             geogigCLI.disableProgressListener();
@@ -127,7 +130,7 @@ public class ConsoleResourceResource extends Resource {
             response = new JsonObject();
             response.addProperty("id", queryId);
 
-            final int charCountLimit = getOutputLimit(geogig.getContext());
+            final int charCountLimit = getOutputLimit(repo.context());
             final StringBuilder output = getLimitedOutput(out, charCountLimit);
 
             if (exitCode == 0) {
@@ -177,8 +180,8 @@ public class ConsoleResourceResource extends Resource {
     private int getOutputLimit(Context ctx) {
         final int defaultLimit = 1024 * 16;
 
-        Optional<String> configuredLimit = ctx.command(ConfigGet.class)
-                .setName("web.console.limit").call();
+        Optional<String> configuredLimit = ctx.command(ConfigGet.class).setName("web.console.limit")
+                .call();
         int limit = defaultLimit;
         if (configuredLimit.isPresent()) {
             try {
@@ -206,8 +209,7 @@ public class ConsoleResourceResource extends Resource {
             output.append(line).append('\n');
             count += line.length();
             if (count >= limit) {
-                output.append("\nNote: output limited to ")
-                        .append(count)
+                output.append("\nNote: output limited to ").append(count)
                         .append(" characters. Run config web.console.limit <newlimit> to change the current ")
                         .append(limit).append(" soft limit.");
                 break;

@@ -24,25 +24,25 @@ import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.geotools.referencing.CRS;
-import org.locationtech.geogig.api.Bucket;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevCommitImpl;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureImpl;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevPerson;
-import org.locationtech.geogig.api.RevPersonImpl;
-import org.locationtech.geogig.api.RevTag;
-import org.locationtech.geogig.api.RevTagImpl;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeImpl;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.storage.FieldType;
+import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.FieldType;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevPersonBuilder;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTagBuilder;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.repository.DiffEntry;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
@@ -53,7 +53,6 @@ import org.opengis.filter.Filter;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.vividsolutions.jts.geom.Envelope;
@@ -76,8 +75,8 @@ public class FormatCommonV1 {
     public final static void requireHeader(DataInput in, String header) throws IOException {
         String s = readToMarker(in, NUL);
         if (!header.equals(s))
-            throw new IllegalArgumentException("Expected header " + header + ", but actually got "
-                    + s);
+            throw new IllegalArgumentException(
+                    "Expected header " + header + ", but actually got " + s);
     }
 
     public final static ObjectId readObjectId(DataInput in) throws IOException {
@@ -123,7 +122,7 @@ public class FormatCommonV1 {
         final String message = in.readUTF();
         final RevPerson tagger = readRevPerson(in);
 
-        return new RevTagImpl(id, name, commitId, message, tagger);
+        return RevTagBuilder.build(id, name, commitId, message, tagger);
     }
 
     public static void writeTag(RevTag tag, DataOutput out) throws IOException {
@@ -172,7 +171,8 @@ public class FormatCommonV1 {
 
         final String message = in.readUTF();
 
-        return new RevCommitImpl(id, treeId, parentListBuilder.build(), author, committer, message);
+        return CommitBuilder.build(id, treeId, parentListBuilder.build(), author, committer,
+                message);
     }
 
     public static final RevPerson readRevPerson(DataInput in) throws IOException {
@@ -180,8 +180,8 @@ public class FormatCommonV1 {
         final String email = in.readUTF();
         final long timestamp = in.readLong();
         final int tzOffset = in.readInt();
-        return new RevPersonImpl(name.length() == 0 ? null : name, email.length() == 0 ? null
-                : email, timestamp, tzOffset);
+        return RevPersonBuilder.build(name.length() == 0 ? null : name,
+                email.length() == 0 ? null : email, timestamp, tzOffset);
     }
 
     public static final void writePerson(RevPerson person, DataOutput data) throws IOException {
@@ -226,11 +226,11 @@ public class FormatCommonV1 {
         ImmutableList<Node> trees = treesBuilder.build();
         ImmutableList<Node> features = featuresBuilder.build();
         if (nTrees == 0 && nFeatures == 0 && nBuckets == 0) {
-            return RevTree.EMPTY;
+            return RevTreeBuilder.EMPTY;
         } else if (trees.isEmpty() && features.isEmpty()) {
-            return RevTreeImpl.createNodeTree(id, size, treeCount, buckets);
+            return RevTreeBuilder.createNodeTree(id, size, treeCount, buckets);
         } else if (buckets.isEmpty()) {
-            return RevTreeImpl.createLeafTree(id, size, features, trees);
+            return RevTreeBuilder.createLeafTree(id, size, features, trees);
         } else {
             throw new IllegalArgumentException(
                     "Tree has mixed buckets and nodes; this is not supported.");
@@ -296,16 +296,17 @@ public class FormatCommonV1 {
 
     public static RevFeature readFeature(ObjectId id, DataInput in) throws IOException {
         final int count = in.readInt();
-        final ImmutableList.Builder<Optional<Object>> builder = ImmutableList.builder();
+        final RevFeatureBuilder builder = RevFeatureBuilder.builder();
 
         for (int i = 0; i < count; i++) {
             final byte fieldTag = in.readByte();
             final FieldType fieldType = FieldType.valueOf(fieldTag);
             Object value = DataStreamValueSerializerV1.read(fieldType, in);
-            builder.add(Optional.fromNullable(value));
+            builder.addValue(value);
         }
 
-        return new RevFeatureImpl(id, builder.build());
+        RevFeature built = builder.build();
+        return built;
     }
 
     public static RevFeatureType readFeatureType(ObjectId id, DataInput in) throws IOException {
@@ -320,9 +321,9 @@ public class FormatCommonV1 {
         for (int i = 0; i < propertyCount; i++) {
             attributes.add(readAttributeDescriptor(in, typeFactory));
         }
-        SimpleFeatureType ftype = typeFactory.createSimpleFeatureType(name, attributes, null,
-                false, Collections.<Filter> emptyList(), BasicFeatureTypes.FEATURE, null);
-        return new RevFeatureTypeImpl(id, ftype);
+        SimpleFeatureType ftype = typeFactory.createSimpleFeatureType(name, attributes, null, false,
+                Collections.<Filter> emptyList(), BasicFeatureTypes.FEATURE, null);
+        return RevFeatureTypeBuilder.build(id, ftype);
     }
 
     private static Name readName(DataInput in) throws IOException {
@@ -375,8 +376,8 @@ public class FormatCommonV1 {
             return typeFactory.createGeometryDescriptor((GeometryType) type, name, minOccurs,
                     maxOccurs, nillable, null);
         else
-            return typeFactory.createAttributeDescriptor(type, name, minOccurs, maxOccurs,
-                    nillable, null);
+            return typeFactory.createAttributeDescriptor(type, name, minOccurs, maxOccurs, nillable,
+                    null);
     }
 
     public static void writeHeader(DataOutput data, String header) throws IOException {

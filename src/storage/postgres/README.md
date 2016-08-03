@@ -1,7 +1,11 @@
+This is the GeoGig storage backend for PostgreSQL databases.
+
+
+
 USAGE:
 ------
 Repository URL must be provided. From the command line, use ``geogig <command> <args> --repo <url>`` for every command
-``<url>`` is of the form: ``postgresql://<server>[:<port>]/database[/<schema>]/<repoid>?user=<username>&password=<pwd>``
+``<url>`` is of the form: ``postgresql://<server>[:<port>]/database[/<schema>]/<reponame>?user=<username>&password=<pwd>``
 
 ``port`` is optional, and defaults to ``5432`` if not given.
 ``schema`` is optional, and defaults to ``public`` if not given.
@@ -18,43 +22,10 @@ Initializes a repository named ``myrepo`` in the PG instance running on localhos
 Initializes a repository named ``myrepo`` in the PG instance running on pg.test.com at port 1701, on the "geogig" database's public "geogig_test" schema.
 
 
-TODO:
------
-
-* **Per database RevObject Cache**
-* **Ref Database LOCKING**
-* Make connection pool configurable
-* (x) Finish PG conflicts database
-* (x) PG blob store
-* (x) Storage format evolvability
-* (x) Config database
-* (x) Per database shared pool
-* (x) Support non filesystem repo URL
-** How to configure logging? where?
-* Multitenancy:
-** Database metadata (biggest supported serialization version, what else?)
-**(x) repository key
-*(x) Instant cloning
-
-API changes:
-------------
-* (x) ResolveGeogigDir returns URI instead of URL
-
-Other actions:
---------------
-
-* (x) ADAPT GeoGigDataStore to work with non file based URIS (GeoGigDataStoreFactory looks up for a file)
-* (x) Change Read/SaveMergeCommitMessageOp to use a repository facility for blob storage. It also needs to be transaction specific,
-      the current implementation doesn't take transactions into account. The PG backend may use a per repository and transaction identified blobs table.
-* (x) RebaseOp and RevertOp shall use the repository blobstore instead of resolving the "revert"
-      folder in the filesystem. CLI's Conflicts.java resolved rebase folder as File rebaseFolder = new File(new File(dir), "rebase-apply");
-* (x) Use of .geogig/osm folder in OSMHistoryImport.getBranchTrackingFile(), ResolveOSMLogfile, ResolveOSMMappingLogFolder
-* Revisit AbstractMappedRemoteRepo. Contains a check for "Sparse clone works only against file system repositories."
-* Improve ResolveGeogigDirTest and InitOpTest to take an argument repository URL
-* (x) Make sure point cache uses correct tmp dir
-
 Tests
 -----
+
+Enable tests with the ``-P postgres`` maven profile: ``mvn clean install -P postgres``
 
 Have a ``$HOME/.geogig-pg-backend-tests.properties`` file with the following content:
 
@@ -69,8 +40,7 @@ A JUnit "Rule" called ``org.locationtech.geogig.storage.postgresql.PGTemporaryTe
 on each test class to create a config for each test.
 
 
-IMPORTANT: every test case creates its own set of tables prefixed by "geogig_test_<N>" where N is a random number between 0 and 999. Just for safety, its recommended to use a separate database schema to run the
-postgres backend tests. To do so, create the schema in pgsql:
+IMPORTANT: every test case creates its own set of tables prefixed by "test_<N>" where N is a random number between 0 and 999. Just for safety, its recommended to use a separate database schema to run the postgres backend tests. To do so, create the schema in pgsql:
 $ psql -d geogig
 # create schema geogig_tests;
 # set search_path to geogig_tests;

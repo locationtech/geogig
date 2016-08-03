@@ -9,33 +9,34 @@
  */
 package org.locationtech.geogig.remote;
 
-import java.util.Iterator;
+import java.util.NoSuchElementException;
 
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RepositoryFilter;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
-
-import com.google.common.collect.AbstractIterator;
+import org.locationtech.geogig.repository.RepositoryFilter;
 
 /**
  * An implementation of a {@link DiffEntry} iterator that filters entries based on a provided
  * {@link RepositoryFilter}.
  */
-public abstract class FilteredDiffIterator extends AbstractIterator<DiffEntry> {
+public abstract class FilteredDiffIterator implements AutoCloseableIterator<DiffEntry> {
 
     protected boolean filtered = false;
 
-    private Iterator<DiffEntry> source;
+    private AutoCloseableIterator<DiffEntry> source;
 
     private Repository sourceRepo;
 
     private RepositoryFilter repoFilter;
+
+    private DiffEntry next = null;
 
     public final boolean wasFiltered() {
         return filtered;
@@ -48,7 +49,7 @@ public abstract class FilteredDiffIterator extends AbstractIterator<DiffEntry> {
      * @param sourceRepo the repository where objects are stored
      * @param repoFilter the filter to use
      */
-    public FilteredDiffIterator(Iterator<DiffEntry> source, Repository sourceRepo,
+    public FilteredDiffIterator(AutoCloseableIterator<DiffEntry> source, Repository sourceRepo,
             RepositoryFilter repoFilter) {
         this.source = source;
         this.sourceRepo = sourceRepo;
@@ -56,10 +57,33 @@ public abstract class FilteredDiffIterator extends AbstractIterator<DiffEntry> {
         filtered = false;
     }
 
+    @Override
+    public boolean hasNext() {
+        if (next == null) {
+            next = computeNext();
+        }
+        return next != null;
+    }
+
+    @Override
+    public DiffEntry next() {
+        if (next == null && !hasNext()) {
+            throw new NoSuchElementException();
+        }
+        DiffEntry returnValue = next;
+        next = null;
+        return returnValue;
+    }
+
+    @Override
+    public void close() {
+        source.close();
+    }
+
     /**
      * Compute the next {@link DiffEntry} that matches our {@link RepositoryFilter}.
      */
-    protected DiffEntry computeNext() {
+    private DiffEntry computeNext() {
         while (source.hasNext()) {
             DiffEntry input = source.next();
 
@@ -99,7 +123,7 @@ public abstract class FilteredDiffIterator extends AbstractIterator<DiffEntry> {
 
             return new DiffEntry(oldObject, newObject);
         }
-        return endOfData();
+        return null;
     }
 
     private NodeRef filter(NodeRef node) {

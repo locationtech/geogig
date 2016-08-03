@@ -11,10 +11,9 @@ package org.locationtech.geogig.storage.postgresql;
 
 import java.net.URI;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.di.PluginDefaults;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
@@ -50,20 +49,14 @@ public class PGRepositoryResolver extends RepositoryResolver {
     public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext) {
         Environment config = parseConfig(repoURI);
         PGConfigDatabase configDb = new PGConfigDatabase(config);
-        if (config.getRepositoryId() != null) {
-            Optional<String> refsFormat = configDb.getGlobal("storage.refs");
+        if (config.getRepositoryName() != null) {
+            Optional<String> refsFormat = configDb.get("storage.refs");
             if (!refsFormat.isPresent()) {
-                configDb.putGlobal(PGStorageProvider.FORMAT_NAME + ".version",
-                        PGStorageProvider.VERSION);
-                configDb.putGlobal("storage.refs", PGStorageProvider.FORMAT_NAME);
-                configDb.putGlobal("storage.objects", PGStorageProvider.FORMAT_NAME);
-                configDb.putGlobal("storage.graph", PGStorageProvider.FORMAT_NAME);
+                configDb.put(PGStorageProvider.FORMAT_NAME + ".version", PGStorageProvider.VERSION);
+                configDb.put("storage.refs", PGStorageProvider.FORMAT_NAME);
+                configDb.put("storage.objects", PGStorageProvider.FORMAT_NAME);
+                configDb.put("storage.graph", PGStorageProvider.FORMAT_NAME);
             }
-
-            PluginDefaults pluginDefaults = repoContext.pluginDefaults();
-            pluginDefaults.setGraph(PGStorageProvider.GRAPH);
-            pluginDefaults.setRefs(PGStorageProvider.REFS);
-            pluginDefaults.setObjects(PGStorageProvider.OBJECTS);
         }
         return configDb;
     }
@@ -76,7 +69,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
             Throwables.propagateIfInstanceOf(e, IllegalArgumentException.class);
             throw new IllegalArgumentException("Error parsing URI " + repoURI, e);
         }
-        Preconditions.checkArgument(config.getRepositoryId() != null,
+        Preconditions.checkArgument(config.getRepositoryName() != null,
                 "No repository id provided in repo URI: '" + repoURI + "'");
         return config;
     }
@@ -87,7 +80,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
                 repositoryLocation);
         Hints hints = new Hints();
         hints.set(Hints.REPOSITORY_URL, repositoryLocation.toString());
-        Context context = GlobalContextBuilder.builder.build(hints);
+        Context context = GlobalContextBuilder.builder().build(hints);
         Repository repository = new GeoGIG(context).getRepository();
         repository.open();
         return repository;
@@ -96,7 +89,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
     @Override
     public String getName(URI repoURI) {
         Environment env = parseConfig(repoURI);
-        String repositoryId = env.getRepositoryId();
+        String repositoryId = env.getRepositoryName();
         return repositoryId;
     }
 

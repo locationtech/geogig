@@ -12,7 +12,7 @@ package org.locationtech.geogig.remote;
 import java.io.Closeable;
 import java.io.IOException;
 
-import org.locationtech.geogig.api.RevObject;
+import org.locationtech.geogig.model.RevObject;
 
 /**
  * A closeable funnel used to transparently send objects to a remote resource.

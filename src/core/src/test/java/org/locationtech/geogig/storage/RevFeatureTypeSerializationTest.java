@@ -19,8 +19,8 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
 
@@ -50,7 +50,7 @@ public abstract class RevFeatureTypeSerializationTest extends Assert {
 
     @Test
     public void testSerialization() throws Exception {
-        RevFeatureType revFeatureType = RevFeatureTypeImpl.build(featureType);
+        RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(featureType);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         serializer.write(revFeatureType, output);
@@ -82,7 +82,7 @@ public abstract class RevFeatureTypeSerializationTest extends Assert {
         ftb.add("geom", Polygon.class, DefaultGeographicCRS.WGS84);
         ftb.setName("type");
         SimpleFeatureType ftype = ftb.buildFeatureType();
-        RevFeatureType revFeatureType = RevFeatureTypeImpl.build(ftype);
+        RevFeatureType revFeatureType = RevFeatureTypeBuilder.build(ftype);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         serializer.write(revFeatureType, output);

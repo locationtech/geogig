@@ -13,9 +13,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.locationtech.geogig.api.ObjectId.NULL;
-import static org.locationtech.geogig.api.RevObject.TYPE.FEATURE;
-import static org.locationtech.geogig.api.RevObject.TYPE.TREE;
+import static org.locationtech.geogig.model.ObjectId.NULL;
+import static org.locationtech.geogig.model.RevObject.TYPE.FEATURE;
+import static org.locationtech.geogig.model.RevObject.TYPE.TREE;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -26,21 +26,19 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.MemoryModule;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeBuilder;
-import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.WriteBack;
 import org.locationtech.geogig.di.GeogigModule;
+import org.locationtech.geogig.di.HintsModule;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.WriteBack;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.test.MemoryModule;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Optional;
 import com.google.inject.Guice;
@@ -68,8 +66,10 @@ public class DepthSearchTest {
     public void setUp() throws IOException {
         File envHome = tempFolder.getRoot();
         Platform testPlatform = new TestPlatform(envHome);
-        Context injector = Guice.createInjector(Modules.override(new GeogigModule()).with(
-                new MemoryModule(testPlatform))).getInstance(Context.class);
+        Context injector = Guice
+                .createInjector(Modules.override(new GeogigModule()).with(new MemoryModule(),
+                        new HintsModule(new Hints().platform(testPlatform))))
+                .getInstance(Context.class);
 
         fakeGeogig = new GeoGIG(injector);
         Repository fakeRepo = fakeGeogig.getOrCreateRepository();
@@ -91,7 +91,7 @@ public class DepthSearchTest {
         Context mockInjector = mock(Context.class);
         when(mockInjector.objectDatabase()).thenReturn(odb);
         RevTreeBuilder subTreeBuilder = new RevTreeBuilder(mockInjector.objectDatabase());
-        
+
         if (singleNodeNames != null) {
             for (String singleNodeName : singleNodeNames) {
                 String nodePath = NodeRef.appendChild(treePath, singleNodeName);
@@ -107,9 +107,8 @@ public class DepthSearchTest {
                 .setChildPath(treePath).setTree(subtree).setMetadataId(fakeTreeMetadataId);
         ObjectId newRootId = writeBack.call();
 
-        return new RevTreeBuilder(odb,
-                fakeGeogig.command(RevObjectParse.class).setObjectId(newRootId).call(RevTree.class)
-                .get());
+        return new RevTreeBuilder(odb, fakeGeogig.command(RevObjectParse.class)
+                .setObjectId(newRootId).call(RevTree.class).get());
     }
 
     @Test

@@ -9,18 +9,14 @@
  */
 package org.locationtech.geogig.test.integration.je.repository;
 
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.di.GeogigModule;
-import org.locationtech.geogig.test.integration.je.JETestStorageModule;
-
-import com.google.inject.Guice;
-import com.google.inject.util.Modules;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.test.integration.je.JETestContextBuilder;
 
 public class JEIndexTest extends org.locationtech.geogig.test.integration.repository.IndexTest {
     @Override
     protected Context createInjector() {
-        return Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new JETestStorageModule())).getInstance(
-                Context.class);
+        Hints hints = new Hints().uri(repositoryDirectory.toURI()).platform(createPlatform());
+        return new JETestContextBuilder().build(hints);
     }
 }

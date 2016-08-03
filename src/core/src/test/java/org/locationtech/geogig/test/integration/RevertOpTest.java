@@ -15,28 +15,29 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.RevFeatureBuilder;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp;
-import org.locationtech.geogig.api.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.api.porcelain.LogOp;
-import org.locationtech.geogig.api.porcelain.RevertConflictsException;
-import org.locationtech.geogig.api.porcelain.RevertOp;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.merge.ConflictsQueryOp;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.RevertConflictsException;
+import org.locationtech.geogig.porcelain.RevertOp;
+import org.locationtech.geogig.repository.Conflict;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 
 public class RevertOpTest extends RepositoryTestCase {
     @Rule
@@ -321,11 +322,13 @@ public class RevertOpTest extends RepositoryTestCase {
         assertTrue(ref.isPresent());
         assertEquals(c3.getId(), ref.get().getObjectId());
 
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
+        List<Conflict> conflicts = Lists
+                .newArrayList(geogig.command(ConflictsQueryOp.class).call());
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
-        assertEquals(conflicts.get(0).getOurs(), RevFeatureBuilder.build(points1_modifiedB).getId());
+        assertEquals(conflicts.get(0).getOurs(),
+                RevFeatureBuilder.build(points1_modifiedB).getId());
         assertEquals(conflicts.get(0).getTheirs(), RevFeatureBuilder.build(points1).getId());
 
         // solve, and continue
@@ -382,11 +385,13 @@ public class RevertOpTest extends RepositoryTestCase {
         assertTrue(ref.isPresent());
         assertEquals(c3.getId(), ref.get().getObjectId());
 
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
+        List<Conflict> conflicts = Lists
+                .newArrayList(geogig.command(ConflictsQueryOp.class).call());
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
-        assertEquals(conflicts.get(0).getOurs(), RevFeatureBuilder.build(points1_modifiedB).getId());
+        assertEquals(conflicts.get(0).getOurs(),
+                RevFeatureBuilder.build(points1_modifiedB).getId());
         assertEquals(conflicts.get(0).getTheirs(), RevFeatureBuilder.build(points1).getId());
 
         geogig.command(RevertOp.class).setAbort(true).call();

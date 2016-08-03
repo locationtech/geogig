@@ -20,15 +20,15 @@ import javax.xml.stream.XMLStreamWriter;
 import org.geotools.data.DataStore;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
 import org.locationtech.geogig.geotools.geopkg.GeopkgDataStoreExportOp;
 import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.Variants;
-import org.locationtech.geogig.rest.geotools.ExportWebOp;
-import org.locationtech.geogig.rest.geotools.ExportWebOp.OutputFormat;
+import org.locationtech.geogig.rest.geotools.Export;
+import org.locationtech.geogig.rest.geotools.Export.OutputFormat;
 import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -56,7 +56,7 @@ import com.google.common.collect.ImmutableMap;
  * </code>
  * </pre>
  * <p>
- * The output of the {@link ExportWebOp} command when used with the {@code format=gpkg} argument
+ * The output of the {@link Export} command when used with the {@code format=gpkg} argument
  * will be produced by the {@link GeopgkExportRepresentation}, which in turn is created by the
  * {@link RepresentationFactory} using the {@link CommandRepresentationFactory} SPI by means of the
  * {@code META-INF/services/org.locationtech.geogig.rest.CommandRepresentationFactory} text file.
@@ -65,16 +65,16 @@ import com.google.common.collect.ImmutableMap;
  * {@link GeopkgDataStoreExportOp} which decorates {@link DataStoreExportOp} by adding support to
  * enable the geopackage interchange extension on the exported layers.
  * 
- * @see ExportWebOp
+ * @see Export
  * @see GeopkgDataStoreExportOp
  */
-public class GeoPkgExportOutputFormat extends ExportWebOp.OutputFormat {
+public class GeoPkgExportOutputFormat extends Export.OutputFormat {
 
     public static final String INTERCHANGE_PARAM = "interchange";
 
-    private boolean enableInterchangeExtension;
+    protected boolean enableInterchangeExtension;
 
-    private static class TempGeoPackageSupplier implements Supplier<DataStore> {
+    static class TempGeoPackageSupplier implements Supplier<DataStore> {
 
         private File targetFile;
 
@@ -126,7 +126,7 @@ public class GeoPkgExportOutputFormat extends ExportWebOp.OutputFormat {
 
     }
 
-    private TempGeoPackageSupplier dataStore;
+    protected TempGeoPackageSupplier dataStore;
 
     public GeoPkgExportOutputFormat(ParameterSet options) {
         setIntechangeExtension(Boolean.parseBoolean(options.getFirstValue(INTERCHANGE_PARAM)));
@@ -146,7 +146,7 @@ public class GeoPkgExportOutputFormat extends ExportWebOp.OutputFormat {
     @Override
     public DataStoreExportOp<File> createCommand(final CommandContext context) {
         boolean enableInterchangeFormat = this.enableInterchangeExtension;
-        return context.getGeoGIG().command(GeopkgDataStoreExportOp.class)
+        return context.getRepository().command(GeopkgDataStoreExportOp.class)
                 .setInterchangeFormat(enableInterchangeFormat)
                 .setDatabaseFile(dataStore.getTargetFile());
     }

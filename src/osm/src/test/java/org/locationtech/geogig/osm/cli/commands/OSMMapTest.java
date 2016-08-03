@@ -19,20 +19,18 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.GlobalContextBuilder;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.TestPlatform;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.test.functional.general.CLITestContextBuilder;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.osm.internal.OSMImportOp;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.ResolveFeatureType;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -49,10 +47,9 @@ public class OSMMapTest extends Assert {
     @Before
     public void setUp() throws Exception {
         Console consoleReader = new Console().disableAnsi();
-        cli = new GeogigCLI(consoleReader);
+        cli = new GeogigCLI(consoleReader).disableProgressListener();
         File workingDirectory = tempFolder.getRoot();
         TestPlatform platform = new TestPlatform(workingDirectory);
-        GlobalContextBuilder.builder = new CLITestContextBuilder(platform);
 
         cli.setPlatform(platform);
         cli.execute("init");
@@ -143,8 +140,8 @@ public class OSMMapTest extends Assert {
 
         cli.execute("osm", "map", "awrongpath/awroongfile.json");
         assertNotNull(cli.exception);
-        assertTrue(cli.exception.getMessage().startsWith(
-                "The specified mapping file does not exist"));
+        assertTrue(
+                cli.exception.getMessage().startsWith("The specified mapping file does not exist"));
 
     }
 
@@ -199,7 +196,7 @@ public class OSMMapTest extends Assert {
         Optional<RevFeatureType> ft = cli.getGeogig().command(ResolveFeatureType.class)
                 .setRefSpec("HEAD:" + iter.next().path()).call();
         assertTrue(ft.isPresent());
-        assertEquals(Polygon.class, ft.get().sortedDescriptors().get(1).getType().getBinding());
+        assertEquals(Polygon.class, ft.get().descriptors().get(1).getType().getBinding());
 
     }
 

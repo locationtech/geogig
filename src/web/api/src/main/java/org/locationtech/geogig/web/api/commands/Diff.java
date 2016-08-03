@@ -9,11 +9,10 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import java.util.Iterator;
-
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.DiffOp;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -28,17 +27,17 @@ import org.locationtech.geogig.web.api.ResponseWriter;
  */
 
 public class Diff extends AbstractWebAPICommand {
-    private String oldRefSpec;
+    String oldRefSpec;
 
-    private String newRefSpec;
+    String newRefSpec;
 
-    private String pathFilter;
+    String pathFilter;
 
-    private boolean showGeometryChanges = false;
+    boolean showGeometryChanges = false;
 
-    private int page;
+    int page;
 
-    private int elementsPerPage;
+    int elementsPerPage;
 
     public Diff(ParameterSet options) {
         super(options);
@@ -120,8 +119,8 @@ public class Diff extends AbstractWebAPICommand {
 
         final Context geogig = this.getCommandLocator(context);
 
-        final Iterator<DiffEntry> diff = geogig.command(DiffOp.class).setOldVersion(oldRefSpec)
-                .setNewVersion(newRefSpec).setFilter(pathFilter).call();
+        final AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                .setOldVersion(oldRefSpec).setNewVersion(newRefSpec).setFilter(pathFilter).call();
 
         context.setResponseContent(new CommandResponse() {
             @Override
@@ -133,6 +132,11 @@ public class Diff extends AbstractWebAPICommand {
                     out.writeDiffEntries("diff", page * elementsPerPage, elementsPerPage, diff);
                 }
                 out.finish();
+            }
+
+            @Override
+            public void close() {
+                diff.close();
             }
         });
     }

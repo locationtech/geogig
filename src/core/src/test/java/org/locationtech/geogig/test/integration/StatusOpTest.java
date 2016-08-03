@@ -10,8 +10,8 @@
 package org.locationtech.geogig.test.integration;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.porcelain.StatusOp;
-import org.locationtech.geogig.api.porcelain.StatusOp.StatusSummary;
+import org.locationtech.geogig.porcelain.StatusOp;
+import org.locationtech.geogig.porcelain.StatusOp.StatusSummary;
 
 public class StatusOpTest extends RepositoryTestCase {
 

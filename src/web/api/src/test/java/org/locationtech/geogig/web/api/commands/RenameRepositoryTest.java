@@ -13,8 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.api.plumbing.ResolveRepositoryName;
-import org.locationtech.geogig.rest.RestletException;
+import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
@@ -39,6 +38,11 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
         return RenameRepository.class;
     }
 
+    @Override
+    protected boolean requiresTransaction() {
+        return false;
+    }
+
     @Test
     public void testBuildParameters() {
         ParameterSet options = TestParams.of("name", "repoName");
@@ -50,7 +54,7 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
     @Test
     public void testRename() throws Exception {
 
-        String repoName = testContext.get().getGeoGIG().command(ResolveRepositoryName.class).call();
+        String repoName = testContext.get().getRepository().command(ResolveRepositoryName.class).call();
 
         assertEquals(TestRepository.REPO_NAME, repoName);
 
@@ -59,7 +63,7 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
         testContext.setRequestMethod(Method.POST);
         cmd.run(testContext.get());
 
-        repoName = testContext.get().getGeoGIG().command(ResolveRepositoryName.class).call();
+        repoName = testContext.get().getRepository().command(ResolveRepositoryName.class).call();
 
         assertEquals("newRepoName", repoName);
 
@@ -81,17 +85,6 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
 
         ex.expect(IllegalArgumentException.class);
         ex.expectMessage("You must specify a new name for the repository.");
-        cmd.run(testContext.get());
-    }
-
-    @Test
-    public void testRequireRepository() {
-        testContext.createUninitializedRepo();
-        ParameterSet options = TestParams.of();
-        WebAPICommand cmd = buildCommand(options);
-
-        ex.expect(RestletException.class);
-        ex.expectMessage("Repository not found.");
         cmd.run(testContext.get());
     }
 }

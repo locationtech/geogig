@@ -16,14 +16,14 @@ import java.io.File;
 import java.util.ServiceLoader;
 
 import org.junit.Test;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.hooks.CannotRunGeogigOperationException;
-import org.locationtech.geogig.api.hooks.CommandHook;
-import org.locationtech.geogig.api.hooks.Scripting;
-import org.locationtech.geogig.api.plumbing.ResolveGeogigDir;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
+import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
+import org.locationtech.geogig.hooks.CommandHook;
+import org.locationtech.geogig.hooks.Scripting;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.ResolveGeogigDir;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -63,7 +63,7 @@ public class HooksTest extends RepositoryTestCase {
     public void testHook() throws Exception {
         // a hook that only accepts commit messages longer with at least 4 words, and converts
         // message to lower case
-        CharSequence commitPreHookCode = "exception = Packages.org.locationtech.geogig.api.hooks.CannotRunGeogigOperationException;\n"
+        CharSequence commitPreHookCode = "exception = Packages.org.locationtech.geogig.hooks.CannotRunGeogigOperationException;\n"
                 + "msg = params.get(\"message\");\n" + "if (msg.length() < 30){\n"
                 + "\tthrow new exception(\"Commit messages must have at least 30 characters\");\n}"
                 + "params.put(\"message\", msg.toLowerCase());";
@@ -136,7 +136,7 @@ public class HooksTest extends RepositoryTestCase {
 
     @Test
     public void testFailingPostPostProcessHook() throws Exception {
-        CharSequence postHookCode = "exception = Packages.org.locationtech.geogig.api.hooks.CannotRunGeogigOperationException;\n"
+        CharSequence postHookCode = "exception = Packages.org.locationtech.geogig.hooks.CannotRunGeogigOperationException;\n"
                 + "throw new exception();";
         File hooksFolder = new File(new ResolveGeogigDir(geogig.getPlatform()).getFile().get(),
                 "hooks");
@@ -201,7 +201,7 @@ public class HooksTest extends RepositoryTestCase {
 
     /**
      * This command hook is discoverable through the {@link ServiceLoader} SPI as there's a
-     * {@code org.locationtech.geogig.api.hooks.CommandHook} file in
+     * {@code org.locationtech.geogig.hooks.CommandHook} file in
      * {@code src/test/resources/META-INF/services} but the static ENABLED flag must be set by the
      * test case for it to be run.
      */

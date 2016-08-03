@@ -12,9 +12,9 @@ package org.locationtech.geogig.web.api.commands;
 import java.util.Iterator;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevCommit;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -32,13 +32,13 @@ import com.google.common.collect.Lists;
 
 public class GetCommitGraph extends AbstractWebAPICommand {
 
-    private String commitId;
+    String commitId;
 
-    private int depth;
+    int depth;
 
-    private int page;
+    int page;
 
-    private int elementsPerPage;
+    int elementsPerPage;
 
     public GetCommitGraph(ParameterSet options) {
         super(options);
@@ -96,8 +96,8 @@ public class GetCommitGraph extends AbstractWebAPICommand {
         if (commitId.equals(ObjectId.NULL.toString())) {
             throw new CommandSpecException("No commitId was given.");
         }
-        final GeoGIG geogig = context.getGeoGIG();
-        RevCommit commit = geogig.getRepository().getCommit(ObjectId.valueOf(commitId));
+        final Repository geogig = context.getRepository();
+        RevCommit commit = geogig.getCommit(ObjectId.valueOf(commitId));
         final List<RevCommit> history = Lists.newLinkedList();
 
         List<CommitNode> nodes = Lists.newLinkedList();
@@ -111,7 +111,7 @@ public class GetCommitGraph extends AbstractWebAPICommand {
             }
             if (this.depth == 0 || node.depth < this.depth) {
                 for (ObjectId id : node.commit.getParentIds()) {
-                    nodes.add(new CommitNode(geogig.getRepository().getCommit(id), node.depth + 1));
+                    nodes.add(new CommitNode(geogig.getCommit(id), node.depth + 1));
                 }
             }
         }

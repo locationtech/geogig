@@ -22,18 +22,20 @@ import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.plumbing.LsTreeOp;
-import org.locationtech.geogig.api.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.api.plumbing.ResolveFeatureType;
-import org.locationtech.geogig.api.plumbing.ResolveTreeish;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.plumbing.ResolveFeatureType;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.ProgressListener;
+import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
@@ -161,24 +163,33 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
 
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
 
-        command(ExportOp.class)//
+        ExportOp cmd = command(ExportOp.class)//
                 .setFeatureStore(featureStore)//
                 .setPath(treeSpec)//
                 .setTransactional(true)//
-                .setBBoxFilter(this.bboxFilter)//
-                .setProgressListener(progress)//
-                .call();
+                .setBBoxFilter(this.bboxFilter);//
+
+        Function<Feature, Optional<Feature>> transformingFunction = getTransformingFunction(
+                featureType);
+
+        if (transformingFunction != null) {
+            cmd.setFeatureTypeConversionFunction(transformingFunction);
+        }
+
+        cmd.setProgressListener(progress).call();//
     }
 
     private Set<String> resolveExportLayerRefSpecs() {
 
         final String refSpec = fromNullable(commitIsh).or(Ref.HEAD);
-        final Optional<ObjectId> id = command(ResolveTreeish.class).setTreeish(refSpec).call();
+        Optional<RevCommit> commit = command(RevObjectParse.class).setRefSpec(refSpec)
+                .call(RevCommit.class);
 
-        checkArgument(id.isPresent(), "RefSpec doesn't resolve to a tree: '%s'", refSpec);
+        checkArgument(commit.isPresent(), "RefSpec doesn't resolve to a commit: '%s'", refSpec);
 
-        final List<NodeRef> featureTreeRefs = Lists.newArrayList(command(LsTreeOp.class)
-                .setReference(id.get().toString()).setStrategy(Strategy.TREES_ONLY).call());
+        final List<NodeRef> featureTreeRefs = Lists.newArrayList(
+                command(LsTreeOp.class).setReference(commit.get().getTreeId().toString())
+                        .setStrategy(Strategy.TREES_ONLY).call());
 
         final Set<String> exportLayers;
 
@@ -198,8 +209,15 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
             exportLayers = requestedLayers;
         }
 
-        final String commitId = id.get().toString() + ":";
+        final String commitId = commit.get().getId().toString() + ":";
         return Sets.newHashSet(Iterables.transform(exportLayers, (s) -> commitId + s));
     }
+
+    /**
+     * @param featureType the feature type of the features to transform
+     * @return a transform function to modify the features being exported
+     */
+    protected abstract Function<Feature, Optional<Feature>> getTransformingFunction(
+            final SimpleFeatureType featureType);
 
 }

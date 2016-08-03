@@ -9,20 +9,19 @@
  */
 package org.locationtech.geogig.osm.internal;
 
-import java.util.Iterator;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
-import org.locationtech.geogig.api.porcelain.DiffOp;
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.porcelain.DiffOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -38,7 +37,6 @@ import org.openstreetmap.osmosis.core.task.common.ChangeAction;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 
 //import org.locationtech.geogig.api.plumbing.diff.DiffEntry.ChangeType;
 
@@ -48,7 +46,7 @@ import com.google.common.collect.Iterators;
  * @see CreateOSMChangesetOp
  */
 @CanRunDuringConflict
-public class CreateOSMChangesetOp extends AbstractGeoGigOp<Iterator<ChangeContainer>> {
+public class CreateOSMChangesetOp extends AbstractGeoGigOp<AutoCloseableIterator<ChangeContainer>> {
 
     private String oldRefSpec;
 
@@ -111,54 +109,49 @@ public class CreateOSMChangesetOp extends AbstractGeoGigOp<Iterator<ChangeContai
      * @see DiffEntry
      */
     @Override
-    protected Iterator<ChangeContainer> _call() {
+    protected AutoCloseableIterator<ChangeContainer> _call() {
 
-        Iterator<DiffEntry> nodeIterator = command(DiffOp.class).setFilter(OSMUtils.NODE_TYPE_NAME)
+        AutoCloseableIterator<DiffEntry> nodeIterator = command(DiffOp.class)
+                .setFilter(OSMUtils.NODE_TYPE_NAME)
                 .setNewVersion(newRefSpec).setOldVersion(oldRefSpec).setReportTrees(false).call();
-        Iterator<DiffEntry> wayIterator = command(DiffOp.class).setFilter(OSMUtils.WAY_TYPE_NAME)
+        AutoCloseableIterator<DiffEntry> wayIterator = command(DiffOp.class)
+                .setFilter(OSMUtils.WAY_TYPE_NAME)
                 .setNewVersion(newRefSpec).setOldVersion(oldRefSpec).setReportTrees(false).call();
-        Iterator<DiffEntry> iterator = Iterators.concat(nodeIterator, wayIterator);
+        AutoCloseableIterator<DiffEntry> iterator = AutoCloseableIterator.concat(nodeIterator,
+                wayIterator);
 
         final EntityConverter converter = new EntityConverter();
-        Function<DiffEntry, ChangeContainer> function = new Function<DiffEntry, ChangeContainer>() {
-
-            @Override
-            @Nullable
-            public ChangeContainer apply(@Nullable DiffEntry diff) {
-                NodeRef ref = diff.changeType().equals(ChangeType.REMOVED) ? diff.getOldObject()
-                        : diff.getNewObject();
-                RevFeature revFeature = command(RevObjectParse.class).setObjectId(ref.getObjectId())
-                        .call(RevFeature.class).get();
-                RevFeatureType revFeatureType = command(RevObjectParse.class)
-                        .setObjectId(ref.getMetadataId()).call(RevFeatureType.class).get();
-                SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
-                        (SimpleFeatureType) revFeatureType.type());
-                ImmutableList<PropertyDescriptor> descriptors = revFeatureType.sortedDescriptors();
-                ImmutableList<Optional<Object>> values = revFeature.getValues();
-                for (int i = 0; i < descriptors.size(); i++) {
-                    PropertyDescriptor descriptor = descriptors.get(i);
-                    Optional<Object> value = values.get(i);
-                    featureBuilder.set(descriptor.getName(), value.orNull());
-                }
-                SimpleFeature feature = featureBuilder.buildFeature(ref.name());
-                Entity entity = converter.toEntity(feature, id);
-                EntityContainer container;
-                if (entity instanceof Node) {
-                    container = new NodeContainer((Node) entity);
-                } else {
-                    container = new WayContainer((Way) entity);
-                }
-
-                ChangeAction action = diff.changeType().equals(ChangeType.ADDED) ? ChangeAction.Create
-                        : diff.changeType().equals(ChangeType.MODIFIED) ? ChangeAction.Modify
-                                : ChangeAction.Delete;
-
-                return new ChangeContainer(container, action);
-
+        final Function<DiffEntry, ChangeContainer> function = (diff) -> {
+            NodeRef ref = diff.changeType().equals(ChangeType.REMOVED) ? diff.getOldObject()
+                    : diff.getNewObject();
+            RevFeature revFeature = command(RevObjectParse.class).setObjectId(ref.getObjectId())
+                    .call(RevFeature.class).get();
+            RevFeatureType revFeatureType = command(RevObjectParse.class)
+                    .setObjectId(ref.getMetadataId()).call(RevFeatureType.class).get();
+            SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
+                    (SimpleFeatureType) revFeatureType.type());
+            ImmutableList<PropertyDescriptor> descriptors = revFeatureType.descriptors();
+            for (int i = 0; i < descriptors.size(); i++) {
+                PropertyDescriptor descriptor = descriptors.get(i);
+                Optional<Object> value = revFeature.get(i);
+                featureBuilder.set(descriptor.getName(), value.orNull());
+            }
+            SimpleFeature feature = featureBuilder.buildFeature(ref.name());
+            Entity entity = converter.toEntity(feature, id);
+            EntityContainer container;
+            if (entity instanceof Node) {
+                container = new NodeContainer((Node) entity);
+            } else {
+                container = new WayContainer((Way) entity);
             }
 
+            ChangeAction action = diff.changeType().equals(ChangeType.ADDED) ? ChangeAction.Create
+                    : diff.changeType().equals(ChangeType.MODIFIED) ? ChangeAction.Modify
+                            : ChangeAction.Delete;
+
+            return new ChangeContainer(container, action);
         };
-        return Iterators.transform(iterator, function);
+        return AutoCloseableIterator.transform(iterator, function);
     }
 
 }

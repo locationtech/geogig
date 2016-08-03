@@ -13,16 +13,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.plumbing.diff.DiffObjectCount;
-import org.locationtech.geogig.api.plumbing.merge.Conflict;
-import org.locationtech.geogig.api.plumbing.merge.ConflictsReadOp;
-import org.locationtech.geogig.api.porcelain.AddOp;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.plumbing.merge.ConflictsCheckOp;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.WorkingTree;
 
 import com.beust.jcommander.Parameter;
@@ -47,7 +46,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig add [-n] [<pattern>...]}
+ * <li>{@code geogig add [-n] [<pattern>...]}
  * </ul>
  * 
  * @see AddOp
@@ -58,10 +57,12 @@ public class Add extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--dry-run", "-n" }, description = "Maximum number of commits to log")
     private boolean dryRun;
 
-    @Parameter(names = { "--update", "-u" }, description = "Only add features that have already been tracked")
+    @Parameter(names = { "--update",
+            "-u" }, description = "Only add features that have already been tracked")
     private boolean updateOnly;
 
-    @Parameter(names = { "--quiet", "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
+    @Parameter(names = { "--quiet",
+            "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
     private boolean quiet;
 
     @Parameter(description = "<patterns>...")
@@ -86,14 +87,14 @@ public class Add extends AbstractCommand implements CLICommand {
             throw new InvalidParameterException("Only a single path is supported so far");
         }
 
-        List<Conflict> conflicts = geogig.command(ConflictsReadOp.class).call();
+        final boolean hasConflicts = geogig.command(ConflictsCheckOp.class).call().booleanValue();
 
         if (!quiet) {
             console.print("Counting unstaged elements...");
             console.flush();
             DiffObjectCount unstaged = geogig.getRepository().workingTree()
                     .countUnstaged(pathFilter);
-            if (0 == unstaged.count() && conflicts.isEmpty()) {
+            if (0 == unstaged.count() && !hasConflicts) {
                 console.println();
                 console.println("No unstaged elements, exiting.");
                 return;

@@ -629,23 +629,50 @@ Porcelain Commands Supported
 
 	**Currently Supported Options:**
 	
-		a) **list** (-R) - true to list the names of your tags
+	    a) **name** (-R) - name of tag, used when creating and deleting tags
 		
-			**Type:** Boolean
+			**Type:** String
 			
-			**Default:** false
+			**Default:** null
+			
+	    b) **message** (-R) - message of tag, used when creating tags
+		
+			**Type:** String
+			
+			**Default:** null
+			
+	    c) **commit** (-R) - ref spec of commit that the tag should point to, used when creating tags
+		
+			**Type:** String
+			
+			**Default:** null
 
 	**Example:**  
-		
- 	::
+	
+	    a) **List all tags**
+	        
+	        ::
+	        
+	            GET localhost:8182/repos/<repo name>/tag
+	            
+	        Outputs a list of all tags.
+	            
+	    b) **Delete a tag**
+	    
+	        ::
+	        
+	            DELETE localhost:8182/repos/<repo name>/tag?name=TagToDelete
+	            
+	        Outputs the information of the deleted tag.
+	            
+	    c) **Create a new tag**
+	    
+	        ::
+	        
+	            PUT localhost:8182/repos/<repo name>/tag?name=MyNewTag&commit=master&message=MyMessage
+	            
+	        Outputs the information of the newly created tag.
 
-	  localhost:8182/repos/<repo name>/tag?list=true
-	
-	**Output:**
-	
-	::
-	   
-	   Returns a list of the tags.
 	   	
 - **Version**
 
@@ -1029,8 +1056,8 @@ These commands can be used by using the ``repos/<repo name>/repo/`` endpoint, in
     
        {
          path: 'featureType/feature',
-         ours: 'objectId for left feature',
-         theirs: 'objectId for right feature',
+         ours: 'commitId that contains the left feature',
+         theirs: 'commitId that contains the right feature',
          merges: {
             attr1: {
                 ours: true // use the value from the left feature

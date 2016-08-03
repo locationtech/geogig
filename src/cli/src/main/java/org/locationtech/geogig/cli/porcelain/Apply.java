@@ -20,17 +20,17 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.plumbing.diff.Patch;
-import org.locationtech.geogig.api.plumbing.diff.PatchSerializer;
-import org.locationtech.geogig.api.plumbing.diff.VerifyPatchOp;
-import org.locationtech.geogig.api.plumbing.diff.VerifyPatchResults;
-import org.locationtech.geogig.api.porcelain.ApplyPatchOp;
-import org.locationtech.geogig.api.porcelain.CannotApplyPatchException;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.plumbing.diff.Patch;
+import org.locationtech.geogig.plumbing.diff.PatchSerializer;
+import org.locationtech.geogig.plumbing.diff.VerifyPatchOp;
+import org.locationtech.geogig.plumbing.diff.VerifyPatchResults;
+import org.locationtech.geogig.porcelain.ApplyPatchOp;
+import org.locationtech.geogig.porcelain.CannotApplyPatchException;
+import org.locationtech.geogig.repository.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -56,7 +56,8 @@ public class Apply extends AbstractCommand {
     /**
      * Check if patch can be applied
      */
-    @Parameter(names = { "--check" }, description = "Do not apply. Just check that patch can be applied")
+    @Parameter(names = {
+            "--check" }, description = "Do not apply. Just check that patch can be applied")
     private boolean check;
 
     @Parameter(names = { "--reverse" }, description = "apply the patch in reverse")
@@ -66,10 +67,12 @@ public class Apply extends AbstractCommand {
      * Whether to apply the patch partially and generate new patch file with rejected changes, or
      * try to apply the whole patch
      */
-    @Parameter(names = { "--reject" }, description = "Apply the patch partially and generate new patch file with rejected changes")
+    @Parameter(names = {
+            "--reject" }, description = "Apply the patch partially and generate new patch file with rejected changes")
     private boolean reject;
 
-    @Parameter(names = { "--summary" }, description = "Do not apply. Just show a summary of changes contained in the patch")
+    @Parameter(names = {
+            "--summary" }, description = "Do not apply. Just show a summary of changes contained in the patch")
     private boolean summary;
 
     @Override
@@ -86,7 +89,7 @@ public class Apply extends AbstractCommand {
         try {
             stream = new FileInputStream(patchFile);
         } catch (FileNotFoundException e1) {
-            throw new CommandFailedException("Can't open patch file " + patchFile, e1);
+            throw new CommandFailedException("Can't open patch file " + patchFile, true);
         }
         BufferedReader reader = null;
         try {
@@ -107,8 +110,8 @@ public class Apply extends AbstractCommand {
         if (summary) {
             console.println(patch.toString());
         } else if (check) {
-            VerifyPatchResults verify = cli.getGeogig().command(VerifyPatchOp.class)
-                    .setPatch(patch).call();
+            VerifyPatchResults verify = cli.getGeogig().command(VerifyPatchOp.class).setPatch(patch)
+                    .call();
             Patch toReject = verify.getToReject();
             Patch toApply = verify.getToApply();
             if (toReject.isEmpty()) {
@@ -140,13 +143,13 @@ public class Apply extends AbstractCommand {
                         writer.close();
                         sb.append("Patch file with rejected changes created at "
                                 + file.getAbsolutePath() + "\n");
-                        throw new CommandFailedException(sb.toString());
+                        throw new CommandFailedException(sb.toString(), true);
                     }
                 } else {
                     console.println("Patch applied succesfully");
                 }
             } catch (CannotApplyPatchException e) {
-                throw new CommandFailedException(e);
+                throw new CommandFailedException(e.getMessage(), true);
             }
 
         }

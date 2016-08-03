@@ -13,7 +13,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -32,6 +31,11 @@ public class RequestDeleteRepositoryTokenTest extends AbstractWebOpTest {
         return RequestDeleteRepositoryToken.class;
     }
 
+    @Override
+    protected boolean requiresTransaction() {
+        return false;
+    }
+
     @Test
     public void testRequestToken() throws Exception {
         ParameterSet options = TestParams.of();
@@ -41,16 +45,5 @@ public class RequestDeleteRepositoryTokenTest extends AbstractWebOpTest {
         JSONObject response = getJSONResponse().getJSONObject("response");
         String token = response.getString("token");
         assertTrue(token.length() > 0);
-    }
-
-    @Test
-    public void testRequireRepository() {
-        testContext.createUninitializedRepo();
-        ParameterSet options = TestParams.of();
-        WebAPICommand cmd = buildCommand(options);
-
-        ex.expect(RestletException.class);
-        ex.expectMessage("Repository not found.");
-        cmd.run(testContext.get());
     }
 }

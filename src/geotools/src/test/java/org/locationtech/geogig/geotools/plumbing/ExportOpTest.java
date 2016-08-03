@@ -11,7 +11,6 @@ package org.locationtech.geogig.geotools.plumbing;
 
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.Query;
 import org.geotools.data.memory.MemoryDataStore;
@@ -22,11 +21,11 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.junit.Test;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeatureTypeImpl;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -126,15 +125,11 @@ public class ExportOpTest extends RepositoryTestCase {
                 simplifiedPoints3 };
 
         final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(simplifiedPointsType);
-        Function<Feature, Optional<Feature>> function = new Function<Feature, Optional<Feature>>() {
-            @Override
-            @Nullable
-            public Optional<Feature> apply(@Nullable Feature feature) {
-                SimpleFeature simpleFeature = (SimpleFeature) feature;
-                featureBuilder.add(simpleFeature.getAttribute(0));
-                featureBuilder.add(simpleFeature.getAttribute(2));
-                return Optional.of((Feature) featureBuilder.buildFeature(null));
-            }
+        final Function<Feature, Optional<Feature>> function = (feature) -> {
+            SimpleFeature simpleFeature = (SimpleFeature) feature;
+            featureBuilder.add(simpleFeature.getAttribute(0));
+            featureBuilder.add(simpleFeature.getAttribute(2));
+            return Optional.of((Feature) featureBuilder.buildFeature(null));
         };
 
         Feature[] points = new Feature[] { points1, points2, points3 };
@@ -162,15 +157,12 @@ public class ExportOpTest extends RepositoryTestCase {
                     wrongFeaturesName, wrongFeaturesTypeSpec);
             final SimpleFeatureBuilder wrongFeatureBuilder = new SimpleFeatureBuilder(
                     wrongFeaturesType);
-            Function<Feature, Optional<Feature>> wrongFunction = new Function<Feature, Optional<Feature>>() {
-                @Override
-                @Nullable
-                public Optional<Feature> apply(@Nullable Feature feature) {
-                    SimpleFeature simpleFeature = (SimpleFeature) feature;
-                    wrongFeatureBuilder.add(simpleFeature.getAttribute(0));
-                    return Optional.of((Feature) wrongFeatureBuilder.buildFeature(null));
-                }
+            final Function<Feature, Optional<Feature>> wrongFunction = (feature) -> {
+                SimpleFeature simpleFeature = (SimpleFeature) feature;
+                wrongFeatureBuilder.add(simpleFeature.getAttribute(0));
+                return Optional.of((Feature) wrongFeatureBuilder.buildFeature(null));
             };
+
             geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
                     .setFeatureTypeConversionFunction(wrongFunction).call();
             fail();
@@ -277,7 +269,7 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
                 .setAlter(true)
-                .setFilterFeatureTypeId(RevFeatureTypeImpl.build(modifiedPointsType).getId())
+                .setFilterFeatureTypeId(RevFeatureTypeBuilder.build(modifiedPointsType).getId())
                 .call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;
@@ -303,7 +295,7 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
-                .setFilterFeatureTypeId(RevFeatureTypeImpl.build(modifiedPointsType).getId())
+                .setFilterFeatureTypeId(RevFeatureTypeBuilder.build(modifiedPointsType).getId())
                 .call();
         featureSource = dataStore.getFeatureSource(typeName);
         featureStore = (SimpleFeatureStore) featureSource;

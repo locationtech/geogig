@@ -13,19 +13,19 @@ import static com.google.common.base.Preconditions.checkState;
 
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.locationtech.geogig.api.Context;
-import org.locationtech.geogig.api.Node;
-import org.locationtech.geogig.api.NodeRef;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.RevFeature;
-import org.locationtech.geogig.api.RevFeatureType;
-import org.locationtech.geogig.api.RevObject.TYPE;
-import org.locationtech.geogig.api.RevTree;
-import org.locationtech.geogig.api.RevTreeBuilder;
-import org.locationtech.geogig.api.plumbing.FindTreeChild;
-import org.locationtech.geogig.api.plumbing.RevObjectParse;
-import org.locationtech.geogig.api.plumbing.WriteBack;
-import org.locationtech.geogig.api.porcelain.AddOp;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.WriteBack;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -47,9 +47,9 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class ResolveConflict extends AbstractWebAPICommand {
 
-    private String path;
+    String path;
 
-    private ObjectId objectId;
+    ObjectId objectId;
 
     public ResolveConflict(ParameterSet options) {
         super(options);
@@ -67,7 +67,11 @@ public class ResolveConflict extends AbstractWebAPICommand {
     }
 
     public void setFeatureObjectId(String objectId) {
-        this.objectId = ObjectId.valueOf(objectId);
+        if (objectId == null) {
+            this.objectId = null;
+        } else {
+            this.objectId = ObjectId.valueOf(objectId);
+        }
     }
 
     /**
@@ -81,7 +85,7 @@ public class ResolveConflict extends AbstractWebAPICommand {
     protected void runInternal(CommandContext context) {
         if (this.getTransactionId() == null) {
             throw new CommandSpecException(
-                    "No transaction was specified, add requires a transaction to preserve the stability of the repository.");
+                    "No transaction was specified, resolve conflict requires a transaction to preserve the stability of the repository.");
         }
         final Context geogig = this.getCommandLocator(context);
 
@@ -102,8 +106,8 @@ public class ResolveConflict extends AbstractWebAPICommand {
         Envelope bounds = ReferencedEnvelope.create(crs);
 
         Optional<Object> o;
-        for (int i = 0; i < revFeature.getValues().size(); i++) {
-            o = revFeature.getValues().get(i);
+        for (int i = 0; i < revFeature.size(); i++) {
+            o = revFeature.get(i);
             if (o.isPresent() && o.get() instanceof Geometry) {
                 Geometry g = (Geometry) o.get();
                 if (bounds.isNull()) {
@@ -133,8 +137,7 @@ public class ResolveConflict extends AbstractWebAPICommand {
             treeBuilder = new RevTreeBuilder(geogig.objectDatabase());
         }
         treeBuilder.put(node.getNode());
-        ObjectId newTreeId = geogig
-                .command(WriteBack.class)
+        ObjectId newTreeId = geogig.command(WriteBack.class)
                 .setAncestor(
                         new RevTreeBuilder(geogig.objectDatabase(), geogig.workingTree().getTree()))
                 .setChildPath(node.getParentPath()).setTree(treeBuilder.build())

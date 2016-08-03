@@ -22,21 +22,21 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.api.AbstractGeoGigOp;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Platform;
-import org.locationtech.geogig.api.ProgressListener;
-import org.locationtech.geogig.api.SubProgressListener;
-import org.locationtech.geogig.api.hooks.Hookable;
-import org.locationtech.geogig.api.porcelain.AddOp;
-import org.locationtech.geogig.api.porcelain.CommitOp;
-import org.locationtech.geogig.osm.internal.coordcache.MapdbPointCache;
+import org.locationtech.geogig.hooks.Hookable;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.osm.internal.coordcache.MappedPointCache;
 import org.locationtech.geogig.osm.internal.coordcache.PointCache;
 import org.locationtech.geogig.osm.internal.log.AddOSMLogEntry;
 import org.locationtech.geogig.osm.internal.log.OSMLogEntry;
 import org.locationtech.geogig.osm.internal.log.OSMMappingLogEntry;
 import org.locationtech.geogig.osm.internal.log.WriteOSMFilterFile;
 import org.locationtech.geogig.osm.internal.log.WriteOSMMappingEntries;
+import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.SubProgressListener;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
 import org.openstreetmap.osmosis.core.OsmosisRuntimeException;
@@ -326,14 +326,11 @@ public class OSMImportOp extends AbstractGeoGigOp<Optional<OSMReport>> {
         Thread readerThread = new Thread(reader, "osm-import-reader-thread");
         readerThread.start();
 
-        Function<Feature, String> parentTreePathResolver = new Function<Feature, String>() {
-            @Override
-            public String apply(Feature input) {
-                if (input instanceof MappedFeature) {
-                    return ((MappedFeature) input).getPath();
-                }
-                return input.getType().getName().getLocalPart();
+        final Function<Feature, String> parentTreePathResolver = (f) -> {
+            if (f instanceof MappedFeature) {
+                return ((MappedFeature) f).getPath();
             }
+            return f.getType().getName().getLocalPart();
         };
 
         // used to set the task status name, but report no progress so it does not interfere
@@ -374,12 +371,8 @@ public class OSMImportOp extends AbstractGeoGigOp<Optional<OSMReport>> {
      */
     static class ConvertAndImportSink implements Sink {
 
-        private static final Function<WayNode, Long> NODELIST_TO_ID_LIST = new Function<WayNode, Long>() {
-            @Override
-            public Long apply(WayNode input) {
-                return Long.valueOf(input.getNodeId());
-            }
-        };
+        private static final Function<WayNode, Long> NODELIST_TO_ID_LIST = (wn) -> Long
+                .valueOf(wn.getNodeId());
 
         private int count = 0;
 
@@ -418,7 +411,7 @@ public class OSMImportOp extends AbstractGeoGigOp<Optional<OSMReport>> {
             this.latestChangeset = 0;
             this.latestTimestamp = 0;
             // this.pointCache = new MappedPointCache(platform);
-            this.pointCache = new MapdbPointCache(platform);
+            this.pointCache = new MappedPointCache(platform);//new MapdbPointCache(platform);
             this.sw = Stopwatch.createStarted();
         }
 

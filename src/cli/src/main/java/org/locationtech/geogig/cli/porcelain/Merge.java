@@ -10,29 +10,31 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
-import org.locationtech.geogig.api.GeoGIG;
-import org.locationtech.geogig.api.ObjectId;
-import org.locationtech.geogig.api.Ref;
-import org.locationtech.geogig.api.RevCommit;
-import org.locationtech.geogig.api.plumbing.RefParse;
-import org.locationtech.geogig.api.plumbing.RevParse;
-import org.locationtech.geogig.api.plumbing.diff.DiffEntry;
-import org.locationtech.geogig.api.porcelain.DiffOp;
-import org.locationtech.geogig.api.porcelain.MergeOp;
-import org.locationtech.geogig.api.porcelain.MergeOp.MergeReport;
-import org.locationtech.geogig.api.porcelain.NothingToCommitException;
-import org.locationtech.geogig.api.porcelain.ResetOp;
-import org.locationtech.geogig.api.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.plumbing.DiffCount;
+import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.porcelain.ConflictsException;
+import org.locationtech.geogig.porcelain.MergeOp;
+import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.porcelain.NothingToCommitException;
+import org.locationtech.geogig.porcelain.ResetOp;
+import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
+import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.ProgressListener;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -48,7 +50,7 @@ import com.google.common.collect.Lists;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig merge [-m <msg>] [--ours] [--theirs] <commitish>...}
+ * <li>{@code geogig merge [-m <msg>] [--ours] [--theirs] <commitish>...}
  * </ul>
  * 
  * @see MergeOp
@@ -77,10 +79,12 @@ public class Merge extends AbstractCommand implements CLICommand {
     @Parameter(names = "--abort", description = "Aborts the current merge")
     private boolean abort;
 
-
-
     @Parameter(description = "<commitish>...")
     private List<String> commits = Lists.newArrayList();
+
+    @Parameter(names = { "--quiet",
+            "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
+    private boolean quiet;
 
     /**
      * Executes the merge command using the provided options.
@@ -93,12 +97,11 @@ public class Merge extends AbstractCommand implements CLICommand {
 
         final GeoGIG geogig = cli.getGeogig();
 
-        Ansi ansi = newAnsi(console);
-
         if (abort) {
             Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
             if (!ref.isPresent()) {
-                throw new CommandFailedException("There is no merge to abort <ORIG_HEAD missing>.");
+                throw new CommandFailedException("There is no merge to abort <ORIG_HEAD missing>.",
+                        true);
             }
 
             geogig.command(ResetOp.class).setMode(ResetMode.HARD)
@@ -107,24 +110,28 @@ public class Merge extends AbstractCommand implements CLICommand {
             return;
         }
 
+        final ProgressListener progress = cli.getProgressListener();
         RevCommit commit;
         try {
             MergeOp merge = geogig.command(MergeOp.class);
             merge.setOurs(ours).setTheirs(theirs).setNoCommit(noCommit);
-            merge.setMessage(message).setProgressListener(cli.getProgressListener());
+            merge.setMessage(message).setProgressListener(progress);
             merge.setFastForwardOnly(fastForwardOnly).setNoFastForward(noFastForward);
             for (String commitish : commits) {
                 Optional<ObjectId> commitId;
                 commitId = geogig.command(RevParse.class).setRefSpec(commitish).call();
                 checkParameter(commitId.isPresent(), "Commit not found '%s'", commitish);
-                merge.addCommit(Suppliers.ofInstance(commitId.get()));
+                merge.addCommit(commitId.get());
+            }
+            if (progress.isCanceled()) {
+                return;
             }
             MergeReport report = merge.call();
             commit = report.getMergeCommit();
         } catch (RuntimeException e) {
             if (e instanceof NothingToCommitException || e instanceof IllegalArgumentException
-                    || e instanceof IllegalStateException) {
-                throw new CommandFailedException(e.getMessage(), e);
+                    || e instanceof IllegalStateException || e instanceof ConflictsException) {
+                throw new InvalidParameterException(e.getMessage(), e);
             }
             throw e;
         }
@@ -132,31 +139,25 @@ public class Merge extends AbstractCommand implements CLICommand {
 
         console.println("[" + commit.getId() + "] " + commit.getMessage());
 
-        console.print("Committed, counting objects...");
-        Iterator<DiffEntry> diff = geogig.command(DiffOp.class).setOldVersion(parentId)
-                .setNewVersion(commit.getId()).call();
-
-        int adds = 0, deletes = 0, changes = 0;
-        DiffEntry diffEntry;
-        while (diff.hasNext()) {
-            diffEntry = diff.next();
-            switch (diffEntry.changeType()) {
-            case ADDED:
-                ++adds;
-                break;
-            case REMOVED:
-                ++deletes;
-                break;
-            case MODIFIED:
-                ++changes;
-                break;
-            }
+        if (progress.isCanceled()) {
+            return;
         }
 
-        ansi.fg(Color.GREEN).a(adds).reset().a(" features added, ").fg(Color.YELLOW).a(changes)
-                .reset().a(" changed, ").fg(Color.RED).a(deletes).reset().a(" deleted.").reset()
-                .newline();
+        if (!quiet) {
+            console.print("Committed, counting objects...");
+            console.flush();
+            final DiffObjectCount diffCount = geogig.command(DiffCount.class)
+                    .setOldVersion(parentId.toString()).setNewTree(commit.getTreeId())
+                    .setProgressListener(progress).call();
 
-        console.print(ansi.toString());
+            Ansi ansi = newAnsi(console);
+            ansi.fg(Color.GREEN).a(diffCount.getFeaturesAdded()).reset().a(" features added, ")
+                    .fg(Color.YELLOW).a(diffCount.getFeaturesChanged()).reset().a(" changed, ")
+                    .fg(Color.RED).a(diffCount.getFeaturesRemoved()).reset().a(" deleted.").reset()
+                    .newline();
+
+            console.print(ansi.toString());
+        }
+
     }
 }

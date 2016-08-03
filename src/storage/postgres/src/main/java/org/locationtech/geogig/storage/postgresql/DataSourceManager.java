@@ -33,7 +33,7 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
         hc.setConnectionInitSql("SELECT NOW()");
         hc.setConnectionTestQuery("SELECT NOW()");
         hc.setDriverClassName("org.postgresql.Driver");
-
+        
         final String jdbcUrl = getUrl(config);
         hc.setJdbcUrl(jdbcUrl);
 
@@ -42,6 +42,7 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
         // hc.setIdleTimeout(30/* seconds */);
         hc.setUsername(config.getUser());
         hc.setPassword(config.getPassword());
+        hc.setConnectionTimeout(5000);
 
         LOG.debug("Connecting to " + jdbcUrl + " as user " + config.getUser());
         HikariDataSource ds = new HikariDataSource(hc);

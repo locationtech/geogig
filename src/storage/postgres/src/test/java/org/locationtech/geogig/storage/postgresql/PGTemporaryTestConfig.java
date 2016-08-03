@@ -77,6 +77,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
         try {
             TableNames tables = environment.getTables();
             Connection cx = dataSource.getConnection();
+            execute(cx, String.format("DROP VIEW IF EXISTS %s_name", tables.repositories()));
             delete(cx, tables.objects(), true);
             delete(cx, tables.conflicts());
             delete(cx, tables.blobs());
@@ -100,6 +101,10 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     private void delete(Connection cx, String table, boolean cascade) throws SQLException {
         String sql = String.format("DROP TABLE IF EXISTS %s %s", table, cascade ? "CASCADE" : "");
+        execute(cx, sql);
+    }
+
+    private void execute(Connection cx, String sql) throws SQLException {
         LOG.debug(sql);
         try (Statement st = cx.createStatement()) {
             st.execute(sql);

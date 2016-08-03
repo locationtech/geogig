@@ -1,0 +1,720 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1">
+  
+  <title>An Introduction to GeoGig &mdash; GeoGig 1.0 Workshop</title>
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="_static/print.css" type="text/css" media="print" />
+  <!--[if IE]>
+  <link rel="stylesheet" href="_static/blueprint/ie.css" type="text/css" media="screen, projection" />
+  <![endif]-->
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+   <link rel="stylesheet" href="_static/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/offcanvas.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html'
+    };
+  </script>
+  <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <link rel="top" title="GeoGig 1.0 Workshop" href="index.html" />
+      <link rel="prev" title="GeoGig Workshop" href="index.html" />
+</head>
+<body class="workshop">
+    <div id="blacktop"></div>
+    <header id="masthead">
+      <div class="navbar">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geogig.org"><h1>GeoGig</h1></a>
+          </div>
+          <div class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li><a href="http://geogig.org/#install">Get Started</a></li>
+              <li><a href="http://geogig.org/docs/index.html">Documentation</a></li>
+              <li><a href="https://github.com/locationtech/geogig">On Github</a></li>
+            </ul>
+          </div><!--/.navbar-collapse -->
+        </div>
+      </div>
+    </header>
+
+    <section class="subheading hidden-xs">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8">
+            <p class="byline">A Tool for Geospatial Data Management</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <a name="top"></a>
+
+ <div id="main">
+    <div class="wrap selfclear">
+      <div id="content">
+      <div class="container">
+        <div class="row row-offcanvas row-offcanvas-right">
+          <div class="col-md-8">
+            <div class="row pull-right">
+             <div class="visible-sm visible-xs" id="menu-btn">
+                <button class="btn btn-blue btn-sm"type="button" data-toggle="offcanvas">
+                  <span class="btn-text active">Menu &rarr;</span>
+                  <span class="btn-back">&larr; Back</span>
+                </button>
+              </div>
+            </div>
+<ul id="breadcrumbs">
+  
+  <li><a href="index.html">GeoGig 1.0 Workshop</a> &raquo;</li>
+  <li>An Introduction to GeoGig</li>
+</ul>
+<ul id="relatedlinks" class="selfclear">
+  <li class="first">
+    <a href="genindex.html" title="General Index"
+       accesskey="I">index</a></li>
+  <li>
+    <a href="index.html" title="GeoGig Workshop"
+       accesskey="P">previous</a>|</li>
+</ul>
+        
+  <div class="section" id="an-introduction-to-geogig">
+<h1>An Introduction to GeoGig<a class="headerlink" href="#an-introduction-to-geogig" title="Permalink to this headline">¶</a></h1>
+<p>This workshop describes how to use GeoGig along with other software packages for spatial data management, showing a typical workflow.</p>
+<p>Instructions are given for all steps performed in the workshop, both for GeoGig and for all additional applications used, but the workshop focuses primarily on GeoGig and assumes user-level knowledge of all other applications. For more information about them, please refer to the corresponding documentation of each program.</p>
+<div class="section" id="sample-data">
+<h2>Sample data<a class="headerlink" href="#sample-data" title="Permalink to this headline">¶</a></h2>
+<p>All exercises in this workshop are based on a sample dataset with OpenStreet Map data. You can download it as a zip file from <a class="reference external" href="http://download.geofabrik.de/africa/ethiopia-latest.shp.zip">here</a>. Unzip it in a folder of your choice.</p>
+</div>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>The following software is required to be installed in your system (followed by download instructions):</p>
+<ul class="simple">
+<li>GeoGig</li>
+<li>GeoServer with GeoGig Extension</li>
+<li>PostGIS (including <code class="docutils literal"><span class="pre">shp2pgsql</span></code>)</li>
+<li>QGIS 2.0</li>
+</ul>
+<p>GeoServer and PostGIS are installed as part of OpenGeo Suite. This workshop assumes than you are using OpenGeo Suite, but will describe independent installation of these two components. Once installed, most of the workshop tasks should be identical, and if any difference exists between the OpenGeo Suite version and the canonical one, it will be pointed out.</p>
+<p>Installation procedures for each of the above applications are described next.</p>
+<div class="section" id="installing-geogig">
+<h3>Installing GeoGig<a class="headerlink" href="#installing-geogig" title="Permalink to this headline">¶</a></h3>
+<p>To install GeoGig, follow these steps.</p>
+<ol class="arabic">
+<li><p class="first">If not already on your system, install a <a class="reference external" href="http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html">Java JDK</a>. GeoGig requires Java 8 or higher to run. Make sure the <cite>java</cite> executable is accessible (i.e. check your PATH environment variable) and the JAVA_HOME environment variable points to the JDK or JRE installation directory.</p>
+</li>
+<li><p class="first">After the JDK is installed, navigate to <a class="reference external" href="http://geogig.org">http://geogig.org</a> and click <span class="guilabel">Download</span>.</p>
+</li>
+<li><p class="first">Extract this archive to your preferred program directory. (For example, <code class="file docutils literal"><span class="pre">C:\Program</span> <span class="pre">Files\GeoGig</span></code> or <code class="file docutils literal"><span class="pre">/opt/geogig</span></code>.)</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The same packages can be used on Windows, OS X, and Linux.</p>
+</div>
+</li>
+<li><p class="first">Add the bin directory to your <code class="docutils literal"><span class="pre">PATH</span></code> environment variable.</p>
+</li>
+</ol>
+<p>When finished, you should be able to run the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">--help</span></code> and see the command usage.</p>
+</div>
+<div class="section" id="installing-geoserver-with-geogig-extension">
+<h3>Installing GeoServer with GeoGig extension<a class="headerlink" href="#installing-geoserver-with-geogig-extension" title="Permalink to this headline">¶</a></h3>
+<p>You need to have GeoServer installed in your system, with a version higher or equal to 2.3.</p>
+<p>Installation instructions can be found in the <a class="reference external" href="http://docs.geoserver.org/stable/en/user/installation/index.html">GeoServer documentation</a>.</p>
+<p>If you are using OpenGeo Suite, GeoServer should already be installed in your system, but it does not contain the GeoGig extension. You can skip the GeoServer installation, but you should install the GeoGig extension as described above.</p>
+</div>
+<div class="section" id="installing-postgis">
+<h3>Installing PostGIS<a class="headerlink" href="#installing-postgis" title="Permalink to this headline">¶</a></h3>
+<p>To install PostGIS, first you must install PostgresSQL. Binaries are available for different OSs <a class="reference external" href="http://www.postgresql.org/download/">here</a>.</p>
+<p>Then, install PostGIS on your PostgreSQL. Packages and iinstall instructions are found <a class="reference external" href="http://postgis.net/install">here</a>.</p>
+<p>As in the case of GeoServer, if you have installed the OpenGeo Suite, you should already have PostGIS, including the <code class="docutils literal"><span class="pre">shp2pgsql</span></code> utility, installed.</p>
+</div>
+<div class="section" id="installing-qgis">
+<h3>Installing QGIS<a class="headerlink" href="#installing-qgis" title="Permalink to this headline">¶</a></h3>
+<p>To install QGIS 2.0, you can download binaries from the <a class="reference external" href="http://www.qgis.org/en/site/forusers/download.html">QGIS website</a>.</p>
+<p>The OpenGeo Explorer plugin is used in this workshop. It is not a core plugin and it has to be installed manually. Installation instructions can be found in the <a class="reference external" href="http://qgis.opengeo.org/static/docs/intro.html">OpenGeo Explorer documentation site</a>.</p>
+</div>
+</div>
+<div class="section" id="setting-up">
+<h2>Setting up<a class="headerlink" href="#setting-up" title="Permalink to this headline">¶</a></h2>
+<p>Once the above software is installed, some initialization is needed before starting working with them. In particular, PostGIS and GeoGig both need to be set up, and the setting up procedures are detailed next.</p>
+<div class="section" id="setting-up-geogig">
+<h3>Setting up GeoGig<a class="headerlink" href="#setting-up-geogig" title="Permalink to this headline">¶</a></h3>
+<p>A user has to be defined in GeoGig before you can commit data to a GeoGig repository and create new snapshots.</p>
+<p>To define a new user, open a console and type the following.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config --global user.name &quot;Author&quot;</span>
+<span class="go">geogig config --global user.email &quot;author@example.com&quot;</span>
+</pre></div>
+</div>
+<p>Replace the user name and user email with your own credentials</p>
+<p>All commits that you do now will be contain that author information. Individual user name and email can be defined for a give repository, but if those are not defined, GeoGig will use the global value that we have set up with the above commands.</p>
+</div>
+<div class="section" id="setting-up-postgis">
+<h3>Setting up PostGIS<a class="headerlink" href="#setting-up-postgis" title="Permalink to this headline">¶</a></h3>
+<p>A database is required to work with PostGIS. We will create a new database named <code class="docutils literal"><span class="pre">geogig-ethiopia</span></code> that we will use for storing all the data used in this workshop.</p>
+<p>The database can be created from the <em>pgAdmin II</em> utility. Open <em>pgAdmin III</em></p>
+<div class="figure">
+<img alt="_images/pgadmin.png" src="_images/pgadmin.png" />
+</div>
+<p>You should have a single server entry. Double-click on it to connect and enter <code class="docutils literal"><span class="pre">postgres</span></code> as the password in the dialog that will appear.</p>
+<p>We will now create a user that we will use for connecting to the database.</p>
+<p>In the object browser, under <em>Login roles</em> you should have a single user name <em>postgres</em>. Right-click on the <em>Login roles</em> item and select <em>New login role</em>.</p>
+<div class="figure">
+<img alt="_images/new_role.png" src="_images/new_role.png" />
+</div>
+<p>Fill the first tab of the dialog as shown below, entering <code class="docutils literal"><span class="pre">geogig</span></code> as the user name</p>
+<div class="figure">
+<img alt="_images/create_role.png" src="_images/create_role.png" />
+</div>
+<p>In the second tab, enter the password corresponding to that user (use <code class="docutils literal"><span class="pre">geogig</span></code> as password)</p>
+<div class="figure">
+<img alt="_images/create_role2.png" src="_images/create_role2.png" />
+</div>
+<p>In the <em>Priviledges</em> tab, make sure the <em>Superuser</em> box is checked, to allow the user full permission.</p>
+<div class="figure">
+<img alt="_images/create_role3.png" src="_images/create_role3.png" />
+</div>
+<p>Now the user should be defined. Let&#8217;s create the database.</p>
+<p>Right-click on the <em>Databases</em> item and select <em>New Database</em>.</p>
+<p>Fill in the <em>New Database</em> form as shown below and click <em>OK</em>.</p>
+<ul class="simple">
+<li><em>Name</em>: <code class="docutils literal"><span class="pre">geogig-ethiopia</span></code></li>
+<li><em>Owner</em>: <code class="docutils literal"><span class="pre">geogig</span></code></li>
+</ul>
+<div class="figure">
+<img alt="_images/create_pg_database.png" src="_images/create_pg_database.png" />
+</div>
+<p>Select the new <code class="docutils literal"><span class="pre">workshop</span></code> database and open it up to display the tree of objects. You’ll see the <code class="docutils literal"><span class="pre">public</span></code> schema.</p>
+<div class="figure">
+<img alt="_images/workshop_db.png" src="_images/workshop_db.png" />
+</div>
+<p>Click on the SQL query button indicated below (or go to Tools &gt; Query Tool).</p>
+<div class="figure">
+<img alt="_images/sql_query.png" src="_images/sql_query.png" />
+</div>
+<p>Enter the following query into the query text field to load the PostGIS spatial extension:</p>
+<div class="highlight-python"><div class="highlight"><pre>CREATE EXTENSION postgis;
+</pre></div>
+</div>
+<p>Click the Play button in the toolbar (or press F5) to <em>Execute the query.</em></p>
+<p>The database is now created and we can already add data to it and create new tables in it.</p>
+</div>
+</div>
+<div class="section" id="preparing-and-importing-the-data">
+<h2>Preparing and importing the data<a class="headerlink" href="#preparing-and-importing-the-data" title="Permalink to this headline">¶</a></h2>
+<p>The sample data zip file contains several shapefiles that we can import into the PostGIS database that we have just created.</p>
+<p>We can use QGIS to do the import. First, start QGIS.</p>
+<div class="figure">
+<img alt="_images/qgis.png" src="_images/qgis.png" />
+</div>
+<p>Make sure that the QGIS browser is visible, by enabling it in the <em>View/Panels</em> menu. It should appear by default on the left-hand side of youor QGIS window.</p>
+<div class="figure">
+<img alt="_images/qgis_browser.png" src="_images/qgis_browser.png" />
+</div>
+<p>Open the OpenGeo Explorer (go to the <em>OpenGeo</em> menu), which should appear on the right hand side of your QGIS window.</p>
+<div class="figure">
+<img alt="_images/opengeo_explorer.png" src="_images/opengeo_explorer.png" />
+</div>
+<p>Now define a connection to the PostGIS database. Right click on the <em>PostGIS connections</em> entry in the browser, right-click on it and select <em>New connection</em>. Fill the dialog as shown below.</p>
+<div class="figure">
+<img alt="_images/new_connection.png" src="_images/new_connection.png" />
+</div>
+<p>Use <code class="docutils literal"><span class="pre">geogig</span></code> as pasword. If you are running a standard PostGIS instead of the OpenGeo Suite one, your port would probaly be 5432 instead of 54321.</p>
+<p>The <em>PostGIS connections</em> entry should be updated and populated with the current connections defined in QGIS, among them the one that you have just created.</p>
+<div class="figure">
+<img alt="_images/geogig_db_connections.png" src="_images/geogig_db_connections.png" />
+</div>
+<p>You can import layers by simply dragging and dropping the corresponding files from the browser and into the connection item in the OpenGeo Explorer (you can also drop them into the PostGIS item in the QGIS browser, but that is not so practical and it will not give you the option to import as single geometries, which is important in this case for some of the work we are going to do later).</p>
+<p>Select all the shapefiles from the sample dataset and drop them into the connection that we have defined.</p>
+<div class="figure">
+<img alt="_images/drag_drop_files.png" src="_images/drag_drop_files.png" />
+</div>
+<p>A dialog will be shown to configure some parameters before importing. Make sure you set them as shown in the figure below.</p>
+<div class="figure">
+<img alt="_images/import_pg_dialog.png" src="_images/import_pg_dialog.png" />
+</div>
+<p>It is important to check the <em>Import as single geometries</em> check box, since, as we said, that will be needed for our further work.</p>
+<p>Click on <em>OK</em> and the files will be imported, creating a separate table for each of them.</p>
+<div class="figure">
+<img alt="_images/geogig_db_with_tables.png" src="_images/geogig_db_with_tables.png" />
+</div>
+</div>
+<div class="section" id="exploring-the-data-in-qgis">
+<h2>Exploring the data in QGIS<a class="headerlink" href="#exploring-the-data-in-qgis" title="Permalink to this headline">¶</a></h2>
+<p>You can open any of these tables in QGIS to visualize it and explore it. To do it, just drag and drop the corresponing table item into the QGIS canvas and a new layer will be created. Add the <em>buildings</em> layer.</p>
+<div class="figure">
+<img alt="_images/drag_layer_to_canvas.png" src="_images/drag_layer_to_canvas.png" />
+</div>
+<p>It should be shown in the QGIS canvas to its full extent.</p>
+<div class="figure">
+<img alt="_images/buildings_layer.png" src="_images/buildings_layer.png" />
+</div>
+<p>To enhance the visualization, you can add a base layer. A very useful plugin is the OpenLayers plugin, which greatly simplifies adding some of the most common base layers, such as Google, Bing or OSM. You can install it opening the Plugin Manager, selecting the <em>Get more</em> section and then searching for <em>OpenLayer</em></p>
+<div class="figure">
+<img alt="_images/install_ol.png" src="_images/install_ol.png" />
+</div>
+<p>Now in the <em>Plugins</em> menu you should have a new entry where you can select the layers to add.</p>
+<div class="figure">
+<img alt="_images/openlayers.png" src="_images/openlayers.png" />
+</div>
+<p>Below you can see the buildings layer with the Bing aerial image, zoomed on the city of Adis Ababa.</p>
+<div class="figure">
+<img alt="_images/bing_buildings.png" src="_images/bing_buildings.png" />
+</div>
+<p>You can query the data in the PostGIS layer to know more about the buildings it contain. Select the identify tool by going to the <em>View/Identify features</em> menu entry. Now select the buildings layer by clicking on its name in the layers list. Click on any of the polygons and a dialog like the one shown below will appear, containing information corresponding to that polygon.</p>
+<div class="figure">
+<img alt="_images/identify.png" src="_images/identify.png" />
+</div>
+<p>The full table of attributes for all the features in the layer can be shown by right&#8211;clicking on the layer name and selecting <em>Open Attribute Table</em> in the context menu.</p>
+<div class="figure">
+<img alt="_images/attribute_table.png" src="_images/attribute_table.png" />
+</div>
+</div>
+<div class="section" id="creating-a-geogig-repository-and-importing-data">
+<h2>Creating a GeoGig repository and importing data<a class="headerlink" href="#creating-a-geogig-repository-and-importing-data" title="Permalink to this headline">¶</a></h2>
+<p>The PostGIS database already contains the data we are going to work with, so we can now initialize a GeoGig repository where we will keep all the history and different version of that data. The PostGIS database will be the one we will work with to edit and extend the data it contains, and the GeoGig repository will store the history of that work.</p>
+<p>Open a console and move to a folder where you want to keep you geogig repo. Under it, create a folder named <code class="docutils literal"><span class="pre">geogig_ethiopia</span></code> and move into it.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ mkdir geogig_ethiopia
+$ cd geogig_ethiopia
+</pre></div>
+</div>
+<p>To initialize a GeoGig repository there, run the following command.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig init
+Initialized empty GeoGig repository in [parent_folder]\geogig_ethiopia\.geogig
+</pre></div>
+</div>
+<p>If you look at the content of the folder now, you will see that a folder named <code class="docutils literal"><span class="pre">.geogig</span></code> has been created. That is where all the data of the repository will be stored.</p>
+<p>To import the data from the PostGIS database, run the following commands:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig pg import --database geogig_ethiopia --port 54321 --user geogig --password geogig --all
+</pre></div>
+</div>
+<p>This tells GeoGig that you want all tables in the geogig database, and uses the credentials of the <code class="docutils literal"><span class="pre">geogig</span></code> user that we created to connect to the database. For each table in the PostGIS database, it will create a new tree in the repository.</p>
+<p>Oonce imported, the data will be in the so called <em>working tree</em>. It is not yet stored in the repository database and it does not constitute a version of the data, but you can see that there are changes in the working tree by running the <code class="docutils literal"><span class="pre">status</span></code> command.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig status
+
+# On branch master
+# Changes not staged for commit:
+#   (use &quot;geogig add &lt;path/to/fid&gt;...&quot; to update what will be committed
+#   (use &quot;geogig checkout -- &lt;path/to/fid&gt;...&quot; to discard changes in working directory
+#
+#      added  points
+#      added  points/127
+#      added  points/2077
+#      added  points/695
+#      added  points/525
+#      added  points/1532
+#      added  points/1551
+#      added  points/2414
+#      added  points/1931
+[...]
+#      added  points/1598
+# 92043 total.
+</pre></div>
+</div>
+<p>There are 92043 new features in the working tree. To see how they are organized in the working tree, use the <code class="docutils literal"><span class="pre">ls</span></code> command</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig ls
+Root tree/
+    points/
+    landuse/
+    waterways/
+    railways/
+    natural/
+    buildings/
+    places/
+    roads/
+</pre></div>
+</div>
+<p>Each one of the trees above correspond to one of the tables that have been imported.</p>
+</div>
+<div class="section" id="creating-a-new-snapshot-in-the-repository">
+<h2>Creating a new snapshot in the repository<a class="headerlink" href="#creating-a-new-snapshot-in-the-repository" title="Permalink to this headline">¶</a></h2>
+<p>You can add the feature in the wroking tree to the staging area by using the <code class="docutils literal"><span class="pre">add</span></code> command. From there, they are ready to be used to create a new version.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig add
+Staging changes...
+100%
+92035 features and 8 trees staged for commit
+0 features and 0 trees not staged for commit
+</pre></div>
+</div>
+<p>Creating a new snapshot is done with the <code class="docutils literal"><span class="pre">commit</span></code> command. Enter the following in the console.</p>
+<div class="highlight-python"><div class="highlight"><pre>$geogig commit -m &quot;Initial add&quot;
+[fc9e9e6d97e979293a028857d275eef31e8a0ce5] Initial add
+Committed, counting objects...92035 features added, 0 changed, 0 deleted.
+</pre></div>
+</div>
+<p>The new version is now created and is identified with the &#8220;Initial add&#8221; message.</p>
+</div>
+<div class="section" id="examining-the-log">
+<h2>Examining the log<a class="headerlink" href="#examining-the-log" title="Permalink to this headline">¶</a></h2>
+<p>You can explore the repository history using the <code class="docutils literal"><span class="pre">log</span></code> command.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig log
+Commit:  fc9e9e6d97e979293a028857d275eef31e8a0ce5
+Author:  volaya &lt;volaya@boundlessgeo.com&gt;
+Date:    (9 minutes ago) 2013-10-31 10:57:02 +0100
+Subject: Initial add
+</pre></div>
+</div>
+<p>Right now, there is only one commit, but as we work on our data and create new snapshot, we will be adding more. Notice that each commit has a message that you define when running the <code class="docutils literal"><span class="pre">commit</span></code> command, but it is also identified with a unique 40-character string ((<code class="docutils literal"><span class="pre">fc9e9e6d97e979293a028857d275eef31e8a0ce5</span></code> in the example above but you will not have the same one, since it is computed based on the properties of the commit such as the commit date, which will be different in your case) . You can use these string to refer to all kinds of elements in a GeoGig repository, since all of them have one of such identifiers. We will see examples of that later on.</p>
+</div>
+<div class="section" id="editing-the-postgis-data-in-qgis">
+<h2>Editing the PostGIS data in QGIS<a class="headerlink" href="#editing-the-postgis-data-in-qgis" title="Permalink to this headline">¶</a></h2>
+<p>We can now go back to QGIS and work on our data.</p>
+<p>Make sure you have the <em>building</em> layer opened in QGIS, based on a connection to the <code class="docutils literal"><span class="pre">buildings</span></code> table in the <code class="docutils literal"><span class="pre">geogig_ethiopia</span></code> database.</p>
+<p>The Bing image that we have added as base layer shows some building that are not digitized and included in the <em>buildings</em> vector layer. We will digitize one of them and then create a new snapshot in the GeoGig repository with the updated data.</p>
+<p>Open the attributes table of the <em>buildings</em> layer and locate the feature with the identifier <code class="docutils literal"><span class="pre">10011</span></code> (features are ordered by ID by default). Select the corresponding row and then click on the <em>Zoom map to the selected rows</em> button. This will zoom your view to an area where there is a large building that is missing in the <em>buildings</em> layer and we can digitize.</p>
+<div class="figure">
+<img alt="_images/10011.png" src="_images/10011.png" />
+</div>
+<p>You can zoom out one level to see it more clearly.</p>
+<div class="figure">
+<img alt="_images/to_digitize.png" src="_images/to_digitize.png" />
+</div>
+<p>Right click on the layer name in the layers list and select <em>Toggle editing</em>. That will put the layer in edit mode, so you can add new features, delete them, or edit them.</p>
+<p>Select <em>Add feature</em> from the <em>Edit</em> menu.</p>
+<div class="figure">
+<img alt="_images/add_feature.png" src="_images/add_feature.png" />
+</div>
+<p>Now you can click on the canvas to add points to delineate the building that we want to digitize. Once you have entered all the points, right-click to finish editing the geometry. A dialog will appear where you should enter the attributes corresponding to the new feature you are adding.</p>
+<div class="figure">
+<img alt="_images/new_feature_attributes.png" src="_images/new_feature_attributes.png" />
+</div>
+<p>Since we do not know the <code class="docutils literal"><span class="pre">osm_id</span></code>, you can leave that field blank. The expression in the first field will assign a correlative id to the feature based on the id&#8217;s used by the other features in the layer. Click on <em>OK</em> an the new feature will be added.</p>
+<p>that feature is still only in the editing buffer, and hasn&#8217;t been stored in the database that contains the layer data. To store the changes, right-click on the layer name and select <em>Toggle editing</em> again. QGIS will ask you if you want to save your edits.</p>
+<div class="figure">
+<img alt="_images/save_edits.png" src="_images/save_edits.png" />
+</div>
+<p>Click on <em>Yes</em> and your PostGIS database will be updated.</p>
+</div>
+<div class="section" id="commit-changes-from-postgis-to-geogig-repository">
+<h2>Commit changes from PostGIS to GeoGig repository<a class="headerlink" href="#commit-changes-from-postgis-to-geogig-repository" title="Permalink to this headline">¶</a></h2>
+<p>The database now contains different data to the one that we imported into GeoGig and used to create the first snapshot. We can create a new snapshot by reimporting the modified database and following a process similar to the one we followed for the first import.</p>
+<p>First, import the data entering the following command ini the console.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig pg import --database geogig_ethiopia --user geogig --password geogig --table buildings --port 54321
+Importing from database geogig_ethiopia
+
+Importing buildings        (1/1)...
+100%
+Import successful.
+</pre></div>
+</div>
+<p>We have just modified the <em>buildings</em> table, so there is not need to reimport all the rest of tables. The <code class="docutils literal"><span class="pre">--all</span></code> argument has been replaced by <code class="docutils literal"><span class="pre">--table</span> <span class="pre">buildings</span></code> to indicate that we just want to import the <em>buildings</em> table.</p>
+<p>We can check that the imported table is different from the one in the repository, by running the <code class="docutils literal"><span class="pre">status</span></code> command.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig status
+# On branch master
+# Changes not staged for commit:
+#   (use &quot;geogig add &lt;path/to/fid&gt;...&quot; to update what will be committed
+#   (use &quot;geogig checkout -- &lt;path/to/fid&gt;...&quot; to discard changes in working directory
+#
+#      added  buildings/12976
+# 1 total.
+</pre></div>
+</div>
+<p>It reports that a new feature has been added.</p>
+<p>To put that new feature in the stagin area, run the <code class="docutils literal"><span class="pre">add</span></code> command.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig add
+Counting unstaged elements...1
+Staging changes...
+100%
+1 features and 0 trees staged for commit
+0 features and 0 trees not staged for commit
+</pre></div>
+</div>
+<p>And then use the <code class="docutils literal"><span class="pre">commit</span></code> command to create a new snapshot.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig commit -m &quot;Added building&quot;
+100%
+[c1a072734c9de17dc98dfec74d8ce169b94b90c2] Added buildings
+Committed, counting objects...1 features added, 0 changed, 0 deleted.
+</pre></div>
+</div>
+</div>
+<div class="section" id="inspecting-the-log-and-the-differences-between-snapshots">
+<h2>Inspecting the log and the differences between snapshots<a class="headerlink" href="#inspecting-the-log-and-the-differences-between-snapshots" title="Permalink to this headline">¶</a></h2>
+<p>The history of the repository now contains two different snapshots. The output of the <code class="docutils literal"><span class="pre">log</span></code> command will now show something like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig log
+Commit:  c1a072734c9de17dc98dfec74d8ce169b94b90c2
+Author:  volaya &lt;volaya@boundlessgeo.com&gt;
+Date:    (1 minutes ago) 2013-10-31 11:45:07 +0100
+Subject: Added building
+
+Commit:  fc9e9e6d97e979293a028857d275eef31e8a0ce5
+Author:  volaya &lt;volaya@boundlessgeo.com&gt;
+Date:    (49 minutes ago) 2013-10-31 10:57:02 +0100
+Subject: Initial add
+</pre></div>
+</div>
+<p>The differences between any two commits can be inspected using the <code class="docutils literal"><span class="pre">diff</span></code> command and passing the identifiers of those commits. To see the difference between the two commits in out GeoGig repository, enter the following command in the console.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff fc9e9e6d97e979293a028857d275eef31e8a0ce5 c1a072734c9de17dc98dfec74d8ce169b94b90c2
+000000... 9efbde... 000000... e0c8d1...   A  buildings/12976
+geom    MULTIPOLYGON (((38.7636514300226 9.059704893617495, 38.764011782062425 9.059795013128007, 38.764053901132016 9.059554694383088, 38.7639837026827 9.059543140593222, 38.76399774237257 9.05946226405379, 38.763838625887445 9.059432224191653, 38.76382692614589 9.05950154694665, 38.76368652924725 9.059471507087796, 38.7636514300226 9.059704893617495)))
+osm_id
+name
+type
+</pre></div>
+</div>
+<p>It reports that this commit introduced a new feature (<code class="docutils literal"><span class="pre">building/12976</span></code>), with the above attributes (which are empty except for the goemetry itself, since we did not specify them).</p>
+<p>There is actually no need to use the full identifiers of the commits. You can abbreviate them, for instance using the first five digits, as in the next example.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff fc9e9 c1a07
+</pre></div>
+</div>
+<p>If there is ambiguity and any of those shortened identifiers cannot be resolved to one and only one full identifier, GeoGig will tell you to enter a more detailed one.</p>
+<p>The first identifier is the original version, while the second one is the final version. Reversing them will give you the opposite difference</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff c1a07 fc9e9
+9efbde... 000000... e0c8d1... 000000...   R  buildings/12976
+</pre></div>
+</div>
+<p>Removals (<code class="docutils literal"><span class="pre">R</span></code>) are not detailed like in the case of additions (<code class="docutils literal"><span class="pre">A</span></code>). Just the name of the removed feature is shown instead.</p>
+<p>GeoGig support several syntaxes to specify the commits you want to compare with the <code class="docutils literal"><span class="pre">diff</span></code> command or any other command that takes a commit as input. The next line will produce the same output as the one using the full identifiers.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff HEAD~1 HEAD
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">HEAD</span></code> refers to the current last commit in the history, while <code class="docutils literal"><span class="pre">HEAD~1</span></code> refers to its parent (the previous commit). This line will compare the two last commits, without having to know their identifiers.</p>
+</div>
+<div class="section" id="cloning-the-repo-from-the-filesystem">
+<h2>Cloning the repo from the filesystem<a class="headerlink" href="#cloning-the-repo-from-the-filesystem" title="Permalink to this headline">¶</a></h2>
+<p>One of the most important features of GeoGig is that data can be synchronized between repositories, so you can have several of them versioning the same data and share the changes made in each them with the other repositories.</p>
+<p>You can create a new local copy of your repository by running the <code class="docutils literal"><span class="pre">clone</span></code>. Move to the parent directory of your repository folder and enter this in the console:</p>
+<div class="highlight-python"><div class="highlight"><pre>$geogig clone ./geogig-ethiopia geogig-ethiopia-clone
+Cloning into &#39;geogig-ethiopia-clone&#39;...
+100%
+Done.
+</pre></div>
+</div>
+<p>Now you should have two folders, <code class="docutils literal"><span class="pre">geogig-ethiopia</span></code> and <code class="docutils literal"><span class="pre">geogig-ethiopia-clone</span></code>, each of them corresponding to a GeoGig repository. If you change your current directory to one of them, the geogig commands that you run will apply to the repository contained in that folder.</p>
+<p>Right now, both repositories are identical. You can check that by moving into the <code class="docutils literal"><span class="pre">geogig-ethiopia-clone</span></code> folder and inspecting the log of the GeoGig repository it contains.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cd geogig-ethiopia-clone
+$ geogig log
+Commit:  c1a072734c9de17dc98dfec74d8ce169b94b90c2
+Author:  volaya &lt;volaya@boundlessgeo.com&gt;
+Date:    (1 minutes ago) 2013-10-31 11:45:07 +0100
+Subject: Added building
+
+Commit:  fc9e9e6d97e979293a028857d275eef31e8a0ce5
+Author:  volaya &lt;volaya@boundlessgeo.com&gt;
+Date:    (49 minutes ago) 2013-10-31 10:57:02 +0100
+Subject: Initial add
+</pre></div>
+</div>
+<p>We will add more snapshots to the original repository and then see how to synchronize with the cloned one, so the cloned one gets the changes that we have introduced in the original repository.</p>
+</div>
+<div class="section" id="making-more-edits-to-the-postgis-database">
+<h2>Making more edits to the PostGIS database<a class="headerlink" href="#making-more-edits-to-the-postgis-database" title="Permalink to this headline">¶</a></h2>
+<p>Go back to QGIS and make some more edits. You can add a new building from the ones that are not in yet digitized. Also, let&#8217;s make a modification so we can later see how GeoGig handles that kind of edits. The feature with the id <code class="docutils literal"><span class="pre">8868</span></code> represents and administrative building, but its <code class="docutils literal"><span class="pre">type</span></code> attribute is <code class="docutils literal"><span class="pre">NULL</span></code>. Correct that by entering <code class="docutils literal"><span class="pre">administrative</span></code> in the corresponding cell in the attribute table. When the layer is in edit mode you can edit table cells by double&#8211;clicking on them.</p>
+<p>Save the changes to the PostGIS database as it has already been explained.</p>
+</div>
+<div class="section" id="commiting-edits-to-original-geogig-repo">
+<h2>Commiting edits to original GeoGig Repo<a class="headerlink" href="#commiting-edits-to-original-geogig-repo" title="Permalink to this headline">¶</a></h2>
+<p>Go to the console and create a new version by importing, adding and commiting your changes. Make sure you are under the <code class="docutils literal"><span class="pre">geogig-ethiopia</span></code> folder, so you are commiting to the original repository, not the cloned one.</p>
+<p>The commands are the same one that we used for creating our second commit, except for the commit message.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig pg import --database geogig_ethiopia --user geogig --password geogig --table buildings --port 54321
+$ geogig add
+$ geogig commit -m &quot;Added more buildings and corrected missing field value&quot;
+</pre></div>
+</div>
+<p>The differences between the two last commits now look like this.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig diff HEAD~1 HEAD
+9efbde... 9efbde... 546e31... 62c2e8...   M  buildings/8868
+type: [MISSING] -&gt; administrative
+
+000000... 9efbde... 000000... cacef3...   A  buildings/12977
+geom    MULTIPOLYGON (((38.75429818070351 9.061127964604221, 38.75435886071902 9.060998131885604, 38.7545105607578 9.061028093286371, 38.754490334085965 9.061147938864453, 38.75429818070351 9.061127964604221)))
+osm_id
+name
+type
+</pre></div>
+</div>
+<p>It shows the modifications done to the attributes of a existing feature, and the description of a newly added feature.</p>
+</div>
+<div class="section" id="pulling-changes-into-the-cloned-repository">
+<h2>Pulling changes into the cloned repository<a class="headerlink" href="#pulling-changes-into-the-cloned-repository" title="Permalink to this headline">¶</a></h2>
+<p>If you move to the <code class="docutils literal"><span class="pre">geogig-ethiopia</span></code> folder and see the log of the repository, you will see that the last commit that we made is not here. Repositories are independent, and the changes were only commited to the original repository. However, we can bring those changes to the cloned repository, by using the <code class="docutils literal"><span class="pre">pull</span></code> command.</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig pull
+100%
+From [parentfolder]/geogig_ethiopia/
+   c1a0727..82c4634     master -&gt; refs/heads/master
+Features Added: 1 Removed: 0 Modified: 1
+</pre></div>
+</div>
+<p>If you now run the <code class="docutils literal"><span class="pre">log</span></code> command you will see that there are 3 commits in the cloned repository, and it has the same history as the original one.</p>
+<p>Running the <code class="docutils literal"><span class="pre">diff</span></code> command will also produce the same results as in the original repository.</p>
+<p>You can pull changes from any repository that versions the same data. In that case, you should tell the <code class="docutils literal"><span class="pre">pull</span></code> command how to find that repository. In this case, however, we are pulling from the default parent repository, which is the original one. When a repository is cloned, GeoGig saves a reference to the original repository, which is used by the pull command to pull changes from in case that no repository has been specified when calling it.</p>
+</div>
+<div class="section" id="expose-clone-with-webservices-using-geoserver">
+<h2>Expose Clone with Webservices using GeoServer<a class="headerlink" href="#expose-clone-with-webservices-using-geoserver" title="Permalink to this headline">¶</a></h2>
+<p>Add the clone as a remote to the original repo:</p>
+<div class="code highlight-python"><div class="highlight"><pre>geogig remote add clone http://localhost:8080/geoserver/geogig/opengeo:ethiopia
+</pre></div>
+</div>
+<p>Make more Edits against PostGIS in QGIS:</p>
+<ol class="arabic simple">
+<li>Start an editing session</li>
+<li>Add new features</li>
+<li>Modify existing features</li>
+<li>Modify existing attributes</li>
+<li>End editing session and save</li>
+</ol>
+<p>Import Edits to original repo:</p>
+<div class="code highlight-python"><div class="highlight"><pre>geogig pg import
+geogig add
+geogig commit -m &quot;More building changes&quot;
+</pre></div>
+</div>
+</div>
+<div class="section" id="push-edits-to-clone-via-remote-api">
+<h2>Push edits to clone via remote API<a class="headerlink" href="#push-edits-to-clone-via-remote-api" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>To pass changes from one repository, you can use the <code class="docutils literal"><span class="pre">pull</span></code> command as we have already seen, or you can <em>send</em> changes to a remote repository with the push command. Let&#8217;s see how to move the latest changes in the original repository, to the clone repository.</p>
+<p>the original repository doesn&#8217;t know anything about the clone one, so you have to add a reference to it, using the <code class="docutils literal"><span class="pre">remote</span> <span class="pre">add</span></code> command.</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig remote add cloned http://localhost:8080/geoserver/geogig/opengeo:ethiopia
+</pre></div>
+</div>
+<p>You can check that the remote reference has been added, by listing all available remotes</p>
+<div class="highlight-python"><div class="highlight"><pre>$ geogig remote list -v
+clone http://localhost:8080/geoserver/geogig/opengeo:ethiopia (fetch)
+clone http://localhost:8080/geoserver/geogig/opengeo:ethiopia (push)
+</pre></div>
+</div>
+</div>
+</div>
+
+
+      <div class="selfclear pagination-nav">
+          <div class="leftwise"><strong>Previous</strong>: <a href="index.html" title="previous chapter">GeoGig Workshop</a></div>
+      </div>
+      <p class="centered-text"><a href="#top"><img src="_static/arrow_up.png" alt="back to top"/></a></p>
+      </div><!-- /#content> -->
+  <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
+
+    <div>
+         <form id="quick-search" action="search.html" method="get" style="width: 100%;">
+          <fieldset>
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+            <input id="quick-search-query" type="text" name="q" accessKey="q" name="searchQuery.queryString" size="25" value="Search Documentation&hellip;" size="20" tabindex="3" onblur="if(this.value=='') this.value='Search Documentation&hellip;';" onfocus="if(this.value=='Search Documentation&hellip;') this.value='';" />
+          </fieldset>
+        </form>
+
+
+        <div class="btn-group-vertical" id="docs_toc">
+          <button type="button" class="btn btn-default"><a href="/docs/">User Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/technical/">Technical Manual</a></button>
+          <button type="button" class="btn btn-default"><a href="/manpages/">Man Pages</a></button>
+          <button type="button" class="btn btn-default"><a href="/workshop/">Workshop</a></button>
+      </div>
+      <h3 class="pngfix">Table Of Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">An Introduction to GeoGig</a><ul>
+<li><a class="reference internal" href="#sample-data">Sample data</a></li>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#installing-geogig">Installing GeoGig</a></li>
+<li><a class="reference internal" href="#installing-geoserver-with-geogig-extension">Installing GeoServer with GeoGig extension</a></li>
+<li><a class="reference internal" href="#installing-postgis">Installing PostGIS</a></li>
+<li><a class="reference internal" href="#installing-qgis">Installing QGIS</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#setting-up">Setting up</a><ul>
+<li><a class="reference internal" href="#setting-up-geogig">Setting up GeoGig</a></li>
+<li><a class="reference internal" href="#setting-up-postgis">Setting up PostGIS</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#preparing-and-importing-the-data">Preparing and importing the data</a></li>
+<li><a class="reference internal" href="#exploring-the-data-in-qgis">Exploring the data in QGIS</a></li>
+<li><a class="reference internal" href="#creating-a-geogig-repository-and-importing-data">Creating a GeoGig repository and importing data</a></li>
+<li><a class="reference internal" href="#creating-a-new-snapshot-in-the-repository">Creating a new snapshot in the repository</a></li>
+<li><a class="reference internal" href="#examining-the-log">Examining the log</a></li>
+<li><a class="reference internal" href="#editing-the-postgis-data-in-qgis">Editing the PostGIS data in QGIS</a></li>
+<li><a class="reference internal" href="#commit-changes-from-postgis-to-geogig-repository">Commit changes from PostGIS to GeoGig repository</a></li>
+<li><a class="reference internal" href="#inspecting-the-log-and-the-differences-between-snapshots">Inspecting the log and the differences between snapshots</a></li>
+<li><a class="reference internal" href="#cloning-the-repo-from-the-filesystem">Cloning the repo from the filesystem</a></li>
+<li><a class="reference internal" href="#making-more-edits-to-the-postgis-database">Making more edits to the PostGIS database</a></li>
+<li><a class="reference internal" href="#commiting-edits-to-original-geogig-repo">Commiting edits to original GeoGig Repo</a></li>
+<li><a class="reference internal" href="#pulling-changes-into-the-cloned-repository">Pulling changes into the cloned repository</a></li>
+<li><a class="reference internal" href="#expose-clone-with-webservices-using-geoserver">Expose Clone with Webservices using GeoServer</a></li>
+<li><a class="reference internal" href="#push-edits-to-clone-via-remote-api">Push edits to clone via remote API</a></li>
+</ul>
+</li>
+</ul>
+
+        <div class="section-footer"></div>
+      </div>
+        <div class="section continue_reading">
+          <h3>Continue Reading</h3>
+          <ul>
+            <li>Previous: <a href="index.html" title="previous chapter">GeoGig Workshop</a></li>
+          </ul>
+        </div>
+        <div class="section">
+        <h3>This Page</h3>
+        <ul class="this-page-menu">
+          <li><a href="_sources/workshop.txt">Show Source</a></li>
+        </ul>
+        </div>
+        <div class="section">
+          <h3>License</h3>
+          <p>This project is licensed under the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse License</a>.</p>
+        </div>
+
+  </div><!-- /#sidebar -->
+  </div><!-- /.wrap> -->
+</div>
+</div>
+
+</div><!-- /#main -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+        </div>
+      </div>
+    </footer>
+
+
+  <script type="text/javascript" src="_static/jquery.js"></script>
+  <script type="text/javascript" src="_static/jquery-migrate-min.js"></script>
+  <script type="text/javascript" src="_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="_static/underscore.js"></script>
+  <script type="text/javascript" src="_static/doctools.js"></script>
+  <script type="text/javascript" src="_static/searchtools.js"></script>
+  <script type="text/javascript" src="searchindex.js"></script>
+  <script>
+      $(document).ready(function() {
+
+      $('[data-toggle=offcanvas]').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+      $('.list-group-item').click(function(e) {
+        e.stopPropagation();
+        $('.row-offcanvas').toggleClass('active');
+        $('.btn-back').toggleClass('active');
+        $('.btn-text').toggleClass('active');
+      });
+    });
+  </script>
+  <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3879903-19']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+  </script>
+  </body>
+</html>

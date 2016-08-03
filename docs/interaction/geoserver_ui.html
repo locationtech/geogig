@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoServer &mdash; GeoGig 1.0-RC2 User Manual</title>
+  <title>GeoServer GUI Configuration &mdash; GeoGig 1.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,15 +20,15 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC2 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.0 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
-      <link rel="next" title="Web-API and GeoServer REST configuration" href="geoserver_web-api.html" />
-      <link rel="prev" title="GeoGig Networking" href="networking.html" />
+      <link rel="next" title="GeoServer REST configuration integration" href="geoserver_web-api.html" />
+      <link rel="prev" title="Serving and Managing Repositories" href="web-repository-management.html" />
 </head>
 <body class="interaction/geoserver_ui">
     <div id="blacktop"></div>
@@ -81,67 +81,65 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC2 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
-  <li>GeoServer</li>
+  <li>GeoServer GUI Configuration</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
   <li class="first">
     <a href="../genindex.html" title="General Index"
        accesskey="I">index</a></li>
   <li>
-    <a href="geoserver_web-api.html" title="Web-API and GeoServer REST configuration"
+    <a href="geoserver_web-api.html" title="GeoServer REST configuration integration"
        accesskey="N">next</a>|</li>
   <li>
-    <a href="networking.html" title="GeoGig Networking"
+    <a href="web-repository-management.html" title="Serving and Managing Repositories"
        accesskey="P">previous</a>|</li>
 </ul>
         
-  <div class="section" id="geoserver">
-<span id="geoserver-ui"></span><h1>GeoServer<a class="headerlink" href="#geoserver" title="Permalink to this headline">¶</a></h1>
-<p>A GeoServer extension is available to allow GeoServer to interact with a GeoGig repository and use it as data store. It enables a GeoGig repository to be exposed as a remote for cloning, pushing and pulling as well as via OGC services (WMS/WFS/WMTS etc). Each top level tree in a GeoGig repository corresponds to a GeoServer layer. GeoServer treats a GeoGig repository as a store in much the same way as it does a database.</p>
+  <div class="section" id="geoserver-gui-configuration">
+<span id="geoserver-ui"></span><h1>GeoServer GUI Configuration<a class="headerlink" href="#geoserver-gui-configuration" title="Permalink to this headline">¶</a></h1>
+<p>A GeoServer extension is available to allow GeoServer to interact with a GeoGig repository and use it as data store. It
+enables a GeoGig repository to be exposed as a remote for cloning, pushing and pulling as well as to publish its data via OGC services
+(WMS/WFS/WMTS/etc). Each top level tree (often called &#8220;feature tree&#8221;) in a GeoGig repository corresponds to a GeoServer layer. GeoServer treats a GeoGig
+repository as a store in much the same way as it does a database.</p>
 <div class="section" id="building-installing-the-geoserver-geogig-extension">
 <h2>Building/installing the GeoServer GeoGig extension<a class="headerlink" href="#building-installing-the-geoserver-geogig-extension" title="Permalink to this headline">¶</a></h2>
-<p>The GeoGig module is not currently included in GeoServer&#8217;s community extensions. You can add it by including the following dependencies into your own pom.xml:</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;dependencies&gt;
-   &lt;dependency&gt;
-     &lt;groupId&gt;org.geogig&lt;/groupId&gt;
-     &lt;artifactId&gt;geogig-web-api&lt;/artifactId&gt;
-     &lt;version&gt;0.9&lt;/version&gt;
-   &lt;/dependency&gt;
-   &lt;dependency&gt;
-     &lt;groupId&gt;org.geogig&lt;/groupId&gt;
-     &lt;artifactId&gt;geogig-geotools&lt;/artifactId&gt;
-     &lt;version&gt;0.9&lt;/version&gt;
-   &lt;/dependency&gt;
-   &lt;dependency&gt;
-     &lt;groupId&gt;org.geogig&lt;/groupId&gt;
-     &lt;artifactId&gt;geogig-geoserver&lt;/artifactId&gt;
-     &lt;version&gt;0.9&lt;/version&gt;
-   &lt;/dependency&gt;
- &lt;/dependencies&gt;
+<p>You can download the latest stable version of the GeoGig GeoServer plugin from the <a class="reference external" href="http://www.geogig.org/">GeoGig</a> home page.</p>
+<p>In order to build it from sources, a GeoGig module is currently included in the 2.8.x branch of GeoServer&#8217;s community extensions. To build it, clone the
+GeoServer GitHub repository:</p>
+<div class="highlight-python"><div class="highlight"><pre>git clone git@github.com:geoserver/geoserver.git
 </pre></div>
 </div>
-<p>Include the plugin in your mvn build command:</p>
-<div class="highlight-python"><div class="highlight"><pre>mvn clean install -Pgeogig
+<p>change into the <code class="docutils literal"><span class="pre">geoserver</span></code> directory</p>
+<div class="highlight-python"><div class="highlight"><pre>cd geoserver
 </pre></div>
 </div>
-<p>Deploy the resulting war in a servlet container.</p>
-<p>Another way of installing the GeoGig extension is to build it yourself and then deploy it in the servlet container where you have deployed GeoServer.</p>
-<p>The GeoServer GeoGig extension is found along with other GeoServer extensions in the geoserver-ext repository.</p>
-<ul class="simple">
-<li>Clone the repository by running:</li>
-</ul>
-<div class="highlight-python"><div class="highlight"><pre>git clone git@github.com:opengeo/geoserver-exts.git
-cd geoserver-exts
-mvn install
+<p>checkout the 2.8.x branch</p>
+<div class="highlight-python"><div class="highlight"><pre>git checkout 2.8.x
 </pre></div>
 </div>
-<ul class="simple">
-<li>In the <tt class="docutils literal"><span class="pre">geogig/target</span></tt> folder you will find a jar file named  <tt class="docutils literal"><span class="pre">gs-geogig-2.X-SNAPSHOT-shaded-plugin.jar</span></tt>. Put that jar file in the GeoServer <tt class="docutils literal"><span class="pre">WEB-INF/lib</span></tt> folder.</li>
-<li>Restart GeoServer.</li>
-</ul>
-<p>The GeoGig data store should now be available.</p>
+<p>change into the <code class="docutils literal"><span class="pre">src</span></code> directory</p>
+<div class="highlight-python"><div class="highlight"><pre>cd src
+</pre></div>
+</div>
+<p>and build the Community Modules</p>
+<div class="highlight-python"><div class="highlight"><pre>mvn clean install -DskipTests assembly:attached -f community/release/pom.xml -P communityRelease
+</pre></div>
+</div>
+<p>This will build all of the GeoServer Community modules, including the plugin for GeoGig. Once the assembly completes, you
+should have a plugin bundle here</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">geoserver</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">community</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">release</span><span class="o">/</span><span class="n">geoserver</span><span class="o">-</span><span class="mf">2.8</span><span class="o">-</span><span class="n">SNAPSHOT</span><span class="o">-</span><span class="n">geogig</span><span class="o">-</span><span class="n">plugin</span><span class="o">.</span><span class="n">zip</span>
+</pre></div>
+</div>
+<p>To install the GeoGig extension, unzip the above bunlde into the GeoServer <code class="docutils literal"><span class="pre">WEB-INF/lib</span></code> folder of your GeoServer install
+and <strong>restart</strong> GeoServer.</p>
+<div class="highlight-python"><div class="highlight"><pre>unzip geoserver/src/community/target/release/geoserver-2.8-SNAPSHOT-geogig-plugin.zip -d &lt;GeoServer install dir&gt;/webapps/geoserver/WEB-INF/lib/
+
+&lt;restart GeoServer&gt;
+</pre></div>
+</div>
+<p>You should now be able to configure GeoGig repositories and use them as DataStores.</p>
 </div>
 <div class="section" id="configuring-a-geogig-store-in-geoserver">
 <h2>Configuring a GeoGig Store in GeoServer<a class="headerlink" href="#configuring-a-geogig-store-in-geoserver" title="Permalink to this headline">¶</a></h2>
@@ -149,11 +147,27 @@ mvn install
 <div class="figure">
 <img alt="../_images/geogig-store.png" src="../_images/geogig-store.png" />
 </div>
-<p>You can then configure a store by providing the path to the repository on the filesystem of the GeoServer installation.</p>
+<p>You can configure a store by:</p>
+<ul class="simple" id="configure-datastore-create-new">
+<li>Creating a brand new GeoGig repository (see <a class="reference internal" href="#configure-new-repo"><span>Configuring a new GeoGig Repository in GeoServer</span></a>):</li>
+</ul>
 <div class="figure">
-<img alt="../_images/configure-geogig-repo-store.png" src="../_images/configure-geogig-repo-store.png" />
+<img alt="../_images/configure-geogig-repo-store-addNew.png" src="../_images/configure-geogig-repo-store-addNew.png" />
 </div>
-<p>You will need to publish each top level tree as a layer individually.</p>
+<ul class="simple" id="configure-datastore-import-existing">
+<li>Importing an existing GeoGig repository that has not yet been configured within GeoServer (see <a class="reference internal" href="#import-existing-repo"><span>Importing an existing GeoGig Repository in GeoServer</span></a>):</li>
+</ul>
+<div class="figure">
+<img alt="../_images/configure-geogig-repo-store-import.png" src="../_images/configure-geogig-repo-store-import.png" />
+</div>
+<ul class="simple">
+<li>Selecting an existing GeoGig repository that has been previously configured within GeoServer:</li>
+</ul>
+<div class="figure">
+<img alt="../_images/configure-geogig-repo-store-existing.png" src="../_images/configure-geogig-repo-store-existing.png" />
+</div>
+<p>Regardless of the method used to create the DataStore, you will need to publish each top level tree as a layer
+individually.</p>
 <div class="figure">
 <img alt="../_images/geogig-publish-layer.png" src="../_images/geogig-publish-layer.png" />
 </div>
@@ -162,23 +176,84 @@ mvn install
 <img alt="../_images/configure-layer-declared-srs.png" src="../_images/configure-layer-declared-srs.png" />
 </div>
 </div>
+<div class="section" id="configuring-a-new-geogig-repository-in-geoserver">
+<span id="configure-new-repo"></span><h2>Configuring a new GeoGig Repository in GeoServer<a class="headerlink" href="#configuring-a-new-geogig-repository-in-geoserver" title="Permalink to this headline">¶</a></h2>
+<p>You can create new GeoGig repositories through the <a class="reference internal" href="#configure-datastore-create-new"><span>Create new GeoGig DataStore</span></a> page
+or by navigating to the <cite>GeoGig Repositories</cite> configuration page in the admin bar</p>
+<div class="figure">
+<img alt="../_images/configure-new-geogig-repo.png" src="../_images/configure-new-geogig-repo.png" />
+</div>
+<p>and selecting <cite>Create new repository</cite></p>
+<div class="figure">
+<img alt="../_images/create-new-geogig-repo.png" src="../_images/create-new-geogig-repo.png" />
+</div>
+<p>On the GeoGig Repository Configuration page, you can choose which type of repository you want, either a
+<a class="reference internal" href="#configure-new-directory-repo"><span>Directory backed GeoGig repository</span></a>, or a
+<a class="reference internal" href="#configure-new-postgres-repo"><span>PostgreSQL backed GeoGig repository</span></a>. A Directory backed repository will store GeoGig
+data in a directory on the GeoServer filesystem, while a PostgreSQL backed repository will store the GeoGig information in
+a PostgreSQL database (the database can be running on the same server as GeoServer, or it can be remote).</p>
+</div>
+<div class="section" id="configuring-a-new-directory-backed-geogig-repository">
+<span id="configure-new-directory-repo"></span><h2>Configuring a new Directory backed GeoGig Repository<a class="headerlink" href="#configuring-a-new-directory-backed-geogig-repository" title="Permalink to this headline">¶</a></h2>
+<p>To configure a new GeoGig repository that is backed by the filesystem, select <strong>Directory</strong> from the <strong>Repository Type</strong>
+pull-down, enter a <strong>Repository Name</strong>, a <strong>Parent Directory</strong> and click Save.</p>
+<div class="figure">
+<img alt="../_images/create-new-geogig-repo-directory.png" src="../_images/create-new-geogig-repo-directory.png" />
+</div>
+<p>You can enter the Parent Directoy manually, or select one from a directory chooser dialog by clicking the <strong>Browse...</strong>
+link:</p>
+<div class="figure">
+<img alt="../_images/create-new-geogig-repo-directory-chooser.png" src="../_images/create-new-geogig-repo-directory-chooser.png" />
+</div>
+</div>
+<div class="section" id="configuring-a-new-postgresql-backed-geogig-repository">
+<span id="configure-new-postgres-repo"></span><h2>Configuring a new PostgreSQL backed GeoGig Repository<a class="headerlink" href="#configuring-a-new-postgresql-backed-geogig-repository" title="Permalink to this headline">¶</a></h2>
+<p>To configure a new GeoGig repository that is backed by a PostgreSQL database, select <strong>PostgreSQL</strong> from the
+<strong>Repository Type</strong> pull-down, enter the relevant database connection parameters and click Save.</p>
+<div class="figure">
+<img alt="../_images/create-new-geogig-repo-postgres.png" src="../_images/create-new-geogig-repo-postgres.png" />
+</div>
+</div>
+<div class="section" id="importing-an-existing-geogig-repository-in-geoserver">
+<span id="import-existing-repo"></span><h2>Importing an existing GeoGig Repository in GeoServer<a class="headerlink" href="#importing-an-existing-geogig-repository-in-geoserver" title="Permalink to this headline">¶</a></h2>
+<p>You can create new GeoGig repositories through the <a class="reference internal" href="#configure-datastore-import-existing"><span>Create new GeoGig DataStore</span></a>
+page or by naviagting to the <cite>GeoGig Repositories</cite> configuration page in the admin bar</p>
+<div class="figure">
+<img alt="../_images/configure-new-geogig-repo.png" src="../_images/configure-new-geogig-repo.png" />
+</div>
+<p>and selecting <cite>Import an existing repository</cite></p>
+<div class="figure">
+<img alt="../_images/import-existing-geogig-repo.png" src="../_images/import-existing-geogig-repo.png" />
+</div>
+<p>Just like creating new repositories, you have the option to import existing Directory backed repositories or PostgreSQL
+backed repositories. Select the <strong>Repository Type</strong> and choose/enter to repository location details:</p>
+<div class="figure" id="id2">
+<img alt="../_images/import-existing-geogig-repo-directory.png" src="../_images/import-existing-geogig-repo-directory.png" />
+<p class="caption"><span class="caption-text"><em>Directory backed Repository configuration</em></span></p>
+</div>
+<div class="figure" id="id3">
+<img alt="../_images/import-existing-geogig-repo-postgres.png" src="../_images/import-existing-geogig-repo-postgres.png" />
+<p class="caption"><span class="caption-text"><em>PostgreSQL backed Repository configuration</em></span></p>
+</div>
+</div>
 <div class="section" id="cloning-pushing-and-pulling">
-<h2>Cloning Pushing and Pulling<a class="headerlink" href="#cloning-pushing-and-pulling" title="Permalink to this headline">¶</a></h2>
-<p>Once GeoServer is configured with this repository, you can address it over the network at a URL path of the form:</p>
-<div class="highlight-python"><div class="highlight"><pre>http://&lt;host&gt;:&lt;port&gt;/geoserver/geogig/&lt;workspace&gt;:&lt;store&gt;
+<h2>Cloning, Pushing and Pulling<a class="headerlink" href="#cloning-pushing-and-pulling" title="Permalink to this headline">¶</a></h2>
+<p>Once GeoServer is configured with a GeoGig repository, you can address it over the network at a URL path of the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>http://&lt;host&gt;:&lt;port&gt;/geoserver/geogig/repos/&lt;geogig name&gt;
 </pre></div>
 </div>
 <p>A sample url as configured in the screenshots above:</p>
-<div class="highlight-python"><div class="highlight"><pre>http://localhost:8080/geoserver/geogig/topp:gisdata-repo
+<div class="highlight-python"><div class="highlight"><pre>http://localhost:8080/geoserver/geogig/repos/geogig_dir_repo
 </pre></div>
 </div>
 <p>It is then possible to clone this repository:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ geogig clone http://localhost:8080/geoserver/geogig/topp:gisdata-repo gisdata-repo-clone
+<div class="highlight-python"><div class="highlight"><pre>$ geogig clone http://localhost:8080/geoserver/geogig/repos/geogig_dir_repo geogig_dir_repo
 </pre></div>
 </div>
-<p>Your clone will be configured with the geoserver repository as a remote. This configuration is stored in .geogig/config in your clone:</p>
+<p>Your clone will be configured with the geoserver repository as a remote. This configuration is stored in .geogig/config in
+your clone:</p>
 <div class="highlight-python"><div class="highlight"><pre>[remote\origin]
-url = http://localhost:8080/geoserver/geogig/topp:gisdata-repo
+url = http://localhost:9090/geoserver/geogig/repos/geogig_dir_repo
 fetch = +refs/heads/*:refs/remotes/origin/*
 
 [branches\master]
@@ -186,7 +261,8 @@ remote = origin
 merge = refs/heads/master
 </pre></div>
 </div>
-<p>It is now possible to push and pull from this remote repository. You can verify this works by testing with the freshly cloned repo:</p>
+<p>It is now possible to push and pull from this remote repository. You can verify this works by testing with the freshly
+cloned repo:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig push origin
 Nothing to push.
 
@@ -200,17 +276,22 @@ Already up to date.
 <h2>Automated Repository Synchronization<a class="headerlink" href="#automated-repository-synchronization" title="Permalink to this headline">¶</a></h2>
 <p>Repositories configured by GeoServer can be configured with remotes and Automated Repository Syncrhonization. TODO</p>
 </div>
-</div>
 <div class="section" id="current-limitations">
-<h1>Current Limitations<a class="headerlink" href="#current-limitations" title="Permalink to this headline">¶</a></h1>
-<p>The default underlying object database (berkeley db) is single user. While the repository is being exposed over the network by either the stand-alone server or by GeoServer, you will not be able to access the repo from the command line interface. The error is pretty clear about whats going on.</p>
-<p>com.sleepycat.je.EnvironmentLockedException: (JE 5.0.58) /Users/jj0hns0n/data/gisdata-repo/.geogig/objects The environment cannot be locked for single writer access. ENV_LOCKED: The je.lck file could not be locked. Environment is invalid and must be closed.</p>
+<span id="id1"></span><h2>Current Limitations<a class="headerlink" href="#current-limitations" title="Permalink to this headline">¶</a></h2>
+<p>When using Directory backed GeoGig repositories, the default underlying object database (berkeley db) is single user. While
+the repository is being exposed over the network by either the stand-alone server or by GeoServer, you will not be able to
+access the repo from the command line interface. The error is pretty clear about whats going on.</p>
+<p>com.sleepycat.je.EnvironmentLockedException: (JE 5.0.58) /Users/jj0hns0n/data/gisdata-repo/.geogig/objects The environment
+cannot be locked for single writer access. ENV_LOCKED: The je.lck file could not be locked. Environment is invalid and must
+be closed.</p>
+<p><strong>GeoGig repositories backed by PostgreSQL do not have this limitation.</strong></p>
+</div>
 </div>
 
 
       <div class="selfclear pagination-nav">
-          <div class="leftwise"><strong>Previous</strong>: <a href="networking.html" title="previous chapter">GeoGig Networking</a></div>
-          <div class="rightwise"><strong>Next</strong>: <a href="geoserver_web-api.html" title="next chapter">Web-API and GeoServer REST configuration</a></div>
+          <div class="leftwise"><strong>Previous</strong>: <a href="web-repository-management.html" title="previous chapter">Serving and Managing Repositories</a></div>
+          <div class="rightwise"><strong>Next</strong>: <a href="geoserver_web-api.html" title="next chapter">GeoServer REST configuration integration</a></div>
       </div>
       <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
       </div><!-- /#content> -->
@@ -234,14 +315,18 @@ Already up to date.
       </div>
       <h3 class="pngfix">Table Of Contents</h3>
         <ul>
-<li><a class="reference internal" href="#">GeoServer</a><ul>
+<li><a class="reference internal" href="#">GeoServer GUI Configuration</a><ul>
 <li><a class="reference internal" href="#building-installing-the-geoserver-geogig-extension">Building/installing the GeoServer GeoGig extension</a></li>
 <li><a class="reference internal" href="#configuring-a-geogig-store-in-geoserver">Configuring a GeoGig Store in GeoServer</a></li>
-<li><a class="reference internal" href="#cloning-pushing-and-pulling">Cloning Pushing and Pulling</a></li>
+<li><a class="reference internal" href="#configuring-a-new-geogig-repository-in-geoserver">Configuring a new GeoGig Repository in GeoServer</a></li>
+<li><a class="reference internal" href="#configuring-a-new-directory-backed-geogig-repository">Configuring a new Directory backed GeoGig Repository</a></li>
+<li><a class="reference internal" href="#configuring-a-new-postgresql-backed-geogig-repository">Configuring a new PostgreSQL backed GeoGig Repository</a></li>
+<li><a class="reference internal" href="#importing-an-existing-geogig-repository-in-geoserver">Importing an existing GeoGig Repository in GeoServer</a></li>
+<li><a class="reference internal" href="#cloning-pushing-and-pulling">Cloning, Pushing and Pulling</a></li>
 <li><a class="reference internal" href="#automated-repository-synchronization">Automated Repository Synchronization</a></li>
+<li><a class="reference internal" href="#current-limitations">Current Limitations</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#current-limitations">Current Limitations</a></li>
 </ul>
 
         <div class="section-footer"></div>
@@ -249,8 +334,8 @@ Already up to date.
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
           <ul>
-            <li>Previous: <a href="networking.html" title="previous chapter">GeoGig Networking</a></li>
-            <li>Next: <a href="geoserver_web-api.html" title="next chapter">Web-API and GeoServer REST configuration</a></li>
+            <li>Previous: <a href="web-repository-management.html" title="previous chapter">Serving and Managing Repositories</a></li>
+            <li>Next: <a href="geoserver_web-api.html" title="next chapter">GeoServer REST configuration integration</a></li>
           </ul>
         </div>
         <div class="section">

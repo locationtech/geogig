@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Import data &mdash; GeoGig 1.0-RC2 User Manual</title>
+  <title>Import data &mdash; GeoGig 1.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,12 +20,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC2 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.0 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Creating and applying patches" href="patches.html" />
       <link rel="prev" title="Exploring your history" href="history.html" />
@@ -81,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC2 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Import data</li>
 </ul>
@@ -113,9 +113,9 @@
 <div class="highlight-python"><div class="highlight"><pre>$ geogig &lt;shp|geojson|pg|sl|sqlserver|oracle&gt; import &lt;source&gt;[-d &lt;destination_path&gt;] [--no-overwrite] &lt;specific_parameters&gt;
 </pre></div>
 </div>
-<p>Data can be imported in a given path defined using the <tt class="docutils literal"><span class="pre">-d</span></tt> option. If it is not used, the destination path will be defined automatically based on the data source. For instance, in the case of using a shapefile, the destination path is defined using the name of the shapefile.</p>
-<p>The <tt class="docutils literal"><span class="pre">source</span></tt> argument is the filepath of the file to import, in case of using shapefiles, or the name of the table to import in case of importing from a PostGIS database.</p>
-<p>The following command line will import all the features in a shapefile named <tt class="docutils literal"><span class="pre">parks.shp</span></tt> into the <tt class="docutils literal"><span class="pre">parks</span></tt> tree in the working tree of the GeoGig repository.</p>
+<p>Data can be imported in a given path defined using the <code class="docutils literal"><span class="pre">-d</span></code> option. If it is not used, the destination path will be defined automatically based on the data source. For instance, in the case of using a shapefile, the destination path is defined using the name of the shapefile.</p>
+<p>The <code class="docutils literal"><span class="pre">source</span></code> argument is the filepath of the file to import, in case of using shapefiles, or the name of the table to import in case of importing from a PostGIS database.</p>
+<p>The following command line will import all the features in a shapefile named <code class="docutils literal"><span class="pre">parks.shp</span></code> into the <code class="docutils literal"><span class="pre">parks</span></code> tree in the working tree of the GeoGig repository.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig shp import /home/shapefiles/parks.shp
 </pre></div>
 </div>
@@ -123,47 +123,47 @@
 <div class="highlight-python"><div class="highlight"><pre>$ geogig shp import /home/shapefiles/parks.shp -d myparks
 </pre></div>
 </div>
-<p>A tree in the GeoGig working tree is the equivalent of a folder in the filesystem. However, if you move into the <tt class="docutils literal"><span class="pre">.geogig</span></tt> folder where the working tree (and the rest of the GeoGig repository data) is stored, you will not see the folders that you might have created by importing data. The structure of the repository is not visible in the filesystem, and the only way to explore it is to use additional GeoGig commands that we will see soon.</p>
+<p>A tree in the GeoGig working tree is the equivalent of a folder in the filesystem. However, if you move into the <code class="docutils literal"><span class="pre">.geogig</span></code> folder where the working tree (and the rest of the GeoGig repository data) is stored, you will not see the folders that you might have created by importing data. The structure of the repository is not visible in the filesystem, and the only way to explore it is to use additional GeoGig commands that we will see soon.</p>
 <p>When importing from a database, additional parameters can be supplied to configure the database connection. In the case of importing from a PostGIS database, the following options are available.</p>
 <ul class="simple">
-<li><tt class="docutils literal"><span class="pre">--host</span></tt>: Machine name or IP address to connect to. Default: localhost</li>
-<li><tt class="docutils literal"><span class="pre">--port</span></tt>: Port number to connect to.  Default: 5432</li>
-<li><tt class="docutils literal"><span class="pre">--schema</span></tt>: The database schema to access.  Default: public</li>
-<li><tt class="docutils literal"><span class="pre">--database</span></tt>: The database to connect to.  Default: database</li>
-<li><tt class="docutils literal"><span class="pre">--user</span></tt>: User name.  Default: postgres</li>
-<li><tt class="docutils literal"><span class="pre">--password</span></tt>: Password.  Default: &lt;no password&gt;</li>
+<li><code class="docutils literal"><span class="pre">--host</span></code>: Machine name or IP address to connect to. Default: localhost</li>
+<li><code class="docutils literal"><span class="pre">--port</span></code>: Port number to connect to.  Default: 5432</li>
+<li><code class="docutils literal"><span class="pre">--schema</span></code>: The database schema to access.  Default: public</li>
+<li><code class="docutils literal"><span class="pre">--database</span></code>: The database to connect to.  Default: database</li>
+<li><code class="docutils literal"><span class="pre">--user</span></code>: User name.  Default: postgres</li>
+<li><code class="docutils literal"><span class="pre">--password</span></code>: Password.  Default: &lt;no password&gt;</li>
 </ul>
 <p>If using a Geopackage database only the following parameters are used.</p>
 <ul class="simple">
-<li><tt class="docutils literal"><span class="pre">--database</span></tt>: The database to connect to.  Default: database.sqlite</li>
-<li><tt class="docutils literal"><span class="pre">--user</span></tt>: User name.  Default: user</li>
+<li><code class="docutils literal"><span class="pre">--database</span></code>: The database to connect to.  Default: database.sqlite</li>
+<li><code class="docutils literal"><span class="pre">--user</span></code>: User name.  Default: user</li>
 </ul>
 <p>GeoGig also supports SQLServer data. In that case the following parameters have to be configured</p>
 <ul class="simple">
-<li><tt class="docutils literal"><span class="pre">--host</span></tt>: Machine name or IP address to connect to. Default: localhost</li>
-<li><tt class="docutils literal"><span class="pre">--port</span></tt>: Port number to connect to.  Default: 1433</li>
-<li><tt class="docutils literal"><span class="pre">--intsec</span></tt>: Use integrated security. ignores user / password (Windows only)  Default: false</li>
-<li><tt class="docutils literal"><span class="pre">--native-paging</span></tt>: Use native paging for queries. This improves performance for some types of queries. Default: true&#8221;)</li>
-<li><tt class="docutils literal"><span class="pre">--geometry_metadata_table</span></tt>: The optional table containing geometry metadata (geometry type and srid). Can be expressed as &#8216;schema.name&#8217; or just &#8216;name&#8217;</li>
-<li><tt class="docutils literal"><span class="pre">--native-serialization</span></tt>: Use native SQL Server serialization (false), or WKB serialization (true).  Default: false</li>
-<li><tt class="docutils literal"><span class="pre">--database</span></tt>: The database to connect to.  Default: database</li>
-<li><tt class="docutils literal"><span class="pre">--schema</span></tt>: The database schema to access.  Default: public</li>
-<li><tt class="docutils literal"><span class="pre">--user</span></tt>: User name.  Default: sqlserver</li>
-<li><tt class="docutils literal"><span class="pre">--password</span></tt>: Password.  Default: &lt;no password&gt;</li>
+<li><code class="docutils literal"><span class="pre">--host</span></code>: Machine name or IP address to connect to. Default: localhost</li>
+<li><code class="docutils literal"><span class="pre">--port</span></code>: Port number to connect to.  Default: 1433</li>
+<li><code class="docutils literal"><span class="pre">--intsec</span></code>: Use integrated security. ignores user / password (Windows only)  Default: false</li>
+<li><code class="docutils literal"><span class="pre">--native-paging</span></code>: Use native paging for queries. This improves performance for some types of queries. Default: true&#8221;)</li>
+<li><code class="docutils literal"><span class="pre">--geometry_metadata_table</span></code>: The optional table containing geometry metadata (geometry type and srid). Can be expressed as &#8216;schema.name&#8217; or just &#8216;name&#8217;</li>
+<li><code class="docutils literal"><span class="pre">--native-serialization</span></code>: Use native SQL Server serialization (false), or WKB serialization (true).  Default: false</li>
+<li><code class="docutils literal"><span class="pre">--database</span></code>: The database to connect to.  Default: database</li>
+<li><code class="docutils literal"><span class="pre">--schema</span></code>: The database schema to access.  Default: public</li>
+<li><code class="docutils literal"><span class="pre">--user</span></code>: User name.  Default: sqlserver</li>
+<li><code class="docutils literal"><span class="pre">--password</span></code>: Password.  Default: &lt;no password&gt;</li>
 </ul>
 <p>This connection parameters are also used when exporting to a database. We will see the exporting functionality later in this same manual.</p>
-<p>When importing from a database, all tables can be imported with one single command. To do so, do not enter the name of a table as data source, but use the <tt class="docutils literal"><span class="pre">--all</span></tt> option instead, as in the following example:</p>
+<p>When importing from a database, all tables can be imported with one single command. To do so, do not enter the name of a table as data source, but use the <code class="docutils literal"><span class="pre">--all</span></code> option instead, as in the following example:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig pg import --all
 </pre></div>
 </div>
-<p>If a destination path is supplied and the <tt class="docutils literal"><span class="pre">--all</span></tt> option used, all tables will be imported into the same path.</p>
-<p>A listing of all available tables for a given database connection can be obtained using the <tt class="docutils literal"><span class="pre">list</span></tt> command, as shown below.</p>
+<p>If a destination path is supplied and the <code class="docutils literal"><span class="pre">--all</span></code> option used, all tables will be imported into the same path.</p>
+<p>A listing of all available tables for a given database connection can be obtained using the <code class="docutils literal"><span class="pre">list</span></code> command, as shown below.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig pg list
 </pre></div>
 </div>
 <p>Since our repository had just been initialized, it was completely empty, and there is no way that the data we have imported can conflict with data that already existed in the repository. However, importing new data (or a different version of that same data) later can cause conflicts and it might require a different approach than just using the plain import command as we have done now. We will deal with these cases later, but for now it is enough to know that our repository contains some spatial data in its working tree.</p>
 <p>Once the data is imported in the working tree, GeoGig can use it. The original file or database from which you imported it is still something that GeoGig cannot manage, so it is of no use for GeoGig. There is no link between your repository and the original file or data base, so you can literally remove it from your system and it would have no effect at all on GeoGig, which will work exclusively with the copy of the data that is now in the repository working tree.</p>
-<p>To see that the data is actually in the working tree, you can use the <tt class="docutils literal"><span class="pre">status</span></tt> command. This command gives you information about the data that you have in the working tree and the index, comparing between them and also with the repository database. This way, you can see which data has been modified but not added to the repository, or which data has been added but has not yet been versioned.</p>
+<p>To see that the data is actually in the working tree, you can use the <code class="docutils literal"><span class="pre">status</span></code> command. This command gives you information about the data that you have in the working tree and the index, comparing between them and also with the repository database. This way, you can see which data has been modified but not added to the repository, or which data has been added but has not yet been versioned.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig status
 # On branch master
 # Changes not staged for commit:

@@ -9,6 +9,7 @@ This section will discuss working with GeoGig repositories.
    :maxdepth: 2
 
    elements
+   storage
    init
    config
    exploring

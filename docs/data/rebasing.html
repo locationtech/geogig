@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Rebasing &mdash; GeoGig 1.0-RC2 User Manual</title>
+  <title>Rebasing &mdash; GeoGig 1.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,12 +20,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC2 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.0 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Referencing a GeoGig element" href="referencing.html" />
       <link rel="prev" title="Cherry-picking commits" href="picking.html" />
@@ -81,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC2 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Rebasing</li>
 </ul>
@@ -115,13 +115,13 @@ To check out the original branch and stop rebasing, run &#39;geogig rebase --abo
 <p>As you can see in the example above, the particular commit that caused the conflict is shown by GeoGig in the message it displays to inform about the conflicted situation. The ID of the commit, its commit message and the elements that are in conflict are shown.</p>
 <p>Conflict are solved in the same way as in the case of a merge conflict. Conflicted elements are marked as such in the index, and you have to use the GeoGig tools and command to set all of them as not-conflicted and select the versions to use in each case.</p>
 <p>Once the conflict is solved, however, the rebase operation is not finished in the same way as in the case of merging. When a merge is performed, all changes from the merged branch are applied at once on the current branch, and all possible conflicts are marked. After you solve them, the merge operation is over and you just have to commit your changes. In the case of a rebase, commits that were rewinded are applied one by one, and each of them analyzed for conflicts. When a conflict is found, the rebase process is stopped, and you have to fix the conflicts before moving to the next commit (which might itself also cause conflicts)</p>
-<p>With the conflict solved, you can now continue the rebase process by using <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--continue</span></tt>. This will commit your new changes using the message of the last commit (the one that caused the conflict), and continue with the next commit, if it exists. If there are no more commits, the rebase process will be finished. If any of the remaining commits causes a conflict, GeoGig will stop the process and you will have to follow the above steps to solve the new conflicts and restart the rebasing again.</p>
-<p>If for a given commit you do not want to solve conflicts and prefer to ignore the changes it introduces, you can run <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--skip</span></tt>. That will reset your head to the last applied commit (that is, ignoring all changes for the currently conflicting commit, including those that did not cause any conflict), and move to the next commit.</p>
-<p>Anytime during the rebase process, if you want to go back to the state that your repo had before you started rebasing, you can use <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--abort</span></tt>. That will abort the rebasing and leave your repository unchanged.</p>
+<p>With the conflict solved, you can now continue the rebase process by using <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--continue</span></code>. This will commit your new changes using the message of the last commit (the one that caused the conflict), and continue with the next commit, if it exists. If there are no more commits, the rebase process will be finished. If any of the remaining commits causes a conflict, GeoGig will stop the process and you will have to follow the above steps to solve the new conflicts and restart the rebasing again.</p>
+<p>If for a given commit you do not want to solve conflicts and prefer to ignore the changes it introduces, you can run <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--skip</span></code>. That will reset your head to the last applied commit (that is, ignoring all changes for the currently conflicting commit, including those that did not cause any conflict), and move to the next commit.</p>
+<p>Anytime during the rebase process, if you want to go back to the state that your repo had before you started rebasing, you can use <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--abort</span></code>. That will abort the rebasing and leave your repository unchanged.</p>
 <div class="section" id="squashing-commits">
 <h2>Squashing commits<a class="headerlink" href="#squashing-commits" title="Permalink to this headline">¶</a></h2>
 <p>You can use the rebase operation to put several commits into just one, in what is known as &#8220;squashing&#8221; commits. When you perform a rebase and squash your commits, all the commits that are rewinded are not applied afterwards. Instead, one single commit is created, which includes all the changes from those commits. Instead of using the commit message of any of the squashed commits, you have to provide a new message.</p>
-<p>To squash the commits applied in the rebase operation, you must use <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--squash</span> <span class="pre">&lt;commit_message&gt;</span></tt>. For instance, if you have a New York dataset in your repo and a branch where you have been adding streets corresponding to the Manhattan area, you can rebase and bring in all the changes from the master branch and at the same time put all the commits you have made to add those streets into a single one, using the following command line:</p>
+<p>To squash the commits applied in the rebase operation, you must use <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">rebase</span> <span class="pre">--squash</span> <span class="pre">&lt;commit_message&gt;</span></code>. For instance, if you have a New York dataset in your repo and a branch where you have been adding streets corresponding to the Manhattan area, you can rebase and bring in all the changes from the master branch and at the same time put all the commits you have made to add those streets into a single one, using the following command line:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig rebase master --squash &quot;Added Manhattan streets&quot;
 </pre></div>
 </div>

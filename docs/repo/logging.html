@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>The GeoGig logging system &mdash; GeoGig 1.0-RC2 User Manual</title>
+  <title>The GeoGig logging system &mdash; GeoGig 1.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,12 +20,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC2 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.0 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Data and commits" href="../data/index.html" />
       <link rel="prev" title="Command aliases" href="commandaliases.html" />
@@ -81,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC2 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>The GeoGig logging system</li>
 </ul>
@@ -106,9 +106,9 @@
 </div>
 <p>If a GeoGig command cannot be run and GeoGig know the reason for that (for instance, you have entered a wrong parameter or the repository is corrupted), it will show you an explanation in the console. It might happen, however, that an error appears during execution and GeoGig cannot handle that and turn it into a meaningful explanation. In that case, the most detailed description of the error that is possible to produce will be stored in the logging file, and GeoGig will tell you to go to that file in case you want more information.</p>
 <p>The logging file records information about the activity of GeoGig on a given repository, including, but not limited to, error traces. In case you are a programmer, this might help you understand what is happening. If not, you can use the content of the log file to provide more detailed information to GeoGig developers, or when asking for a solution in the GeoGig mailing list, so it is important to know how to find the logging file.</p>
-<p>By default, the logging file is located in your repository folder, under <tt class="docutils literal"><span class="pre">.geogig/log/geogig.log</span></tt></p>
+<p>By default, the logging file is located in your repository folder, under <code class="docutils literal"><span class="pre">.geogig/log/geogig.log</span></code></p>
 <p>GeoGig uses the <a class="reference external" href="http://logback.qos.ch/">Logback</a> framework for logging. Check its documentation to know more about how to configure logback.</p>
-<p>Apart from the logging file you will find other files in the <tt class="docutils literal"><span class="pre">log</span></tt> folder. Metrics are collected in the <tt class="docutils literal"><span class="pre">metrics.csv</span></tt> file, but you have to explicitly enable it, since that is not enabled by default. On the console, type the following.</p>
+<p>Apart from the logging file you will find other files in the <code class="docutils literal"><span class="pre">log</span></code> folder. Metrics are collected in the <code class="docutils literal"><span class="pre">metrics.csv</span></code> file, but you have to explicitly enable it, since that is not enabled by default. On the console, type the following.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig config metrics.enabled true
 </pre></div>
 </div>

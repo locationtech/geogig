@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Merging branches &mdash; GeoGig 1.0-RC2 User Manual</title>
+  <title>Merging branches &mdash; GeoGig 1.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,12 +20,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC2 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.0 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Interacting with remote repositories" href="remotes.html" />
       <link rel="prev" title="Branches" href="branches.html" />
@@ -81,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC2 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>Merging branches</li>
 </ul>
@@ -99,18 +99,18 @@
         
   <div class="section" id="merging-branches">
 <span id="repo-merging"></span><h1>Merging branches<a class="headerlink" href="#merging-branches" title="Permalink to this headline">¶</a></h1>
-<p>When working on a branch, a typical workflow will eventually involve copying that work onto another branch, most often the <tt class="docutils literal"><span class="pre">master</span></tt> branch.</p>
-<p>Merging is usually done when you have finished working on a given branch and you think the modifications that you have made are ready to become part of the main <tt class="docutils literal"><span class="pre">master</span></tt> branch. In that case, you will apply all the same changes that you have made to the features and trees in that branch onto the features and trees in the <tt class="docutils literal"><span class="pre">master</span></tt> branch, so the <tt class="docutils literal"><span class="pre">master</span></tt> branch will contains changes from both branches.</p>
+<p>When working on a branch, a typical workflow will eventually involve copying that work onto another branch, most often the <code class="docutils literal"><span class="pre">master</span></code> branch.</p>
+<p>Merging is usually done when you have finished working on a given branch and you think the modifications that you have made are ready to become part of the main <code class="docutils literal"><span class="pre">master</span></code> branch. In that case, you will apply all the same changes that you have made to the features and trees in that branch onto the features and trees in the <code class="docutils literal"><span class="pre">master</span></code> branch, so the <code class="docutils literal"><span class="pre">master</span></code> branch will contain changes from both branches.</p>
 <p>The following graphic describes this procedure:</p>
 <div class="figure">
 <img alt="../_images/merged.png" src="../_images/merged.png" />
 </div>
-<p>Merging is done using the <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">merge</span></tt> command. Change to the <strong>destination branch</strong> (in most cases, <tt class="docutils literal"><span class="pre">master</span></tt>) and perform the following command:</p>
+<p>Merging is done using the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">merge</span></code> command. Change to the <strong>destination branch</strong> (in most cases, <code class="docutils literal"><span class="pre">master</span></code>) and perform the following command:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig merge mybranch</span>
 </pre></div>
 </div>
-<p>That will add new commits from the <tt class="docutils literal"><span class="pre">mybranch</span></tt> branch to the <tt class="docutils literal"><span class="pre">master</span></tt> branch.</p>
-<p>Once you have merged your changes, you may wish to delete the branch. Do this by invoking the <tt class="docutils literal"><span class="pre">-d</span></tt> option on the <tt class="docutils literal"><span class="pre">branch</span></tt> command.</p>
+<p>That will add new commits from the <code class="docutils literal"><span class="pre">mybranch</span></code> branch to the <code class="docutils literal"><span class="pre">master</span></code> branch.</p>
+<p>Once you have merged your changes, you may wish to delete the branch. Do this by invoking the <code class="docutils literal"><span class="pre">-d</span></code> option on the <code class="docutils literal"><span class="pre">branch</span></code> command.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig branch -d mybranch</span>
 </pre></div>
 </div>
@@ -124,7 +124,7 @@
 <span class="go">Automatic merge failed. Fix conflicts and then commit the result.</span>
 </pre></div>
 </div>
-<p>You can check which elements are conflicted by running the <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">status</span></tt> command. The result will be similar to the one shown next:</p>
+<p>You can check which elements are conflicted by running the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">status</span></code> command. The result will be similar to the one shown next:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="gp">#</span> On branch master
 <span class="gp">#</span> Unmerged paths:
 <span class="gp">#</span>   <span class="o">(</span>use <span class="s2">&quot;geogig add/rm &lt;path/to/fid&gt;...&quot;</span> as appropriate to mark resolution
@@ -146,11 +146,10 @@
 <h2>Types of conflicts<a class="headerlink" href="#types-of-conflicts" title="Permalink to this headline">¶</a></h2>
 <p>The following cases will create a merge conflict when the following situations occur on both branches:</p>
 <ul class="simple">
-<li>Modifying the same attribute of a feature, setting different values.</li>
+<li>Modifying the same attribute of a feature (including geometries), setting different values.</li>
 <li>Modifying an attribute in a feature (on one branch), deleting that attribute (on another branch).</li>
 <li>Adding different features under the same path.</li>
 <li>Modifying the default feature type for a given path, setting different values.</li>
-<li>Modifying the same geometry of a feature differently.</li>
 <li>One branch has deleted a tree, while the other one has added or modified a feature under that tree.</li>
 <li>Both branches have modified a feature and at least one of them has changed its feature type, and the resulting feature types are not the same.</li>
 </ul>
@@ -158,21 +157,19 @@
 <ul class="simple">
 <li>Adding the same feature at the same path.</li>
 <li>Deleting the same feature.</li>
-<li>Modifying the same attribute in a feature, setting the same new value.</li>
+<li>Modifying the same attribute in a feature (including geometries), setting the same new value.</li>
 <li>Setting the same new default feature type for a path.</li>
 <li>Editing the same feature, but modifying different attributes.</li>
-<li>Modifying the geometry of a feature, but when changes are compatible and can be both incorporated.</li>
-<li>Making the same modification to a feature geometry.</li>
 </ul>
 <p>In general, whenever the situation doesn&#8217;t have a clear way of being solved, GeoGig will report a conflict for the sake of safety.</p>
 </div>
 <div class="section" id="showing-conflicts">
 <h2>Showing conflicts<a class="headerlink" href="#showing-conflicts" title="Permalink to this headline">¶</a></h2>
-<p>The <tt class="docutils literal"><span class="pre">conflicts</span></tt> command can be used to describe the current unmerged elements. There are three ways of displaying conflicts:</p>
+<p>The <code class="docutils literal"><span class="pre">conflicts</span></code> command can be used to describe the current unmerged elements. There are three ways of displaying conflicts:</p>
 <ol class="arabic simple">
-<li>Running <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span></tt> will print the full descriptions of the versions involved in the conflict: the common ancestor, &#8220;ours&#8221; (current branch) and &#8220;theirs&#8221; (the branch to merge). The descriptions of the involved elements are the same ones that would be obtained by calling the GeoGig <tt class="docutils literal"><span class="pre">cat</span></tt> command on each of them.</li>
-<li>Running <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span> <span class="pre">--diff</span></tt> will output a representation with diff-like syntax instead of full descriptions, showing only those attributes the differ. It uses the same syntax as the <tt class="docutils literal"><span class="pre">diff</span></tt> command, which is described in the <a class="reference internal" href="../data/diffs.html#differences"><em>Showing differences</em></a> section, which makes it easier to see why the conflict arises and how to solve it.</li>
-<li>Running <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span> <span class="pre">--ids-only</span></tt> will return just the IDs of the three versions corresponding to each unmerged element.</li>
+<li>Running <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span></code> will print the full descriptions of the versions involved in the conflict: the common ancestor, &#8220;ours&#8221; (current branch) and &#8220;theirs&#8221; (the branch to merge). The descriptions of the involved elements are the same ones that would be obtained by calling the GeoGig <code class="docutils literal"><span class="pre">cat</span></code> command on each of them.</li>
+<li>Running <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span> <span class="pre">--diff</span></code> will output a representation with diff-like syntax instead of full descriptions, showing only those attributes the differ. It uses the same syntax as the <code class="docutils literal"><span class="pre">diff</span></code> command, which is described in the <a class="reference internal" href="../data/diffs.html#differences"><span>Showing differences</span></a> section, which makes it easier to see why the conflict arises and how to solve it.</li>
+<li>Running <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">conflicts</span> <span class="pre">--ids-only</span></code> will return just the IDs of the three versions corresponding to each unmerged element.</li>
 </ol>
 </div>
 <div class="section" id="solving-using-the-merge-tool">
@@ -181,18 +178,18 @@
 </div>
 <div class="section" id="merging-more-than-two-branches">
 <h2>Merging more than two branches<a class="headerlink" href="#merging-more-than-two-branches" title="Permalink to this headline">¶</a></h2>
-<p>The <tt class="docutils literal"><span class="pre">merge</span></tt> command accepts more than one single branch name as entry. If several branch names are provided, it will perform what is know as an <strong>octopus merge</strong>.</p>
+<p>The <code class="docutils literal"><span class="pre">merge</span></code> command accepts more than one single branch name as entry. If several branch names are provided, it will perform what is know as an <strong>octopus merge</strong>.</p>
 <p>The following situations will cause GeoGig to fail the octopus merge process:</p>
 <ul class="simple">
 <li>A conflict on any type exist, whether it is a conflict between two branches or between many of them at the same time.</li>
 <li>A feature has been edited by at least two branches, and the changes introduced are not identical. Even if the changes are compatible (for instance, if branches have edited values for different attributes), GeoGig will not perform an automerge in this case, and the merge operation won&#8217;t be executed.</li>
 </ul>
-<p>In these cases, you will have to merge branches individually, solving conflicts for each of them one be on.</p>
+<p>In these cases, you will have to merge branches individually, solving conflicts for each of them one by one.</p>
 <p>Unlike a standard two branch merge, where the process will partially complete, a conflict will cause an octopus merge to <em>not even start</em>.</p>
 </div>
-<div class="section" id="staging-a-merged-version-of-an-conflicted-element">
-<h2>Staging a merged version of an conflicted element<a class="headerlink" href="#staging-a-merged-version-of-an-conflicted-element" title="Permalink to this headline">¶</a></h2>
-<p>Using the <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">add</span></tt> command, features can be staged in the usual way. When a feature is staged, it is not in a conflicted state. Running the <tt class="docutils literal"><span class="pre">add</span></tt> command will solve the conflicted merge. Before this can be done, you must pick which version of the commit to merge.</p>
+<div class="section" id="staging-a-merged-version-of-a-conflicted-element">
+<h2>Staging a merged version of a conflicted element<a class="headerlink" href="#staging-a-merged-version-of-a-conflicted-element" title="Permalink to this headline">¶</a></h2>
+<p>Using the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">add</span></code> command, features can be staged in the usual way. When a feature is staged, it is not in a conflicted state. Running the <code class="docutils literal"><span class="pre">add</span></code> command will solve the conflicted merge. Before this can be done, you must pick which version of the commit to merge.</p>
 <p>GeoGig uses &#8220;ours&#8221; and &#8220;theirs&#8221; notation, with &#8220;ours&#8221; referring to the current branch, and &#8220;theirs&#8221; referring to the other branch.</p>
 <p>To select the feature from the current branch:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig checkout -p &lt;path_to_feature&gt; --ours</span>
@@ -202,9 +199,9 @@
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig checkout -p &lt;path_to_feature&gt; --theirs</span>
 </pre></div>
 </div>
-<p>Alternately, you can import a new feature using one of the importing tools from GeoGig, or delete the conflicted feature entirely using the <tt class="docutils literal"><span class="pre">rm</span></tt> command. The latter option will remove it from both the working tree and the index, as well as the commit.. Their is no need to call <tt class="docutils literal"><span class="pre">add</span></tt> afterwards, unless you have staged some other element to solve a different conflict.</p>
-<p>Once you have the correct version that you want to commit, run <tt class="docutils literal"><span class="pre">add</span></tt> to stage it and then run <tt class="docutils literal"><span class="pre">commit</span></tt> to finally commit your resolved elements and finish the merge.</p>
-<p>In a standard commit, you usually must supply a commit message using the <tt class="docutils literal"><span class="pre">-m</span></tt> switch. In the case of a merge, you can also run <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">merge</span></tt> without a commit message. In the conflict case, the default message would look something like this:</p>
+<p>Alternately, you can import a new feature using one of the importing tools from GeoGig, or delete the conflicted feature entirely using the <code class="docutils literal"><span class="pre">rm</span></code> command. The latter option will remove it from both the working tree and the index, as well as the commit.. Their is no need to call <code class="docutils literal"><span class="pre">add</span></code> afterwards, unless you have staged some other element to solve a different conflict.</p>
+<p>Once you have the correct version that you want to commit, run <code class="docutils literal"><span class="pre">add</span></code> to stage it and then run <code class="docutils literal"><span class="pre">commit</span></code> to finally commit your resolved elements and finish the merge.</p>
+<p>In a standard commit, you usually must supply a commit message using the <code class="docutils literal"><span class="pre">-m</span></code> switch. In the case of a merge, you can also run <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">merge</span></code> without a commit message. In the conflict case, the default message would look something like this:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Merge branch refs/heads/b1</span>
 
 <span class="go">Conflicts:</span>
@@ -216,14 +213,14 @@
 </div>
 <div class="section" id="aborting-the-merge-operation">
 <h2>Aborting the merge operation<a class="headerlink" href="#aborting-the-merge-operation" title="Permalink to this headline">¶</a></h2>
-<p>You can abort the merge operation and restore it to the original state it had before you invoked the <tt class="docutils literal"><span class="pre">merge</span></tt> command. You have the following alternatives, which will cause the same result.</p>
+<p>You can abort the merge operation and restore it to the original state it had before you invoked the <code class="docutils literal"><span class="pre">merge</span></code> command. You have the following alternatives, which will cause the same result.</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">geogig reset --hard ORIG_HEAD</span>
 <span class="go">geogig merge --abort</span>
 </pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">This is not like git. The <tt class="docutils literal"><span class="pre">--abort</span></tt> here is just a reset operation.</p>
+<p class="last">This is not like git. The <code class="docutils literal"><span class="pre">--abort</span></code> here is just a reset operation.</p>
 </div>
 <div class="highlight-python"><div class="highlight"><pre>geogig conflicts
 $geogig conflicts
@@ -307,7 +304,7 @@ STRING    Public
 <li><a class="reference internal" href="#showing-conflicts">Showing conflicts</a></li>
 <li><a class="reference internal" href="#solving-using-the-merge-tool">Solving using the merge tool</a></li>
 <li><a class="reference internal" href="#merging-more-than-two-branches">Merging more than two branches</a></li>
-<li><a class="reference internal" href="#staging-a-merged-version-of-an-conflicted-element">Staging a merged version of an conflicted element</a></li>
+<li><a class="reference internal" href="#staging-a-merged-version-of-a-conflicted-element">Staging a merged version of a conflicted element</a></li>
 <li><a class="reference internal" href="#aborting-the-merge-operation">Aborting the merge operation</a></li>
 </ul>
 </li>

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoGig for developers &mdash; GeoGig 1.0-RC2 Technical Manual</title>
+  <title>GeoGig for developers &mdash; GeoGig 1.0 Technical Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,13 +20,13 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
   <link rel="shortcut icon" href="_static/favicon.ico"/>
-      <link rel="top" title="GeoGig 1.0-RC2 Technical Manual" href="index.html" />
+      <link rel="top" title="GeoGig 1.0 Technical Manual" href="index.html" />
       <link rel="next" title="GeoGig merge conflicts strategy" href="geogig-merge-conflicts.html" />
       <link rel="prev" title="Plumbing commands" href="plumbing_commands.html" />
 </head>
@@ -81,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.0-RC2 Technical Manual</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.0 Technical Manual</a> &raquo;</li>
   <li>GeoGig for developers</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -117,15 +117,15 @@
 </ul>
 </div></blockquote>
 </li>
-<li><p class="first">Move to the <tt class="docutils literal"><span class="pre">src/parent</span></tt> folder under the folder where you have cloned the GeoGig source code, and type the following.</p>
+<li><p class="first">Move to the <code class="docutils literal"><span class="pre">src/parent</span></code> folder under the folder where you have cloned the GeoGig source code, and type the following.</p>
 </li>
 </ul>
 <div class="highlight-python"><div class="highlight"><pre>$mvn clean install
 </pre></div>
 </div>
 <ul class="simple">
-<li>GeoGig should now be built, and scripts ready to be run should be available in the <tt class="docutils literal"><span class="pre">src/cli-app/target/geogig/bin</span></tt> folder. Add that folders to your <tt class="docutils literal"><span class="pre">PATH</span></tt> environment variable, so your system can find it and you can call GeoGig from the console.</li>
-<li>To test that GeoGig is ready to be used, open a console and type <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">help</span></tt>. You should see a list of available commands like the one shown below.</li>
+<li>GeoGig should now be built, and scripts ready to be run should be available in the <code class="docutils literal"><span class="pre">src/cli-app/target/geogig/bin</span></code> folder. Add that folders to your <code class="docutils literal"><span class="pre">PATH</span></code> environment variable, so your system can find it and you can call GeoGig from the console.</li>
+<li>To test that GeoGig is ready to be used, open a console and type <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">help</span></code>. You should see a list of available commands like the one shown below.</li>
 </ul>
 <div class="highlight-python"><div class="highlight"><pre>usage: geogig &lt;command&gt; [&lt;args&gt;]
 
@@ -151,7 +151,7 @@ diff            Show changes between commits, commit and working tree, etc
 <h2>Working with eclipse<a class="headerlink" href="#working-with-eclipse" title="Permalink to this headline">¶</a></h2>
 <p>To work with the Eclipse IDE, follow these steps.</p>
 <ul class="simple">
-<li>Move to the <tt class="docutils literal"><span class="pre">src/parent</span></tt> folder and type the following to build the corresponding eclipse projects:</li>
+<li>Move to the <code class="docutils literal"><span class="pre">src/parent</span></code> folder and type the following to build the corresponding eclipse projects:</li>
 </ul>
 <div class="highlight-python"><div class="highlight"><pre>$mvn eclipse:eclipse
 </pre></div>
@@ -166,7 +166,7 @@ diff            Show changes between commits, commit and working tree, etc
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">In the <em>Select root directory</em> field, select the <tt class="docutils literal"><span class="pre">src</span></tt> folder where the GeoGig source code can be found (which now will also contain the Eclipse projects). The list of projects in the <em>Projects</em> field will be populated.</p>
+<li><p class="first">In the <em>Select root directory</em> field, select the <code class="docutils literal"><span class="pre">src</span></code> folder where the GeoGig source code can be found (which now will also contain the Eclipse projects). The list of projects in the <em>Projects</em> field will be populated.</p>
 </li>
 <li><p class="first">Click on <em>Finish</em> and all of GeoGig projects will be added to your workspace.</p>
 </li>
@@ -181,7 +181,7 @@ diff            Show changes between commits, commit and working tree, etc
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Press the <em>Import</em> button and import the GeoGig formatting rules that are found at <tt class="docutils literal"><span class="pre">build/eclipse/formatter.xml</span></tt>. Set <tt class="docutils literal"><span class="pre">GeoGig</span></tt> as the current active profile.</p>
+<li><p class="first">Press the <em>Import</em> button and import the GeoGig formatting rules that are found at <code class="docutils literal"><span class="pre">build/eclipse/formatter.xml</span></code>. Set <code class="docutils literal"><span class="pre">GeoGig</span></code> as the current active profile.</p>
 </li>
 <li><p class="first">If you use the auto-formatting on save option, make sure that only edited lines are formatted.</p>
 <blockquote>
@@ -196,9 +196,9 @@ diff            Show changes between commits, commit and working tree, etc
 <h2>Programming guide<a class="headerlink" href="#programming-guide" title="Permalink to this headline">¶</a></h2>
 <p>Here are some notes to help you get introduced in programming GeoGig</p>
 <ul>
-<li><p class="first">GeoGig makes extensive use of the <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/GuavaExplained">Google Guava library</a>. Check its documentation and use it when possible, as it contains many valuable tools that will increase code readability. Of particular relevance are the usage of <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/PreconditionsExplained">preconditions</a>, of utilities to deal with <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/CollectionUtilitiesExplained">collections</a> and of the <tt class="docutils literal"><span class="pre">Optional</span></tt> class to <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/UsingAndAvoidingNullExplained">avoid null references</a>. Make sure you check the above links to get familiar with those elements.</p>
+<li><p class="first">GeoGig makes extensive use of the <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/GuavaExplained">Google Guava library</a>. Check its documentation and use it when possible, as it contains many valuable tools that will increase code readability. Of particular relevance are the usage of <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/PreconditionsExplained">preconditions</a>, of utilities to deal with <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/CollectionUtilitiesExplained">collections</a> and of the <code class="docutils literal"><span class="pre">Optional</span></code> class to <a class="reference external" href="https://code.google.com/p/guava-libraries/wiki/UsingAndAvoidingNullExplained">avoid null references</a>. Make sure you check the above links to get familiar with those elements.</p>
 </li>
-<li><p class="first">Tests are written using the Junit framework. Online tests that require a GeoGig endpoint, are available using <tt class="docutils literal"><span class="pre">mvn</span> <span class="pre">-Ponline</span></tt>.</p>
+<li><p class="first">Tests are written using the Junit framework. Online tests that require a GeoGig endpoint, are available using <code class="docutils literal"><span class="pre">mvn</span> <span class="pre">-Ponline</span></code>.</p>
 </li>
 <li><p class="first">Cobertura is configured for a test coverage report:</p>
 <blockquote>
@@ -208,13 +208,13 @@ open target/site/cobertura/index.html
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Functional tests are available for the command-line interface. GeoGig uses the <a class="reference external" href="https://github.com/cucumber/cucumber-jvm">cucumber-jvm</a> framework for functional testing. The <tt class="docutils literal"><span class="pre">RunFunctionalTest</span></tt> class is a JUnit Runner that will run all cucumber functional tests. To run a single test from Eclipse, you can install the <a class="reference external" href="https://github.com/mrpotes/cukes-jvm-eclipse-plugin/">cukes-jvm-eclipse plugin</a>. Once installed, you can right click on functional test files (which have the <tt class="docutils literal"><span class="pre">.feature</span></tt> extension) and run them individually. More information about running cucumber tests from eclipse can be found <a class="reference external" href="https://github.com/cucumber/cucumber-jvm/wiki/IDE-support">here</a>.</p>
+<li><p class="first">Functional tests are available for the command-line interface. GeoGig uses the <a class="reference external" href="https://github.com/cucumber/cucumber-jvm">cucumber-jvm</a> framework for functional testing. The <code class="docutils literal"><span class="pre">RunFunctionalTest</span></code> class is a JUnit Runner that will run all cucumber functional tests. To run a single test from Eclipse, you can install the <a class="reference external" href="https://github.com/mrpotes/cukes-jvm-eclipse-plugin/">cukes-jvm-eclipse plugin</a>. Once installed, you can right click on functional test files (which have the <code class="docutils literal"><span class="pre">.feature</span></code> extension) and run them individually. More information about running cucumber tests from eclipse can be found <a class="reference external" href="https://github.com/cucumber/cucumber-jvm/wiki/IDE-support">here</a>.</p>
 </li>
 </ul>
 </div>
 <div class="section" id="technical-documentation">
 <h2>Technical documentation<a class="headerlink" href="#technical-documentation" title="Permalink to this headline">¶</a></h2>
-<p>Technical documentation is available in the <tt class="docutils literal"><span class="pre">docs/technical</span></tt> folder. It contains mostly descriptions of the mechanisms used by some GeoGig core operations.</p>
+<p>Technical documentation is available in the <code class="docutils literal"><span class="pre">docs/technical</span></code> folder. It contains mostly descriptions of the mechanisms used by some GeoGig core operations.</p>
 </div>
 </div>
 

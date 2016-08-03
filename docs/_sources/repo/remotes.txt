@@ -12,11 +12,11 @@ Cloning a repository
 
 To clone a repository from a remote location, use the ``clone`` command. You must specify the name of the directory where the cloned repository is to be stored as well as a valid URL that points to the original repository.
 
-Here is the command line to be used to clone a repository at ``http://myoriginalrepo.com`` into a local directory named ``repo``:
+Here is the command line to be used to clone a repository at ``http://myoriginalrepo.com/repos/naturalearth`` into a local directory named ``repo``:
 
 .. code-block:: console
 
-   geogig clone http://myoriginalrepo.com repo
+   geogig clone http://myoriginalrepo.com/repos/naturalearth repo
 
 Once the repository is cloned, both copies are identical, and you can start working on your copy independently, following the usual GeoGig workflow.
 
@@ -29,7 +29,7 @@ Instead of referring to a remote with its full URL, a GeoGig repository can refe
 
    geogig remote add origin https://myoriginalrepo.com
 
-This creates an alias called ``origin`` for the repository at ``https://myoriginalrepo.com``
+This creates an alias called ``origin`` for the repository at ``http://myoriginalrepo.com/repos/naturalearth``
 
 You can rename an alias with the ``rename`` argument:
 

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>OpenStreetMap Web-Api Documentation &mdash; GeoGig 1.0-RC2 User Manual</title>
+  <title>OpenStreetMap Web-Api Documentation &mdash; GeoGig 1.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,15 +20,15 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC2 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.0 User Manual" href="../index.html" />
       <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
       <link rel="next" title="GeoPackage import and export Web-API" href="geopackage-import-export.html" />
-      <link rel="prev" title="Web-API Asynchronous tasks" href="async-tasks.html" />
+      <link rel="prev" title="Using GeoGig with OpenStreetMap data" href="osm.html" />
 </head>
 <body class="interaction/osm-web-api">
     <div id="blacktop"></div>
@@ -81,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC2 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
   <li>OpenStreetMap Web-Api Documentation</li>
 </ul>
@@ -93,7 +93,7 @@
     <a href="geopackage-import-export.html" title="GeoPackage import and export Web-API"
        accesskey="N">next</a>|</li>
   <li>
-    <a href="async-tasks.html" title="Web-API Asynchronous tasks"
+    <a href="osm.html" title="Using GeoGig with OpenStreetMap data"
        accesskey="P">previous</a>|</li>
 </ul>
         
@@ -107,52 +107,52 @@ This is achieved by first initiating a transaction, then using the transaction i
 and finally commit the transaction.
 Example:</p>
 <p>Initiate transaction:</p>
-<div class="highlight-python"><div class="highlight"><pre>GET /&lt;repo&gt;/beginTransaction
+<div class="highlight-python"><div class="highlight"><pre>GET /repos/&lt;repo&gt;/beginTransaction
 &lt;response&gt;
    &lt;success&gt;true&lt;/success&gt;
    &lt;Transaction&gt;&lt;ID&gt;7accffe5-d506-4273-96f2-7b2581b71b36&lt;/ID&gt;&lt;/Transaction&gt;
 &lt;/response&gt;
-GET /&lt;repo&gt;/&lt;command&gt;?transactionId=7accffe5-d506-4273-96f2-7b2581b71b36&amp;&lt;command args&gt;
-GET /&lt;repo&gt;/endTransaction?transactionId=7accffe5-d506-4273-96f2-7b2581b71b36
+GET /repos/&lt;repo&gt;/&lt;command&gt;?transactionId=7accffe5-d506-4273-96f2-7b2581b71b36&amp;&lt;command args&gt;
+GET /repos/&lt;repo&gt;/endTransaction?transactionId=7accffe5-d506-4273-96f2-7b2581b71b36
 &lt;response&gt;&lt;success&gt;true&lt;/success&gt;&lt;Transaction/&gt;&lt;/response&gt;
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">All osm-web-api command response are formatted for xml by default, however you can get a JSON response by addressing the resource with the <tt class="docutils literal"><span class="pre">.json</span></tt> extension.</p>
+<p class="last">All osm-web-api command response are formatted for xml by default, however you can get a JSON response by addressing the resource with the <code class="docutils literal"><span class="pre">.json</span></code> extension.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Remember the entry point for a repository served by the <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></tt> command is at the root context (e.g. <tt class="docutils literal"><span class="pre">http://localhost:8182/</span></tt>)
-whilst when using the GeoServer plugin, its under <tt class="docutils literal"><span class="pre">&lt;geoserver</span> <span class="pre">context&gt;/geogig/&lt;repository</span> <span class="pre">id&gt;</span></tt> (e.g. <tt class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/1f563a96-bd5c-4d59-84ec-e02e158eba78/</span></tt>).
-You can check the list of repository ids and names by accessing <tt class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/</span></tt>.</p>
+<p class="last">Remember the entry point for a repository served by the <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">serve</span></code> command is at the root context (e.g. <code class="docutils literal"><span class="pre">http://localhost:8182/repos/naturalearth</span></code>)
+whilst when using the GeoServer plugin, its under <code class="docutils literal"><span class="pre">&lt;geoserver</span> <span class="pre">context&gt;/geogig/repos/&lt;repo</span> <span class="pre">name&gt;</span></code> (e.g. <code class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/repos/naturalearth</span></code>).
+You can check the list of repository ids and names by accessing <code class="docutils literal"><span class="pre">http://localhost:8080/geoserver/geogig/repos</span></code>.</p>
 </div>
 <div class="section" id="osm-download">
 <h2>OSM Download<a class="headerlink" href="#osm-download" title="Permalink to this headline">¶</a></h2>
 <p>Downloads data from OSM and commits it to the repository.</p>
-<div class="highlight-python"><div class="highlight"><pre>GET /&lt;repo&gt;/osm/download[.xml|.json]?&lt;filter=&lt;filter file path&gt;|bbox=S,W,N,E&gt;[&amp;message=&lt;commit message&gt;][&amp;update=true|false][&amp;rebase=true|false][&amp;mapping=&lt;mapping file&gt;][&amp;transactionId=&lt;transaction id&gt;]
+<div class="highlight-python"><div class="highlight"><pre>GET /repos/&lt;repo&gt;/osm/download[.xml|.json]?&lt;filter=&lt;filter file path&gt;|bbox=S,W,N,E&gt;[&amp;message=&lt;commit message&gt;][&amp;update=true|false][&amp;rebase=true|false][&amp;mapping=&lt;mapping file&gt;][&amp;transactionId=&lt;transaction id&gt;]
 </pre></div>
 </div>
 <div class="section" id="parameters">
 <h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
 <p><strong>filter:</strong>
-Mandatory if <tt class="docutils literal"><span class="pre">bbox</span></tt> is not given. The filter file to use. Must  exist in the server file system
+Mandatory if <code class="docutils literal"><span class="pre">bbox</span></code> is not given. The filter file to use. Must  exist in the server file system
 and contain an <a class="reference external" href="http://wiki.openstreetmap.org/wiki/Overpass_API/Overpass_QL">Overpass QL filter</a>.</p>
 <p><strong>bbox:</strong>
-Mandatory if <tt class="docutils literal"><span class="pre">filter</span></tt> is not given. The bounding box to use as filter, in WGS84 coordinates. Format: <tt class="docutils literal"><span class="pre">&lt;S&gt;,&lt;W&gt;,&lt;N&gt;,&lt;E&gt;</span></tt>.</p>
+Mandatory if <code class="docutils literal"><span class="pre">filter</span></code> is not given. The bounding box to use as filter, in WGS84 coordinates. Format: <code class="docutils literal"><span class="pre">&lt;S&gt;,&lt;W&gt;,&lt;N&gt;,&lt;E&gt;</span></code>.</p>
 <p><strong>message:</strong>
 Message for the commit to create.</p>
 <p><strong>update:</strong>
-Boolean. Default: <tt class="docutils literal"><span class="pre">false</span></tt>. Update the OSM data currently in the geogig repository</p>
+Boolean. Default: <code class="docutils literal"><span class="pre">false</span></code>. Update the OSM data currently in the geogig repository</p>
 <p><strong>rebase:</strong>
-Boolean. Default: <tt class="docutils literal"><span class="pre">false</span></tt>. Use rebase instead of merge when updating. Can only be true if <tt class="docutils literal"><span class="pre">upate</span> <span class="pre">=</span> <span class="pre">true</span></tt>.</p>
+Boolean. Default: <code class="docutils literal"><span class="pre">false</span></code>. Use rebase instead of merge when updating. Can only be true if <code class="docutils literal"><span class="pre">upate</span> <span class="pre">=</span> <span class="pre">true</span></code>.</p>
 <p><strong>mapping:</strong>
 The file that contains the data mapping to use.</p>
 </div>
 <div class="section" id="examples">
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
 <p>A bad argument:</p>
-<div class="highlight-python"><div class="highlight"><pre>$curl -v &quot;localhost:8182/osm/download?bbox=-32.9621,-60.6309,-32.9541,-60.6154&amp;mapping=nonExistentMappingFile&quot;
+<div class="highlight-python"><div class="highlight"><pre>$curl -v &quot;localhost:8182/repos/rosario_osm/osm/download?bbox=-32.9621,-60.6309,-32.9541,-60.6154&amp;mapping=nonExistentMappingFile&quot;
 &lt; HTTP/1.1 400 Bad Request
 The specified mapping file does not exist
 Usage: GET &lt;repo context&gt;/osm/download?&lt;[filter=&lt;filterfile&gt;]|[bbox=S,W,N,E]&gt;[&amp;message=&lt;commit message&gt;][&amp;mapping=&lt;mapping file&gt;][&amp;update=true|false*][&amp;rebase=true|false*]
@@ -166,7 +166,7 @@ Arguments:
 </pre></div>
 </div>
 <p>Download OSM data inside a transaction, using a mapping file and a bounding box filter:</p>
-<div class="highlight-python"><div class="highlight"><pre>$curl -v &quot;http://localhost:8182/beginTransaction&quot;
+<div class="highlight-python"><div class="highlight"><pre>$curl -v &quot;http://localhost:8182/repos/rosario_osm/beginTransaction&quot;
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
@@ -177,7 +177,7 @@ Arguments:
    &lt;/Transaction&gt;
 &lt;/response&gt;
 
-$curl -v &quot;http://localhost:8182/osm/download.xml?transactionID=430f4052-8bbe-4fce-8578-c572f069be28&amp;bbox=-32.9621,-60.6309,-32.9541,-60.6154&amp;mapping=/home/groldan/buildings_and_roads.json&quot;
+$curl -v &quot;http://localhost:8182/repos/rosario_osm/osm/download.xml?transactionID=430f4052-8bbe-4fce-8578-c572f069be28&amp;bbox=-32.9621,-60.6309,-32.9541,-60.6154&amp;mapping=/home/groldan/buildings_and_roads.json&quot;
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
@@ -189,7 +189,7 @@ $curl -v &quot;http://localhost:8182/osm/download.xml?transactionID=430f4052-8bb
    &lt;atom:link xmlns:atom=&quot;http://www.w3.org/2005/Atom&quot; rel=&quot;alternate&quot; href=&quot;http://localhost:8080/geoserver/geogig/tasks/12.xml&quot; type=&quot;application/xml&quot;/&gt;
 &lt;/task&gt;
 
-curl -v &quot;http://localhost:8182/endTransaction?transactionId=430f4052-8bbe-4fce-8578-c572f069be28&quot;
+curl -v &quot;http://localhost:8182/repos/rosario_osm/endTransaction?transactionId=430f4052-8bbe-4fce-8578-c572f069be28&quot;
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
@@ -199,45 +199,45 @@ curl -v &quot;http://localhost:8182/endTransaction?transactionId=430f4052-8bbe-4
 &lt;/response&gt;
 </pre></div>
 </div>
-<p>The example above uses a mapping file in <tt class="docutils literal"><span class="pre">/home/groldan/buildings_and_roads.json</span></tt> with the following content to create
-the <tt class="docutils literal"><span class="pre">osm_roads</span></tt> and <tt class="docutils literal"><span class="pre">osm_buildings</span></tt> feature type trees out of the imported OSM &#8220;nodes&#8221; and &#8220;ways&#8221;.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&quot;rules&quot;</span><span class="p">:</span>
+<p>The example above uses a mapping file in <code class="docutils literal"><span class="pre">/home/groldan/buildings_and_roads.json</span></code> with the following content to create
+the <code class="docutils literal"><span class="pre">osm_roads</span></code> and <code class="docutils literal"><span class="pre">osm_buildings</span></code> feature type trees out of the imported OSM &#8220;nodes&#8221; and &#8220;ways&#8221;.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s2">&quot;rules&quot;</span><span class="p">:</span>
   <span class="p">[</span>
     <span class="p">{</span>
-      <span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;osm_roads&quot;</span><span class="p">,</span>
-      <span class="s">&quot;filter&quot;</span><span class="p">:{</span>
-         <span class="s">&quot;highway&quot;</span><span class="p">:[</span>
-           <span class="s">&quot;tertiary&quot;</span><span class="p">,</span><span class="s">&quot;residential&quot;</span><span class="p">,</span><span class="s">&quot;service&quot;</span><span class="p">,</span><span class="s">&quot;secondary&quot;</span><span class="p">,</span><span class="s">&quot;track&quot;</span><span class="p">,</span><span class="s">&quot;footway&quot;</span><span class="p">,</span><span class="s">&quot;path&quot;</span><span class="p">,</span><span class="s">&quot;unclassified&quot;</span><span class="p">,</span><span class="s">&quot;primary&quot;</span><span class="p">,</span>
-           <span class="s">&quot;trunk&quot;</span><span class="p">,</span><span class="s">&quot;motorway&quot;</span><span class="p">,</span><span class="s">&quot;construction&quot;</span><span class="p">,</span><span class="s">&quot;proposed&quot;</span><span class="p">,</span><span class="s">&quot;cycleway&quot;</span><span class="p">,</span><span class="s">&quot;living_street&quot;</span><span class="p">,</span><span class="s">&quot;steps&quot;</span><span class="p">,</span> <span class="s">&quot;road&quot;</span><span class="p">,</span> <span class="s">&quot;pedestrian&quot;</span><span class="p">,</span>
-           <span class="s">&quot;construction&quot;</span><span class="p">,</span><span class="s">&quot;bridleway&quot;</span><span class="p">,</span><span class="s">&quot;platform&quot;</span><span class="p">,</span><span class="s">&quot;proposed&quot;</span><span class="p">]</span>
+      <span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;osm_roads&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;filter&quot;</span><span class="p">:{</span>
+         <span class="s2">&quot;highway&quot;</span><span class="p">:[</span>
+           <span class="s2">&quot;tertiary&quot;</span><span class="p">,</span><span class="s2">&quot;residential&quot;</span><span class="p">,</span><span class="s2">&quot;service&quot;</span><span class="p">,</span><span class="s2">&quot;secondary&quot;</span><span class="p">,</span><span class="s2">&quot;track&quot;</span><span class="p">,</span><span class="s2">&quot;footway&quot;</span><span class="p">,</span><span class="s2">&quot;path&quot;</span><span class="p">,</span><span class="s2">&quot;unclassified&quot;</span><span class="p">,</span><span class="s2">&quot;primary&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;trunk&quot;</span><span class="p">,</span><span class="s2">&quot;motorway&quot;</span><span class="p">,</span><span class="s2">&quot;construction&quot;</span><span class="p">,</span><span class="s2">&quot;proposed&quot;</span><span class="p">,</span><span class="s2">&quot;cycleway&quot;</span><span class="p">,</span><span class="s2">&quot;living_street&quot;</span><span class="p">,</span><span class="s2">&quot;steps&quot;</span><span class="p">,</span> <span class="s2">&quot;road&quot;</span><span class="p">,</span> <span class="s2">&quot;pedestrian&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;construction&quot;</span><span class="p">,</span><span class="s2">&quot;bridleway&quot;</span><span class="p">,</span><span class="s2">&quot;platform&quot;</span><span class="p">,</span><span class="s2">&quot;proposed&quot;</span><span class="p">]</span>
       <span class="p">},</span>
-      <span class="s">&quot;fields&quot;</span><span class="p">:{</span>
-        <span class="s">&quot;geom&quot;</span><span class="p">:{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;geom&quot;</span><span class="p">,</span> <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;LINESTRING&quot;</span><span class="p">},</span>
-        <span class="s">&quot;name&quot;</span><span class="p">:{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;STRING&quot;</span><span class="p">}</span>
+      <span class="s2">&quot;fields&quot;</span><span class="p">:{</span>
+        <span class="s2">&quot;geom&quot;</span><span class="p">:{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;geom&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;LINESTRING&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;STRING&quot;</span><span class="p">}</span>
       <span class="p">}</span>
     <span class="p">},</span>
     <span class="p">{</span>
-      <span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;osm_buildings&quot;</span><span class="p">,</span>
-      <span class="s">&quot;filter&quot;</span><span class="p">:{</span>
-        <span class="s">&quot;geom&quot;</span><span class="p">:[</span><span class="s">&quot;closed&quot;</span><span class="p">],</span>
-        <span class="s">&quot;building&quot;</span><span class="p">:[</span>
-          <span class="s">&quot;yes&quot;</span><span class="p">,</span><span class="s">&quot;residential&quot;</span><span class="p">,</span><span class="s">&quot;house&quot;</span><span class="p">,</span><span class="s">&quot;garage&quot;</span><span class="p">,</span><span class="s">&quot;detached&quot;</span><span class="p">,</span><span class="s">&quot;terrace&quot;</span><span class="p">,</span><span class="s">&quot;apartments&quot;</span><span class="p">,</span> <span class="s">&quot;hut&quot;</span><span class="p">,</span> <span class="s">&quot;industrial&quot;</span><span class="p">,</span> <span class="s">&quot;roof&quot;</span><span class="p">,</span> <span class="s">&quot;garages&quot;</span><span class="p">,</span>
-          <span class="s">&quot;terrace&quot;</span><span class="p">,</span> <span class="s">&quot;farm_auxiliary&quot;</span><span class="p">,</span> <span class="s">&quot;commercial&quot;</span><span class="p">,</span> <span class="s">&quot;retail&quot;</span><span class="p">,</span> <span class="s">&quot;school&quot;</span><span class="p">,</span> <span class="s">&quot;church&quot;</span><span class="p">,</span> <span class="s">&quot;shed&quot;</span><span class="p">,</span> <span class="s">&quot;manufacture&quot;</span><span class="p">,</span> <span class="s">&quot;greenhouse&quot;</span><span class="p">,</span>
-          <span class="s">&quot;farm&quot;</span><span class="p">,</span><span class="s">&quot;office&quot;</span><span class="p">,</span><span class="s">&quot;cabin&quot;</span><span class="p">,</span><span class="s">&quot;barn&quot;</span><span class="p">],</span>
-        <span class="s">&quot;aeroway&quot;</span><span class="p">:[</span><span class="s">&quot;terminal&quot;</span><span class="p">]</span>
+      <span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;osm_buildings&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;filter&quot;</span><span class="p">:{</span>
+        <span class="s2">&quot;geom&quot;</span><span class="p">:[</span><span class="s2">&quot;closed&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;building&quot;</span><span class="p">:[</span>
+          <span class="s2">&quot;yes&quot;</span><span class="p">,</span><span class="s2">&quot;residential&quot;</span><span class="p">,</span><span class="s2">&quot;house&quot;</span><span class="p">,</span><span class="s2">&quot;garage&quot;</span><span class="p">,</span><span class="s2">&quot;detached&quot;</span><span class="p">,</span><span class="s2">&quot;terrace&quot;</span><span class="p">,</span><span class="s2">&quot;apartments&quot;</span><span class="p">,</span> <span class="s2">&quot;hut&quot;</span><span class="p">,</span> <span class="s2">&quot;industrial&quot;</span><span class="p">,</span> <span class="s2">&quot;roof&quot;</span><span class="p">,</span> <span class="s2">&quot;garages&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;terrace&quot;</span><span class="p">,</span> <span class="s2">&quot;farm_auxiliary&quot;</span><span class="p">,</span> <span class="s2">&quot;commercial&quot;</span><span class="p">,</span> <span class="s2">&quot;retail&quot;</span><span class="p">,</span> <span class="s2">&quot;school&quot;</span><span class="p">,</span> <span class="s2">&quot;church&quot;</span><span class="p">,</span> <span class="s2">&quot;shed&quot;</span><span class="p">,</span> <span class="s2">&quot;manufacture&quot;</span><span class="p">,</span> <span class="s2">&quot;greenhouse&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;farm&quot;</span><span class="p">,</span><span class="s2">&quot;office&quot;</span><span class="p">,</span><span class="s2">&quot;cabin&quot;</span><span class="p">,</span><span class="s2">&quot;barn&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;aeroway&quot;</span><span class="p">:[</span><span class="s2">&quot;terminal&quot;</span><span class="p">]</span>
       <span class="p">},</span>
-      <span class="s">&quot;fields&quot;</span><span class="p">:{</span>
-        <span class="s">&quot;geom&quot;</span><span class="p">:{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;geom&quot;</span><span class="p">,</span><span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;POLYGON&quot;</span><span class="p">},</span>
-        <span class="s">&quot;status&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;status&quot;</span><span class="p">,</span> <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;STRING&quot;</span><span class="p">},</span>
-        <span class="s">&quot;building&quot;</span><span class="p">:{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;building&quot;</span><span class="p">,</span> <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;STRING&quot;</span><span class="p">}</span>
+      <span class="s2">&quot;fields&quot;</span><span class="p">:{</span>
+        <span class="s2">&quot;geom&quot;</span><span class="p">:{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;geom&quot;</span><span class="p">,</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;POLYGON&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;status&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;STRING&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;building&quot;</span><span class="p">:{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;building&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;STRING&quot;</span><span class="p">}</span>
       <span class="p">}</span>
     <span class="p">}</span>
   <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>We can verify both trees have been created with the <tt class="docutils literal"><span class="pre">ls-tree</span></tt> command like in:</p>
-<div class="highlight-python"><div class="highlight"><pre>$curl -v &quot;http://localhost:8182/ls-tree&quot;
+<p>We can verify both trees have been created with the <code class="docutils literal"><span class="pre">ls-tree</span></code> command like in:</p>
+<div class="highlight-python"><div class="highlight"><pre>$curl -v &quot;http://localhost:8182/repos/rosario_osm/ls-tree&quot;
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
@@ -255,19 +255,19 @@ the <tt class="docutils literal"><span class="pre">osm_roads</span></tt> and <tt
 <div class="section" id="osm-import">
 <h2>OSM Import<a class="headerlink" href="#osm-import" title="Permalink to this headline">¶</a></h2>
 <p>Imports OSM data from a file into the working tree, and optionally creates a commit if a mapping file is used.</p>
-<div class="highlight-python"><div class="highlight"><pre>GET /&lt;repo&gt;/osm/import[.xml|.json]?&lt;uri=&lt;file path&gt;&gt;[&amp;add=true|false][&amp;noRaw=true|false][&amp;mapping=&lt;mapping file&gt;][&amp;message=&lt;commit message&gt;][&amp;transactionId=&lt;transaction id&gt;]
+<div class="highlight-python"><div class="highlight"><pre>GET /repos/&lt;repo&gt;/osm/import[.xml|.json]?&lt;uri=&lt;file path&gt;&gt;[&amp;add=true|false][&amp;noRaw=true|false][&amp;mapping=&lt;mapping file&gt;][&amp;message=&lt;commit message&gt;][&amp;transactionId=&lt;transaction id&gt;]
 </pre></div>
 </div>
 <div class="section" id="id1">
 <h3>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p><strong>uri:</strong>
-Mandatory. The path to the <tt class="docutils literal"><span class="pre">.pbf</span></tt> or <tt class="docutils literal"><span class="pre">.xml</span></tt> OSM data file to import.</p>
+Mandatory. The path to the <code class="docutils literal"><span class="pre">.pbf</span></code> or <code class="docutils literal"><span class="pre">.xml</span></code> OSM data file to import.</p>
 <p><strong>add:</strong>
-Boolean. Default: <tt class="docutils literal"><span class="pre">false</span></tt>. If <tt class="docutils literal"><span class="pre">true</span></tt>, append the new data to existing one, otherwise remove existing data before importing.</p>
+Boolean. Default: <code class="docutils literal"><span class="pre">false</span></code>. If <code class="docutils literal"><span class="pre">true</span></code>, append the new data to existing one, otherwise remove existing data before importing.</p>
 <p><strong>mapping:</strong>
 The file that contains the data mapping to use.</p>
 <p><strong>noRaw:</strong>
-Boolean. Default: <tt class="docutils literal"><span class="pre">false</span></tt>. Only has effect if using a mapping file. A value of <tt class="docutils literal"><span class="pre">true</span></tt> indicates not to import the &#8220;raw&#8221; <tt class="docutils literal"><span class="pre">node</span></tt> and <tt class="docutils literal"><span class="pre">way</span></tt> data.</p>
+Boolean. Default: <code class="docutils literal"><span class="pre">false</span></code>. Only has effect if using a mapping file. A value of <code class="docutils literal"><span class="pre">true</span></code> indicates not to import the &#8220;raw&#8221; <code class="docutils literal"><span class="pre">node</span></code> and <code class="docutils literal"><span class="pre">way</span></code> data.</p>
 <p><strong>message:</strong>
 Optional. Message for the commit to create. Only has effect if using a mapping file.</p>
 </div>
@@ -275,7 +275,7 @@ Optional. Message for the commit to create. Only has effect if using a mapping f
 <h3>Examples<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="a-bad-argument">
 <h4>A bad argument:<a class="headerlink" href="#a-bad-argument" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/osm/import?uri=/data/osm/geofabrik/nonexistent.osm.pbf&quot;
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/rosario_osm/osm/import?uri=/data/osm/geofabrik/nonexistent.osm.pbf&quot;
 &lt; HTTP/1.1 200 OK
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
 &lt;task&gt;&lt;id&gt;4&lt;/id&gt;
@@ -298,7 +298,7 @@ Optional. Message for the commit to create. Only has effect if using a mapping f
 </div>
 <div class="section" id="missing-uri-argument">
 <h4>Missing uri argument:<a class="headerlink" href="#missing-uri-argument" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/osm/import?&quot;
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/rosario_osm/osm/import?&quot;
 &lt; HTTP/1.1 400 Bad Request
 Missing parameter: uri
 Usage: GET &lt;repo context&gt;/osm/import?uri=&lt;osm file URI&gt;[&amp;&lt;arg&gt;=&lt;value&gt;]+
@@ -315,7 +315,7 @@ Arguments:
 <div class="section" id="proper-sequence-using-a-transaction">
 <h4>Proper sequence, using a transaction:<a class="headerlink" href="#proper-sequence-using-a-transaction" title="Permalink to this headline">¶</a></h4>
 <p>Begin transaction:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/beginTransaction&quot;
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/rosario_osm/beginTransaction&quot;
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
@@ -328,7 +328,7 @@ Arguments:
 </pre></div>
 </div>
 <p>Call import:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/osm/import?uri=/data/osm/geofabrik/albania-latest.osm.pbf&amp;transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&quot;
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/rosario_osm/osm/import?uri=/data/osm/geofabrik/albania-latest.osm.pbf&amp;transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&quot;
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
@@ -370,7 +370,7 @@ Arguments:
 </pre></div>
 </div>
 <p>Add and commit:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/add?transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&quot;
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/rosario_osm/add?transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&quot;
 
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
@@ -380,7 +380,7 @@ Arguments:
    &lt;Add&gt;Success&lt;/Add&gt;
 &lt;/response&gt;
 
-$ curl -v &quot;http://localhost:8182/commit?transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&amp;message=Import%20of%20albania%20OSM%20data&amp;authorName=Gabriel%20Roldan&amp;authorEmail=groldan@example.com&quot;
+$ curl -v &quot;http://localhost:8182/repos/rosario_osm/commit?transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&amp;message=Import%20of%20albania%20OSM%20data&amp;authorName=Gabriel%20Roldan&amp;authorEmail=groldan@example.com&quot;
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
@@ -394,7 +394,7 @@ $ curl -v &quot;http://localhost:8182/commit?transactionId=e0007ea2-96f7-4e5b-be
 </pre></div>
 </div>
 <p>End transaction:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/endTransaction?transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&quot;
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/rosario_osm/endTransaction?transactionId=e0007ea2-96f7-4e5b-bee1-74915929c461&quot;
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
@@ -405,7 +405,7 @@ $ curl -v &quot;http://localhost:8182/commit?transactionId=e0007ea2-96f7-4e5b-be
 </pre></div>
 </div>
 <p>Verify the commit is now on the current HEAD:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/log?limit=1&quot;
+<div class="highlight-python"><div class="highlight"><pre>$ curl -v &quot;http://localhost:8182/repos/rosario_osm/log?limit=1&quot;
 &lt; HTTP/1.1 200 OK
 &lt; Content-Type: application/xml
 &lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
@@ -441,7 +441,7 @@ $ curl -v &quot;http://localhost:8182/commit?transactionId=e0007ea2-96f7-4e5b-be
 
 
       <div class="selfclear pagination-nav">
-          <div class="leftwise"><strong>Previous</strong>: <a href="async-tasks.html" title="previous chapter">Web-API Asynchronous tasks</a></div>
+          <div class="leftwise"><strong>Previous</strong>: <a href="osm.html" title="previous chapter">Using GeoGig with OpenStreetMap data</a></div>
           <div class="rightwise"><strong>Next</strong>: <a href="geopackage-import-export.html" title="next chapter">GeoPackage import and export Web-API</a></div>
       </div>
       <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
@@ -491,7 +491,7 @@ $ curl -v &quot;http://localhost:8182/commit?transactionId=e0007ea2-96f7-4e5b-be
         <div class="section continue_reading">
           <h3>Continue Reading</h3>
           <ul>
-            <li>Previous: <a href="async-tasks.html" title="previous chapter">Web-API Asynchronous tasks</a></li>
+            <li>Previous: <a href="osm.html" title="previous chapter">Using GeoGig with OpenStreetMap data</a></li>
             <li>Next: <a href="geopackage-import-export.html" title="next chapter">GeoPackage import and export Web-API</a></li>
           </ul>
         </div>

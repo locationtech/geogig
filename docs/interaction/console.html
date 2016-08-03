@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>The GeoGig Console &mdash; GeoGig 1.0-RC2 User Manual</title>
+  <title>The GeoGig Console &mdash; GeoGig 1.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,15 +20,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC2 User Manual" href="../index.html" />
-      <link rel="up" title="Other ways to interact with GeoGig" href="index.html" />
-      <link rel="next" title="GeoGig Networking" href="networking.html" />
-      <link rel="prev" title="Other ways to interact with GeoGig" href="index.html" />
+      <link rel="top" title="GeoGig 1.0 User Manual" href="../index.html" />
 </head>
 <body class="interaction/console">
     <div id="blacktop"></div>
@@ -81,42 +78,35 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC2 User Manual</a> &raquo;</li>
-  <li><a href="index.html" accesskey="U">Other ways to interact with GeoGig</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0 User Manual</a> &raquo;</li>
   <li>The GeoGig Console</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
   <li class="first">
     <a href="../genindex.html" title="General Index"
        accesskey="I">index</a></li>
-  <li>
-    <a href="networking.html" title="GeoGig Networking"
-       accesskey="N">next</a>|</li>
-  <li>
-    <a href="index.html" title="Other ways to interact with GeoGig"
-       accesskey="P">previous</a>|</li>
 </ul>
         
   <div class="section" id="the-geogig-console">
 <h1>The GeoGig Console<a class="headerlink" href="#the-geogig-console" title="Permalink to this headline">¶</a></h1>
-<p>GeoGig is a command-line application that is run by calling commands in the form <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">&lt;command&gt;</span> <span class="pre">[options]</span></tt>. Each time you call it with a sentence like that, GeoGig has to be initialized. If your session involves running several commands, a better option is to run the geogig console, which lets you run a set of commands, initializing GeoGig just once at the begining of the session.</p>
-<p>To start the GeoGig console, type <tt class="docutils literal"><span class="pre">geogig-console</span></tt></p>
+<p>GeoGig is a command-line application that is run by calling commands in the form <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">&lt;command&gt;</span> <span class="pre">[options]</span></code>. Each time you call it with a sentence like that, GeoGig has to be initialized. If your session involves running several commands, a better option is to run the geogig console, which lets you run a set of commands, initializing GeoGig just once at the begining of the session.</p>
+<p>To start the GeoGig console, type <code class="docutils literal"><span class="pre">geogig-console</span></code></p>
 <p>The prompt will show you the current folder, and in case it is a GeoGig folder, the name of the current branch (or the current commit pointed by HEAD, in case you are in a detached HEAD state).</p>
 <div class="highlight-python"><div class="highlight"><pre>(geogig):my/current/folder (master) $
 </pre></div>
 </div>
-<p>You can enter commands just like you do on a normal console when calling GeoGig, but without having to add <tt class="docutils literal"><span class="pre">geogig</span></tt> at the beginning of each sentence. For instance, to get the history of your repository, just type <tt class="docutils literal"><span class="pre">log</span></tt> (instead of <tt class="docutils literal"><span class="pre">geogig</span> <span class="pre">log</span></tt>).</p>
-<p>Console commands (like  <tt class="docutils literal"><span class="pre">ls</span></tt> if you are on Linux or <tt class="docutils literal"><span class="pre">dir</span></tt> if you are running Windows) are not available in the GeoGig console.</p>
+<p>You can enter commands just like you do on a normal console when calling GeoGig, but without having to add <code class="docutils literal"><span class="pre">geogig</span></code> at the beginning of each sentence. For instance, to get the history of your repository, just type <code class="docutils literal"><span class="pre">log</span></code> (instead of <code class="docutils literal"><span class="pre">geogig</span> <span class="pre">log</span></code>).</p>
+<p>Console commands (like  <code class="docutils literal"><span class="pre">ls</span></code> if you are on Linux or <code class="docutils literal"><span class="pre">dir</span></code> if you are running Windows) are not available in the GeoGig console.</p>
 <p>The GeoGig console has autocompletion, which is available pressing the tab key.</p>
-<p>When you finish working with GeoGig and want to go back to you shell environment, type <tt class="docutils literal"><span class="pre">exit</span></tt>.</p>
+<p>When you finish working with GeoGig and want to go back to you shell environment, type <code class="docutils literal"><span class="pre">exit</span></code>.</p>
 <div class="section" id="running-geogig-console-in-batch-mode">
 <h2>Running GeoGig console in batch mode<a class="headerlink" href="#running-geogig-console-in-batch-mode" title="Permalink to this headline">¶</a></h2>
 <p>If you need to run several GeoGig operations in a batch script, you will be initializing GeoSgit as many times as commands you execute. Instead, you can pass the whole set of commands to the GeoGig console, and reduce the number of initializations to just one.</p>
-<p>To do so, create a text file with all the GeoGig commands that you want to run, and run the <tt class="docutils literal"><span class="pre">geogig-console</span></tt> option followed by the path to that text file.</p>
+<p>To do so, create a text file with all the GeoGig commands that you want to run, and run the <code class="docutils literal"><span class="pre">geogig-console</span></code> option followed by the path to that text file.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig-console myscript.txt
 </pre></div>
 </div>
-<p>As when using the GeoGig console in its interactive mode, the command calls in the text file should not start with the <tt class="docutils literal"><span class="pre">geogig</span></tt> command name, but with the operation name instead. Here is an example of a simple batch file.</p>
+<p>As when using the GeoGig console in its interactive mode, the command calls in the text file should not start with the <code class="docutils literal"><span class="pre">geogig</span></code> command name, but with the operation name instead. Here is an example of a simple batch file.</p>
 <div class="highlight-python"><div class="highlight"><pre>import shp myfile.shp
 add
 commit -m &quot;First commit&quot;
@@ -124,7 +114,7 @@ commit -m &quot;First commit&quot;
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>If you use GeoGig on Windows and you create a batch file to call several GeoGig commands using the normal <tt class="docutils literal"><span class="pre">geogig</span></tt> script (not <tt class="docutils literal"><span class="pre">geogig-console</span></tt>), notice that the <tt class="docutils literal"><span class="pre">geogig</span></tt> command is itself a batch process. To be able to run more than a single GeoGig command, make each call in your batch file using the <tt class="docutils literal"><span class="pre">call</span></tt> command. For instance, this will not work (it will only execute the first line):</p>
+<p>If you use GeoGig on Windows and you create a batch file to call several GeoGig commands using the normal <code class="docutils literal"><span class="pre">geogig</span></code> script (not <code class="docutils literal"><span class="pre">geogig-console</span></code>), notice that the <code class="docutils literal"><span class="pre">geogig</span></code> command is itself a batch process. To be able to run more than a single GeoGig command, make each call in your batch file using the <code class="docutils literal"><span class="pre">call</span></code> command. For instance, this will not work (it will only execute the first line):</p>
 <dl class="docutils">
 <dt>::</dt>
 <dd>geogig import shp myfile.shp
@@ -143,10 +133,6 @@ call geogig commit -m &#8220;First commit&#8221;</dd>
 </div>
 
 
-      <div class="selfclear pagination-nav">
-          <div class="leftwise"><strong>Previous</strong>: <a href="index.html" title="previous chapter">Other ways to interact with GeoGig</a></div>
-          <div class="rightwise"><strong>Next</strong>: <a href="networking.html" title="next chapter">GeoGig Networking</a></div>
-      </div>
       <p class="centered-text"><a href="#top"><img src="../_static/arrow_up.png" alt="back to top"/></a></p>
       </div><!-- /#content> -->
   <div id="sidebar" class="sidebar-offcanvas contrast col-sm-4 sidebar-offcanvas" id="sidebar" role="navigation">
@@ -177,13 +163,6 @@ call geogig commit -m &#8220;First commit&#8221;</dd>
 
         <div class="section-footer"></div>
       </div>
-        <div class="section continue_reading">
-          <h3>Continue Reading</h3>
-          <ul>
-            <li>Previous: <a href="index.html" title="previous chapter">Other ways to interact with GeoGig</a></li>
-            <li>Next: <a href="networking.html" title="next chapter">GeoGig Networking</a></li>
-          </ul>
-        </div>
         <div class="section">
         <h3>This Page</h3>
         <ul class="this-page-menu">

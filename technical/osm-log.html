@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title><no title> &mdash; GeoGig 1.0-RC2 Technical Manual</title>
+  <title><no title> &mdash; GeoGig 1.0 Technical Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,13 +20,13 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
   <link rel="shortcut icon" href="_static/favicon.ico"/>
-      <link rel="top" title="GeoGig 1.0-RC2 Technical Manual" href="index.html" />
+      <link rel="top" title="GeoGig 1.0 Technical Manual" href="index.html" />
 </head>
 <body class="osm-log">
     <div id="blacktop"></div>
@@ -79,7 +79,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.0-RC2 Technical Manual</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.0 Technical Manual</a> &raquo;</li>
   <li><no title></li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -94,13 +94,13 @@
 <li>Entries corresponding to mappings, which store the tree ids before and after mapping operations.</li>
 <li>Entries corresponding to filters, which stores filters used when downloading OSM data</li>
 </ul>
-<p>All entries are stored in the correpsoning files in a folder named <tt class="docutils literal"><span class="pre">osm</span></tt> under the <tt class="docutils literal"><span class="pre">.geogig</span></tt> folder</p>
-<p>The changeset entries are stored in a file named <tt class="docutils literal"><span class="pre">log</span></tt>. When a dowload operation is performed and a filter or mapping is used, a new entry is added to the file. The entry contains the ObjectId of the tree after the OSM data was imported updated, the latest changeset id and its timestamp. This can be used later to know if the OSM in the repo is up to date.</p>
+<p>All entries are stored in the correpsoning files in a folder named <code class="docutils literal"><span class="pre">osm</span></code> under the <code class="docutils literal"><span class="pre">.geogig</span></code> folder</p>
+<p>The changeset entries are stored in a file named <code class="docutils literal"><span class="pre">log</span></code>. When a dowload operation is performed and a filter or mapping is used, a new entry is added to the file. The entry contains the ObjectId of the tree after the OSM data was imported updated, the latest changeset id and its timestamp. This can be used later to know if the OSM in the repo is up to date.</p>
 <p>The filter and map descriptions are stored, so when a new dowload/update operation is run, there is no need to specify them again.</p>
-<p>The filter description corresponding to a download operation is stored in a file named <tt class="docutils literal"><span class="pre">filterXXX</span></tt>, where XXX is the entry id, that is, the object id of the tree after the download operation.</p>
-<p>Mapping information is stored in a folder named <tt class="docutils literal"><span class="pre">map</span></tt> under the <tt class="docutils literal"><span class="pre">osm</span></tt> folder. For a mapping operation affecting a tree named <tt class="docutils literal"><span class="pre">mytree</span></tt>, the following files are created:</p>
+<p>The filter description corresponding to a download operation is stored in a file named <code class="docutils literal"><span class="pre">filterXXX</span></code>, where XXX is the entry id, that is, the object id of the tree after the download operation.</p>
+<p>Mapping information is stored in a folder named <code class="docutils literal"><span class="pre">map</span></code> under the <code class="docutils literal"><span class="pre">osm</span></code> folder. For a mapping operation affecting a tree named <code class="docutils literal"><span class="pre">mytree</span></code>, the following files are created:</p>
 <ul class="simple">
-<li>a file named <tt class="docutils literal"><span class="pre">mytree</span></tt> which contains a list of mapping used for that tree in the hitory of the repo. Each entry is a single line with to object ids, corresponding to the ids of the repostiory tree before ad after the mapping. If this file already exists, a new entry will be added, with the ids corresponing to the current mapping operation being logged</li>
+<li>a file named <code class="docutils literal"><span class="pre">mytree</span></code> which contains a list of mapping used for that tree in the hitory of the repo. Each entry is a single line with to object ids, corresponding to the ids of the repostiory tree before ad after the mapping. If this file already exists, a new entry will be added, with the ids corresponing to the current mapping operation being logged</li>
 <li>a file named with the object id of the repo tree after the mapping operation, which contains the mapping description.</li>
 </ul>
 <p>If the mapping affects several trees, the above will be repeated for each of them.</p>

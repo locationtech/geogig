@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Plumbing commands &mdash; GeoGig 1.0-RC2 Technical Manual</title>
+  <title>Plumbing commands &mdash; GeoGig 1.0 Technical Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,13 +20,13 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
   <link rel="shortcut icon" href="_static/favicon.ico"/>
-      <link rel="top" title="GeoGig 1.0-RC2 Technical Manual" href="index.html" />
+      <link rel="top" title="GeoGig 1.0 Technical Manual" href="index.html" />
       <link rel="next" title="GeoGig for developers" href="developers.html" />
       <link rel="prev" title="GeoGig Network Synchronization" href="geogig-network-sync.html" />
 </head>
@@ -81,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.0-RC2 Technical Manual</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.0 Technical Manual</a> &raquo;</li>
   <li>Plumbing commands</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -103,7 +103,7 @@
 <p>This document describes plumbing commands and how they replace the corresponding porcelain commands. Detail description of their output format can also be found here.</p>
 <div class="section" id="ls-tree">
 <h2>ls-tree<a class="headerlink" href="#ls-tree" title="Permalink to this headline">¶</a></h2>
-<p>The ls-tree command replaces the <tt class="docutils literal"><span class="pre">ls</span></tt> command and shows a list of elements (trees and features) under a given path, with the following format:</p>
+<p>The ls-tree command replaces the <code class="docutils literal"><span class="pre">ls</span></code> command and shows a list of elements (trees and features) under a given path, with the following format:</p>
 <ul class="simple">
 <li>If the &#8211;verbose option is not used, then it prints outs a list of element paths, separated by line breaks. There is no information printed about whether the path corresponds to a tree or to a feature</li>
 <li>If the &#8211;verbose option is used, each line correponding to an element has this format:</li>
@@ -113,8 +113,8 @@
 </div>
 <p>Size and number of trees are only printed if the eeent described is a tree</p>
 <p>Paths are absolute paths to the tree. Elements are shown in depthfirst order, so elements under a given tree will appear inmediatly after it.</p>
-<p>The <tt class="docutils literal"><span class="pre">verbose</span></tt>, <tt class="docutils literal"><span class="pre">-r</span></tt>, <tt class="docutils literal"><span class="pre">-d</span></tt> and <tt class="docutils literal"><span class="pre">-t</span></tt> options are available, with the same effect as in the case of using the <tt class="docutils literal"><span class="pre">ls</span></tt> commands.</p>
-<p>The following are some examples of the output produced by the <tt class="docutils literal"><span class="pre">ls-tree</span></tt> command</p>
+<p>The <code class="docutils literal"><span class="pre">verbose</span></code>, <code class="docutils literal"><span class="pre">-r</span></code>, <code class="docutils literal"><span class="pre">-d</span></code> and <code class="docutils literal"><span class="pre">-t</span></code> options are available, with the same effect as in the case of using the <code class="docutils literal"><span class="pre">ls</span></code> commands.</p>
+<p>The following are some examples of the output produced by the <code class="docutils literal"><span class="pre">ls-tree</span></code> command</p>
 <div class="highlight-python"><div class="highlight"><pre>$geogig ls-tree -v parks
 6beb800506a526e151e8f77c422c111cd54bcf7e tree 292f917fbd5153fcfb3def60f5cc57f628ae1252 elevation 18.666297912597656;18.715967178344727;45.776702880859375;45.811668395996094 2 0
 1e6988eab76ab6b9da5da4d174278cca26049ab8 tree 3a2530e0818647b70afc17d09b1d56201aeb6fd3 landuse 18.66728973388672;18.71497344970703;45.77732849121094;45.811126708984375 3 0
@@ -139,11 +139,11 @@ landuse/3
 </div>
 <div class="section" id="diff-tree">
 <h2>diff-tree<a class="headerlink" href="#diff-tree" title="Permalink to this headline">¶</a></h2>
-<p>The <tt class="docutils literal"><span class="pre">diff-tree</span></tt> command shows a list of differences between two commits. It uses the same syntax of the <tt class="docutils literal"><span class="pre">diff</span></tt> command and its ouput is a list of lines with the following formt</p>
+<p>The <code class="docutils literal"><span class="pre">diff-tree</span></code> command shows a list of differences between two commits. It uses the same syntax of the <code class="docutils literal"><span class="pre">diff</span></code> command and its ouput is a list of lines with the following formt</p>
 <div class="highlight-python"><div class="highlight"><pre>&lt;path&gt; &lt;blank_space&gt; &lt;old_objectid&gt; &lt;blank_space&gt; &lt;new_object_id&gt;
 </pre></div>
 </div>
-<p>And additional <tt class="docutils literal"><span class="pre">--describe</span></tt> switch is available, which causes the output to contain the values of fields in the affected paths</p>
+<p>And additional <code class="docutils literal"><span class="pre">--describe</span></code> switch is available, which causes the output to contain the values of fields in the affected paths</p>
 <p>Output format is as follows</p>
 <div class="highlight-python"><div class="highlight"><pre>&lt;path&gt;
 &lt;change_type&gt;&lt;blank_space&gt;&lt;field_name1&gt;
@@ -163,7 +163,7 @@ landuse/3
 </div>
 <div class="section" id="rev-list">
 <h2>rev-list<a class="headerlink" href="#rev-list" title="Permalink to this headline">¶</a></h2>
-<p>The <tt class="docutils literal"><span class="pre">rev-list</span></tt> command is the plumbing equivalent to the <tt class="docutils literal"><span class="pre">log</span></tt> porcelain command.</p>
+<p>The <code class="docutils literal"><span class="pre">rev-list</span></code> command is the plumbing equivalent to the <code class="docutils literal"><span class="pre">log</span></code> porcelain command.</p>
 <p>The output of rev-list is a list of commits separated by blank lines, with the following format</p>
 <div class="highlight-python"><div class="highlight"><pre>&quot;commit&quot; + &lt;blank_space&gt; + &lt;id_of_commit&gt;
 &quot;tree&quot; + &lt;blank_space&gt; + &lt;id_of_tree&gt;
@@ -176,7 +176,7 @@ landuse/3
 </div>
 <p>If several parents exist, the line starting with &#8220;parent&#8221; will appear repeated.</p>
 <p>If the commit message contains line breaks, all lines will appear indented, with a tab character starting each line.</p>
-<p>In case of using the <tt class="docutils literal"><span class="pre">--changed</span></tt> option, the format is as follows:</p>
+<p>In case of using the <code class="docutils literal"><span class="pre">--changed</span></code> option, the format is as follows:</p>
 <div class="highlight-python"><div class="highlight"><pre>&quot;commit&quot; + &lt;blank_space&gt; + &lt;id_of_commit&gt;
 &quot;tree&quot; + &lt;blank_space&gt; + &lt;id_of_tree&gt;
 &quot;author&quot; + &lt;blank_space&gt; + &lt;author_name&gt; + &lt;blank_space&gt; + &lt;author_email&gt; + &lt;blank_space&gt; + &lt;timestamp&gt; + &lt;blank_space&gt; + &lt;timezon_offset&gt; + &quot;\n&quot;
@@ -192,7 +192,7 @@ landuse/3
 </div>
 <div class="section" id="cat">
 <h2>cat<a class="headerlink" href="#cat" title="Permalink to this headline">¶</a></h2>
-<p>The <tt class="docutils literal"><span class="pre">cat</span></tt> command replaces the <tt class="docutils literal"><span class="pre">show</span></tt> command produces a text description of elements in a GeoGig repository. The format for the different types of objects is as follows. An example has been added in each case.</p>
+<p>The <code class="docutils literal"><span class="pre">cat</span></code> command replaces the <code class="docutils literal"><span class="pre">show</span></code> command produces a text description of elements in a GeoGig repository. The format for the different types of objects is as follows. An example has been added in each case.</p>
 <div class="section" id="commit">
 <h3>Commit<a class="headerlink" href="#commit" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-python"><div class="highlight"><pre>&quot;id&quot; + &quot;\t&quot; + &lt;commit_id&gt; + &quot;\n&quot;
@@ -302,11 +302,11 @@ For geometry attributes, and additional substring is added at the end of the cor
 </div>
 <div class="section" id="blame">
 <h2>blame<a class="headerlink" href="#blame" title="Permalink to this headline">¶</a></h2>
-<p>The blame command has a <tt class="docutils literal"><span class="pre">--porcelain</span></tt> option that generates machine-readable output with the following format:</p>
+<p>The blame command has a <code class="docutils literal"><span class="pre">--porcelain</span></code> option that generates machine-readable output with the following format:</p>
 <div class="highlight-python"><div class="highlight"><pre>&lt;name_of_field&gt; &lt;blank_space&gt; &lt;commit_id&gt; &lt;blank_space&gt; &lt;committer_name&gt; &lt;blank_space&gt; &lt;commiter_email&gt; &lt;blank_space&gt; &lt;commit_timestamp&gt; &lt;blank_space&gt; &lt;commit_timezone_offset&gt;
 </pre></div>
 </div>
-<p>The following is an example of the porcelain output of the <tt class="docutils literal"><span class="pre">blame</span></tt> command</p>
+<p>The following is an example of the porcelain output of the <code class="docutils literal"><span class="pre">blame</span></code> command</p>
 <div class="highlight-python"><div class="highlight"><pre>parktype 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@boundlessgeo.com 1367236628965 7200000
 area 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@boundlessgeo.com 1367236628965 7200000
 perimeter 2d132099c2ede0c9ea2306317cfba4796a62abeb volaya volaya@boundlessgeo.com 1367236628965 7200000

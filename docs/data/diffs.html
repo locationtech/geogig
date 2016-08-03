@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Showing differences &mdash; GeoGig 1.0-RC2 User Manual</title>
+  <title>Showing differences &mdash; GeoGig 1.0 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
@@ -20,12 +20,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0-RC2',
+        VERSION:     '1.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0-RC2 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.0 User Manual" href="../index.html" />
       <link rel="up" title="Data and commits" href="index.html" />
       <link rel="next" title="Exporting from a GeoGig repository" href="exporting.html" />
       <link rel="prev" title="Commiting changes" href="commiting.html" />
@@ -81,7 +81,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0-RC2 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Data and commits</a> &raquo;</li>
   <li>Showing differences</li>
 </ul>
@@ -99,8 +99,8 @@
         
   <div class="section" id="showing-differences">
 <span id="differences"></span><h1>Showing differences<a class="headerlink" href="#showing-differences" title="Permalink to this headline">¶</a></h1>
-<p>The differences between two entries in a GeoGig repository can be displayed using the <tt class="docutils literal"><span class="pre">diff</span></tt> command. In the most common case, this is used to show the differences between the working tree and the HEAD of the repository, so as to know which changes will be introduced if the current modifications in the current working tree are staged and committed. The HEAD will represent in this case the <em>old</em> version, while the working tree will represent the <em>new</em> version.</p>
-<p>For this task, the most basic usage of the <tt class="docutils literal"><span class="pre">diff</span></tt> command requires no options at all</p>
+<p>The differences between two entries in a GeoGig repository can be displayed using the <code class="docutils literal"><span class="pre">diff</span></code> command. In the most common case, this is used to show the differences between the working tree and the HEAD of the repository, so as to know which changes will be introduced if the current modifications in the current working tree are staged and committed. The HEAD will represent in this case the <em>old</em> version, while the working tree will represent the <em>new</em> version.</p>
+<p>For this task, the most basic usage of the <code class="docutils literal"><span class="pre">diff</span></code> command requires no options at all</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig diff
 </pre></div>
 </div>
@@ -115,26 +115,26 @@ the_geom: [-122.83646412838807,42.36016644633764 -122.83706843181271,42.36018038
 </div>
 <div class="section" id="modified-features">
 <h2>Modified features<a class="headerlink" href="#modified-features" title="Permalink to this headline">¶</a></h2>
-<p>The above text indicates that 2 features under the <tt class="docutils literal"><span class="pre">parks</span></tt> tree (<tt class="docutils literal"><span class="pre">12</span></tt> and <tt class="docutils literal"><span class="pre">22</span></tt>) have been modified. The first line corresponding to each modification, they both have a similar syntax. Below is the explanation of each value in the case of the first difference.</p>
+<p>The above text indicates that 2 features under the <code class="docutils literal"><span class="pre">parks</span></code> tree (<code class="docutils literal"><span class="pre">12</span></code> and <code class="docutils literal"><span class="pre">22</span></code>) have been modified. The first line corresponding to each modification, they both have a similar syntax. Below is the explanation of each value in the case of the first difference.</p>
 <ul class="simple">
-<li><tt class="docutils literal"><span class="pre">6350a6...</span></tt>: Id of the feature type of the &#8216;old&#8217; version</li>
-<li><tt class="docutils literal"><span class="pre">6350a6...</span></tt>: Id of the feature type of the &#8216;new&#8217; version. Since the feature type hasn&#8217;t changed, this is the same as the previous value.</li>
-<li><tt class="docutils literal"><span class="pre">887b4a...</span></tt>: Id of the of the &#8216;old&#8217; version of the feature</li>
-<li><tt class="docutils literal"><span class="pre">fad2fa...</span></tt>: Id of the of the &#8216;new&#8217; version of the feature</li>
-<li><tt class="docutils literal"><span class="pre">M</span></tt>. Type of difference. <tt class="docutils literal"><span class="pre">M</span></tt> indicates that the feature has been modified, that is, some of its attributes have changed or its feature type has changed. It can also be <tt class="docutils literal"><span class="pre">A</span></tt>, which denotes an addition (a new feature that did not exist before on that path), or <tt class="docutils literal"><span class="pre">R</span></tt>, which denotes a removal (a feature that existed on that path in the old version, but is not present in the new one)</li>
-<li><tt class="docutils literal"><span class="pre">parks/parks.12</span></tt>: full path of the feature.</li>
+<li><code class="docutils literal"><span class="pre">6350a6...</span></code>: Id of the feature type of the &#8216;old&#8217; version</li>
+<li><code class="docutils literal"><span class="pre">6350a6...</span></code>: Id of the feature type of the &#8216;new&#8217; version. Since the feature type hasn&#8217;t changed, this is the same as the previous value.</li>
+<li><code class="docutils literal"><span class="pre">887b4a...</span></code>: Id of the of the &#8216;old&#8217; version of the feature</li>
+<li><code class="docutils literal"><span class="pre">fad2fa...</span></code>: Id of the of the &#8216;new&#8217; version of the feature</li>
+<li><code class="docutils literal"><span class="pre">M</span></code>. Type of difference. <code class="docutils literal"><span class="pre">M</span></code> indicates that the feature has been modified, that is, some of its attributes have changed or its feature type has changed. It can also be <code class="docutils literal"><span class="pre">A</span></code>, which denotes an addition (a new feature that did not exist before on that path), or <code class="docutils literal"><span class="pre">R</span></code>, which denotes a removal (a feature that existed on that path in the old version, but is not present in the new one)</li>
+<li><code class="docutils literal"><span class="pre">parks/parks.12</span></code>: full path of the feature.</li>
 </ul>
 <p>All Id&#8217;s are shortened to the first 6 characters.</p>
-<p>After the header line, the following lines describe the changes in those attributes that have been modified. For each line, the name of the modified parameter is followed by the description of the modification. In the case of attributes that do not contain geometries, the modification is expressed showing the old and new values. From the two features modified in the above example, only <tt class="docutils literal"><span class="pre">parks.22</span></tt> contains a non-geometry field (named <tt class="docutils literal"><span class="pre">parktype</span></tt>) which has been modified.</p>
+<p>After the header line, the following lines describe the changes in those attributes that have been modified. For each line, the name of the modified parameter is followed by the description of the modification. In the case of attributes that do not contain geometries, the modification is expressed showing the old and new values. From the two features modified in the above example, only <code class="docutils literal"><span class="pre">parks.22</span></code> contains a non-geometry field (named <code class="docutils literal"><span class="pre">parktype</span></code>) which has been modified.</p>
 <div class="highlight-python"><div class="highlight"><pre>parktype: &quot;Garden&quot; -&gt; &quot;Park&quot;
 </pre></div>
 </div>
-<p>If the modification involves removing an attribute from the feature type, the word <tt class="docutils literal"><span class="pre">[MISSING]</span></tt> is shown as the new value.</p>
+<p>If the modification involves removing an attribute from the feature type, the word <code class="docutils literal"><span class="pre">[MISSING]</span></code> is shown as the new value.</p>
 <div class="highlight-python"><div class="highlight"><pre>parktype: &quot;Garden&quot; -&gt; [MISSING]
 </pre></div>
 </div>
 <p>If the terminal suports ANSI escape codes, that line will be shown in red.</p>
-<p>If the modification involves adding an attribute from the feature type, the word <tt class="docutils literal"><span class="pre">[MISSING]</span></tt> is shown as the old value.</p>
+<p>If the modification involves adding an attribute from the feature type, the word <code class="docutils literal"><span class="pre">[MISSING]</span></code> is shown as the old value.</p>
 <div class="highlight-python"><div class="highlight"><pre>parktype: [MISSING] -&gt; &quot;Park&quot;
 </pre></div>
 </div>
@@ -145,9 +145,9 @@ the_geom: [-122.83646412838807,42.36016644633764 -122.83706843181271,42.36018038
 <li>It starts with the type name of the geometry, followed by the list of coordinates</li>
 <li>Coordinates are x,y pairs, separated by a whitespace</li>
 <li>In the case of multi-geometries, sub-geometries are separated by the slash (<cite>/</cite>) sign. For instance, <cite>MultiLineString 0,10 0,20 0,30 / 10,10 50,65`</cite> represents a multi-line with two lines</li>
-<li>In the case of polygons, the first string of coordinates represents the outer ring, and inner rings are added next, delimited by the <tt class="docutils literal"><span class="pre">&#64;</span></tt> sign. For instance, <tt class="docutils literal"><span class="pre">MultiPolygon</span> <span class="pre">40.0,40.0</span> <span class="pre">20.0,45.0</span> <span class="pre">45.0,30.0</span> <span class="pre">40.0,40.0</span> <span class="pre">/</span> <span class="pre">20.0,35.0</span> <span class="pre">45.0,20.0</span> <span class="pre">30.0,5.0</span> <span class="pre">10.0,10.0</span> <span class="pre">10.0,30.0</span> <span class="pre">20.0,35.0</span> <span class="pre">&#64;</span> <span class="pre">30.0,20.0</span> <span class="pre">20.0,25.0</span> <span class="pre">20.0,15.0</span> <span class="pre">30.0,20.0</span></tt> represents a geometry with two polygons, the last one of them with an inner ring.</li>
+<li>In the case of polygons, the first string of coordinates represents the outer ring, and inner rings are added next, delimited by the <code class="docutils literal"><span class="pre">&#64;</span></code> sign. For instance, <code class="docutils literal"><span class="pre">MultiPolygon</span> <span class="pre">40.0,40.0</span> <span class="pre">20.0,45.0</span> <span class="pre">45.0,30.0</span> <span class="pre">40.0,40.0</span> <span class="pre">/</span> <span class="pre">20.0,35.0</span> <span class="pre">45.0,20.0</span> <span class="pre">30.0,5.0</span> <span class="pre">10.0,10.0</span> <span class="pre">10.0,30.0</span> <span class="pre">20.0,35.0</span> <span class="pre">&#64;</span> <span class="pre">30.0,20.0</span> <span class="pre">20.0,25.0</span> <span class="pre">20.0,15.0</span> <span class="pre">30.0,20.0</span></code> represents a geometry with two polygons, the last one of them with an inner ring.</li>
 </ul>
-<p>To avoid large geometries cluttering the result, the <tt class="docutils literal"><span class="pre">--nogeom</span></tt> option can be used. Instead of showing the full list of coordinates, it will show a summary of changes made for the corresponding attributes.</p>
+<p>To avoid large geometries cluttering the result, the <code class="docutils literal"><span class="pre">--nogeom</span></code> option can be used. Instead of showing the full list of coordinates, it will show a summary of changes made for the corresponding attributes.</p>
 <p>The above example will look as shown next.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig diff --nogeom
 6350a6... 6350a6... 37d757... e0c9ec...   M  parks/22
@@ -178,8 +178,8 @@ usage    &quot;Public&quot;
 </pre></div>
 </div>
 <p>Removals are just indicated with the header line and no additional information. Notice the null Id of the new object.</p>
-<p>Additions are described with the full printing of the object added, represented as a list of <tt class="docutils literal"><span class="pre">(attribute_name,</span> <span class="pre">attribute_value)</span></tt> pairs, similar to the one produced by the <tt class="docutils literal"><span class="pre">show</span></tt> command. A raw description of the feature and its feature type can be obtained using the <tt class="docutils literal"><span class="pre">cat</span></tt> command and the feature and feature type Id&#8217;s provided by the <tt class="docutils literal"><span class="pre">diff</span></tt> command. Notice that, in this case, the old object has null Id&#8217;s for both the feature and feature type. The one corresponding to the feature type, however, doesn&#8217;t have to be necessarily null, as it might already exist another feature with that feature type in the repository, prior to adding the one described by this <tt class="docutils literal"><span class="pre">diff</span></tt> output.</p>
-<p>A summary mode is available, by using the <tt class="docutils literal"><span class="pre">--summary</span></tt> option. When used, only the header line of each modification will be shown.</p>
+<p>Additions are described with the full printing of the object added, represented as a list of <code class="docutils literal"><span class="pre">(attribute_name,</span> <span class="pre">attribute_value)</span></code> pairs, similar to the one produced by the <code class="docutils literal"><span class="pre">show</span></code> command. A raw description of the feature and its feature type can be obtained using the <code class="docutils literal"><span class="pre">cat</span></code> command and the feature and feature type Id&#8217;s provided by the <code class="docutils literal"><span class="pre">diff</span></code> command. Notice that, in this case, the old object has null Id&#8217;s for both the feature and feature type. The one corresponding to the feature type, however, doesn&#8217;t have to be necessarily null, as it might already exist another feature with that feature type in the repository, prior to adding the one described by this <code class="docutils literal"><span class="pre">diff</span></code> output.</p>
+<p>A summary mode is available, by using the <code class="docutils literal"><span class="pre">--summary</span></code> option. When used, only the header line of each modification will be shown.</p>
 </div>
 <div class="section" id="showing-differences-between-specific-commits">
 <h2>Showing differences between specific commits<a class="headerlink" href="#showing-differences-between-specific-commits" title="Permalink to this headline">¶</a></h2>
@@ -204,15 +204,15 @@ usage    &quot;Public&quot;
 </pre></div>
 </div>
 <p>If one of the references is omitted, the supplied reference will be taken as the old version and compared with the working tree.</p>
-<p>Comparing against the index instead of the working tree can be done by using the <tt class="docutils literal"><span class="pre">--cached</span></tt> option. In this case, only one commit reference can be used.</p>
+<p>Comparing against the index instead of the working tree can be done by using the <code class="docutils literal"><span class="pre">--cached</span></code> option. In this case, only one commit reference can be used.</p>
 </div>
 <div class="section" id="showing-differences-for-a-given-path-or-feature">
 <h2>Showing differences for a given path or feature<a class="headerlink" href="#showing-differences-for-a-given-path-or-feature" title="Permalink to this headline">¶</a></h2>
-<p>By default, all the differences between the specified commits (or the working tree and the index if not specified) are shown. Partial differences corresponding to a given path can be obtained by using the <tt class="docutils literal"><span class="pre">--</span></tt> option followed by the path to compare, as in the following example.</p>
+<p>By default, all the differences between the specified commits (or the working tree and the index if not specified) are shown. Partial differences corresponding to a given path can be obtained by using the <code class="docutils literal"><span class="pre">--</span></code> option followed by the path to compare, as in the following example.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig diff --path parks
 </pre></div>
 </div>
-<p>This will just list the differences in the <tt class="docutils literal"><span class="pre">parks</span></tt> path.</p>
+<p>This will just list the differences in the <code class="docutils literal"><span class="pre">parks</span></code> path.</p>
 <p>The path can point to a single feature, as in the command line below</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig diff --path parks/1
 </pre></div>

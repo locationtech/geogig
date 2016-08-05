@@ -28,8 +28,7 @@ import com.google.common.collect.Lists;
  * Compares content and metadata links of blobs between the index and repository
  */
 public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
-        implements
- Supplier<AutoCloseableIterator<DiffEntry>> {
+        implements Supplier<AutoCloseableIterator<DiffEntry>> {
 
     private String refSpec;
 
@@ -117,8 +116,8 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
     }
 
     public DiffIndex setMaxDiffs(@Nullable Long limit) {
-        Preconditions.checkArgument(limit == null || limit.longValue() >= 0,
-                "limit must be >= 0: ", limit);
+        Preconditions.checkArgument(limit == null || limit.longValue() >= 0, "limit must be >= 0: ",
+                limit);
         this.limit = limit;
         return this;
     }

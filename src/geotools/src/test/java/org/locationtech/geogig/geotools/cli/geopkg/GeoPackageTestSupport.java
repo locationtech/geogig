@@ -147,7 +147,8 @@ public class GeoPackageTestSupport {
             throws IOException, SQLException {
 
         JDBCDataStore gpkgStore = (JDBCDataStore) gpkg;
-        GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(gpkgStore.getConnection(Transaction.AUTO_COMMIT));
+        GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(
+                gpkgStore.getConnection(Transaction.AUTO_COMMIT));
         Transaction gttx = new DefaultTransaction();
         try {
             gpkg.createSchema(source.getSchema());
@@ -156,7 +157,7 @@ public class GeoPackageTestSupport {
             Preconditions.checkState(store.getQueryCapabilities().isUseProvidedFIDSupported());
             store.setTransaction(gttx);
             SimpleFeatureCollection features = source.getFeatures();
-            
+
             SimpleFeatureIterator iter = features.features();
             SimpleFeature original, updated;
             SimpleFeatureType featureType = null;
@@ -172,7 +173,7 @@ public class GeoPackageTestSupport {
             ListFeatureCollection transformedFeatures = new ListFeatureCollection(featureType,
                     updatedFeatures);
             metadata.createFidMappingTable(source.getName().getLocalPart(), mappings);
-            
+
             store.addFeatures(transformedFeatures);
             gttx.commit();
         } finally {

@@ -25,8 +25,8 @@ public class ContextBuilder {
      *        can make use of it
      */
     public Context build(Hints hints) {
-        return Guice.createInjector(new GeogigModule(), new HintsModule(hints)).getInstance(
-                org.locationtech.geogig.repository.Context.class);
+        return Guice.createInjector(new GeogigModule(), new HintsModule(hints))
+                .getInstance(org.locationtech.geogig.repository.Context.class);
     }
 
 }

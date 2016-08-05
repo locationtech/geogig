@@ -23,7 +23,6 @@ import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -34,19 +33,15 @@ import com.vividsolutions.jts.geom.Envelope;
  * Writes the contents of a given tree as a child of a given ancestor tree, creating any
  * intermediate tree needed, and returns the {@link ObjectId id} of the resulting new ancestor tree.
  * <p>
- * If no {@link #setAncestor(RevTreeBuilder) ancestor} is provided,it is assumed to be the current
- * HEAD tree.
- * <p>
  * If no {@link #setAncestorPath(String) ancestor path} is provided, the ancestor is assumed to be a
  * root tree
  * 
  * @see CreateTree
- * @see RevObjectParse
  * @see FindTreeChild
  */
 public class WriteBack extends AbstractGeoGigOp<ObjectId> {
 
-    private Supplier<RevTreeBuilder> ancestor;
+    private RevTree ancestor;
 
     private String childPath;
 
@@ -65,23 +60,28 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
      *        intermediate tree. If not set defaults to the current HEAD tree
      * @return {@code this}
      */
-    public WriteBack setAncestor(RevTreeBuilder oldRoot) {
-        return setAncestor(Suppliers.ofInstance(oldRoot));
+    public WriteBack setAncestor(ObjectId oldRoot) {
+        if (RevTreeBuilder.EMPTY_TREE_ID.equals(oldRoot)) {
+            this.ancestor = RevTreeBuilder.EMPTY;
+        } else {
+            this.ancestor = objectDatabase().getTree(oldRoot);
+        }
+        return this;
     }
 
     /**
      * @param ancestor the root tree to which add the {@link #setTree(RevTree) child tree} and any
-     *        intermediate tree. If not set defaults to the current HEAD tree
+     *        intermediate tree. Defaults to the current HEAD tree if not set.
      * @return {@code this}
      */
-    public WriteBack setAncestor(Supplier<RevTreeBuilder> ancestor) {
+    public WriteBack setAncestor(RevTree ancestor) {
         this.ancestor = ancestor;
         return this;
     }
 
     /**
-     * @param ancestorPath the path of the {@link #setAncestor(Supplier) ancestor tree}. If set not
-     *        the ancestor tree is assumed to be a root tree.
+     * @param ancestorPath the path of the {@link #setAncestor ancestor tree}. If not set the
+     *        ancestor tree is assumed to be a root tree.
      * @return {@code this}
      */
     public WriteBack setAncestorPath(String ancestorPath) {
@@ -127,7 +127,7 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
         checkNotNull(tree, "child tree not set");
         checkNotNull(childPath, "child tree path not set");
 
-        String ancestorPath = resolveAncestorPath();
+        final String ancestorPath = resolveAncestorPath();
         checkArgument(NodeRef.isChild(ancestorPath, childPath), String.format(
                 "child path '%s' is not a child of ancestor path '%s'", childPath, ancestorPath));
 
@@ -135,9 +135,8 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
         checkState(null != tree, "child tree supplier returned null");
 
         ObjectDatabase targetDb = objectDatabase();
-        RevTreeBuilder root = resolveAncestor();
 
-        return writeBack(root, ancestorPath, tree, childPath, targetDb,
+        return writeBack(ancestor, ancestorPath, tree, childPath, targetDb,
                 metadataId.or(ObjectId.NULL));
     }
 
@@ -145,24 +144,14 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
      * @return the resolved ancestor path
      */
     private String resolveAncestorPath() {
-        return ancestorPath == null ? "" : ancestorPath;
+        return ancestorPath == null ? NodeRef.ROOT : ancestorPath;
     }
 
-    /**
-     * @return the resolved ancestor
-     */
-    private RevTreeBuilder resolveAncestor() {
-        RevTreeBuilder ancestor = this.ancestor.get();
-        checkState(ancestor != null, "provided ancestor tree supplier returned null");
-        return ancestor;
-    }
-
-    private ObjectId writeBack(RevTreeBuilder ancestor, final String ancestorPath,
+    private ObjectId writeBack(final RevTree root, final String ancestorPath,
             final RevTree childTree, final String childPath, final ObjectDatabase targetDatabase,
             final ObjectId metadataId) {
 
-        final ObjectId treeId = childTree.getId();
-        targetDatabase.put(childTree);
+        final ObjectId newRootId;
 
         final boolean isDirectChild = NodeRef.isDirectChild(ancestorPath, childPath);
         if (isDirectChild) {
@@ -171,47 +160,50 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
                 treeBounds = SpatialOps.boundsOf(childTree);
             }
             String childName = childPath;
-            Node treeNode = Node.create(childName, treeId, metadataId, TYPE.TREE, treeBounds);
+            Node treeNode = Node.create(childName, childTree.getId(), metadataId, TYPE.TREE,
+                    treeBounds);
+            RevTree newRoot;
+            RevTreeBuilder ancestor = RevTreeBuilder.canonical(targetDatabase, root);
             ancestor.put(treeNode);
-            RevTree newAncestor = ancestor.build();
-            targetDatabase.put(newAncestor);
-            return newAncestor.getId();
-        }
+            newRoot = ancestor.build();
 
-        final String parentPath = NodeRef.parentPath(childPath);
-        Optional<NodeRef> parentRef = getTreeChild(ancestor, parentPath);
-        RevTreeBuilder parentBuilder;
-        ObjectId parentMetadataId = ObjectId.NULL;
-        if (parentRef.isPresent()) {
-            ObjectId parentId = parentRef.get().getObjectId();
-            parentMetadataId = parentRef.get().getMetadataId();
-            parentBuilder = new RevTreeBuilder(targetDatabase, getTree(parentId, targetDatabase));
+            newRootId = newRoot.getId();
         } else {
-            parentBuilder = new RevTreeBuilder(targetDatabase, RevTreeBuilder.EMPTY);
-        }
 
-        String childName = NodeRef.nodeFromPath(childPath);
-        Envelope treeBounds = null;
-        if (!metadataId.isNull()) {// only include bounds for trees with a default feature type
-            treeBounds = SpatialOps.boundsOf(childTree);
-        }
-        Node treeNode = Node.create(childName, treeId, metadataId, TYPE.TREE, treeBounds);
-        parentBuilder.put(treeNode);
-        RevTree parent = parentBuilder.build();
+            final String parentPath = NodeRef.parentPath(childPath);
+            final String childName = NodeRef.nodeFromPath(childPath);
 
-        return writeBack(ancestor, ancestorPath, parent, parentPath, targetDatabase,
-                parentMetadataId);
+            Optional<NodeRef> parentRef = getTreeChild(root, parentPath);
+            RevTreeBuilder parentBuilder;
+            ObjectId parentMetadataId = ObjectId.NULL;
+            if (parentRef.isPresent()) {
+                ObjectId parentId = parentRef.get().getObjectId();
+                parentMetadataId = parentRef.get().getMetadataId();
+                parentBuilder = RevTreeBuilder.canonical(targetDatabase,
+                        targetDatabase.getTree(parentId));
+            } else {
+                parentBuilder = RevTreeBuilder.canonical(targetDatabase);
+            }
+
+            Envelope treeBounds = null;
+            if (!metadataId.isNull()) {// only include bounds for trees with a default feature type
+                treeBounds = SpatialOps.boundsOf(childTree);
+            }
+            Node treeNode = Node.create(childName, childTree.getId(), metadataId, TYPE.TREE,
+                    treeBounds);
+
+            parentBuilder.put(treeNode);
+            RevTree parent = parentBuilder.build();
+
+            newRootId = writeBack(root, ancestorPath, parent, parentPath, targetDatabase,
+                    parentMetadataId);
+        }
+        return newRootId;
     }
 
-    private RevTree getTree(ObjectId treeId, ObjectStore targetDb) {
-        RevTree revTree = targetDb.getTree(treeId);
-        return revTree;
-    }
+    private Optional<NodeRef> getTreeChild(RevTree parent, String childPath) {
 
-    private Optional<NodeRef> getTreeChild(RevTreeBuilder parent, String childPath) {
-        RevTree realParent = parent.build();
-        FindTreeChild cmd = command(FindTreeChild.class).setParent(realParent).setChildPath(
-                childPath);
+        FindTreeChild cmd = command(FindTreeChild.class).setParent(parent).setChildPath(childPath);
 
         Optional<NodeRef> nodeRef = cmd.call();
         return nodeRef;

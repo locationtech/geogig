@@ -71,8 +71,7 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
         // we organize the changes made for each path
         for (RevCommit commit : commits) {
             AutoCloseableIterator<DiffEntry> toMergeDiffs = command(DiffTree.class)
-                    .setReportTrees(true)
-                    .setOldTree(ancestor.get()).setNewTree(commit.getId())
+                    .setReportTrees(true).setOldTree(ancestor.get()).setNewTree(commit.getId())
                     .setPreserveIterationOrder(true).call();
             commitDiffs.add(toMergeDiffs);
         }

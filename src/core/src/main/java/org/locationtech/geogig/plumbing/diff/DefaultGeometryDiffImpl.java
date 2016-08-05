@@ -36,10 +36,10 @@ public class DefaultGeometryDiffImpl {
     public DefaultGeometryDiffImpl(String s) {
         String[] tokens = s.split("\t");
         Preconditions.checkArgument(tokens.length == 2, "Wrong difference definition:", s);
-        oldGeom = Optional.fromNullable((Geometry) TextValueSerializer.fromString(
-                FieldType.forBinding(Geometry.class), tokens[0]));
-        newGeom = Optional.fromNullable((Geometry) TextValueSerializer.fromString(
-                FieldType.forBinding(Geometry.class), tokens[1]));
+        oldGeom = Optional.fromNullable((Geometry) TextValueSerializer
+                .fromString(FieldType.forBinding(Geometry.class), tokens[0]));
+        newGeom = Optional.fromNullable((Geometry) TextValueSerializer
+                .fromString(FieldType.forBinding(Geometry.class), tokens[1]));
 
     }
 

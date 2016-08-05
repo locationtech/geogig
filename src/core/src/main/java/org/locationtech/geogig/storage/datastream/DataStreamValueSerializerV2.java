@@ -44,7 +44,7 @@ import com.vividsolutions.jts.io.WKBWriter;
  * A class to serializer/deserialize attribute values to/from a data stream
  * 
  */
-class DataStreamValueSerializerV2 {
+public class DataStreamValueSerializerV2 {
 
     public static interface ValueSerializer {
 
@@ -557,7 +557,8 @@ class DataStreamValueSerializerV2 {
         if (serializers.containsKey(type)) {
             serializers.get(type).write(opt.orNull(), data);
         } else {
-            throw new IllegalArgumentException("The specified type (" + type + ") is not supported");
+            throw new IllegalArgumentException(
+                    "The specified type (" + type + ") is not supported");
         }
     }
 
@@ -565,7 +566,8 @@ class DataStreamValueSerializerV2 {
         FieldType type = FieldType.forValue(value);
         ValueSerializer valueSerializer = serializers.get(type);
         if (null == valueSerializer) {
-            throw new IllegalArgumentException("The specified type (" + type + ") is not supported");
+            throw new IllegalArgumentException(
+                    "The specified type (" + type + ") is not supported");
         }
         valueSerializer.write(value, data);
     }

@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.SortedMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
@@ -43,6 +44,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -376,6 +378,9 @@ public class WriteTree2Test extends RepositoryTestCase {
                 repoTree("roads/highways", "a21", "d1", 3), // added 2 features
                 repoTree("roads/streets", "a31", "d2", 1) // removed 1 feature
         );
+        
+        System.err.printf("left : %s\n\t%s\n\t%s\n", leftTree, leftTree.trees().orNull(), leftTree.features().orNull());
+        System.err.printf("right: %s\n\t%s\n\t%s\n", rightTree, rightTree.trees().orNull(), rightTree.features().orNull());
 
         MapDifference<String, NodeRef> difference;
         Set<String> onlyOnLeft;
@@ -391,12 +396,9 @@ public class WriteTree2Test extends RepositoryTestCase {
         assertEquals(set("buildings", "buildings/buildings.0", "buildings/buildings.1"),
                 onlyOnLeft);
         assertEquals(set(), onlyOnRight);
-        assertEquals(
-                set("roads", "roads/roads.0", "roads/streets/streets.0",
-                        "roads/highways/highways.0", "roads/highways/highways.2",
-                        "roads/highways/highways.1", "roads/highways", "roads/streets"),
-                entriesInCommon);
-        assertEquals(set(), entriesDiffering);
+        assertEquals(set("roads/roads.0", "roads/streets/streets.0", "roads/highways/highways.0",
+                "roads/highways/highways.2", "roads/highways/highways.1"), entriesInCommon);
+        assertEquals(set("roads", "roads/streets", "roads/highways"), entriesDiffering);
 
     }
 
@@ -654,7 +656,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         final ObjectId treeId = id(id);
         final ObjectId metadataId = id(mdId);
         final String feturePrefix = NodeRef.nodeFromPath(path);
-        RevTreeBuilder b = new RevTreeBuilder(db);
+        RevTreeBuilder b = RevTreeBuilder.canonical(db);
         if (numFeatures > 0) {
             for (int i = 0; i < numFeatures; i++) {
                 Node fn = feature(db, feturePrefix, i);
@@ -682,7 +684,13 @@ public class WriteTree2Test extends RepositoryTestCase {
 
     private RevTree forceTreeId(RevTreeBuilder b, ObjectId treeId) {
         RevTree tree = b.build();
-        RevTree fakenId = RevTreeBuilder.create(treeId, tree.size(), tree);
+        long size = tree.size();
+        int childTreeCount = tree.numTrees();
+        ImmutableList<Node> trees = tree.trees().orNull();
+        ImmutableList<Node> features = tree.features().orNull();
+        SortedMap<Integer, Bucket> buckets = tree.buckets().orNull();
+        RevTree fakenId = RevTreeBuilder.create(treeId, size, childTreeCount, trees, features,
+                buckets);
         return fakenId;
     }
 
@@ -716,6 +724,6 @@ public class WriteTree2Test extends RepositoryTestCase {
         if (contents == null) {
             return ImmutableSet.of();
         }
-        return ImmutableSet.copyOf(contents);
+        return ImmutableSet.copyOf(Sets.newTreeSet(ImmutableList.copyOf(contents)));
     }
 }

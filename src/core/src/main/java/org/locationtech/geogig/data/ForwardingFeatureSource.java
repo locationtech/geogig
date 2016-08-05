@@ -26,8 +26,8 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 
-public class ForwardingFeatureSource<T extends FeatureType, F extends Feature> implements
-        FeatureSource<T, F> {
+public class ForwardingFeatureSource<T extends FeatureType, F extends Feature>
+        implements FeatureSource<T, F> {
 
     private FeatureSource<T, F> source;
 

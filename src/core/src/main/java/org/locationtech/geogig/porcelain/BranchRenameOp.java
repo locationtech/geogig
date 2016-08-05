@@ -81,7 +81,7 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
      *         specified doesn't exist or if oldBranchName doesn't resolve to a branch
      */
     @Override
-    protected  Ref _call() {
+    protected Ref _call() {
         checkArgument(newBranchName != null, "New branch name not specified");
         checkArgument(!newBranchName.equals(oldBranchName), "Done");
         command(CheckRefFormat.class).setThrowsException(true).setRef(newBranchName)

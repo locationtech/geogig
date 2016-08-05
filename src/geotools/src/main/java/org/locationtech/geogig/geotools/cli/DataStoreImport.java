@@ -45,20 +45,23 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
     /**
      * do not replace or delete features
      */
-    @Parameter(names = { "--add" }, description = "Do not replace or delete features on the destination path, but just add new ones")
+    @Parameter(names = {
+            "--add" }, description = "Do not replace or delete features on the destination path, but just add new ones")
     boolean add;
 
     /**
      * Use origin feature type
      */
-    @Parameter(names = { "--force-featuretype" }, description = "Use origin feature type even if it does not match the default destination featuretype")
+    @Parameter(names = {
+            "--force-featuretype" }, description = "Use origin feature type even if it does not match the default destination featuretype")
     boolean forceFeatureType;
 
     /**
      * Set the path default feature type to the the feature type of imported features, and modify
      * existing features to match it
      */
-    @Parameter(names = { "--alter" }, description = "Set the path default feature type to the the feature type of imported features, and modify existing features to match it")
+    @Parameter(names = {
+            "--alter" }, description = "Set the path default feature type to the the feature type of imported features, and modify existing features to match it")
     boolean alter;
 
     /**
@@ -70,7 +73,8 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
     /**
      * The attribute to use to create the feature Id
      */
-    @Parameter(names = { "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
+    @Parameter(names = {
+            "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
     String fidAttribute;
 
     protected abstract String getSourceDatabaseName();
@@ -121,19 +125,19 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
             case UNABLE_TO_GET_FEATURES:
                 throw new CommandFailedException("Unable to get features from the database.", e);
             case UNABLE_TO_INSERT:
-                throw new CommandFailedException(
-                        "Unable to insert features into the working tree.", e);
+                throw new CommandFailedException("Unable to insert features into the working tree.",
+                        e);
             case INCOMPATIBLE_FEATURE_TYPE:
                 throw new CommandFailedException(
                         "The feature type of the data to import does not match the feature type of the destination tree and cannot be imported\n"
                                 + "USe the --force-featuretype switch to import using the original featuretype and crete a mixed type tree",
-                                true);
+                        true);
             case ALTER_AND_ALL_DEFINED:
                 throw new CommandFailedException(
                         "Alter cannot be used with --all option and more than one table.", true);
             default:
-                throw new CommandFailedException("Import failed with exception: "
-                        + e.statusCode.name(), e);
+                throw new CommandFailedException(
+                        "Import failed with exception: " + e.statusCode.name(), e);
             }
         } finally {
             dataStore.dispose();

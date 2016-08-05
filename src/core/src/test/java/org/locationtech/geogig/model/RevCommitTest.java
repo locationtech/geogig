@@ -23,10 +23,10 @@ import com.google.common.collect.ImmutableList;
 
 public class RevCommitTest {
 
-
     @Test
     public void testConstructorAndAccessors() {
-        RevPerson committer = RevPersonBuilder.build("ksishmael", "kelsey.ishmael@lmnsolutions.com", 12345, 12345);
+        RevPerson committer = RevPersonBuilder.build("ksishmael", "kelsey.ishmael@lmnsolutions.com",
+                12345, 12345);
         RevPerson author = RevPersonBuilder.build("test", "test@email.com", 12345, 12345);
         ObjectId id = ObjectId.forString("new commit");
         ObjectId treeId = ObjectId.forString("test tree");
@@ -51,7 +51,8 @@ public class RevCommitTest {
 
     @Test
     public void testToStringAndEquals() {
-        RevPerson committer = RevPersonBuilder.build("ksishmael", "kelsey.ishmael@lmnsolutions.com", 12345, 12345);
+        RevPerson committer = RevPersonBuilder.build("ksishmael", "kelsey.ishmael@lmnsolutions.com",
+                12345, 12345);
         RevPerson author = RevPersonBuilder.build("test", "test@email.com", 12345, 12345);
         ObjectId id = ObjectId.forString("new commit");
         ObjectId treeId = ObjectId.forString("test tree");

@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -24,6 +25,7 @@ import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindOrCreateSubtree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -52,7 +54,9 @@ class WorkingTreeInsertHelper {
 
     private Function<Feature, String> treePathResolver;
 
-    private final Map<String, RevTreeBuilder2> treeBuilders = Maps.newHashMap();
+    private final Map<String, RevFeatureType> revFeatureTypes = Maps.newConcurrentMap();
+
+    private final Map<String, RevTreeBuilder> treeBuilders = Maps.newHashMap();
 
     private final ExecutorService executorService;
 
@@ -78,57 +82,96 @@ class WorkingTreeInsertHelper {
 
     public Node put(final ObjectId revFeatureId, final Feature feature) {
 
-        final RevTreeBuilder2 treeBuilder = getTreeBuilder(feature);
+        final RevTreeBuilder treeBuilder = getTreeBuilder(feature);
 
         String fid = feature.getIdentifier().getID();
+        // System.err.printf("%s -> %s\n", fid, treeBuilder);
         BoundingBox bounds = feature.getBounds();
         FeatureType type = feature.getType();
 
-        final Node node = treeBuilder.putFeature(revFeatureId, fid, bounds, type);
+        final Node node = createFeatureNode(revFeatureId, fid, bounds, type);
+        treeBuilder.put(node);
+        return node;
+    }
+
+    private Node createFeatureNode(final ObjectId id, final String name,
+            @Nullable final BoundingBox bounds, final FeatureType type) {
+        Envelope bbox;
+        if (bounds == null) {
+            bbox = null;
+        } else if (bounds instanceof Envelope) {
+            bbox = (Envelope) bounds;
+        } else {
+            bbox = new Envelope(bounds.getMinimum(0), bounds.getMaximum(0), bounds.getMinimum(1),
+                    bounds.getMaximum(1));
+        }
+        RevFeatureType revFeatureType = revFeatureTypes.get(type.getName().getLocalPart());
+        if (null == revFeatureType) {
+            revFeatureType = RevFeatureTypeBuilder.build(type);
+            revFeatureTypes.put(type.getName().getLocalPart(), revFeatureType);
+        }
+        ObjectId defaultMetadataId = revFeatureType.getId();
+        ObjectId metadataId = revFeatureType.getId().equals(defaultMetadataId) ? ObjectId.NULL
+                : revFeatureType.getId();
+        Node node = Node.create(name, id, metadataId, TYPE.FEATURE, bbox);
         return node;
     }
 
     public void remove(FeatureToDelete feature) {
-        final RevTreeBuilder2 treeBuilder = getTreeBuilder(feature);
+        final RevTreeBuilder treeBuilder = getTreeBuilder(feature);
 
         String fid = feature.getIdentifier().getID();
-        treeBuilder.removeFeature(fid);
+        treeBuilder.remove(fid);
     }
 
     public void remove(String featurePath) {
         final String treePath = NodeRef.parentPath(featurePath);
         final String featureId = NodeRef.nodeFromPath(featurePath);
-        Optional<RevTreeBuilder2> treeBuilder = getTreeBuilder(treePath);
+        Optional<RevTreeBuilder> treeBuilder = getTreeBuilder(treePath);
         if (treeBuilder.isPresent()) {
-            RevTreeBuilder2 builder = treeBuilder.get();
-            builder.removeFeature(featureId);
+            RevTreeBuilder builder = treeBuilder.get();
+            builder.remove(featureId);
         }
     }
 
-    private Optional<RevTreeBuilder2> getTreeBuilder(final String treePath) {
-        RevTreeBuilder2 builder = treeBuilders.get(treePath);
+    private Optional<RevTreeBuilder> getTreeBuilder(final String treePath) {
+        RevTreeBuilder builder = treeBuilders.get(treePath);
         if (builder == null) {
             Optional<NodeRef> treeNode = context.command(FindTreeChild.class).setParent(workHead)
                     .setChildPath(treePath).call();
             if (treeNode.isPresent()) {
                 RevTree parentTree = db.getTree(treeNode.get().getObjectId());
                 ObjectId metadataId = treeNode.get().getMetadataId();
-                builder = createBuilder(parentTree, metadataId);
+                if (!metadataId.isNull()) {
+                    RevFeatureType featureType = db.getFeatureType(metadataId);
+                    revFeatureTypes.put(treePath, featureType);
+                }
+                builder = createBuilder(parentTree);
                 treeBuilders.put(treePath, builder);
             }
         }
         return Optional.fromNullable(builder);
     }
 
-    private RevTreeBuilder2 getTreeBuilder(final Feature feature) {
+    private RevTreeBuilder getTreeBuilder(final Feature feature) {
 
         final String treePath = treePathResolver.apply(feature);
-        RevTreeBuilder2 builder = getTreeBuilder(treePath).orNull();
+        RevTreeBuilder builder = getTreeBuilder(treePath).orNull();
+
         if (builder == null) {
-            FeatureType type = feature.getType();
-            builder = createBuilder(treePath, type);
+            final FeatureType type = feature.getType();
+            final NodeRef treeRef = findOrCreateTree(treePath, type);
+            final ObjectId treeId = treeRef.getObjectId();
+            final RevTree origTree = db.getTree(treeId);
+            final ObjectId defaultMetadataId = treeRef.getMetadataId();
+            if (!defaultMetadataId.isNull()) {
+                RevFeatureType featureType = db.getFeatureType(defaultMetadataId);
+                revFeatureTypes.put(treePath, featureType);
+            }
+            builder = createBuilder(origTree);
             treeBuilders.put(treePath, builder);
         }
+
         return builder;
     }
 
@@ -146,29 +189,16 @@ class WorkingTreeInsertHelper {
             metadataId = revFeatureType.getId();
         }
         Envelope bounds = SpatialOps.boundsOf(tree);
-        Node node = Node.create(NodeRef.nodeFromPath(treePath), tree.getId(), metadataId,
-                TYPE.TREE, bounds);
+        Node node = Node.create(NodeRef.nodeFromPath(treePath), tree.getId(), metadataId, TYPE.TREE,
+                bounds);
 
         String parentPath = NodeRef.parentPath(treePath);
         return new NodeRef(node, parentPath, ObjectId.NULL);
     }
 
-    private RevTreeBuilder2 createBuilder(String treePath, FeatureType type) {
-
-        final NodeRef treeRef = findOrCreateTree(treePath, type);
-        final ObjectId treeId = treeRef.getObjectId();
-        final RevTree origTree = db.getTree(treeId);
-
-        ObjectId defaultMetadataId = treeRef.getMetadataId();
-
-        RevTreeBuilder2 builder = createBuilder(origTree, defaultMetadataId);
-        return builder;
-    }
-
-    private RevTreeBuilder2 createBuilder(final RevTree origTree, ObjectId defaultMetadataId) {
-        RevTreeBuilder2 builder;
-        Platform platform = context.platform();
-        builder = new RevTreeBuilder2(db, origTree, defaultMetadataId, platform, executorService);
+    private RevTreeBuilder createBuilder(final RevTree origTree) {
+        RevTreeBuilder builder;
+        builder = RevTreeBuilder.canonical(db, origTree);
         return builder;
     }
 
@@ -178,10 +208,12 @@ class WorkingTreeInsertHelper {
 
         List<AsyncBuildTree> tasks = Lists.newArrayList();
 
-        for (Entry<String, RevTreeBuilder2> builderEntry : treeBuilders.entrySet()) {
+        for (Entry<String, RevTreeBuilder> builderEntry : treeBuilders.entrySet()) {
             final String treePath = builderEntry.getKey();
-            final RevTreeBuilder2 builder = builderEntry.getValue();
-            tasks.add(new AsyncBuildTree(treePath, builder, result));
+            final RevTreeBuilder builder = builderEntry.getValue();
+            final RevFeatureType revFeatureType = revFeatureTypes.get(treePath);
+            final ObjectId metadataId = revFeatureType.getId();
+            tasks.add(new AsyncBuildTree(treePath, builder, metadataId, result));
         }
         try {
             executorService.invokeAll(tasks);
@@ -196,15 +228,18 @@ class WorkingTreeInsertHelper {
 
         private String treePath;
 
-        private RevTreeBuilder2 builder;
+        private RevTreeBuilder builder;
 
         private Map<NodeRef, RevTree> target;
 
-        AsyncBuildTree(final String treePath, final RevTreeBuilder2 builder,
-                final Map<NodeRef, RevTree> target) {
+        private ObjectId defaultMetadataId;
+
+        AsyncBuildTree(final String treePath, final RevTreeBuilder builder,
+                final ObjectId defaultMetadataId, final Map<NodeRef, RevTree> target) {
 
             this.treePath = treePath;
             this.builder = builder;
+            this.defaultMetadataId = defaultMetadataId;
             this.target = target;
         }
 
@@ -214,7 +249,7 @@ class WorkingTreeInsertHelper {
 
             Node treeNode;
             {
-                ObjectId treeMetadataId = builder.getDefaultMetadataId();
+                ObjectId treeMetadataId = defaultMetadataId;
                 String name = NodeRef.nodeFromPath(treePath);
                 ObjectId oid = tree.getId();
                 Envelope bounds = SpatialOps.boundsOf(tree);

@@ -89,7 +89,7 @@ public class DataStoreConcurrencyTest {
 
         GlobalContextBuilder.builder(new TestContextBuilder(platform));
         Context context = GlobalContextBuilder.builder().build(new Hints().platform(platform));
-        
+
         GeoGIG repo = new GeoGIG(context);
         repo.command(InitOp.class).call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
@@ -238,7 +238,7 @@ public class DataStoreConcurrencyTest {
                 e.printStackTrace();
                 throw Throwables.propagate(e);
             }
-            //System.err.printf("Thread %s finished\n", Thread.currentThread().getName());
+            // System.err.printf("Thread %s finished\n", Thread.currentThread().getName());
             return insertCount;
         }
     }

@@ -13,7 +13,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,8 +28,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableSortedMap;
 import com.vividsolutions.jts.geom.Envelope;
 
 public abstract class RevTreeSerializationTest extends Assert {
@@ -63,23 +63,24 @@ public abstract class RevTreeSerializationTest extends Assert {
                 ObjectId.forString("barnodeid"), ObjectId.forString("barmetadataid"),
                 RevObject.TYPE.TREE, new Envelope(1, 2, 1, 2)));
 
-        ImmutableMap<Integer, Bucket> spatialBuckets = ImmutableMap.of(1,
+        SortedMap<Integer, Bucket> spatialBuckets = ImmutableSortedMap.of(1,
                 Bucket.create(ObjectId.forString("buckettree"), new Envelope()));
 
-        ImmutableMap<Integer, Bucket> buckets = ImmutableMap.of(1,
+        SortedMap<Integer, Bucket> buckets = ImmutableSortedMap.of(1,
                 Bucket.create(ObjectId.forString("buckettree"), new Envelope(1, 2, 1, 2)));
 
-        tree1_leaves = RevTreeBuilder.createLeafTree(ObjectId.forString("leaves"), 1, features,
-                ImmutableList.<Node> of());
-        tree2_internal = RevTreeBuilder.createLeafTree(ObjectId.forString("internal"), 1,
-                ImmutableList.<Node> of(), trees);
-        tree3_buckets = RevTreeBuilder.createNodeTree(ObjectId.forString("buckets"), 1, 1, buckets);
-        tree4_spatial_leaves = RevTreeBuilder.createLeafTree(ObjectId.forString("leaves"), 1,
-                spatialFeatures, ImmutableList.<Node> of());
-        tree5_spatial_internal = RevTreeBuilder.createLeafTree(ObjectId.forString("internal"), 1,
-                ImmutableList.<Node> of(), spatialTrees);
-        tree6_spatial_buckets = RevTreeBuilder.createNodeTree(ObjectId.forString("buckets"), 1, 1,
-                spatialBuckets);
+        tree1_leaves = RevTreeBuilder.create(ObjectId.forString("leaves"), 1L, 0, null, features,
+                null);
+        tree2_internal = RevTreeBuilder.create(ObjectId.forString("internal"), 0, trees.size(),
+                trees, null, null);
+        tree3_buckets = RevTreeBuilder.create(ObjectId.forString("buckets"), 1L, 1, null, null,
+                buckets);
+        tree4_spatial_leaves = RevTreeBuilder.create(ObjectId.forString("leaves"), 1L, 0, null,
+                spatialFeatures, null);
+        tree5_spatial_internal = RevTreeBuilder.create(ObjectId.forString("internal"), 1L,
+                spatialTrees.size(), spatialTrees, null, null);
+        tree6_spatial_buckets = RevTreeBuilder.create(ObjectId.forString("buckets"), 1L, 1, null,
+                null, spatialBuckets);
     }
 
     @Test
@@ -106,17 +107,18 @@ public abstract class RevTreeSerializationTest extends Assert {
         ObjectId id = ObjectId.forString("fake");
         long size = 100000000;
         int childTreeCount = 0;
-        Map<Integer, Bucket> bucketTrees = createBuckets(32);
+        SortedMap<Integer, Bucket> bucketTrees = createBuckets(32);
 
-        final RevTree tree = RevTreeBuilder.createNodeTree(id, size, childTreeCount, bucketTrees);
+        final RevTree tree = RevTreeBuilder.create(id, size, childTreeCount, null, null,
+                bucketTrees);
 
         RevTree roundTripped = read(tree.getId(), write(tree));
         assertTreesAreEqual(tree, roundTripped);
 
     }
 
-    private Map<Integer, Bucket> createBuckets(int count) {
-        Map<Integer, Bucket> buckets = Maps.newHashMap();
+    private SortedMap<Integer, Bucket> createBuckets(int count) {
+        SortedMap<Integer, Bucket> buckets = new TreeMap<>();
         for (int i = 0; i < count; i++) {
             Bucket bucket = Bucket.create(ObjectId.forString("b" + i),
                     new Envelope(i, i * 2, i, i * 2));

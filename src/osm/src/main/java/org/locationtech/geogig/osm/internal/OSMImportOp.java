@@ -410,8 +410,7 @@ public class OSMImportOp extends AbstractGeoGigOp<Optional<OSMReport>> {
             this.progressListener = progressListener;
             this.latestChangeset = 0;
             this.latestTimestamp = 0;
-            // this.pointCache = new MappedPointCache(platform);
-            this.pointCache = new MappedPointCache(platform);//new MapdbPointCache(platform);
+            this.pointCache = new MappedPointCache(platform);
             this.sw = Stopwatch.createStarted();
         }
 

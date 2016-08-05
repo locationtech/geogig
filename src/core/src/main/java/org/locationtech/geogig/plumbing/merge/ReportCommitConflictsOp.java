@@ -87,8 +87,8 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
         }
         // get changes
         try (AutoCloseableIterator<DiffEntry> diffs = command(DiffTree.class)
-                .setOldTree(parentTreeId)
-                .setNewTree(commit.getTreeId()).setReportTrees(true).call()) {
+                .setOldTree(parentTreeId).setNewTree(commit.getTreeId()).setReportTrees(true)
+                .call()) {
             while (diffs.hasNext()) {
                 DiffEntry diff = diffs.next();
                 String path = diff.oldPath() == null ? diff.newPath() : diff.oldPath();

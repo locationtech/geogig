@@ -68,14 +68,17 @@ public class OSMImportOpTest extends RepositoryTestCase {
         String filename = getClass().getResource("ways.xml").getFile();
         File file = new File(filename);
         geogig.command(OSMImportOp.class).setDataSource(file.getAbsolutePath()).call();
+
+        WorkingTree workingTree = geogig.getRepository().workingTree();
+        assertEquals(26, workingTree.countUnstaged("node").featureCount());
+        assertEquals(4, workingTree.countUnstaged("way").featureCount());
+
         filename = getClass().getResource("nodes.xml").getFile();
         file = new File(filename);
         geogig.command(OSMImportOp.class).setDataSource(file.getAbsolutePath()).setAdd(true).call();
         // Check that the working tree contains elements from both imports
-        long unstaged = geogig.getRepository().workingTree().countUnstaged("node").featureCount();
-        assertEquals(30, unstaged);
-        unstaged = geogig.getRepository().workingTree().countUnstaged("way").featureCount();
-        assertEquals(4, unstaged);
+        assertEquals(30, workingTree.countUnstaged("node").featureCount());
+        assertEquals(4, workingTree.countUnstaged("way").featureCount());
     }
 
     @Test

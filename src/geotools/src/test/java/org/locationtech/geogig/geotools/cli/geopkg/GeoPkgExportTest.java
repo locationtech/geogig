@@ -195,8 +195,6 @@ public class GeoPkgExportTest extends RepositoryTestCase {
         exportCommand.interchangeFormat = true;
         exportCommand.run(cli);
 
-
-
         // Verify GeoPackage
         JDBCDataStore store = (JDBCDataStore) store(geoPkgFile);
         try {

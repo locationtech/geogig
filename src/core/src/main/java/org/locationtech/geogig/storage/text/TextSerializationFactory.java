@@ -812,12 +812,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
 
             }
 
-            RevTree tree;
-            if (subtrees.isEmpty()) {
-                tree = RevTreeBuilder.createLeafTree(id, size, features.build(), trees.build());
-            } else {
-                tree = RevTreeBuilder.createNodeTree(id, size, numTrees, subtrees);
-            }
+            RevTree tree = RevTreeBuilder.create(id, size, numTrees, trees.build(),
+                    features.build(), subtrees);
             return tree;
         }
     };

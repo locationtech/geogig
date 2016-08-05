@@ -90,9 +90,9 @@ public class ObjectFunnels {
             if (currentTarget == null) {
                 currentTarget = new CountingOutputStream(outputFactory.get());
             } else if (currentTarget.getCount() >= byteSoftLimit) {
-                LOGGER.info(String.format(
-                        "Closing stream and opening a new one, reached %,d bytes.\n",
-                        currentTarget.getCount()));
+                LOGGER.info(
+                        String.format("Closing stream and opening a new one, reached %,d bytes.\n",
+                                currentTarget.getCount()));
                 currentTarget.close();
                 currentTarget = new CountingOutputStream(outputFactory.get());
             }

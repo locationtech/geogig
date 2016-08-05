@@ -41,8 +41,6 @@ public interface RevTree extends RevObject {
     public Optional<ImmutableSortedMap<Integer, Bucket>> buckets();
 
     /**
-     * Precondition: {@code !buckets().isPresent()}
-     * 
      * @return an iterator over the trees and feature children collections, in the prescribed node
      *         storage {@link CanonicalNodeOrder order}
      */

@@ -73,11 +73,11 @@ public class RefParseTest {
         when(mockCommandLocator.refDatabase()).thenReturn(mockRefDb);
         command.setContext(mockCommandLocator);
         ResolveObjectType mockResolveObjectType = mock(ResolveObjectType.class);
-        when(mockCommandLocator.command(eq(ResolveObjectType.class))).thenReturn(
-                mockResolveObjectType);
+        when(mockCommandLocator.command(eq(ResolveObjectType.class)))
+                .thenReturn(mockResolveObjectType);
 
-        when(mockResolveObjectType.setObjectId((ObjectId) anyObject())).thenReturn(
-                mockResolveObjectType);
+        when(mockResolveObjectType.setObjectId((ObjectId) anyObject()))
+                .thenReturn(mockResolveObjectType);
         when(mockResolveObjectType.call()).thenReturn(TYPE.COMMIT);
     }
 

@@ -106,6 +106,10 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
         return hashOrder.compare(p1, p2);
     }
 
+    public int compare(final long longBits1, final String p1, final long longBits2, String p2) {
+        return hashOrder.compare(longBits1, p1, longBits2, p2);
+    }
+
     /**
      * Returns the canonical max size of a leaf tree for the given depth index; hard limit, can't be
      * changed or would affect the hash of trees.
@@ -187,6 +191,19 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
     }
 
     /**
+     * Given feature name's {@link #hashCodeLong(String) long hashcode}, computes the bucket index
+     * that corresponds to the node name at the given depth.
+     * 
+     * @return and Integer between zero and {@link #maxBucketsForLevel
+     *         maxBucketsForLevel(depthIndex)} minus one
+     */
+    public static int bucket(final UnsignedLong hashCodeLong, final int depthIndex) {
+        final long longBits = hashCodeLong.longValue();
+        final int bucket = hashOrder.bucket(longBits, depthIndex);
+        return bucket;
+    }
+
+    /**
      * Computes the
      * <a href="http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function">FNV-1a
      * </a> hash code for the given feature identifier, as an unsigned long.
@@ -227,6 +244,11 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
             final long longBits1 = fnvBits(p1);
             final long longBits2 = fnvBits(p2);
 
+            return compare(longBits1, p1, longBits2, p2);
+        }
+
+        private int compare(final long longBits1, final String p1, final long longBits2,
+                final String p2) {
             for (int i = 0; i < 8; i++) {
                 int bucket1 = bucket(longBits1, i);
                 int bucket2 = bucket(longBits2, i);

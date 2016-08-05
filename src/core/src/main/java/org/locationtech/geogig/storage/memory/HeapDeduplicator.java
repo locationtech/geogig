@@ -19,12 +19,12 @@ import com.google.common.collect.Sets;
 
 public class HeapDeduplicator implements Deduplicator {
     private Set<ObjectId> seen = Sets.newConcurrentHashSet();
-    
+
     @Override
     public boolean visit(ObjectId id) {
         return !seen.add(id);
     }
-    
+
     @Override
     public boolean isDuplicate(ObjectId id) {
         return seen.contains(id);
@@ -34,14 +34,14 @@ public class HeapDeduplicator implements Deduplicator {
     public void removeDuplicates(List<ObjectId> ids) {
         ids.removeAll(seen);
     }
-    
+
     @Override
     public void reset() {
-    	seen.clear();
+        seen.clear();
     }
 
     @Override
     public void release() {
-    	seen = null;
+        seen = null;
     }
 }

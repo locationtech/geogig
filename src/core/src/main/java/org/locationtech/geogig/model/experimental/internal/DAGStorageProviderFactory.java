@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 Boundless and others.
+/* Copyright (c) 2015-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -7,15 +7,11 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.osm.internal.coordcache;
+package org.locationtech.geogig.model.experimental.internal;
 
-import org.locationtech.geogig.repository.Platform;
+interface DAGStorageProviderFactory {
 
-public class MapdbPointCacheTest extends PointCacheTest {
+    public DAGStorageProvider canonical();
 
-    @Override
-    protected MapdbPointCache createCache(Platform platform) {
-        return new MapdbPointCache(platform);
-    }
-
+    public DAGStorageProvider quadtree();
 }

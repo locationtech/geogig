@@ -14,8 +14,8 @@ import org.geotools.feature.collection.DecoratingFeatureCollection;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 
-public class ForwardingFeatureCollection<T extends FeatureType, F extends Feature> extends
-        DecoratingFeatureCollection<T, F> {
+public class ForwardingFeatureCollection<T extends FeatureType, F extends Feature>
+        extends DecoratingFeatureCollection<T, F> {
 
     public ForwardingFeatureCollection(FeatureCollection<T, F> delegate) {
         super(delegate);

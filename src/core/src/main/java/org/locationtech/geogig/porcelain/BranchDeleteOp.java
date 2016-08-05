@@ -45,24 +45,26 @@ public class BranchDeleteOp extends AbstractGeoGigOp<Optional<? extends Ref>> {
      * @throws RuntimeException if the branch couldn't be deleted
      * @Throws IllegalStateException if the branch to be deleted is the HEAD
      * @throws IllegalArgumentException if the given branch name does not resolve to a branch
-     *         reference (i.e. under the {@link Ref#HEADS_PREFIX heads} or
-     *         {@link Ref#REMOTES_PREFIX remotes} namespace)
+     *         reference (i.e. under the {@link Ref#HEADS_PREFIX heads} or {@link Ref#REMOTES_PREFIX
+     *         remotes} namespace)
      */
     @Override
-    protected  Optional<? extends Ref> _call() {
+    protected Optional<? extends Ref> _call() {
         checkState(branchName != null, "Branch name not provided");
         Optional<Ref> branchRef = command(RefParse.class).setName(branchName).call();
         if (branchRef.isPresent()) {
             final Ref ref = branchRef.get();
             checkArgument(
                     ref.getName().startsWith(Ref.HEADS_PREFIX)
-                            || ref.getName().startsWith(Ref.REMOTES_PREFIX), branchName
-                            + " does not resolve to a branch reference: " + ref.getName());
+                            || ref.getName().startsWith(Ref.REMOTES_PREFIX),
+                    branchName + " does not resolve to a branch reference: " + ref.getName());
             checkState(!(ref instanceof SymRef));
 
             final Optional<Ref> head = command(RefParse.class).setName(Ref.HEAD).call();
-            checkArgument(!(head.isPresent() && head.get() instanceof SymRef && ((SymRef) head.get())
-                    .getTarget().equals(ref.getName())), "Cannot delete the branch you are on");
+            checkArgument(
+                    !(head.isPresent() && head.get() instanceof SymRef
+                            && ((SymRef) head.get()).getTarget().equals(ref.getName())),
+                    "Cannot delete the branch you are on");
 
             UpdateRef updateRef = command(UpdateRef.class).setName(ref.getName()).setDelete(true)
                     .setReason("Delete branch " + ref.getName());

@@ -65,7 +65,8 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
      * {@code refs/remotes} namespace</li>
      * <li><b>tag-NN-gABBREV</b>: output from describe, parsed by treating {@code ABBREV} as an
      * abbreviated SHA-1.</li>
-     * <li><i>id</i><b>^</b>: first parent of commit <i>id</i>, this is the same as {@code id^1}</li>
+     * <li><i>id</i><b>^</b>: first parent of commit <i>id</i>, this is the same as {@code id^1}
+     * </li>
      * <li><i>id</i><b>^0</b>: ensure <i>id</i> is a commit</li>
      * <li><i>id</i><b>^n</b>: n-th parent of commit <i>id</i></li>
      * <li><i>id</i><b>~n</b>: n-th historical ancestor of <i>id</i>, by first parent. {@code id~3}
@@ -186,8 +187,8 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
             // 0 == check id is a commit
             Optional<RevObject> object = command(RevObjectParse.class).setObjectId(objectId).call();
             checkArgument(object.isPresent() && object.get() instanceof RevCommit,
-                    "%s is not a commit: %s", objectId, (object.isPresent() ? object.get()
-                            .getType() : "null"));
+                    "%s is not a commit: %s", objectId,
+                    (object.isPresent() ? object.get().getType() : "null"));
             return Optional.of(objectId);
         }
 
@@ -335,9 +336,9 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
                 }
                 List<ObjectId> hashMatches = objectDatabase().lookUp(refSpec);
                 if (hashMatches.size() > 1) {
-                    throw new IllegalArgumentException(String.format(
-                            "Ref spec (%s) matches more than one object id: %s", refSpec,
-                            hashMatches.toString()));
+                    throw new IllegalArgumentException(
+                            String.format("Ref spec (%s) matches more than one object id: %s",
+                                    refSpec, hashMatches.toString()));
                 }
                 if (hashMatches.size() == 1) {
                     resolvedTo = hashMatches.get(0);

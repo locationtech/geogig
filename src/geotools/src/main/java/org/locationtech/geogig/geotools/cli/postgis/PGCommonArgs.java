@@ -20,25 +20,29 @@ public class PGCommonArgs {
     /**
      * Machine name or IP address to connect to. Default: localhost
      */
-    @Parameter(names = { "--host", "-H" }, description = "Machine name or IP address to connect to. Default: localhost")
+    @Parameter(names = { "--host",
+            "-H" }, description = "Machine name or IP address to connect to. Default: localhost")
     public String host = "localhost";
 
     /**
      * Port number to connect to. Default: 5432
      */
-    @Parameter(names = { "--port", "-P" }, description = "Port number to connect to.  Default: 5432")
+    @Parameter(names = { "--port",
+            "-P" }, description = "Port number to connect to.  Default: 5432")
     public Integer port = 5432;
 
     /**
      * The database schema to access. Default: public
      */
-    @Parameter(names = { "--schema", "-S" }, description = "The database schema to access.  Default: public")
+    @Parameter(names = { "--schema",
+            "-S" }, description = "The database schema to access.  Default: public")
     public String schema = "public";
 
     /**
      * The database to connect to. Default: database
      */
-    @Parameter(names = { "--database", "-D" }, description = "The database to connect to.  Default: database")
+    @Parameter(names = { "--database",
+            "-D" }, description = "The database to connect to.  Default: database")
     public String database = "database";
 
     /**

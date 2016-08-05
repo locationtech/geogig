@@ -120,7 +120,7 @@ public class Index implements StagingArea {
         Supplier<RevTreeBuilder> supplier = new Supplier<RevTreeBuilder>() {
             @Override
             public RevTreeBuilder get() {
-                return new RevTreeBuilder(context.objectDatabase(), getTree());
+                return RevTreeBuilder.canonical(context.objectDatabase(), getTree());
             }
         };
         return Suppliers.memoize(supplier);
@@ -258,8 +258,7 @@ public class Index implements StagingArea {
                     newRootTree = changedTree.getId();
                 } else {
                     // parentMetadataId = parentMetadataId == null ?
-                    Supplier<RevTreeBuilder> rootTreeSupplier = getTreeSupplier();
-                    newRootTree = context.command(WriteBack.class).setAncestor(rootTreeSupplier)
+                    newRootTree = context.command(WriteBack.class).setAncestor(getTree())
                             .setChildPath(changedTreePath).setMetadataId(parentMetadataId)
                             .setTree(changedTree).call();
                 }
@@ -314,7 +313,8 @@ public class Index implements StagingArea {
         if (parentBuilder == null) {
             ObjectId parentMetadataId = null;
             if (NodeRef.ROOT.equals(parentPath)) {
-                parentBuilder = new RevTreeBuilder(context.objectDatabase(), currentIndexHead);
+                parentBuilder = RevTreeBuilder.canonical(context.objectDatabase(),
+                        currentIndexHead);
             } else {
                 Optional<NodeRef> parentRef = context.command(FindTreeChild.class)
                         .setParent(currentIndexHead).setChildPath(parentPath).call();
@@ -323,7 +323,7 @@ public class Index implements StagingArea {
                     parentMetadataId = parentRef.get().getMetadataId();
                 }
 
-                parentBuilder = new RevTreeBuilder(context.objectDatabase(),
+                parentBuilder = RevTreeBuilder.canonical(context.objectDatabase(),
                         context.command(FindOrCreateSubtree.class)
                                 .setParent(Suppliers.ofInstance(Optional.of(getTree())))
                                 .setChildPath(parentPath).call());
@@ -344,8 +344,7 @@ public class Index implements StagingArea {
     @Override
     public AutoCloseableIterator<DiffEntry> getStaged(final @Nullable List<String> pathFilters) {
         AutoCloseableIterator<DiffEntry> unstaged = context.command(DiffIndex.class)
-                .setFilter(pathFilters)
-                .setReportTrees(true).call();
+                .setFilter(pathFilters).setReportTrees(true).call();
         return unstaged;
     }
 

@@ -102,8 +102,7 @@ public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
      *
      * @return A reference to this operation.
      *
-     * @see org.locationtech.geogig.porcelain.CommitOp#setAuthor(java.lang.String,
-     *      java.lang.String)
+     * @see org.locationtech.geogig.porcelain.CommitOp#setAuthor(java.lang.String, java.lang.String)
      */
     public DataStoreImportOp<T> setAuthorEmail(String authorEmail) {
         this.authorEmail = authorEmail;
@@ -123,8 +122,7 @@ public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
      *
      * @return A reference to this operation.
      *
-     * @see org.locationtech.geogig.porcelain.CommitOp#setAuthor(java.lang.String,
-     *      java.lang.String)
+     * @see org.locationtech.geogig.porcelain.CommitOp#setAuthor(java.lang.String, java.lang.String)
      */
     public DataStoreImportOp<T> setAuthorName(String authorName) {
         this.authorName = authorName;

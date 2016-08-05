@@ -51,7 +51,6 @@ public final class BinaryPackedObjects {
 
     private final ObjectSerializingFactory marshaller;
 
-
     private final ObjectStore database;
 
     public BinaryPackedObjects(ObjectStore database) {
@@ -64,8 +63,8 @@ public final class BinaryPackedObjects {
      */
     public long write(ObjectFunnel funnel, List<ObjectId> want, List<ObjectId> have,
             boolean traverseCommits, Deduplicator deduplicator) throws IOException {
-        return write(funnel, want, have, new HashSet<ObjectId>(), DEFAULT_CALLBACK,
-                traverseCommits, deduplicator);
+        return write(funnel, want, have, new HashSet<ObjectId>(), DEFAULT_CALLBACK, traverseCommits,
+                deduplicator);
     }
 
     /**
@@ -83,8 +82,8 @@ public final class BinaryPackedObjects {
 
         LOGGER.info("scanning for previsit list...");
         Stopwatch sw = Stopwatch.createStarted();
-        ImmutableList<ObjectId> needsPrevisit = traverseCommits ? scanForPrevisitList(want, have,
-                deduplicator) : ImmutableList.copyOf(have);
+        ImmutableList<ObjectId> needsPrevisit = traverseCommits
+                ? scanForPrevisitList(want, have, deduplicator) : ImmutableList.copyOf(have);
         LOGGER.info(String.format(
                 "Previsit list built in %s for %,d ids: %s. Calculating reachable content ids...",
                 sw.stop(), needsPrevisit.size(), needsPrevisit));
@@ -101,8 +100,8 @@ public final class BinaryPackedObjects {
         LOGGER.info("obtaining post order iterator on range...");
         sw.reset().start();
 
-        Iterator<RevObject> objects = PostOrderIterator.range(want, new ArrayList<ObjectId>(
-                previsitResults), database, traverseCommits, deduplicator);
+        Iterator<RevObject> objects = PostOrderIterator.range(want,
+                new ArrayList<ObjectId>(previsitResults), database, traverseCommits, deduplicator);
         long objectCount = 0;
         LOGGER.info("PostOrderIterator.range took {}", sw.stop());
 

@@ -154,9 +154,8 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
     }
 
     private static AutoCloseableIterator<SimpleFeature> getFeatures(
-            AutoCloseableIterator<DiffEntry> diffs, final boolean old,
-            final ObjectStore database, final ObjectId metadataId,
-            final ProgressListener progressListener) {
+            AutoCloseableIterator<DiffEntry> diffs, final boolean old, final ObjectStore database,
+            final ObjectId metadataId, final ProgressListener progressListener) {
 
         final SimpleFeatureType featureType = addChangeTypeAttribute(
                 database.getFeatureType(metadataId));

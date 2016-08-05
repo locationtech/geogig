@@ -9,24 +9,23 @@
  */
 package org.locationtech.geogig.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.plumbing.HashObject;
-import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.RevTreeBuilder2;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.vividsolutions.jts.geom.Envelope;
 
 public class RevObjectTestSupport {
 
-    public static RevTree createTreesTree(ObjectDatabase source, int numSubTrees,
+    public static RevTree createTreesTree(ObjectStore source, int numSubTrees,
             int featuresPerSubtre, ObjectId metadataId) {
 
         RevTree tree = createTreesTreeBuilder(source, numSubTrees, featuresPerSubtre, metadataId)
@@ -35,10 +34,10 @@ public class RevObjectTestSupport {
         return tree;
     }
 
-    public static RevTreeBuilder createTreesTreeBuilder(ObjectDatabase source, int numSubTrees,
+    public static RevTreeBuilder createTreesTreeBuilder(ObjectStore source, int numSubTrees,
             int featuresPerSubtre, ObjectId metadataId) {
 
-        RevTreeBuilder builder = new RevTreeBuilder(source);
+        RevTreeBuilder builder = RevTreeBuilder.canonical(source);
         for (int treeN = 0; treeN < numSubTrees; treeN++) {
             RevTree subtree = createFeaturesTreeBuilder(source, "subtree" + treeN,
                     featuresPerSubtre).build();
@@ -65,7 +64,7 @@ public class RevObjectTestSupport {
             final String namePrefix, final int numEntries, final int startIndex,
             boolean randomIds) {
 
-        RevTreeBuilder tree = new RevTreeBuilder(source);
+        RevTreeBuilder tree = RevTreeBuilder.canonical(source);
         for (int i = startIndex; i < startIndex + numEntries; i++) {
             tree.put(featureNode(namePrefix, i, randomIds));
         }
@@ -81,14 +80,11 @@ public class RevObjectTestSupport {
         return tree;
     }
 
-    public static RevTreeBuilder2 createLargeFeaturesTreeBuilder(ObjectDatabase source,
+    public static RevTreeBuilder createLargeFeaturesTreeBuilder(ObjectDatabase source,
             final String namePrefix, final int numEntries, final int startIndex,
             boolean randomIds) {
 
-        Platform platform = new DefaultPlatform();// for tmp directory lookup
-        ExecutorService executorService = MoreExecutors.sameThreadExecutor();
-        RevTreeBuilder2 tree = new RevTreeBuilder2(source, RevTreeBuilder.EMPTY, ObjectId.NULL,
-                platform, executorService);
+        RevTreeBuilder tree = RevTreeBuilder.canonical(source);
 
         for (int i = startIndex; i < startIndex + numEntries; i++) {
             tree.put(featureNode(namePrefix, i, randomIds));
@@ -99,11 +95,21 @@ public class RevObjectTestSupport {
     public static RevTree createLargeFeaturesTree(ObjectDatabase source, final String namePrefix,
             final int numEntries, final int startIndex, boolean randomIds) {
 
-        RevTreeBuilder2 builder = createLargeFeaturesTreeBuilder(source, namePrefix, numEntries,
+        RevTreeBuilder builder = createLargeFeaturesTreeBuilder(source, namePrefix, numEntries,
                 startIndex, randomIds);
         RevTree tree = builder.build();
         source.put(tree);
         return tree;
+    }
+
+    public static List<Node> featureNodes(int fromIndexInclussive, int toIndexExclussive,
+            boolean randomIds) {
+
+        List<Node> nodes = new ArrayList<>(1 + (toIndexExclussive - fromIndexInclussive));
+        for (int i = fromIndexInclussive; i < toIndexExclussive; i++) {
+            nodes.add(featureNode("f", i, randomIds));
+        }
+        return nodes;
     }
 
     public static Node featureNode(String namePrefix, int index) {
@@ -122,7 +128,8 @@ public class RevObjectTestSupport {
         } else {// predictable id
             oid = ObjectId.forString(name);
         }
-        Node ref = Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE, null);
+        Node ref = Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE,
+                new Envelope(index, index + 1, index, index + 1));
         return ref;
     }
 

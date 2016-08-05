@@ -32,8 +32,8 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.sort.SortBy;
 
-class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature> extends
-        ForwardingFeatureSource<T, F> {
+class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature>
+        extends ForwardingFeatureSource<T, F> {
 
     private T featureType;
 
@@ -103,10 +103,8 @@ class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature> 
                 GeometryDescriptor geomDescriptorDest = featureType.getGeometryDescriptor();
                 if (!geomDescriptorOrg.getType().getBinding()
                         .equals(geomDescriptorDest.getType().getBinding())
-                        || !geomDescriptorOrg
-                                .getType()
-                                .getCoordinateReferenceSystem()
-                                .equals(geomDescriptorDest.getType().getCoordinateReferenceSystem())) {
+                        || !geomDescriptorOrg.getType().getCoordinateReferenceSystem().equals(
+                                geomDescriptorDest.getType().getCoordinateReferenceSystem())) {
                     throw new GeoToolsOpException(
                             GeoToolsOpException.StatusCode.INCOMPATIBLE_FEATURE_TYPE);
                 }
@@ -114,7 +112,8 @@ class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature> 
                 SimpleFeatureBuilder builder = new SimpleFeatureBuilder(
                         (SimpleFeatureType) featureType);
 
-                return new FeatureTypeConverterIterator<F>(iterator, (SimpleFeatureBuilder) builder);
+                return new FeatureTypeConverterIterator<F>(iterator,
+                        (SimpleFeatureBuilder) builder);
             }
 
             @Override
@@ -124,8 +123,8 @@ class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature> 
         };
     }
 
-    private static class FeatureTypeConverterIterator<F extends Feature> extends
-            ForwardingFeatureIterator<F> {
+    private static class FeatureTypeConverterIterator<F extends Feature>
+            extends ForwardingFeatureIterator<F> {
 
         private SimpleFeatureBuilder builder;
 
@@ -143,7 +142,8 @@ class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature> 
             String fid = ((SimpleFeature) next).getID();
             Name geometryAttributeName = builder.getFeatureType().getGeometryDescriptor().getName();
             builder.set(geometryAttributeName, next.getDefaultGeometryProperty().getValue());
-            for (AttributeDescriptor attribute : builder.getFeatureType().getAttributeDescriptors()) {
+            for (AttributeDescriptor attribute : builder.getFeatureType()
+                    .getAttributeDescriptors()) {
                 Name name = attribute.getName();
                 if (!name.equals(geometryAttributeName)) {
                     Property property = next.getProperty(name);

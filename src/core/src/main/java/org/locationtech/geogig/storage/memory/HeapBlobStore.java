@@ -61,8 +61,8 @@ public class HeapBlobStore implements TransactionBlobStore {
     }
 
     private String key(@Nullable String ns, String path) {
-        return Strings.isNullOrEmpty(ns) ? path : new StringBuilder(ns).append('/').append(path)
-                .toString();
+        return Strings.isNullOrEmpty(ns) ? path
+                : new StringBuilder(ns).append('/').append(path).toString();
     }
 
     @Override

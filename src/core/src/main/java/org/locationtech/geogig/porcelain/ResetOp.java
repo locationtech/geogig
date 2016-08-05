@@ -112,8 +112,8 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
 
         final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
         Preconditions.checkArgument(currHead.isPresent(), "Repository has no HEAD, can't reset.");
-        Preconditions
-                .checkState(currHead.get() instanceof SymRef, "Can't reset from detached HEAD");
+        Preconditions.checkState(currHead.get() instanceof SymRef,
+                "Can't reset from detached HEAD");
         final SymRef headRef = (SymRef) currHead.get();
 
         final String currentBranch = headRef.getTarget();

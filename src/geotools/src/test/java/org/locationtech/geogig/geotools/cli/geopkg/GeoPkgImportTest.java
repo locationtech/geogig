@@ -58,11 +58,10 @@ public class GeoPkgImportTest extends RepositoryTestCase {
         importCommand.commonArgs.database = support.createDefaultTestData().getAbsolutePath();
         importCommand.table = "Points";
         importCommand.run(cli);
-        
+
         Iterator<NodeRef> nodeIterator = cli.getGeogig().command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST).call();
-        assertTrue("Expected repo to have some nodes, but was empty",
-                nodeIterator.hasNext());
+        assertTrue("Expected repo to have some nodes, but was empty", nodeIterator.hasNext());
         List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
                 (nr) -> nr.name());
         assertTrue(nodeList.contains("Points"));

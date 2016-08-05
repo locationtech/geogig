@@ -18,7 +18,7 @@ import com.google.common.base.Optional;
 
 public class ConflictsCheckOp extends AbstractGeoGigOp<Boolean> {
     @Override
-    protected  Boolean _call() {
+    protected Boolean _call() {
         final Optional<URI> repoUrl = command(ResolveGeogigURI.class).call();
         Boolean hasConflicts = Boolean.FALSE;
 

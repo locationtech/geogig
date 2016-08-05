@@ -13,12 +13,12 @@ import org.locationtech.geogig.test.integration.OnlineTestProperties;
 
 public class IniSQLServerProperties extends OnlineTestProperties {
 
-    private static final String[] DEFAULTS = {//
-    "database.host", "localhost",//
-            "database.port", "1433",//
-            "database.schema", "dbo",//
-            "database.database", "database",//
-            "database.user", "sa",//
+    private static final String[] DEFAULTS = { //
+            "database.host", "localhost", //
+            "database.port", "1433", //
+            "database.schema", "dbo", //
+            "database.database", "database", //
+            "database.user", "sa", //
             "database.password", "sa"//
     };
 

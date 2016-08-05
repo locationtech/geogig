@@ -57,8 +57,8 @@ public class DiffBoundsTest extends RepositoryTestCase {
     @Override
     protected void setUpInternal() throws Exception {
         // create one commit per feature
-        ArrayList<RevCommit> commits = Lists.newArrayList(populate(true, points1, points3,
-                points1_modified));
+        ArrayList<RevCommit> commits = Lists
+                .newArrayList(populate(true, points1, points3, points1_modified));
         this.points1_modified_commit = commits.get(2);
 
         Feature p1ModifiedAgain = feature(pointsType, idP1, "StringProp1_1a", new Integer(1001),
@@ -158,7 +158,8 @@ public class DiffBoundsTest extends RepositoryTestCase {
 
         assertEquals(DEFAULT_CRS, diffBounds.getLeft().getCoordinateReferenceSystem());
         assertEquals(DEFAULT_CRS, diffBounds.getRight().getCoordinateReferenceSystem());
-        assertEquals(DEFAULT_CRS, diffBounds.getMergedResult().get().getCoordinateReferenceSystem());
+        assertEquals(DEFAULT_CRS,
+                diffBounds.getMergedResult().get().getCoordinateReferenceSystem());
     }
 
     @Test

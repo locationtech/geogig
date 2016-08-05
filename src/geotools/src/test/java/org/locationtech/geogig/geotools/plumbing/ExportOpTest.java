@@ -111,14 +111,14 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureType simplifiedPointsType = DataUtilities.createType(pointsNs,
                 simplifiedPointsName, simplifiedPointsTypeSpec);
 
-        Feature simplifiedPoints1 = feature(simplifiedPointsType,
-                ((SimpleFeature) points1).getID(), ((SimpleFeature) points1).getAttribute(0),
+        Feature simplifiedPoints1 = feature(simplifiedPointsType, ((SimpleFeature) points1).getID(),
+                ((SimpleFeature) points1).getAttribute(0),
                 ((SimpleFeature) points1).getAttribute(2));
-        Feature simplifiedPoints2 = feature(simplifiedPointsType,
-                ((SimpleFeature) points2).getID(), ((SimpleFeature) points2).getAttribute(0),
+        Feature simplifiedPoints2 = feature(simplifiedPointsType, ((SimpleFeature) points2).getID(),
+                ((SimpleFeature) points2).getAttribute(0),
                 ((SimpleFeature) points2).getAttribute(2));
-        Feature simplifiedPoints3 = feature(simplifiedPointsType,
-                ((SimpleFeature) points3).getID(), ((SimpleFeature) points3).getAttribute(0),
+        Feature simplifiedPoints3 = feature(simplifiedPointsType, ((SimpleFeature) points3).getID(),
+                ((SimpleFeature) points3).getAttribute(0),
                 ((SimpleFeature) points3).getAttribute(2));
 
         Feature[] simplifiedPoints = new Feature[] { simplifiedPoints1, simplifiedPoints2,
@@ -217,7 +217,8 @@ public class ExportOpTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testExportFromTreeWithSeveralFeatureTypesUsingDefaultFeatureType() throws Exception {
+    public void testExportFromTreeWithSeveralFeatureTypesUsingDefaultFeatureType()
+            throws Exception {
         Feature[] points = new Feature[] { points2, points1B, points3 };
         for (Feature feature : points) {
             insert(feature);

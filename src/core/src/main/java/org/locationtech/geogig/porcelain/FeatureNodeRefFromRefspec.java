@@ -71,8 +71,8 @@ public class FeatureNodeRefFromRefspec extends AbstractGeoGigOp<Optional<NodeRef
 
     private Optional<RevFeature> getFeatureFromRefSpec() {
 
-        Optional<RevObject> revObject = command(RevObjectParse.class).setRefSpec(ref).call(
-                RevObject.class);
+        Optional<RevObject> revObject = command(RevObjectParse.class).setRefSpec(ref)
+                .call(RevObject.class);
 
         if (!revObject.isPresent()) { // let's try to see if it is a feature in the working tree
             NodeRef.checkValidPath(ref);

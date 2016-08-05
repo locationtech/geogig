@@ -112,7 +112,7 @@ public class CachingModuleTest {
         odb.put(o1);
         odb.put(o2);
         odb.put(o3);
-        
+
         odb.put(s1);
         odb.put(s2);
         odb.put(s3);

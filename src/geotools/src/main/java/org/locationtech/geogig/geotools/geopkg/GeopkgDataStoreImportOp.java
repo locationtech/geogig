@@ -94,7 +94,8 @@ public class GeopkgDataStoreImportOp extends DataStoreImportOp<RevCommit> {
                 .setDestinationPath(dest).setFidAttribute(fidAttribute);
     }
 
-    private ForwardingFeatureIteratorProvider getFeatureIteratorTransformer(GeopkgGeogigMetadata metadata) {
+    private ForwardingFeatureIteratorProvider getFeatureIteratorTransformer(
+            GeopkgGeogigMetadata metadata) {
         return new GeoPkgForwardingFeatureIteratorProvider(metadata);
     }
 }

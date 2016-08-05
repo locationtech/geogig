@@ -97,10 +97,10 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         expectedMaster.addFirst(commit);
 
         remoteGeogig.geogig.command(TagCreateOp.class) //
-            .setMessage("TestTag") //
-            .setCommitId(commit.getId()) //
-            .setName("test") //
-            .call();
+                .setMessage("TestTag") //
+                .setCommitId(commit.getId()) //
+                .setName("test") //
+                .call();
 
         // Make sure master has all of the commits
         logs = remoteGeogig.geogig.command(LogOp.class).call();
@@ -184,7 +184,7 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
         localGeogig.geogig.command(CheckoutOp.class).setSource("refs/remotes/origin/Branch1")
                 .call();
         logs = localGeogig.geogig.command(LogOp.class).call();
-        logged = Lists.newArrayList(logs); 
+        logged = Lists.newArrayList(logs);
 
         assertEquals(3, logged.size());
 

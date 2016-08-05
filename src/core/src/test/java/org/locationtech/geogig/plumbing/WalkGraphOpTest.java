@@ -144,16 +144,16 @@ public class WalkGraphOpTest extends RepositoryTestCase {
         List<String> sevents = listener.sevents;
 
         Set<String> expected = ImmutableSet.of(//
-                "COMMIT Lines.1",//
-                "TREE ",//
-                "FEATURETYPE Points",//
-                "TREE Points",//
-                "FEATURETYPE Lines",//
-                "TREE Lines",//
-                "FEATURE Points.1",//
-                "END TREE Points",//
-                "FEATURE Lines.1",//
-                "END TREE Lines",//
+                "COMMIT Lines.1", //
+                "TREE ", //
+                "FEATURETYPE Points", //
+                "TREE Points", //
+                "FEATURETYPE Lines", //
+                "TREE Lines", //
+                "FEATURE Points.1", //
+                "END TREE Points", //
+                "FEATURE Lines.1", //
+                "END TREE Lines", //
                 "END TREE ");
 
         assertEquals(expected, new HashSet<>(sevents));

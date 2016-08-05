@@ -284,8 +284,10 @@ public class HashObjectTest extends RepositoryTestCase {
 
         RevPerson tagger = RevPersonBuilder.build("volaya", "volaya@boundlessgeo.com", -1000, -1);
         RevPerson tagger2 = RevPersonBuilder.build("groldan", "groldan@boundlessgeo.com", 10000, 0);
-        RevTag tag = RevTagBuilder.build(null, "tag1", ObjectId.forString("fake commit id"), "message", tagger);
-        RevTag tag2 = RevTagBuilder.build(null, "tag2", ObjectId.forString("another fake commit id"), "another message", tagger2);
+        RevTag tag = RevTagBuilder.build(null, "tag1", ObjectId.forString("fake commit id"),
+                "message", tagger);
+        RevTag tag2 = RevTagBuilder.build(null, "tag2",
+                ObjectId.forString("another fake commit id"), "another message", tagger2);
         ObjectId tagId = hashCommand.setObject(tag).call();
         ObjectId tagId2 = hashCommand.setObject(tag2).call();
         assertNotNull(tagId);

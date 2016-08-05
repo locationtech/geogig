@@ -27,7 +27,7 @@ import org.opengis.feature.type.FeatureType;
 import com.vividsolutions.jts.geom.Polygon;
 
 public abstract class RevFeatureTypeSerializationTest extends Assert {
-    
+
     protected final ObjectSerializingFactory serializer = getObjectSerializingFactory();
 
     private String namespace = "http://geoserver.org/test";
@@ -63,8 +63,8 @@ public abstract class RevFeatureTypeSerializationTest extends Assert {
 
         assertNotNull(rft);
         SimpleFeatureType serializedFeatureType = (SimpleFeatureType) rft.type();
-        assertEquals(serializedFeatureType.getDescriptors().size(), featureType.getDescriptors()
-                .size());
+        assertEquals(serializedFeatureType.getDescriptors().size(),
+                featureType.getDescriptors().size());
 
         for (int i = 0; i < featureType.getDescriptors().size(); i++) {
             assertEquals(featureType.getDescriptor(i), serializedFeatureType.getDescriptor(i));

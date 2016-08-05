@@ -67,7 +67,7 @@ public class CatObjectTest extends RepositoryTestCase {
     }
 
     private RevTree createTree(int numChildren) {
-        RevTreeBuilder rtb = new RevTreeBuilder(odb);
+        RevTreeBuilder rtb = RevTreeBuilder.canonical(odb);
         for (int i = 0; i < numChildren; i++) {
             String key = FEATURE_PREFIX + i;
             Node ref = Node.create(key, FAKE_ID, FAKE_ID, TYPE.FEATURE, null);
@@ -79,8 +79,8 @@ public class CatObjectTest extends RepositoryTestCase {
     @Test
     public void TestCatFeatureObject() {
         RevFeature feature = RevFeatureBuilder.build(points1);
-        CharSequence desc = geogig.command(CatObject.class)
-                .setObject(Suppliers.ofInstance(feature)).call();
+        CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(feature))
+                .call();
         String[] lines = desc.toString().split("\n");
 
         assertEquals(points1.getProperties().size() + 2, lines.length);

@@ -178,17 +178,32 @@ public abstract class PointCacheTest extends Assert {
     @Ignore
     @Test
     public void testLargeSequencesNonSequentialQueries100M() {
-        testLargeSequencesNonSequentialQueries(100 * 1000 * 1000);
+        testLargeSequencesNonSequentialQueries(100_000_000);
+    }
+
+    @Ignore
+    @Test
+    public void testLargeSequencesNonSequentialQueries250M() {
+        testLargeSequencesNonSequentialQueries(250_000_000);
+    }
+
+    @Ignore
+    @Test
+    public void testLargeSequencesNonSequentialQueries1000M() {
+        testLargeSequencesNonSequentialQueries(1000_000_000);
     }
 
     private void testLargeSequences(final int numNodes) {
-        List<Long> queryIds = new ArrayList<Long>(numNodes / 6);
+        System.err.printf("\n----------- \n%s.testLargeSequences(%,d)...\n", getClass()
+                .getSimpleName(), numNodes);
+
+        List<Long> queryIds = new ArrayList<Long>(100_000);
 
         Stopwatch sw = Stopwatch.createUnstarted();
         final int bulkSize = 10_000;
         List<Integer> random = new ArrayList<>(bulkSize);
         for (int n = 1; n <= numNodes; n++) {
-            if (n % 20 == 0) {
+            if (n % 20 == 0 && queryIds.size() < 100_000) {
                 queryIds.add(Long.valueOf(n));
             }
             random.add(Integer.valueOf(n));
@@ -216,22 +231,22 @@ public abstract class PointCacheTest extends Assert {
     }
 
     private void testLargeSequencesNonSequentialQueries(final int numNodes) {
-        List<Long> nodeIds = new ArrayList<Long>(numNodes / 6);
+        System.err.printf("\n-----------\n %s.testLargeSequencesNonSequentialQueries(%,d)...\n",
+                getClass().getSimpleName(), numNodes);
+
         Stopwatch sw = Stopwatch.createStarted();
         for (int n = 0; n < numNodes; n++) {
-            if (n % 20 == 0) {
-                nodeIds.add(Long.valueOf(n));
-            }
             cache.put((long) n, coord(n, n));
-
-            if (n > 1 && n % 100 == 0) {
-                Collections.shuffle(nodeIds);
-                List<Long> ids = nodeIds.subList(0, Math.min(nodeIds.size(), 100));
-                cache.get(ids);
-                nodeIds.clear();
-            }
+            // if (n > 1 && n % 100 == 0) {
+            // Collections.shuffle(nodeIds);
+            // List<Long> ids = nodeIds.subList(0, Math.min(nodeIds.size(), 100));
+            // cache.get(ids);
+            // nodeIds.clear();
+            // }
         }
         System.err.printf("%,d nodes added in %s\n", numNodes, sw.stop());
+
+        List<Long> nodeIds = new ArrayList<Long>(1000);
     }
 
     private long caclDbSize() {

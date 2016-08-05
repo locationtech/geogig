@@ -31,6 +31,7 @@ import cucumber.runtime.java.StepDefAnnotation;
 public class GeoToolsStepDefinitions {
 
     private CLIContext localRepo;
+
     private CLIContextProvider contextProvider;
 
     @cucumber.api.java.Before

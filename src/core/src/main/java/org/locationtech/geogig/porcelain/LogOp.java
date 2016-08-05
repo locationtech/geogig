@@ -45,11 +45,11 @@ import com.google.common.collect.Sets;
  * <p>
  * The list of commits to return can be filtered by setting the following properties:
  * <ul>
- * <li> {@link #setLimit(int) limit}: Limits the number of commits to return.
- * <li> {@link #setTimeRange(Range) timeRange}: return commits that fall in to the given time range.
- * <li> {@link #setSince(ObjectId) since}...{@link #setUntil(ObjectId) until}: Show only commits
+ * <li>{@link #setLimit(int) limit}: Limits the number of commits to return.
+ * <li>{@link #setTimeRange(Range) timeRange}: return commits that fall in to the given time range.
+ * <li>{@link #setSince(ObjectId) since}...{@link #setUntil(ObjectId) until}: Show only commits
  * between the named two commits.
- * <li> {@link #addPath(String) addPath}: Show only commits that affect the specified path.
+ * <li>{@link #addPath(String) addPath}: Show only commits that affect the specified path.
  * </ul>
  * </p>
  * 
@@ -444,8 +444,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          */
         @SuppressWarnings("unchecked")
         public LinearHistoryIterator(final ObjectId tip, final Repository repo) {
-            this.nextCommitId = (Optional<ObjectId>) (tip.isNull() ? Optional.absent() : Optional
-                    .of(tip));
+            this.nextCommitId = (Optional<ObjectId>) (tip.isNull() ? Optional.absent()
+                    : Optional.of(tip));
             this.repo = repo;
         }
 

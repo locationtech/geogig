@@ -144,7 +144,8 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
-                RevFeatureTypeBuilder.build(modifiedPointsType), RevFeatureTypeBuilder.build(pointsType));
+                RevFeatureTypeBuilder.build(modifiedPointsType),
+                RevFeatureTypeBuilder.build(pointsType));
         patch.addModifiedFeature(featureDiff);
         geogig.command(ApplyPatchOp.class).setPatch(patch).call();
         Optional<RevFeature> feature = geogig.command(RevObjectParse.class)
@@ -165,7 +166,8 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         Object newValue = points1B.getProperty("extra").getValue();
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(null, newValue);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
-        FeatureDiff featureDiff = new FeatureDiff(path, map, RevFeatureTypeBuilder.build(pointsType),
+        FeatureDiff featureDiff = new FeatureDiff(path, map,
+                RevFeatureTypeBuilder.build(pointsType),
                 RevFeatureTypeBuilder.build(modifiedPointsType));
         patch.addModifiedFeature(featureDiff);
         geogig.command(ApplyPatchOp.class).setPatch(patch).call();
@@ -182,7 +184,8 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
-                RevFeatureTypeBuilder.build(modifiedPointsType), RevFeatureTypeBuilder.build(pointsType));
+                RevFeatureTypeBuilder.build(modifiedPointsType),
+                RevFeatureTypeBuilder.build(pointsType));
         patch.addModifiedFeature(featureDiff);
         try {
             geogig.command(ApplyPatchOp.class).setPatch(patch).call();
@@ -238,8 +241,8 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         Object oldValue = points1.getProperty("sp").getValue();
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
         map.put(pointsType.getDescriptor("sp"), diff);
-        FeatureDiff featureDiff = new FeatureDiff(path, map, RevFeatureTypeBuilder.build(pointsType),
-                RevFeatureTypeBuilder.build(pointsType));
+        FeatureDiff featureDiff = new FeatureDiff(path, map,
+                RevFeatureTypeBuilder.build(pointsType), RevFeatureTypeBuilder.build(pointsType));
         patch.addModifiedFeature(featureDiff);
         try {
             geogig.command(ApplyPatchOp.class).setPatch(patch).call();
@@ -276,7 +279,8 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(pathModify, map,
-                RevFeatureTypeBuilder.build(modifiedPointsType), RevFeatureTypeBuilder.build(pointsType));
+                RevFeatureTypeBuilder.build(modifiedPointsType),
+                RevFeatureTypeBuilder.build(pointsType));
         patch.addModifiedFeature(featureDiff);
         Patch rejected = geogig.command(ApplyPatchOp.class).setPatch(patch).setApplyPartial(true)
                 .call();

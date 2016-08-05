@@ -193,7 +193,7 @@ public class OSMApplyDiffOp extends AbstractGeoGigOp<Optional<OSMReport>> {
             this.progressListener = progressListener;
             this.latestChangeset = 0;
             this.latestTimestamp = 0;
-            this.pointCache = new MappedPointCache(platform);// new MapdbPointCache(platform);
+            this.pointCache = new MappedPointCache(platform);
             Optional<NodeRef> waysNodeRef = cmdLocator.command(FindTreeChild.class)
                     .setChildPath(OSMUtils.WAY_TYPE_NAME).setParent(workTree.getTree()).call();
             Optional<NodeRef> nodesNodeRef = cmdLocator.command(FindTreeChild.class)

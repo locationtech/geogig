@@ -35,7 +35,7 @@ final class PGId {
         final int hash1 = ((id.byteN(0) << 24) //
                 | (id.byteN(1) << 16) //
                 | (id.byteN(2) << 8) //
-        | (id.byteN(3)));
+                | (id.byteN(3)));
         return hash1;
     }
 
@@ -43,7 +43,7 @@ final class PGId {
         final int hash1 = ((((int) id[0]) << 24) //
                 | (((int) id[1] & 0xFF) << 16) //
                 | (((int) id[2] & 0xFF) << 8) //
-        | (((int) id[3] & 0xFF)));
+                | (((int) id[3] & 0xFF)));
         return hash1;
     }
 
@@ -59,7 +59,7 @@ final class PGId {
                 | (((long) id[8] & 0xFF) << 24) //
                 | (((long) id[9] & 0xFF) << 16) //
                 | (((long) id[10] & 0xFF) << 8)//
-        | (((long) id[11] & 0xFF)));
+                | (((long) id[11] & 0xFF)));
         return hash2;
     }
 
@@ -71,7 +71,7 @@ final class PGId {
                 | (((long) id[16] & 0xFF) << 24) //
                 | (((long) id[17] & 0xFF) << 16) //
                 | (((long) id[18] & 0xFF) << 8)//
-        | (((long) id[19] & 0xFF)));
+                | (((long) id[19] & 0xFF)));
         return hash3;
     }
 

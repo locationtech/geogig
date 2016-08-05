@@ -59,13 +59,16 @@ public class GeoJsonExport extends AbstractGeoJsonCommand implements CLICommand 
     @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output file")
     public boolean overwrite;
 
-    @Parameter(names = { "--defaulttype" }, description = "Export only features with the tree default feature type if several types are found")
+    @Parameter(names = {
+            "--defaulttype" }, description = "Export only features with the tree default feature type if several types are found")
     public boolean defaultType;
 
-    @Parameter(names = { "--alter" }, description = "Export all features if several types are found, altering them to adapt to the output feature type")
+    @Parameter(names = {
+            "--alter" }, description = "Export all features if several types are found, altering them to adapt to the output feature type")
     public boolean alter;
 
-    @Parameter(names = { "--featuretype" }, description = "Export only features with the specified feature type if several types are found")
+    @Parameter(names = {
+            "--featuretype" }, description = "Export only features with the specified feature type if several types are found")
     @Nullable
     public String sFeatureTypeId;
 
@@ -73,8 +76,8 @@ public class GeoJsonExport extends AbstractGeoJsonCommand implements CLICommand 
      * Executes the export command using the provided options.
      */
     @Override
-    protected void runInternal(GeogigCLI cli) throws InvalidParameterException,
-            CommandFailedException, IOException {
+    protected void runInternal(GeogigCLI cli)
+            throws InvalidParameterException, CommandFailedException, IOException {
         if (args.isEmpty()) {
             printUsage(cli);
             throw new CommandFailedException();
@@ -173,15 +176,15 @@ public class GeoJsonExport extends AbstractGeoJsonCommand implements CLICommand 
         Optional<ObjectId> rootTreeId = geogig.command(ResolveTreeish.class)
                 .setTreeish(refspec.split(":")[0]).call();
 
-        checkParameter(rootTreeId.isPresent(), "Couldn't resolve '" + refspec
-                + "' to a treeish object");
+        checkParameter(rootTreeId.isPresent(),
+                "Couldn't resolve '" + refspec + "' to a treeish object");
 
         RevTree rootTree = geogig.getRepository().getTree(rootTreeId.get());
         Optional<NodeRef> featureTypeTree = geogig.command(FindTreeChild.class)
                 .setChildPath(refspec.split(":")[1]).setParent(rootTree).call();
 
-        checkParameter(featureTypeTree.isPresent(), "pathspec '" + refspec.split(":")[1]
-                + "' did not match any valid path");
+        checkParameter(featureTypeTree.isPresent(),
+                "pathspec '" + refspec.split(":")[1] + "' did not match any valid path");
 
         Optional<RevObject> revObject = cli.getGeogig().command(RevObjectParse.class)
                 .setObjectId(featureTypeTree.get().getMetadataId()).call();

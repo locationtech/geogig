@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.sqlite;
 
-import org.locationtech.geogig.di.StorageProvider;
 import org.locationtech.geogig.di.VersionedFormat;
+import org.locationtech.geogig.storage.StorageProvider;
 import org.locationtech.geogig.storage.fs.FileRefDatabase;
 
 public class XerialStorageProvider extends StorageProvider {

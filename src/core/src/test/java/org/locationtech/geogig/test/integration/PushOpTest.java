@@ -311,8 +311,8 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         push.addRefSpec(":Branch1");
         push.call();
 
-        assertFalse(remoteGeogig.geogig.command(RefParse.class).setName("Branch1").call()
-                .isPresent());
+        assertFalse(
+                remoteGeogig.geogig.command(RefParse.class).setName("Branch1").call().isPresent());
     }
 
     @Test

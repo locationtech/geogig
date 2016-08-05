@@ -41,9 +41,8 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
         this.workingTree = workingTree;
     }
 
-    public static GeoGigFeatureWriter create(
-            FeatureReader<SimpleFeatureType, SimpleFeature> reader, String typePath,
-            WorkingTree workingTree) {
+    public static GeoGigFeatureWriter create(FeatureReader<SimpleFeatureType, SimpleFeature> reader,
+            String typePath, WorkingTree workingTree) {
         return new GeoGigFeatureWriter(reader, typePath, workingTree);
     }
 
@@ -89,8 +88,8 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
         //
     }
 
-    private static final class InfiniteFeatureReader implements
-            FeatureReader<SimpleFeatureType, SimpleFeature> {
+    private static final class InfiniteFeatureReader
+            implements FeatureReader<SimpleFeatureType, SimpleFeature> {
 
         private FeatureReader<SimpleFeatureType, SimpleFeature> reader;
 
@@ -112,8 +111,8 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
         }
 
         @Override
-        public SimpleFeature next() throws IOException, IllegalArgumentException,
-                NoSuchElementException {
+        public SimpleFeature next()
+                throws IOException, IllegalArgumentException, NoSuchElementException {
             if (reader.hasNext()) {
                 return reader.next();
             }

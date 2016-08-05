@@ -24,9 +24,11 @@ import com.google.common.collect.Maps;
 public class ShortestPathWalker implements Iterator<Node> {
 
     final Node start;
+
     final Node end;
 
-    final Map<Node,CostNode> nodes;
+    final Map<Node, CostNode> nodes;
+
     final PriorityQueue<CostNode> q;
 
     ShortestPathWalker(Node start, Node end) {
@@ -44,7 +46,7 @@ public class ShortestPathWalker implements Iterator<Node> {
     }
 
     CostNode newNode(Node n, Double cost) {
-        CostNode node = new CostNode(n, cost); 
+        CostNode node = new CostNode(n, cost);
         nodes.put(n, node);
         return node;
     }
@@ -67,8 +69,7 @@ public class ShortestPathWalker implements Iterator<Node> {
             if (m == null) {
                 m = newNode(adj, cost);
                 q.offer(m);
-            }
-            else {
+            } else {
                 if (cost < m.cost) {
                     // update the node
                     m.cost = cost;
@@ -88,6 +89,7 @@ public class ShortestPathWalker implements Iterator<Node> {
 
     static class CostNode {
         Node node;
+
         Double cost = Double.MAX_VALUE;
 
         CostNode(Node node, Double cost) {

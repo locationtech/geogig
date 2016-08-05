@@ -47,10 +47,12 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
     /**
      * A traversal of all objects reachable from the given origin, with deduplication.
      */
-    public static Iterator<RevObject> all(ObjectId top, ObjectStore database, Deduplicator deduplicator) {
+    public static Iterator<RevObject> all(ObjectId top, ObjectStore database,
+            Deduplicator deduplicator) {
         List<ObjectId> start = new ArrayList<ObjectId>();
         start.add(top);
-        return new PostOrderIterator(start, database, uniqueWithDeduplicator(ALL_SUCCESSORS, deduplicator));
+        return new PostOrderIterator(start, database,
+                uniqueWithDeduplicator(ALL_SUCCESSORS, deduplicator));
     }
 
     /**
@@ -61,23 +63,29 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
     public static Iterator<RevObject> range(List<ObjectId> start, List<ObjectId> base,
             ObjectStore database, boolean traverseCommits, Deduplicator deduplicator) {
         return new PostOrderIterator(new ArrayList<ObjectId>(start), database, //
-                uniqueWithDeduplicator(blacklist((traverseCommits ? ALL_SUCCESSORS : COMMIT_SUCCESSORS), base), deduplicator));
+                uniqueWithDeduplicator(
+                        blacklist((traverseCommits ? ALL_SUCCESSORS : COMMIT_SUCCESSORS), base),
+                        deduplicator));
     }
 
     /**
-     * A traversal of commit history (no content) with deduplication. 
+     * A traversal of commit history (no content) with deduplication.
+     * 
      * @param start
      * @param base
      * @param database
      * @return
      */
-    public static Iterator<RevObject> rangeOfCommits(List<ObjectId> start, List<ObjectId> base, ObjectStore database, Deduplicator deduplicator) {
-        return new PostOrderIterator(new ArrayList<ObjectId>(start), database, uniqueWithDeduplicator(blacklist( COMMIT_PARENTS, base), deduplicator));
+    public static Iterator<RevObject> rangeOfCommits(List<ObjectId> start, List<ObjectId> base,
+            ObjectStore database, Deduplicator deduplicator) {
+        return new PostOrderIterator(new ArrayList<ObjectId>(start), database,
+                uniqueWithDeduplicator(blacklist(COMMIT_PARENTS, base), deduplicator));
     }
 
-    public static Iterator<RevObject> contentsOf(List<ObjectId> needsPrevisit,
-            ObjectStore database, Deduplicator deduplicator) {
-        return new PostOrderIterator(new ArrayList<ObjectId>(needsPrevisit), database, uniqueWithDeduplicator(COMMIT_SUCCESSORS, deduplicator));
+    public static Iterator<RevObject> contentsOf(List<ObjectId> needsPrevisit, ObjectStore database,
+            Deduplicator deduplicator) {
+        return new PostOrderIterator(new ArrayList<ObjectId>(needsPrevisit), database,
+                uniqueWithDeduplicator(COMMIT_SUCCESSORS, deduplicator));
     }
 
     /**
@@ -346,10 +354,12 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
      *         repetitions.
      */
     private final static Successors unique(final Successors delegate) {
-        return uniqueWithDeduplicator(delegate, new org.locationtech.geogig.storage.memory.HeapDeduplicator());
+        return uniqueWithDeduplicator(delegate,
+                new org.locationtech.geogig.storage.memory.HeapDeduplicator());
     }
-    
-    private final static Successors uniqueWithDeduplicator(final Successors delegate, final Deduplicator deduplicator) {
+
+    private final static Successors uniqueWithDeduplicator(final Successors delegate,
+            final Deduplicator deduplicator) {
         return new Successors() {
             public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
                 if (!deduplicator.isDuplicate(object.getId())) {
@@ -374,7 +384,8 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
      * @param base a list of blacklisted objectids
      * @return a Successors policy for visiting the same nodes as the original policy, but with
      */
-    private final static Successors blacklist(final Successors delegate, final List<ObjectId> base) {
+    private final static Successors blacklist(final Successors delegate,
+            final List<ObjectId> base) {
         final Set<ObjectId> baseSet = new HashSet<ObjectId>(base);
         return new Successors() {
             public void findSuccessors(final RevObject object, final List<ObjectId> successors) {

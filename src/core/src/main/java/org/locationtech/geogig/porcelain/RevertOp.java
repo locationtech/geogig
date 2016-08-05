@@ -284,8 +284,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         ArrayList<Conflict> conflicts = new ArrayList<Conflict>();
         // get changes (in reverse)
         try (AutoCloseableIterator<DiffEntry> reverseDiff = command(DiffTree.class)
-                .setNewTree(parentTreeId)
-                .setOldTree(commit.getTreeId()).setReportTrees(false).call()) {
+                .setNewTree(parentTreeId).setOldTree(commit.getTreeId()).setReportTrees(false)
+                .call()) {
 
             ObjectId headTreeId = repository.getCommit(revertHead).getTreeId();
             final RevTree headTree = repository.getTree(headTreeId);

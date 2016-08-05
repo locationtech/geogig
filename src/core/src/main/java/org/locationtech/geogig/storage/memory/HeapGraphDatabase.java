@@ -118,8 +118,9 @@ public class HeapGraphDatabase implements GraphDatabase {
             public ImmutableList<ObjectId> apply(Node n) {
                 // transform outgoing nodes to id
                 // filter for null to skip fake root node
-                return new ImmutableList.Builder<ObjectId>().addAll(
-                        filter(transform(n.to(), NODE_TO_ID), Predicates.notNull())).build();
+                return new ImmutableList.Builder<ObjectId>()
+                        .addAll(filter(transform(n.to(), NODE_TO_ID), Predicates.notNull()))
+                        .build();
             }
         }).or(ImmutableList.<ObjectId> of());
     }
@@ -129,8 +130,8 @@ public class HeapGraphDatabase implements GraphDatabase {
         return graph.get(commitId).transform(new Function<Node, ImmutableList<ObjectId>>() {
             @Override
             public ImmutableList<ObjectId> apply(Node n) {
-                return new ImmutableList.Builder<ObjectId>()
-                        .addAll(transform(n.from(), NODE_TO_ID)).build();
+                return new ImmutableList.Builder<ObjectId>().addAll(transform(n.from(), NODE_TO_ID))
+                        .build();
             }
         }).or(ImmutableList.<ObjectId> of());
     }
@@ -257,8 +258,8 @@ public class HeapGraphDatabase implements GraphDatabase {
             List<GraphEdge> edges = new LinkedList<GraphEdge>();
             while (nodeEdges.hasNext()) {
                 Edge nodeEdge = nodeEdges.next();
-                edges.add(new GraphEdge(new HeapGraphNode(nodeEdge.src), new HeapGraphNode(
-                        nodeEdge.dst)));
+                edges.add(new GraphEdge(new HeapGraphNode(nodeEdge.src),
+                        new HeapGraphNode(nodeEdge.dst)));
             }
             return edges.iterator();
         }

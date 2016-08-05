@@ -119,8 +119,8 @@ class TableNames {
     }
 
     public List<String> all() {
-        return ImmutableList.of(repositories(), config(), refs(), conflicts(), objects(),
-                commits(), features(), featureTypes(), trees(), graphEdges(), graphMappings(),
+        return ImmutableList.of(repositories(), config(), refs(), conflicts(), objects(), commits(),
+                features(), featureTypes(), trees(), graphEdges(), graphMappings(),
                 graphProperties(), blobs());
     }
 

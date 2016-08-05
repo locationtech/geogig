@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
@@ -218,6 +219,16 @@ public class HeapObjectStore extends AbstractObjectStore {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    public int size() {
+        return this.objects.size();
+    }
+
+    public long storageSize() {
+        final AtomicLong size = new AtomicLong();
+        this.objects.values().forEach((ba) -> size.addAndGet(ba.length));
+        return size.get();
     }
 
 }

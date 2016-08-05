@@ -102,8 +102,8 @@ public class DepthSearch {
 
         checkArgument(parentPath.isEmpty() || childPath.startsWith(parentPath + PATH_SEPARATOR));
 
-        final List<String> parentSteps = Lists.newArrayList(Splitter.on(PATH_SEPARATOR)
-                .omitEmptyStrings().split(parentPath));
+        final List<String> parentSteps = Lists
+                .newArrayList(Splitter.on(PATH_SEPARATOR).omitEmptyStrings().split(parentPath));
         List<String> childSteps = Lists.newArrayList(Splitter.on(PATH_SEPARATOR).split(childPath));
         childSteps = childSteps.subList(parentSteps.size(), childSteps.size());
 
@@ -123,8 +123,8 @@ public class DepthSearch {
         NodeRef result = null;
         if (node.isPresent()) {
             String nodeParentPath = NodeRef.parentPath(childPath);
-            result = new NodeRef(node.get(), nodeParentPath, node.get().getMetadataId()
-                    .or(metadataId));
+            result = new NodeRef(node.get(), nodeParentPath,
+                    node.get().getMetadataId().or(metadataId));
         }
         return Optional.fromNullable(result);
     }

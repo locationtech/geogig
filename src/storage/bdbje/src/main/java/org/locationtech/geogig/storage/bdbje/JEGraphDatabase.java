@@ -95,7 +95,8 @@ abstract class JEGraphDatabase extends SynchronizedGraphDatabase {
         private final String formatVersion;
 
         public Impl(final ConfigDatabase config, final EnvironmentBuilder envProvider,
-                final TupleBinding<NodeData> binding, final String formatVersion, final Hints hints) {
+                final TupleBinding<NodeData> binding, final String formatVersion,
+                final Hints hints) {
             this.configDb = config;
             this.envProvider = envProvider;
             this.BINDING = binding;
@@ -111,8 +112,8 @@ abstract class JEGraphDatabase extends SynchronizedGraphDatabase {
                 return;
             }
             this.graphDb = createDatabase();
-            LOGGER.debug("Graph database opened at {}. Transactional: {}", env.getHome(), graphDb
-                    .getConfig().getTransactional());
+            LOGGER.debug("Graph database opened at {}. Transactional: {}", env.getHome(),
+                    graphDb.getConfig().getTransactional());
         }
 
         protected Database createDatabase() {
@@ -188,8 +189,8 @@ abstract class JEGraphDatabase extends SynchronizedGraphDatabase {
 
         @Override
         public void checkConfig() throws RepositoryConnectionException {
-            RepositoryConnectionException.StorageType.GRAPH
-                    .verify(configDb, "bdbje", formatVersion);
+            RepositoryConnectionException.StorageType.GRAPH.verify(configDb, "bdbje",
+                    formatVersion);
         }
 
         @Override
@@ -468,8 +469,8 @@ abstract class JEGraphDatabase extends SynchronizedGraphDatabase {
                     nodeEdges = node.outgoing.iterator();
                     while (nodeEdges.hasNext()) {
                         ObjectId otherNode = nodeEdges.next();
-                        edges.add(new GraphEdge(this, new JEGraphNode(getNodeInternal(otherNode,
-                                true))));
+                        edges.add(new GraphEdge(this,
+                                new JEGraphNode(getNodeInternal(otherNode, true))));
                     }
                 }
 

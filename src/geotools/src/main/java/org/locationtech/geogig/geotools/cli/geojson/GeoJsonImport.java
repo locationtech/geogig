@@ -41,20 +41,23 @@ public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand 
     /**
      * do not replace or delete features
      */
-    @Parameter(names = { "--add" }, description = "Do not replace or delete features on the destination path, but just add new ones")
+    @Parameter(names = {
+            "--add" }, description = "Do not replace or delete features on the destination path, but just add new ones")
     boolean add;
 
     /**
      * Use origin feature type
      */
-    @Parameter(names = { "--force-featuretype" }, description = "Use origin feature type even if it does not match the default destination featuretype")
+    @Parameter(names = {
+            "--force-featuretype" }, description = "Use origin feature type even if it does not match the default destination featuretype")
     boolean forceFeatureType;
 
     /**
      * Set the path default feature type to the the feature type of imported features, and modify
      * existing features to match it
      */
-    @Parameter(names = { "--alter" }, description = "Set the path default feature type to the the feature type of imported features, and modify existing features to match it")
+    @Parameter(names = {
+            "--alter" }, description = "Set the path default feature type to the the feature type of imported features, and modify existing features to match it")
     boolean alter;
 
     /**
@@ -66,24 +69,27 @@ public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand 
     /**
      * Name to use for geometry attribute, replacing the default one ("geometry")
      */
-    @Parameter(names = { "--geom-name" }, description = "Name to use for geometry attribute, replacing the default one ('geometry')")
+    @Parameter(names = {
+            "--geom-name" }, description = "Name to use for geometry attribute, replacing the default one ('geometry')")
     String geomName;
 
     /**
      * Name to use for geometry attribute, replacing the default one ("geometry")
      */
-    @Parameter(names = { "--geom-name-auto" }, description = "Uses the name of the geometry descriptor in the destination feature type")
+    @Parameter(names = {
+            "--geom-name-auto" }, description = "Uses the name of the geometry descriptor in the destination feature type")
     boolean geomNameAuto;
 
     /**
      * The attribute to use to create the feature Id
      */
-    @Parameter(names = { "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
+    @Parameter(names = {
+            "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
     String fidAttribute;
 
     @Override
-    protected void runInternal(GeogigCLI cli) throws InvalidParameterException,
-            CommandFailedException, IOException {
+    protected void runInternal(GeogigCLI cli)
+            throws InvalidParameterException, CommandFailedException, IOException {
         checkParameter(geoJSONList != null && !geoJSONList.isEmpty(), "No GeoJSON specified");
         checkParameter(geomName == null || !geomNameAuto,
                 "Cannot use --geom-name and --geom-name-auto at the same time");
@@ -153,10 +159,10 @@ public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand 
                     throw new CommandFailedException(
                             "The feature type of the data to import does not match the feature type of the destination tree and cannot be imported\n"
                                     + "USe the --force-featuretype switch to import using the original featuretype and crete a mixed type tree",
-                                    true);
+                            true);
                 default:
-                    throw new CommandFailedException("Import failed with exception: "
-                            + e.statusCode.name(), e);
+                    throw new CommandFailedException(
+                            "Import failed with exception: " + e.statusCode.name(), e);
                 }
             }
         }

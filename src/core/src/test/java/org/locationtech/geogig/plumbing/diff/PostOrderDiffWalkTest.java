@@ -95,8 +95,8 @@ public class PostOrderDiffWalkTest {
      */
     private static NodeRef nodeFor(RevTree root) {
         Envelope bounds = SpatialOps.boundsOf(root);
-        return NodeRef.createRoot(Node.create(NodeRef.ROOT, root.getId(), ObjectId.NULL, TYPE.TREE,
-                bounds));
+        return NodeRef.createRoot(
+                Node.create(NodeRef.ROOT, root.getId(), ObjectId.NULL, TYPE.TREE, bounds));
     }
 
     @Test
@@ -137,7 +137,8 @@ public class PostOrderDiffWalkTest {
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
         List<? extends Bounded> expectedLeft = newArrayList(null, nodeFor(left));
-        List<? extends Bounded> expectedRight = newArrayList(featureNodeRef("f", 1), nodeFor(right));
+        List<? extends Bounded> expectedRight = newArrayList(featureNodeRef("f", 1),
+                nodeFor(right));
 
         visitor.walk(testConsumer);
         assertEquals(expectedLeft, testConsumer.orderedLeft);
@@ -154,12 +155,12 @@ public class PostOrderDiffWalkTest {
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
         List<? extends Bounded> expectedLeft = newArrayList(//
-                null,//
-                null,//
+                null, //
+                null, //
                 nodeFor(left));
         List<? extends Bounded> expectedRight = newArrayList(//
-                featureNodeRef("f", 3),//
-                featureNodeRef("f", 4),//
+                featureNodeRef("f", 3), //
+                featureNodeRef("f", 4), //
                 nodeFor(right));
 
         visitor.walk(testConsumer);
@@ -246,9 +247,7 @@ public class PostOrderDiffWalkTest {
     @Test
     public void testBucketNested() {
         final RevTree origLeft = RevTreeBuilder.EMPTY;
-        final RevTree origRight = createFeaturesTree(
-                leftSource,
-                "f",
+        final RevTree origRight = createFeaturesTree(leftSource, "f",
                 CanonicalNodeNameOrder.normalizedSizeLimit(0)
                         * CanonicalNodeNameOrder.maxBucketsForLevel(0));
 

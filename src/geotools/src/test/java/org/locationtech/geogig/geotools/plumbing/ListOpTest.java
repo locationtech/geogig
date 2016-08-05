@@ -45,8 +45,8 @@ public class ListOpTest {
     @Test
     public void testTypeNameException() throws Exception {
         ListOp list = new ListOp();
-        list.setDataStore(TestHelper.createFactoryWithGetNamesException().createDataStore(
-                ImmutableMap.of()));
+        list.setDataStore(
+                TestHelper.createFactoryWithGetNamesException().createDataStore(ImmutableMap.of()));
         exception.expect(GeoToolsOpException.class);
         list.call();
     }

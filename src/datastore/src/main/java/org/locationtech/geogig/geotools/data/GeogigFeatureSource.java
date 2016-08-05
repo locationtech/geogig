@@ -202,8 +202,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
         FeatureReader<SimpleFeatureType, SimpleFeature> features;
         if (isNaturalOrder(query.getSortBy())) {
             Integer offset = query.getStartIndex();
-            Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null : query
-                    .getMaxFeatures();
+            Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null
+                    : query.getMaxFeatures();
             ScreenMap screenMap = (ScreenMap) query.getHints().get(Hints.SCREENMAP);
             features = getNativeReader(Query.NO_NAMES, filter, offset, maxFeatures, screenMap);
         } else {
@@ -229,8 +229,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
         }
 
         final Integer offset = query.getStartIndex();
-        final Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null : query
-                .getMaxFeatures();
+        final Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null
+                : query.getMaxFeatures();
 
         int size;
         if (Filter.INCLUDE.equals(filter) && oldRoot == null
@@ -274,8 +274,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
 
         final boolean naturalOrder = isNaturalOrder(query.getSortBy());
         final int startIndex = Optional.fromNullable(query.getStartIndex()).or(Integer.valueOf(0));
-        final Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null : query
-                .getMaxFeatures();
+        final Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null
+                : query.getMaxFeatures();
         final Filter filter = query.getFilter();
         final ScreenMap screenMap = (ScreenMap) query.getHints().get(Hints.SCREENMAP);
         final String[] propertyNames = query.getPropertyNames();
@@ -292,7 +292,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 }
             }
             if (maxFeatures != null && maxFeatures > 0) {
-                reader = new MaxFeatureReader<SimpleFeatureType, SimpleFeature>(reader, maxFeatures);
+                reader = new MaxFeatureReader<SimpleFeatureType, SimpleFeature>(reader,
+                        maxFeatures);
             }
         }
 
@@ -396,8 +397,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 .setObjectId(metadataId).call(RevFeatureType.class);
 
         if (!revType.isPresent()) {
-            throw new IllegalStateException(String.format("Feature type for tree %s not found",
-                    treePath));
+            throw new IllegalStateException(
+                    String.format("Feature type for tree %s not found", treePath));
         }
 
         SimpleFeatureType featureType = (SimpleFeatureType) revType.get().type();

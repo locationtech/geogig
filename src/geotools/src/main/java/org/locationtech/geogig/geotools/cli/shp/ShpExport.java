@@ -83,7 +83,8 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
     /**
      * Charset to use for encoding attributes in DBF file
      */
-    @Parameter(names = { "--charset" }, description = "Use the specified charset to encode attributes. Default is ISO-8859-1.")
+    @Parameter(names = {
+            "--charset" }, description = "Use the specified charset to encode attributes. Default is ISO-8859-1.")
     public String charset = "ISO-8859-1";
 
     /**

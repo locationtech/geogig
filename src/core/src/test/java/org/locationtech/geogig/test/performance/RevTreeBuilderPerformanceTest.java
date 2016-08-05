@@ -9,40 +9,69 @@
  */
 package org.locationtech.geogig.test.performance;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
-import org.locationtech.geogig.model.CanonicalNodeOrder;
+import org.junit.rules.TestName;
+import org.junit.runners.MethodSorters;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
-import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.geogig.storage.memory.HeapObjectStore;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.UnmodifiableIterator;
+import com.google.common.collect.Iterables;
 import com.vividsolutions.jts.geom.Envelope;
 
-public class RevTreeBuilderPerformanceTest extends RepositoryTestCase {
+/**
+ * Reports the performance of building large {@link RevTree}
+ * <p>
+ * The test is only run if the System property {@code geogig.runPerformanceTests} is set to
+ * {@code true}
+ * <p>
+ * It also needs to be run with a rather high Heap size (4GB recommended)
+ */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class RevTreeBuilderPerformanceTest {
 
-    private ObjectDatabase odb;
+    private HeapObjectStore odb;
 
     private static final ObjectId FAKE_ID = ObjectId.forString("fake");
 
-    private static final int numNodes = 512 * 32;
+    @Rule
+    public TestName testName = new TestName();
 
-    private static Iterable<Node> nodes;
+    @ClassRule
+    public static EnablePerformanceTestRule performanceRule = new EnablePerformanceTestRule();
 
-    @BeforeClass
-    public static void beforeClass() {
-        nodes = new Iterable<Node>() {
+    @Before
+    public void before() {
+        odb = new HeapObjectStore();
+        odb.open();
+    }
+
+    @After
+    public void after() throws InterruptedException {
+        odb.close();
+        System.gc();
+        Thread.sleep(3000);
+        System.gc();
+        Thread.sleep(1000);
+    }
+
+    private Iterable<Node> nodes(final int numNodes) {
+        return new Iterable<Node>() {
             @Override
             public Iterator<Node> iterator() {
                 return new AbstractIterator<Node>() {
@@ -61,61 +90,55 @@ public class RevTreeBuilderPerformanceTest extends RepositoryTestCase {
         };
     }
 
-    @Override
-    protected void setUpInternal() throws Exception {
-        odb = repo.objectDatabase();
+    @Test
+    public void testBuilUnordered_01_100K() {
+        testBuildUnordered(100_000);
     }
 
     @Test
-    public void testInsertUnordered() {
-        System.err.println("testInsertUnordered...");
-        createTree(nodes, new RevTreeBuilder(odb), true);
+    public void testBuilUnordered_02_1M() {
+        testBuildUnordered(1000_000);
     }
 
     @Test
-    public void testInsertOrderedPartitioned10K() {
-        System.err.println("testInsertOrderedPartitioned10K...");
-        final int partitionSize = 10 * 1000;
-        testInsertPartitioned(partitionSize);
+    public void testBuilUnordered_03_5M() {
+        testBuildUnordered(5000_000);
     }
 
     @Test
-    public void testInsertOrderedPartitioned50K() {
-        System.err.println("testInsertOrderedPartitioned50K...");
-        final int partitionSize = 50 * 1000;
-        testInsertPartitioned(partitionSize);
+    public void testBuilUnordered_04_10M() {
+        testBuildUnordered(10_000_000);
     }
 
+    @Ignore
     @Test
-    public void testInsertOrderedPartitioned100K() {
-        System.err.println("testInsertOrderedPartitioned100K...");
-        final int partitionSize = 100 * 1000;
-        testInsertPartitioned(partitionSize);
+    public void testBuilUnordered_05_50M() {
+        testBuildUnordered(50_000_000);
     }
 
-    @Test
-    public void testInsertOrderedPartitioned500K() {
-        System.err.println("testInsertOrderedPartitioned500K...");
-        final int partitionSize = 500 * 1000;
-        testInsertPartitioned(partitionSize);
-    }
+    private void testBuildUnordered(final int size) {
+        System.err.println(testName.getMethodName() + ":\n----------------------");
+        Stopwatch totalTime = Stopwatch.createUnstarted();
+        Iterable<Node> nodes = nodes(size);
 
-    private void testInsertPartitioned(int partitionSize) {
-        UnmodifiableIterator<List<Node>> partitions = Iterators.partition(nodes.iterator(),
-                partitionSize);
+        RevTreeBuilder builder = RevTreeBuilder.canonical(odb);
 
-        RevTreeBuilder builder = new RevTreeBuilder(odb);
+        createTree(nodes, builder, totalTime);
+
+        totalTime.start();
+
+        System.err.print("\tbuilding...");
         Stopwatch sw = Stopwatch.createStarted();
-        while (partitions.hasNext()) {
-            List<Node> partition = new ArrayList<Node>(partitions.next());
-            Collections.sort(partition, new CanonicalNodeOrder());
-            createTree(partition, builder, false);
-        }
-        System.err.println("Calling RevTreeBuilder.build()...");
-        builder.build();
+
+        RevTree tree = builder.build();
+
         sw.stop();
-        System.err.printf("-- Created tree with %d sorted partitioned size in %s\n", partitionSize,
-                sw);
+        totalTime.stop();
+
+        System.err.printf("%,d features tree built in %s (%s)\n", tree.size(), sw, tree.getId());
+        System.err.printf("\tTotal time: %s\n", totalTime);
+        System.err.printf("\tTotal trees created: %,d, Stored size: %,d bytes\n", odb.size(),
+                odb.storageSize());
     }
 
     private static Node createNode(int i) {
@@ -128,18 +151,23 @@ public class RevTreeBuilderPerformanceTest extends RepositoryTestCase {
     }
 
     private RevTreeBuilder createTree(final Iterable<Node> nodes, final RevTreeBuilder b,
-            final boolean buildTree) {
-        if (buildTree) {
-            System.err.printf("Creating treee with %d nodes...", numNodes);
+            Stopwatch totalTime) {
+        Preconditions.checkArgument(!totalTime.isRunning());
+        System.err.print("\tInserting nodes...");
+        int count = 0;
+        Stopwatch sw = Stopwatch.createUnstarted();
+        Iterable<List<Node>> partitions = Iterables.partition(nodes, 100_000);
+        for (List<Node> partition : partitions) {
+            sw.start();
+            totalTime.start();
+            for (Node n : partition) {
+                count++;
+                b.put(n);
+            }
+            sw.stop();
+            totalTime.stop();
         }
-        Stopwatch sw = Stopwatch.createStarted();
-        for (Node n : nodes) {
-            b.put(n);
-        }
-        sw.stop();
-        if (buildTree) {
-            System.err.printf("Created in %s\n", sw);
-        }
+        System.err.printf("%,d nodes inserted in %s\n", count, sw);
         return b;
     }
 

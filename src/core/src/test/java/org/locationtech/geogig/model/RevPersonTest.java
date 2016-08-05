@@ -39,9 +39,11 @@ public class RevPersonTest {
     @Test
     public void testRevPersonEquals() {
         RevPerson person = RevPersonBuilder.build("test name", "test.email@test.com", 12345, 54321);
-        RevPerson person2 = RevPersonBuilder.build("kishmael", "kelsey.ishmael@lmnsolutions.com", 54321, 12345);
+        RevPerson person2 = RevPersonBuilder.build("kishmael", "kelsey.ishmael@lmnsolutions.com",
+                54321, 12345);
         assertFalse(person.equals(person2));
-        person2 = RevPersonBuilder.build("test name", "kelsey.ishmael@lmnsolutions.com", 54321, 12345);
+        person2 = RevPersonBuilder.build("test name", "kelsey.ishmael@lmnsolutions.com", 54321,
+                12345);
 
         assertFalse(person.equals(person2));
         person2 = RevPersonBuilder.build("test name", "test.email@test.com", 54321, 12345);

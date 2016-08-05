@@ -100,16 +100,17 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
 
     @Override
     protected DiffSummary<BoundingBox, BoundingBox> _call() {
-        checkArgument(cached && oldVersion == null || !cached, String.format(
-                "compare index allows only one revision to check against, got %s / %s", oldVersion,
-                newVersion));
+        checkArgument(cached && oldVersion == null || !cached,
+                String.format(
+                        "compare index allows only one revision to check against, got %s / %s",
+                        oldVersion, newVersion));
 
         checkArgument(newVersion == null || oldVersion != null,
                 "If new rev spec is specified then old rev spec is mandatory");
 
         final String leftRefSpec = fromNullable(oldVersion).or(Ref.HEAD);
-        final String rightRefSpec = fromNullable(newVersion).or(
-                cached ? Ref.STAGE_HEAD : Ref.WORK_HEAD);
+        final String rightRefSpec = fromNullable(newVersion)
+                .or(cached ? Ref.STAGE_HEAD : Ref.WORK_HEAD);
 
         RevTree left = resolveTree(leftRefSpec);
         RevTree right = resolveTree(rightRefSpec);
@@ -149,7 +150,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         return objectDatabase().getTree(id.get());
     }
 
-    private static class BoundsWalk implements PreOrderDiffWalk.Consumer {
+    private static class BoundsWalk extends PreOrderDiffWalk.AbstractConsumer {
 
         /**
          * Private extension of {@link ReferencedEnvelope} to make only the methods
@@ -267,13 +268,6 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
                 return false;
             }
             return true;
-        }
-
-        @Override
-        public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                @Nullable Bucket left, @Nullable Bucket right) {
-            // TODO Auto-generated method stub
-
         }
 
         private ObjectId md(@Nullable NodeRef node) {

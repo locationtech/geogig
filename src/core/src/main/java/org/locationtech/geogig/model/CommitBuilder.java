@@ -251,8 +251,10 @@ public final class CommitBuilder {
         final ObjectId treeId = this.treeId;
         final ImmutableList<ObjectId> parentIds = ImmutableList.copyOf(this.parentIds);
 
-        final RevPerson author = RevPersonBuilder.build(this.author, authorEmail, getAuthorTimestamp(), getAuthorTimeZoneOffset());
-        final RevPerson committer = RevPersonBuilder.build(this.committer, committerEmail, getCommitterTimestamp(), getCommitterTimeZoneOffset());
+        final RevPerson author = RevPersonBuilder.build(this.author, authorEmail,
+                getAuthorTimestamp(), getAuthorTimeZoneOffset());
+        final RevPerson committer = RevPersonBuilder.build(this.committer, committerEmail,
+                getCommitterTimestamp(), getCommitterTimeZoneOffset());
 
         final String commitMessage = this.message == null ? "" : this.message;
 
@@ -268,5 +270,5 @@ public final class CommitBuilder {
         return new RevCommitImpl(id, treeId, ImmutableList.copyOf(parents), author, committer,
                 message);
     }
-    
+
 }

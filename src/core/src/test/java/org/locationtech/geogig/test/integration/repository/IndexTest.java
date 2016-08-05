@@ -56,8 +56,8 @@ public class IndexTest extends RepositoryTestCase {
     @Test
     public void testInsertIdenticalObjects() throws Exception {
         ObjectId oId1 = insertAndAdd(points1);
-        Feature equalContentFeature = feature(pointsType, "DifferentId", ((SimpleFeature) points1)
-                .getAttributes().toArray());
+        Feature equalContentFeature = feature(pointsType, "DifferentId",
+                ((SimpleFeature) points1).getAttributes().toArray());
 
         ObjectId oId2 = insertAndAdd(equalContentFeature);
 
@@ -105,14 +105,14 @@ public class IndexTest extends RepositoryTestCase {
                 .setStrategy(Strategy.DEPTHFIRST).call());
 
         assertEquals(3, workHead.size());
-        Collection<NodeRef> filtered = Collections2
-                .filter(workHead, new TreeNameFilter(pointsName));
+        Collection<NodeRef> filtered = Collections2.filter(workHead,
+                new TreeNameFilter(pointsName));
         assertEquals(1, filtered.size());
 
         geogig.command(AddOp.class).call();
 
-        List<NodeRef> indexHead = toList(geogig.command(LsTreeOp.class)
-                .setReference(Ref.STAGE_HEAD).setStrategy(Strategy.DEPTHFIRST).call());
+        List<NodeRef> indexHead = toList(geogig.command(LsTreeOp.class).setReference(Ref.STAGE_HEAD)
+                .setStrategy(Strategy.DEPTHFIRST).call());
 
         assertEquals(3, indexHead.size());
         filtered = Collections2.filter(indexHead, new TreeNameFilter(pointsName));
@@ -167,10 +167,10 @@ public class IndexTest extends RepositoryTestCase {
         assertNotNull(oId1_modified);
         assertFalse(oId1.equals(oId1_modified));
 
-        assertFalse(index.findStaged(appendChild(pointsName, idP1)).get().getObjectId()
-                .equals(oId1));
-        assertEquals(oId1_modified, index.findStaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
+        assertFalse(
+                index.findStaged(appendChild(pointsName, idP1)).get().getObjectId().equals(oId1));
+        assertEquals(oId1_modified,
+                index.findStaged(appendChild(pointsName, idP1)).get().getObjectId());
 
     }
 
@@ -184,10 +184,10 @@ public class IndexTest extends RepositoryTestCase {
         assertFalse(index.findStaged(appendChild(pointsName, idP1)).isPresent());
         assertFalse(index.findStaged(appendChild(pointsName, idP2)).isPresent());
 
-        assertEquals(oId1, repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get()
-                .getObjectId());
-        assertEquals(oId2, repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get()
-                .getObjectId());
+        assertEquals(oId1,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2,
+                repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
 
         geogig.command(AddOp.class).call();
 
@@ -276,8 +276,8 @@ public class IndexTest extends RepositoryTestCase {
             RevTree newRepoTree = repo.getTree(newRepoTreeId1);
 
             // check feature1_1 is there
-            assertEquals(oId1_1, repo.getTreeChild(newRepoTree, appendChild(pointsName, idP1))
-                    .get().getObjectId());
+            assertEquals(oId1_1, repo.getTreeChild(newRepoTree, appendChild(pointsName, idP1)).get()
+                    .getObjectId());
 
         }
 
@@ -309,17 +309,20 @@ public class IndexTest extends RepositoryTestCase {
 
             // check feature1_2, feature1_2 and feature2_1
             Optional<Node> treeChild;
-            assertNotNull(treeChild = repo.getTreeChild(newRepoTree, appendChild(pointsName, idP2)));
+            assertNotNull(
+                    treeChild = repo.getTreeChild(newRepoTree, appendChild(pointsName, idP2)));
             assertEquals(oId1_2, treeChild.get().getObjectId());
 
-            assertNotNull(treeChild = repo.getTreeChild(newRepoTree, appendChild(pointsName, idP3)));
+            assertNotNull(
+                    treeChild = repo.getTreeChild(newRepoTree, appendChild(pointsName, idP3)));
             assertEquals(oId1_3, treeChild.get().getObjectId());
 
             assertNotNull(treeChild = repo.getTreeChild(newRepoTree, appendChild(linesName, idL1)));
             assertEquals(oId2_1, treeChild.get().getObjectId());
 
             // as well as feature1_1 from the previous commit
-            assertNotNull(treeChild = repo.getTreeChild(newRepoTree, appendChild(pointsName, idP1)));
+            assertNotNull(
+                    treeChild = repo.getTreeChild(newRepoTree, appendChild(pointsName, idP1)));
             assertEquals(oId1_1, treeChild.get().getObjectId());
         }
 
@@ -328,7 +331,7 @@ public class IndexTest extends RepositoryTestCase {
             RevCommit commit = new CommitBuilder().setTreeId(newRepoTreeId2).setParentIds(parents)
                     .build();
             ObjectId commitId = commit.getId();
-            
+
             repo.objectDatabase().put(commit);
             Optional<Ref> newHead = geogig.command(UpdateRef.class).setName("refs/heads/master")
                     .setNewValue(commitId).call();
@@ -356,8 +359,8 @@ public class IndexTest extends RepositoryTestCase {
             assertFalse(repo.getTreeChild(newRepoTree, appendChild(pointsName, idP3)).isPresent());
             assertFalse(repo.getTreeChild(newRepoTree, appendChild(linesName, idL3)).isPresent());
 
-            assertEquals(oId1_2, repo.getTreeChild(newRepoTree, appendChild(pointsName, idP2))
-                    .get().getObjectId());
+            assertEquals(oId1_2, repo.getTreeChild(newRepoTree, appendChild(pointsName, idP2)).get()
+                    .getObjectId());
             assertEquals(oId2_2, repo.getTreeChild(newRepoTree, appendChild(linesName, idL2)).get()
                     .getObjectId());
         }

@@ -32,7 +32,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
  * needed.
  * <li>{@code unmerged}: If {@code refresh == true} and finds unmerged changes in the index, the
  * default behavior is to error out. This option makes geogig update-index continue anyway.
- * <li> {@code ignoremissing}: Ignores missing features during a {@code refresh}
+ * <li>{@code ignoremissing}: Ignores missing features during a {@code refresh}
  * <li>cacheinfo <mode> <object> <path> Directly insert the specified info into the index.
  * </ul>
  */

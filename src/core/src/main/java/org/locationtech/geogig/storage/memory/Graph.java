@@ -20,7 +20,7 @@ import com.google.common.collect.Maps;
 /**
  * In memory directed graph implementation.
  * <p>
- * This class isn't used outside of {@link HeapGraphDatabase}. 
+ * This class isn't used outside of {@link HeapGraphDatabase}.
  * </p>
  * 
  * @author Justin Deoliveira, Boundless
@@ -28,8 +28,9 @@ import com.google.common.collect.Maps;
  */
 class Graph {
 
-    final Map<ObjectId,Node> nodes;
-    final Map<ObjectId,ObjectId> mappings;
+    final Map<ObjectId, Node> nodes;
+
+    final Map<ObjectId, ObjectId> mappings;
 
     /**
      * Creates an empty graph.
@@ -48,7 +49,7 @@ class Graph {
     }
 
     /**
-     * Looks up a node in the graph by its identifier. 
+     * Looks up a node in the graph by its identifier.
      */
     public Optional<Node> get(ObjectId id) {
         return Optional.fromNullable(nodes.get(id));
@@ -57,7 +58,7 @@ class Graph {
     /**
      * Creates a new node in the graph.
      * 
-     * @param id The id of the new node. 
+     * @param id The id of the new node.
      */
     public Node newNode(ObjectId id) {
         Preconditions.checkNotNull(id);
@@ -81,14 +82,14 @@ class Graph {
     }
 
     /**
-     * Creates an mapping/alias. 
+     * Creates an mapping/alias.
      */
     public void map(ObjectId mapped, ObjectId original) {
         mappings.put(mapped, original);
     }
 
     /**
-     * Returns a mapping, or <code>null</code> if one does not exist. 
+     * Returns a mapping, or <code>null</code> if one does not exist.
      *
      */
     public ObjectId getMapping(ObjectId commitId) {

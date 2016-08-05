@@ -19,7 +19,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig geopkg <command> <args>...}
+ * <li>{@code geogig geopkg <command> <args>...}
  * </ul>
  * 
  * @see GeopkgImport

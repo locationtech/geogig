@@ -400,8 +400,8 @@ class HttpUtils {
                     reader.close();
 
                     if (target != null) {
-                        remoteRef = Optional.of((Ref) new SymRef(refName, new Ref(target, ObjectId
-                                .valueOf(objectId))));
+                        remoteRef = Optional.of((Ref) new SymRef(refName,
+                                new Ref(target, ObjectId.valueOf(objectId))));
                     } else {
                         remoteRef = Optional.of(new Ref(refName, ObjectId.valueOf(objectId)));
                     }

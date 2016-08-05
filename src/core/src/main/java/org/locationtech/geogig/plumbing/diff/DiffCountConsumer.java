@@ -26,7 +26,7 @@ import org.locationtech.geogig.storage.ObjectStore;
  * Use {@link DiffCountConsumer#get() consumer.get()} after {@link PreOrderDiffWalk#walk(Consumer)
  * visitor.walk(consumer)} to get the resulting {@link DiffObjectCount}.
  */
-public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
+public class DiffCountConsumer extends PreOrderDiffWalk.AbstractConsumer {
 
     private final ObjectStore db;
 
@@ -98,16 +98,5 @@ public class DiffCountConsumer implements PreOrderDiffWalk.Consumer {
 
         int numTrees = tree.numTrees();
         return numTrees > 0;
-    }
-
-    @Override
-    public void endTree(NodeRef left, NodeRef right) {
-        // no need to do anything
-    }
-
-    @Override
-    public void endBucket(NodeRef leftp, NodeRef rightp, BucketIndex bucketIndex, Bucket left,
-            Bucket right) {
-        // no need to do anything
     }
 }

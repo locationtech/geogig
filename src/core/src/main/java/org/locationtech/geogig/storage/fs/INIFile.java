@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,6 +39,8 @@ public abstract class INIFile {
      * Timestamp the ini file at latest read
      */
     private long timestamp = 0;
+
+    private WatchService watchService;
 
     /**
      * Content of the ini file
@@ -396,8 +399,8 @@ public abstract class INIFile {
     }
 
     private void write() throws IOException {
-        PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(iniFile()))));
+        PrintWriter writer = new PrintWriter(
+                new BufferedWriter(new OutputStreamWriter(new FileOutputStream(iniFile()))));
         try {
             for (Entry e : data) {
                 e.write(writer);

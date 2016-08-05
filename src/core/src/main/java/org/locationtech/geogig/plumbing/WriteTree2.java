@@ -299,14 +299,15 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
                 this.pathFilters, treePath);
 
         // find the diffs that apply to the path filters
-        final ObjectId leftTreeId = leftTreeRef == null ? RevTreeBuilder.EMPTY_TREE_ID : leftTreeRef
-                .getObjectId();
-        final ObjectId rightTreeId = rightTreeRef == null ? RevTreeBuilder.EMPTY_TREE_ID : rightTreeRef
-                .getObjectId();
+        final ObjectId leftTreeId = leftTreeRef == null ? RevTreeBuilder.EMPTY_TREE_ID
+                : leftTreeRef.getObjectId();
+        final ObjectId rightTreeId = rightTreeRef == null ? RevTreeBuilder.EMPTY_TREE_ID
+                : rightTreeRef.getObjectId();
 
         final RevTree currentLeftTree = repositoryDatabase.getTree(leftTreeId);
 
-        final RevTreeBuilder builder = new RevTreeBuilder(repositoryDatabase, currentLeftTree);
+        final RevTreeBuilder builder = RevTreeBuilder.canonical(repositoryDatabase,
+                currentLeftTree);
 
         // create the new trees taking into account all the nodes
         DiffTree diffs = command(DiffTree.class).setRecursive(false).setReportTrees(false)
@@ -453,11 +454,11 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
             Iterator<NodeRef> empty = Collections.emptyIterator();
             leftTreeRefs = Suppliers.ofInstance(empty);
         } else {
-            leftTreeRefs = command(LsTreeOp.class).setReference(rootTreeId.toString()).setStrategy(
-                    Strategy.DEPTHFIRST_ONLY_TREES);
+            leftTreeRefs = command(LsTreeOp.class).setReference(rootTreeId.toString())
+                    .setStrategy(Strategy.DEPTHFIRST_ONLY_TREES);
         }
-        rightTreeRefs = command(LsTreeOp.class).setReference(rightTreeish).setStrategy(
-                Strategy.DEPTHFIRST_ONLY_TREES);
+        rightTreeRefs = command(LsTreeOp.class).setReference(rightTreeish)
+                .setStrategy(Strategy.DEPTHFIRST_ONLY_TREES);
 
         MutableTree leftTree = MutableTree.createFromRefs(rootTreeId, leftTreeRefs);
         MutableTree rightTree = MutableTree.createFromRefs(stageRootId, rightTreeRefs);

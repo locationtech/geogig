@@ -70,7 +70,7 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
         serializer.write(out, entry);
 
         byte[] array = stream.toByteArray();
-        
+
         DiffEntry read = serializer.read(new DataInputStream(new ByteArrayInputStream(array)));
         assertEquals(entry, read);
     }
@@ -90,10 +90,10 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
 
         DiffEntry entry = new DiffEntry(left, right);
 
-       serializer.write(out, entry);
+        serializer.write(out, entry);
 
         byte[] array = stream.toByteArray();
-      
+
         DiffEntry read = serializer.read(new DataInputStream(new ByteArrayInputStream(array)));
         assertEquals(entry, read);
     }
@@ -116,7 +116,7 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
         serializer.write(out, entry);
 
         byte[] array = stream.toByteArray();
-        
+
         DiffEntry read = serializer.read(new DataInputStream(new ByteArrayInputStream(array)));
         assertEquals(entry, read);
     }
@@ -136,7 +136,7 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
         serializer.write(out, entry);
 
         byte[] array = stream.toByteArray();
-        
+
         DiffEntry read = serializer.read(new DataInputStream(new ByteArrayInputStream(array)));
         assertEquals(entry, read);
     }

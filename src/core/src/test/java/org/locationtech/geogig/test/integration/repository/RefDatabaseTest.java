@@ -135,8 +135,10 @@ public abstract class RefDatabaseTest {
             String value = e.getValue();
             if (key.startsWith(Ref.append(Ref.TRANSACTIONS_PREFIX, "txnamespace"))) {
                 // createRefs added txnamespace1 and txnamespace2
-                assertFalse(key + " is in a transaction namespace, "
-                        + "shall not be returned by getAll()", allOnNullNamespace.containsKey(key));
+                assertFalse(
+                        key + " is in a transaction namespace, "
+                                + "shall not be returned by getAll()",
+                        allOnNullNamespace.containsKey(key));
             } else {
                 assertTrue(key + " not found", allOnNullNamespace.containsKey(key));
                 assertEquals(value, allOnNullNamespace.get(key));
@@ -184,8 +186,9 @@ public abstract class RefDatabaseTest {
                 assertTrue(allOnNamespace.containsKey(key));
                 assertEquals(value, allOnNamespace.get(key));
             } else {
-                assertFalse(key + " is NOT in a transaction namespace " + namespace
-                        + ", shall not be returned by getAll(String namespace)",
+                assertFalse(
+                        key + " is NOT in a transaction namespace " + namespace
+                                + ", shall not be returned by getAll(String namespace)",
                         allOnNamespace.containsKey(key));
             }
         }

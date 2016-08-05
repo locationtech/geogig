@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.datastream;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Integer.toBinaryString;
 import static org.locationtech.geogig.storage.datastream.Varint.readSignedVarLong;
@@ -239,7 +238,6 @@ public class FormatCommonV2 {
 
         final ImmutableList.Builder<Node> featuresBuilder = new ImmutableList.Builder<Node>();
         final ImmutableList.Builder<Node> treesBuilder = new ImmutableList.Builder<Node>();
-        final SortedMap<Integer, Bucket> buckets = new TreeMap<Integer, Bucket>();
 
         final int nFeatures = readUnsignedVarInt(in);
         for (int i = 0; i < nFeatures; i++) {
@@ -253,12 +251,14 @@ public class FormatCommonV2 {
         for (int i = 0; i < nTrees; i++) {
             Node n = readNode(in);
             checkState(RevObject.TYPE.TREE.equals(n.getType()),
-                    "Non-tree node in tree's subtree list.");
+                    "Non-tree node in tree's subtree list %s->%s.", n.getType(), n);
 
             treesBuilder.add(n);
         }
 
         final int nBuckets = readUnsignedVarInt(in);
+        final SortedMap<Integer, Bucket> buckets;
+        buckets = nBuckets > 0 ? new TreeMap<>() : ImmutableSortedMap.of();
         for (int i = 0; i < nBuckets; i++) {
             int bucketIndex = readUnsignedVarInt(in);
             {
@@ -273,16 +273,12 @@ public class FormatCommonV2 {
                 buckets.size());
         ImmutableList<Node> trees = treesBuilder.build();
         ImmutableList<Node> features = featuresBuilder.build();
-        checkArgument(buckets.isEmpty() || (trees.isEmpty() && features.isEmpty()),
-                "Tree has mixed buckets and nodes; this is not supported.");
 
         if (id == null) {
             id = HashObject.hashTree(trees, features, ImmutableSortedMap.copyOf(buckets));
         }
-        if (trees.isEmpty() && features.isEmpty()) {
-            return RevTreeBuilder.createNodeTree(id, size, treeCount, buckets);
-        }
-        return RevTreeBuilder.createLeafTree(id, size, features, trees);
+        RevTree tree = RevTreeBuilder.create(id, size, treeCount, trees, features, buckets);
+        return tree;
     }
 
     public static DiffEntry readDiff(DataInput in) throws IOException {

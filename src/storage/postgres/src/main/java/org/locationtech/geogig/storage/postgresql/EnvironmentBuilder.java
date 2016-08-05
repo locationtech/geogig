@@ -71,11 +71,9 @@ class EnvironmentBuilder {
         portNumber = String.valueOf(port);
 
         List<String> path = Splitter.on('/').omitEmptyStrings().splitToList(repoUrl.getPath());
-        Preconditions
-                .checkArgument(
-                        path.size() >= 2 && path.size() <= 3,
-                        "Path in URI must be like postgresql://<server>[:<port>]/database[/<schema>]/<repoid>?user=<username>&password=<pwd>",
-                        repoUrl);
+        Preconditions.checkArgument(path.size() >= 2 && path.size() <= 3,
+                "Path in URI must be like postgresql://<server>[:<port>]/database[/<schema>]/<repoid>?user=<username>&password=<pwd>",
+                repoUrl);
 
         dbName = path.get(0);
         schema = path.size() == 2 ? "public" : path.get(1);
@@ -124,9 +122,10 @@ class EnvironmentBuilder {
         try {
             port = portNumber == null ? 4532 : Integer.parseInt(portNumber);
         } catch (NumberFormatException nfe) {
-            throw new IllegalArgumentException(String.format(
-                    "'%s' can't be parsed as integer for argument %s", portNumber,
-                    Environment.KEY_DB_PORT), nfe);
+            throw new IllegalArgumentException(
+                    String.format("'%s' can't be parsed as integer for argument %s", portNumber,
+                            Environment.KEY_DB_PORT),
+                    nfe);
         }
         String tablePrefix = props.getProperty("tablePrefix");// only used by tests
         if (tablePrefix != null && tablePrefix.trim().isEmpty()) {

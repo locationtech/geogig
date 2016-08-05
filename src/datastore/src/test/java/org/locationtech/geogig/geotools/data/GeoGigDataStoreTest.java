@@ -71,7 +71,7 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
 
         Iterator<NodeRef> typeTrees = geogig.command(LsTreeOp.class)
                 .setStrategy(Strategy.TREES_ONLY).setReference(head).call();
-        
+
         List<String> typeNames = Lists
                 .newArrayList(Iterators.transform(typeTrees, (ref) -> ref.name()));
         return typeNames;
@@ -330,8 +330,8 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
         dataStore.createSchema(linesType);
 
         Transaction tx = new DefaultTransaction();
-        FeatureWriter<SimpleFeatureType, SimpleFeature> fw = dataStore.getFeatureWriterAppend(
-                linesTypeName.getLocalPart(), tx);
+        FeatureWriter<SimpleFeatureType, SimpleFeature> fw = dataStore
+                .getFeatureWriterAppend(linesTypeName.getLocalPart(), tx);
 
         LineString line = new GeometryBuilder().lineString(0, 0, 1, 1);
         SimpleFeature f = (SimpleFeature) fw.next();
@@ -348,8 +348,8 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
                 .getFeatureSource(linesName);
         assertEquals(1, source.getCount(null));
 
-        FeatureReader<SimpleFeatureType, SimpleFeature> r = dataStore.getFeatureReader(new Query(
-                linesName), Transaction.AUTO_COMMIT);
+        FeatureReader<SimpleFeatureType, SimpleFeature> r = dataStore
+                .getFeatureReader(new Query(linesName), Transaction.AUTO_COMMIT);
         assertTrue(r.hasNext());
 
         f = r.next();

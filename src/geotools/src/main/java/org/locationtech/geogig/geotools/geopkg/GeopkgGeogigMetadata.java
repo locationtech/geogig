@@ -179,8 +179,7 @@ public class GeopkgGeogigMetadata {
         }
     }
 
-    public void createChangeLog(final String targetTableName)
-            throws SQLException {
+    public void createChangeLog(final String targetTableName) throws SQLException {
         final String changeTable = targetTableName + "_changes";
 
         StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS \"").append(changeTable)
@@ -190,7 +189,7 @@ public class GeopkgGeogigMetadata {
             st.execute(log(sql.toString()));
         }
     }
-    
+
     public void populateChangeLog(final String targetTableName,
             Map<String, ChangeType> changedNodes) throws SQLException {
         final String changeTable = targetTableName + "_changes";
@@ -230,16 +229,14 @@ public class GeopkgGeogigMetadata {
         final String fidMappingTable = tableName + "_fids";
 
         StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS \"")
-                .append(fidMappingTable)
-                .append("\" ")
+                .append(fidMappingTable).append("\" ")
                 .append("(gpkg_fid VARCHAR, geogig_fid VARCHAR, PRIMARY KEY(gpkg_fid))");
 
         cx.setAutoCommit(false);
-        
+
         StringBuilder insertSql = new StringBuilder("INSERT OR REPLACE INTO \"")
-                .append(fidMappingTable)
-                .append("\" VALUES(?,?);");
-        
+                .append(fidMappingTable).append("\" VALUES(?,?);");
+
         try {
             Statement st = cx.createStatement();
             st.execute(log(sql.toString()));
@@ -289,8 +286,8 @@ public class GeopkgGeogigMetadata {
     }
 
     /**
-     * Gathers table column names and type names according to <a
-     * href="http://www.sqlite.org/pragma.html#pragma_table_info">PRAGMA table_info</a>
+     * Gathers table column names and type names according to
+     * <a href="http://www.sqlite.org/pragma.html#pragma_table_info">PRAGMA table_info</a>
      */
     private LinkedHashMap<String, String> getColumnNamesAndTypes(final String tableName)
             throws SQLException {
@@ -311,8 +308,8 @@ public class GeopkgGeogigMetadata {
     private void createInsertTrigger(final String tableName, final String auditTable,
             final LinkedHashMap<String, String> columnNames) throws SQLException {
 
-        StringBuilder trigger = new StringBuilder(format(
-                "CREATE TRIGGER '%s_insert' AFTER INSERT ON '%s'\n", auditTable, tableName));
+        StringBuilder trigger = new StringBuilder(
+                format("CREATE TRIGGER '%s_insert' AFTER INSERT ON '%s'\n", auditTable, tableName));
         trigger.append("BEGIN\n");
         trigger.append(format("  INSERT INTO '%s' (", auditTable));
         for (String colName : columnNames.keySet()) {
@@ -334,8 +331,8 @@ public class GeopkgGeogigMetadata {
     private void createUpdateTrigger(final String tableName, final String auditTable,
             final LinkedHashMap<String, String> columnNames) throws SQLException {
 
-        StringBuilder trigger = new StringBuilder(format(
-                "CREATE TRIGGER '%s_update' AFTER UPDATE ON '%s'\n", auditTable, tableName));
+        StringBuilder trigger = new StringBuilder(
+                format("CREATE TRIGGER '%s_update' AFTER UPDATE ON '%s'\n", auditTable, tableName));
         trigger.append("BEGIN\n");
         trigger.append(format("  INSERT INTO '%s' (", auditTable));
         for (String colName : columnNames.keySet()) {
@@ -357,13 +354,12 @@ public class GeopkgGeogigMetadata {
     private void createDeleteTrigger(final String tableName, final String auditTable,
             final LinkedHashMap<String, String> columnNames) throws SQLException {
 
-        StringBuilder trigger = new StringBuilder(format(
-                "CREATE TRIGGER '%s_delete' AFTER DELETE ON '%s'\n", auditTable, tableName));
+        StringBuilder trigger = new StringBuilder(
+                format("CREATE TRIGGER '%s_delete' AFTER DELETE ON '%s'\n", auditTable, tableName));
         trigger.append("BEGIN\n");
 
-        final String insert = format(
-                "  INSERT INTO '%s' ('fid', audit_op) VALUES (OLD.fid, %s);\n", auditTable,
-                AUDIT_OP_DELETE);
+        final String insert = format("  INSERT INTO '%s' ('fid', audit_op) VALUES (OLD.fid, %s);\n",
+                auditTable, AUDIT_OP_DELETE);
         trigger.append(insert);
 
         trigger.append("END\n");

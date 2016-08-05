@@ -45,9 +45,9 @@ final class DiffPathFilter {
         this.pathFilters = new ArrayList<String>(new HashSet<String>(filters));
         for (String s : this.pathFilters) {
             if (Strings.isNullOrEmpty(s)) {
-                throw new IllegalArgumentException(String.format(
-                        "Empty or null filters not allowed: %s",
-                        Arrays.toString(this.pathFilters.toArray())));
+                throw new IllegalArgumentException(
+                        String.format("Empty or null filters not allowed: %s",
+                                Arrays.toString(this.pathFilters.toArray())));
             }
         }
     }

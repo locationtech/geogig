@@ -44,7 +44,8 @@ public class PatchSerializationTest extends RepositoryTestCase {
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
-                RevFeatureTypeBuilder.build(modifiedPointsType), RevFeatureTypeBuilder.build(pointsType));
+                RevFeatureTypeBuilder.build(modifiedPointsType),
+                RevFeatureTypeBuilder.build(pointsType));
         patch.addModifiedFeature(featureDiff);
         patch.addFeatureType(RevFeatureTypeBuilder.build(pointsType));
         testPatch(patch);
@@ -58,7 +59,8 @@ public class PatchSerializationTest extends RepositoryTestCase {
         Object newValue = points1B.getProperty("extra").getValue();
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(null, newValue);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
-        FeatureDiff featureDiff = new FeatureDiff(path, map, RevFeatureTypeBuilder.build(pointsType),
+        FeatureDiff featureDiff = new FeatureDiff(path, map,
+                RevFeatureTypeBuilder.build(pointsType),
                 RevFeatureTypeBuilder.build(modifiedPointsType));
         patch.addModifiedFeature(featureDiff);
         patch.addFeatureType(RevFeatureTypeBuilder.build(modifiedPointsType));

@@ -22,7 +22,6 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Function;
@@ -101,7 +100,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
     };
 
     public DepthTreeIterator(final String treePath, final ObjectId metadataId, RevTree tree,
-            ObjectDatabase source, Strategy strategy) {
+            ObjectStore source, Strategy strategy) {
         checkNotNull(treePath);
         checkNotNull(metadataId);
         checkNotNull(tree);
@@ -298,6 +297,8 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             Preconditions.checkArgument(tree.buckets().isPresent());
             buckets = Iterators.filter(tree.buckets().get().values().iterator(), boundsFilter);
             bucketEntries = Collections.emptyIterator();
+            // may it be a mixed tree (having both direct children and buckets)
+            bucketEntries = tree.children();
         }
 
         @Override

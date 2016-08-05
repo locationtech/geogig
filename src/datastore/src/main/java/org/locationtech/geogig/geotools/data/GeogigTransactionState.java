@@ -156,8 +156,8 @@ class GeogigTransactionState implements State {
 
         StringBuilder msg = new StringBuilder();
         if (count > 0) {
-            try (AutoCloseableIterator<DiffEntry> indexDiffs = this.geogigTx.command(DiffIndex.class)
-                    .setMaxDiffs(10L).call()) {
+            try (AutoCloseableIterator<DiffEntry> indexDiffs = this.geogigTx
+                    .command(DiffIndex.class).setMaxDiffs(10L).call()) {
                 while (indexDiffs.hasNext()) {
                     DiffEntry entry = indexDiffs.next();
                     msg.append("\n ").append(entry.changeType().toString().toLowerCase())

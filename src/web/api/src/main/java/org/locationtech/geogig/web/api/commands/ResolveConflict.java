@@ -131,17 +131,15 @@ public class ResolveConflict extends AbstractWebAPICommand {
             Optional<RevTree> parsed = geogig.command(RevObjectParse.class)
                     .setObjectId(parentNode.get().getNode().getObjectId()).call(RevTree.class);
             checkState(parsed.isPresent(), "Parent tree couldn't be found in the repository.");
-            treeBuilder = new RevTreeBuilder(geogig.objectDatabase(), parsed.get());
+            treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase(), parsed.get());
             treeBuilder.remove(node.getNode().getName());
         } else {
-            treeBuilder = new RevTreeBuilder(geogig.objectDatabase());
+            treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase());
         }
         treeBuilder.put(node.getNode());
         ObjectId newTreeId = geogig.command(WriteBack.class)
-                .setAncestor(
-                        new RevTreeBuilder(geogig.objectDatabase(), geogig.workingTree().getTree()))
-                .setChildPath(node.getParentPath()).setTree(treeBuilder.build())
-                .setMetadataId(metadataId).call();
+                .setAncestor(geogig.workingTree().getTree()).setChildPath(node.getParentPath())
+                .setTree(treeBuilder.build()).setMetadataId(metadataId).call();
         geogig.workingTree().updateWorkHead(newTreeId);
 
         AddOp command = geogig.command(AddOp.class);

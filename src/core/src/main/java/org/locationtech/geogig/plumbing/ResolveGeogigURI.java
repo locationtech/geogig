@@ -85,8 +85,8 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
                 }
                 repoLocation = Optional.of(uri);
             } catch (URISyntaxException e) {
-                throw new IllegalStateException("Repository URL is not a valid URI: "
-                        + repoUrl.get(), e);
+                throw new IllegalStateException(
+                        "Repository URL is not a valid URI: " + repoUrl.get(), e);
             }
         } else {
             File pwd = platform().pwd();

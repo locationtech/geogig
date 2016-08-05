@@ -13,12 +13,12 @@ import org.locationtech.geogig.test.integration.OnlineTestProperties;
 
 public class IniOracleProperties extends OnlineTestProperties {
 
-    private static final String[] DEFAULTS = {//
-    "database.host", "192.168.1.99",//
-            "database.port", "1521",//
-            "database.schema", "ORACLE",//
-            "database.database", "ORCL",//
-            "database.user", "oracle",//
+    private static final String[] DEFAULTS = { //
+            "database.host", "192.168.1.99", //
+            "database.port", "1521", //
+            "database.schema", "ORACLE", //
+            "database.database", "ORCL", //
+            "database.user", "oracle", //
             "database.password", "oracle"//
     };
 

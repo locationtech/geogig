@@ -260,8 +260,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                             // Update the repository depth if it is deeper than before.
                             int newDepth;
                             try {
-                                newDepth = repository().graphDatabase().getDepth(
-                                        newRef.getObjectId());
+                                newDepth = repository().graphDatabase()
+                                        .getDepth(newRef.getObjectId());
                             } catch (IllegalStateException e) {
                                 throw new RuntimeException(ref.toString(), e);
                             }
@@ -299,8 +299,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
         if (fullDepth) {
             // The full history was fetched, this is no longer a shallow clone
-            command(ConfigOp.class).setAction(ConfigAction.CONFIG_UNSET)
-                    .setScope(ConfigScope.LOCAL).setName(Repository.DEPTH_CONFIG_KEY).call();
+            command(ConfigOp.class).setAction(ConfigAction.CONFIG_UNSET).setScope(ConfigScope.LOCAL)
+                    .setName(Repository.DEPTH_CONFIG_KEY).call();
         }
 
         progressListener.complete();

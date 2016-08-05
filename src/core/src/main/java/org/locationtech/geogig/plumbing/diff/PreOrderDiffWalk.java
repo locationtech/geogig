@@ -442,10 +442,13 @@ public class PreOrderDiffWalk {
             if (consumer.tree(leftNode, rightNode)) {
                 RevTree left;
                 RevTree right;
-                left = leftNode == null || RevTreeBuilder.EMPTY_TREE_ID.equals(leftNode.getObjectId()) ? RevTreeBuilder.EMPTY
-                        : leftSource.getTree(leftNode.getObjectId());
-                right = rightNode == null || RevTreeBuilder.EMPTY_TREE_ID.equals(rightNode.getObjectId()) ? RevTreeBuilder.EMPTY
-                        : rightSource.getTree(rightNode.getObjectId());
+                left = leftNode == null
+                        || RevTreeBuilder.EMPTY_TREE_ID.equals(leftNode.getObjectId())
+                                ? RevTreeBuilder.EMPTY : leftSource.getTree(leftNode.getObjectId());
+                right = rightNode == null
+                        || RevTreeBuilder.EMPTY_TREE_ID.equals(rightNode.getObjectId())
+                                ? RevTreeBuilder.EMPTY
+                                : rightSource.getTree(rightNode.getObjectId());
 
                 TraverseTreeContents traverseTreeContents = new TraverseTreeContents(consumer,
                         leftSource, rightSource, leftNode, rightNode, left, right,
@@ -690,8 +693,10 @@ public class PreOrderDiffWalk {
 
                 if (consumer.bucket(leftParent, rightParent, index, lbucket, rbucket)) {
 
-                    ltree = lbucket == null ? RevTreeBuilder.EMPTY : trees.get(lbucket.getObjectId());
-                    rtree = rbucket == null ? RevTreeBuilder.EMPTY : trees.get(rbucket.getObjectId());
+                    ltree = lbucket == null ? RevTreeBuilder.EMPTY
+                            : trees.get(lbucket.getObjectId());
+                    rtree = rbucket == null ? RevTreeBuilder.EMPTY
+                            : trees.get(rbucket.getObjectId());
 
                     TraverseTreeContents task = traverseTreeContents(leftParent, rightParent, ltree,
                             rtree, index);
@@ -1062,6 +1067,36 @@ public class PreOrderDiffWalk {
         public abstract void endBucket(NodeRef leftParent, NodeRef rightParent,
                 final BucketIndex bucketIndex, @Nullable final Bucket left,
                 @Nullable final Bucket right);
+    }
+
+    public static abstract class AbstractConsumer implements Consumer {
+        @Override
+        public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            return true;
+        }
+
+        @Override
+        public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+            return true;
+        }
+
+        @Override
+        public void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
+            //
+        }
+
+        @Override
+        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                @Nullable Bucket left, @Nullable Bucket right) {
+            return true;
+        }
+
+        @Override
+        public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                @Nullable Bucket left, @Nullable Bucket right) {
+            //
+        }
+
     }
 
     /**

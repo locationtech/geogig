@@ -107,7 +107,7 @@ public class OracleImportTest {
     public void testImportException() throws Exception {
 
         GeogigCLI mockCli = spy(cli);
-        
+
         when(mockCli.getConsole()).thenThrow(new MockitoException("Exception"));
         OracleImport importCommand = new OracleImport();
         importCommand.all = true;

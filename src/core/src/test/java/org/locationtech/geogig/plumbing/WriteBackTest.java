@@ -26,6 +26,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.MemoryModule;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
@@ -56,8 +57,8 @@ public class WriteBackTest extends Assert {
     @Test
     public void testSimple() {
 
-        RevTreeBuilder oldRoot = new RevTreeBuilder(odb);
-        RevTree tree = new RevTreeBuilder(odb).put(blob("blob")).build();
+        RevTree oldRoot = RevTreeBuilder.EMPTY;
+        RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
         ObjectId newRootId = writeBack.setAncestor(oldRoot).setChildPath("subtree").setTree(tree)
                 .call();
 
@@ -68,9 +69,9 @@ public class WriteBackTest extends Assert {
     @Test
     public void testSingleLevel() {
 
-        RevTreeBuilder oldRoot = new RevTreeBuilder(odb);
+        RevTree oldRoot = RevTreeBuilder.EMPTY;
 
-        RevTree tree = new RevTreeBuilder(odb).put(blob("blob")).build();
+        RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
         ObjectId newRootId = writeBack.setAncestor(oldRoot).setChildPath("level1").setTree(tree)
                 .call();
@@ -88,9 +89,9 @@ public class WriteBackTest extends Assert {
     @Test
     public void testSingleNested() {
 
-        RevTreeBuilder oldRoot = new RevTreeBuilder(odb);
+        RevTree oldRoot = RevTreeBuilder.EMPTY;
 
-        RevTree tree = new RevTreeBuilder(odb).put(blob("blob")).build();
+        RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
         ObjectId newRootId = writeBack.setAncestor(oldRoot).setChildPath("level1/level2")
                 .setTree(tree).call();
@@ -111,15 +112,15 @@ public class WriteBackTest extends Assert {
     @Test
     public void testSiblingsSingleLevel() {
 
-        RevTreeBuilder ancestor = new RevTreeBuilder(odb);
+        RevTree ancestor = RevTreeBuilder.EMPTY;
 
-        RevTree tree1 = new RevTreeBuilder(odb).put(blob("blob")).build();
-        RevTree tree2 = new RevTreeBuilder(odb).put(blob("blob")).build();
+        RevTree tree1 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
+        RevTree tree2 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
         ObjectId newRootId1 = writeBack.setAncestor(ancestor).setChildPath("subtree1")
                 .setTree(tree1).call();
 
-        ancestor = new RevTreeBuilder(odb, odb.getTree(newRootId1));
+        ancestor = odb.getTree(newRootId1);
         ObjectId newRootId2 = writeBack.setAncestor(ancestor).setChildPath("subtree2")
                 .setTree(tree2).call();
 
@@ -134,16 +135,17 @@ public class WriteBackTest extends Assert {
     @Test
     public void testSiblingsNested() {
 
-        RevTreeBuilder oldRoot = new RevTreeBuilder(odb);
+        RevTree tree1 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
+        RevTree tree2 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
-        RevTree tree1 = new RevTreeBuilder(odb).put(blob("blob")).build();
-        RevTree tree2 = new RevTreeBuilder(odb).put(blob("blob")).build();
-
+        Preconditions.checkState(odb.isOpen());
+        RevTree oldRoot = RevTreeBuilder.EMPTY;
         ObjectId newRootId1 = writeBack.setAncestor(oldRoot).setChildPath("subtree1/level2")
                 .setTree(tree1).call();
 
-        RevTreeBuilder newRevTreeBuilder = new RevTreeBuilder(odb, odb.getTree(newRootId1));
-        ObjectId newRootId2 = writeBack.setAncestor(newRevTreeBuilder)
+        Preconditions.checkState(odb.isOpen());
+        RevTree newRevTree = odb.getTree(newRootId1);
+        ObjectId newRootId2 = writeBack.setAncestor(newRevTree)
                 .setChildPath("subtree2/level2/level3").setTree(tree2).call();
 
         // created the intermediate tree node?
@@ -161,9 +163,9 @@ public class WriteBackTest extends Assert {
     @Test
     public void testPreserveMetadataId() {
 
-        RevTreeBuilder oldRoot = new RevTreeBuilder(odb);
+        RevTree oldRoot = RevTreeBuilder.EMPTY;
 
-        RevTree tree = new RevTreeBuilder(odb).put(blob("blob")).build();
+        RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
         final ObjectId treeMetadataId = ObjectId.forString("fakeMdId");
 

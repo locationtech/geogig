@@ -225,16 +225,9 @@ public class FormatCommonV1 {
 
         ImmutableList<Node> trees = treesBuilder.build();
         ImmutableList<Node> features = featuresBuilder.build();
-        if (nTrees == 0 && nFeatures == 0 && nBuckets == 0) {
-            return RevTreeBuilder.EMPTY;
-        } else if (trees.isEmpty() && features.isEmpty()) {
-            return RevTreeBuilder.createNodeTree(id, size, treeCount, buckets);
-        } else if (buckets.isEmpty()) {
-            return RevTreeBuilder.createLeafTree(id, size, features, trees);
-        } else {
-            throw new IllegalArgumentException(
-                    "Tree has mixed buckets and nodes; this is not supported.");
-        }
+
+        RevTree tree = RevTreeBuilder.create(id, size, treeCount, trees, features, buckets);
+        return tree;
     }
 
     public static Node readNode(DataInput in) throws IOException {

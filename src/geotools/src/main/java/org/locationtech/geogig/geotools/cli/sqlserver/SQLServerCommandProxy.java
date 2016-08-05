@@ -19,7 +19,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig sqlserver <command> <args>...}
+ * <li>{@code geogig sqlserver <command> <args>...}
  * </ul>
  * 
  * @see SQLServerImport

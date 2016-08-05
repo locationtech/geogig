@@ -33,8 +33,7 @@ public class PGDiffOpTest extends DiffOpTest {
 
         Hints hints = new Hints();
         hints.set(Hints.REPOSITORY_URL, repoUrl);
-        return Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new HintsModule(hints),
-                        new PGStorageModule())).getInstance(Context.class);
+        return Guice.createInjector(Modules.override(new GeogigModule())
+                .with(new HintsModule(hints), new PGStorageModule())).getInstance(Context.class);
     }
 }

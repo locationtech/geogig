@@ -116,11 +116,9 @@ public class MapToStringConverterFactory implements ConverterFactory {
                 String value = entry.getValue();
 
                 int openIdex = value.indexOf('<');
-                Preconditions
-                        .checkArgument(
-                                openIdex > 0 && value.endsWith(">"),
-                                "Invalid value format for key %s: '%s'. Expected: {FieldType}<{converted value}>",
-                                key, value);
+                Preconditions.checkArgument(openIdex > 0 && value.endsWith(">"),
+                        "Invalid value format for key %s: '%s'. Expected: {FieldType}<{converted value}>",
+                        key, value);
                 String valueType = value.substring(0, openIdex);
                 String stringValue = value.substring(openIdex + 1, value.length() - 1);
 
@@ -128,9 +126,10 @@ public class MapToStringConverterFactory implements ConverterFactory {
                 try {
                     valueFieldType = FieldType.valueOf(valueType);
                 } catch (IllegalArgumentException e) {
-                    throw new IllegalArgumentException(String.format(
-                            "Invalid field type '%s' for key '%s', value '%s;", valueType, key,
-                            value), e);
+                    throw new IllegalArgumentException(
+                            String.format("Invalid field type '%s' for key '%s', value '%s;",
+                                    valueType, key, value),
+                            e);
                 }
                 Class<?> valueBinding = valueFieldType.getBinding();
 

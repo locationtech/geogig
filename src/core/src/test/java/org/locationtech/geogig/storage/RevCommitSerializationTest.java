@@ -88,9 +88,9 @@ public abstract class RevCommitSerializationTest extends Assert {
 
     @Test
     public void testCommitSerializationMultipleParents() throws IOException {
-        testCommit.setParentIds(ImmutableList.of(ObjectId.forString("parent1"),
-                ObjectId.forString("parent2"), ObjectId.forString("parent3"),
-                ObjectId.forString("parent4")));
+        testCommit.setParentIds(
+                ImmutableList.of(ObjectId.forString("parent1"), ObjectId.forString("parent2"),
+                        ObjectId.forString("parent3"), ObjectId.forString("parent4")));
         RevCommit commit = testCommit.build();
         testCommit(commit);
     }
@@ -100,7 +100,8 @@ public abstract class RevCommitSerializationTest extends Assert {
 
         serializer.write(commit, out);
 
-        RevObject read = serializer.read(commit.getId(), new ByteArrayInputStream(out.toByteArray()));
+        RevObject read = serializer.read(commit.getId(),
+                new ByteArrayInputStream(out.toByteArray()));
         assertEquals(commit, read);
     }
 

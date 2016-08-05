@@ -187,8 +187,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         function = new FetchFunction(context.objectDatabase(), schema);
         final int fetchSize = 1000;
         Iterator<List<NodeRef>> partition = Iterators.partition(featureRefs, fetchSize);
-        Iterator<Iterator<SimpleFeature>> transformed = Iterators.transform(partition,
-                function);
+        Iterator<Iterator<SimpleFeature>> transformed = Iterators.transform(partition, function);
 
         // final Iterator<SimpleFeature> featuresUnfiltered = transform(featureRefs,
         // refToFeature);
@@ -216,8 +215,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         }
     }
 
-    private AutoCloseableIterator<NodeRef> toFeatureRefs(final AutoCloseableIterator<DiffEntry> diffs,
-            final ChangeType changeType) {
+    private AutoCloseableIterator<NodeRef> toFeatureRefs(
+            final AutoCloseableIterator<DiffEntry> diffs, final ChangeType changeType) {
 
         return AutoCloseableIterator.transform(diffs, (e) -> {
             if (e.isAdd()) {

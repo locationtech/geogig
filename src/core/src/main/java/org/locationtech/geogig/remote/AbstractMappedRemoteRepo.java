@@ -211,7 +211,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
                 ObjectStore objectDatabase = localRepository.objectDatabase();
                 graphDatabase.put(commit.getId(), commit.getParentIds());
 
-            RevTree rootTree = RevTreeBuilder.EMPTY;
+                RevTree rootTree = RevTreeBuilder.EMPTY;
 
                 if (commit.getParentIds().size() > 0) {
                     // Map this commit to the last "sparse" commit in my ancestry

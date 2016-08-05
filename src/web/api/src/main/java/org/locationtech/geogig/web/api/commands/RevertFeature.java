@@ -201,18 +201,17 @@ public class RevertFeature extends AbstractWebAPICommand {
             Optional<RevTree> parsed = geogig.command(RevObjectParse.class)
                     .setObjectId(parentNode.get().getNode().getObjectId()).call(RevTree.class);
             checkState(parsed.isPresent(), "Parent tree couldn't be found in the repository.");
-            treeBuilder = new RevTreeBuilder(geogig.objectDatabase(), parsed.get());
+            treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase(), parsed.get());
             treeBuilder.remove(node.get().getNode().getName());
         } else {
-            treeBuilder = new RevTreeBuilder(geogig.objectDatabase());
+            treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase());
         }
 
         // put the old feature into the new tree
         if (!delete) {
             treeBuilder.put(node.get().getNode());
         }
-        ObjectId newTreeId = geogig.command(WriteBack.class)
-                .setAncestor(new RevTreeBuilder(geogig.objectDatabase(), newTree.get()))
+        ObjectId newTreeId = geogig.command(WriteBack.class).setAncestor(newTree.get())
                 .setChildPath(node.get().getParentPath()).setTree(treeBuilder.build())
                 .setMetadataId(metadataId).call();
 

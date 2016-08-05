@@ -23,13 +23,11 @@ public final class CanonicalNodeOrder extends Ordering<Node> implements Serializ
 
     private static final long serialVersionUID = -2860468212633430368L;
 
-    private final CanonicalNodeNameOrder nameOrder = new CanonicalNodeNameOrder();
-
     public static final CanonicalNodeOrder INSTANCE = new CanonicalNodeOrder();
 
     @Override
     public int compare(Node nr1, Node nr2) {
-        return nameOrder.compare(nr1.getName(), nr2.getName());
+        return CanonicalNodeNameOrder.INSTANCE.compare(nr1.getName(), nr2.getName());
     }
 
     /**

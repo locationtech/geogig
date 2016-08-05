@@ -37,7 +37,7 @@ public class IniRepositoryFilter extends RepositoryFilter {
         final File f = new File(filterFile);
         if (f.exists()) {
             try {
-                final INIFile ini = new INIFile() { 
+                final INIFile ini = new INIFile() {
                     @Override
                     public File iniFile() {
                         return f;

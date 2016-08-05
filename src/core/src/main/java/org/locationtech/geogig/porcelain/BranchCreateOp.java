@@ -92,7 +92,7 @@ public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
         return this;
     }
 
-    protected  Ref _call() {
+    protected Ref _call() {
         checkState(branchName != null, "branch name was not provided");
         final String branchRefPath = Ref.append(Ref.HEADS_PREFIX, branchName);
         checkArgument(force || !command(RefParse.class).setName(branchRefPath).call().isPresent(),
@@ -124,18 +124,18 @@ public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
         Optional<Ref> ref = command(RefParse.class).setName(branchOrigin).call();
         if (ref.isPresent()) {
             ObjectId commitId = ref.get().getObjectId();
-            checkArgument(!commitId.isNull(), branchOrigin
-                    + " has no commits yet, branch cannot be created.");
+            checkArgument(!commitId.isNull(),
+                    branchOrigin + " has no commits yet, branch cannot be created.");
             return commitId;
         }
         Optional<ObjectId> objectId = command(RevParse.class).setRefSpec(branchOrigin).call();
-        checkArgument(objectId.isPresent(), branchOrigin
-                + " does not resolve to a repository object");
+        checkArgument(objectId.isPresent(),
+                branchOrigin + " does not resolve to a repository object");
 
         ObjectId commitId = objectId.get();
         TYPE objectType = command(ResolveObjectType.class).setObjectId(commitId).call();
-        checkArgument(TYPE.COMMIT.equals(objectType), branchOrigin
-                + " does not resolve to a commit: " + objectType);
+        checkArgument(TYPE.COMMIT.equals(objectType),
+                branchOrigin + " does not resolve to a commit: " + objectType);
 
         return commitId;
     }

@@ -140,11 +140,9 @@ public class RevParseTest extends RepositoryTestCase {
 
         objectId = geogig.command(RevParse.class).setRefSpec(ObjectId.NULL.toString()).call();
         assertEquals(ObjectId.NULL, objectId.get());
-        objectId = geogig
-                .command(RevParse.class)
-                .setRefSpec(
-                        ObjectId.NULL.toString().substring(0,
-                                ObjectId.NULL.toString().length() - 10)).call();
+        objectId = geogig.command(RevParse.class).setRefSpec(
+                ObjectId.NULL.toString().substring(0, ObjectId.NULL.toString().length() - 10))
+                .call();
         assertEquals(ObjectId.NULL, objectId.get());
 
         objectId = geogig.command(RevParse.class).setRefSpec(commitId1.toString() + "~1").call();

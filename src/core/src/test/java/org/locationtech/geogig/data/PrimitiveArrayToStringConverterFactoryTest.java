@@ -35,14 +35,15 @@ public class PrimitiveArrayToStringConverterFactoryTest {
     @Test
     public void testShort() {
         roundtripTest(new short[0]);
-        roundtripTest(new short[] { Short.MIN_VALUE, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, Short.MAX_VALUE });
+        roundtripTest(
+                new short[] { Short.MIN_VALUE, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, Short.MAX_VALUE });
     }
 
     @Test
     public void testInt() {
         roundtripTest(new int[0]);
-        roundtripTest(new int[] { Integer.MIN_VALUE, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8,
-                Integer.MAX_VALUE });
+        roundtripTest(
+                new int[] { Integer.MIN_VALUE, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, Integer.MAX_VALUE });
     }
 
     @Test
@@ -61,9 +62,8 @@ public class PrimitiveArrayToStringConverterFactoryTest {
     @Test
     public void testDouble() {
         roundtripTest(new double[0]);
-        roundtripTest(new double[] { Double.NaN, Double.NEGATIVE_INFINITY,
-                Double.POSITIVE_INFINITY, Double.MIN_VALUE, -1.1, 0, 1.1, 2.2, 3.3,
-                Double.MAX_VALUE });
+        roundtripTest(new double[] { Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                Double.MIN_VALUE, -1.1, 0, 1.1, 2.2, 3.3, Double.MAX_VALUE });
     }
 
     private void roundtripTest(Object value) {

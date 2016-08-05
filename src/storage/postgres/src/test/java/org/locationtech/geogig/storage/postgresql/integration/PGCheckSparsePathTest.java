@@ -20,8 +20,8 @@ import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
-public class PGCheckSparsePathTest extends
-        org.locationtech.geogig.test.integration.CheckSparsePathTest {
+public class PGCheckSparsePathTest
+        extends org.locationtech.geogig.test.integration.CheckSparsePathTest {
 
     @Rule
     public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
@@ -33,8 +33,7 @@ public class PGCheckSparsePathTest extends
 
         Hints hints = new Hints();
         hints.set(Hints.REPOSITORY_URL, repoUrl);
-        return Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new HintsModule(hints),
-                        new PGStorageModule())).getInstance(Context.class);
+        return Guice.createInjector(Modules.override(new GeogigModule())
+                .with(new HintsModule(hints), new PGStorageModule())).getInstance(Context.class);
     }
 }

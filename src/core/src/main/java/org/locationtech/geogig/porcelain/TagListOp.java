@@ -29,8 +29,8 @@ public class TagListOp extends AbstractGeoGigOp<ImmutableList<RevTag>> {
 
     @Override
     protected ImmutableList<RevTag> _call() {
-        List<Ref> refs = Lists.newArrayList(command(ForEachRef.class).setPrefixFilter(
-                Ref.TAGS_PREFIX).call());
+        List<Ref> refs = Lists
+                .newArrayList(command(ForEachRef.class).setPrefixFilter(Ref.TAGS_PREFIX).call());
         List<RevTag> list = Lists.newArrayList();
         for (Ref ref : refs) {
             Optional<RevTag> tag = command(RevObjectParse.class).setObjectId(ref.getObjectId())

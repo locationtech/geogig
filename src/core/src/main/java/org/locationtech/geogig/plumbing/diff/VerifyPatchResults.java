@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-
 /**
  * A class to contains the results of a verify patch operation. It contains two patches, one with
  * the changes that can be applied on the current working tree, and another one with the changes

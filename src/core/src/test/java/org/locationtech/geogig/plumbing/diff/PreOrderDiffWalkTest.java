@@ -611,13 +611,7 @@ public class PreOrderDiffWalkTest {
     private long testBucketLeafPerf(final RevTree left, final int rightsize,
             final int overlapCount) {
 
-        consumer = new Consumer() {
-
-            @Override
-            public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
-                return true;
-            }
-
+        consumer = new PreOrderDiffWalk.AbstractConsumer() {
             @Override
             public boolean bucket(NodeRef leftParent, NodeRef rigthParent, BucketIndex bucketIndex,
                     @Nullable Bucket left, @Nullable Bucket right) {
@@ -627,15 +621,6 @@ public class PreOrderDiffWalkTest {
                     throw new IllegalStateException();
                 }
                 return true;
-            }
-
-            @Override
-            public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
-                return true;
-            }
-
-            @Override
-            public void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
             }
 
             @Override
@@ -737,18 +722,7 @@ public class PreOrderDiffWalkTest {
 
         final AtomicInteger maxDepth = new AtomicInteger();
 
-        visitor.walk(new Consumer() {
-
-            @Override
-            public boolean tree(NodeRef left, NodeRef right) {
-                return true;
-            }
-
-            @Override
-            public boolean feature(NodeRef left, NodeRef right) {
-                return true;
-            }
-
+        visitor.walk(new PreOrderDiffWalk.AbstractConsumer() {
             @Override
             public boolean bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
                     Bucket left, Bucket right) {
@@ -757,15 +731,6 @@ public class PreOrderDiffWalkTest {
                                                                         // number of levels, not the
                                                                         // zero-based level index
                 return true;
-            }
-
-            @Override
-            public void endTree(NodeRef left, NodeRef right) {
-            }
-
-            @Override
-            public void endBucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
-                    Bucket left, Bucket right) {
             }
         });
         return maxDepth.get();
@@ -846,7 +811,7 @@ public class PreOrderDiffWalkTest {
         ArrayList<NodeRef> leftFeatureNodes = Lists.newArrayList(new DepthTreeIterator("",
                 ObjectId.NULL, left, leftSource, Strategy.RECURSIVE_FEATURES_ONLY));
 
-        RevTreeBuilder rightBuilder = new RevTreeBuilder(rightSource);
+        RevTreeBuilder rightBuilder = RevTreeBuilder.canonical(rightSource);
 
         Map<String, Node> rightChanges = new HashMap<>();
         Collections.shuffle(leftFeatureNodes);
@@ -928,7 +893,7 @@ public class PreOrderDiffWalkTest {
         assertEquals(3, abortedAtCount);
     }
 
-    private static final class FeatureCountingConsumer implements Consumer {
+    private static final class FeatureCountingConsumer extends PreOrderDiffWalk.AbstractConsumer {
 
         final AtomicLong count = new AtomicLong();
 
@@ -937,29 +902,6 @@ public class PreOrderDiffWalkTest {
             count.incrementAndGet();
             return true;
         }
-
-        @Override
-        public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
-            return true;
-        }
-
-        @Override
-        public void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
-        }
-
-        @Override
-        public boolean bucket(final NodeRef leftParent, final NodeRef rightParent,
-                final BucketIndex bucketIndex, @Nullable final Bucket left,
-                @Nullable final Bucket right) {
-            return true;
-        }
-
-        @Override
-        public void endBucket(NodeRef leftParent, NodeRef rightParent,
-                final BucketIndex bucketIndex, @Nullable final Bucket left,
-                @Nullable final Bucket right) {
-        }
-
     }
 
     private static Matcher<BucketIndex> depthMatches(final int expectedDepth) {

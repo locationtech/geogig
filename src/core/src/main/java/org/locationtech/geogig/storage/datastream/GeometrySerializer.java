@@ -67,7 +67,7 @@ class GeometrySerializer implements ValueSerializer {
         abstract Geometry read(DataInput in) throws IOException;
     }
 
-    private static GeometryEncoder[] ENCODERS = new GeometryEncoder[] {//
+    private static GeometryEncoder[] ENCODERS = new GeometryEncoder[] { //
 
     };
 

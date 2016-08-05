@@ -41,7 +41,7 @@ public class FindFeatureTypeTrees extends AbstractGeoGigOp<List<NodeRef>> {
     }
 
     @Override
-    protected  List<NodeRef> _call() {
+    protected List<NodeRef> _call() {
         Preconditions.checkNotNull(refSpec, "refSpec was not provided");
         Iterator<NodeRef> allTrees;
         try {

@@ -53,7 +53,8 @@ class ObjectDatabasePutInterceptor implements Decorator {
 
         private Provider<GraphDatabase> graphDb;
 
-        public GraphUpdatingObjectDatabase(Provider<GraphDatabase> graphDb, ObjectDatabase subject) {
+        public GraphUpdatingObjectDatabase(Provider<GraphDatabase> graphDb,
+                ObjectDatabase subject) {
             super(Providers.of(subject));
             this.graphDb = graphDb;
         }

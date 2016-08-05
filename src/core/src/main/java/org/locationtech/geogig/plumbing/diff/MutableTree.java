@@ -54,8 +54,8 @@ public class MutableTree implements Cloneable {
         @Override
         public int compare(NodeRef o1, NodeRef o2) {
 
-            int depth = Integer.valueOf(depth(o1.path())).compareTo(
-                    Integer.valueOf(depth(o2.path())));
+            int depth = Integer.valueOf(depth(o1.path()))
+                    .compareTo(Integer.valueOf(depth(o2.path())));
 
             if (depth != 0) {
                 return depth;
@@ -268,7 +268,7 @@ public class MutableTree implements Cloneable {
         final ObjectId nodeId = node.getObjectId();
         final RevTree tree = origin.getTree(nodeId);
 
-        RevTreeBuilder builder = new RevTreeBuilder(target, tree).clearSubtrees();
+        RevTreeBuilder builder = RevTreeBuilder.canonical(target, tree);// .clearSubtrees();
 
         for (MutableTree childTree : this.childTrees.values()) {
             String name;

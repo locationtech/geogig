@@ -128,7 +128,6 @@
     <hikaricp.version>2.4.2</hikaricp.version>    
 
     <test.maxHeapSize>512M</test.maxHeapSize>
-    <test.tmpDir>${project.build.directory}</test.tmpDir> <!-- use the provided tmp dir for tests, defaults to project's target/ directory -->
     <maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
     <build.timestamp>${maven.build.timestamp}</build.timestamp>
     <online.skip.pattern>**/*OnlineTest.java</online.skip.pattern>
@@ -462,9 +461,6 @@
           </excludes>
           <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
           <reuseForks>true</reuseForks>
-          <systemPropertyVariables>
-            <java.io.tmpdir>${test.tmpDir}</java.io.tmpdir>
-          </systemPropertyVariables>
         </configuration>
       </plugin>
       <plugin>
@@ -589,9 +585,6 @@
               </excludes>
               <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
               <reuseForks>true</reuseForks>
-              <systemPropertyVariables>
-                <java.io.tmpdir>${test.tmpDir}</java.io.tmpdir>
-              </systemPropertyVariables>
             </configuration>
           </plugin>
         </plugins>

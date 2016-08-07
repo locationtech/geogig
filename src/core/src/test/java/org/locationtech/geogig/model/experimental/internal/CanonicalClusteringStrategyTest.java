@@ -35,13 +35,14 @@ import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.LegacyTreeBuilder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
@@ -86,7 +87,7 @@ public abstract class CanonicalClusteringStrategyTest {
 
     @Test
     public void buildSimpleDAGFromScratch() {
-        strategy = canonical.create(RevTreeBuilder.EMPTY, storageProvider);
+        strategy = canonical.create(RevTree.EMPTY, storageProvider);
         for (int i = 0; i < strategy.normalizedSizeLimit(0); i++) {
             Node node = featureNode("f", i);
             strategy.put(node);
@@ -101,7 +102,7 @@ public abstract class CanonicalClusteringStrategyTest {
 
     @Test
     public void buildSplittedDAGFromScratch() {
-        strategy = canonical.create(RevTreeBuilder.EMPTY, storageProvider);
+        strategy = canonical.create(RevTree.EMPTY, storageProvider);
 
         final int numNodes = 2 * strategy.normalizedSizeLimit(0);
 
@@ -251,7 +252,7 @@ public abstract class CanonicalClusteringStrategyTest {
     public void randomEdits() throws Exception {
         final int numEntries = 20 * CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1500;
 
-        strategy = canonical.create(RevTreeBuilder.EMPTY, storageProvider);
+        strategy = canonical.create(RevTree.EMPTY, storageProvider);
 
         List<Node> nodes = featureNodes(0, numEntries, false);
         for (Node n : nodes) {
@@ -372,7 +373,7 @@ public abstract class CanonicalClusteringStrategyTest {
 
     @Test
     public void nodeReplacedOnEdits() {
-        strategy = canonical.create(RevTreeBuilder.EMPTY, storageProvider);
+        strategy = canonical.create(RevTree.EMPTY, storageProvider);
 
         final int numNodes = 2 * strategy.normalizedSizeLimit(0);
 
@@ -428,7 +429,7 @@ public abstract class CanonicalClusteringStrategyTest {
                 original.add(it.next().getNode());
             }
             for (Node n : original) {
-                ObjectId oid = ObjectId.forString(n.toString());
+                ObjectId oid = RevObjects.forString(n.toString());
                 Node edit = Node.create(n.getName(), oid, ObjectId.NULL, TYPE.FEATURE,
                         n.bounds().orNull());
                 edited.add(edit);

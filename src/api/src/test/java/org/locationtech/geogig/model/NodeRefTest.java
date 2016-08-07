@@ -14,15 +14,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.locationtech.geogig.model.NodeRef.allPathsTo;
-import static org.locationtech.geogig.model.NodeRef.isChild;
-import static org.locationtech.geogig.model.NodeRef.isDirectChild;
-import static org.locationtech.geogig.model.NodeRef.parentPath;
+import static org.locationtech.geogig.repository.NodeRef.allPathsTo;
+import static org.locationtech.geogig.repository.NodeRef.isChild;
+import static org.locationtech.geogig.repository.NodeRef.isDirectChild;
+import static org.locationtech.geogig.repository.NodeRef.parentPath;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -162,7 +163,7 @@ public class NodeRefTest {
 
     @Test
     public void testAccessorsAndConstructors() {
-        Node node = Node.create("Points.1", ObjectId.forString("Points stuff"), ObjectId.NULL,
+        Node node = Node.create("Points.1", RevObjects.forString("Points stuff"), ObjectId.NULL,
                 TYPE.FEATURE, null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
         assertEquals(node.getMetadataId(), Optional.absent());
@@ -176,14 +177,14 @@ public class NodeRefTest {
 
     @Test
     public void testIsEqual() {
-        Node node = Node.create("Points.1", ObjectId.forString("Points stuff"), ObjectId.NULL,
+        Node node = Node.create("Points.1", RevObjects.forString("Points stuff"), ObjectId.NULL,
                 TYPE.FEATURE, null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
         assertFalse(nodeRef.equals(node));
-        Node node2 = Node.create("Lines.1", ObjectId.forString("Lines stuff"), ObjectId.NULL,
+        Node node2 = Node.create("Lines.1", RevObjects.forString("Lines stuff"), ObjectId.NULL,
                 TYPE.FEATURE, null);
         NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
-        NodeRef nodeRef3 = new NodeRef(node2, "Lines", ObjectId.forString("Lines stuff"));
+        NodeRef nodeRef3 = new NodeRef(node2, "Lines", RevObjects.forString("Lines stuff"));
         assertFalse(nodeRef.equals(nodeRef2));
         assertTrue(nodeRef.equals(nodeRef));
         assertFalse(nodeRef2.equals(nodeRef3));
@@ -191,7 +192,7 @@ public class NodeRefTest {
 
     @Test
     public void testNodeAndNodeRefToString() {
-        Node node = Node.create("Points.1", ObjectId.forString("Points stuff"), ObjectId.NULL,
+        Node node = Node.create("Points.1", RevObjects.forString("Points stuff"), ObjectId.NULL,
                 TYPE.FEATURE, null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
 
@@ -203,11 +204,11 @@ public class NodeRefTest {
 
     @Test
     public void testCompareTo() {
-        Node node = Node.create("Points.1", ObjectId.forString("Points stuff"), ObjectId.NULL,
+        Node node = Node.create("Points.1", RevObjects.forString("Points stuff"), ObjectId.NULL,
                 TYPE.FEATURE, null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
         assertFalse(nodeRef.equals(node));
-        Node node2 = Node.create("Lines.1", ObjectId.forString("Lines stuff"), ObjectId.NULL,
+        Node node2 = Node.create("Lines.1", RevObjects.forString("Lines stuff"), ObjectId.NULL,
                 TYPE.FEATURE, null);
         NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
         assertTrue(nodeRef.compareTo(nodeRef2) > 0);

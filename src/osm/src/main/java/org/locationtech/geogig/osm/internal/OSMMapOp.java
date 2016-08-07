@@ -18,7 +18,6 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.data.FeatureBuilder;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureTypeBuilder;
@@ -32,6 +31,7 @@ import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Function;

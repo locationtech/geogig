@@ -16,7 +16,6 @@ import java.util.List;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.plumbing.DiffWorkTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
@@ -25,6 +24,7 @@ import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 
 import com.beust.jcommander.Parameter;

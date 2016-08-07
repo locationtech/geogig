@@ -30,15 +30,15 @@ import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectTestSupport;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.PostOrderDiffWalk.Consumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
@@ -177,7 +177,7 @@ public class PostOrderDiffWalkTest {
     @Test
     public void testLeafLeafWithSubStrees() {
         // two leaf trees
-        ObjectId metadataId = ObjectId.forString("fake");
+        ObjectId metadataId = RevObjects.forString("fake");
 
         RevTree left = createTreesTreeBuilder(leftSource, 2, 2, metadataId).build();
         RevTree right = createTreesTreeBuilder(rightSource, 3, 2, metadataId).build();
@@ -246,7 +246,7 @@ public class PostOrderDiffWalkTest {
      */
     @Test
     public void testBucketNested() {
-        final RevTree origLeft = RevTreeBuilder.EMPTY;
+        final RevTree origLeft = RevTree.EMPTY;
         final RevTree origRight = createFeaturesTree(leftSource, "f",
                 CanonicalNodeNameOrder.normalizedSizeLimit(0)
                         * CanonicalNodeNameOrder.maxBucketsForLevel(0));
@@ -259,7 +259,7 @@ public class PostOrderDiffWalkTest {
             private void copy(Bounded nodeOrBucket) {
                 if (nodeOrBucket != null) {
                     ObjectId objectId = nodeOrBucket.getObjectId();
-                    if (!RevTreeBuilder.EMPTY_TREE_ID.equals(objectId)) {
+                    if (!RevTree.EMPTY_TREE_ID.equals(objectId)) {
                         RevObject object = leftSource.get(objectId);
                         rightSource.put(object);
                     }

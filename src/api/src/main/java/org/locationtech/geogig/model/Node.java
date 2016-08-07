@@ -23,6 +23,8 @@ import com.vividsolutions.jts.geom.Envelope;
 /**
  * An identifier->object id mapping for an object
  * 
+ * 
+ * @since 1.0
  */
 public abstract class Node implements Bounded, Comparable<Node> {
 
@@ -238,7 +240,8 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
     private static class FeatureNode extends Node {
 
-        public FeatureNode(String name, ObjectId oid, ObjectId mdid, Map<String, Object> extraData) {
+        public FeatureNode(String name, ObjectId oid, ObjectId mdid,
+                Map<String, Object> extraData) {
             super(name, oid, mdid, extraData);
         }
 

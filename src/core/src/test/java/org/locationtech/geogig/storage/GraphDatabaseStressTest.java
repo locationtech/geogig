@@ -26,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.collect.ImmutableList;
@@ -79,7 +80,7 @@ public abstract class GraphDatabaseStressTest {
         executor.shutdown();
         executor.awaitTermination(10, TimeUnit.SECONDS);
         assertEquals(errorLog.toString(), 0, errorLog.size());
-        assertEquals(100, database.getDepth(ObjectId.forString("a_commit_100")));
+        assertEquals(100, database.getDepth(RevObjects.forString("a_commit_100")));
     }
 
     private class InsertMany implements Runnable {
@@ -95,8 +96,8 @@ public abstract class GraphDatabaseStressTest {
         public void run() {
             try {
                 for (int i = 0; i < 100; i++) {
-                    ObjectId root = ObjectId.forString(key + "_commit_" + i);
-                    ObjectId commit = ObjectId.forString(key + "_commit_" + (i + 1));
+                    ObjectId root = RevObjects.forString(key + "_commit_" + i);
+                    ObjectId commit = RevObjects.forString(key + "_commit_" + (i + 1));
                     database.put(commit, ImmutableList.of(root));
                 }
             } catch (Exception e) {

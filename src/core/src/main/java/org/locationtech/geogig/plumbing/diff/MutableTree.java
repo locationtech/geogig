@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static org.locationtech.geogig.model.NodeRef.ROOT;
-import static org.locationtech.geogig.model.NodeRef.depth;
-import static org.locationtech.geogig.model.NodeRef.split;
+import static org.locationtech.geogig.repository.NodeRef.ROOT;
+import static org.locationtech.geogig.repository.NodeRef.depth;
+import static org.locationtech.geogig.repository.NodeRef.split;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -22,11 +22,11 @@ import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -68,7 +68,7 @@ public class MutableTree implements Cloneable {
             .reverse();
 
     private MutableTree(String name) {
-        this(Node.tree(name, RevTreeBuilder.EMPTY_TREE_ID, ObjectId.NULL));
+        this(Node.tree(name, RevTree.EMPTY_TREE_ID, ObjectId.NULL));
     }
 
     private MutableTree(Node node) {

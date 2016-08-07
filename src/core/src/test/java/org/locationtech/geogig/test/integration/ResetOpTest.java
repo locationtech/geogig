@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import static org.locationtech.geogig.model.NodeRef.appendChild;
+import static org.locationtech.geogig.repository.NodeRef.appendChild;
 
 import org.junit.Rule;
 import org.junit.Test;

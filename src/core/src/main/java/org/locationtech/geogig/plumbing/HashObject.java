@@ -16,9 +16,11 @@ import static org.locationtech.geogig.model.RevObject.TYPE.TAG;
 import static org.locationtech.geogig.model.RevObject.TYPE.TREE;
 
 import java.util.List;
+import java.util.SortedMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.HashObjectFunnels;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
@@ -83,7 +85,7 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
     public static ObjectId hashFeature(List<Object> values) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
 
-        HashObjectFunnels.featureFunnel().funnelValues(values, hasher);
+        HashObjectFunnels.feature(hasher, values);
 
         final byte[] rawKey = hasher.hash().asBytes();
         final ObjectId id = ObjectId.createNoClone(rawKey);
@@ -91,24 +93,26 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
         return id;
     }
 
-    public static ObjectId hashTree(@Nullable ImmutableList<Node> trees,
-            @Nullable ImmutableList<Node> features,
-            @Nullable ImmutableSortedMap<Integer, Bucket> buckets) {
+    public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
+            @Nullable SortedMap<Integer, Bucket> buckets) {
 
-        return hashTree(Optional.fromNullable(trees), Optional.fromNullable(features),
-                Optional.fromNullable(buckets));
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+        trees = trees == null ? ImmutableList.of() : trees;
+        features = features == null ? ImmutableList.of() : features;
+        buckets = buckets == null ? ImmutableSortedMap.of() : buckets;
+        HashObjectFunnels.tree(hasher, trees, features, buckets);
+
+        final byte[] rawKey = hasher.hash().asBytes();
+        final ObjectId id = ObjectId.createNoClone(rawKey);
+
+        return id;
     }
 
     public static ObjectId hashTree(Optional<ImmutableList<Node>> trees,
             Optional<ImmutableList<Node>> features,
             Optional<ImmutableSortedMap<Integer, Bucket>> buckets) {
-        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
 
-        HashObjectFunnels.treeFunnel().funnel(hasher, trees, features, buckets);
-
-        final byte[] rawKey = hasher.hash().asBytes();
-        final ObjectId id = ObjectId.createNoClone(rawKey);
-
-        return id;
+        return hashTree(trees.or(ImmutableList.of()), features.or(ImmutableList.of()),
+                buckets.or(ImmutableSortedMap.of()));
     }
 }

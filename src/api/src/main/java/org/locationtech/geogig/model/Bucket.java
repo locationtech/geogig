@@ -15,7 +15,14 @@ import com.google.common.base.Optional;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
- *
+ * A Bucket is merely a bounded pointer to another tree in a {@link RevTree} data structure.
+ * <p>
+ * {@link Node}s are pointers to named objects such as feature trees or features, while buckets are
+ * pointers to the {@link RevTree}s it's parent tree is split into when the builder's imposed split
+ * threshold is overcame.
+ * 
+ * @see RevTree#buckets()
+ * @since 1.0
  */
 public abstract class Bucket implements Bounded {
 
@@ -26,13 +33,8 @@ public abstract class Bucket implements Bounded {
     }
 
     /**
-     * @deprecated use {@link #getObjectId()} instead
+     * @return the {@link ObjectId} of the tree this bucket points to
      */
-    @Deprecated
-    public ObjectId id() {
-        return bucketTree;
-    }
-
     @Override
     public ObjectId getObjectId() {
         return bucketTree;

@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
@@ -30,6 +29,7 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Optional;

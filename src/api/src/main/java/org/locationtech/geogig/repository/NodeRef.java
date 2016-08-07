@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.model;
+package org.locationtech.geogig.repository;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -15,6 +15,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.Bounded;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;

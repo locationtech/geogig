@@ -42,11 +42,11 @@ import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -443,11 +443,11 @@ public class PreOrderDiffWalk {
                 RevTree left;
                 RevTree right;
                 left = leftNode == null
-                        || RevTreeBuilder.EMPTY_TREE_ID.equals(leftNode.getObjectId())
-                                ? RevTreeBuilder.EMPTY : leftSource.getTree(leftNode.getObjectId());
+                        || RevTree.EMPTY_TREE_ID.equals(leftNode.getObjectId())
+                                ? RevTree.EMPTY : leftSource.getTree(leftNode.getObjectId());
                 right = rightNode == null
-                        || RevTreeBuilder.EMPTY_TREE_ID.equals(rightNode.getObjectId())
-                                ? RevTreeBuilder.EMPTY
+                        || RevTree.EMPTY_TREE_ID.equals(rightNode.getObjectId())
+                                ? RevTree.EMPTY
                                 : rightSource.getTree(rightNode.getObjectId());
 
                 TraverseTreeContents traverseTreeContents = new TraverseTreeContents(consumer,
@@ -492,8 +492,10 @@ public class PreOrderDiffWalk {
             // 4- left is bucketed and right is leaf
             final boolean leftIsLeaf = !left.buckets().isPresent();
             final boolean rightIsLeaf = !right.buckets().isPresent();
-            Iterator<Node> leftc = leftIsLeaf ? left.children() : null;
-            Iterator<Node> rightc = rightIsLeaf ? right.children() : null;
+            Iterator<Node> leftc = leftIsLeaf ? RevObjects.children(left, CanonicalNodeOrder.INSTANCE)
+                    : null;
+            Iterator<Node> rightc = rightIsLeaf
+                    ? RevObjects.children(right, CanonicalNodeOrder.INSTANCE) : null;
 
             WalkAction task;
             if (leftIsLeaf && rightIsLeaf) {// 1-
@@ -533,7 +535,7 @@ public class PreOrderDiffWalk {
         }
 
         /**
-         * Traverse and compare the {@link RevTree#children() children} nodes of two leaf trees,
+         * Traverse and compare the {@link RevObjects#children() children} nodes of two leaf trees,
          * calling {@link #node(Consumer, Node, Node)} for each diff.
          */
         @Override
@@ -693,9 +695,9 @@ public class PreOrderDiffWalk {
 
                 if (consumer.bucket(leftParent, rightParent, index, lbucket, rbucket)) {
 
-                    ltree = lbucket == null ? RevTreeBuilder.EMPTY
+                    ltree = lbucket == null ? RevTree.EMPTY
                             : trees.get(lbucket.getObjectId());
-                    rtree = rbucket == null ? RevTreeBuilder.EMPTY
+                    rtree = rbucket == null ? RevTree.EMPTY
                             : trees.get(rbucket.getObjectId());
 
                     TraverseTreeContents task = traverseTreeContents(leftParent, rightParent, ltree,
@@ -771,7 +773,7 @@ public class PreOrderDiffWalk {
 
         /**
          * Compares a bucket tree at the left side of the comparison, and a the
-         * {@link RevTree#children() children} nodes of a leaf tree at the right side of the
+         * {@link RevObjects#children() children} nodes of a leaf tree at the right side of the
          * comparison.
          * <p>
          * This happens when the left tree is much larger than the right tree
@@ -826,7 +828,7 @@ public class PreOrderDiffWalk {
                     if (consumer.bucket(leftParent, rightParent, childIndex, leftBucket, null)) {
 
                         TraverseTreeContents task = traverseTreeContents(leftParent, rightParent,
-                                leftTree, RevTreeBuilder.EMPTY, childIndex);
+                                leftTree, RevTree.EMPTY, childIndex);
                         tasks.add(task);
                         pendingEndBucketNotifications.put(childIndex, leftBucket);
                     }
@@ -835,7 +837,8 @@ public class PreOrderDiffWalk {
                     if (leftTree.buckets().isPresent()) {
                         tasks.add(bucketLeaf(leftTree, rightNodes.iterator(), childIndex));
                     } else {
-                        tasks.add(leafLeaf(leftParent, rightParent, leftTree.children(),
+                        tasks.add(leafLeaf(leftParent, rightParent,
+                                RevObjects.children(leftTree, CanonicalNodeOrder.INSTANCE),
                                 rightNodes.iterator()));
                     }
                 }
@@ -869,7 +872,7 @@ public class PreOrderDiffWalk {
 
         /**
          * Compares a bucket tree at the right side of the comparison, and a the
-         * {@link RevTree#children() children} nodes of a leaf tree at the left side of the
+         * {@link RevObjects#children() children} nodes of a leaf tree at the left side of the
          * comparison.
          * <p>
          * This happens when the right tree is much larger than the left tree
@@ -925,7 +928,7 @@ public class PreOrderDiffWalk {
                     if (consumer.bucket(leftParent, rightParent, childIndex, null, rightBucket)) {
 
                         TraverseTreeContents task = traverseTreeContents(leftParent, rightParent,
-                                RevTreeBuilder.EMPTY, rightTree, childIndex);
+                                RevTree.EMPTY, rightTree, childIndex);
                         tasks.add(task);
                         pendingEndBucketNotifications.put(childIndex, rightBucket);
 
@@ -936,7 +939,7 @@ public class PreOrderDiffWalk {
                         tasks.add(leafBucket(leftNodes.iterator(), rightTree, childIndex));
                     } else {
                         tasks.add(leafLeaf(leftParent, rightParent, leftNodes.iterator(),
-                                rightTree.children()));
+                                RevObjects.children(rightTree, CanonicalNodeOrder.INSTANCE)));
                     }
                 }
             }

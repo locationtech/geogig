@@ -15,11 +15,11 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -33,6 +33,7 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.RevertConflictsException;
 import org.locationtech.geogig.porcelain.RevertOp;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;
@@ -246,7 +247,7 @@ public class RevertOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
         exception.expect(IllegalArgumentException.class);
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(ObjectId.forString("wrong")))
+        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(RevObjects.forString("wrong")))
                 .call();
     }
 

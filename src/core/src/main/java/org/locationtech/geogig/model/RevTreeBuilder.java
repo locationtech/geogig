@@ -22,12 +22,11 @@ import org.locationtech.geogig.storage.ObjectStore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 
+/**
+ * 
+ *
+ */
 public interface RevTreeBuilder {
-
-    ObjectId EMPTY_TREE_ID = HashObject.hashTree((ImmutableList<Node>) null,
-            (ImmutableList<Node>) null, (ImmutableSortedMap<Integer, Bucket>) null);
-
-    RevTree EMPTY = empty();
 
     public RevTreeBuilder put(Node node);
 
@@ -36,7 +35,7 @@ public interface RevTreeBuilder {
     public RevTree build();
 
     static RevTreeBuilder canonical(final ObjectStore store) {
-        return RevTreeBuilder.canonical(store, EMPTY);
+        return RevTreeBuilder.canonical(store, RevTree.EMPTY);
     }
 
     ////
@@ -62,15 +61,6 @@ public interface RevTreeBuilder {
             builder = new LegacyTreeBuilder(store, original);
         }
         return builder;
-    }
-
-    /**
-     * @return a new instance of a properly "named" empty tree (as in with a proper object id after
-     *         applying {@link HashObject})
-     */
-    static RevTree empty() {
-        RevTree theEmptyTree = RevTreeImpl.create(EMPTY_TREE_ID, 0L, 0, null, null, null);
-        return theEmptyTree;
     }
 
     static RevTree build(final long size, final int childTreeCount,

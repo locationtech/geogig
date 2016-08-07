@@ -20,7 +20,6 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.CheckSparsePath;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
@@ -236,7 +235,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                     .setNewVersion(commitId).setOldVersion(parent).setReportTrees(true).call()) {
                 LocalCopyingDiffIterator changes = new LocalCopyingDiffIterator(diffIter, from, to);
 
-                RevTree rootTree = RevTreeBuilder.EMPTY;
+                RevTree rootTree = RevTree.EMPTY;
 
                 if (newParents.size() > 0) {
                     ObjectId mappedCommit = newParents.get(0);

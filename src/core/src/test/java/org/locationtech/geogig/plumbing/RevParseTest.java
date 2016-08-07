@@ -24,6 +24,7 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
@@ -173,7 +174,7 @@ public class RevParseTest extends RepositoryTestCase {
         // TODO: Make a case for Tags when they actually do something
 
         objectId = geogig.command(RevParse.class)
-                .setRefSpec(ObjectId.forString("NotAFeature").toString()).call();
+                .setRefSpec(RevObjects.forString("NotAFeature").toString()).call();
         assertEquals(Optional.absent(), objectId);
     }
 
@@ -220,8 +221,8 @@ public class RevParseTest extends RepositoryTestCase {
         Optional<Ref> ref = Optional.absent();
         when(mockRefParse.call()).thenReturn(ref);
 
-        List<ObjectId> oIds = Arrays.asList(ObjectId.forString("Object 1"),
-                ObjectId.forString("Object 2"));
+        List<ObjectId> oIds = Arrays.asList(RevObjects.forString("Object 1"),
+                RevObjects.forString("Object 2"));
         when(mockCommands.objectDatabase()).thenReturn(mockdb);
         when(mockdb.lookUp(anyString())).thenReturn(oIds);
         when(mockCommands.conflictsDatabase()).thenReturn(mockConflictsDb);

@@ -24,13 +24,13 @@ import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.LegacyTreeBuilder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTreeBuilderTest;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
+import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -166,7 +166,7 @@ public abstract class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         final RevTree legacyFull;
         final RevTree leafFull;
         {
-            LegacyTreeBuilder legacy = createLegacyBuilder(RevTreeBuilder.EMPTY);
+            LegacyTreeBuilder legacy = createLegacyBuilder(RevTree.EMPTY);
             RevTreeBuilder builder = createBuiler();
             for (int i = 0; i < CanonicalNodeNameOrder.normalizedSizeLimit(0); i++) {
                 Node node = node(i);

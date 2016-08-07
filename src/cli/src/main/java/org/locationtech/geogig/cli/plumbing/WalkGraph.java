@@ -21,7 +21,6 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -29,6 +28,7 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.WalkGraphOp;
 import org.locationtech.geogig.plumbing.WalkGraphOp.Listener;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
+import org.locationtech.geogig.repository.NodeRef;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

@@ -15,12 +15,12 @@ import static com.google.common.base.Preconditions.checkState;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
@@ -61,8 +61,8 @@ public class WriteBack extends AbstractGeoGigOp<ObjectId> {
      * @return {@code this}
      */
     public WriteBack setAncestor(ObjectId oldRoot) {
-        if (RevTreeBuilder.EMPTY_TREE_ID.equals(oldRoot)) {
-            this.ancestor = RevTreeBuilder.EMPTY;
+        if (RevTree.EMPTY_TREE_ID.equals(oldRoot)) {
+            this.ancestor = RevTree.EMPTY;
         } else {
             this.ancestor = objectDatabase().getTree(oldRoot);
         }

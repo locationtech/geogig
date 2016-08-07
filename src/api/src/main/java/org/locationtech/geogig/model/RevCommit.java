@@ -12,6 +12,10 @@ package org.locationtech.geogig.model;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
+/**
+ * 
+ * @since 1.0
+ */
 public interface RevCommit extends RevObject {
 
     /**

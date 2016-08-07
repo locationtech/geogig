@@ -113,7 +113,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
         deletes = Sets.newTreeSet();
         bucketTreesByBucket = Maps.newTreeMap();
         pendingWritesCache = Maps.newTreeMap();
-        original = RevTreeBuilder.EMPTY;
+        original = RevTree.EMPTY;
     }
 
     public RevTreeBuilder normalizationThreshold(final int threshold) {
@@ -152,7 +152,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
         this.featureChanges = Maps.newHashMap();
         this.bucketTreesByBucket = Maps.newTreeMap();
 
-        this.original = copy == null ? RevTreeBuilder.EMPTY : copy;
+        this.original = copy == null ? RevTree.EMPTY : copy;
 
         if (copy != null) {
             this.initialSize = copy.size();
@@ -318,7 +318,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
             if (bucketTree.buckets().isPresent()) {
                 moveBucketsToChildren(bucketTree);
             } else {
-                Iterator<Node> children = bucketTree.children();
+                Iterator<Node> children = RevObjects.children(bucketTree, CanonicalNodeOrder.INSTANCE);
                 while (children.hasNext()) {
                     Node next = children.next();
                     putInternal(next);
@@ -484,7 +484,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
         List<Integer> missing = new ArrayList<>(changedBucketIndexes.size());
         for (Integer bucketIndex : changedBucketIndexes) {
             Bucket bucket = bucketTreesByBucket.get(bucketIndex);
-            RevTree cached = bucket == null ? RevTreeBuilder.EMPTY
+            RevTree cached = bucket == null ? RevTree.EMPTY
                     : pendingWritesCache.get(bucket.getObjectId());
             if (cached == null) {
                 missing.add(bucketIndex);
@@ -510,13 +510,13 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
     }
 
     /**
-     * @return the bucket tree or {@link RevTreeBuilder#EMPTY} if this tree does not have a bucket
+     * @return the bucket tree or {@link RevTree#EMPTY} if this tree does not have a bucket
      *         for the given bucket index
      */
     private RevTree getBucketTree(Integer bucketIndex) {
         final Bucket bucket = bucketTreesByBucket.get(bucketIndex);
         if (bucket == null) {
-            return RevTreeBuilder.EMPTY;
+            return RevTree.EMPTY;
         } else {
             return loadTree(bucket.getObjectId());
         }

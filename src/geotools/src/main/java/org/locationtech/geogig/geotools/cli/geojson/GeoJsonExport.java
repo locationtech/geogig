@@ -27,7 +27,6 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
@@ -39,6 +38,7 @@ import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.beust.jcommander.Parameter;

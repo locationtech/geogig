@@ -7,11 +7,12 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.plumbing;
+package org.locationtech.geogig.model;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,31 +22,18 @@ import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.referencing.CRS;
-import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.FieldType;
-import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevPerson;
-import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.RevTree;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.feature.type.PropertyType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Lists;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Funnels;
+import com.google.common.hash.Hasher;
 import com.google.common.hash.PrimitiveSink;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateFilter;
@@ -56,8 +44,10 @@ import com.vividsolutions.jts.geom.Geometry;
  * 
  * @see RevObject
  * @see ObjectId
+ * 
+ * @since 1.0
  */
-class HashObjectFunnels {
+public class HashObjectFunnels {
 
     // This random byte code is used to represent null in hashing. This is intended to be something
     // that would be unlikely to duplicated by accident with real data. Changing this will cause all
@@ -65,24 +55,64 @@ class HashObjectFunnels {
     private static final byte[] NULL_BYTE_CODE = { 0x60, (byte) 0xe5, 0x6d, 0x08, (byte) 0xd3, 0x08,
             0x53, (byte) 0xb7, (byte) 0x84, 0x07, 0x77 };
 
-    public static CommitFunnel commitFunnel() {
+    public static Funnel<RevCommit> commitFunnel() {
         return CommitFunnel.INSTANCE;
     }
 
-    public static TreeFunnel treeFunnel() {
+    public static Funnel<RevTree> treeFunnel() {
         return TreeFunnel.INSTANCE;
     }
 
-    public static FeatureFunnel featureFunnel() {
+    public static Funnel<RevFeature> featureFunnel() {
         return FeatureFunnel.INSTANCE;
     }
 
-    public static TagFunnel tagFunnel() {
+    public static Funnel<RevTag> tagFunnel() {
         return TagFunnel.INSTANCE;
     }
 
-    public static FeatureTypeFunnel featureTypeFunnel() {
+    public static Funnel<RevFeatureType> featureTypeFunnel() {
         return FeatureTypeFunnel.INSTANCE;
+    }
+
+    /**
+     * Convenience method to hash a {@link RevFeature} out of its property values
+     * 
+     * @param hasher expected to be {@link ObjectId#HASH_FUNCTION} in order to compute the SHA-1
+     *        hash
+     * @param values the {@link RevFeature} actual values, not {@code Optional}s
+     */
+    public static void feature(PrimitiveSink hasher, List<Object> values) {
+        FeatureFunnel.INSTANCE.funnelValues(values, hasher);
+    }
+
+    /**
+     * Convenience method to hash a {@link RevTree} out of its values
+     * 
+     * @param hasher expected to be {@link ObjectId#HASH_FUNCTION} in order to compute the SHA-1
+     *        hash
+     * @param trees the tree's {@link RevTree#trees() contained tree nodes}
+     * @param features the tree's {@link RevTree#trees() contained feature nodes}
+     * @param buckets the tree's {@link RevTree#trees() contained bucket pointers}
+     */
+    public static void tree(PrimitiveSink hasher, List<Node> trees, List<Node> features,
+            SortedMap<Integer, Bucket> buckets) {
+        TreeFunnel.INSTANCE.funnel(hasher, trees, features, buckets);
+    }
+
+    public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
+            @Nullable SortedMap<Integer, Bucket> buckets) {
+
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+        trees = trees == null ? ImmutableList.of() : trees;
+        features = features == null ? ImmutableList.of() : features;
+        buckets = buckets == null ? ImmutableSortedMap.of() : buckets;
+        HashObjectFunnels.tree(hasher, trees, features, buckets);
+
+        final byte[] rawKey = hasher.hash().asBytes();
+        final ObjectId id = ObjectId.createNoClone(rawKey);
+
+        return id;
     }
 
     private static final class NullableFunnel<T> implements Funnel<T> {
@@ -147,7 +177,7 @@ class HashObjectFunnels {
         }
     };
 
-    static final class CommitFunnel implements Funnel<RevCommit> {
+    private static final class CommitFunnel implements Funnel<RevCommit> {
         private static final long serialVersionUID = -1L;
 
         private static final CommitFunnel INSTANCE = new CommitFunnel();
@@ -166,7 +196,7 @@ class HashObjectFunnels {
         }
     };
 
-    static final class TreeFunnel implements Funnel<RevTree> {
+    private static final class TreeFunnel implements Funnel<RevTree> {
 
         private static final long serialVersionUID = 1L;
 
@@ -174,44 +204,28 @@ class HashObjectFunnels {
 
         @Override
         public void funnel(RevTree from, PrimitiveSink into) {
-            Optional<ImmutableList<Node>> treesOp = from.trees();
-            Optional<ImmutableList<Node>> featuresOp = from.features();
-            Optional<ImmutableSortedMap<Integer, Bucket>> bucketsOp = from.buckets();
-            funnel(into, treesOp, featuresOp, bucketsOp);
+            ImmutableList<Node> trees = from.trees().or(ImmutableList.of());
+            ImmutableList<Node> features = from.features().or(ImmutableList.of());
+            ImmutableSortedMap<Integer, Bucket> buckets = from.buckets()
+                    .or(ImmutableSortedMap.of());
+            funnel(into, trees, features, buckets);
         }
 
-        public void funnel(PrimitiveSink into, Optional<ImmutableList<Node>> treesOp,
-                Optional<ImmutableList<Node>> featuresOp,
-                Optional<ImmutableSortedMap<Integer, Bucket>> bucketsOp) {
+        public void funnel(PrimitiveSink into, List<Node> trees, List<Node> features,
+                SortedMap<Integer, Bucket> buckets) {
 
             RevObjectTypeFunnel.funnel(TYPE.TREE, into);
-            if (treesOp.isPresent()) {
-                ImmutableList<Node> trees = treesOp.get();
-                Node ref;
-                for (int i = 0; i < trees.size(); i++) {
-                    ref = trees.get(i);
-                    NodeFunnel.funnel(ref, into);
-                }
-            }
-            if (featuresOp.isPresent()) {
-                ImmutableList<Node> children = featuresOp.get();
-                Node ref;
-                for (int i = 0; i < children.size(); i++) {
-                    ref = children.get(i);
-                    NodeFunnel.funnel(ref, into);
-                }
-            }
-            if (bucketsOp.isPresent()) {
-                ImmutableSortedMap<Integer, Bucket> buckets = bucketsOp.get();
-                for (Entry<Integer, Bucket> entry : buckets.entrySet()) {
-                    Funnels.integerFunnel().funnel(entry.getKey(), into);
-                    ObjectIdFunnel.funnel(entry.getValue().getObjectId(), into);
-                }
+            trees.forEach((n) -> NodeFunnel.funnel(n, into));
+            features.forEach((n) -> NodeFunnel.funnel(n, into));
+
+            for (Entry<Integer, Bucket> entry : buckets.entrySet()) {
+                Funnels.integerFunnel().funnel(entry.getKey(), into);
+                ObjectIdFunnel.funnel(entry.getValue().getObjectId(), into);
             }
         }
     };
 
-    static final class FeatureFunnel implements Funnel<RevFeature> {
+    private static final class FeatureFunnel implements Funnel<RevFeature> {
 
         private static final long serialVersionUID = 1L;
 
@@ -227,13 +241,9 @@ class HashObjectFunnels {
             RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
             values.forEach((v) -> PropertyValueFunnel.funnel(v, into));
         }
-
-        public void funnel(List<Optional<Object>> values, PrimitiveSink into) {
-            funnelValues(Lists.transform(values, (v) -> v.orNull()), into);
-        }
     };
 
-    static final class FeatureTypeFunnel implements Funnel<RevFeatureType> {
+    private static final class FeatureTypeFunnel implements Funnel<RevFeatureType> {
         private static final long serialVersionUID = 1L;
 
         public static final FeatureTypeFunnel INSTANCE = new FeatureTypeFunnel();
@@ -242,8 +252,7 @@ class HashObjectFunnels {
         public void funnel(RevFeatureType from, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(TYPE.FEATURETYPE, into);
 
-            ImmutableSet<PropertyDescriptor> featureTypeProperties = new DescribeFeatureType()
-                    .setFeatureType(from).call();
+            Collection<PropertyDescriptor> featureTypeProperties = from.type().getDescriptors();
 
             NameFunnel.funnel(from.getName(), into);
 
@@ -254,7 +263,7 @@ class HashObjectFunnels {
 
     };
 
-    static final class TagFunnel implements Funnel<RevTag> {
+    private static final class TagFunnel implements Funnel<RevTag> {
         private static final long serialVersionUID = 1L;
 
         public static final TagFunnel INSTANCE = new TagFunnel();

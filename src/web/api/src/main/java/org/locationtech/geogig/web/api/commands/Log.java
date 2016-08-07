@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.geotools.util.Range;
 import org.locationtech.geogig.model.FieldType;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
@@ -36,6 +35,7 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;

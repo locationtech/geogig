@@ -14,17 +14,16 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -75,7 +74,7 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
         Preconditions.checkArgument(oid.isPresent(), "Can't resolve reference '%s' at %s",
                 reference, repository().getLocation());
 
-        RevTree left = RevTreeBuilder.EMPTY;
+        RevTree left = RevTree.EMPTY;
         RevTree right;
 
         RevObject revObject = odb.get(oid.get());

@@ -11,7 +11,6 @@ package org.locationtech.geogig.model.experimental.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.model.RevTreeBuilder.EMPTY;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +35,7 @@ import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTreeBuilderTest;
@@ -239,7 +239,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         Context context = createTestContext();
         ObjectDatabase odb = context.objectDatabase();
-        odb.put(RevTreeBuilder.EMPTY);
+        odb.put(RevTree.EMPTY);
 
         final RevTree quadTree;
         final RevTree canonicalTree;
@@ -300,7 +300,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         Context context = createTestContext();
         ObjectStore odb = context.objectDatabase();
-        odb.put(RevTreeBuilder.EMPTY);
+        odb.put(RevTree.EMPTY);
 
         List<Node> nodes;
         // nodes = createSmallRectNodes(nodeIds, maxBounds);
@@ -315,7 +315,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         Envelope bounds = new Envelope();
         orig.expand(bounds);
         bounds.expandBy(0.0001);
-        Node change = Node.create(orig.getName(), ObjectId.forString("changes"), ObjectId.NULL,
+        Node change = Node.create(orig.getName(), RevObjects.forString("changes"), ObjectId.NULL,
                 TYPE.FEATURE, bounds);
         nodes.set(1, change);
         // nodes.remove(2000);
@@ -431,7 +431,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         DiffTree diff = new DiffTree();
         diff.setContext(context);
-        diff.setOldTree(RevTreeBuilder.EMPTY_TREE_ID);
+        diff.setOldTree(RevTree.EMPTY_TREE_ID);
         diff.setNewTree(tree.getId());
 
         // diff.setCustomFilter(screenmapFilter);
@@ -507,7 +507,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
             nodeTime.start();
             String nodeName = String.valueOf(intId);
             String sid = Strings.padStart(nodeName, 40, '0');
-            ObjectId oid = ObjectId.forString(sid);
+            ObjectId oid = RevObjects.forString(sid);
 
             double x1 = minX + (intId * stepx);
             double x2 = minX + (intId * stepx) + stepx;
@@ -603,7 +603,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
             final ObjectStore objectStore) {
         System.err.printf("Creating QuadTree with %,d nodes...", nodes.size());
 
-        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(objectStore, EMPTY, maxBounds, maxDepth);
+        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(objectStore, RevTree.EMPTY, maxBounds, maxDepth);
 
         Stopwatch sw = Stopwatch.createUnstarted();
 
@@ -633,7 +633,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         System.err.printf("Creating QuadTree with %,d nodes...", nodes.size());
 
-        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(odb, EMPTY, maxBounds, maxDepth);
+        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(odb, RevTree.EMPTY, maxBounds, maxDepth);
 
         Stopwatch sw = Stopwatch.createUnstarted();
 

@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -33,6 +32,7 @@ import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.DepthSearch;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.opengis.feature.type.PropertyDescriptor;
 

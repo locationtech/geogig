@@ -17,7 +17,6 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -94,10 +93,10 @@ public class Index implements StagingArea {
         Optional<ObjectId> stageTreeId = context.command(ResolveTreeish.class)
                 .setTreeish(Ref.STAGE_HEAD).call();
 
-        RevTree stageTree = RevTreeBuilder.EMPTY;
+        RevTree stageTree = RevTree.EMPTY;
 
         if (stageTreeId.isPresent()) {
-            if (!stageTreeId.get().equals(RevTreeBuilder.EMPTY_TREE_ID)) {
+            if (!stageTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
                 stageTree = context.objectDatabase().getTree(stageTreeId.get());
             }
         } else {
@@ -105,7 +104,7 @@ public class Index implements StagingArea {
             Optional<ObjectId> headTreeId = context.command(ResolveTreeish.class)
                     .setTreeish(Ref.HEAD).call();
 
-            if (headTreeId.isPresent() && !headTreeId.get().equals(RevTreeBuilder.EMPTY_TREE_ID)) {
+            if (headTreeId.isPresent() && !headTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
                 stageTree = context.objectDatabase().getTree(headTreeId.get());
                 updateStageHead(stageTree.getId());
             }

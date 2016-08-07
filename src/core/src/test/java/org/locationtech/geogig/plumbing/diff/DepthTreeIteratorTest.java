@@ -20,11 +20,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 
@@ -50,9 +51,9 @@ public class DepthTreeIteratorTest extends Assert {
         source = new HeapObjectDatabase();
         source.open();
 
-        metadataId = ObjectId.forString("fake id");
+        metadataId = RevObjects.forString("fake id");
         treePath = "";
-        emptyTree = RevTreeBuilder.EMPTY;
+        emptyTree = RevTree.EMPTY;
         featuresLeafTree = createFeaturesTree(source, "featuresLeafTree", 100);
         assertTrue(featuresLeafTree.features().isPresent());
 

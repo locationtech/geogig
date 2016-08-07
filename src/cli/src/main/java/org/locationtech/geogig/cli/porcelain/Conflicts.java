@@ -18,7 +18,6 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -34,6 +33,7 @@ import org.locationtech.geogig.porcelain.RebaseOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.Blobs;
 
 import com.beust.jcommander.Parameter;

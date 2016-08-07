@@ -25,7 +25,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.CleanRefsOp;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -331,7 +330,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         }
 
         final ObjectId currentRootTreeId = command(ResolveTreeish.class)
-                .setTreeish(currHeadCommitId).call().or(RevTreeBuilder.EMPTY_TREE_ID);
+                .setTreeish(currHeadCommitId).call().or(RevTree.EMPTY_TREE_ID);
         if (currentRootTreeId.equals(newTreeId)) {
             if (!allowEmpty && !amend) {
                 throw new NothingToCommitException("Nothing to commit after " + currHeadCommitId);
@@ -406,7 +405,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
             public RevTree get() {
                 Optional<ObjectId> head = command(ResolveTreeish.class).setTreeish(Ref.HEAD).call();
                 if (!head.isPresent() || head.get().isNull()) {
-                    return RevTreeBuilder.EMPTY;
+                    return RevTree.EMPTY;
                 }
                 return command(RevObjectParse.class).setObjectId(head.get()).call(RevTree.class)
                         .get();

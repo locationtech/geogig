@@ -25,7 +25,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -33,7 +32,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -43,6 +41,7 @@ import org.locationtech.geogig.plumbing.diff.PostOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PostOrderDiffWalk.Consumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.porcelain.SynchronizationException;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
@@ -266,7 +265,7 @@ class LocalRemoteRepo extends AbstractRemoteRepo {
             if (parentIds.isEmpty()) {
                 parentIds.add(ObjectId.NULL);
             }
-            RevTree oldTree = RevTreeBuilder.EMPTY;
+            RevTree oldTree = RevTree.EMPTY;
             // the diff against each parent is not working. For some reason some buckets that are
             // equal between the two ends of the comparison never get transferred (at some point
             // they shouldn't be equal and so the Consumer notified of it/them). Yet with the target

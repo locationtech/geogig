@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration.repository;
 
-import static org.locationtech.geogig.model.NodeRef.appendChild;
+import static org.locationtech.geogig.repository.NodeRef.appendChild;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,17 +29,16 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.data.ForwardingFeatureSource;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.FeatureToDelete;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -760,7 +759,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
         Optional<Node> newTypeTree = findTreeChild(workTree.getTree(), pointsName);
         assertTrue(newTypeTree.isPresent());
-        assertEquals(RevTreeBuilder.EMPTY_TREE_ID, newTypeTree.get().getObjectId());
+        assertEquals(RevTree.EMPTY_TREE_ID, newTypeTree.get().getObjectId());
         assertEquals(oldTypeTree.getMetadataId(), newTypeTree.get().getMetadataId());
     }
 

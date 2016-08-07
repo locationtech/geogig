@@ -21,9 +21,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 
@@ -51,35 +53,35 @@ public abstract class RevTreeSerializationTest extends Assert {
     @Before
     public void initialize() {
         ImmutableList<Node> features = ImmutableList
-                .of(Node.create("foo", ObjectId.forString("nodeid"),
-                        ObjectId.forString("metadataid"), RevObject.TYPE.FEATURE, null));
+                .of(Node.create("foo", RevObjects.forString("nodeid"),
+                        RevObjects.forString("metadataid"), RevObject.TYPE.FEATURE, null));
         ImmutableList<Node> spatialFeatures = ImmutableList.of(Node.create("foo",
-                ObjectId.forString("nodeid"), ObjectId.forString("metadataid"),
+                RevObjects.forString("nodeid"), RevObjects.forString("metadataid"),
                 RevObject.TYPE.FEATURE, new Envelope(0.0000001, 0.0000002, 0.0000001, 0.0000002)));
         ImmutableList<Node> trees = ImmutableList
-                .of(Node.create("bar", ObjectId.forString("barnodeid"),
-                        ObjectId.forString("barmetadataid"), RevObject.TYPE.TREE, null));
+                .of(Node.create("bar", RevObjects.forString("barnodeid"),
+                        RevObjects.forString("barmetadataid"), RevObject.TYPE.TREE, null));
         ImmutableList<Node> spatialTrees = ImmutableList.of(Node.create("bar",
-                ObjectId.forString("barnodeid"), ObjectId.forString("barmetadataid"),
+                RevObjects.forString("barnodeid"), RevObjects.forString("barmetadataid"),
                 RevObject.TYPE.TREE, new Envelope(1, 2, 1, 2)));
 
         SortedMap<Integer, Bucket> spatialBuckets = ImmutableSortedMap.of(1,
-                Bucket.create(ObjectId.forString("buckettree"), new Envelope()));
+                Bucket.create(RevObjects.forString("buckettree"), new Envelope()));
 
         SortedMap<Integer, Bucket> buckets = ImmutableSortedMap.of(1,
-                Bucket.create(ObjectId.forString("buckettree"), new Envelope(1, 2, 1, 2)));
+                Bucket.create(RevObjects.forString("buckettree"), new Envelope(1, 2, 1, 2)));
 
-        tree1_leaves = RevTreeBuilder.create(ObjectId.forString("leaves"), 1L, 0, null, features,
+        tree1_leaves = RevTreeBuilder.create(RevObjects.forString("leaves"), 1L, 0, null, features,
                 null);
-        tree2_internal = RevTreeBuilder.create(ObjectId.forString("internal"), 0, trees.size(),
+        tree2_internal = RevTreeBuilder.create(RevObjects.forString("internal"), 0, trees.size(),
                 trees, null, null);
-        tree3_buckets = RevTreeBuilder.create(ObjectId.forString("buckets"), 1L, 1, null, null,
+        tree3_buckets = RevTreeBuilder.create(RevObjects.forString("buckets"), 1L, 1, null, null,
                 buckets);
-        tree4_spatial_leaves = RevTreeBuilder.create(ObjectId.forString("leaves"), 1L, 0, null,
+        tree4_spatial_leaves = RevTreeBuilder.create(RevObjects.forString("leaves"), 1L, 0, null,
                 spatialFeatures, null);
-        tree5_spatial_internal = RevTreeBuilder.create(ObjectId.forString("internal"), 1L,
+        tree5_spatial_internal = RevTreeBuilder.create(RevObjects.forString("internal"), 1L,
                 spatialTrees.size(), spatialTrees, null, null);
-        tree6_spatial_buckets = RevTreeBuilder.create(ObjectId.forString("buckets"), 1L, 1, null,
+        tree6_spatial_buckets = RevTreeBuilder.create(RevObjects.forString("buckets"), 1L, 1, null,
                 null, spatialBuckets);
     }
 
@@ -104,7 +106,7 @@ public abstract class RevTreeSerializationTest extends Assert {
     @Test
     public void testRoundTripBucketsFull() throws IOException {
 
-        ObjectId id = ObjectId.forString("fake");
+        ObjectId id = RevObjects.forString("fake");
         long size = 100000000;
         int childTreeCount = 0;
         SortedMap<Integer, Bucket> bucketTrees = createBuckets(32);
@@ -120,7 +122,7 @@ public abstract class RevTreeSerializationTest extends Assert {
     private SortedMap<Integer, Bucket> createBuckets(int count) {
         SortedMap<Integer, Bucket> buckets = new TreeMap<>();
         for (int i = 0; i < count; i++) {
-            Bucket bucket = Bucket.create(ObjectId.forString("b" + i),
+            Bucket bucket = Bucket.create(RevObjects.forString("b" + i),
                     new Envelope(i, i * 2, i, i * 2));
             buckets.put(i, bucket);
         }
@@ -174,8 +176,8 @@ public abstract class RevTreeSerializationTest extends Assert {
             ia = a.buckets().get().values().iterator();
             ib = b.buckets().get().values().iterator();
         } else {
-            ia = a.children();
-            ib = b.children();
+            ia = RevObjects.children(a, CanonicalNodeOrder.INSTANCE);
+            ib = RevObjects.children(b, CanonicalNodeOrder.INSTANCE);
         }
 
         // bounds are not part of the Bounded.equals(Object) contract as its auxiliary information

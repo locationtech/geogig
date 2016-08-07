@@ -16,7 +16,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.base.Optional;
@@ -85,7 +85,7 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
 
         ObjectId objectId = resolved.get();
         if (objectId.isNull()) {// might be an empty commit ref
-            return Optional.of(RevTreeBuilder.EMPTY_TREE_ID);
+            return Optional.of(RevTree.EMPTY_TREE_ID);
         }
 
         final TYPE objectType = command(ResolveObjectType.class).setObjectId(objectId).call();

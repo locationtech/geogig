@@ -27,7 +27,7 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
     }
 
     public static RevTreeBuilder quadTree(final ObjectStore store) {
-        return QuadTreeBuilder.quadTree(store, RevTreeBuilder.EMPTY);
+        return QuadTreeBuilder.quadTree(store, RevTree.EMPTY);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
 
         ClusteringStrategy strategy = ClusteringStrategy.quadTree(store, original, maxBounds,
                 maxDepth);
-        QuadTreeBuilder builder = new QuadTreeBuilder(store, RevTreeBuilder.EMPTY, strategy);
+        QuadTreeBuilder builder = new QuadTreeBuilder(store, RevTree.EMPTY, strategy);
         return builder;
     }
 

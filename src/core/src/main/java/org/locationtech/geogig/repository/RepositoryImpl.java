@@ -16,14 +16,12 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
@@ -270,7 +268,7 @@ public class RepositoryImpl implements Repository {
     public RevTree getOrCreateHeadTree() {
         Optional<ObjectId> headTreeId = command(ResolveTreeish.class).setTreeish(Ref.HEAD).call();
         if (!headTreeId.isPresent()) {
-            return RevTreeBuilder.EMPTY;
+            return RevTree.EMPTY;
         }
         return getTree(headTreeId.get());
     }

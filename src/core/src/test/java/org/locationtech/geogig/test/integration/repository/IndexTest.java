@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration.repository;
 
-import static org.locationtech.geogig.model.NodeRef.appendChild;
+import static org.locationtech.geogig.repository.NodeRef.appendChild;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,19 +17,18 @@ import java.util.List;
 import org.junit.Test;
 import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.WriteTree2;
 import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
@@ -202,7 +201,7 @@ public class IndexTest extends RepositoryTestCase {
             @Override
             public RevTree get() {
                 if (treeId.isNull()) {
-                    return RevTreeBuilder.EMPTY;
+                    return RevTree.EMPTY;
                 }
                 return geogig.command(RevObjectParse.class).setObjectId(treeId).call(RevTree.class)
                         .get();

@@ -12,7 +12,6 @@ package org.locationtech.geogig.test.integration;
 import java.util.List;
 
 import org.junit.Test;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -29,6 +28,7 @@ import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.opengis.feature.Feature;
 

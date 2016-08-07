@@ -12,10 +12,10 @@ package org.locationtech.geogig.plumbing;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;

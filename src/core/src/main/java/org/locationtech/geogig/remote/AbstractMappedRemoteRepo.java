@@ -26,7 +26,6 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
@@ -211,7 +210,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
                 ObjectStore objectDatabase = localRepository.objectDatabase();
                 graphDatabase.put(commit.getId(), commit.getParentIds());
 
-                RevTree rootTree = RevTreeBuilder.EMPTY;
+                RevTree rootTree = RevTree.EMPTY;
 
                 if (commit.getParentIds().size() > 0) {
                     // Map this commit to the last "sparse" commit in my ancestry

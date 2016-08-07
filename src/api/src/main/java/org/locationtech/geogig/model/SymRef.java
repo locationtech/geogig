@@ -11,6 +11,8 @@ package org.locationtech.geogig.model;
 
 /**
  * Symbolic reference.
+ * 
+ * @since 1.0
  */
 public class SymRef extends Ref {
 

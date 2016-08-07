@@ -41,9 +41,9 @@ abstract class AbstractRevObject implements RevObject {
      */
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof AbstractRevObject)) {
+        if (!(o instanceof RevObject)) {
             return false;
         }
-        return id.equals(((AbstractRevObject) o).getId());
+        return id.equals(((RevObject) o).getId());
     }
 }

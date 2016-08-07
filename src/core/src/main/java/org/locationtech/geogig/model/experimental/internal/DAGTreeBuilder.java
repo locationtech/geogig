@@ -133,8 +133,8 @@ public class DAGTreeBuilder {
         }
 
         public RevTree getTree(ObjectId treeId) {
-            if (RevTreeBuilder.EMPTY_TREE_ID.equals(treeId)) {
-                return RevTreeBuilder.EMPTY;
+            if (RevTree.EMPTY_TREE_ID.equals(treeId)) {
+                return RevTree.EMPTY;
             }
             RevTree tree = newTrees.get(treeId);
             if (tree == null) {

@@ -16,7 +16,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.base.Preconditions;
 
@@ -70,7 +70,7 @@ class DAG implements Cloneable {
 
     public DAG() {
         this.children = new HashSet<>();
-        this.treeId = RevTreeBuilder.EMPTY_TREE_ID;
+        this.treeId = RevTree.EMPTY_TREE_ID;
         this.state = STATE.INITIALIZED;
     }
 

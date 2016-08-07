@@ -32,7 +32,7 @@ abstract class AbstractTreeBuilder implements RevTreeBuilder {
     private final AtomicBoolean disposed = new AtomicBoolean(false);
 
     protected AbstractTreeBuilder(final ObjectStore store) {
-        this(store, RevTreeBuilder.EMPTY);
+        this(store, RevTree.EMPTY);
     }
 
     protected AbstractTreeBuilder(final ObjectStore store, final RevTree original) {

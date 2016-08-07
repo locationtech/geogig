@@ -9,15 +9,18 @@
  */
 package org.locationtech.geogig.model;
 
+import org.locationtech.geogig.repository.NodeRef;
+
 import com.google.common.base.Optional;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
- * Super-interface for objects pointing to another object in the revision graph
+ * Super-interface for objects pointing to another object (nodes or buckets) in a {@link RevTree}.
  * 
  * @see Node
  * @see Bucket
  * @see NodeRef
+ * @since 1.0
  */
 public interface Bounded {
 
@@ -26,9 +29,18 @@ public interface Bounded {
      */
     public ObjectId getObjectId();
 
+    /**
+     * TODO: move to {@link RevObjects} to keep the model objects clear of implementation details
+     */
     public boolean intersects(Envelope env);
 
+    /**
+     * TODO: move to {@link RevObjects} to keep the model objects clear of implementation details
+     */
     public void expand(Envelope env);
 
+    /**
+     * @return the spatial envelope of the revision object this object points to, if any.
+     */
     public Optional<Envelope> bounds();
 }

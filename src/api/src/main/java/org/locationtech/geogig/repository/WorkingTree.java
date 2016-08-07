@@ -7,7 +7,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTree;

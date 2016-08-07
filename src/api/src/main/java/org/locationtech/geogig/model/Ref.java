@@ -12,7 +12,8 @@ package org.locationtech.geogig.model;
 import com.google.common.base.Preconditions;
 
 /**
- * Pairing of a name and the {@link ObjectId} it currently has.
+ * A named pointer to {@link RevObject} that represents an entry point in a repository's revision
+ * graph.
  * <p>
  * A ref in Git is (more or less) a variable that holds a single object identifier. The object
  * identifier can be any valid Git object (blob, tree, commit, annotated tag, ...).
@@ -20,6 +21,10 @@ import com.google.common.base.Preconditions;
  * The ref name has the attributes of the ref that was asked for as well as the ref it was resolved
  * to for symbolic refs plus the object id it points to and (for tags) the peeled target object id,
  * i.e. the tag resolved recursively until a non-tag object is referenced.
+ * 
+ * @see SymRef
+ * 
+ * @since 1.0
  */
 public class Ref implements Comparable<Ref> {
 

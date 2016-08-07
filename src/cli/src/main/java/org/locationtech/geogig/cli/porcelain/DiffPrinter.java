@@ -25,11 +25,11 @@ import java.util.Set;
 import org.fusesource.jansi.Ansi;
 import org.locationtech.geogig.cli.AnsiDecorator;
 import org.locationtech.geogig.cli.Console;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.plumbing.DiffFeature;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff;
@@ -39,6 +39,7 @@ import org.locationtech.geogig.plumbing.diff.LCSGeometryDiffImpl;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.type.PropertyDescriptor;
 
@@ -90,7 +91,7 @@ class SummaryDiffPrinter implements DiffPrinter {
     }
 
     private static String shortOid(ObjectId oid) {
-        return ObjectId.toString(oid, 4, new StringBuilder(19)).append("...").toString();
+        return RevObjects.toString(oid, 4, new StringBuilder(19)).append("...").toString();
     }
 
     private static String formatPath(DiffEntry entry) {

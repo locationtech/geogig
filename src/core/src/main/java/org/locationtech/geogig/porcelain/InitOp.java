@@ -21,7 +21,7 @@ import java.util.Map.Entry;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.UpdateRef;
@@ -197,7 +197,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                 repository.open();
                 // make sure the repo has the empty tree
                 ObjectStore objectDatabase = repository.objectDatabase();
-                objectDatabase.put(RevTreeBuilder.EMPTY);
+                objectDatabase.put(RevTree.EMPTY);
             } catch (RepositoryConnectionException e) {
                 throw new IllegalStateException(
                         "Error opening repository databases: " + e.getMessage(), e);
@@ -264,13 +264,13 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         Optional<Ref> workhead = command(RefParse.class).setName(Ref.WORK_HEAD).call();
         Preconditions.checkState(!workhead.isPresent(),
                 Ref.WORK_HEAD + " was already initialized.");
-        command(UpdateRef.class).setName(Ref.WORK_HEAD).setNewValue(RevTreeBuilder.EMPTY.getId())
+        command(UpdateRef.class).setName(Ref.WORK_HEAD).setNewValue(RevTree.EMPTY.getId())
                 .setReason("Repository initialization").call();
 
         Optional<Ref> stagehead = command(RefParse.class).setName(Ref.STAGE_HEAD).call();
         Preconditions.checkState(!stagehead.isPresent(),
                 Ref.STAGE_HEAD + " was already initialized.");
-        command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(RevTreeBuilder.EMPTY.getId())
+        command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(RevTree.EMPTY.getId())
                 .setReason("Repository initialization").call();
 
     }

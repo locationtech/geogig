@@ -19,7 +19,6 @@ import java.util.SortedSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -32,6 +31,7 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -299,9 +299,9 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
                 this.pathFilters, treePath);
 
         // find the diffs that apply to the path filters
-        final ObjectId leftTreeId = leftTreeRef == null ? RevTreeBuilder.EMPTY_TREE_ID
+        final ObjectId leftTreeId = leftTreeRef == null ? RevTree.EMPTY_TREE_ID
                 : leftTreeRef.getObjectId();
-        final ObjectId rightTreeId = rightTreeRef == null ? RevTreeBuilder.EMPTY_TREE_ID
+        final ObjectId rightTreeId = rightTreeRef == null ? RevTree.EMPTY_TREE_ID
                 : rightTreeRef.getObjectId();
 
         final RevTree currentLeftTree = repositoryDatabase.getTree(leftTreeId);

@@ -39,6 +39,7 @@ import org.junit.rules.TestName;
 import org.junit.runners.MethodSorters;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
@@ -337,7 +338,7 @@ public abstract class ObjectStoreStressTest {
     }
 
     private ObjectId fakeId(int i) {
-        return ObjectId.forString("fakeID" + i);
+        return RevObjects.forString("fakeID" + i);
     }
 
 }

@@ -21,7 +21,6 @@ import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.WriteTree;
 import org.locationtech.geogig.remote.BinaryPackedChanges;
@@ -95,7 +94,7 @@ public class ApplyChangesResource extends Finder {
                 BinaryPackedChanges unpacker = new BinaryPackedChanges(repository);
                 try (AutoCloseableIterator<DiffEntry> changes = new HttpFilteredDiffIterator(input,
                         unpacker)) {
-                    RevTree rootTree = RevTreeBuilder.EMPTY;
+                    RevTree rootTree = RevTree.EMPTY;
 
                     if (newParents.size() > 0) {
                         ObjectId mappedCommit = newParents.get(0);

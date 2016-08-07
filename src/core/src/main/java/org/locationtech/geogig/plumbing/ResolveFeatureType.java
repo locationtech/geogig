@@ -10,12 +10,12 @@
 package org.locationtech.geogig.plumbing;
 
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

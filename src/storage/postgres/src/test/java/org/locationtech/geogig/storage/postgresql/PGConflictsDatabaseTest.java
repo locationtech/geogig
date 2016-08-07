@@ -12,7 +12,6 @@ package org.locationtech.geogig.storage.postgresql;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.ObjectId.NULL;
-import static org.locationtech.geogig.model.ObjectId.forString;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -29,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.mockito.Answers;
@@ -44,8 +44,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class PGConflictsDatabaseTest {
 
-    private static final Conflict c1 = new Conflict("Rivers/1", NULL, forString("ours"),
-            forString("theirs"));
+    private static final Conflict c1 = new Conflict("Rivers/1", NULL, RevObjects.forString("ours"),
+            RevObjects.forString("theirs"));
 
     @Rule
     public ExpectedException expected = ExpectedException.none();

@@ -9,6 +9,10 @@
  */
 package org.locationtech.geogig.model;
 
+/**
+ * 
+ * @since 1.0
+ */
 public interface RevTag extends RevObject {
 
     /**

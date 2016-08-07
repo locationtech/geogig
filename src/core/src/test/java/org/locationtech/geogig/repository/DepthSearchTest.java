@@ -29,9 +29,9 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.WriteBack;
@@ -59,7 +59,7 @@ public class DepthSearchTest {
 
     private ObjectId rootTreeId;
 
-    private ObjectId fakeTreeMetadataId = ObjectId.forString("fakeMdId");
+    private ObjectId fakeTreeMetadataId = RevObjects.forString("fakeMdId");
 
     @Before
     public void setUp() throws IOException {
@@ -75,7 +75,7 @@ public class DepthSearchTest {
         odb = fakeRepo.objectDatabase();
         search = new DepthSearch(odb);
 
-        RevTree root = RevTreeBuilder.EMPTY;
+        RevTree root = RevTree.EMPTY;
         root = addTree(root, "path/to/tree1", "node11", "node12", "node13");
         root = addTree(root, "path/to/tree2", "node21", "node22", "node23");
         root = addTree(root, "tree3", "node31", "node32", "node33");
@@ -92,7 +92,7 @@ public class DepthSearchTest {
         if (singleNodeNames != null) {
             for (String singleNodeName : singleNodeNames) {
                 String nodePath = NodeRef.appendChild(treePath, singleNodeName);
-                ObjectId fakeFeatureOId = ObjectId.forString(nodePath);
+                ObjectId fakeFeatureOId = RevObjects.forString(nodePath);
                 ObjectId fakeTypeOId = ObjectId.NULL;// forString(treePath);
                 subTreeBuilder.put(Node.create(singleNodeName, fakeFeatureOId, fakeTypeOId,
                         TYPE.FEATURE, null));

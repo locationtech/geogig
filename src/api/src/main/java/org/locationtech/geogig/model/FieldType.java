@@ -45,6 +45,8 @@ import com.vividsolutions.jts.geom.Polygon;
  * When the attribute value or class is not bound to a constant in this enum, the {@link #UNKNOWN}
  * constant will be returned by both {@link #forValue(Object)} and {@link #forBinding(Class)}, which
  * should be treated by the calling code as an exceptional condition and act accordingly.
+ * 
+ * @since 1.0
  */
 public enum FieldType {
     NULL(0x00, Void.class), //

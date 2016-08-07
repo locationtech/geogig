@@ -35,7 +35,6 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
@@ -132,10 +131,10 @@ public class WorkingTreeImpl implements WorkingTree {
         Optional<ObjectId> workTreeId = context.command(ResolveTreeish.class)
                 .setTreeish(Ref.WORK_HEAD).call();
 
-        RevTree workTree = RevTreeBuilder.EMPTY;
+        RevTree workTree = RevTree.EMPTY;
 
         if (workTreeId.isPresent()) {
-            if (!workTreeId.get().equals(RevTreeBuilder.EMPTY_TREE_ID)) {
+            if (!workTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
                 workTree = indexDatabase.getTree(workTreeId.get());
             }
         } else {
@@ -143,7 +142,7 @@ public class WorkingTreeImpl implements WorkingTree {
             Optional<ObjectId> headTreeId = context.command(ResolveTreeish.class)
                     .setTreeish(Ref.HEAD).call();
 
-            if (headTreeId.isPresent() && !headTreeId.get().equals(RevTreeBuilder.EMPTY_TREE_ID)) {
+            if (headTreeId.isPresent() && !headTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
                 workTree = context.objectDatabase().getTree(headTreeId.get());
                 updateWorkHead(workTree.getId());
             }
@@ -224,7 +223,7 @@ public class WorkingTreeImpl implements WorkingTree {
         }
         RevTreeBuilder parentBuilder = RevTreeBuilder.canonical(indexDatabase, parent);
         Envelope bounds = null;
-        Node newTreeNode = Node.create(childName, RevTreeBuilder.EMPTY_TREE_ID, treeMetadataId,
+        Node newTreeNode = Node.create(childName, RevTree.EMPTY_TREE_ID, treeMetadataId,
                 TYPE.TREE, bounds, extraData);
         RevTree newParent = parentBuilder.put(newTreeNode).build();
         indexDatabase.put(newParent);
@@ -516,7 +515,7 @@ public class WorkingTreeImpl implements WorkingTree {
             if (treeRef == null) {
                 String parentPath = NodeRef.parentPath(treePath);
                 Node treeNode = Node.create(NodeRef.nodeFromPath(treePath),
-                        RevTreeBuilder.EMPTY_TREE_ID, featureMetadataId, TYPE.TREE, null);
+                        RevTree.EMPTY_TREE_ID, featureMetadataId, TYPE.TREE, null);
                 treeRef = new NodeRef(treeNode, parentPath, featureMetadataId);
                 currentTrees.put(treePath, treeRef);
             }

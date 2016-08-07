@@ -17,10 +17,12 @@ import java.util.Iterator;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -223,7 +225,8 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             if (tree.buckets().isPresent()) {
                 this.children = new Buckets(tree);
             } else {
-                this.children = Iterators.filter(tree.children(), boundsFilter);
+                this.children = Iterators
+                        .filter(RevObjects.children(tree, CanonicalNodeOrder.INSTANCE), boundsFilter);
             }
         }
 
@@ -298,7 +301,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             buckets = Iterators.filter(tree.buckets().get().values().iterator(), boundsFilter);
             bucketEntries = Collections.emptyIterator();
             // may it be a mixed tree (having both direct children and buckets)
-            bucketEntries = tree.children();
+            bucketEntries = RevObjects.children(tree, CanonicalNodeOrder.INSTANCE);
         }
 
         @Override

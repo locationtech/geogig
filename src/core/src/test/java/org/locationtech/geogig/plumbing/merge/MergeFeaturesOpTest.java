@@ -10,10 +10,10 @@
 package org.locationtech.geogig.plumbing.merge;
 
 import org.junit.Test;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 

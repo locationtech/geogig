@@ -42,9 +42,9 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
@@ -103,7 +103,7 @@ public abstract class ObjectStoreConformanceTest {
     public void testReadOnlyHint() {
         hints.set(Hints.OBJECTS_READ_ONLY, Boolean.TRUE);
         db = closeAndCreate(db, platform, hints);
-        RevObject obj = RevTreeBuilder.EMPTY;
+        RevObject obj = RevTree.EMPTY;
         try {
             db.put(obj);
             fail("Expected UOE on read only hint");
@@ -116,7 +116,7 @@ public abstract class ObjectStoreConformanceTest {
     public void testReadOnlyHintPreservedOnReopen() {
         hints.set(Hints.OBJECTS_READ_ONLY, Boolean.TRUE);
         db = closeAndCreate(db, platform, hints);
-        RevObject obj = RevTreeBuilder.EMPTY;
+        RevObject obj = RevTree.EMPTY;
         try {
             db.put(obj);
             fail("Expected UOE on read only hint");
@@ -138,7 +138,7 @@ public abstract class ObjectStoreConformanceTest {
     public void testReadOnlyHint2() {
         hints.set(Hints.OBJECTS_READ_ONLY, Boolean.TRUE);
         db = closeAndCreate(db, platform, hints);
-        RevObject obj = RevTreeBuilder.EMPTY;
+        RevObject obj = RevTree.EMPTY;
         try {
             db.put(obj);
             fail("Expected ISE on read only hint");
@@ -157,7 +157,7 @@ public abstract class ObjectStoreConformanceTest {
     public void testReadOnlyHint3() {
         hints.set(Hints.OBJECTS_READ_ONLY, Boolean.TRUE);
         db = closeAndCreate(db, platform, hints);
-        RevObject obj = RevTreeBuilder.EMPTY;
+        RevObject obj = RevTree.EMPTY;
         try {
             db.put(obj);
             fail("Expected UOE on read only hint");
@@ -178,7 +178,7 @@ public abstract class ObjectStoreConformanceTest {
         try (ObjectStore db2 = createOpen(platform, hints)) {
             assertNotSame(db, db2);
 
-            RevObject obj = RevTreeBuilder.EMPTY;
+            RevObject obj = RevTree.EMPTY;
 
             assertTrue(db.put(obj));
 
@@ -196,16 +196,16 @@ public abstract class ObjectStoreConformanceTest {
         checkClosed(() -> db.delete(ObjectId.NULL));
         checkClosed(() -> db.deleteAll(emptyIterator()));
         checkClosed(() -> db.deleteAll(emptyIterator(), NOOP_LISTENER));
-        checkClosed(() -> db.exists(RevTreeBuilder.EMPTY_TREE_ID));
-        checkClosed(() -> db.get(RevTreeBuilder.EMPTY_TREE_ID));
-        checkClosed(() -> db.get(RevTreeBuilder.EMPTY_TREE_ID, RevTree.class));
+        checkClosed(() -> db.exists(RevTree.EMPTY_TREE_ID));
+        checkClosed(() -> db.get(RevTree.EMPTY_TREE_ID));
+        checkClosed(() -> db.get(RevTree.EMPTY_TREE_ID, RevTree.class));
         checkClosed(() -> db.getAll(ImmutableList.of()));
         checkClosed(() -> db.getAll(ImmutableList.of(), NOOP_LISTENER));
         checkClosed(() -> db.getAll(ImmutableList.of(), NOOP_LISTENER, RevTree.class));
         checkClosed(() -> db.getIfPresent(ObjectId.NULL));
-        checkClosed(() -> db.getIfPresent(RevTreeBuilder.EMPTY_TREE_ID, RevTree.class));
+        checkClosed(() -> db.getIfPresent(RevTree.EMPTY_TREE_ID, RevTree.class));
         checkClosed(() -> db.lookUp("abcd1234"));
-        checkClosed(() -> db.put(RevTreeBuilder.EMPTY));
+        checkClosed(() -> db.put(RevTree.EMPTY));
         checkClosed(() -> db.putAll(emptyIterator()));
         checkClosed(() -> db.putAll(emptyIterator(), NOOP_LISTENER));
     }
@@ -219,14 +219,14 @@ public abstract class ObjectStoreConformanceTest {
         checkNullArgument(() -> db.exists(null));
         checkNullArgument(() -> db.get(null));
         checkNullArgument(() -> db.get(null, RevTree.class));
-        checkNullArgument(() -> db.get(RevTreeBuilder.EMPTY_TREE_ID, null));
+        checkNullArgument(() -> db.get(RevTree.EMPTY_TREE_ID, null));
         checkNullArgument(() -> db.getAll(null));
         checkNullArgument(() -> db.getAll(null, NOOP_LISTENER));
         checkNullArgument(() -> db.getAll(ImmutableList.of(), NOOP_LISTENER, null));
         checkNullArgument(() -> db.getAll(ImmutableList.of(), null));
         checkNullArgument(() -> db.getIfPresent(null));
         checkNullArgument(() -> db.getIfPresent(null, RevTree.class));
-        checkNullArgument(() -> db.getIfPresent(RevTreeBuilder.EMPTY_TREE_ID, null));
+        checkNullArgument(() -> db.getIfPresent(RevTree.EMPTY_TREE_ID, null));
         checkNullArgument(() -> db.lookUp(null));
         checkNullArgument(() -> db.put(null));
         checkNullArgument(() -> db.putAll(null));
@@ -254,9 +254,9 @@ public abstract class ObjectStoreConformanceTest {
 
     @Test
     public void testDelete() {
-        assertTrue(db.put(RevTreeBuilder.EMPTY));
-        db.delete(RevTreeBuilder.EMPTY_TREE_ID);
-        assertFalse(db.exists(RevTreeBuilder.EMPTY_TREE_ID));
+        assertTrue(db.put(RevTree.EMPTY));
+        db.delete(RevTree.EMPTY_TREE_ID);
+        assertFalse(db.exists(RevTree.EMPTY_TREE_ID));
     }
 
     @Test
@@ -268,8 +268,8 @@ public abstract class ObjectStoreConformanceTest {
             assertTrue(db.put(o));
         }
 
-        ObjectId notInDb1 = ObjectId.forString("fake1");
-        ObjectId notInDb2 = ObjectId.forString("fake2");
+        ObjectId notInDb1 = RevObjects.forString("fake1");
+        ObjectId notInDb2 = RevObjects.forString("fake2");
 
         Function<RevObject, ObjectId> toId = p -> p.getId();
         List<ObjectId> ids = Lists.newArrayList(concat(singletonIterator(notInDb1),
@@ -290,8 +290,8 @@ public abstract class ObjectStoreConformanceTest {
             assertTrue(db.put(o));
         }
 
-        ObjectId notInDb1 = ObjectId.forString("fake1");
-        ObjectId notInDb2 = ObjectId.forString("fake2");
+        ObjectId notInDb1 = RevObjects.forString("fake1");
+        ObjectId notInDb2 = RevObjects.forString("fake2");
 
         Function<RevObject, ObjectId> toId = p -> p.getId();
         Iterator<ObjectId> ids = concat(singletonIterator(notInDb1),
@@ -361,7 +361,7 @@ public abstract class ObjectStoreConformanceTest {
 
         ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
                 feature(1, "value", new Integer(111)), feature(2, (Object) null),
-                RevTreeBuilder.EMPTY);
+                RevTree.EMPTY);
 
         for (RevObject o : expected) {
             assertTrue(db.put(o));
@@ -384,7 +384,7 @@ public abstract class ObjectStoreConformanceTest {
 
         ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
                 feature(1, "value", new Integer(111)), feature(2, (Object) null),
-                RevTreeBuilder.EMPTY);
+                RevTree.EMPTY);
 
         for (RevObject o : expected) {
             assertTrue(db.put(o));
@@ -397,8 +397,8 @@ public abstract class ObjectStoreConformanceTest {
 
         CountingListener listener = BulkOpListener.newCountingListener();
 
-        Iterable<ObjectId> notFound = ImmutableList.of(ObjectId.forString("notfound1"),
-                ObjectId.forString("notfound2"));
+        Iterable<ObjectId> notFound = ImmutableList.of(RevObjects.forString("notfound1"),
+                RevObjects.forString("notfound2"));
 
         Iterator<RevObject> result = db.getAll(Iterables.concat(notFound, ids), listener);
 
@@ -415,7 +415,7 @@ public abstract class ObjectStoreConformanceTest {
         final RevFeature f1 = feature(0, null, "some value");
         final RevFeature f2 = feature(1, "value", new Integer(111));
         final RevFeature f3 = feature(2, (Object) null);
-        final RevTree t1 = RevTreeBuilder.EMPTY;
+        final RevTree t1 = RevTree.EMPTY;
         final RevTree t2 = createFeaturesTree(db, "t", 10);
         final RevTree t3 = createFeaturesTree(db, "t", 100);
 
@@ -453,7 +453,7 @@ public abstract class ObjectStoreConformanceTest {
     public void testGetIfPresent() {
         ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
                 feature(1, "value", new Integer(111)), feature(2, (Object) null),
-                RevTreeBuilder.EMPTY);
+                RevTree.EMPTY);
 
         for (RevObject o : expected) {
             assertTrue(db.put(o));
@@ -461,17 +461,17 @@ public abstract class ObjectStoreConformanceTest {
         for (RevObject o : expected) {
             assertEquals(o, db.getIfPresent(o.getId()));
         }
-        assertNull(db.getIfPresent(ObjectId.forString("notfound")));
+        assertNull(db.getIfPresent(RevObjects.forString("notfound")));
     }
 
     @Test
     public void testGetIfPresentWithCasting() {
-        assertTrue(db.put(RevTreeBuilder.EMPTY));
+        assertTrue(db.put(RevTree.EMPTY));
 
-        assertEquals(RevTreeBuilder.EMPTY,
-                db.getIfPresent(RevTreeBuilder.EMPTY_TREE_ID, RevTree.class));
+        assertEquals(RevTree.EMPTY,
+                db.getIfPresent(RevTree.EMPTY_TREE_ID, RevTree.class));
 
-        assertNull(db.getIfPresent(RevTreeBuilder.EMPTY_TREE_ID, RevTag.class));
+        assertNull(db.getIfPresent(RevTree.EMPTY_TREE_ID, RevTag.class));
     }
 
     @Test
@@ -538,8 +538,8 @@ public abstract class ObjectStoreConformanceTest {
 
     @Test
     public void testPut() {
-        assertTrue(db.put(RevTreeBuilder.EMPTY));
-        assertFalse(db.put(RevTreeBuilder.EMPTY));
+        assertTrue(db.put(RevTree.EMPTY));
+        assertFalse(db.put(RevTree.EMPTY));
     }
 
     @Test
@@ -547,7 +547,7 @@ public abstract class ObjectStoreConformanceTest {
 
         ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
                 feature(1, "value", new Integer(111)), feature(2, (Object) null),
-                RevTreeBuilder.EMPTY);
+                RevTree.EMPTY);
 
         db.putAll(expected.iterator());
         for (RevObject o : expected) {
@@ -560,7 +560,7 @@ public abstract class ObjectStoreConformanceTest {
 
         ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
                 feature(1, "value", new Integer(111)), feature(2, (Object) null),
-                RevTreeBuilder.EMPTY);
+                RevTree.EMPTY);
 
         Function<RevObject, ObjectId> toId = p -> p.getId();
         final Iterable<ObjectId> ids = Iterables.transform(expected, toId);

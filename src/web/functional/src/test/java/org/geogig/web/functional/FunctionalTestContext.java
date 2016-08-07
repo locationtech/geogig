@@ -18,10 +18,10 @@ import java.util.Set;
 
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.TestData;
 import org.restlet.data.Method;

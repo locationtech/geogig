@@ -17,7 +17,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
@@ -67,7 +66,7 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
 
     @Override
     public DAG getOrCreateTree(TreeId treeId) {
-        return getOrCreateTree(treeId, RevTreeBuilder.EMPTY_TREE_ID);
+        return getOrCreateTree(treeId, RevTree.EMPTY_TREE_ID);
     }
 
     @Override

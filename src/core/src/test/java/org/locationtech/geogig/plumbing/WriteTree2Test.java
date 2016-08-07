@@ -17,9 +17,9 @@ import java.util.SortedMap;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -28,12 +28,14 @@ import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.diff.MutableTree;
 import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -56,7 +58,7 @@ import com.vividsolutions.jts.io.ParseException;
 
 public class WriteTree2Test extends RepositoryTestCase {
 
-    private static final String EMPTY_ID = RevTreeBuilder.EMPTY_TREE_ID.toString();
+    private static final String EMPTY_ID = RevTree.EMPTY_TREE_ID.toString();
 
     private WriteTree2 command;
 
@@ -86,7 +88,7 @@ public class WriteTree2Test extends RepositoryTestCase {
     public void testEmptyRepo() {
         ObjectId root = command.call();
         assertNotNull(root);
-        assertEquals(RevTreeBuilder.EMPTY_TREE_ID, root);
+        assertEquals(RevTree.EMPTY_TREE_ID, root);
     }
 
     @Test
@@ -378,9 +380,11 @@ public class WriteTree2Test extends RepositoryTestCase {
                 repoTree("roads/highways", "a21", "d1", 3), // added 2 features
                 repoTree("roads/streets", "a31", "d2", 1) // removed 1 feature
         );
-        
-        System.err.printf("left : %s\n\t%s\n\t%s\n", leftTree, leftTree.trees().orNull(), leftTree.features().orNull());
-        System.err.printf("right: %s\n\t%s\n\t%s\n", rightTree, rightTree.trees().orNull(), rightTree.features().orNull());
+
+        System.err.printf("left : %s\n\t%s\n\t%s\n", leftTree, leftTree.trees().orNull(),
+                leftTree.features().orNull());
+        System.err.printf("right: %s\n\t%s\n\t%s\n", rightTree, rightTree.trees().orNull(),
+                rightTree.features().orNull());
 
         MapDifference<String, NodeRef> difference;
         Set<String> onlyOnLeft;
@@ -553,7 +557,7 @@ public class WriteTree2Test extends RepositoryTestCase {
 
         RevTree tree = objectDb.getTree(repoTreeId);
 
-        Iterator<Node> children = tree.children();
+        Iterator<Node> children = RevObjects.children(tree, CanonicalNodeOrder.INSTANCE);
         while (children.hasNext()) {
             final Node node = children.next();
             if (TYPE.TREE.equals(node.getType())) {
@@ -629,7 +633,7 @@ public class WriteTree2Test extends RepositoryTestCase {
     }
 
     private RevTree createFromRefs(ObjectDatabase targetDb, NodeRef... treeRefs) {
-        MutableTree mutableTree = MutableTree.createFromRefs(RevTreeBuilder.EMPTY_TREE_ID,
+        MutableTree mutableTree = MutableTree.createFromRefs(RevTree.EMPTY_TREE_ID,
                 treeRefs);
         RevTree tree = mutableTree.build(objectDb, targetDb);
         return tree;

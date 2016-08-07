@@ -22,10 +22,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.BoundsFilteringDiffConsumer;
 import org.locationtech.geogig.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
@@ -35,6 +33,7 @@ import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.ForwardingConsumer
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -324,14 +323,14 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         ResolveTreeish command = null;
 
         if (treeOid != null) {
-            if (ObjectId.NULL.equals(treeOid) || RevTreeBuilder.EMPTY_TREE_ID.equals(treeOid)) {
-                tree = RevTreeBuilder.EMPTY;
+            if (ObjectId.NULL.equals(treeOid) || RevTree.EMPTY_TREE_ID.equals(treeOid)) {
+                tree = RevTree.EMPTY;
             } else {
                 command = command(ResolveTreeish.class).setTreeish(treeOid);
             }
         } else if (treeIsh.equals(ObjectId.NULL.toString())
-                || RevTreeBuilder.EMPTY_TREE_ID.toString().equals(treeIsh)) {
-            tree = RevTreeBuilder.EMPTY;
+                || RevTree.EMPTY_TREE_ID.toString().equals(treeIsh)) {
+            tree = RevTree.EMPTY;
         } else {
             command = command(ResolveTreeish.class).setTreeish(treeIsh);
         }

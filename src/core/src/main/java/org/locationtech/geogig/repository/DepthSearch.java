@@ -11,14 +11,13 @@ package org.locationtech.geogig.repository;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.locationtech.geogig.model.NodeRef.PATH_SEPARATOR;
+import static org.locationtech.geogig.repository.NodeRef.PATH_SEPARATOR;
 
 import java.util.List;
 
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectDatabase;

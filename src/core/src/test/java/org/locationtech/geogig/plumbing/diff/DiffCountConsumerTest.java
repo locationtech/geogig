@@ -17,12 +17,13 @@ import org.junit.Test;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 
@@ -34,13 +35,13 @@ public class DiffCountConsumerTest extends Assert {
     /**
      * All original feature noderefs have this objectid
      */
-    private static final ObjectId FAKE_FEATURE_ID = ObjectId
+    private static final ObjectId FAKE_FEATURE_ID = RevObjects
             .forString("1100000000000000000000000000000000000000");
 
     /**
      * All changed feature noderefs have this objectid
      */
-    private static final ObjectId FAKE_FEATURE_ID_CHANGED = ObjectId
+    private static final ObjectId FAKE_FEATURE_ID_CHANGED = RevObjects
             .forString("2200000000000000000000000000000000000000");
 
     private ObjectDatabase odb;
@@ -99,9 +100,9 @@ public class DiffCountConsumerTest extends Assert {
     @Test
     public void testChildrenEmpty() {
         assertEquals(childrenFeatureTree.size(),
-                count(childrenFeatureTree, RevTreeBuilder.EMPTY).featureCount());
+                count(childrenFeatureTree, RevTree.EMPTY).featureCount());
         assertEquals(childrenFeatureTree.size(),
-                count(RevTreeBuilder.EMPTY, childrenFeatureTree).featureCount());
+                count(RevTree.EMPTY, childrenFeatureTree).featureCount());
     }
 
     @Test

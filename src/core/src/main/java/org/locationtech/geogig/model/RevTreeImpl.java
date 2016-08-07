@@ -11,7 +11,6 @@ package org.locationtech.geogig.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Iterator;
 import java.util.SortedMap;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -19,7 +18,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Iterators;
 
 /**
  *
@@ -53,11 +51,6 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         public int numTrees() {
             return trees != null ? trees.size() : 0;
         }
-
-        @Override
-        public final boolean isEmpty() {
-            return (features == null || features.isEmpty()) && (trees == null || trees.isEmpty());
-        }
     }
 
     static final class NodeTree extends RevTreeImpl {
@@ -81,11 +74,6 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         @Override
         public Optional<ImmutableSortedMap<Integer, Bucket>> buckets() {
             return Optional.fromNullable(buckets);
-        }
-
-        @Override
-        public final boolean isEmpty() {
-            return buckets == null || buckets.isEmpty();
         }
 
         @Override
@@ -129,12 +117,6 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         @Override
         public Optional<ImmutableSortedMap<Integer, Bucket>> buckets() {
             return Optional.fromNullable(buckets);
-        }
-
-        @Override
-        public final boolean isEmpty() {
-            return (trees == null || trees.isEmpty()) && (features == null || features.isEmpty())
-                    && (buckets == null || buckets.isEmpty());
         }
 
         @Override
@@ -187,25 +169,6 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
             return new NodeTree(id, size, childTreeCount, immutableBuckets);
         }
         return new MixedTree(id, size, childTreeCount, trees, features, immutableBuckets);
-    }
-
-    @Override
-    public TYPE getType() {
-        return TYPE.TREE;
-    }
-
-    @Override
-    public Iterator<Node> children() {
-        ImmutableList<Node> trees = trees().or(ImmutableList.<Node> of());
-        ImmutableList<Node> features = features().or(ImmutableList.<Node> of());
-        if (trees.isEmpty()) {
-            return features.iterator();
-        }
-        if (features.isEmpty()) {
-            return trees.iterator();
-        }
-        return Iterators.mergeSorted(ImmutableList.of(trees.iterator(), features.iterator()),
-                CanonicalNodeOrder.INSTANCE);
     }
 
     @Override

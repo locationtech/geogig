@@ -26,7 +26,6 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.experimental.internal.DAG.STATE;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -311,8 +310,8 @@ public abstract class ClusteringStrategy {
 
     private RevTree getOriginalTree(@Nullable ObjectId originalId) {
         final RevTree original;
-        if (originalId == null || RevTreeBuilder.EMPTY_TREE_ID.equals(originalId)) {
-            original = RevTreeBuilder.EMPTY;
+        if (originalId == null || RevTree.EMPTY_TREE_ID.equals(originalId)) {
+            original = RevTree.EMPTY;
         } else {
             // System.err.println("Loading tree " + originalId);
             original = storageProvider.getTree(originalId);

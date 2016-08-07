@@ -126,7 +126,7 @@ public class RevObjectTestSupport {
             RND.nextBytes(raw);
             oid = ObjectId.createNoClone(raw);
         } else {// predictable id
-            oid = ObjectId.forString(name);
+            oid = RevObjects.forString(name);
         }
         Node ref = Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE,
                 new Envelope(index, index + 1, index, index + 1));

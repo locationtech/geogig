@@ -18,13 +18,13 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.osm.internal.coordcache.MappedPointCache;
 import org.locationtech.geogig.osm.internal.coordcache.PointCache;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.FeatureToDelete;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.SubProgressListener;

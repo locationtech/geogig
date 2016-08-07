@@ -12,15 +12,32 @@ package org.locationtech.geogig.model;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+import com.google.common.hash.HashFunction;
 
 /**
- * Base object type accessed during revision walking.
+ * Base interface for the closed set of revision objects that are stored in a GeoGig repository.
+ * <p>
+ * All {@link RevObject}s have a {@link #getType() type} and {@link #getId() id}.
+ * <p>
+ * The id is an {@link ObjectId} computed algorithmically by {@link HashObjectFunnels} with a SHA-1
+ * {@link HashFunction HashFunction}, the the type is given by the concrete kind of revision object.
+ * 
+ * @apiNote all revision objects are immutable data structures that describe the contents of an
+ *          instance of the specific type. When stored in a repository, the id shall not be included
+ *          as part of its serialized form, but only its contents. Given the case, specific checks
+ *          can be implemented to ensure a revision object obtained from the repository for a given
+ *          {@link ObjectId} do hash out to the expected id.
+ * @implNote Given any two objects of the same type with the same exact contents shall hash out to
+ *           the same {@link ObjectId}, {@link #equals(Object) equality} checks can merely compare
+ *           the two {@link ObjectId}s for equality.
  * 
  * @see RevCommit
  * @see RevTree
  * @see RevFeature
- * @see RevFeature
+ * @see RevFeatureType
  * @see RevTag
+ * 
+ * @since 1.0
  */
 public interface RevObject {
     /**
@@ -121,16 +138,15 @@ public interface RevObject {
     public TYPE getType();
 
     /**
-     * Get the name of this object.
-     * 
      * @return unique hash of this object.
      */
     public ObjectId getId();
 
     /**
-     * Equality is based on id
+     * @implNote Given any two objects of the same type with the same exact contents shall hash out
+     *           to the same {@link ObjectId}, {@link #equals(Object) equality} checks can merely
+     *           compare the two {@link ObjectId}s for equality.
      * 
-     * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
     public boolean equals(Object o);

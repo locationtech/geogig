@@ -11,8 +11,8 @@ package org.locationtech.geogig.plumbing;
 
 import java.util.regex.Pattern;
 
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;

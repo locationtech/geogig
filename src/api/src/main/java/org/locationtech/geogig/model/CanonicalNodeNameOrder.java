@@ -91,7 +91,7 @@ import com.google.common.primitives.UnsignedLong;
  * The {@code "Max #features"} column shows what's the maximum number of feature nodes a tree split
  * at that level of nesting can contain.
  * 
- * @since 0.6
+ * @since 1.0
  */
 public final class CanonicalNodeNameOrder extends Ordering<String> implements Serializable {
 
@@ -179,7 +179,8 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
     }
 
     /**
-     * Computes the bucket index that corresponds to the given node name at the given depth.
+     * Computes the bucket index (zero based) that corresponds to the given node name at the given
+     * (zero based) depth.
      * 
      * @return and Integer between zero and {@link #maxBucketsForLevel
      *         maxBucketsForLevel(depthIndex)} minus one

@@ -10,18 +10,22 @@
 package org.locationtech.geogig.model;
 
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
-import com.google.common.hash.HashCode;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.UnsignedBytes;
 
 /**
- * A {@link RevObject} identifier backed by a hash function (SHA1 for instance)
+ * A unique identifier for a {@link RevObject}, which is created by passing a {@link HashFunction}
+ * to {@link HashObjectFunnels}.
+ * 
+ * @apiNote the {@code ObjectId} effectively encloses a 20-byte byte array which is the
+ *          <a href="https://en.wikipedia.org/wiki/SHA-1">SHA-1</a> hash resulting
+ * 
+ * @since 1.0
  */
 public final class ObjectId implements Comparable<ObjectId>, Serializable {
 
@@ -34,6 +38,8 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
 
     /**
      * ObjectId instance that represents a NULL id.
+     * 
+     * @apiNote the NULL object is defined as the one where all its 20 bytes are zero.
      */
     public static final ObjectId NULL;
 
@@ -42,6 +48,10 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      */
     public static final HashFunction HASH_FUNCTION;
 
+    /**
+     * A constant with decimal value {@code 20}, defining the prescribed size of the internal byte
+     * array that composes an object id
+     */
     public static final int NUM_BYTES;
 
     private static final int NUM_CHARS;
@@ -118,29 +128,13 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
                 | ((hashCode[3] & 0xFF) << 24);
     }
 
-    private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
-
     /**
      * @return a human friendly representation of this SHA1
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
-        return ObjectId.toString(this, NUM_BYTES, new StringBuilder(2 * NUM_BYTES)).toString();
-    }
-
-    public static StringBuilder toString(final ObjectId id, final int byteLength,
-            StringBuilder target) {
-        Preconditions.checkNotNull(id);
-        Preconditions.checkArgument(byteLength > 0 && byteLength <= NUM_BYTES);
-
-        StringBuilder sb = target == null ? new StringBuilder(2 * byteLength) : target;
-        byte b;
-        for (int i = 0; i < byteLength; i++) {
-            b = (byte) id.byteN(i);
-            sb.append(HEX_DIGITS[(b >> 4) & 0xf]).append(HEX_DIGITS[b & 0xf]);
-        }
-        return sb;
+        return RevObjects.toString(this, NUM_BYTES, new StringBuilder(2 * NUM_BYTES)).toString();
     }
 
     /**
@@ -166,8 +160,11 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
     }
 
     /**
-     * Converts a {@code String} representation of a byte code into a byte array.
+     * Converts a (possibly partial) {@code String} representation of an {@link ObjectId} into a
+     * byte array.
      * 
+     * @pre {@code hash.length <= 20}
+     * @pre all the characters in {@code hash} are hexadecimal digits
      * @param hash the string to convert
      * @return the byte array represented by its string form
      */
@@ -198,10 +195,6 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
     public int compareTo(final ObjectId o) {
         byte[] left = this.hashCode;
         byte[] right = o.hashCode;
-        return compare(left, right);
-    }
-
-    public static int compare(byte[] left, byte[] right) {
         return UnsignedBytes.lexicographicalComparator().compare(left, right);
     }
 
@@ -213,38 +206,45 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
         return hashCode.clone();
     }
 
+    /**
+     * Copies the 20 bytes of this objcetid's internal SHA-1 hash into {@code target}, starting at
+     * {@code target}'s index zero.
+     * 
+     * @pre {@code 0 <= length <= 20}
+     * @pre {@code target.length >= 20}
+     * @param target the byte array where to copy the 20 bytes of this SHA-1 hash sequence.
+     */
     public void getRawValue(byte[] target) {
-        System.arraycopy(hashCode, 0, target, 0, NUM_BYTES);
-    }
-
-    public void getRawValue(byte[] target, int size) {
-        System.arraycopy(hashCode, 0, target, 0, size);
+        getRawValue(target, NUM_BYTES);
     }
 
     /**
-     * Utility method to quickly hash a String and create an ObjectId out of the string SHA-1 hash.
-     * <p>
-     * Note this method is to hash a string, not to convert the string representation of an
-     * ObjectId. Use {@link #valueOf(String)} for that purpose.
-     * </p>
+     * Copies the first {@code length} bytes of this objcetid's internal SHA-1 hash into
+     * {@code target}, starting at {@code target}'s index zero.
      * 
-     * @param strToHash
-     * @return the {@code ObjectId} generated from the string
+     * @pre {@code 0 <= length <= length}
+     * @pre {@code target.length >= length}
+     * @param target the byte array where to copy the specified number of bytes of this SHA-1 hash
+     *        sequence.
+     * @param length how many bytes
      */
-    public static ObjectId forString(final String strToHash) {
-        Preconditions.checkNotNull(strToHash);
-        HashCode hashCode = HASH_FUNCTION.hashString(strToHash, Charset.forName("UTF-8"));
-        return new ObjectId(hashCode.asBytes(), false);
+    public void getRawValue(byte[] target, final int length) {
+        Preconditions.checkArgument(length >= 0);
+        Preconditions.checkArgument(length <= NUM_BYTES);
+        Preconditions.checkArgument(target.length >= length);
+        System.arraycopy(hashCode, 0, target, 0, length);
     }
 
     /**
      * Returns the value of this ObjectId's internal hash at the given index without having to go
      * through {@link #getRawValue()} and hence create excessive defensive copies of the byte array.
      * 
+     * @pre {@code 0 <= inded < 20}
      * @param index the index of the byte inside this objectid's internal hash to return
      * @return the byte at the given index as an integer
      */
-    public int byteN(int index) {
+    public int byteN(final int index) {
+        Preconditions.checkArgument(index >= 0 && index < NUM_BYTES);
         int b = this.hashCode[index] & 0xFF;
         return b;
     }

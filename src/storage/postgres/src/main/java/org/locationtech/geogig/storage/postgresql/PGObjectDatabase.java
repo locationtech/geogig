@@ -59,7 +59,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.BulkOpListener;
@@ -346,8 +345,8 @@ public class PGObjectDatabase implements ObjectDatabase {
         config.checkRepositoryExists();
 
         final RevObject obj;
-        if (RevTreeBuilder.EMPTY_TREE_ID.equals(id)) {
-            return type.isAssignableFrom(RevTree.class) ? type.cast(RevTreeBuilder.EMPTY) : null;
+        if (RevTree.EMPTY_TREE_ID.equals(id)) {
+            return type.isAssignableFrom(RevTree.class) ? type.cast(RevTree.EMPTY) : null;
         }
 
         @Nullable

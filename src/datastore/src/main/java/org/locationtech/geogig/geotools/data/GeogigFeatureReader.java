@@ -33,20 +33,19 @@ import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -130,7 +129,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         this.maxFeatures = maxFeatures;
 
         final String effectiveHead = headRef == null ? Ref.WORK_HEAD : headRef;
-        final String effectiveOldHead = oldHeadRef == null ? RevTreeBuilder.EMPTY_TREE_ID.toString()
+        final String effectiveOldHead = oldHeadRef == null ? RevTree.EMPTY_TREE_ID.toString()
                 : oldHeadRef;
         final String typeTreeRefSpec = effectiveHead + ":" + typeTreePath;
 

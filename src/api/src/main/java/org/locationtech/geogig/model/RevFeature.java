@@ -14,6 +14,10 @@ import java.util.function.Consumer;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
+/**
+ * 
+ * @since 1.0
+ */
 public interface RevFeature extends RevObject {
 
     /**

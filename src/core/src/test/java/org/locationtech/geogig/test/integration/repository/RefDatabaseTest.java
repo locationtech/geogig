@@ -28,6 +28,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.test.TestPlatform;
@@ -45,7 +46,7 @@ public abstract class RefDatabaseTest {
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    private static final ObjectId sampleId = ObjectId.forString("some random string");
+    private static final ObjectId sampleId = RevObjects.forString("some random string");
 
     @Before
     public void setUp() throws Exception {
@@ -263,7 +264,7 @@ public abstract class RefDatabaseTest {
     }
 
     private String id(String string) {
-        return ObjectId.forString(string).toString();
+        return RevObjects.forString(string).toString();
     }
 
     private void putRef(String name, String value, Map<String, String> holder) {

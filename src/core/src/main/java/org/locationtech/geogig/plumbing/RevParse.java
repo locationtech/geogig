@@ -16,15 +16,14 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.base.Optional;
 
@@ -325,8 +324,8 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
                     if (parsed.isNull()) {
                         return Optional.of(ObjectId.NULL);
                     }
-                    if (parsed.equals(RevTreeBuilder.EMPTY_TREE_ID)) {
-                        return Optional.of(RevTreeBuilder.EMPTY_TREE_ID);
+                    if (parsed.equals(RevTree.EMPTY_TREE_ID)) {
+                        return Optional.of(RevTree.EMPTY_TREE_ID);
                     }
                     if (objectDatabase().exists(parsed)) {
                         return Optional.of(parsed);
@@ -344,8 +343,8 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
                     resolvedTo = hashMatches.get(0);
                 } else if (ObjectId.NULL.toString().startsWith(refSpec)) {
                     resolvedTo = ObjectId.NULL;
-                } else if (RevTreeBuilder.EMPTY_TREE_ID.toString().startsWith(refSpec)) {
-                    resolvedTo = RevTreeBuilder.EMPTY.getId();
+                } else if (RevTree.EMPTY_TREE_ID.toString().startsWith(refSpec)) {
+                    resolvedTo = RevTree.EMPTY.getId();
                 }
             }
         }

@@ -641,6 +641,46 @@
           <aggregate>true</aggregate>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.4</version>
+        <configuration>
+          <show>public</show>
+          <tags>
+            <tag>
+              <name>apiNote</name>
+              <placement>a</placement>
+              <head>API Note:</head>
+            </tag>
+            <tag>
+              <name>implSpec</name>
+              <placement>a</placement>
+              <head>Implementation Requirements:</head>
+            </tag>
+            <tag>
+              <name>implNote</name>
+              <placement>a</placement>
+              <head>Implementation Note:</head>
+            </tag>
+            <tag>
+              <name>pre</name>
+              <placement>a</placement>
+              <head>Precondition:</head>
+            </tag>
+            <tag>
+              <name>post</name>
+              <placement>a</placement>
+              <head>Postcontidion:</head>
+            </tag>
+            <tag>
+              <name>invariant</name>
+              <placement>a</placement>
+              <head>Invariant:</head>
+            </tag>
+          </tags>
+        </configuration>
+      </plugin>
     </plugins>
   </reporting>
 

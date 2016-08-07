@@ -34,7 +34,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.UpdateRef;
@@ -158,7 +159,7 @@ public class InitOpTest {
         verify(mockUpdateRef, times(1)).setName(eq(Ref.WORK_HEAD));
         verify(mockUpdateRef, times(1)).setName(eq(Ref.STAGE_HEAD));
         verify(mockUpdateRef, times(1)).setNewValue(eq(ObjectId.NULL));
-        verify(mockUpdateRef, times(2)).setNewValue(eq(RevTreeBuilder.EMPTY_TREE_ID));
+        verify(mockUpdateRef, times(2)).setNewValue(eq(RevTree.EMPTY_TREE_ID));
         verify(mockUpdateRef, times(3)).setReason(anyString());
         verify(mockUpdateRef, times(3)).call();
 
@@ -166,7 +167,7 @@ public class InitOpTest {
         verify(mockUpdateSymRef, times(1)).setNewValue(eq(Ref.MASTER));
         verify(mockUpdateSymRef, times(1)).call();
 
-        assertEquals(RevTreeBuilder.EMPTY, objectDatabase.get(RevTreeBuilder.EMPTY_TREE_ID));
+        assertEquals(RevTree.EMPTY, objectDatabase.get(RevTree.EMPTY_TREE_ID));
     }
 
     @Test
@@ -184,7 +185,7 @@ public class InitOpTest {
         assertTrue(new File(workingDir, ".geogig").exists());
         assertTrue(new File(workingDir, ".geogig").isDirectory());
 
-        Ref master = new Ref(Ref.MASTER, ObjectId.forString("hash me"));
+        Ref master = new Ref(Ref.MASTER, RevObjects.forString("hash me"));
 
         when(mockRefParse.call()).thenReturn(Optional.of(master));
 
@@ -202,7 +203,7 @@ public class InitOpTest {
         verify(injector, never()).command(eq(UpdateRef.class));
         verify(injector, never()).command(eq(UpdateSymRef.class));
 
-        assertEquals(RevTreeBuilder.EMPTY, objectDatabase.get(RevTreeBuilder.EMPTY_TREE_ID));
+        assertEquals(RevTree.EMPTY, objectDatabase.get(RevTree.EMPTY_TREE_ID));
     }
 
     @Test

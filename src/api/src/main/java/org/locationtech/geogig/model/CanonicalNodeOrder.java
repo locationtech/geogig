@@ -18,6 +18,8 @@ import com.google.common.collect.Ordering;
  * comparator.
  * 
  * @see CanonicalNodeNameOrder
+ * 
+ * @since 1.0
  */
 public final class CanonicalNodeOrder extends Ordering<Node> implements Serializable {
 

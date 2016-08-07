@@ -14,14 +14,15 @@ import static org.junit.Assert.assertTrue;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
@@ -44,8 +45,8 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ObjectId oldCommitId = ObjectId.forString("old");
-        ObjectId newCommitId = ObjectId.forString("new");
+        ObjectId oldCommitId = RevObjects.forString("old");
+        ObjectId newCommitId = RevObjects.forString("new");
         ParameterSet options = TestParams.of("authorName", "Tester", "authorEmail",
                 "tester@example.com", "commitMessage", "someCommitMessage", "mergeMessage",
                 "someMergeMessage", "oldCommitId", oldCommitId.toString(), "newCommitId",

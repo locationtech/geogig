@@ -14,13 +14,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DepthSearch;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.MemoryModule;
@@ -57,7 +58,7 @@ public class WriteBackTest extends Assert {
     @Test
     public void testSimple() {
 
-        RevTree oldRoot = RevTreeBuilder.EMPTY;
+        RevTree oldRoot = RevTree.EMPTY;
         RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
         ObjectId newRootId = writeBack.setAncestor(oldRoot).setChildPath("subtree").setTree(tree)
                 .call();
@@ -69,7 +70,7 @@ public class WriteBackTest extends Assert {
     @Test
     public void testSingleLevel() {
 
-        RevTree oldRoot = RevTreeBuilder.EMPTY;
+        RevTree oldRoot = RevTree.EMPTY;
 
         RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
@@ -89,7 +90,7 @@ public class WriteBackTest extends Assert {
     @Test
     public void testSingleNested() {
 
-        RevTree oldRoot = RevTreeBuilder.EMPTY;
+        RevTree oldRoot = RevTree.EMPTY;
 
         RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
@@ -112,7 +113,7 @@ public class WriteBackTest extends Assert {
     @Test
     public void testSiblingsSingleLevel() {
 
-        RevTree ancestor = RevTreeBuilder.EMPTY;
+        RevTree ancestor = RevTree.EMPTY;
 
         RevTree tree1 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
         RevTree tree2 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
@@ -139,7 +140,7 @@ public class WriteBackTest extends Assert {
         RevTree tree2 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
         Preconditions.checkState(odb.isOpen());
-        RevTree oldRoot = RevTreeBuilder.EMPTY;
+        RevTree oldRoot = RevTree.EMPTY;
         ObjectId newRootId1 = writeBack.setAncestor(oldRoot).setChildPath("subtree1/level2")
                 .setTree(tree1).call();
 
@@ -163,11 +164,11 @@ public class WriteBackTest extends Assert {
     @Test
     public void testPreserveMetadataId() {
 
-        RevTree oldRoot = RevTreeBuilder.EMPTY;
+        RevTree oldRoot = RevTree.EMPTY;
 
         RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
-        final ObjectId treeMetadataId = ObjectId.forString("fakeMdId");
+        final ObjectId treeMetadataId = RevObjects.forString("fakeMdId");
 
         ObjectId newRootId = writeBack.setAncestor(oldRoot).setChildPath("level1/level2")
                 .setTree(tree).setMetadataId(treeMetadataId).call();
@@ -182,6 +183,6 @@ public class WriteBackTest extends Assert {
     }
 
     private Node blob(String path) {
-        return Node.create(path, ObjectId.forString(path), ObjectId.NULL, TYPE.FEATURE, null);
+        return Node.create(path, RevObjects.forString(path), ObjectId.NULL, TYPE.FEATURE, null);
     }
 }

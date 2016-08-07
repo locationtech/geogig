@@ -20,7 +20,6 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.hooks.Hookable;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -41,6 +40,7 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Optional;

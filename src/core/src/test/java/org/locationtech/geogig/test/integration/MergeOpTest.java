@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import static org.locationtech.geogig.model.NodeRef.appendChild;
+import static org.locationtech.geogig.repository.NodeRef.appendChild;
 
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -47,6 +46,7 @@ import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.porcelain.PullOp;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 

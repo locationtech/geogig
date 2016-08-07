@@ -47,11 +47,6 @@
 
     mvn clean install -PsqlServer,sqlServerOnline
 
-  Corertura is configufred for a test coverage report:
-
-    mvn cobertura:cobertura
-    open target/site/cobertura/index.html
-
   * For Oracle:
 
     mvn clean install -Poracle
@@ -442,6 +437,11 @@
           <artifactId>maven-dependency-plugin</artifactId>
           <version>2.2</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.17</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -449,7 +449,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.17</version>
         <configuration>
           <includes>
             <include>**/*Test.java</include>
@@ -573,7 +572,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.17</version>
             <configuration>
               <includes>
                 <include>**/*Test.java</include>
@@ -585,6 +583,34 @@
               </excludes>
               <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
               <reuseForks>true</reuseForks>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>performance</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <systemPropertyVariables>
+                <geogig.runPerformanceTests>true</geogig.runPerformanceTests>
+              </systemPropertyVariables>
+              <!--excludes>
+                <exclude>${online.skip.pattern}</exclude>
+                <exclude>${sqlServerOnline.skip.pattern}</exclude>
+                <exclude>${postgresOnline.skip.pattern}</exclude>
+              </excludes-->
+              <includes>
+                <include>**/*StressTest.java</include>
+                <include>**/*PerformanceTest.java</include>
+              </includes>
+              <forkCount>1</forkCount>
+              <reuseForks>false</reuseForks>
+              <argLine>-Xms2G -Xmx2G</argLine>
             </configuration>
           </plugin>
         </plugins>
@@ -636,7 +662,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.17</version>
         <configuration>
           <aggregate>true</aggregate>
         </configuration>

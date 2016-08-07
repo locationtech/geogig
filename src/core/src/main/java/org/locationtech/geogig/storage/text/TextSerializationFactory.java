@@ -384,15 +384,11 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         protected void print(RevTree revTree, Writer w) throws IOException {
             println(w, "size\t", Long.toString(revTree.size()));
             println(w, "numtrees\t", Integer.toString(revTree.numTrees()));
-            if (revTree.trees().isPresent()) {
-                writeChildren(w, revTree.trees().get());
-            }
-            if (revTree.features().isPresent()) {
-                writeChildren(w, revTree.features().get());
-            } else if (revTree.buckets().isPresent()) {
-                writeBuckets(w, revTree.buckets().get());
-            }
 
+            writeChildren(w, revTree.trees());
+            writeChildren(w, revTree.features());
+
+            writeBuckets(w, revTree.buckets());
         }
 
         private void writeChildren(Writer w, ImmutableCollection<Node> children)

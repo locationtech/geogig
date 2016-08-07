@@ -55,10 +55,10 @@ public class DepthTreeIteratorTest extends Assert {
         treePath = "";
         emptyTree = RevTree.EMPTY;
         featuresLeafTree = createFeaturesTree(source, "featuresLeafTree", 100);
-        assertTrue(featuresLeafTree.features().isPresent());
+        assertFalse(featuresLeafTree.features().isEmpty());
 
         treesLeafTree = createTreesTree(source, 100, 10, metadataId);
-        assertTrue(treesLeafTree.trees().isPresent());
+        assertFalse(treesLeafTree.trees().isEmpty());
 
         RevTreeBuilder builder = createTreesTreeBuilder(source, 10, 10, metadataId);
         for (int i = 0; i < 100; i++) {

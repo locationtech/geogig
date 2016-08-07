@@ -168,8 +168,8 @@ abstract class DAGNode {
 
         @Override
         protected ImmutableList<Node> collection(RevTree tree) {
-            Preconditions.checkState(tree.trees().isPresent());
-            ImmutableList<Node> trees = tree.trees().get();
+            Preconditions.checkState(!tree.trees().isEmpty());
+            ImmutableList<Node> trees = tree.trees();
             return trees;
         }
 
@@ -183,8 +183,8 @@ abstract class DAGNode {
 
         @Override
         protected ImmutableList<Node> collection(RevTree tree) {
-            checkState(tree.features().isPresent());
-            ImmutableList<Node> features = tree.features().get();
+            checkState(!tree.features().isEmpty());
+            ImmutableList<Node> features = tree.features();
             return features;
         }
     }

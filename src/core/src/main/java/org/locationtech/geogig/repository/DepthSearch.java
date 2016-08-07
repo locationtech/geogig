@@ -139,17 +139,17 @@ public class DepthSearch {
             return Optional.absent();
         }
 
-        if (parent.trees().isPresent() || parent.features().isPresent()) {
-            if (parent.trees().isPresent()) {
-                ImmutableList<Node> refs = parent.trees().get();
+        if (!parent.trees().isEmpty() || !parent.features().isEmpty()) {
+            if (!parent.trees().isEmpty()) {
+                ImmutableList<Node> refs = parent.trees();
                 for (int i = 0; i < refs.size(); i++) {
                     if (directChildName.equals(refs.get(i).getName())) {
                         return Optional.of(refs.get(i));
                     }
                 }
             }
-            if (parent.features().isPresent()) {
-                ImmutableList<Node> refs = parent.features().get();
+            if (!parent.features().isEmpty()) {
+                ImmutableList<Node> refs = parent.features();
                 for (int i = 0; i < refs.size(); i++) {
                     if (directChildName.equals(refs.get(i).getName())) {
                         return Optional.of(refs.get(i));
@@ -160,7 +160,7 @@ public class DepthSearch {
         }
 
         Integer bucket = refOrder.bucket(directChildName, subtreesDepth);
-        ImmutableSortedMap<Integer, Bucket> buckets = parent.buckets().get();
+        ImmutableSortedMap<Integer, Bucket> buckets = parent.buckets();
         Bucket subtreeBucket = buckets.get(bucket);
         if (subtreeBucket == null) {
             return Optional.absent();

@@ -341,36 +341,28 @@ public class ResponseWriter {
         writeElement("id", tree.getId().toString());
         writeElement("size", Long.toString(tree.size()));
         writeElement("numtrees", Integer.toString(tree.numTrees()));
-        if (tree.trees().isPresent()) {
-            ImmutableList<Node> trees = tree.trees().get();
-            for (Node ref : trees) {
-                writeNode(ref, "subtree");
-            }
+        for (Node ref : tree.trees()) {
+            writeNode(ref, "subtree");
         }
-        if (tree.features().isPresent()) {
-            ImmutableList<Node> features = tree.features().get();
-            for (Node ref : features) {
-                writeNode(ref, "feature");
-            }
-        } else if (tree.buckets().isPresent()) {
-            Map<Integer, Bucket> buckets = tree.buckets().get();
-            for (Entry<Integer, Bucket> entry : buckets.entrySet()) {
-                Integer bucketIndex = entry.getKey();
-                Bucket bucket = entry.getValue();
-                out.writeStartElement("bucket");
-                writeElement("bucketindex", bucketIndex.toString());
-                writeElement("bucketid", bucket.getObjectId().toString());
-                Envelope env = new Envelope();
-                env.setToNull();
-                bucket.expand(env);
-                out.writeStartElement("bbox");
-                writeElement("minx", Double.toString(env.getMinX()));
-                writeElement("maxx", Double.toString(env.getMaxX()));
-                writeElement("miny", Double.toString(env.getMinY()));
-                writeElement("maxy", Double.toString(env.getMaxY()));
-                out.writeEndElement();
-                out.writeEndElement();
-            }
+        for (Node ref : tree.features()) {
+            writeNode(ref, "feature");
+        }
+        for (Entry<Integer, Bucket> entry : tree.buckets().entrySet()) {
+            Integer bucketIndex = entry.getKey();
+            Bucket bucket = entry.getValue();
+            out.writeStartElement("bucket");
+            writeElement("bucketindex", bucketIndex.toString());
+            writeElement("bucketid", bucket.getObjectId().toString());
+            Envelope env = new Envelope();
+            env.setToNull();
+            bucket.expand(env);
+            out.writeStartElement("bbox");
+            writeElement("minx", Double.toString(env.getMinX()));
+            writeElement("maxx", Double.toString(env.getMaxX()));
+            writeElement("miny", Double.toString(env.getMinY()));
+            writeElement("maxy", Double.toString(env.getMaxY()));
+            out.writeEndElement();
+            out.writeEndElement();
         }
 
         out.writeEndElement();

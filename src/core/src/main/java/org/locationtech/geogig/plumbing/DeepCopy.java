@@ -200,14 +200,9 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
         public AllTrees(ObjectId id, ObjectStore from) {
             this.from = from;
             this.tree = from.getTree(id);
-            this.trees = Collections.emptyIterator();
-            if (tree.trees().isPresent()) {
-                trees = tree.trees().get().iterator();
-            }
-            buckets = Collections.emptyIterator();
-            if (tree.buckets().isPresent()) {
-                buckets = tree.buckets().get().values().iterator();
-            }
+            this.trees = tree.trees().iterator();
+            buckets = tree.buckets().values().iterator();
+            
             bucketTrees = Collections.emptyIterator();
         }
 

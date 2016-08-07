@@ -312,9 +312,9 @@ public abstract class RevTreeBuilderTest {
         assertEquals(numSubTrees, root.numTrees());
         // This root tree won't be split into buckets since the sum of direct features and trees
         // does not exceed the normalization limit
-        assertTrue(root.trees().isPresent());
-        assertTrue(root.features().isPresent());
-        assertFalse(root.buckets().isPresent());
+        assertFalse(root.trees().isEmpty());
+        assertFalse(root.features().isEmpty());
+        assertTrue(root.buckets().isEmpty());
     }
 
     @Test
@@ -344,9 +344,9 @@ public abstract class RevTreeBuilderTest {
 
         // This root tree shall be split into buckets since the sum of direct features and trees
         // does exceed the normalization limit
-        assertFalse(root.trees().isPresent());
-        assertFalse(root.features().isPresent());
-        assertTrue(root.buckets().isPresent());
+        assertTrue(root.trees().isEmpty());
+        assertTrue(root.features().isEmpty());
+        assertFalse(root.buckets().isEmpty());
     }
 
     private void checkTreeBounds(int size) {

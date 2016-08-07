@@ -255,7 +255,7 @@ public abstract class ClusteringStrategy {
             final RevTree original = getOriginalTree(root.treeId);
             root.childCount = original.size();
 
-            final boolean originalIsLeaf = !original.buckets().isPresent();
+            final boolean originalIsLeaf = original.buckets().isEmpty();
 
             if (originalIsLeaf) {
                 final Map<NodeId, DAGNode> origNodes = lazyNodes(original);
@@ -271,7 +271,7 @@ public abstract class ClusteringStrategy {
 
                 @Nullable
                 final TreeId nodeBucketId = computeBucketId(nodeId, depth);
-                final ImmutableSortedMap<Integer, Bucket> buckets = original.buckets().get();
+                final ImmutableSortedMap<Integer, Bucket> buckets = original.buckets();
 
                 if (root.getState() == STATE.INITIALIZED) {
                     { // make DAG a bucket tree
@@ -348,14 +348,14 @@ public abstract class ClusteringStrategy {
 
         Map<NodeId, DAGNode> dagNodes = new HashMap<>();
 
-        List<Node> treeNodes = tree.trees().or(ImmutableList.of());
+        List<Node> treeNodes = tree.trees();
         for (int i = 0; i < treeNodes.size(); i++) {
             NodeId nodeId = computeId(treeNodes.get(i));
             DAGNode dagNode = DAGNode.treeNode(cacheTreeId, i);
             dagNodes.put(nodeId, dagNode);
         }
 
-        ImmutableList<Node> featureNodes = tree.features().or(ImmutableList.of());
+        ImmutableList<Node> featureNodes = tree.features();
         for (int i = 0; i < featureNodes.size(); i++) {
             NodeId nodeId = computeId(featureNodes.get(i));
             DAGNode dagNode = DAGNode.featureNode(cacheTreeId, i);

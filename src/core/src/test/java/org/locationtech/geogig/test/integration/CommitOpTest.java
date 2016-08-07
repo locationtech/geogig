@@ -517,8 +517,7 @@ public class CommitOpTest extends RepositoryTestCase {
 
         final RevTree tree1 = geogig.command(RevObjectParse.class).setObjectId(commit1.getTreeId())
                 .call(RevTree.class).get();
-        assertTrue(tree1.trees().isPresent());
-        assertEquals(2, tree1.trees().get().size());
+        assertEquals(2, tree1.trees().size());
 
         WorkingTree workingTree = geogig.getRepository().workingTree();
         workingTree.delete(pointsName);
@@ -529,8 +528,7 @@ public class CommitOpTest extends RepositoryTestCase {
         RevTree tree2 = geogig.command(RevObjectParse.class).setObjectId(commit2.getTreeId())
                 .call(RevTree.class).get();
 
-        assertTrue(tree2.trees().isPresent());
-        assertEquals(1, tree2.trees().get().size());
+        assertEquals(1, tree2.trees().size());
     }
 
     @Test

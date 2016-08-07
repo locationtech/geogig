@@ -58,8 +58,8 @@ class TreeCache {
         if (internalId == null) {
             tree = store.getTree(treeId);
             getTreeId(tree);
-            if (tree.buckets().isPresent()) {
-                preload(Iterables.transform(tree.buckets().get().values(), (b) -> b.getObjectId()));
+            if (!tree.buckets().isEmpty()) {
+                preload(Iterables.transform(tree.buckets().values(), (b) -> b.getObjectId()));
             }
         } else {
             tree = resolve(internalId.intValue());

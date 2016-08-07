@@ -15,7 +15,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
-import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevTree;
@@ -24,7 +23,6 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -80,24 +78,9 @@ public class SpatialOps {
 
     public static Envelope boundsOf(RevTree tree) {
         Envelope env = new Envelope();
-        if (tree.buckets().isPresent()) {
-            for (Bucket bucket : tree.buckets().get().values()) {
-                bucket.expand(env);
-            }
-        }
-        if (tree.trees().isPresent()) {
-            ImmutableList<Node> trees = tree.trees().get();
-            for (int i = 0; i < trees.size(); i++) {
-                trees.get(i).expand(env);
-            }
-        }
-        if (tree.features().isPresent()) {
-            ImmutableList<Node> trees = tree.features().get();
-            for (int i = 0; i < trees.size(); i++) {
-                trees.get(i).expand(env);
-            }
-        }
-
+        tree.buckets().values().forEach((b) -> b.expand(env));
+        tree.trees().forEach((t) -> t.expand(env));
+        tree.features().forEach((f) -> f.expand(env));
         return env;
     }
 

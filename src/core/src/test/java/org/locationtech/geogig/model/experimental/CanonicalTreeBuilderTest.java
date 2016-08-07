@@ -157,7 +157,7 @@ public abstract class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         final RevTree legacyResult = legacy.build();
         final RevTree result = builder.build();
         assertEquals(resultSize, result.size());
-        assertFalse(result.buckets().isPresent());
+        assertTrue(result.buckets().isEmpty());
         assertEquals(legacyResult, result);
     }
 
@@ -177,7 +177,7 @@ public abstract class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
             legacyFull = legacy.build();
         }
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0), leafFull.size());
-        assertFalse(leafFull.buckets().isPresent());
+        assertTrue(leafFull.buckets().isEmpty());
         assertEquals(legacyFull, leafFull);
 
         final RevTree legacyExpanded;
@@ -196,8 +196,8 @@ public abstract class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         }
 
         assertEquals(2 * CanonicalNodeNameOrder.normalizedSizeLimit(0), expanded.size());
-        assertFalse(expanded.features().isPresent());
-        assertTrue(expanded.buckets().isPresent());
+        assertTrue(expanded.features().isEmpty());
+        assertFalse(expanded.buckets().isEmpty());
         List<Node> lstree = lstree(expanded);
         assertEquals(2 * CanonicalNodeNameOrder.normalizedSizeLimit(0), lstree.size());
         assertEquals(legacyExpanded, expanded);
@@ -220,8 +220,8 @@ public abstract class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         bucketTreeBuilder.put(expectedOrder.get(expectedOrder.size() - 1));
         RevTree flatTree = flatTreeBuilder.build();
         RevTree bucketTree = bucketTreeBuilder.build();
-        assertFalse(flatTree.buckets().isPresent());
-        assertTrue(bucketTree.buckets().isPresent());
+        assertTrue(flatTree.buckets().isEmpty());
+        assertFalse(bucketTree.buckets().isEmpty());
         objectStore.put(flatTree);
         objectStore.put(bucketTree);
 

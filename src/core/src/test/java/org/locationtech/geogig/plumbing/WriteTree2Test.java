@@ -381,10 +381,10 @@ public class WriteTree2Test extends RepositoryTestCase {
                 repoTree("roads/streets", "a31", "d2", 1) // removed 1 feature
         );
 
-        System.err.printf("left : %s\n\t%s\n\t%s\n", leftTree, leftTree.trees().orNull(),
-                leftTree.features().orNull());
-        System.err.printf("right: %s\n\t%s\n\t%s\n", rightTree, rightTree.trees().orNull(),
-                rightTree.features().orNull());
+        System.err.printf("left : %s\n\t%s\n\t%s\n", leftTree, leftTree.trees(),
+                leftTree.features());
+        System.err.printf("right: %s\n\t%s\n\t%s\n", rightTree, rightTree.trees(),
+                rightTree.features());
 
         MapDifference<String, NodeRef> difference;
         Set<String> onlyOnLeft;
@@ -571,8 +571,8 @@ public class WriteTree2Test extends RepositoryTestCase {
             }
             verifyMetadata(node);
         }
-        if (tree.buckets().isPresent()) {
-            ImmutableCollection<Bucket> buckets = tree.buckets().get().values();
+        if (!tree.buckets().isEmpty()) {
+            ImmutableCollection<Bucket> buckets = tree.buckets().values();
             for (Bucket b : buckets) {
                 ObjectId bucketTreeId = b.getObjectId();
                 verifyRepositoryTree(path + "/" + bucketTreeId.toString().substring(0, 8),
@@ -633,8 +633,7 @@ public class WriteTree2Test extends RepositoryTestCase {
     }
 
     private RevTree createFromRefs(ObjectDatabase targetDb, NodeRef... treeRefs) {
-        MutableTree mutableTree = MutableTree.createFromRefs(RevTree.EMPTY_TREE_ID,
-                treeRefs);
+        MutableTree mutableTree = MutableTree.createFromRefs(RevTree.EMPTY_TREE_ID, treeRefs);
         RevTree tree = mutableTree.build(objectDb, targetDb);
         return tree;
     }
@@ -690,9 +689,9 @@ public class WriteTree2Test extends RepositoryTestCase {
         RevTree tree = b.build();
         long size = tree.size();
         int childTreeCount = tree.numTrees();
-        ImmutableList<Node> trees = tree.trees().orNull();
-        ImmutableList<Node> features = tree.features().orNull();
-        SortedMap<Integer, Bucket> buckets = tree.buckets().orNull();
+        ImmutableList<Node> trees = tree.trees();
+        ImmutableList<Node> features = tree.features();
+        SortedMap<Integer, Bucket> buckets = tree.buckets();
         RevTree fakenId = RevTreeBuilder.create(treeId, size, childTreeCount, trees, features,
                 buckets);
         return fakenId;

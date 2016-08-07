@@ -53,6 +53,7 @@ import org.opengis.filter.Filter;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.vividsolutions.jts.geom.Envelope;
@@ -394,28 +395,35 @@ public class FormatCommonV1 {
         writeBucket(index, bucket, data, new Envelope());
     }
 
-    public static void writeBucket(int index, Bucket bucket, DataOutput data, Envelope envBuff)
-            throws IOException {
-        data.writeInt(index);
-        data.write(bucket.getObjectId().getRawValue());
-        envBuff.setToNull();
-        bucket.expand(envBuff);
-        writeBoundingBox(envBuff, data);
+    public static void writeBucket(int index, Bucket bucket, DataOutput data, Envelope envBuff) {
+        try {
+            data.writeInt(index);
+            data.write(bucket.getObjectId().getRawValue());
+            envBuff.setToNull();
+            bucket.expand(envBuff);
+            writeBoundingBox(envBuff, data);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public static void writeNode(Node node, DataOutput data) throws IOException {
         writeNode(node, data, new Envelope());
     }
 
-    public static void writeNode(Node node, DataOutput data, Envelope envBuff) throws IOException {
-        data.writeUTF(node.getName());
-        data.write(node.getObjectId().getRawValue());
-        data.write(node.getMetadataId().or(ObjectId.NULL).getRawValue());
-        int typeN = node.getType().value();
-        data.writeByte(typeN);
-        envBuff.setToNull();
-        node.expand(envBuff);
-        writeBoundingBox(envBuff, data);
+    public static void writeNode(Node node, DataOutput data, Envelope envBuff) {
+        try {
+            data.writeUTF(node.getName());
+            data.write(node.getObjectId().getRawValue());
+            data.write(node.getMetadataId().or(ObjectId.NULL).getRawValue());
+            int typeN = node.getType().value();
+            data.writeByte(typeN);
+            envBuff.setToNull();
+            node.expand(envBuff);
+            writeBoundingBox(envBuff, data);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public static void writeDiff(DiffEntry diff, DataOutput data) throws IOException {

@@ -158,21 +158,21 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
             this.initialSize = copy.size();
             this.initialNumTrees = copy.numTrees();
 
-            if (copy.trees().isPresent()) {
-                checkArgument(!copy.buckets().isPresent());
-                for (Node node : copy.trees().get()) {
+            if (!copy.trees().isEmpty()) {
+                checkArgument(copy.buckets().isEmpty());
+                for (Node node : copy.trees()) {
                     putInternal(node);
                 }
             }
-            if (copy.features().isPresent()) {
-                checkArgument(!copy.buckets().isPresent());
-                for (Node node : copy.features().get()) {
+            if (!copy.features().isEmpty()) {
+                checkArgument(copy.buckets().isEmpty());
+                for (Node node : copy.features()) {
                     putInternal(node);
                 }
             }
-            if (copy.buckets().isPresent()) {
-                checkArgument(!copy.features().isPresent());
-                bucketTreesByBucket.putAll(copy.buckets().get());
+            if (!copy.buckets().isEmpty()) {
+                checkArgument(copy.features().isEmpty());
+                bucketTreesByBucket.putAll(copy.buckets());
             }
         }
     }
@@ -269,7 +269,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
 
             if (tree.size() <= CanonicalNodeNameOrder.normalizedSizeLimit(this.depth)) {
                 this.bucketTreesByBucket.clear();
-                if (tree.buckets().isPresent()) {
+                if (!tree.buckets().isEmpty()) {
                     tree = moveBucketsToChildren(tree);
                 }
                 if (this.depth == 0) {
@@ -309,16 +309,17 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
      * @return
      */
     private RevTree moveBucketsToChildren(RevTree tree) {
-        checkState(tree.buckets().isPresent());
+        checkState(!tree.buckets().isEmpty());
         checkState(this.bucketTreesByBucket.isEmpty());
 
-        for (Bucket bucket : tree.buckets().get().values()) {
+        for (Bucket bucket : tree.buckets().values()) {
             ObjectId id = bucket.getObjectId();
             RevTree bucketTree = this.loadTree(id);
-            if (bucketTree.buckets().isPresent()) {
+            if (!bucketTree.buckets().isEmpty()) {
                 moveBucketsToChildren(bucketTree);
             } else {
-                Iterator<Node> children = RevObjects.children(bucketTree, CanonicalNodeOrder.INSTANCE);
+                Iterator<Node> children = RevObjects.children(bucketTree,
+                        CanonicalNodeOrder.INSTANCE);
                 while (children.hasNext()) {
                     Node next = children.next();
                     putInternal(next);
@@ -442,7 +443,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
                             // System.err.printf(" ---> removed bucket %s from list\n",
                             // currentBucketTree.getId());
                         }
-                        if (modifiedBucketTree.buckets().isPresent()) {
+                        if (!modifiedBucketTree.buckets().isEmpty()) {
                             pendingWritesCache.put(modifiedBucketTree.getId(), modifiedBucketTree);
                         } else {
                             // db.put(modifiedBucketTree);
@@ -510,8 +511,8 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
     }
 
     /**
-     * @return the bucket tree or {@link RevTree#EMPTY} if this tree does not have a bucket
-     *         for the given bucket index
+     * @return the bucket tree or {@link RevTree#EMPTY} if this tree does not have a bucket for the
+     *         given bucket index
      */
     private RevTree getBucketTree(Integer bucketIndex) {
         final Bucket bucket = bucketTreesByBucket.get(bucketIndex);
@@ -617,10 +618,9 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
             obStore.put(tree);
         }
 
-        ObjectId oldid = HashObject.hashTree(original.trees().orNull(),
-                original.features().orNull(), original.buckets().orNull());
-        ObjectId newid = HashObject.hashTree(tree.trees().orNull(), tree.features().orNull(),
-                tree.buckets().orNull());
+        ObjectId oldid = HashObject.hashTree(original.trees(), original.features(),
+                original.buckets());
+        ObjectId newid = HashObject.hashTree(tree.trees(), tree.features(), tree.buckets());
 
         return oldid.equals(newid) ? original : tree;
     }

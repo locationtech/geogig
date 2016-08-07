@@ -60,7 +60,7 @@ public class CatObjectTest extends RepositoryTestCase {
         CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
                 .call();
         String[] lines = desc.toString().split("\n");
-        assertEquals(tree.buckets().get().size() + 4, lines.length);
+        assertEquals(tree.buckets().size() + 4, lines.length);
         for (int i = 4; i < lines.length; i++) {
             String[] tokens = lines[i].split("\t");
             assertEquals(tokens[0].trim(), "BUCKET");

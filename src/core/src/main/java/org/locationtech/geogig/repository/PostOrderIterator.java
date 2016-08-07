@@ -245,9 +245,9 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
         public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
             if (object instanceof RevTree) {
                 final RevTree tree = (RevTree) object;
-                if (tree.features().isPresent()) {
+                if (!tree.features().isEmpty()) {
                     final Set<ObjectId> seen = new HashSet<ObjectId>();
-                    for (Node n : tree.features().get()) {
+                    for (Node n : tree.features()) {
                         if (n.getMetadataId().isPresent()) {
                             if (seen.add(n.getMetadataId().get())) {
                                 successors.add(n.getMetadataId().get());
@@ -274,9 +274,9 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
         public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
             if (object instanceof RevTree) {
                 final RevTree tree = (RevTree) object;
-                if (tree.trees().isPresent()) {
+                if (!tree.trees().isEmpty()) {
                     final Set<ObjectId> seen = new HashSet<ObjectId>();
-                    for (Node n : tree.trees().get()) {
+                    for (Node n : tree.trees()) {
                         if (n.getMetadataId().isPresent()) {
                             if (seen.add(n.getMetadataId().get())) {
                                 successors.add(n.getMetadataId().get());
@@ -303,8 +303,8 @@ public class PostOrderIterator extends AbstractIterator<RevObject> {
         public void findSuccessors(final RevObject object, final List<ObjectId> successors) {
             if (object instanceof RevTree) {
                 final RevTree tree = (RevTree) object;
-                if (tree.buckets().isPresent()) {
-                    for (Map.Entry<?, Bucket> entry : tree.buckets().get().entrySet()) {
+                if (!tree.buckets().isEmpty()) {
+                    for (Map.Entry<?, Bucket> entry : tree.buckets().entrySet()) {
                         final Bucket bucket = entry.getValue();
                         successors.add(bucket.getObjectId());
                     }

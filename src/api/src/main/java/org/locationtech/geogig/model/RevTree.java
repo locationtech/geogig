@@ -13,7 +13,6 @@ import java.util.Comparator;
 
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -93,8 +92,8 @@ public interface RevTree extends RevObject {
         }
 
         @Override
-        public Optional<ImmutableList<Node>> trees() {
-            return Optional.absent();
+        public ImmutableList<Node> trees() {
+            return ImmutableList.of();
         }
 
         @Override
@@ -113,13 +112,13 @@ public interface RevTree extends RevObject {
         }
 
         @Override
-        public Optional<ImmutableList<Node>> features() {
-            return Optional.absent();
+        public ImmutableList<Node> features() {
+            return ImmutableList.of();
         }
 
         @Override
-        public Optional<ImmutableSortedMap<Integer, Bucket>> buckets() {
-            return Optional.absent();
+        public ImmutableSortedMap<Integer, Bucket> buckets() {
+            return ImmutableSortedMap.of();
         }
 
         @Override
@@ -167,7 +166,7 @@ public interface RevTree extends RevObject {
      *         nodes)
      */
     public default boolean isEmpty() {
-        boolean empty = !(trees().isPresent() || features().isPresent() || buckets().isPresent());
+        boolean empty = trees().isEmpty() && features().isEmpty() && buckets().isEmpty();
         if (empty) {
             Preconditions.checkState(size() == 0L);
             Preconditions.checkState(EMPTY_TREE_ID.equals(getId()));
@@ -184,7 +183,7 @@ public interface RevTree extends RevObject {
      * 
      * @apiNote the returned list does not contain {@code null} objects
      */
-    public Optional<ImmutableList<Node>> trees();
+    public ImmutableList<Node> trees();
 
     /**
      * The {@link TYPE#FEATURE feature} nodes held directly by this tree.
@@ -208,7 +207,7 @@ public interface RevTree extends RevObject {
      * 
      * @apiNote the returned list does not contain {@code null} objects
      */
-    public Optional<ImmutableList<Node>> features();
+    public ImmutableList<Node> features();
 
     /**
      * The mapping of (zero-based) bucket index to the bucket (pointer to {@link RevTree} instance)
@@ -224,5 +223,5 @@ public interface RevTree extends RevObject {
      * 
      * @apiNote the returned map does not contain {@code null} keys nor values
      */
-    public Optional<ImmutableSortedMap<Integer, Bucket>> buckets();
+    public ImmutableSortedMap<Integer, Bucket> buckets();
 }

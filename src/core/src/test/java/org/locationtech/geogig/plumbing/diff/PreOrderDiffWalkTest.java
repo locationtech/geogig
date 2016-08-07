@@ -356,8 +356,8 @@ public class PreOrderDiffWalkTest {
         // two leaf trees
         final RevTree left;
         final RevTree right;
-        final Node nodeChange1 = Node.create("f2", RevObjects.forString("forcechange"), ObjectId.NULL,
-                TYPE.FEATURE, null);
+        final Node nodeChange1 = Node.create("f2", RevObjects.forString("forcechange"),
+                ObjectId.NULL, TYPE.FEATURE, null);
         final Node nodeChange2 = Node.create("f3", RevObjects.forString("fakefake"), ObjectId.NULL,
                 TYPE.FEATURE, null);
         {
@@ -481,7 +481,7 @@ public class PreOrderDiffWalkTest {
 
         // there's only one feature on the right tree, so all right trees features fall on a single
         // bucket
-        final int leftBucketCount = left.buckets().get().size();
+        final int leftBucketCount = left.buckets().size();
         final int expectedBucketCalls = leftBucketCount - 1;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
                 argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
@@ -513,7 +513,7 @@ public class PreOrderDiffWalkTest {
 
         // there's only one feature on the right tree, so all right trees features fall on a single
         // bucket
-        final int leftBucketCount = right.buckets().get().size();
+        final int leftBucketCount = right.buckets().size();
         final int expectedBucketCalls = leftBucketCount - 1;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
                 argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));
@@ -756,7 +756,7 @@ public class PreOrderDiffWalkTest {
 
         // there's only one feature on the right tree, so all right trees features fall on a single
         // bucket
-        final int leftBucketCount = left.buckets().get().size();
+        final int leftBucketCount = left.buckets().size();
         final int expectedBucketCalls = leftBucketCount - 1;
         verify(consumer, times(expectedBucketCalls)).bucket(any(NodeRef.class), any(NodeRef.class),
                 argThat(depthMatches(0)), any(Bucket.class), any(Bucket.class));

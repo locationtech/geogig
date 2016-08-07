@@ -296,10 +296,8 @@ public class PostOrderDiffWalkTest {
     private void walkTree(ObjectId treeId, ObjectDatabase source) {
         assertTrue(source.exists(treeId));
         RevTree tree = source.getTree(treeId);
-        if (tree.buckets().isPresent()) {
-            for (Bucket b : tree.buckets().get().values()) {
-                walkTree(b.getObjectId(), source);
-            }
+        for (Bucket b : tree.buckets().values()) {
+            walkTree(b.getObjectId(), source);
         }
     }
 }

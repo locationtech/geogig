@@ -204,10 +204,9 @@ public class HashObjectFunnels {
 
         @Override
         public void funnel(RevTree from, PrimitiveSink into) {
-            ImmutableList<Node> trees = from.trees().or(ImmutableList.of());
-            ImmutableList<Node> features = from.features().or(ImmutableList.of());
-            ImmutableSortedMap<Integer, Bucket> buckets = from.buckets()
-                    .or(ImmutableSortedMap.of());
+            ImmutableList<Node> trees = from.trees();
+            ImmutableList<Node> features = from.features();
+            ImmutableSortedMap<Integer, Bucket> buckets = from.buckets();
             funnel(into, trees, features, buckets);
         }
 

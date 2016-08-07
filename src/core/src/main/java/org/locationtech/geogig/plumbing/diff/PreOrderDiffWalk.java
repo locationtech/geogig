@@ -442,13 +442,10 @@ public class PreOrderDiffWalk {
             if (consumer.tree(leftNode, rightNode)) {
                 RevTree left;
                 RevTree right;
-                left = leftNode == null
-                        || RevTree.EMPTY_TREE_ID.equals(leftNode.getObjectId())
-                                ? RevTree.EMPTY : leftSource.getTree(leftNode.getObjectId());
-                right = rightNode == null
-                        || RevTree.EMPTY_TREE_ID.equals(rightNode.getObjectId())
-                                ? RevTree.EMPTY
-                                : rightSource.getTree(rightNode.getObjectId());
+                left = leftNode == null || RevTree.EMPTY_TREE_ID.equals(leftNode.getObjectId())
+                        ? RevTree.EMPTY : leftSource.getTree(leftNode.getObjectId());
+                right = rightNode == null || RevTree.EMPTY_TREE_ID.equals(rightNode.getObjectId())
+                        ? RevTree.EMPTY : rightSource.getTree(rightNode.getObjectId());
 
                 TraverseTreeContents traverseTreeContents = new TraverseTreeContents(consumer,
                         leftSource, rightSource, leftNode, rightNode, left, right,
@@ -490,10 +487,10 @@ public class PreOrderDiffWalk {
             // 2- left and right are bucket trees
             // 3- left is leaf and right is bucketed
             // 4- left is bucketed and right is leaf
-            final boolean leftIsLeaf = !left.buckets().isPresent();
-            final boolean rightIsLeaf = !right.buckets().isPresent();
-            Iterator<Node> leftc = leftIsLeaf ? RevObjects.children(left, CanonicalNodeOrder.INSTANCE)
-                    : null;
+            final boolean leftIsLeaf = left.buckets().isEmpty();
+            final boolean rightIsLeaf = right.buckets().isEmpty();
+            Iterator<Node> leftc = leftIsLeaf
+                    ? RevObjects.children(left, CanonicalNodeOrder.INSTANCE) : null;
             Iterator<Node> rightc = rightIsLeaf
                     ? RevObjects.children(right, CanonicalNodeOrder.INSTANCE) : null;
 
@@ -630,8 +627,8 @@ public class PreOrderDiffWalk {
 
             super(consumer, ls, rs, leftParent, rightParent, bucketIndex);
             checkArgument(left != null && right != null);
-            checkArgument(left.isEmpty() || left.buckets().isPresent());
-            checkArgument(right.isEmpty() || right.buckets().isPresent());
+            checkArgument(left.isEmpty() || !left.buckets().isEmpty());
+            checkArgument(right.isEmpty() || !right.buckets().isEmpty());
 
             this.left = left;
             this.right = right;
@@ -663,8 +660,8 @@ public class PreOrderDiffWalk {
             if (consumer.isCancelled()) {
                 return;
             }
-            final ImmutableSortedMap<Integer, Bucket> lb = left.buckets().get();
-            final ImmutableSortedMap<Integer, Bucket> rb = right.buckets().get();
+            final ImmutableSortedMap<Integer, Bucket> lb = left.buckets();
+            final ImmutableSortedMap<Integer, Bucket> rb = right.buckets();
             final TreeSet<BucketIndex> availableIndexes;
             {
                 Iterable<BucketIndex> indexes = Iterables.transform(//
@@ -695,10 +692,8 @@ public class PreOrderDiffWalk {
 
                 if (consumer.bucket(leftParent, rightParent, index, lbucket, rbucket)) {
 
-                    ltree = lbucket == null ? RevTree.EMPTY
-                            : trees.get(lbucket.getObjectId());
-                    rtree = rbucket == null ? RevTree.EMPTY
-                            : trees.get(rbucket.getObjectId());
+                    ltree = lbucket == null ? RevTree.EMPTY : trees.get(lbucket.getObjectId());
+                    rtree = rbucket == null ? RevTree.EMPTY : trees.get(rbucket.getObjectId());
 
                     TraverseTreeContents task = traverseTreeContents(leftParent, rightParent, ltree,
                             rtree, index);
@@ -766,7 +761,7 @@ public class PreOrderDiffWalk {
                 NodeRef leftParent, NodeRef rightParent, RevTree bucket,
                 Iterator<Node> rightcChildren, BucketIndex bucketIndex) {
             super(consumer, ls, rs, leftParent, rightParent, bucketIndex);
-            checkArgument(bucket.buckets().isPresent());
+            checkArgument(!bucket.buckets().isEmpty());
             this.bucket = bucket;
             this.leaf = rightcChildren;
         }
@@ -788,7 +783,7 @@ public class PreOrderDiffWalk {
             if (consumer.isCancelled()) {
                 return;
             }
-            final SortedMap<Integer, Bucket> leftBuckets = bucket.buckets().get();
+            final SortedMap<Integer, Bucket> leftBuckets = bucket.buckets();
             final ListMultimap<Integer, Node> nodesByBucket = splitNodesToBucketsAtDepth(leaf,
                     bucketIndex);
 
@@ -834,12 +829,12 @@ public class PreOrderDiffWalk {
                     }
                 } else {
                     RevTree leftTree = bucketTrees.get(leftBucket.getObjectId());
-                    if (leftTree.buckets().isPresent()) {
-                        tasks.add(bucketLeaf(leftTree, rightNodes.iterator(), childIndex));
-                    } else {
+                    if (leftTree.buckets().isEmpty()) {
                         tasks.add(leafLeaf(leftParent, rightParent,
                                 RevObjects.children(leftTree, CanonicalNodeOrder.INSTANCE),
                                 rightNodes.iterator()));
+                    } else {
+                        tasks.add(bucketLeaf(leftTree, rightNodes.iterator(), childIndex));
                     }
                 }
             }
@@ -865,7 +860,7 @@ public class PreOrderDiffWalk {
                 NodeRef leftParent, NodeRef rightParent, Iterator<Node> leftcChildren,
                 RevTree bucket, BucketIndex bucketIndex) {
             super(consumer, ls, rs, leftParent, rightParent, bucketIndex);
-            checkArgument(bucket.buckets().isPresent());
+            checkArgument(!bucket.buckets().isEmpty());
             this.leaf = leftcChildren;
             this.bucket = bucket;
         }
@@ -887,7 +882,7 @@ public class PreOrderDiffWalk {
             if (consumer.isCancelled()) {
                 return;
             }
-            final SortedMap<Integer, Bucket> rightBuckets = bucket.buckets().get();
+            final SortedMap<Integer, Bucket> rightBuckets = bucket.buckets();
             final ListMultimap<Integer, Node> nodesByBucket = splitNodesToBucketsAtDepth(leaf,
                     bucketIndex);
 
@@ -935,11 +930,11 @@ public class PreOrderDiffWalk {
                     }
                 } else {
                     RevTree rightTree = bucketTrees.get(rightBucket.getObjectId());
-                    if (rightTree.buckets().isPresent()) {
-                        tasks.add(leafBucket(leftNodes.iterator(), rightTree, childIndex));
-                    } else {
+                    if (rightTree.buckets().isEmpty()) {
                         tasks.add(leafLeaf(leftParent, rightParent, leftNodes.iterator(),
                                 RevObjects.children(rightTree, CanonicalNodeOrder.INSTANCE)));
+                    } else {
+                        tasks.add(leafBucket(leftNodes.iterator(), rightTree, childIndex));
                     }
                 }
             }

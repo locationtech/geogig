@@ -207,28 +207,22 @@ public class FormatCommonV2 {
 
         Envelope envBuff = new Envelope();
 
-        final int nFeatures = tree.features().isPresent() ? tree.features().get().size() : 0;
+        final int nFeatures = tree.features().size();
         writeUnsignedVarInt(nFeatures, data);
-        if (nFeatures > 0) {
-            for (Node feature : tree.features().get()) {
-                writeNode(feature, data, envBuff);
-            }
+        for (Node feature : tree.features()) {
+            writeNode(feature, data, envBuff);
         }
-        final int nTrees = tree.trees().isPresent() ? tree.trees().get().size() : 0;
+        final int nTrees = tree.trees().size();
         writeUnsignedVarInt(nTrees, data);
-        if (nTrees > 0) {
-            for (Node subTree : tree.trees().get()) {
-                writeNode(subTree, data, envBuff);
-            }
+        for (Node subTree : tree.trees()) {
+            writeNode(subTree, data, envBuff);
         }
 
-        final int nBuckets = tree.buckets().isPresent() ? tree.buckets().get().size() : 0;
+        ImmutableSortedMap<Integer, Bucket> buckets = tree.buckets();
+        final int nBuckets = buckets.size();
         writeUnsignedVarInt(nBuckets, data);
-        if (tree.buckets().isPresent()) {
-            ImmutableSortedMap<Integer, Bucket> buckets = tree.buckets().get();
-            for (Map.Entry<Integer, Bucket> bucket : buckets.entrySet()) {
-                writeBucket(bucket.getKey(), bucket.getValue(), data, envBuff);
-            }
+        for (Map.Entry<Integer, Bucket> bucket : buckets.entrySet()) {
+            writeBucket(bucket.getKey(), bucket.getValue(), data, envBuff);
         }
     }
 

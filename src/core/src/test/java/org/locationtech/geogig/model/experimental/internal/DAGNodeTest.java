@@ -77,7 +77,7 @@ public class DAGNodeTest {
         when(cache.resolve(eq(5))).thenReturn(featuresTree);
         Node resolved = node.resolve(cache);
         assertNotNull(resolved);
-        assertSame(featuresTree.features().get().get(511), resolved);
+        assertSame(featuresTree.features().get(511), resolved);
     }
 
     @Test

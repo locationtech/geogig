@@ -58,8 +58,8 @@ public class RevObjects {
      */
     public static Iterator<Node> children(RevTree tree, Comparator<Node> comparator) {
         checkNotNull(comparator);
-        ImmutableList<Node> trees = tree.trees().or(ImmutableList.<Node> of());
-        ImmutableList<Node> features = tree.features().or(ImmutableList.<Node> of());
+        ImmutableList<Node> trees = tree.trees();
+        ImmutableList<Node> features = tree.features();
         if (trees.isEmpty()) {
             return features.iterator();
         }

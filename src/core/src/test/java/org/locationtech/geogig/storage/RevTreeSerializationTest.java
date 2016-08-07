@@ -172,12 +172,12 @@ public abstract class RevTreeSerializationTest extends Assert {
 
         Iterator<? extends Bounded> ia;
         Iterator<? extends Bounded> ib;
-        if (a.buckets().isPresent()) {
-            ia = a.buckets().get().values().iterator();
-            ib = b.buckets().get().values().iterator();
-        } else {
+        if (a.buckets().isEmpty()) {
             ia = RevObjects.children(a, CanonicalNodeOrder.INSTANCE);
             ib = RevObjects.children(b, CanonicalNodeOrder.INSTANCE);
+        } else {
+            ia = a.buckets().values().iterator();
+            ib = b.buckets().values().iterator();
         }
 
         // bounds are not part of the Bounded.equals(Object) contract as its auxiliary information

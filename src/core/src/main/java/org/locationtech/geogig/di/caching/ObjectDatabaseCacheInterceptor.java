@@ -307,7 +307,7 @@ class ObjectDatabaseCacheInterceptor {
                 return false;
             }
             // do not cache leaf trees. They tend to be quite large. TODO: make this configurable
-            if ((object instanceof RevTree) && ((RevTree) object).features().isPresent()) {
+            if ((object instanceof RevTree) && !((RevTree) object).features().isEmpty()) {
                 return false;
             }
             return object != null;

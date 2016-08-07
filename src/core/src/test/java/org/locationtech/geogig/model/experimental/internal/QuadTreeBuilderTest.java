@@ -184,7 +184,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         RevTree revTreeFromSequentialQuadTree = createRevTree(sequentialTree);
         printTreeBounds(revTreeFromSequentialQuadTree);
 
-        for (Bucket b : revTreeFromSequentialQuadTree.buckets().get().values()) {
+        for (Bucket b : revTreeFromSequentialQuadTree.buckets().values()) {
             // System.err.println(b.getExtraData());
         }
         //

@@ -91,7 +91,10 @@ public interface RevTreeBuilder {
             @Nullable ImmutableList<Node> trees, @Nullable ImmutableList<Node> features,
             @Nullable SortedMap<Integer, Bucket> buckets) {
 
-        return RevTreeImpl.create(id, size, childTreeCount, trees, features, buckets);
+        ImmutableSortedMap<Integer, Bucket> immutableBuckets = buckets == null ? null
+                : ImmutableSortedMap.copyOfSorted(buckets);
+
+        return RevTreeImpl.create(id, size, childTreeCount, trees, features, immutableBuckets);
 
     }
 }

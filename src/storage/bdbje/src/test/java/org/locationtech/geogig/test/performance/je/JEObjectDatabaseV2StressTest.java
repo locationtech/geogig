@@ -12,11 +12,11 @@ package org.locationtech.geogig.test.performance.je;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.ObjectStoreStressTest;
 import org.locationtech.geogig.storage.bdbje.EnvironmentBuilder;
 import org.locationtech.geogig.storage.bdbje.JEObjectDatabase_v0_2;
+import org.locationtech.geogig.test.performance.AbstractObjectStoreStressTest;
 
-public class JEObjectDatabaseV2StressTest extends ObjectStoreStressTest {
+public class JEObjectDatabaseV2StressTest extends AbstractObjectStoreStressTest {
 
     @Override
     protected ObjectDatabase createDb(Platform platform, ConfigDatabase config) {

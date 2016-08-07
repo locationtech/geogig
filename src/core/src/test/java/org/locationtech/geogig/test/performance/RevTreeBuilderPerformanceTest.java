@@ -53,6 +53,9 @@ public class RevTreeBuilderPerformanceTest {
     @Rule
     public TestName testName = new TestName();
 
+    /**
+     * Enables this test only if the geogig.runPerformanceTests=true system property was provided
+     */
     @ClassRule
     public static EnablePerformanceTestRule performanceRule = new EnablePerformanceTestRule();
 

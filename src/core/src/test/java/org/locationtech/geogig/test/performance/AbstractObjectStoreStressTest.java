@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage;
+package org.locationtech.geogig.test.performance;
 
 import static org.locationtech.geogig.model.RevObjectTestSupport.featureForceId;
 
@@ -30,6 +30,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -41,7 +42,10 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
+import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import org.locationtech.geogig.test.TestPlatform;
 
@@ -53,8 +57,14 @@ import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public abstract class ObjectStoreStressTest {
+public abstract class AbstractObjectStoreStressTest {
     private static final MemoryMXBean MEMORY_MX_BEAN = ManagementFactory.getMemoryMXBean();
+
+    /**
+     * Enables this test only if the geogig.runPerformanceTests=true system property was provided
+     */
+    @ClassRule
+    public static EnablePerformanceTestRule performanceRule = new EnablePerformanceTestRule();
 
     @Rule
     public TestName testName = new TestName();
@@ -113,13 +123,11 @@ public abstract class ObjectStoreStressTest {
         testPutAll(100_000);
     }
 
-    @Ignore
     @Test
     public void test04_PutAll_1M() throws Exception {
         testPutAll(1000_000);
     }
 
-    @Ignore
     @Test
     public void test05_PutAll_5M() throws Exception {
         testPutAll(5000_000);

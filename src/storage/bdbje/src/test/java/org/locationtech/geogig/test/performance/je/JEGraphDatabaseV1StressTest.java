@@ -7,20 +7,22 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.bdbje;
+package org.locationtech.geogig.test.performance.je;
 
 import java.io.File;
 
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
-import org.locationtech.geogig.storage.GraphDatabaseStressTest;
+import org.locationtech.geogig.storage.bdbje.EnvironmentBuilder;
+import org.locationtech.geogig.storage.bdbje.JEGraphDatabase_v0_1;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import org.locationtech.geogig.test.TestPlatform;
+import org.locationtech.geogig.test.performance.AbstractGraphDatabaseStressTest;
 
 import com.google.common.base.Preconditions;
 
-public class JEGraphDatabaseV1StressTest extends GraphDatabaseStressTest {
+public class JEGraphDatabaseV1StressTest extends AbstractGraphDatabaseStressTest {
     // instance variable so its reused as if it were the singleton in the guice config
     private EnvironmentBuilder envProvider;
 

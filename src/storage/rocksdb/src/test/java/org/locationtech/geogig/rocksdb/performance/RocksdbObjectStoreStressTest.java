@@ -7,14 +7,15 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.rocksdb;
+package org.locationtech.geogig.rocksdb.performance;
 
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.rocksdb.RocksdbObjectStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.ObjectStoreStressTest;
+import org.locationtech.geogig.test.performance.AbstractObjectStoreStressTest;
 
-public class RocksdbObjectStoreStressTest extends ObjectStoreStressTest {
+public class RocksdbObjectStoreStressTest extends AbstractObjectStoreStressTest {
 
     @Override
     protected ObjectStore createDb(Platform platform, ConfigDatabase config) {

@@ -7,7 +7,7 @@
  * Contributors:
  * David Winslow (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage;
+package org.locationtech.geogig.test.performance;
 
 import static org.junit.Assert.assertEquals;
 
@@ -22,11 +22,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.collect.ImmutableList;
@@ -37,10 +39,16 @@ import com.google.common.collect.ImmutableList;
  * Create a concrete subclass of this test suite and implement {@link #createInjector()} so that
  * {@code GraphDtabase.class} is bound to your implementation instance as a singleton.
  */
-public abstract class GraphDatabaseStressTest {
+public abstract class AbstractGraphDatabaseStressTest {
     protected GraphDatabase database;
 
     protected TestPlatform platform;
+
+    /**
+     * Enables this test only if the geogig.runPerformanceTests=true system property was provided
+     */
+    @ClassRule
+    public static EnablePerformanceTestRule performanceRule = new EnablePerformanceTestRule();
 
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();

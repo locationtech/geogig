@@ -7,13 +7,13 @@
  * Contributors:
  * Justin Deoliveira (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.memory;
+package org.locationtech.geogig.test.performance;
 
 import org.locationtech.geogig.storage.GraphDatabase;
-import org.locationtech.geogig.storage.GraphDatabaseStressTest;
+import org.locationtech.geogig.storage.memory.HeapGraphDatabase;
 import org.locationtech.geogig.test.TestPlatform;
 
-public class HeapGraphDatabaseStressTest extends GraphDatabaseStressTest {
+public class HeapGraphDatabaseStressTest extends AbstractGraphDatabaseStressTest {
 
     @Override
     protected GraphDatabase createDatabase(TestPlatform platform) {

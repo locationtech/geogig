@@ -172,7 +172,7 @@ public class CLIContext {
         GeoGIG geogig = geogigCLI.newGeoGIG();
         try {
             final WorkingTree workTree = geogig.getRepository().workingTree();
-            workTree.delete(points1.getType().getName());
+            workTree.delete(points1.getType().getName().getLocalPart());
             Name name = points1_FTmodified.getType().getName();
             String parentPath = name.getLocalPart();
             workTree.insert(parentPath, points1_FTmodified);

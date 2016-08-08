@@ -11,6 +11,8 @@ package org.locationtech.geogig.repository;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.model.RevTree.EMPTY;
+import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,7 +34,6 @@ import org.geotools.factory.Hints;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -52,21 +53,18 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
-import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.WriteBack;
+import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
-import org.opengis.filter.Filter;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -131,10 +129,10 @@ public class WorkingTreeImpl implements WorkingTree {
         Optional<ObjectId> workTreeId = context.command(ResolveTreeish.class)
                 .setTreeish(Ref.WORK_HEAD).call();
 
-        RevTree workTree = RevTree.EMPTY;
+        RevTree workTree = EMPTY;
 
         if (workTreeId.isPresent()) {
-            if (!workTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
+            if (!workTreeId.get().equals(EMPTY_TREE_ID)) {
                 workTree = indexDatabase.getTree(workTreeId.get());
             }
         } else {
@@ -142,7 +140,7 @@ public class WorkingTreeImpl implements WorkingTree {
             Optional<ObjectId> headTreeId = context.command(ResolveTreeish.class)
                     .setTreeish(Ref.HEAD).call();
 
-            if (headTreeId.isPresent() && !headTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
+            if (headTreeId.isPresent() && !headTreeId.get().equals(EMPTY_TREE_ID)) {
                 workTree = context.objectDatabase().getTree(headTreeId.get());
                 updateWorkHead(workTree.getId());
             }
@@ -154,35 +152,15 @@ public class WorkingTreeImpl implements WorkingTree {
     /**
      * Deletes a single feature from the working tree and updates the WORK_HEAD ref.
      * 
-     * @param path the path of the feature
+     * @param parentPath the parent path of the feature
      * @param featureId the id of the feature
      * @return true if the object was found and deleted, false otherwise
      */
     @Override
-    public boolean delete(final String path, final String featureId) {
-        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(getTree())
-                .setChildPath(path).call();
-
-        ObjectId metadataId = null;
-        if (typeTreeRef.isPresent()) {
-            metadataId = typeTreeRef.get().getMetadataId();
-        }
-
-        RevTreeBuilder parentTree = RevTreeBuilder.canonical(indexDatabase, context
-                .command(FindOrCreateSubtree.class).setParent(getTree()).setChildPath(path).call());
-
-        String featurePath = NodeRef.appendChild(path, featureId);
-        Optional<Node> node = findUnstaged(featurePath);
-        if (node.isPresent()) {
-            parentTree.remove(node.get().getName());
-        }
-
-        ObjectId newTree = context.command(WriteBack.class).setAncestor(getTree())
-                .setChildPath(path).setMetadataId(metadataId).setTree(parentTree.build()).call();
-
-        updateWorkHead(newTree);
-
-        return node.isPresent();
+    public boolean delete(final String parentPath, final String featureId) {
+        final RevTree workHead = getTree();
+        final ObjectId newWorkHeadId = delete(NodeRef.appendChild(parentPath, featureId));
+        return !workHead.getId().equals(newWorkHeadId);
     }
 
     /**
@@ -191,57 +169,25 @@ public class WorkingTreeImpl implements WorkingTree {
      */
     @Override
     public ObjectId truncate(final String path) {
-        final String parentPath = NodeRef.parentPath(path);
-        final String childName = NodeRef.nodeFromPath(path);
-
         final RevTree workHead = getTree();
 
-        RevTree parent;
-        ObjectId parentMetadataId = ObjectId.NULL;
-        if (parentPath.isEmpty()) {
-            parent = workHead;
-        } else {
-            Optional<NodeRef> parentRef = context.command(FindTreeChild.class).setParent(workHead)
-                    .setChildPath(parentPath).call();
-            if (!parentRef.isPresent()) {
-                return workHead.getId();
-            }
+        final NodeRef currentTypeRef = context.command(FindTreeChild.class).setParent(workHead)
+                .setChildPath(path).call().orNull();
 
-            parentMetadataId = parentRef.get().getMetadataId();
-            parent = context.command(RevObjectParse.class)
-                    .setObjectId(parentRef.get().getObjectId()).call(RevTree.class).get();
-        }
-        Optional<NodeRef> treeRef = context.command(FindTreeChild.class).setParent(parent)
-                .setChildPath(childName).call();
-        if (!treeRef.isPresent()) {
+        if (null == currentTypeRef) {
             return workHead.getId();
         }
-        final ObjectId treeMetadataId = treeRef.get().getMetadataId();
-        Map<String, Object> extraData = treeRef.get().getNode().getExtraData();
-        if (extraData != null) {
-            extraData = new HashMap<>(extraData);
-        }
-        RevTreeBuilder parentBuilder = RevTreeBuilder.canonical(indexDatabase, parent);
-        Envelope bounds = null;
-        Node newTreeNode = Node.create(childName, RevTree.EMPTY_TREE_ID, treeMetadataId,
-                TYPE.TREE, bounds, extraData);
-        RevTree newParent = parentBuilder.put(newTreeNode).build();
-        indexDatabase.put(newParent);
+        checkArgument(TYPE.TREE.equals(currentTypeRef.getType()), "%s is not a tree: %s", path,
+                currentTypeRef.getType());
 
-        if (parent.getId().equals(newParent.getId())) {
-            return workHead.getId();// nothing changed
-        }
+        final NodeRef newTypeRef = currentTypeRef.update(EMPTY_TREE_ID, (Envelope) null);
 
-        ObjectId newWorkHead;
-        if (parentPath.isEmpty()) {
-            newWorkHead = newParent.getId();
-        } else {
-            newWorkHead = context.command(WriteBack.class).setAncestor(workHead)
-                    .setChildPath(parentPath).setTree(newParent).setMetadataId(parentMetadataId)
-                    .call();
+        final RevTree newWorkHead = context.command(UpdateTree.class).setRoot(workHead)
+                .setChild(newTypeRef).call();
+        if (!workHead.equals(newWorkHead)) {
+            updateWorkHead(newWorkHead.getId());
         }
-        updateWorkHead(newWorkHead);
-        return newWorkHead;
+        return newWorkHead.getId();
     }
 
     /**
@@ -257,110 +203,42 @@ public class WorkingTreeImpl implements WorkingTree {
      */
     @Override
     public ObjectId delete(final String path) {
-
-        final String parentPath = NodeRef.parentPath(path);
-        final String childName = NodeRef.nodeFromPath(path);
-
         final RevTree workHead = getTree();
 
-        RevTree parent;
-        RevTreeBuilder parentBuilder;
-        ObjectId parentMetadataId = ObjectId.NULL;
-        if (parentPath.isEmpty()) {
-            parent = workHead;
-            parentBuilder = RevTreeBuilder.canonical(indexDatabase, workHead);
-        } else {
-            Optional<NodeRef> parentRef = context.command(FindTreeChild.class).setParent(workHead)
-                    .setChildPath(parentPath).call();
-            if (!parentRef.isPresent()) {
+        final NodeRef childRef = context.command(FindTreeChild.class).setParent(workHead)
+                .setChildPath(path).call().orNull();
+
+        if (null == childRef) {
+            return workHead.getId();
+        }
+        final RevTree newWorkTree;
+        if (TYPE.FEATURE.equals(childRef.getType())) {
+            final String featureId = childRef.name();
+            final String parentTreePath = childRef.getParentPath();
+            final NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(workHead)
+                    .setChildPath(parentTreePath).call().get();
+            final RevTree currentParent = indexDatabase.getTree(typeTreeRef.getObjectId());
+            RevTreeBuilder parentBuilder = RevTreeBuilder.canonical(indexDatabase, currentParent);
+            parentBuilder.remove(featureId);
+
+            final RevTree newParent = parentBuilder.build();
+            if (newParent.getId().equals(typeTreeRef.getObjectId())) {
                 return workHead.getId();
             }
-
-            parentMetadataId = parentRef.get().getMetadataId();
-            parent = context.command(RevObjectParse.class)
-                    .setObjectId(parentRef.get().getObjectId()).call(RevTree.class).get();
-            parentBuilder = RevTreeBuilder.canonical(indexDatabase, parent);
-        }
-        RevTree newParent = parentBuilder.remove(childName).build();
-        indexDatabase.put(newParent);
-        if (parent.getId().equals(newParent.getId())) {
-            return workHead.getId();// nothing changed
-        }
-
-        ObjectId newWorkHead;
-        if (parentPath.isEmpty()) {
-            newWorkHead = newParent.getId();
+            final Envelope newBounds = SpatialOps.boundsOf(newParent);
+            final NodeRef newParentRef = typeTreeRef.update(newParent.getId(), newBounds);
+            newWorkTree = context.command(UpdateTree.class).setRoot(workHead).setChild(newParentRef)
+                    .call();
         } else {
-            newWorkHead = context.command(WriteBack.class).setAncestor(workHead)
-                    .setChildPath(parentPath).setTree(newParent).setMetadataId(parentMetadataId)
+            checkArgument(TYPE.TREE.equals(childRef.getType()));
+            newWorkTree = context.command(UpdateTree.class).setRoot(workHead).removeChildTree(path)
                     .call();
         }
-        updateWorkHead(newWorkHead);
-        return newWorkHead;
-    }
 
-    /**
-     * Deletes a collection of features of the same type from the working tree and updates the
-     * WORK_HEAD ref.
-     * 
-     * @param typeName feature type
-     * @param filter - currently unused
-     * @param affectedFeatures features to remove
-     * @throws Exception
-     */
-    @Override
-    public void delete(final Name typeName, final Filter filter,
-            final Iterator<Feature> affectedFeatures) throws Exception {
-
-        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(getTree())
-                .setChildPath(typeName.getLocalPart()).call();
-
-        ObjectId parentMetadataId = null;
-        if (typeTreeRef.isPresent()) {
-            parentMetadataId = typeTreeRef.get().getMetadataId();
+        if (!workHead.equals(newWorkTree)) {
+            updateWorkHead(newWorkTree.getId());
         }
-
-        RevTreeBuilder parentTree = RevTreeBuilder.canonical(indexDatabase,
-                context.command(FindOrCreateSubtree.class)
-                        .setParent(Suppliers.ofInstance(Optional.of(getTree())))
-                        .setChildPath(typeName.getLocalPart()).call());
-
-        String fid;
-        String featurePath;
-
-        while (affectedFeatures.hasNext()) {
-            fid = affectedFeatures.next().getIdentifier().getID();
-            featurePath = NodeRef.appendChild(typeName.getLocalPart(), fid);
-            Optional<Node> ref = findUnstaged(featurePath);
-            if (ref.isPresent()) {
-                parentTree.remove(ref.get().getName());
-            }
-        }
-
-        ObjectId newTree = context.command(WriteBack.class).setAncestor(getTree())
-                .setMetadataId(parentMetadataId).setChildPath(typeName.getLocalPart())
-                .setTree(parentTree.build()).call();
-
-        updateWorkHead(newTree);
-    }
-
-    /**
-     * Deletes a feature type from the working tree and updates the WORK_HEAD ref.
-     * 
-     * @param typeName feature type to remove
-     * @throws Exception
-     */
-    @Override
-    public void delete(final Name typeName) throws Exception {
-        checkNotNull(typeName);
-
-        RevTreeBuilder workRoot = RevTreeBuilder.canonical(indexDatabase, getTree());
-
-        final String treePath = typeName.getLocalPart();
-        workRoot.remove(treePath);
-        RevTree newRoot = workRoot.build();
-        indexDatabase.put(newRoot);
-        updateWorkHead(newRoot.getId());
+        return newWorkTree.getId();
     }
 
     /**
@@ -393,9 +271,9 @@ public class WorkingTreeImpl implements WorkingTree {
                 return;
             }
 
-            Map<NodeRef, RevTree> trees = insertHelper.buildTrees();
+            final Map<NodeRef, RevTree> trees = insertHelper.buildTrees();
 
-            ObjectId newWorkHead = currewntWorkHead.getId();
+            UpdateTree updateTree = context.command(UpdateTree.class).setRoot(currewntWorkHead);
 
             for (Map.Entry<NodeRef, RevTree> treeEntry : trees.entrySet()) {
                 if (progress.isCanceled()) {
@@ -403,18 +281,13 @@ public class WorkingTreeImpl implements WorkingTree {
                 }
                 NodeRef treeRef = treeEntry.getKey();
                 assert indexDatabase.exists(treeRef.getObjectId());
-
-                RevTree newFeatureTree = treeEntry.getValue();
-
-                String treePath = treeRef.path();
-
-                newWorkHead = context.command(WriteBack.class).setAncestor(newWorkHead)
-                        .setChildPath(treePath).setMetadataId(treeRef.getMetadataId())
-                        .setTree(newFeatureTree).call();
+                updateTree.setChild(treeRef);
             }
 
-            if (!newWorkHead.equals(currewntWorkHead.getId())) {
-                updateWorkHead(newWorkHead);
+            final RevTree newWorkHead = updateTree.call();
+
+            if (!newWorkHead.equals(currewntWorkHead) && !progress.isCanceled()) {
+                updateWorkHead(newWorkHead.getId());
             }
         } finally {
             treeBuildingService.shutdownNow();
@@ -425,25 +298,35 @@ public class WorkingTreeImpl implements WorkingTree {
     public synchronized NodeRef createTypeTree(final String treePath,
             final FeatureType featureType) {
 
-        final RevTree workHead = getTree();
-        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(workHead)
-                .setChildPath(treePath).call();
+        NodeRef.checkValidPath(treePath);
 
-        final RevFeatureType revType = RevFeatureTypeBuilder.build(featureType);
-        if (typeTreeRef.isPresent()) {
+        final RevTree workHead = getTree();
+        final NodeRef currentTreeRef = context.command(FindTreeChild.class).setParent(workHead)
+                .setChildPath(treePath).call().orNull();
+        if (null != currentTreeRef) {
             throw new IllegalArgumentException("Tree already exists at " + treePath);
         }
+
+        final RevFeatureType revType = RevFeatureTypeBuilder.build(featureType);
         indexDatabase.put(revType);
 
         final ObjectId metadataId = revType.getId();
-        final RevTree newTree = RevTreeBuilder.canonical(indexDatabase).build();
 
-        ObjectId newWorkHeadId = context.command(WriteBack.class).setAncestor(workHead)
-                .setChildPath(treePath).setTree(newTree).setMetadataId(metadataId).call();
-        updateWorkHead(newWorkHeadId);
+        final String parentPath = NodeRef.parentPath(treePath);
+        final String treeName = NodeRef.nodeFromPath(treePath);
 
-        return context.command(FindTreeChild.class).setParent(getTree()).setChildPath(treePath)
-                .call().get();
+        final NodeRef newTreeRef = NodeRef.create(parentPath,
+                Node.tree(treeName, EMPTY_TREE_ID, metadataId));
+
+        final RevTree newWorkHead = context.command(UpdateTree.class).setRoot(workHead)
+                .setChild(newTreeRef).call();
+
+        updateWorkHead(newWorkHead.getId());
+
+        NodeRef ref = context.command(FindTreeChild.class).setParent(newWorkHead)
+                .setChildPath(treePath).call().orNull();
+        checkNotNull(ref, "tree wasn't created: " + treePath);
+        return ref;
     }
 
     @Override
@@ -457,6 +340,7 @@ public class WorkingTreeImpl implements WorkingTree {
         checkArgument(featureInfos != null);
         checkArgument(progress != null);
 
+        final RevTree currentWorkHead = getTree();
         final Map<String, NodeRef> currentTrees = Maps
                 .newHashMap(Maps.uniqueIndex(getFeatureTypeTrees(), (nr) -> nr.path()));
 
@@ -492,18 +376,18 @@ public class WorkingTreeImpl implements WorkingTree {
             return;
         }
 
+        UpdateTree updateTree = context.command(UpdateTree.class).setRoot(currentWorkHead);
         parentBuilders.forEach((path, builder) -> {
 
-            RevTree newFeatureTree = builder.build();
-            ObjectId treeMetadataId = currentTrees.get(path).getDefaultMetadataId();
-
-            ObjectId newWorkTree = context.command(WriteBack.class).setAncestor(getTree())
-                    .setChildPath(path).setTree(newFeatureTree).setMetadataId(treeMetadataId)
-                    .call();
-
-            updateWorkHead(newWorkTree);
+            final NodeRef oldTreeRef = currentTrees.get(path);
+            final RevTree newFeatureTree = builder.build();
+            final NodeRef newTreeRef = oldTreeRef.update(newFeatureTree.getId(),
+                    SpatialOps.boundsOf(newFeatureTree));
+            updateTree.setChild(newTreeRef);
         });
 
+        final RevTree newWorkHead = updateTree.call();
+        updateWorkHead(newWorkHead.getId());
     }
 
     private RevTreeBuilder getTreeBuilder(Map<String, NodeRef> currentTrees,
@@ -514,15 +398,14 @@ public class WorkingTreeImpl implements WorkingTree {
             NodeRef treeRef = currentTrees.get(treePath);
             if (treeRef == null) {
                 String parentPath = NodeRef.parentPath(treePath);
-                Node treeNode = Node.create(NodeRef.nodeFromPath(treePath),
-                        RevTree.EMPTY_TREE_ID, featureMetadataId, TYPE.TREE, null);
+                Node treeNode = Node.create(NodeRef.nodeFromPath(treePath), EMPTY_TREE_ID,
+                        featureMetadataId, TYPE.TREE, null);
                 treeRef = new NodeRef(treeNode, parentPath, featureMetadataId);
                 currentTrees.put(treePath, treeRef);
             }
 
             builder = RevTreeBuilder.canonical(indexDatabase,
-                    context.command(FindOrCreateSubtree.class)
-                            .setParent(Suppliers.ofInstance(Optional.of(getTree())))
+                    context.command(FindOrCreateSubtree.class).setParent(getTree())
                             .setChildPath(treePath).call());
             treeBuilders.put(treePath, builder);
         }
@@ -540,50 +423,49 @@ public class WorkingTreeImpl implements WorkingTree {
 
         final FeatureType featureType = feature.getType();
 
-        NodeRef treeRef;
+        final RevTree currentWorkHead = getTree();
 
-        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(getTree())
-                .setChildPath(parentTreePath).call();
+        NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(currentWorkHead)
+                .setChildPath(parentTreePath).call().orNull();
+
         ObjectId metadataId;
-        if (typeTreeRef.isPresent()) {
-            treeRef = typeTreeRef.get();
+        if (typeTreeRef != null) {
             RevFeatureType newFeatureType = RevFeatureTypeBuilder.build(featureType);
-            metadataId = newFeatureType.getId().equals(treeRef.getMetadataId()) ? ObjectId.NULL
+            metadataId = newFeatureType.getId().equals(typeTreeRef.getMetadataId()) ? ObjectId.NULL
                     : newFeatureType.getId();
-            if (!newFeatureType.getId().equals(treeRef.getMetadataId())) {
+            if (!newFeatureType.getId().equals(typeTreeRef.getMetadataId())) {
                 indexDatabase.put(newFeatureType);
             }
         } else {
-            treeRef = createTypeTree(parentTreePath, featureType);
+            typeTreeRef = createTypeTree(parentTreePath, featureType);
             metadataId = ObjectId.NULL;// treeRef.getMetadataId();
         }
 
         // ObjectId metadataId = treeRef.getMetadataId();
         final RevFeature newFeature = RevFeatureBuilder.build(feature);
+        indexDatabase.put(newFeature);
+
         final ObjectId objectId = newFeature.getId();
         final Envelope bounds = (ReferencedEnvelope) feature.getBounds();
         final String nodeName = feature.getIdentifier().getID();
 
-        indexDatabase.put(newFeature);
+        final Node featureNode = Node.create(nodeName, objectId, metadataId, TYPE.FEATURE, bounds);
 
-        final Node node = Node.create(nodeName, objectId, metadataId, TYPE.FEATURE, bounds);
+        final RevTree currentTypeTree = EMPTY_TREE_ID.equals(typeTreeRef.getObjectId()) ? EMPTY
+                : indexDatabase.getTree(typeTreeRef.getObjectId());
 
-        RevTreeBuilder parentTree = RevTreeBuilder.canonical(indexDatabase,
-                context.command(FindOrCreateSubtree.class)
-                        .setParent(Suppliers.ofInstance(Optional.of(getTree())))
-                        .setChildPath(parentTreePath).call());
+        final RevTreeBuilder parentTree = RevTreeBuilder.canonical(indexDatabase, currentTypeTree);
+        parentTree.put(featureNode);
+        final RevTree newTypeTree = parentTree.build();
+        final NodeRef newTypeRef = typeTreeRef.update(newTypeTree.getId(),
+                SpatialOps.boundsOf(newTypeTree));
 
-        parentTree.put(node);
-        final ObjectId treeMetadataId = treeRef.getMetadataId();
+        final RevTree newWorkHead = context.command(UpdateTree.class).setRoot(currentWorkHead)
+                .setChild(newTypeRef).call();
+        updateWorkHead(newWorkHead.getId());
 
-        ObjectId newTree = context.command(WriteBack.class).setAncestor(getTree())
-                .setChildPath(parentTreePath).setTree(parentTree.build())
-                .setMetadataId(treeMetadataId).call();
-
-        updateWorkHead(newTree);
-
-        final String featurePath = NodeRef.appendChild(parentTreePath, node.getName());
-        Optional<NodeRef> featureRef = context.command(FindTreeChild.class).setParent(getTree())
+        final String featurePath = NodeRef.appendChild(parentTreePath, featureNode.getName());
+        Optional<NodeRef> featureRef = context.command(FindTreeChild.class).setParent(newWorkHead)
                 .setChildPath(featurePath).call();
         return featureRef.get().getNode();
     }
@@ -628,12 +510,20 @@ public class WorkingTreeImpl implements WorkingTree {
         Stopwatch sw = Stopwatch.createStarted();
 
         final RevTree origTree = indexDatabase.getTree(treeRef.getObjectId());
+        RevTreeBuilder builder = RevTreeBuilder.canonical(indexDatabase, origTree);
+
+        ObjectId currentMdId = treeRef.getDefaultMetadataId();
+        RevFeatureType revType = RevFeatureTypeBuilder.build(source.getSchema());
+        ObjectId featureMdId = ObjectId.NULL;// use default
+        if (!currentMdId.equals(revType.getId())) {
+            indexDatabase.put(revType);
+            featureMdId = revType.getId();// override default in a per node basis
+        }
+        List<Future<Integer>> insertBlobsFuture = insertBlobs(source, query, executorService,
+                listener, collectionSize, nFetchThreads, builder, featureMdId);
 
         RevTree newFeatureTree;
         try {
-            RevTreeBuilder builder = RevTreeBuilder.canonical(indexDatabase, origTree);
-            List<Future<Integer>> insertBlobsFuture = insertBlobs(source, query, executorService,
-                    listener, collectionSize, nFetchThreads, builder);
             long insertedCount = 0;
             for (Future<Integer> f : insertBlobsFuture) {
                 insertedCount += f.get().longValue();
@@ -656,12 +546,13 @@ public class WorkingTreeImpl implements WorkingTree {
         } finally {
             executorService.shutdown();
         }
-        ObjectId newTree = context.command(WriteBack.class).setAncestor(getTree())
-                .setChildPath(treePath).setMetadataId(treeRef.getMetadataId())
-                .setTree(newFeatureTree).call();
 
-        updateWorkHead(newTree);
+        final NodeRef newTypeTreeRef = treeRef.update(newFeatureTree.getId(),
+                SpatialOps.boundsOf(newFeatureTree));
 
+        RevTree newWorkHead = context.command(UpdateTree.class).setRoot(getTree())
+                .setChild(newTypeTreeRef).call();
+        updateWorkHead(newWorkHead.getId());
     }
 
     private NodeRef findOrCreateTypeTree(final String treePath,
@@ -685,7 +576,8 @@ public class WorkingTreeImpl implements WorkingTree {
     @SuppressWarnings("rawtypes")
     private List<Future<Integer>> insertBlobs(final FeatureSource source, final Query baseQuery,
             final ExecutorService executorService, final ProgressListener listener,
-            final @Nullable Long collectionSize, int nTasks, RevTreeBuilder builder) {
+            final @Nullable Long collectionSize, int nTasks, RevTreeBuilder builder,
+            final ObjectId defaultMetadataId) {
 
         listener.setMaxProgress(0);
         int partitionSize = 0;
@@ -705,8 +597,8 @@ public class WorkingTreeImpl implements WorkingTree {
                 limit = null;// let the last task take any remaining
                              // feature
             }
-            results.add(executorService
-                    .submit(new BlobInsertTask(source, offset, limit, listener, builder)));
+            results.add(executorService.submit(new BlobInsertTask(source, offset, limit, listener,
+                    builder, defaultMetadataId)));
         }
         return results;
     }
@@ -724,14 +616,17 @@ public class WorkingTreeImpl implements WorkingTree {
 
         private RevTreeBuilder builder;
 
+        private ObjectId defaultMetadataId;
+
         private BlobInsertTask(@SuppressWarnings("rawtypes") FeatureSource source,
                 @Nullable Integer offset, @Nullable Integer limit, ProgressListener listener,
-                RevTreeBuilder builder) {
+                RevTreeBuilder builder, ObjectId defaultMetadataId) {
             this.source = source;
             this.offset = offset;
             this.limit = limit;
             this.listener = listener;
             this.builder = builder;
+            this.defaultMetadataId = defaultMetadataId;
         }
 
         @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -753,24 +648,15 @@ public class WorkingTreeImpl implements WorkingTree {
 
             AtomicInteger count = new AtomicInteger();
 
-            Map<String, ObjectId> metadataIds = new HashMap<>();
-
             Iterator<RevObject> objects = Iterators.transform(fiterator, (feature) -> {
                 final RevFeature revFeature = RevFeatureBuilder.build(feature);
 
                 ObjectId id = revFeature.getId();
                 String name = feature.getIdentifier().getID();
                 Envelope bounds = (Envelope) feature.getBounds();
-                FeatureType type = feature.getType();
+                // FeatureType type = feature.getType();
 
-                ObjectId metadataId = metadataIds.get(type.getName().getLocalPart());
-                if (metadataId == null) {
-                    RevFeatureType revType = RevFeatureTypeBuilder.build(type);
-                    indexDatabase.put(revType);
-                    metadataId = revType.getId();
-                    metadataIds.put(type.getName().getLocalPart(), metadataId);
-                }
-                Node node = Node.create(name, id, metadataId, TYPE.FEATURE, bounds);
+                Node node = Node.create(name, id, defaultMetadataId, TYPE.FEATURE, bounds);
                 builder.put(node);
                 count.incrementAndGet();
                 listener.setProgress(1f + listener.getProgress());
@@ -892,19 +778,15 @@ public class WorkingTreeImpl implements WorkingTree {
 
             listener.setDescription(String.format("Trees built in %s", sw.stop()));
 
+            UpdateTree updateTree = context.command(UpdateTree.class).setRoot(getTree());
             for (Map.Entry<NodeRef, RevTree> treeEntry : trees.entrySet()) {
                 if (!listener.isCanceled()) {
                     NodeRef treeRef = treeEntry.getKey();
-                    RevTree newFeatureTree = treeEntry.getValue();
-
-                    String treePath = treeRef.path();
-
-                    ObjectId newRootTree = context.command(WriteBack.class).setAncestor(getTree())
-                            .setChildPath(treePath).setMetadataId(treeRef.getMetadataId())
-                            .setTree(newFeatureTree).call();
-                    updateWorkHead(newRootTree);
+                    updateTree.setChild(treeRef);
                 }
             }
+            final RevTree newWorkTree = updateTree.call();
+            updateWorkHead(newWorkTree.getId());
             listener.complete();
         } finally {
             treeBuildingService.shutdownNow();
@@ -1012,8 +894,9 @@ public class WorkingTreeImpl implements WorkingTree {
 
     /**
      * Updates the definition of a Feature type associated as default feature type to a given path.
-     * It also modifies the metadataId associated to features under the passed path, which used the
-     * previous default feature type.
+     * <p>
+     * It also modifies the metadataId associated to feature nodes under the passed path, which used
+     * the previous default feature type.
      * 
      * @param path the path
      * @param featureType the new feature type definition to set as default for the passed path
@@ -1021,45 +904,66 @@ public class WorkingTreeImpl implements WorkingTree {
     @Override
     public NodeRef updateTypeTree(final String treePath, final FeatureType featureType) {
 
-        // TODO: This is not the optimal way of doing this. A better solution should be found.
-
         final RevTree workHead = getTree();
-        Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class).setParent(workHead)
-                .setChildPath(treePath).call();
-        Preconditions.checkArgument(typeTreeRef.isPresent(), "Tree does not exist: %s", treePath);
 
-        Iterator<NodeRef> iter = context.command(LsTreeOp.class).setReference(treePath)
+        final NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(workHead)
+                .setChildPath(treePath).call().orNull();
+        Preconditions.checkArgument(null != typeTreeRef, "Tree does not exist: %s", treePath);
+
+        final RevFeatureType newRevType = RevFeatureTypeBuilder.build(featureType);
+        if (newRevType.getId().equals(typeTreeRef.getMetadataId())) {
+            return typeTreeRef;
+        }
+        indexDatabase.put(newRevType);
+
+        final ObjectId oldDefaultMetadata = typeTreeRef.getDefaultMetadataId();
+        final ObjectId newDeafultMetadata = newRevType.getId();
+
+        Preconditions.checkState(!ObjectId.NULL.equals(oldDefaultMetadata));
+
+        Iterator<NodeRef> oldFeatureRefs = context.command(LsTreeOp.class)//
+                .setReference(treePath)//
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
 
-        final RevFeatureType revType = RevFeatureTypeBuilder.build(featureType);
-        indexDatabase.put(revType);
+        // rebuild the tree with nodes with updated metadata id as necessary
+        RevTreeBuilder newTreeBuilder = RevTreeBuilder.canonical(indexDatabase);
 
-        final ObjectId metadataId = revType.getId();
-        RevTreeBuilder treeBuilder = RevTreeBuilder.canonical(indexDatabase);
-
-        final RevTree newTree = treeBuilder.build();
-        ObjectId newWorkHeadId = context.command(WriteBack.class).setAncestor(workHead)
-                .setChildPath(treePath).setTree(newTree).setMetadataId(metadataId).call();
-        updateWorkHead(newWorkHeadId);
-
-        Map<ObjectId, FeatureBuilder> featureBuilders = Maps.newHashMap();
-        while (iter.hasNext()) {
-            NodeRef noderef = iter.next();
-            RevFeature feature = context.command(RevObjectParse.class)
-                    .setObjectId(noderef.getObjectId()).call(RevFeature.class).get();
-            if (!featureBuilders.containsKey(noderef.getMetadataId())) {
-                RevFeatureType ft = context.command(RevObjectParse.class)
-                        .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class).get();
-                featureBuilders.put(noderef.getMetadataId(), new FeatureBuilder(ft));
+        while (oldFeatureRefs.hasNext()) {
+            NodeRef ref = oldFeatureRefs.next();
+            Node node = ref.getNode();
+            ObjectId newMetadataId;
+            final @Nullable ObjectId nodesMetadataId = node.getMetadataId().orNull();
+            if (null == nodesMetadataId) {
+                // force the node holding the old metadata id instead of relying on its parent's
+                newMetadataId = oldDefaultMetadata;
+            } else if (newDeafultMetadata.equals(nodesMetadataId)) {
+                // explicitly had the new metadataid, make it default to the new parent's
+                newMetadataId = ObjectId.NULL;
+            } else {
+                // neither the old nor the new
+                newMetadataId = nodesMetadataId;
             }
-            FeatureBuilder fb = featureBuilders.get(noderef.getMetadataId());
-            String parentPath = NodeRef.parentPath(NodeRef.appendChild(treePath, noderef.path()));
-            insert(parentPath, fb.build(noderef.getNode().getName(), feature));
+            Node newNode = Node.create(node.getName(), node.getObjectId(), newMetadataId,
+                    TYPE.FEATURE, node.bounds().orNull());
+            newTreeBuilder.put(newNode);
         }
+
+        final RevTree newTypeTree = newTreeBuilder.build();
+
+        final ObjectId overridingMetadataId = newRevType.getId();
+
+        final Node overridingTreeNode = Node.tree(typeTreeRef.name(), newTypeTree.getId(),
+                overridingMetadataId);
+
+        final NodeRef newTreeRef = NodeRef.create(typeTreeRef.getParentPath(), overridingTreeNode);
+
+        final RevTree newWorkHead = context.command(UpdateTree.class).setRoot(workHead)
+                .setChild(newTreeRef).call();
+
+        updateWorkHead(newWorkHead.getId());
 
         return context.command(FindTreeChild.class).setParent(getTree()).setChildPath(treePath)
                 .call().get();
 
     }
-
 }

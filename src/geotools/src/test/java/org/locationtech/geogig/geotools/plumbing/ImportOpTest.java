@@ -267,6 +267,9 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setTable("table1");
         importOp.call();
+
+        importOp = geogig.command(ImportOp.class);
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setTable("table2");
         importOp.setAdaptToDefaultFeatureType(false);
         importOp.setDestinationPath("table1");

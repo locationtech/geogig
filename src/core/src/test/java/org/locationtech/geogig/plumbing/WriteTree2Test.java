@@ -634,7 +634,7 @@ public class WriteTree2Test extends RepositoryTestCase {
 
     private RevTree createFromRefs(ObjectDatabase targetDb, NodeRef... treeRefs) {
         MutableTree mutableTree = MutableTree.createFromRefs(RevTree.EMPTY_TREE_ID, treeRefs);
-        RevTree tree = mutableTree.build(objectDb, targetDb);
+        RevTree tree = mutableTree.build(targetDb);
         return tree;
     }
 

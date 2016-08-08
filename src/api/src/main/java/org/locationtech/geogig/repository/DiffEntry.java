@@ -145,9 +145,9 @@ public class DiffEntry {
      */
     public ChangeType changeType() {
         ChangeType type;
-        if (oldObject == null || oldObject.getObjectId().isNull()) {
+        if (oldObject == null) {
             type = ChangeType.ADDED;
-        } else if (newObject == null || newObject.getObjectId().isNull()) {
+        } else if (newObject == null) {
             type = ChangeType.REMOVED;
         } else {
             type = ChangeType.MODIFIED;

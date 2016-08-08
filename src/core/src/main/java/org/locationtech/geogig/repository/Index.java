@@ -9,6 +9,11 @@
  */
 package org.locationtech.geogig.repository;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.model.RevTree.EMPTY;
+import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -24,22 +29,20 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.DiffIndex;
-import org.locationtech.geogig.plumbing.FindOrCreateSubtree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.WriteBack;
+import org.locationtech.geogig.plumbing.UpdateTree;
+import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.locationtech.geogig.storage.ConflictsDatabase;
-import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.PersistedIterable;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * The Index keeps track of the changes that have been staged, but not yet committed to the
@@ -93,10 +96,10 @@ public class Index implements StagingArea {
         Optional<ObjectId> stageTreeId = context.command(ResolveTreeish.class)
                 .setTreeish(Ref.STAGE_HEAD).call();
 
-        RevTree stageTree = RevTree.EMPTY;
+        RevTree stageTree = EMPTY;
 
         if (stageTreeId.isPresent()) {
-            if (!stageTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
+            if (!stageTreeId.get().equals(EMPTY_TREE_ID)) {
                 stageTree = context.objectDatabase().getTree(stageTreeId.get());
             }
         } else {
@@ -104,25 +107,12 @@ public class Index implements StagingArea {
             Optional<ObjectId> headTreeId = context.command(ResolveTreeish.class)
                     .setTreeish(Ref.HEAD).call();
 
-            if (headTreeId.isPresent() && !headTreeId.get().equals(RevTree.EMPTY_TREE_ID)) {
+            if (headTreeId.isPresent() && !headTreeId.get().equals(EMPTY_TREE_ID)) {
                 stageTree = context.objectDatabase().getTree(headTreeId.get());
                 updateStageHead(stageTree.getId());
             }
         }
         return stageTree;
-    }
-
-    /**
-     * @return a supplier for the index.
-     */
-    private Supplier<RevTreeBuilder> getTreeSupplier() {
-        Supplier<RevTreeBuilder> supplier = new Supplier<RevTreeBuilder>() {
-            @Override
-            public RevTreeBuilder get() {
-                return RevTreeBuilder.canonical(context.objectDatabase(), getTree());
-            }
-        };
-        return Suppliers.memoize(supplier);
     }
 
     /**
@@ -166,8 +156,8 @@ public class Index implements StagingArea {
 
         final RevTree currentIndexHead = getTree();
 
-        Map<String, RevTreeBuilder> parentTress = Maps.newHashMap();
-        Map<String, ObjectId> parentMetadataIds = Maps.newHashMap();
+        Map<String, RevTreeBuilder> featureTypeTrees = Maps.newHashMap();
+        Map<String, NodeRef> currentFeatureTypeRefs = Maps.newHashMap();
         Set<String> removedTrees = Sets.newHashSet();
 
         final ConflictsDatabase conflictsDb = conflictsDatabase();
@@ -182,9 +172,11 @@ public class Index implements StagingArea {
             pathBuffer = new HashSet<>();
         }
         try {
+            UpdateTree updateTree = context.command(UpdateTree.class).setRoot(currentIndexHead);
+
             while (unstaged.hasNext()) {
                 final DiffEntry diff = unstaged.next();
-                final String fullPath = diff.oldPath() == null ? diff.newPath() : diff.oldPath();
+                final String fullPath = diff.path();
                 if (hasConflicts) {
                     pathBuffer.add(fullPath);
                     if (pathBuffer.size() == 100_000) {
@@ -214,55 +206,53 @@ public class Index implements StagingArea {
                     progress.complete();
                     return;
                 }
-                RevTreeBuilder parentTree = getParentTree(currentIndexHead, parentPath, parentTress,
-                        parentMetadataIds);
+
+                // RevTreeBuilder parentTree = getParentTree(currentIndexHead, parentPath,
+                // featureTypeTrees, currentFeatureTypeRefs);
 
                 i++;
                 progress.setProgress((float) (i * 100) / numChanges);
 
-                NodeRef oldObject = diff.getOldObject();
-                NodeRef newObject = diff.getNewObject();
-                if (newObject == null) {
-                    // Delete
-                    parentTree.remove(oldObject.name());
+                final NodeRef oldObject = diff.getOldObject();
+                final NodeRef newObject = diff.getNewObject();
+                final ChangeType changeType = diff.changeType();
+                switch (changeType) {
+                case REMOVED:
                     if (TYPE.TREE.equals(oldObject.getType())) {
-                        removedTrees.add(oldObject.path());
+                        updateTree.removeChildTree(fullPath);
+                        removedTrees.add(fullPath);
+                    } else {
+                        getTreeBuilder(currentIndexHead, oldObject, featureTypeTrees,
+                                currentFeatureTypeRefs).remove(oldObject.name());
                     }
-                } else if (oldObject == null) {
-                    // Add
-                    Node node = newObject.getNode();
-                    parentTree.put(node);
-                    parentMetadataIds.put(newObject.path(), newObject.getMetadataId());
-                } else {
-                    // Modify
-                    Node node = newObject.getNode();
-                    parentTree.put(node);
+                    break;
+                default:
+                    checkArgument(newObject != null);
+                    if (TYPE.TREE.equals(newObject.getType())) {
+                        updateTree.setChild(newObject);
+                    } else {
+                        getTreeBuilder(currentIndexHead, newObject, featureTypeTrees,
+                                currentFeatureTypeRefs).put(newObject.getNode());
+                    }
+                    break;
                 }
             }
 
-            ObjectId newRootTree = currentIndexHead.getId();
-
-            ObjectStore objectDatabase = context.objectDatabase();
-            for (Map.Entry<String, RevTreeBuilder> entry : parentTress.entrySet()) {
-                String changedTreePath = entry.getKey();
-                RevTreeBuilder changedTreeBuilder = entry.getValue();
+            for (Map.Entry<String, RevTreeBuilder> entry : featureTypeTrees.entrySet()) {
+                final String changedTreePath = entry.getKey();
+                final NodeRef currentTreeRef = currentFeatureTypeRefs.get(changedTreePath);
+                checkState(null != currentTreeRef);
+                final RevTreeBuilder changedTreeBuilder = entry.getValue();
                 if (!NodeRef.ROOT.equals(changedTreePath)) {
                     progress.setDescription("Building final tree " + changedTreePath);
                 }
-                RevTree changedTree = changedTreeBuilder.build();
-                ObjectId parentMetadataId = parentMetadataIds.get(changedTreePath);
-                if (NodeRef.ROOT.equals(changedTreePath)) {
-                    // root
-                    objectDatabase.put(changedTree);
-                    newRootTree = changedTree.getId();
-                } else {
-                    // parentMetadataId = parentMetadataId == null ?
-                    newRootTree = context.command(WriteBack.class).setAncestor(getTree())
-                            .setChildPath(changedTreePath).setMetadataId(parentMetadataId)
-                            .setTree(changedTree).call();
-                }
-                updateStageHead(newRootTree);
+                final RevTree changedTree = changedTreeBuilder.build();
+                final Envelope newBounds = SpatialOps.boundsOf(changedTree);
+                final NodeRef newTreeRef = currentTreeRef.update(changedTree.getId(), newBounds);
+                updateTree.setChild(newTreeRef);
             }
+            RevTree newRootTree = updateTree.call();
+            updateStageHead(newRootTree.getId());
 
             // remove conflicts once the STAGE_HEAD was updated
             if (hasConflicts) {
@@ -298,41 +288,33 @@ public class Index implements StagingArea {
         progress.complete();
     }
 
-    /**
-     * @param currentIndexHead
-     * @param diffEntry
-     * @param parentTress
-     * @param parentMetadataIds
-     * @return
-     */
-    private RevTreeBuilder getParentTree(RevTree currentIndexHead, String parentPath,
-            Map<String, RevTreeBuilder> parentTress, Map<String, ObjectId> parentMetadataIds) {
+    private RevTreeBuilder getTreeBuilder(RevTree currentIndexHead, NodeRef featureRef,
+            Map<String, RevTreeBuilder> featureTypeTrees,
+            Map<String, NodeRef> currentFeatureTypeRefs) {
 
-        RevTreeBuilder parentBuilder = parentTress.get(parentPath);
-        if (parentBuilder == null) {
-            ObjectId parentMetadataId = null;
-            if (NodeRef.ROOT.equals(parentPath)) {
-                parentBuilder = RevTreeBuilder.canonical(context.objectDatabase(),
-                        currentIndexHead);
+        checkArgument(TYPE.FEATURE.equals(featureRef.getType()));
+
+        final String typeTreePath = featureRef.getParentPath();
+        RevTreeBuilder typeTreeBuilder = featureTypeTrees.get(typeTreePath);
+        if (typeTreeBuilder == null) {
+            NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(currentIndexHead)
+                    .setChildPath(typeTreePath).call().orNull();
+
+            final RevTree currentTypeTree;
+            if (typeTreeRef == null) {
+                ObjectId metadataId = featureRef.getMetadataId();
+                Node parentNode = Node.tree(NodeRef.nodeFromPath(typeTreePath), EMPTY_TREE_ID,
+                        metadataId);
+                typeTreeRef = NodeRef.create(NodeRef.parentPath(typeTreePath), parentNode);
+                currentTypeTree = EMPTY;
             } else {
-                Optional<NodeRef> parentRef = context.command(FindTreeChild.class)
-                        .setParent(currentIndexHead).setChildPath(parentPath).call();
-
-                if (parentRef.isPresent()) {
-                    parentMetadataId = parentRef.get().getMetadataId();
-                }
-
-                parentBuilder = RevTreeBuilder.canonical(context.objectDatabase(),
-                        context.command(FindOrCreateSubtree.class)
-                                .setParent(Suppliers.ofInstance(Optional.of(getTree())))
-                                .setChildPath(parentPath).call());
+                currentTypeTree = context.objectDatabase().getTree(typeTreeRef.getObjectId());
             }
-            parentTress.put(parentPath, parentBuilder);
-            if (parentMetadataId != null) {
-                parentMetadataIds.put(parentPath, parentMetadataId);
-            }
+            typeTreeBuilder = RevTreeBuilder.canonical(context.objectDatabase(), currentTypeTree);
+            currentFeatureTypeRefs.put(typeTreePath, typeTreeRef);
+            featureTypeTrees.put(typeTreePath, typeTreeBuilder);
         }
-        return parentBuilder;
+        return typeTreeBuilder;
     }
 
     /**

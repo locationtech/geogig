@@ -34,7 +34,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
-import org.locationtech.geogig.plumbing.WriteBack;
+import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.MemoryModule;
 import org.locationtech.geogig.test.TestPlatform;
@@ -100,11 +100,9 @@ public class DepthSearchTest {
         }
 
         RevTree subtree = subTreeBuilder.build();
-        WriteBack writeBack = fakeGeogig.command(WriteBack.class).setAncestor(root)
-                .setChildPath(treePath).setTree(subtree).setMetadataId(fakeTreeMetadataId);
-        ObjectId newRootId = writeBack.call();
-
-        RevTree newRoot = odb.getTree(newRootId);
+        NodeRef childTreeNode = NodeRef.tree(treePath, subtree.getId(), fakeTreeMetadataId);
+        RevTree newRoot = fakeGeogig.command(UpdateTree.class).setRoot(root).setChild(childTreeNode)
+                .call();
         return newRoot;
     }
 

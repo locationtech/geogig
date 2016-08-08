@@ -13,7 +13,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
-import org.opengis.filter.Filter;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -60,25 +59,6 @@ public interface WorkingTree {
      * @throws Exception
      */
     ObjectId delete(String path);
-
-    /**
-     * Deletes a collection of features of the same type from the working tree and updates the
-     * WORK_HEAD ref.
-     * 
-     * @param typeName feature type
-     * @param filter - currently unused
-     * @param affectedFeatures features to remove
-     * @throws Exception
-     */
-    void delete(Name typeName, Filter filter, Iterator<Feature> affectedFeatures) throws Exception;
-
-    /**
-     * Deletes a feature type from the working tree and updates the WORK_HEAD ref.
-     * 
-     * @param typeName feature type to remove
-     * @throws Exception
-     */
-    void delete(Name typeName) throws Exception;
 
     /**
      * 

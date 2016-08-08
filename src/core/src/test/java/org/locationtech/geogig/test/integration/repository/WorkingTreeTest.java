@@ -435,32 +435,6 @@ public class WorkingTreeTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testDeleteCollection() throws Exception {
-        List<Feature> featureList = new LinkedList<Feature>();
-        featureList.add(points1);
-        featureList.add(points2);
-        featureList.add(points3);
-
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
-
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP3)).isPresent());
-
-        List<Feature> deleteFeatures = new LinkedList<Feature>();
-        deleteFeatures.add(points1);
-        deleteFeatures.add(points3);
-
-        Name typeName = points1.getName();
-
-        workTree.delete(typeName, null, deleteFeatures.iterator());
-
-        assertFalse(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
-        assertFalse(workTree.findUnstaged(appendChild(pointsName, idP3)).isPresent());
-    }
-
-    @Test
     public void testDeleteCollectionAffectingMultipleTrees() throws Exception {
         insert(points1, points2, points3, lines1, lines2, lines3);
 
@@ -488,30 +462,6 @@ public class WorkingTreeTest extends RepositoryTestCase {
         assertFalse(workTree.findUnstaged(path4).isPresent());
         assertTrue(workTree.findUnstaged(path5).isPresent());
         assertFalse(workTree.findUnstaged(path6).isPresent());
-    }
-
-    @Test
-    public void testDeleteCollectionOfFeaturesNotPresent() throws Exception {
-        List<Feature> featureList = new LinkedList<Feature>();
-        featureList.add(points1);
-        featureList.add(points2);
-
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
-
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
-        assertFalse(workTree.findUnstaged(appendChild(pointsName, idP3)).isPresent());
-
-        List<Feature> deleteFeatures = new LinkedList<Feature>();
-        deleteFeatures.add(points3);
-
-        Name typeName = points1.getName();
-
-        workTree.delete(typeName, null, deleteFeatures.iterator());
-
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
-        assertFalse(workTree.findUnstaged(appendChild(pointsName, idP3)).isPresent());
     }
 
     @Test

@@ -22,8 +22,8 @@ import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -198,18 +198,22 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
             repositoryDatabase.put(newRoot);
             newTargetRootId = newRoot.getId();
         }
+
+        UpdateTree updateTree = command(UpdateTree.class).setRoot(newTargetRootId);
         for (Map.Entry<String, RevTreeBuilder> e : repositoryChangedTrees.entrySet()) {
             String treePath = e.getKey();
             ObjectId metadataId = changedTreesMetadataId.get(treePath);
             RevTreeBuilder treeBuilder = e.getValue();
-            RevTree newRoot = getTree(newTargetRootId);
             RevTree tree = treeBuilder.build();
-            newTargetRootId = writeBack(newRoot, tree, treePath, metadataId);
+
+            NodeRef newTreeRef = NodeRef.tree(treePath, tree.getId(), metadataId);
+            updateTree.setChild(newTreeRef);
         }
+        final RevTree newRoot = updateTree.call();
 
         progress.complete();
 
-        return newTargetRootId;
+        return newRoot.getId();
     }
 
     private void resolveSourceTreeRef(String parentPath, Map<String, NodeRef> indexChangedTrees,
@@ -295,10 +299,4 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         return objectDatabase().getTree(targetTreeId);
     }
 
-    private ObjectId writeBack(RevTree root, final RevTree tree, final String pathToTree,
-            final ObjectId metadataId) {
-
-        return command(WriteBack.class).setAncestor(root).setAncestorPath("").setTree(tree)
-                .setChildPath(pathToTree).setMetadataId(metadataId).call();
-    }
 }

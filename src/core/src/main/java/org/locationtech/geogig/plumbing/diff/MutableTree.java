@@ -9,10 +9,13 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
+import static org.locationtech.geogig.model.RevTree.EMPTY;
+import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 import static org.locationtech.geogig.repository.NodeRef.ROOT;
 import static org.locationtech.geogig.repository.NodeRef.depth;
 import static org.locationtech.geogig.repository.NodeRef.split;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -28,7 +31,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.SpatialOps;
-import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
@@ -241,60 +243,54 @@ public class MutableTree implements Cloneable {
 
     @Nullable
     public MutableTree removeChild(String path) {
-        ImmutableList<String> steps = NodeRef.split(path);
-        MutableTree tree = this;
+        NodeRef.checkValidPath(path);
 
-        for (Iterator<String> childNames = steps.iterator(); childNames.hasNext();) {
+        final List<String> querySteps = NodeRef.split(path);
+        List<String> visited = new ArrayList<>(querySteps.size());
+
+        MutableTree tree = this;
+        MutableTree removed = null;
+        for (Iterator<String> childNames = querySteps.iterator(); childNames.hasNext();) {
             String childName = childNames.next();
+            visited.add(childName);
+
             MutableTree child = tree.childTrees.get(childName);
             if (child == null) {
-                return null;
+                break;
             }
-            if (!childNames.hasNext()) {
-                MutableTree removed = tree.childTrees.remove(childName);
-                return removed;
+            if (querySteps.equals(visited)) {
+                removed = tree.childTrees.remove(childName);
+                break;
             } else {
                 tree = child;
             }
         }
-        return null;
+        return removed;
     }
 
     public void setNode(final Node newNode) {
         this.node = newNode;
     }
 
-    public RevTree build(ObjectStore origin, ObjectDatabase target) {
-        final ObjectId nodeId = node.getObjectId();
-        final RevTree tree = origin.getTree(nodeId);
+    public RevTree build(ObjectStore store) {
+        final ObjectId treeId = this.node.getObjectId();
+        final RevTree original = EMPTY_TREE_ID.equals(treeId) ? EMPTY : store.getTree(treeId);
 
-        RevTreeBuilder builder = RevTreeBuilder.canonical(target, tree);// .clearSubtrees();
+        RevTreeBuilder builder = RevTreeBuilder.canonical(store, original);// .clearSubtrees();
+        ImmutableList<Node> currentTrees = original.trees();
+        currentTrees.forEach((n) -> builder.remove(n.getName()));
 
         for (MutableTree childTree : this.childTrees.values()) {
-            String name;
-            ObjectId newObjectId;
-            ObjectId metadataId;
-            Envelope bounds;
-            {
-                RevTree newChild = childTree.build(origin, target);
-                target.put(newChild);
-                Node oldNode = childTree.getNode();
-                name = oldNode.getName();
-                newObjectId = newChild.getId();
-                metadataId = oldNode.getMetadataId().or(ObjectId.NULL);
-                bounds = SpatialOps.boundsOf(newChild);
-            }
-            Node newNode = Node.create(name, newObjectId, metadataId, TYPE.TREE, bounds);
+            childTree.build(store);
+            Node newNode = childTree.node;
             builder.put(newNode);
         }
-        RevTree newTree = builder.build();
-        if (!this.node.getObjectId().equals(newTree.getId())) {
-            target.put(newTree);
-            Envelope bounds = SpatialOps.boundsOf(newTree);
-            this.node = Node.create(node.getName(), newTree.getId(),
-                    node.getMetadataId().or(ObjectId.NULL), TYPE.TREE, bounds);
-        }
 
+        final Node oldNode = this.node;
+        RevTree newTree = builder.build();
+        Envelope newBounds = SpatialOps.boundsOf(newTree);
+        Node newNode = oldNode.update(newTree.getId(), newBounds);
+        this.node = newNode;
         return newTree;
     }
 

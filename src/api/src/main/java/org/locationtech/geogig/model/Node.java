@@ -11,6 +11,7 @@ package org.locationtech.geogig.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -54,7 +55,16 @@ public abstract class Node implements Bounded, Comparable<Node> {
         this.name = name;
         this.objectId = oid;
         this.metadataId = metadataId.isNull() ? null : metadataId;
-        this.extraData = extraData;
+        this.extraData = extraData == null ? null : new HashMap<>(extraData);
+    }
+
+    public Node update(final ObjectId newId) {
+        return update(newId, bounds().orNull());
+    }
+
+    public Node update(final ObjectId newId, final @Nullable Envelope newBounds) {
+        ObjectId mdId = metadataId == null ? ObjectId.NULL : metadataId;
+        return Node.create(name, newId, mdId, getType(), newBounds, extraData);
     }
 
     public Optional<ObjectId> getMetadataId() {
@@ -148,6 +158,10 @@ public abstract class Node implements Bounded, Comparable<Node> {
     public static Node create(final String name, final ObjectId oid, final ObjectId metadataId,
             final TYPE type, @Nullable final Envelope bounds,
             @Nullable Map<String, Object> extraData) {
+        checkNotNull(name, "name");
+        checkNotNull(oid, "oid");
+        checkNotNull(metadataId, "metadataId");
+        checkNotNull(type, "type");
 
         switch (type) {
         case FEATURE:

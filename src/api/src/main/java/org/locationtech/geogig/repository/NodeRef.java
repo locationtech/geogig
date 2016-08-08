@@ -79,6 +79,11 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         this.metadataId = metadataId;
     }
 
+    public NodeRef update(final ObjectId newId, final @Nullable Envelope newBounds) {
+        Node newNode = node.update(newId, newBounds);
+        return NodeRef.create(parentPath, newNode, metadataId);
+    }
+
     /**
      * Creates a {@link NodeRef} pointing to {@code node} with a {@code null} parent path, which is
      * the only exception
@@ -400,5 +405,15 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     @Override
     public Optional<Envelope> bounds() {
         return node.bounds();
+    }
+
+    public static NodeRef tree(String treePath, ObjectId id, ObjectId metadataId) {
+        NodeRef.checkValidPath(treePath);
+        checkNotNull(id);
+        checkNotNull(metadataId);
+        String parentPath = NodeRef.parentPath(treePath);
+        String treeName = NodeRef.nodeFromPath(treePath);
+        Node treeNode = Node.tree(treeName, id, metadataId);
+        return NodeRef.create(parentPath, treeNode);
     }
 }

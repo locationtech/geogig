@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 
 import com.google.common.base.Optional;
@@ -79,7 +80,12 @@ public class RevObjectParse extends AbstractGeoGigOp<Optional<RevObject>> {
         if (resolvedObjectId.isNull()) {
             return Optional.absent();
         }
-        RevObject revObject = objectDatabase().get(resolvedObjectId);
+        RevObject revObject;
+        if (RevTree.EMPTY_TREE_ID.equals(resolvedObjectId)) {
+            revObject = RevTree.EMPTY;
+        } else {
+            revObject = objectDatabase().get(resolvedObjectId, clazz);
+        }
         Preconditions.checkArgument(clazz.isAssignableFrom(revObject.getClass()),
                 "Wrong return class for RevObjectParse operation. Expected %s, got %s",
                 clazz.getName(), revObject.getClass().getName());

@@ -22,7 +22,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.plumbing.WriteBack;
+import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.NodeRef;
@@ -40,9 +40,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * The interface for the Add operation in GeoGig.
- * 
- * Web interface for {@link AddOp}
+ * Web interface to resolve a single feature conflict
  */
 
 public class ResolveConflict extends AbstractWebAPICommand {
@@ -118,12 +116,12 @@ public class ResolveConflict extends AbstractWebAPICommand {
             }
         }
 
-        NodeRef node = new NodeRef(Node.create(NodeRef.nodeFromPath(path), objectId, ObjectId.NULL,
-                TYPE.FEATURE, bounds), NodeRef.parentPath(path), ObjectId.NULL);
+        NodeRef newFeatureNode = new NodeRef(Node.create(NodeRef.nodeFromPath(path), objectId,
+                ObjectId.NULL, TYPE.FEATURE, bounds), NodeRef.parentPath(path), ObjectId.NULL);
 
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class)
-                .setParent(geogig.workingTree().getTree()).setChildPath(node.getParentPath())
-                .call();
+                .setParent(geogig.workingTree().getTree())
+                .setChildPath(newFeatureNode.getParentPath()).call();
         RevTreeBuilder treeBuilder;
         ObjectId metadataId = ObjectId.NULL;
         if (parentNode.isPresent()) {
@@ -132,15 +130,19 @@ public class ResolveConflict extends AbstractWebAPICommand {
                     .setObjectId(parentNode.get().getNode().getObjectId()).call(RevTree.class);
             checkState(parsed.isPresent(), "Parent tree couldn't be found in the repository.");
             treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase(), parsed.get());
-            treeBuilder.remove(node.getNode().getName());
+            treeBuilder.remove(newFeatureNode.getNode().getName());
         } else {
             treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase());
         }
-        treeBuilder.put(node.getNode());
-        ObjectId newTreeId = geogig.command(WriteBack.class)
-                .setAncestor(geogig.workingTree().getTree()).setChildPath(node.getParentPath())
-                .setTree(treeBuilder.build()).setMetadataId(metadataId).call();
-        geogig.workingTree().updateWorkHead(newTreeId);
+        treeBuilder.put(newFeatureNode.getNode());
+
+        RevTree newFeatureTree = treeBuilder.build();
+        NodeRef newTreeRef = NodeRef.tree(newFeatureNode.getParentPath(), newFeatureTree.getId(),
+                metadataId);
+
+        RevTree newRoot = geogig.command(UpdateTree.class).setRoot(geogig.workingTree().getTree())
+                .setChild(newTreeRef).call();
+        geogig.workingTree().updateWorkHead(newRoot.getId());
 
         AddOp command = geogig.command(AddOp.class);
 

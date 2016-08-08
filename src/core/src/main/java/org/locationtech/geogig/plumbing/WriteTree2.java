@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
@@ -27,7 +29,6 @@ import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.diff.MutableTree;
 import org.locationtech.geogig.plumbing.diff.TreeDifference;
-import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
@@ -51,20 +52,23 @@ import com.vividsolutions.jts.geom.Envelope;
  * Creates a new root tree in the {@link ObjectDatabase object database} from the current index,
  * based on the current {@code HEAD} and returns the new root tree id.
  * <p>
- * <b>Note</b> this is a performance improvement replacement for {@link WriteTree} but so far is
- * only used by {@link CommitOp}, as it doesn't have a proper replacement for
- * {@link WriteTree#setDiffSupplier(Supplier)} yet, as used by the remote, REST, and WEB APIs.
+ * The index must be in a fully merged state.
+ * 
  * <p>
  * This command creates a tree object using the current index. The id of the new root tree object is
  * returned. No {@link Ref ref} is updated as a result of this operation, so the resulting root tree
  * is "orphan". It's up to the calling code to update any needed reference.
  * 
- * The index must be in a fully merged state.
- * 
  * Conceptually, write-tree sync()s the current index contents into a set of tree objects on the
  * {@link ObjectDatabase}. In order to have that match what is actually in your directory right now,
  * you need to have done a {@link UpdateIndex} phase before you did the write-tree.
  * 
+ * @implNote: this is a performance improvement replacement for {@link WriteTree}, and so far has
+ *            been replaced everywhere (i.e. for commit, rebase, revert, cherry-pick), and not by
+ *            web api's {@code ApplyChangesResource} and core's
+ *            {@code Abstract/LocalMappedRemoteRepo} as it doesn't have a proper replacement for
+ *            {@link WriteTree#setDiffSupplier(Supplier)} yet, as used by the remote, REST, and WEB
+ *            APIs.
  * @see TreeDifference
  * @see MutableTree
  */
@@ -74,7 +78,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
     private Supplier<RevTree> oldRoot;
 
-    private final List<String> pathFilters = Lists.newLinkedList();
+    private final Set<String> pathFilters = new TreeSet<>();
 
     // to be used when implementing a replacement for the current WriteTree2.setDiffSupplier()
     // private Supplier<Iterator<DiffEntry>> diffSupplier = null;
@@ -89,21 +93,34 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
     }
 
     /**
+     * Sets the tree paths that will be processed.
+     * <p>
+     * That is, whether the changes to the current {@link Ref#STAGE_HEAD STAGE_HEAD} vs
+     * {@link Ref#HEAD HEAD} should be processed.
+     * <p>
+     * A path filter applies if:
+     * <ul>
+     * <li>There are no filters at all
+     * <li>A filter and the path are the same
+     * <li>A filter is a child of the tree path (e.g. {@code filter = "roads/roads.0" and path =
+     * "roads"})
+     * <li>A filter is a parent of the tree given by {@code treePath} and addresses a tree instead
+     * of a feature (e.g. {@code filter = "roads" and path = "roads/highways"}, but <b>not</b> if
+     * {@code filter = "roads/roads.0" and path = "roads/highways"} where {@code roads/roads.0} is
+     * not a tree as given by the tree structure in {@code rightTree} and hence may address a
+     * feature that's a direct child of {@code roads} instead)
+     * </ul>
      * 
-     * @param pathFilter the pathfilter to pass on to the index
-     * @return {@code this}
+     * @param treePath a path to a tree in {@code rightTree}
+     * @param rightTree the trees at the right side of the comparison, used to determine if a filter
+     *        addresses a parent tree.
+     * @return {@code true} if the changes in the tree given by {@code treePath} should be processed
+     *         because any of the filters will match the changes on it
      */
-    public WriteTree2 addPathFilter(String pathFilter) {
-        if (pathFilter != null) {
-            this.pathFilters.add(pathFilter);
-        }
-        return this;
-    }
-
-    public WriteTree2 setPathFilter(@Nullable List<String> pathFilters) {
+    public WriteTree2 setPathFilter(@Nullable Iterable<String> pathFilters) {
         this.pathFilters.clear();
         if (pathFilters != null) {
-            this.pathFilters.addAll(pathFilters);
+            this.pathFilters.addAll(Lists.newArrayList(pathFilters));
         }
         return this;
     }
@@ -137,7 +154,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         Preconditions.checkState(oldLeftTree.equals(treeDifference.getLeftTree()));
 
         // handle renames before new and deleted trees for the computation of new and deleted to be
-        // accurate
+        // accurate, by means of the ignoreList
         Set<String> ignoreList = Sets.newHashSet();
         handleRenames(treeDifference, ignoreList);
         handlePureMetadataChanges(treeDifference, ignoreList);
@@ -150,7 +167,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         MutableTree newLeftTree = treeDifference.getLeftTree();
 
         final ObjectDatabase repositoryDatabase = objectDatabase();
-        final RevTree newRoot = newLeftTree.build(objectDatabase(), repositoryDatabase);
+        final RevTree newRoot = newLeftTree.build(repositoryDatabase);
 
         ObjectId newRootId = newRoot.getId();
 
@@ -295,8 +312,8 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         final ObjectDatabase repositoryDatabase = objectDatabase();
         final String treePath = rightTreeRef == null ? leftTreeRef.path() : rightTreeRef.path();
 
-        final List<String> strippedPathFilters = stripParentAndFiltersThatDontApply(
-                this.pathFilters, treePath);
+        final Set<String> strippedPathFilters = stripParentAndFiltersThatDontApply(this.pathFilters,
+                treePath);
 
         // find the diffs that apply to the path filters
         final ObjectId leftTreeId = leftTreeRef == null ? RevTree.EMPTY_TREE_ID
@@ -311,8 +328,8 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
         // create the new trees taking into account all the nodes
         DiffTree diffs = command(DiffTree.class).setRecursive(false).setReportTrees(false)
-                .setOldTree(leftTreeId).setNewTree(rightTreeId).setPathFilter(strippedPathFilters)
-                .setCustomFilter(null);
+                .setOldTree(leftTreeId).setNewTree(rightTreeId)
+                .setPathFilter(new ArrayList<>(strippedPathFilters)).setCustomFilter(null);
 
         try (AutoCloseableIterator<DiffEntry> sourceIterator = diffs.get()) {
             Iterator<DiffEntry> updatedIterator = sourceIterator;
@@ -370,7 +387,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
      * Determines if any of the {@link #setPathFilter(List) path filters} apply to the given
      * {@code treePath}.
      * <p>
-     * That is, whether the changes to the tree given by {@code treePath} should be processes.
+     * That is, whether the changes to the tree given by {@code treePath} should be processed.
      * <p>
      * A path filter applies to the given tree path if:
      * <ul>
@@ -420,10 +437,10 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
      *         or a parent of), with their own parents stripped to that they apply directly to the
      *         node names in the tree
      */
-    private List<String> stripParentAndFiltersThatDontApply(List<String> pathFilters,
+    private Set<String> stripParentAndFiltersThatDontApply(Set<String> pathFilters,
             final String treePath) {
 
-        List<String> parentsStripped = Lists.newArrayListWithCapacity(pathFilters.size());
+        Set<String> parentsStripped = new TreeSet<>();
         for (String filter : pathFilters) {
             if (filter.equals(treePath)) {
                 continue;// include all diffs in the tree addressed by treePath
@@ -465,16 +482,6 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
         TreeDifference treeDifference = TreeDifference.create(leftTree, rightTree);
         return treeDifference;
-    }
-
-    @Nullable
-    private NodeRef findTree(ObjectId objectId, Map<String, NodeRef> treeEntries) {
-        for (NodeRef ref : treeEntries.values()) {
-            if (objectId.equals(ref.getObjectId())) {
-                return ref;
-            }
-        }
-        return null;
     }
 
     /**

@@ -23,8 +23,8 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.opengis.feature.Feature;
 

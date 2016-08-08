@@ -33,10 +33,10 @@ import org.locationtech.geogig.porcelain.CheckoutResult;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RemoveOp;
+import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Optional;

@@ -10,7 +10,7 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.io.IOException;
-import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,8 +34,13 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.filter.identity.FeatureIdVersionedImpl;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -51,7 +56,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 
@@ -219,17 +223,76 @@ class GeogigFeatureStore extends ContentFeatureStore {
             features = new EmptyFeatureReader<SimpleFeatureType, SimpleFeature>(getSchema());
         }
 
-        String path = delegate.getTypeTreePath();
+        final NodeRef typeRef = delegate.getTypeRef();
         WorkingTree wtree = getFeatureSource().getWorkingTree();
 
         GeoGigFeatureWriter writer;
         if ((flags | WRITER_ADD) == WRITER_ADD) {
-            writer = GeoGigFeatureWriter.createAppendable(features, path, wtree);
+            writer = GeoGigFeatureWriter.createAppendable(features, typeRef, wtree);
         } else {
-            writer = GeoGigFeatureWriter.create(features, path, wtree);
+            writer = GeoGigFeatureWriter.create(features, typeRef, wtree);
         }
         return writer;
     }
+
+    // @Override
+    // public final List<FeatureId> addFeatures(
+    // FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection)
+    // throws IOException {
+    //
+    // // Preconditions.checkState(getDataStore().isAllowTransactions(),
+    // // "Transactions not supported; head is not a local branch");
+    // final WorkingTree workingTree = delegate.getWorkingTree();
+    // final String path = delegate.getTypeTreePath();
+    //
+    // ProgressListener listener = new DefaultProgressListener();
+    //
+    // final List<FeatureId> insertedFids = Lists.newArrayList();
+    // List<Node> deferringTarget = new AbstractList<Node>() {
+    //
+    // @Override
+    // public boolean add(Node node) {
+    // String fid = node.getName();
+    // String version = node.getObjectId().toString();
+    // insertedFids.add(new FeatureIdVersionedImpl(fid, version));
+    // return true;
+    // }
+    //
+    // @Override
+    // public Node get(int index) {
+    // throw new UnsupportedOperationException();
+    // }
+    //
+    // @Override
+    // public int size() {
+    // return 0;
+    // }
+    // };
+    // Integer count = (Integer) null;
+    //
+    // FeatureIterator<SimpleFeature> featureIterator = featureCollection.features();
+    // try {
+    // Iterator<SimpleFeature> features;
+    // features = new FeatureIteratorIterator<SimpleFeature>(featureIterator);
+    // /*
+    // * Make sure to transform the incoming features to the native schema to avoid situations
+    // * where geogig would change the metadataId of the RevFeature nodes due to small
+    // * differences in the default and incoming schema such as namespace or missing
+    // * properties
+    // */
+    // final SimpleFeatureType nativeSchema = delegate.getNativeType();
+    //
+    // features = Iterators.transform(features, new SchemaInforcer(nativeSchema));
+    //
+    // workingTree.insert(path, features, listener, deferringTarget, count);
+    // } catch (Exception e) {
+    // throw new IOException(e);
+    // } finally {
+    // featureIterator.close();
+    // }
+    //
+    // return insertedFids;
+    // }
 
     @Override
     public final List<FeatureId> addFeatures(
@@ -239,35 +302,20 @@ class GeogigFeatureStore extends ContentFeatureStore {
         // Preconditions.checkState(getDataStore().isAllowTransactions(),
         // "Transactions not supported; head is not a local branch");
         final WorkingTree workingTree = delegate.getWorkingTree();
-        final String path = delegate.getTypeTreePath();
+        final RevTree currentWorkHead = workingTree.getTree();
 
         ProgressListener listener = new DefaultProgressListener();
 
-        final List<FeatureId> insertedFids = Lists.newArrayList();
-        List<Node> deferringTarget = new AbstractList<Node>() {
+        final SimpleFeatureType nativeSchema = delegate.getNativeType();
+        final NodeRef typeRef = delegate.getTypeRef();
+        final String treePath = typeRef.path();
+        final ObjectId featureTypeId = typeRef.getMetadataId();
 
-            @Override
-            public boolean add(Node node) {
-                String fid = node.getName();
-                String version = node.getObjectId().toString();
-                insertedFids.add(new FeatureIdVersionedImpl(fid, version));
-                return true;
-            }
+        final ObjectId newWorktreeId;
 
-            @Override
-            public Node get(int index) {
-                throw new UnsupportedOperationException();
-            }
+        List<FeatureId> insertedFids = new ArrayList<>();
 
-            @Override
-            public int size() {
-                return 0;
-            }
-        };
-        Integer count = (Integer) null;
-
-        FeatureIterator<SimpleFeature> featureIterator = featureCollection.features();
-        try {
+        try (FeatureIterator<SimpleFeature> featureIterator = featureCollection.features()) {
             Iterator<SimpleFeature> features;
             features = new FeatureIteratorIterator<SimpleFeature>(featureIterator);
             /*
@@ -276,17 +324,23 @@ class GeogigFeatureStore extends ContentFeatureStore {
              * differences in the default and incoming schema such as namespace or missing
              * properties
              */
-            final SimpleFeatureType nativeSchema = delegate.getNativeType();
-
             features = Iterators.transform(features, new SchemaInforcer(nativeSchema));
+            // the returned list is expected to be in the order provided by the argument feature
+            // collection, so lets add the fids in the transformer here
+            Iterator<FeatureInfo> featureInfos = Iterators.transform(features, (f) -> {
+                RevFeature feature = RevFeatureBuilder.build(f);
+                String fid = f.getID();
+                String path = NodeRef.appendChild(treePath, fid);
+                String version = feature.getId().toString();
+                insertedFids.add(new FeatureIdVersionedImpl(fid, version));
 
-            workingTree.insert(path, features, listener, deferringTarget, count);
+                return FeatureInfo.insert(feature, featureTypeId, path);
+            });
+
+            newWorktreeId = workingTree.insert(featureInfos, listener);
         } catch (Exception e) {
             throw new IOException(e);
-        } finally {
-            featureIterator.close();
         }
-
         return insertedFids;
     }
 
@@ -346,22 +400,28 @@ class GeogigFeatureStore extends ContentFeatureStore {
                 "Transactions not supported; head is not a local branch");
 
         final WorkingTree workingTree = delegate.getWorkingTree();
-        final String path = delegate.getTypeTreePath();
-        Iterator<SimpleFeature> features = modifyingFeatureIterator(names, values, filter);
-        /*
-         * Make sure to transform the incoming features to the native schema to avoid situations
-         * where geogig would change the metadataId of the RevFeature nodes due to small differences
-         * in the default and incoming schema such as namespace or missing properties
-         */
         final SimpleFeatureType nativeSchema = delegate.getNativeType();
+        final NodeRef typeRef = delegate.getTypeRef();
+        final String treePath = typeRef.path();
+        final ObjectId featureTypeId = typeRef.getMetadataId();
 
-        features = Iterators.transform(features, new SchemaInforcer(nativeSchema));
+        try (AutoCloseableIterator<SimpleFeature> features = modifyingFeatureIterator(names, values,
+                filter)) {
+            /*
+             * Make sure to transform the incoming features to the native schema to avoid situations
+             * where geogig would change the metadataId of the RevFeature nodes due to small
+             * differences in the default and incoming schema such as namespace or missing
+             * properties
+             */
+            Iterator<SimpleFeature> schemaEnforced = Iterators.transform(features,
+                    new SchemaInforcer(nativeSchema));
 
-        try {
             ProgressListener listener = new DefaultProgressListener();
-            Integer count = (Integer) null;
-            List<Node> target = (List<Node>) null;
-            workingTree.insert(path, features, listener, target, count);
+
+            Iterator<FeatureInfo> featureInfos = Iterators.transform(schemaEnforced,
+                    (f) -> FeatureInfo.insert(RevFeatureBuilder.build(f), featureTypeId, NodeRef.appendChild(treePath, f.getID())));
+
+            workingTree.insert(featureInfos, listener);
         } catch (Exception e) {
             throw new IOException(e);
         }
@@ -374,23 +434,27 @@ class GeogigFeatureStore extends ContentFeatureStore {
      * @return
      * @throws IOException
      */
-    private Iterator<SimpleFeature> modifyingFeatureIterator(final Name[] names,
+    private AutoCloseableIterator<SimpleFeature> modifyingFeatureIterator(final Name[] names,
             final Object[] values, final Filter filter) throws IOException {
 
-        Iterator<SimpleFeature> iterator = featureIterator(filter);
+        AutoCloseableIterator<SimpleFeature> iterator = featureIterator(filter);
 
         Function<SimpleFeature, SimpleFeature> modifyingFunction = new ModifyingFunction(names,
                 values);
 
-        Iterator<SimpleFeature> modifyingIterator = Iterators.transform(iterator,
-                modifyingFunction);
+        AutoCloseableIterator<SimpleFeature> modifyingIterator = AutoCloseableIterator
+                .transform(iterator, modifyingFunction);
         return modifyingIterator;
     }
 
-    private Iterator<SimpleFeature> featureIterator(final Filter filter) throws IOException {
+    private AutoCloseableIterator<SimpleFeature> featureIterator(final Filter filter)
+            throws IOException {
         FeatureReader<SimpleFeatureType, SimpleFeature> unchanged = getReader(filter);
-        Iterator<SimpleFeature> iterator = new FeatureReaderIterator<SimpleFeature>(unchanged);
-        return iterator;
+        FeatureReaderIterator<SimpleFeature> iterator = new FeatureReaderIterator<SimpleFeature>(
+                unchanged);
+        AutoCloseableIterator<SimpleFeature> autocloseable = AutoCloseableIterator
+                .fromIterator(iterator, (i) -> iterator.close());
+        return autocloseable;
     }
 
     @Override
@@ -412,7 +476,7 @@ class GeogigFeatureStore extends ContentFeatureStore {
 
         Iterator<String> affectedFeaturePaths = Iterators.transform(featureIterator,
                 (f) -> NodeRef.appendChild(typeTreePath, f.getID()));
-        workingTree.delete(affectedFeaturePaths);
+        workingTree.delete(affectedFeaturePaths, DefaultProgressListener.NULL);
     }
 
     /**

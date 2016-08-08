@@ -33,9 +33,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.LsRemote;
 import org.locationtech.geogig.plumbing.SendPack;
 import org.locationtech.geogig.porcelain.AddOp;
@@ -48,8 +50,10 @@ import org.locationtech.geogig.porcelain.PullOp;
 import org.locationtech.geogig.porcelain.PushOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.ContextBuilder;
+import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GlobalContextBuilder;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
@@ -361,9 +365,12 @@ public abstract class RemoteRepositoryTestCase {
         final WorkingTree workTree = geogig.getRepository().workingTree();
         Name name = f.getType().getName();
         String parentPath = name.getLocalPart();
-        Node ref = workTree.insert(parentPath, f);
-        ObjectId objectId = ref.getObjectId();
-        return objectId;
+        RevFeatureType type = RevFeatureTypeBuilder.build(f.getType());
+        geogig.getRepository().objectDatabase().put(type);
+        String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
+        FeatureInfo fi = FeatureInfo.insert(RevFeatureBuilder.build(f), type.getId(), path);
+        workTree.insert(fi);
+        return fi.getFeature().getId();
     }
 
     protected void insertAndAdd(GeoGIG geogig, Feature... features) throws Exception {

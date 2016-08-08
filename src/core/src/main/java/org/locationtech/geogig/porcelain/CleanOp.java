@@ -22,8 +22,8 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.WorkingTree;
 
 import com.google.common.base.Optional;

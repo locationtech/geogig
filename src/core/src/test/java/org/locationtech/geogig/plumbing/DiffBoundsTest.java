@@ -24,6 +24,7 @@ import org.locationtech.geogig.plumbing.diff.DiffSummary;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
@@ -35,7 +36,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.io.ParseException;
 
 public class DiffBoundsTest extends RepositoryTestCase {
 
@@ -195,12 +195,10 @@ public class DiffBoundsTest extends RepositoryTestCase {
         final String typeName = "newpoints";
 
         final DefaultProgressListener listener = new DefaultProgressListener();
-        workingTree.insert(typeName, new TestFeatureIterator(typeName, leftCount), listener, null,
-                null);
+        workingTree.insert(new TestFeatureIterator(typeName, leftCount), listener);
         geogig.command(AddOp.class).call();
 
-        workingTree.insert(typeName, new TestFeatureIterator(typeName, rightCount), listener, null,
-                null);
+        workingTree.insert(new TestFeatureIterator(typeName, rightCount), listener);
 
         {// sanity check
             long diffFeatures = geogig.command(DiffCount.class).setOldVersion("STAGE_HEAD")
@@ -228,7 +226,7 @@ public class DiffBoundsTest extends RepositoryTestCase {
         assertEquals(expected, actual);
     }
 
-    private final class TestFeatureIterator extends AbstractIterator<Feature> {
+    private final class TestFeatureIterator extends AbstractIterator<FeatureInfo> {
         final int fcount;
 
         int c;
@@ -246,17 +244,13 @@ public class DiffBoundsTest extends RepositoryTestCase {
         }
 
         @Override
-        protected Feature computeNext() {
+        protected FeatureInfo computeNext() {
             c++;
             if (c == fcount) {
                 return endOfData();
             }
-            try {
-                String geomWkt = String.format("POINT(%d %d)", c, c);
-                return feature(featureType, String.valueOf(c), geomWkt);
-            } catch (ParseException e) {
-                throw Throwables.propagate(e);
-            }
+            String geomWkt = String.format("POINT(%d %d)", c, c);
+            return featureInfo(featureType, String.valueOf(c), geomWkt);
         }
     }
 

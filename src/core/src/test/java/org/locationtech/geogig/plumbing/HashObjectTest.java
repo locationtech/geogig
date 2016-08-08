@@ -22,7 +22,6 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import org.geotools.data.DataUtilities;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
 import org.locationtech.geogig.model.CommitBuilder;
@@ -41,7 +40,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -295,21 +293,6 @@ public class HashObjectTest extends RepositoryTestCase {
         assertNotNull(tagId2);
         assertNotSame(tagId, tagId2);
 
-    }
-
-    protected Feature feature(SimpleFeatureType type, String id, Object... values)
-            throws ParseException {
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-        for (int i = 0; i < values.length; i++) {
-            Object value = values[i];
-            if (type.getDescriptor(i) instanceof GeometryDescriptor) {
-                if (value instanceof String) {
-                    value = geom((String) value);
-                }
-            }
-            builder.set(i, value);
-        }
-        return builder.buildFeature(id);
     }
 
     private Geometry geom(String wkt) throws ParseException {

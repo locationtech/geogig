@@ -23,8 +23,8 @@ import org.locationtech.geogig.plumbing.diff.Patch;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;

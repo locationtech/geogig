@@ -15,6 +15,11 @@ import java.util.NoSuchElementException;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureWriter;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -26,30 +31,34 @@ import com.google.common.base.Preconditions;
  */
 class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeature> {
 
-    private FeatureReader<SimpleFeatureType, SimpleFeature> reader;
+    private final FeatureReader<SimpleFeatureType, SimpleFeature> reader;
 
-    private WorkingTree workingTree;
+    private final WorkingTree workingTree;
+
+    private final String typePath;
+
+    private final ObjectId featureTypeId;
 
     private SimpleFeature last;
 
-    private String typePath;
-
-    private GeoGigFeatureWriter(FeatureReader<SimpleFeatureType, SimpleFeature> reader,
-            String typePath, WorkingTree workingTree) {
+    private GeoGigFeatureWriter(final FeatureReader<SimpleFeatureType, SimpleFeature> reader,
+            final NodeRef typeRef, final WorkingTree workingTree) {
         this.reader = reader;
-        this.typePath = typePath;
+        this.typePath = typeRef.path();
+        this.featureTypeId = typeRef.getMetadataId();
         this.workingTree = workingTree;
     }
 
-    public static GeoGigFeatureWriter create(FeatureReader<SimpleFeatureType, SimpleFeature> reader,
-            String typePath, WorkingTree workingTree) {
-        return new GeoGigFeatureWriter(reader, typePath, workingTree);
+    public static GeoGigFeatureWriter create(
+            final FeatureReader<SimpleFeatureType, SimpleFeature> reader, final NodeRef typeRef,
+            final WorkingTree workingTree) {
+        return new GeoGigFeatureWriter(reader, typeRef, workingTree);
     }
 
     public static GeoGigFeatureWriter createAppendable(
-            FeatureReader<SimpleFeatureType, SimpleFeature> reader, String typePath,
+            FeatureReader<SimpleFeatureType, SimpleFeature> reader, NodeRef typeRef,
             WorkingTree workingTree) {
-        return new GeoGigFeatureWriter(new InfiniteFeatureReader(reader), typePath, workingTree);
+        return new GeoGigFeatureWriter(new InfiniteFeatureReader(reader), typeRef, workingTree);
     }
 
     @Override
@@ -80,7 +89,10 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
     public void write() throws IOException {
         Preconditions.checkState(last != null, "next() hasn't been called");
         String parentTreePath = typePath;
-        workingTree.insert(parentTreePath, last);
+        RevFeature feature = RevFeatureBuilder.build(last);
+        String path = NodeRef.appendChild(parentTreePath, last.getID());
+        FeatureInfo fi = FeatureInfo.insert(feature, featureTypeId, path);
+        workingTree.insert(fi);
     }
 
     @Override

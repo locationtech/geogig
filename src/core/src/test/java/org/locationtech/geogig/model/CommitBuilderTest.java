@@ -12,9 +12,6 @@ package org.locationtech.geogig.model;
 import java.util.List;
 
 import org.junit.Test;
-import org.locationtech.geogig.model.CommitBuilder;
-import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevCommit;
 
 import com.google.common.collect.ImmutableList;
 

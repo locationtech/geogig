@@ -29,7 +29,7 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
 /**
- * Enumeration of types supported as {@link RevFeature} attribute values.
+ * Enumeration of value types supported as {@link RevFeature} attribute values.
  * <p>
  * The constants in this enum define the object types attribute values for GeoGig {@link RevFeature}
  * instances may assume.
@@ -44,7 +44,70 @@ import com.vividsolutions.jts.geom.Polygon;
  * <p>
  * When the attribute value or class is not bound to a constant in this enum, the {@link #UNKNOWN}
  * constant will be returned by both {@link #forValue(Object)} and {@link #forBinding(Class)}, which
- * should be treated by the calling code as an exceptional condition and act accordingly.
+ * shall be treated by the calling code as an exceptional condition and act accordingly.
+ * <p>
+ * Since {@link RevFeature} is mandated to be immutable, and some of the supported value types are
+ * not immutable, the {@link #safeCopy(Object)} method may be used by an implementation in order to
+ * return a copy of the internal value and hence preserve the internal state of the
+ * {@link RevFeature} instance.
+ * <p>
+ * The following is the list of supported value types:
+ * <ul>
+ * <li>{@link #NULL} a null value;
+ * <li>{@link #BOOLEAN} a boolean value, bound to the {@link Boolean} Java type;
+ * <li>{@link #BYTE} a single byte value, bound to the {@link Byte} Java type;
+ * <li>{@link #SHORT} a signed 16-bit short, bound to the {@link Short} Java type;
+ * <li>{@link #INTEGER} a signed 32-bit integer, bound to the {@link Integer} Java type;
+ * <li>{@link #LONG} a signed 64-bit integer, bound to the {@link Long} Java type;
+ * <li>{@link #FLOAT} a signed 32-bit floating point number, bound to the {@link Float} Java type;
+ * <li>{@link #DOUBLE} a signed 64-bit floating point number, bound to the {@link Double} Java type;
+ * <li>{@link #STRING} a 16-bit Unicode character sequence, bound to the {@link String} Java type;
+ * <li>{@link #BOOLEAN_ARRAY} an array of {@link #BOOLEAN} values;
+ * <li>{@link #BYTE_ARRAY} an array of {@link #BYTE} values;
+ * <li>{@link #SHORT_ARRAY} an array of {@link #SHORT} values;
+ * <li>{@link #INTEGER_ARRAY} an array of {@link #INTEGER} values;
+ * <li>{@link #LONG_ARRAY} an array of {@link #LONG} values;
+ * <li>{@link #FLOAT_ARRAY} an array of {@link #FLOAT} values;
+ * <li>{@link #DOUBLE_ARRAY} an array of {@link #DOUBLE} values;
+ * <li>{@link #STRING_ARRAY} an array of {@link #STRING} values;
+ * <li>{@link #POINT} a point geometry, bound to the JTS {@link Point} class;
+ * <li>{@link #LINESTRING} a linestring geometry, bound to the JTS {@link LineString} class;
+ * <li>{@link #POLYGON} a polygon geometry, bound to the JTS {@link Polygon} class;
+ * <li>{@link #MULTIPOINT} a sequence of point geometries, bound to the JTS {@link MultiPoint}
+ * class;
+ * <li>{@link #MULTILINESTRING} a sequence of linestring geometries, bound to the JTS
+ * {@link MultiLineString} class;
+ * <li>{@link #MULTIPOLYGON} a sequence of polygon geometries, bound to the JTS {@link MultiPolygon}
+ * class;
+ * <li>{@link #GEOMETRYCOLLECTION} a collection of other geometry objects, bound to the JTS
+ * {@link GeometryCollection} class;
+ * <li>{@link #GEOMETRY} a geometry object of an unspecified type, should not be used since concrete
+ * instances will always be of one of the concrete geometry types
+ * <li>{@link #UUID} a 128-bit
+ * <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">Universally Unique
+ * Identifier</a>, bound to the {@link java.util.UUID} Java class;
+ * <li>{@link #BIG_INTEGER} an arbitrary-precision signed integer value, bound to the
+ * {@link BigInteger} Java class;
+ * <li>{@link #BIG_DECIMAL} an arbitrary-precision signed decimal number, bound to the
+ * {@link BigDecimal} Java class;
+ * <li>{@link #DATETIME} a (signed) Unix timestamp, milliseconds ellapsed since January 1, 1970
+ * 00:00:00.000 GMT, bound to the {@link java.util.Date} class;
+ * <li>{@link #DATE} a (signed) Unix timestamp, milliseconds ellapsed since January 1, 1970
+ * 00:00:00.000 GMT, with milliseconds rounded to date precision, bound to the {@link java.sql.Date}
+ * class
+ * <li>{@link #TIME} a Unix timestamp with milliseconds corresponding to year, month and date set to
+ * zero, bound to {@link java.sql.Time} class
+ * <li>{@link #TIMESTAMP} a Unix timestamp plus nanoseconds precision, bound to the
+ * {@link java.sql.Timestamp} class
+ * <li>{@link #MAP}(0x20, java.util.Map.class, (v) -> new HashMap<>((Map) v)), //
+ * <li>{@link #CHAR} a single 16-bit Unicode characted, bount to the {@link Character} Java type;
+ * <li>{@link #CHAR_ARRAY} an array of {@link #CHAR}, essentially equivalent to {@link #STRING}, but
+ * present for completeness as the client application may define a field to be of a fixed size, for
+ * example.
+ * <li>{@link #UNKNOWN} an error condition enum value for when a value instance can't be mapped to
+ * any supported type. See {@link #forBinding(Class)} and {@link #forValue(Object)} for more
+ * information.
+ * </ul>
  * 
  * @since 1.0
  */
@@ -73,6 +136,13 @@ public enum FieldType {
     MULTILINESTRING(0x15, MultiLineString.class, (v) -> ((Geometry) v).clone()), //
     MULTIPOLYGON(0x16, MultiPolygon.class, (v) -> ((Geometry) v).clone()), //
     GEOMETRYCOLLECTION(0x17, GeometryCollection.class, (v) -> ((Geometry) v).clone()), //
+    /**
+     * a geometry object of an unspecified type
+     * 
+     * @deprecated should not be used since concrete instances will always be of one of the concrete
+     *             geometry types
+     * 
+     */
     GEOMETRY(0x18, Geometry.class, (v) -> ((Geometry) v).clone()), //
     UUID(0x19, java.util.UUID.class), //
     BIG_INTEGER(0x1A, BigInteger.class), //

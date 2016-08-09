@@ -144,11 +144,16 @@ public interface RevTree extends RevObject {
     }
 
     /**
-     * @return total number of features, including the size nested trees
+     * @return total number of features, including the size of nested trees
      */
     public long size();
 
     /**
+     * <p>
+     * A {@code RevTree} with an empty {@link #trees() tree list} may still have direct children
+     * trees if it has been split into bucket trees, hence {@code numTrees()} may be greater than
+     * zero while the trees list is empty.
+     * 
      * @return number of direct child trees
      */
     public int numTrees();

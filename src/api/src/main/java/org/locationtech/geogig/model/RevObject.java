@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2014 Boundless and others.
+/* Copyright (c) 2012-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,7 @@ import com.google.common.hash.HashFunction;
 /**
  * Base interface for the closed set of revision objects that are stored in a GeoGig repository.
  * <p>
- * All {@link RevObject}s have a {@link #getType() type} and {@link #getId() id}.
+ * All {@code RevObject}s have a {@link #getType() type} and {@link #getId() id}.
  * <p>
  * The id is an {@link ObjectId} computed algorithmically by {@link HashObjectFunnels} with a SHA-1
  * {@link HashFunction HashFunction}, the the type is given by the concrete kind of revision object.
@@ -53,8 +53,15 @@ public interface RevObject {
 
     /**
      * {@code RevObject} types enumeration.
+     * <p>
+     * Every concrete revision object instance's {@link RevObject#getType() RevObject.getType()}
+     * method must return the enum value corresponding to it's kind of object in the closed set of
+     * revision objects that comprise GeoGig's repository's object model
      */
     public static enum TYPE {
+        /**
+         * Enum value for objects of type {@link RevCommit}
+         */
         COMMIT {
             @Override
             public int value() {
@@ -66,6 +73,9 @@ public interface RevObject {
                 return RevCommit.class;
             }
         },
+        /**
+         * Enum value for objects of type {@link RevTree}
+         */
         TREE {
             @Override
             public int value() {
@@ -77,6 +87,9 @@ public interface RevObject {
                 return RevTree.class;
             }
         },
+        /**
+         * Enum value for objects of type {@link RevFeature}
+         */
         FEATURE {
             @Override
             public int value() {
@@ -88,6 +101,9 @@ public interface RevObject {
                 return RevFeature.class;
             }
         },
+        /**
+         * Enum value for objects of type {@link RevTag}
+         */
         TAG {
             @Override
             public int value() {
@@ -99,6 +115,9 @@ public interface RevObject {
                 return RevTag.class;
             }
         },
+        /**
+         * Enum value for objects of type {@link RevFeatureType}
+         */
         FEATURETYPE {
             @Override
             public int value() {
@@ -111,12 +130,35 @@ public interface RevObject {
             }
         };
 
+        /**
+         * private static cache of values to be accessed by {@link #valueOf(int)} since repeteadly
+         * calling {@link #values()} may incur in a small performance overhead when called inside a
+         * loop.
+         */
+        private static final TYPE[] VALUES = TYPE.values();
+
+        /**
+         * An integral unique identifier for each enum value, useful for encoding/serialization
+         * mechanisms
+         */
         public abstract int value();
 
+        /**
+         * @return the specific {@link RevObject} subtype this enum value is bound to
+         */
         public abstract Class<? extends RevObject> binding();
 
+        /**
+         * Utility method to obtain the enum value whose {@link #value() value} is equal to the
+         * provided {@code value} literal
+         * 
+         * @param value one of the possible {@link #value() values}
+         * @return the enum value whose {@link #value()} equals {@code value}
+         */
         public static TYPE valueOf(final int value) {
-            return TYPE.values()[value];
+            // Note we're using the value ordinal for convenience just becase each enum value()
+            // coincides with its ordinal()
+            return VALUES[value];
         }
 
         private static final ImmutableMap<Class<? extends RevObject>, Integer> byBinding = ImmutableMap
@@ -124,6 +166,11 @@ public interface RevObject {
                         FEATURE.binding(), FEATURE.value(), TAG.binding(), TAG.value(),
                         FEATURETYPE.binding(), FEATURETYPE.value());
 
+        /**
+         * @param binding the specific kind of {@link RevObject} for which to return its bound enum
+         *        value
+         * @return the enum value bound to {@code binding}
+         */
         public static TYPE valueOf(final Class<? extends RevObject> binding) {
             Preconditions.checkNotNull(binding);
             Integer value = byBinding.get(binding);

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static org.locationtech.geogig.model.RevObjects.forString;
+import static org.locationtech.geogig.model.RevObjectTestSupport.hashString;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -74,7 +74,7 @@ public class UpdateTreeTest extends Assert {
 
         RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
-        NodeRef level1 = NodeRef.tree("level1", tree.getId(), forString("fake"));
+        NodeRef level1 = NodeRef.tree("level1", tree.getId(), hashString("fake"));
         RevTree newRoot = context.command(UpdateTree.class).setRoot(RevTree.EMPTY).setChild(level1)
                 .call();
         assertTrue(odb.exists(newRoot.getId()));
@@ -94,7 +94,7 @@ public class UpdateTreeTest extends Assert {
 
         RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
-        NodeRef level2 = NodeRef.tree("level1/level2", tree.getId(), forString("fake"));
+        NodeRef level2 = NodeRef.tree("level1/level2", tree.getId(), hashString("fake"));
 
         RevTree newRoot = context.command(UpdateTree.class).setRoot(RevTree.EMPTY).setChild(level2)
                 .call();
@@ -118,11 +118,11 @@ public class UpdateTreeTest extends Assert {
         RevTree tree1 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
         RevTree tree2 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
-        NodeRef subtree1 = NodeRef.tree("subtree1", tree1.getId(), forString("md1"));
+        NodeRef subtree1 = NodeRef.tree("subtree1", tree1.getId(), hashString("md1"));
         RevTree newRoot1 = context.command(UpdateTree.class).setRoot(RevTree.EMPTY)
                 .setChild(subtree1).call();
 
-        NodeRef subtree2 = NodeRef.tree("subtree2", tree2.getId(), forString("md2"));
+        NodeRef subtree2 = NodeRef.tree("subtree2", tree2.getId(), hashString("md2"));
         RevTree newRoot2 = context.command(UpdateTree.class).setRoot(newRoot1).setChild(subtree2)
                 .call();
 
@@ -142,13 +142,13 @@ public class UpdateTreeTest extends Assert {
 
         Preconditions.checkState(odb.isOpen());
 
-        NodeRef level2 = NodeRef.tree("subtree1/level2", tree1.getId(), forString("tree1"));
+        NodeRef level2 = NodeRef.tree("subtree1/level2", tree1.getId(), hashString("tree1"));
 
         RevTree newRoot1 = context.command(UpdateTree.class).setRoot(RevTree.EMPTY).setChild(level2)
                 .call();
         assertTrue(odb.exists(newRoot1.getId()));
 
-        NodeRef level3 = NodeRef.tree("subtree2/level2/level3", tree2.getId(), forString("tree2"));
+        NodeRef level3 = NodeRef.tree("subtree2/level2/level3", tree2.getId(), hashString("tree2"));
 
         RevTree newRoot2 = context.command(UpdateTree.class).setRoot(newRoot1).setChild(level3)
                 .call();
@@ -171,8 +171,8 @@ public class UpdateTreeTest extends Assert {
         RevTree tree1 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
         RevTree tree2 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
-        NodeRef level2 = NodeRef.tree("subtree1/level2", tree1.getId(), forString("tree1"));
-        NodeRef level3 = NodeRef.tree("subtree2/level2/level3", tree2.getId(), forString("tree2"));
+        NodeRef level2 = NodeRef.tree("subtree1/level2", tree1.getId(), hashString("tree1"));
+        NodeRef level3 = NodeRef.tree("subtree2/level2/level3", tree2.getId(), hashString("tree2"));
 
         final RevTree root = context.command(UpdateTree.class).setRoot(RevTree.EMPTY)
                 .setChild(level2).setChild(level3).call();
@@ -211,7 +211,7 @@ public class UpdateTreeTest extends Assert {
 
         RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
 
-        final ObjectId treeMetadataId = forString("fakeMdId");
+        final ObjectId treeMetadataId = hashString("fakeMdId");
 
         NodeRef child = NodeRef.tree("level1/level2", tree.getId(), treeMetadataId);
 
@@ -228,6 +228,6 @@ public class UpdateTreeTest extends Assert {
     }
 
     private Node blob(String path) {
-        return Node.create(path, forString(path), ObjectId.NULL, TYPE.FEATURE, null);
+        return Node.create(path, hashString(path), ObjectId.NULL, TYPE.FEATURE, null);
     }
 }

@@ -23,7 +23,7 @@ import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -37,9 +37,9 @@ public abstract class RevCommitSerializationTest extends Assert {
     @Before
     public void before() {
         this.serializer = getObjectSerializingFactory();
-        ObjectId treeId = RevObjects.forString("treeid");
+        ObjectId treeId = RevObjectTestSupport.hashString("treeid");
         testCommit = testCommit(treeId, "groldan", "groldan@boundlessgeo.com", 5000L, "jd",
-                "jd@lmnsolutions.com", 10000L, "test message", RevObjects.forString("first parent"));
+                "jd@lmnsolutions.com", 10000L, "test message", RevObjectTestSupport.hashString("first parent"));
     }
 
     protected abstract ObjectSerializingFactory getObjectSerializingFactory();
@@ -90,8 +90,8 @@ public abstract class RevCommitSerializationTest extends Assert {
     @Test
     public void testCommitSerializationMultipleParents() throws IOException {
         testCommit.setParentIds(
-                ImmutableList.of(RevObjects.forString("parent1"), RevObjects.forString("parent2"),
-                        RevObjects.forString("parent3"), RevObjects.forString("parent4")));
+                ImmutableList.of(RevObjectTestSupport.hashString("parent1"), RevObjectTestSupport.hashString("parent2"),
+                        RevObjectTestSupport.hashString("parent3"), RevObjectTestSupport.hashString("parent4")));
         RevCommit commit = testCommit.build();
         testCommit(commit);
     }
@@ -142,11 +142,11 @@ public abstract class RevCommitSerializationTest extends Assert {
         builder.setCommitterTimestamp(currentTime);
         builder.setCommitterTimeZoneOffset(timeZoneOffset);
 
-        ObjectId treeId = RevObjects.forString("Fake tree");
+        ObjectId treeId = RevObjectTestSupport.hashString("Fake tree");
         builder.setTreeId(treeId);
 
-        ObjectId parent1 = RevObjects.forString("Parent 1 of fake commit");
-        ObjectId parent2 = RevObjects.forString("Parent 2 of fake commit");
+        ObjectId parent1 = RevObjectTestSupport.hashString("Parent 1 of fake commit");
+        ObjectId parent2 = RevObjectTestSupport.hashString("Parent 2 of fake commit");
         List<ObjectId> parents = Arrays.asList(parent1, parent2);
         builder.setParentIds(parents);
 

@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.repository;
+package org.locationtech.geogig.model;
 
 import java.util.List;
 
@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevObjects;
 
 import com.google.common.collect.ImmutableList;
 
@@ -50,12 +49,12 @@ public class CommitBuilderTest extends TestCase {
         b.setAuthorTimestamp(500);
         b.setAuthorTimeZoneOffset(-5);
 
-        ObjectId treeId = RevObjects.forString("fake tree content");
+        ObjectId treeId = RevObjectTestSupport.hashString("fake tree content");
 
         b.setTreeId(treeId);
 
-        ObjectId parentId1 = RevObjects.forString("fake parent content 1");
-        ObjectId parentId2 = RevObjects.forString("fake parent content 2");
+        ObjectId parentId1 = RevObjectTestSupport.hashString("fake parent content 1");
+        ObjectId parentId2 = RevObjectTestSupport.hashString("fake parent content 2");
         List<ObjectId> parentIds = ImmutableList.of(parentId1, parentId2);
         b.setParentIds(parentIds);
 
@@ -85,7 +84,7 @@ public class CommitBuilderTest extends TestCase {
         b.setMessage("cool this works");
         b.setAuthorTimestamp(1000);
 
-        ObjectId treeId = RevObjects.forString("fake tree content");
+        ObjectId treeId = RevObjectTestSupport.hashString("fake tree content");
 
         b.setTreeId(treeId);
 
@@ -104,12 +103,12 @@ public class CommitBuilderTest extends TestCase {
         b.setMessage(null);
         b.setAuthorTimestamp(1000);
 
-        ObjectId treeId = RevObjects.forString("fake tree content");
+        ObjectId treeId = RevObjectTestSupport.hashString("fake tree content");
 
         b.setTreeId(treeId);
 
-        ObjectId parentId1 = RevObjects.forString("fake parent content 1");
-        ObjectId parentId2 = RevObjects.forString("fake parent content 2");
+        ObjectId parentId1 = RevObjectTestSupport.hashString("fake parent content 1");
+        ObjectId parentId2 = RevObjectTestSupport.hashString("fake parent content 2");
         List<ObjectId> parentIds = ImmutableList.of(parentId1, parentId2);
         b.setParentIds(parentIds);
 
@@ -143,12 +142,12 @@ public class CommitBuilderTest extends TestCase {
         b.setMessage("cool this works");
         b.setAuthorTimestamp(1000);
 
-        ObjectId treeId = RevObjects.forString("fake tree content");
+        ObjectId treeId = RevObjectTestSupport.hashString("fake tree content");
 
         b.setTreeId(treeId);
 
-        ObjectId parentId1 = RevObjects.forString("fake parent content 1");
-        ObjectId parentId2 = RevObjects.forString("fake parent content 2");
+        ObjectId parentId1 = RevObjectTestSupport.hashString("fake parent content 1");
+        ObjectId parentId2 = RevObjectTestSupport.hashString("fake parent content 2");
         List<ObjectId> parentIds = ImmutableList.of(parentId1, parentId2);
         b.setParentIds(parentIds);
 

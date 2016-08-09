@@ -19,7 +19,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeatureBuilder;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -247,7 +247,7 @@ public class RevertOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
         exception.expect(IllegalArgumentException.class);
-        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(RevObjects.forString("wrong")))
+        geogig.command(RevertOp.class).addCommit(Suppliers.ofInstance(RevObjectTestSupport.hashString("wrong")))
                 .call();
     }
 

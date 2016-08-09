@@ -42,7 +42,7 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.Hints;
@@ -268,8 +268,8 @@ public abstract class ObjectStoreConformanceTest {
             assertTrue(db.put(o));
         }
 
-        ObjectId notInDb1 = RevObjects.forString("fake1");
-        ObjectId notInDb2 = RevObjects.forString("fake2");
+        ObjectId notInDb1 = RevObjectTestSupport.hashString("fake1");
+        ObjectId notInDb2 = RevObjectTestSupport.hashString("fake2");
 
         Function<RevObject, ObjectId> toId = p -> p.getId();
         List<ObjectId> ids = Lists.newArrayList(concat(singletonIterator(notInDb1),
@@ -290,8 +290,8 @@ public abstract class ObjectStoreConformanceTest {
             assertTrue(db.put(o));
         }
 
-        ObjectId notInDb1 = RevObjects.forString("fake1");
-        ObjectId notInDb2 = RevObjects.forString("fake2");
+        ObjectId notInDb1 = RevObjectTestSupport.hashString("fake1");
+        ObjectId notInDb2 = RevObjectTestSupport.hashString("fake2");
 
         Function<RevObject, ObjectId> toId = p -> p.getId();
         Iterator<ObjectId> ids = concat(singletonIterator(notInDb1),
@@ -397,8 +397,8 @@ public abstract class ObjectStoreConformanceTest {
 
         CountingListener listener = BulkOpListener.newCountingListener();
 
-        Iterable<ObjectId> notFound = ImmutableList.of(RevObjects.forString("notfound1"),
-                RevObjects.forString("notfound2"));
+        Iterable<ObjectId> notFound = ImmutableList.of(RevObjectTestSupport.hashString("notfound1"),
+                RevObjectTestSupport.hashString("notfound2"));
 
         Iterator<RevObject> result = db.getAll(Iterables.concat(notFound, ids), listener);
 
@@ -461,7 +461,7 @@ public abstract class ObjectStoreConformanceTest {
         for (RevObject o : expected) {
             assertEquals(o, db.getIfPresent(o.getId()));
         }
-        assertNull(db.getIfPresent(RevObjects.forString("notfound")));
+        assertNull(db.getIfPresent(RevObjectTestSupport.hashString("notfound")));
     }
 
     @Test

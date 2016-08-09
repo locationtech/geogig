@@ -34,7 +34,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectTestSupport;
-import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.PostOrderDiffWalk.Consumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
@@ -177,7 +176,7 @@ public class PostOrderDiffWalkTest {
     @Test
     public void testLeafLeafWithSubStrees() {
         // two leaf trees
-        ObjectId metadataId = RevObjects.forString("fake");
+        ObjectId metadataId = RevObjectTestSupport.hashString("fake");
 
         RevTree left = createTreesTreeBuilder(leftSource, 2, 2, metadataId).build();
         RevTree right = createTreesTreeBuilder(rightSource, 3, 2, metadataId).build();

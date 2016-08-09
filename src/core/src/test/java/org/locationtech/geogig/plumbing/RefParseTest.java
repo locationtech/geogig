@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.storage.RefDatabase;
@@ -50,17 +50,17 @@ public class RefParseTest {
 
         Builder<String, String> builder = ImmutableMap.builder();
         Map<String, String> allRefs = builder//
-                .put("refs/heads/master", RevObjects.forString("refs/heads/master").toString())//
-                .put("refs/heads/branch1", RevObjects.forString("refs/heads/branch1").toString())//
-                .put("refs/heads/v1.1", RevObjects.forString("refs/heads/v1.1").toString())//
-                .put("refs/tags/tag1", RevObjects.forString("refs/tags/tag1").toString())//
-                .put("refs/tags/v1.1", RevObjects.forString("refs/tags/v1.1").toString())//
+                .put("refs/heads/master", RevObjectTestSupport.hashString("refs/heads/master").toString())//
+                .put("refs/heads/branch1", RevObjectTestSupport.hashString("refs/heads/branch1").toString())//
+                .put("refs/heads/v1.1", RevObjectTestSupport.hashString("refs/heads/v1.1").toString())//
+                .put("refs/tags/tag1", RevObjectTestSupport.hashString("refs/tags/tag1").toString())//
+                .put("refs/tags/v1.1", RevObjectTestSupport.hashString("refs/tags/v1.1").toString())//
                 .put("refs/remotes/origin/master",
-                        RevObjects.forString("refs/remotes/origin/master").toString())//
+                        RevObjectTestSupport.hashString("refs/remotes/origin/master").toString())//
                 .put("refs/remotes/origin/branch1",
-                        RevObjects.forString("refs/remotes/origin/branch1").toString())//
-                .put("refs/remotes/juan/master", RevObjects.forString("refs/remotes/juan/master").toString())//
-                .put("refs/remotes/juan/v1.1", RevObjects.forString("refs/remotes/juan/v1.1").toString())//
+                        RevObjectTestSupport.hashString("refs/remotes/origin/branch1").toString())//
+                .put("refs/remotes/juan/master", RevObjectTestSupport.hashString("refs/remotes/juan/master").toString())//
+                .put("refs/remotes/juan/v1.1", RevObjectTestSupport.hashString("refs/remotes/juan/v1.1").toString())//
                 .build();
 
         when(mockRefDb.getAll()).thenReturn(allRefs);
@@ -105,7 +105,7 @@ public class RefParseTest {
         Optional<Ref> ref = command.setName(refName).call();
         assertTrue(ref.isPresent());
         assertEquals(refName, ref.get().getName());
-        assertEquals(RevObjects.forString(refName), ref.get().getObjectId());
+        assertEquals(RevObjectTestSupport.hashString(refName), ref.get().getObjectId());
 
         refName = "refs/remotes/juan/v1.1";
 
@@ -129,7 +129,7 @@ public class RefParseTest {
         ref = command.setName(refSpec).call();
         assertTrue(ref.isPresent());
         assertEquals(refName, ref.get().getName());
-        assertEquals(RevObjects.forString(refName), ref.get().getObjectId());
+        assertEquals(RevObjectTestSupport.hashString(refName), ref.get().getObjectId());
     }
 
     @Test

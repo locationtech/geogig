@@ -32,7 +32,7 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevFeatureTypeBuilder;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevPersonBuilder;
 import org.locationtech.geogig.model.RevTag;
@@ -93,12 +93,12 @@ public class HashObjectTest extends RepositoryTestCase {
         b.setCommitterTimestamp(1000);
         b.setCommitterTimeZoneOffset(5);
 
-        ObjectId treeId = RevObjects.forString("fake tree content");
+        ObjectId treeId = RevObjectTestSupport.hashString("fake tree content");
 
         b.setTreeId(treeId);
 
-        ObjectId parentId1 = RevObjects.forString("fake parent content 1");
-        ObjectId parentId2 = RevObjects.forString("fake parent content 2");
+        ObjectId parentId1 = RevObjectTestSupport.hashString("fake parent content 1");
+        ObjectId parentId2 = RevObjectTestSupport.hashString("fake parent content 2");
         List<ObjectId> parentIds = ImmutableList.of(parentId1, parentId2);
         b.setParentIds(parentIds);
 
@@ -285,10 +285,10 @@ public class HashObjectTest extends RepositoryTestCase {
 
         RevPerson tagger = RevPersonBuilder.build("volaya", "volaya@boundlessgeo.com", -1000, -1);
         RevPerson tagger2 = RevPersonBuilder.build("groldan", "groldan@boundlessgeo.com", 10000, 0);
-        RevTag tag = RevTagBuilder.build(null, "tag1", RevObjects.forString("fake commit id"),
+        RevTag tag = RevTagBuilder.build(null, "tag1", RevObjectTestSupport.hashString("fake commit id"),
                 "message", tagger);
         RevTag tag2 = RevTagBuilder.build(null, "tag2",
-                RevObjects.forString("another fake commit id"), "another message", tagger2);
+                RevObjectTestSupport.hashString("another fake commit id"), "another message", tagger2);
         ObjectId tagId = hashCommand.setObject(tag).call();
         ObjectId tagId2 = hashCommand.setObject(tag2).call();
         assertNotNull(tagId);

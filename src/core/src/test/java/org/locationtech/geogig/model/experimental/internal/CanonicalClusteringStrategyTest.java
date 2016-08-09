@@ -37,7 +37,7 @@ import org.locationtech.geogig.model.LegacyTreeBuilder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
@@ -429,7 +429,7 @@ public abstract class CanonicalClusteringStrategyTest {
                 original.add(it.next().getNode());
             }
             for (Node n : original) {
-                ObjectId oid = RevObjects.forString(n.toString());
+                ObjectId oid = RevObjectTestSupport.hashString(n.toString());
                 Node edit = Node.create(n.getName(), oid, ObjectId.NULL, TYPE.FEATURE,
                         n.bounds().orNull());
                 edited.add(edit);

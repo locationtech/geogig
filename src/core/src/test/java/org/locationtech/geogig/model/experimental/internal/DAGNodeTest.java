@@ -26,7 +26,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.experimental.internal.DAGNode.FeatureDAGNode;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -49,7 +49,7 @@ public class DAGNodeTest {
         store.open();
         cache = mock(TreeCache.class);
         featuresTree = createFeaturesTree(store, "f", 512);
-        treesTree = createTreesTree(store, 2, 200, RevObjects.forString("test"));
+        treesTree = createTreesTree(store, 2, 200, RevObjectTestSupport.hashString("test"));
     }
 
     @Test

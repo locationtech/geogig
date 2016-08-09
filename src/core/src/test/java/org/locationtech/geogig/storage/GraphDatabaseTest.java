@@ -24,7 +24,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.GraphDatabase.Direction;
 import org.locationtech.geogig.storage.GraphDatabase.GraphEdge;
@@ -69,13 +69,13 @@ public abstract class GraphDatabaseTest {
 
     @Test
     public void testNodes() throws IOException {
-        ObjectId rootId = RevObjects.forString("root");
+        ObjectId rootId = RevObjectTestSupport.hashString("root");
         ImmutableList<ObjectId> parents = ImmutableList.of();
         database.put(rootId, parents);
-        ObjectId commit1 = RevObjects.forString("c1");
+        ObjectId commit1 = RevObjectTestSupport.hashString("c1");
         parents = ImmutableList.of(rootId);
         database.put(commit1, parents);
-        ObjectId commit2 = RevObjects.forString("c2");
+        ObjectId commit2 = RevObjectTestSupport.hashString("c2");
         parents = ImmutableList.of(commit1);
         database.put(commit2, parents);
 
@@ -102,8 +102,8 @@ public abstract class GraphDatabaseTest {
 
     @Test
     public void testMapNode() throws IOException {
-        ObjectId commitId = RevObjects.forString("commitId");
-        ObjectId mappedId = RevObjects.forString("mapped");
+        ObjectId commitId = RevObjectTestSupport.hashString("commitId");
+        ObjectId mappedId = RevObjectTestSupport.hashString("mapped");
         database.put(commitId, new ImmutableList.Builder<ObjectId>().build());
         database.put(mappedId, new ImmutableList.Builder<ObjectId>().build());
         database.map(mappedId, commitId);
@@ -111,7 +111,7 @@ public abstract class GraphDatabaseTest {
         assertEquals(commitId + " : " + mappedId + " : " + mapping, commitId, mapping);
 
         // update mapping
-        ObjectId commitId2 = RevObjects.forString("commitId2");
+        ObjectId commitId2 = RevObjectTestSupport.hashString("commitId2");
         database.map(mappedId, commitId2);
         mapping = database.getMapping(mappedId);
         assertEquals(commitId2 + " : " + mappedId + " : " + mapping, commitId2, mapping);
@@ -143,40 +143,40 @@ public abstract class GraphDatabaseTest {
         // o - commit10
         // |
         // o - commit11
-        ObjectId rootId = RevObjects.forString("root commit");
+        ObjectId rootId = RevObjectTestSupport.hashString("root commit");
         ImmutableList<ObjectId> parents = ImmutableList.of();
         database.put(rootId, parents);
-        ObjectId commit1 = RevObjects.forString("commit1");
+        ObjectId commit1 = RevObjectTestSupport.hashString("commit1");
         parents = ImmutableList.of(rootId);
         database.put(commit1, parents);
-        ObjectId commit2 = RevObjects.forString("commit2");
+        ObjectId commit2 = RevObjectTestSupport.hashString("commit2");
         parents = ImmutableList.of(commit1);
         database.put(commit2, parents);
-        ObjectId commit3 = RevObjects.forString("commit3");
+        ObjectId commit3 = RevObjectTestSupport.hashString("commit3");
         parents = ImmutableList.of(commit2);
         database.put(commit3, parents);
-        ObjectId commit4 = RevObjects.forString("commit4");
+        ObjectId commit4 = RevObjectTestSupport.hashString("commit4");
         parents = ImmutableList.of(commit3);
         database.put(commit4, parents);
-        ObjectId commit5 = RevObjects.forString("commit5");
+        ObjectId commit5 = RevObjectTestSupport.hashString("commit5");
         parents = ImmutableList.of(commit3);
         database.put(commit5, parents);
-        ObjectId commit6 = RevObjects.forString("commit6");
+        ObjectId commit6 = RevObjectTestSupport.hashString("commit6");
         parents = ImmutableList.of(commit5, commit4);
         database.put(commit6, parents);
-        ObjectId commit7 = RevObjects.forString("commit7");
+        ObjectId commit7 = RevObjectTestSupport.hashString("commit7");
         parents = ImmutableList.of(rootId);
         database.put(commit7, parents);
-        ObjectId commit8 = RevObjects.forString("commit8");
+        ObjectId commit8 = RevObjectTestSupport.hashString("commit8");
         parents = ImmutableList.of(commit2);
         database.put(commit8, parents);
-        ObjectId commit9 = RevObjects.forString("commit9");
+        ObjectId commit9 = RevObjectTestSupport.hashString("commit9");
         parents = ImmutableList.of(commit7, commit8);
         database.put(commit9, parents);
-        ObjectId commit10 = RevObjects.forString("commit10");
+        ObjectId commit10 = RevObjectTestSupport.hashString("commit10");
         parents = ImmutableList.of();
         database.put(commit10, parents);
-        ObjectId commit11 = RevObjects.forString("commit11");
+        ObjectId commit11 = RevObjectTestSupport.hashString("commit11");
         parents = ImmutableList.of(commit10);
         database.put(commit11, parents);
 
@@ -190,7 +190,7 @@ public abstract class GraphDatabaseTest {
 
     @Test
     public void testProperties() throws IOException {
-        ObjectId rootId = RevObjects.forString("root");
+        ObjectId rootId = RevObjectTestSupport.hashString("root");
         ImmutableList<ObjectId> parents = ImmutableList.of();
         database.put(rootId, parents);
 
@@ -200,11 +200,11 @@ public abstract class GraphDatabaseTest {
 
     @Test
     public void testEdges() throws IOException {
-        ObjectId rootId = RevObjects.forString("root");
+        ObjectId rootId = RevObjectTestSupport.hashString("root");
         database.put(rootId, ImmutableList.of());
-        ObjectId commit1 = RevObjects.forString("c1");
+        ObjectId commit1 = RevObjectTestSupport.hashString("c1");
         database.put(commit1, ImmutableList.of(rootId));
-        ObjectId commit2 = RevObjects.forString("c2");
+        ObjectId commit2 = RevObjectTestSupport.hashString("c2");
         database.put(commit2, ImmutableList.of(commit1, rootId));
 
         GraphNode node;
@@ -234,11 +234,11 @@ public abstract class GraphDatabaseTest {
 
     @Test
     public void testTruncate() throws IOException {
-        ObjectId rootId = RevObjects.forString("root");
+        ObjectId rootId = RevObjectTestSupport.hashString("root");
         database.put(rootId, ImmutableList.of());
-        ObjectId commit1 = RevObjects.forString("c1");
+        ObjectId commit1 = RevObjectTestSupport.hashString("c1");
         database.put(commit1, ImmutableList.of(rootId));
-        ObjectId commit2 = RevObjects.forString("c2");
+        ObjectId commit2 = RevObjectTestSupport.hashString("c2");
         database.put(commit2, ImmutableList.of(commit1, rootId));
 
         assertTrue(database.exists(rootId));

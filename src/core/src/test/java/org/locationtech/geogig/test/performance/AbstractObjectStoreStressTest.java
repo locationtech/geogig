@@ -40,7 +40,7 @@ import org.junit.rules.TestName;
 import org.junit.runners.MethodSorters;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
@@ -346,7 +346,7 @@ public abstract class AbstractObjectStoreStressTest {
     }
 
     private ObjectId fakeId(int i) {
-        return RevObjects.forString("fakeID" + i);
+        return RevObjectTestSupport.hashString("fakeID" + i);
     }
 
 }

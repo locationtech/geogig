@@ -19,7 +19,7 @@ import java.util.UUID;
 import org.junit.Test;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.RevFeatureSerializationTest;
 import org.opengis.feature.Feature;
@@ -53,7 +53,7 @@ public class RevFeatureTextSerializationTest extends RevFeatureSerializationTest
         writer.flush();
 
         try {
-            serializer.read(RevObjects.forString("ID_STRING"),
+            serializer.read(RevObjectTestSupport.hashString("ID_STRING"),
                     new ByteArrayInputStream(out.toByteArray()));
             fail();
         } catch (Exception e) {
@@ -68,7 +68,7 @@ public class RevFeatureTextSerializationTest extends RevFeatureSerializationTest
         writer.flush();
 
         try {
-            serializer.read(RevObjects.forString("ID_STRING"),
+            serializer.read(RevObjectTestSupport.hashString("ID_STRING"),
                     new ByteArrayInputStream(out.toByteArray()));
             fail();
         } catch (Exception e) {

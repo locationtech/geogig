@@ -48,7 +48,6 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectTestSupport;
-import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
@@ -223,7 +222,7 @@ public class PreOrderDiffWalkTest {
     @Test
     public void testLeafLeafWithSubStrees() {
         // two leaf trees
-        ObjectId metadataId = RevObjects.forString("fake");
+        ObjectId metadataId = RevObjectTestSupport.hashString("fake");
         RevTree left = createTreesTree(leftSource, 2, 100, metadataId);
         RevTree right = createTreesTree(rightSource, 3, 100, metadataId);
         PreOrderDiffWalk visitor = newVisitor(left, right);
@@ -261,7 +260,7 @@ public class PreOrderDiffWalkTest {
     @Test
     public void testSkipAddedTree() {
         // two leaf trees
-        ObjectId metadataId = RevObjects.forString("fake");
+        ObjectId metadataId = RevObjectTestSupport.hashString("fake");
         RevTree left = createTreesTree(leftSource, 2, 10, metadataId);
         RevTree right = createTreesTree(rightSource, 3, 10, metadataId);
         PreOrderDiffWalk visitor = newVisitor(left, right);
@@ -327,7 +326,7 @@ public class PreOrderDiffWalkTest {
     @Test
     public void testSkipRemovedTree() {
         // two leaf trees
-        ObjectId metadataId = RevObjects.forString("fake");
+        ObjectId metadataId = RevObjectTestSupport.hashString("fake");
         RevTree left = createTreesTree(leftSource, 3, 10, metadataId);
         RevTree right = createTreesTree(rightSource, 2, 10, metadataId);
         PreOrderDiffWalk visitor = newVisitor(left, right);
@@ -356,9 +355,9 @@ public class PreOrderDiffWalkTest {
         // two leaf trees
         final RevTree left;
         final RevTree right;
-        final Node nodeChange1 = Node.create("f2", RevObjects.forString("forcechange"),
+        final Node nodeChange1 = Node.create("f2", RevObjectTestSupport.hashString("forcechange"),
                 ObjectId.NULL, TYPE.FEATURE, null);
-        final Node nodeChange2 = Node.create("f3", RevObjects.forString("fakefake"), ObjectId.NULL,
+        final Node nodeChange2 = Node.create("f3", RevObjectTestSupport.hashString("fakefake"), ObjectId.NULL,
                 TYPE.FEATURE, null);
         {
             left = createFeaturesTree(leftSource, "f", 5);
@@ -821,7 +820,7 @@ public class PreOrderDiffWalkTest {
             Node node = nr.getNode();
             if (i++ < 100) {
                 // make a change
-                node = Node.create(node.getName(), RevObjects.forString("changed-" + i),
+                node = Node.create(node.getName(), RevObjectTestSupport.hashString("changed-" + i),
                         node.getMetadataId().or(ObjectId.NULL), TYPE.FEATURE, (Envelope) null);
                 rightChanges.put(node.getName(), node);
             }

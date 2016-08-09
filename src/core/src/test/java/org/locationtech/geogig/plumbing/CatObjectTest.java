@@ -17,7 +17,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -29,7 +29,7 @@ public class CatObjectTest extends RepositoryTestCase {
 
     private ObjectDatabase odb;
 
-    private static final ObjectId FAKE_ID = RevObjects.forString("fake");
+    private static final ObjectId FAKE_ID = RevObjectTestSupport.hashString("fake");
 
     private static final String FEATURE_PREFIX = "Feature.";
 

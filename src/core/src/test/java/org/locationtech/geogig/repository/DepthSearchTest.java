@@ -31,7 +31,7 @@ import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.UpdateTree;
@@ -59,7 +59,7 @@ public class DepthSearchTest {
 
     private ObjectId rootTreeId;
 
-    private ObjectId fakeTreeMetadataId = RevObjects.forString("fakeMdId");
+    private ObjectId fakeTreeMetadataId = RevObjectTestSupport.hashString("fakeMdId");
 
     @Before
     public void setUp() throws IOException {
@@ -92,7 +92,7 @@ public class DepthSearchTest {
         if (singleNodeNames != null) {
             for (String singleNodeName : singleNodeNames) {
                 String nodePath = NodeRef.appendChild(treePath, singleNodeName);
-                ObjectId fakeFeatureOId = RevObjects.forString(nodePath);
+                ObjectId fakeFeatureOId = RevObjectTestSupport.hashString(nodePath);
                 ObjectId fakeTypeOId = ObjectId.NULL;// forString(treePath);
                 subTreeBuilder.put(Node.create(singleNodeName, fakeFeatureOId, fakeTypeOId,
                         TYPE.FEATURE, null));

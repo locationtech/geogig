@@ -34,7 +34,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
@@ -185,7 +185,7 @@ public class InitOpTest {
         assertTrue(new File(workingDir, ".geogig").exists());
         assertTrue(new File(workingDir, ".geogig").isDirectory());
 
-        Ref master = new Ref(Ref.MASTER, RevObjects.forString("hash me"));
+        Ref master = new Ref(Ref.MASTER, RevObjectTestSupport.hashString("hash me"));
 
         when(mockRefParse.call()).thenReturn(Optional.of(master));
 

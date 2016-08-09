@@ -9,42 +9,39 @@
  */
 package org.locationtech.geogig.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-public class RefTest extends RepositoryTestCase {
+public class RefTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
-        injector.configDatabase().put("user.name", "groldan");
-        injector.configDatabase().put("user.email", "groldan@boundlessgeo.com");
-    }
+    final ObjectId oid = ObjectId.valueOf("abc123000000000000001234567890abcdef0001");
+
+    final ObjectId oid2 = ObjectId.valueOf("abc123000000000000001234567890abcdef0002");
+
+    final ObjectId oid3 = ObjectId.valueOf("abc123000000000000001234567890abcdef0003");
 
     @Test
     public void testConstructor() throws Exception {
-        insertAndAdd(points1);
-        RevCommit oid = geogig.command(CommitOp.class).call();
 
-        Ref testRef = new Ref(Ref.REFS_PREFIX + "commit1", oid.getId());
+        Ref testRef = new Ref(Ref.REFS_PREFIX + "commit1", oid);
 
         assertEquals(Ref.REFS_PREFIX + "commit1", testRef.getName());
         assertEquals(Ref.REFS_PREFIX, testRef.namespace());
         assertEquals("commit1", testRef.localName());
-        assertEquals(oid.getId(), testRef.getObjectId());
+        assertEquals(oid, testRef.getObjectId());
     }
 
     @Test
     public void testToString() throws Exception {
-        insertAndAdd(points1);
-        RevCommit oid = geogig.command(CommitOp.class).call();
-
-        Ref testRef = new Ref(Ref.REFS_PREFIX + "commit1", oid.getId());
+        Ref testRef = new Ref(Ref.REFS_PREFIX + "commit1", oid);
 
         assertEquals("Ref[" + testRef.getName() + " -> " + testRef.getObjectId().toString() + "]",
                 testRef.toString());
@@ -52,19 +49,13 @@ public class RefTest extends RepositoryTestCase {
 
     @Test
     public void testEquals() throws Exception {
-        insertAndAdd(points1);
-        RevCommit oid = geogig.command(CommitOp.class).call();
 
-        Ref testRef = new Ref(Ref.REFS_PREFIX + "commit1", oid.getId());
-
-        insertAndAdd(lines1);
-        RevCommit oid2 = geogig.command(CommitOp.class).call();
-
-        Ref testRef2 = new Ref(Ref.REFS_PREFIX + "commit2", oid2.getId());
+        Ref testRef = new Ref(Ref.REFS_PREFIX + "commit1", oid);
+        Ref testRef2 = new Ref(Ref.REFS_PREFIX + "commit2", oid2);
 
         assertFalse(testRef.equals(testRef2));
 
-        testRef2 = new Ref(Ref.REFS_PREFIX + "commit1", oid.getTreeId());
+        testRef2 = new Ref(Ref.REFS_PREFIX + "commit1", oid3);
 
         assertFalse(testRef.equals(testRef2));
 
@@ -75,15 +66,8 @@ public class RefTest extends RepositoryTestCase {
 
     @Test
     public void testCompare() throws Exception {
-        insertAndAdd(points1);
-        RevCommit oid = geogig.command(CommitOp.class).call();
-
-        Ref testRef = new Ref(Ref.REFS_PREFIX + "commit1", oid.getId());
-
-        insertAndAdd(lines1);
-        RevCommit oid2 = geogig.command(CommitOp.class).call();
-
-        Ref testRef2 = new Ref(Ref.REFS_PREFIX + "commit2", oid2.getId());
+        Ref testRef = new Ref(Ref.REFS_PREFIX + "commit1", oid);
+        Ref testRef2 = new Ref(Ref.REFS_PREFIX + "commit2", oid2);
 
         assertTrue(testRef.compareTo(testRef2) < 0);
         assertTrue(testRef2.compareTo(testRef) > 0);

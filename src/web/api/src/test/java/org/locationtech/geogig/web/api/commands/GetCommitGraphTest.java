@@ -16,7 +16,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
@@ -48,7 +48,7 @@ public class GetCommitGraphTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        String testId = RevObjects.forString("objectid").toString();
+        String testId = RevObjectTestSupport.hashString("objectid").toString();
         ParameterSet options = TestParams.of("depth", "5", "commitId", testId, "page", "3", "show",
                 "11");
 

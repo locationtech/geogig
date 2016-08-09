@@ -21,17 +21,18 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-public class RevCommitTest {
+public class RevCommitImplTest {
 
     @Test
     public void testConstructorAndAccessors() {
         RevPerson committer = RevPersonBuilder.build("ksishmael", "kelsey.ishmael@lmnsolutions.com",
                 12345, 12345);
         RevPerson author = RevPersonBuilder.build("test", "test@email.com", 12345, 12345);
-        ObjectId id = RevObjects.forString("new commit");
-        ObjectId treeId = RevObjects.forString("test tree");
+        ObjectId id = RevObjectTestSupport.hashString("new commit");
+        ObjectId treeId = RevObjectTestSupport.hashString("test tree");
         String message = "This is a test commit";
-        ImmutableList<ObjectId> parentIds = ImmutableList.of(RevObjects.forString("Parent 1"));
+        ImmutableList<ObjectId> parentIds = ImmutableList
+                .of(RevObjectTestSupport.hashString("Parent 1"));
         RevCommit commit = CommitBuilder.build(id, treeId, parentIds, author, committer, message);
 
         assertEquals(committer, commit.getCommitter());
@@ -54,10 +55,11 @@ public class RevCommitTest {
         RevPerson committer = RevPersonBuilder.build("ksishmael", "kelsey.ishmael@lmnsolutions.com",
                 12345, 12345);
         RevPerson author = RevPersonBuilder.build("test", "test@email.com", 12345, 12345);
-        ObjectId id = RevObjects.forString("new commit");
-        ObjectId treeId = RevObjects.forString("test tree");
+        ObjectId id = RevObjectTestSupport.hashString("new commit");
+        ObjectId treeId = RevObjectTestSupport.hashString("test tree");
         String message = "This is a test commit";
-        ImmutableList<ObjectId> parentId = ImmutableList.of(RevObjects.forString("Parent 1"));
+        ImmutableList<ObjectId> parentId = ImmutableList
+                .of(RevObjectTestSupport.hashString("Parent 1"));
         ImmutableList<ObjectId> emptyParentIds = ImmutableList.of();
         RevCommit commit = CommitBuilder.build(id, treeId, parentId, author, committer, message);
 
@@ -65,13 +67,13 @@ public class RevCommitTest {
 
         assertEquals("Commit[" + id.toString() + ", '" + message + "']", commitString);
 
-        RevCommit commit2 = CommitBuilder.build(RevObjects.forString("second commit"), treeId,
-                parentId, author, committer, message);
+        RevCommit commit2 = CommitBuilder.build(RevObjectTestSupport.hashString("second commit"),
+                treeId, parentId, author, committer, message);
 
         assertTrue(commit.equals(commit2));
 
-        commit2 = CommitBuilder.build(id, RevObjects.forString("new test tree"), parentId, author,
-                committer, message);
+        commit2 = CommitBuilder.build(id, RevObjectTestSupport.hashString("new test tree"),
+                parentId, author, committer, message);
 
         assertFalse(commit.equals(commit2));
 

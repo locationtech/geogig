@@ -21,7 +21,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
@@ -55,7 +55,7 @@ public class CatTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ObjectId id = RevObjects.forString("objectId");
+        ObjectId id = RevObjectTestSupport.hashString("objectId");
         ParameterSet options = TestParams.of("objectid", id.toString());
 
         Cat op = (Cat) buildCommand(options);

@@ -28,7 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.NodeRef;
 
@@ -45,23 +45,23 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
 
     private T conflicts;
 
-    protected final Conflict c1 = new Conflict("Rivers/1", NULL, RevObjects.forString("ours"),
-            RevObjects.forString("theirs"));
+    protected final Conflict c1 = new Conflict("Rivers/1", NULL, RevObjectTestSupport.hashString("ours"),
+            RevObjectTestSupport.hashString("theirs"));
 
-    protected final Conflict c2 = new Conflict("Rivers/2", RevObjects.forString("ancestor"),
-            RevObjects.forString("ours2"), RevObjects.forString("theirs2"));
+    protected final Conflict c2 = new Conflict("Rivers/2", RevObjectTestSupport.hashString("ancestor"),
+            RevObjectTestSupport.hashString("ours2"), RevObjectTestSupport.hashString("theirs2"));
 
-    protected final Conflict c3 = new Conflict("Rivers/3", RevObjects.forString("ancestor"),
-            RevObjects.forString("ours3"), RevObjects.forString("theirs3"));
+    protected final Conflict c3 = new Conflict("Rivers/3", RevObjectTestSupport.hashString("ancestor"),
+            RevObjectTestSupport.hashString("ours3"), RevObjectTestSupport.hashString("theirs3"));
 
-    protected final Conflict b1 = new Conflict("buildings/1", NULL, RevObjects.forString("ours"),
-            RevObjects.forString("theirs"));
+    protected final Conflict b1 = new Conflict("buildings/1", NULL, RevObjectTestSupport.hashString("ours"),
+            RevObjectTestSupport.hashString("theirs"));
 
-    protected final Conflict b2 = new Conflict("buildings/2", RevObjects.forString("ancestor"),
-            RevObjects.forString("ours2"), RevObjects.forString("theirs2"));
+    protected final Conflict b2 = new Conflict("buildings/2", RevObjectTestSupport.hashString("ancestor"),
+            RevObjectTestSupport.hashString("ours2"), RevObjectTestSupport.hashString("theirs2"));
 
-    protected final Conflict b3 = new Conflict("buildings/3", RevObjects.forString("ancestor"),
-            RevObjects.forString("ours3"), RevObjects.forString("theirs3"));
+    protected final Conflict b3 = new Conflict("buildings/3", RevObjectTestSupport.hashString("ancestor"),
+            RevObjectTestSupport.hashString("ours3"), RevObjectTestSupport.hashString("theirs3"));
 
     @Before
     public void before() throws Exception {
@@ -85,9 +85,9 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
 
     protected Conflict createTestConflict(String path) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(path));
-        ObjectId ancestor = RevObjects.forString(NodeRef.parentPath(path));
-        ObjectId ours = RevObjects.forString(path);
-        ObjectId theirs = RevObjects.forString(path + "1");
+        ObjectId ancestor = RevObjectTestSupport.hashString(NodeRef.parentPath(path));
+        ObjectId ours = RevObjectTestSupport.hashString(path);
+        ObjectId theirs = RevObjectTestSupport.hashString(path + "1");
         Conflict c = new Conflict(path, ancestor, ours, theirs);
         return c;
     }

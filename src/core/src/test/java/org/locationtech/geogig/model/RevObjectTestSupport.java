@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.model;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -20,7 +21,9 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.hash.HashCode;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class RevObjectTestSupport {
@@ -126,7 +129,7 @@ public class RevObjectTestSupport {
             RND.nextBytes(raw);
             oid = ObjectId.createNoClone(raw);
         } else {// predictable id
-            oid = RevObjects.forString(name);
+            oid = RevObjectTestSupport.hashString(name);
         }
         Node ref = Node.create(name, oid, ObjectId.NULL, TYPE.FEATURE,
                 new Envelope(index, index + 1, index, index + 1));
@@ -208,6 +211,22 @@ public class RevObjectTestSupport {
         public void forEach(final Consumer<Object> consumer) {
             values.forEach((o) -> consumer.accept(o.orNull()));
         }
+    }
+
+    /**
+     * Utility method to quickly hash a String and create an ObjectId out of the string SHA-1 hash.
+     * <p>
+     * Note this method is to hash a string, and is used for testing, not to convert the string
+     * representation of an ObjectId. Use {@link ObjectId#valueOf(String)} for that purpose.
+     * </p>
+     * 
+     * @param strToHash
+     * @return the {@code ObjectId} generated from the string
+     */
+    public static ObjectId hashString(final String strToHash) {
+        Preconditions.checkNotNull(strToHash);
+        HashCode hashCode = ObjectId.HASH_FUNCTION.hashString(strToHash, Charset.forName("UTF-8"));
+        return ObjectId.createNoClone(hashCode.asBytes());
     }
 
 }

@@ -26,7 +26,7 @@ public class NodeTest {
 
     @Test
     public void testNodeAccessorsAndConstructors() {
-        ObjectId oid = RevObjects.forString("Points stuff");
+        ObjectId oid = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
         Node node = Node.create("Points", oid, ObjectId.NULL, TYPE.TREE, null);
         assertEquals(node.getMetadataId(), Optional.absent());
         assertEquals(node.getName(), "Points");
@@ -36,12 +36,15 @@ public class NodeTest {
 
     @Test
     public void testIsEqual() {
-        Node node = Node.create("Points.1", RevObjects.forString("Points stuff"), ObjectId.NULL,
+        Node node = Node.create("Points.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
                 TYPE.FEATURE, null);
-        Node node2 = Node.create("Lines.1", RevObjects.forString("Lines stuff"), ObjectId.NULL,
+        Node node2 = Node.create("Lines.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
                 TYPE.FEATURE, null);
-        Node node3 = Node.create("Lines.1", RevObjects.forString("Lines stuff"),
-                RevObjects.forString("Lines Stuff"), TYPE.TREE, null);
+        Node node3 = Node.create("Lines.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0002"), TYPE.TREE, null);
 
         assertFalse(node.equals("NotANode"));
         assertFalse(node.equals(node2));
@@ -51,7 +54,8 @@ public class NodeTest {
 
     @Test
     public void testToString() {
-        Node node = Node.create("Points.1", RevObjects.forString("Points stuff"), ObjectId.NULL,
+        Node node = Node.create("Points.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
                 TYPE.FEATURE, null);
 
         String readableNode = node.toString();
@@ -61,9 +65,11 @@ public class NodeTest {
 
     @Test
     public void testCompareTo() {
-        Node node = Node.create("Points.1", RevObjects.forString("Points stuff"), ObjectId.NULL,
+        Node node = Node.create("Points.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
                 TYPE.FEATURE, null);
-        Node node2 = Node.create("Lines.1", RevObjects.forString("Lines stuff"), ObjectId.NULL,
+        Node node2 = Node.create("Lines.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
                 TYPE.FEATURE, null);
 
         assertTrue(node.compareTo(node2) > 0);

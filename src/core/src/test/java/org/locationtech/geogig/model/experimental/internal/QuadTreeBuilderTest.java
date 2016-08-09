@@ -35,7 +35,7 @@ import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTreeBuilderTest;
@@ -315,7 +315,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         Envelope bounds = new Envelope();
         orig.expand(bounds);
         bounds.expandBy(0.0001);
-        Node change = Node.create(orig.getName(), RevObjects.forString("changes"), ObjectId.NULL,
+        Node change = Node.create(orig.getName(), RevObjectTestSupport.hashString("changes"), ObjectId.NULL,
                 TYPE.FEATURE, bounds);
         nodes.set(1, change);
         // nodes.remove(2000);
@@ -507,7 +507,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
             nodeTime.start();
             String nodeName = String.valueOf(intId);
             String sid = Strings.padStart(nodeName, 40, '0');
-            ObjectId oid = RevObjects.forString(sid);
+            ObjectId oid = RevObjectTestSupport.hashString(sid);
 
             double x1 = minX + (intId * stepx);
             double x2 = minX + (intId * stepx) + stepx;

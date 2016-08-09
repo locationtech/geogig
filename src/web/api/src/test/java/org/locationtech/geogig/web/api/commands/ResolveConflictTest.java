@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeatureBuilder;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
@@ -45,7 +45,7 @@ public class ResolveConflictTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ObjectId someObjectId = RevObjects.forString("object");
+        ObjectId someObjectId = RevObjectTestSupport.hashString("object");
         ParameterSet options = TestParams.of("path", "some/path", "objectid",
                 someObjectId.toString());
 

@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeatureBuilder;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
@@ -45,8 +45,8 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ObjectId oldCommitId = RevObjects.forString("old");
-        ObjectId newCommitId = RevObjects.forString("new");
+        ObjectId oldCommitId = RevObjectTestSupport.hashString("old");
+        ObjectId newCommitId = RevObjectTestSupport.hashString("new");
         ParameterSet options = TestParams.of("authorName", "Tester", "authorEmail",
                 "tester@example.com", "commitMessage", "someCommitMessage", "mergeMessage",
                 "someMergeMessage", "oldCommitId", oldCommitId.toString(), "newCommitId",

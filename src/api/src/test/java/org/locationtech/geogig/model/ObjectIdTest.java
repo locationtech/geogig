@@ -29,17 +29,17 @@ public class ObjectIdTest extends TestCase {
 
     @Test
     public void testEquals() {
-        ObjectId id1 = RevObjects.forString("some content");
-        ObjectId id2 = RevObjects.forString("some content");
+        ObjectId id1 = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
+        ObjectId id2 = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
         assertNotSame(id1, id2);
         assertEquals(id1, id2);
-        assertFalse(id1.equals(RevObjects.forString("some other content")));
+        assertFalse(id1.equals(ObjectId.valueOf("abc123000000000000001234567890abcdef0001")));
         assertFalse(id1.equals("blah"));
     }
 
     @Test
     public void testToStringAndValueOf() {
-        ObjectId id1 = RevObjects.forString("some content");
+        ObjectId id1 = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
         String stringRep = id1.toString();
         ObjectId valueOf = ObjectId.valueOf(stringRep);
         assertEquals(id1, valueOf);

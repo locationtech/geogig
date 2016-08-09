@@ -19,7 +19,7 @@ import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.DiffObjectCount;
@@ -35,14 +35,14 @@ public class DiffCountConsumerTest extends Assert {
     /**
      * All original feature noderefs have this objectid
      */
-    private static final ObjectId FAKE_FEATURE_ID = RevObjects
-            .forString("1100000000000000000000000000000000000000");
+    private static final ObjectId FAKE_FEATURE_ID = RevObjectTestSupport
+            .hashString("1100000000000000000000000000000000000000");
 
     /**
      * All changed feature noderefs have this objectid
      */
-    private static final ObjectId FAKE_FEATURE_ID_CHANGED = RevObjects
-            .forString("2200000000000000000000000000000000000000");
+    private static final ObjectId FAKE_FEATURE_ID_CHANGED = RevObjectTestSupport
+            .hashString("2200000000000000000000000000000000000000");
 
     private ObjectDatabase odb;
 

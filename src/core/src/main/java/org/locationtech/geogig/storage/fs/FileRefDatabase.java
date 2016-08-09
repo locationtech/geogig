@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
@@ -149,7 +148,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     /**
      * @param refName the name of the ref
-     * @param refValue the value of the ref
+     * @param refValue the value of the ref, must be the hex encoding of an {@link ObjectId}
      * @return {@code null} if the ref didn't exist already, its old value otherwise
      */
     @Override
@@ -157,7 +156,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
         checkNotNull(refName);
         checkNotNull(refValue);
         try {
-            RevObjects.forString(refValue);
+            ObjectId.valueOf(refValue);
         } catch (IllegalArgumentException e) {
             throw e;
         }

@@ -151,7 +151,7 @@ public abstract class RevTreeBuilderTest {
                     ; // $codepro.audit.disable extraSemicolon
                 }
                 String name = "Feature." + random;
-                ObjectId newid = RevObjects.forString(name + "changed");
+                ObjectId newid = RevObjectTestSupport.hashString(name + "changed");
                 Node ref = Node.create(name, newid, ObjectId.NULL, TYPE.FEATURE, null);
                 randomEdits.put(random, ref);
             }
@@ -179,7 +179,7 @@ public abstract class RevTreeBuilderTest {
             for (; it.hasNext(); i++) {
                 NodeRef entry = it.next();
                 if (i % 10 == 0) {
-                    ObjectId oid = RevObjects.forString("updated" + i);
+                    ObjectId oid = RevObjectTestSupport.hashString("updated" + i);
                     Node update = Node.create(entry.name(), oid, entry.getMetadataId(),
                             TYPE.FEATURE, entry.bounds().orNull());
                     oldValues.put(entry.name(), entry.getNode());
@@ -264,7 +264,7 @@ public abstract class RevTreeBuilderTest {
         return tree;
     }
 
-    private static final ObjectId FAKE_ID = RevObjects.forString("fake");
+    private static final ObjectId FAKE_ID = RevObjectTestSupport.hashString("fake");
 
     private void addNode(RevTreeBuilder tree, int i) {
         String key = "Feature." + i;
@@ -302,7 +302,7 @@ public abstract class RevTreeBuilderTest {
             RevTree subtree = createTree(size, false).build();
             assertEquals(size, subtree.size());
             String name = "tree-" + i;
-            ObjectId metadataId = RevObjects.forString(name);
+            ObjectId metadataId = RevObjectTestSupport.hashString(name);
             Node node = Node.create(name, subtree.getId(), metadataId, TYPE.TREE,
                     SpatialOps.boundsOf(subtree));
             builder.put(node);
@@ -333,7 +333,7 @@ public abstract class RevTreeBuilderTest {
             RevTree subtree = createTree(size, false).build();
             assertEquals(size, subtree.size());
             String name = "tree-" + i;
-            ObjectId metadataId = RevObjects.forString(name);
+            ObjectId metadataId = RevObjectTestSupport.hashString(name);
             Node node = Node.create(name, subtree.getId(), metadataId, TYPE.TREE,
                     SpatialOps.boundsOf(subtree));
             builder.put(node);
@@ -393,7 +393,7 @@ public abstract class RevTreeBuilderTest {
      */
     protected static Node node(int i) {
         String key = "a" + String.valueOf(i);
-        ObjectId oid = RevObjects.forString(key);
+        ObjectId oid = RevObjectTestSupport.hashString(key);
         Envelope bounds = new Envelope(i, i + 1, i, i + 1);
         Node node = Node.create(key, oid, ObjectId.NULL, TYPE.FEATURE, bounds);
         return node;

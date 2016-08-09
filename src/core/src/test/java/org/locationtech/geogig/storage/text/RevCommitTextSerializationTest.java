@@ -15,7 +15,7 @@ import java.io.OutputStreamWriter;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.RevCommitSerializationTest;
 
@@ -36,7 +36,7 @@ public class RevCommitTextSerializationTest extends RevCommitSerializationTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8");
         writer.write(TYPE.COMMIT.name() + "\n");
-        writer.write("tree\t" + RevObjects.forString("TREE_ID_STRING") + "\n");
+        writer.write("tree\t" + RevObjectTestSupport.hashString("TREE_ID_STRING") + "\n");
         writer.write("author\tvolaya\tvolaya@boundlessgeo.com\n");
         writer.write("commiter\tvolaya<volaya@boundlessgeo.com>\n");
         writer.write("timestamp\t" + Long.toString(12345678) + "\n");
@@ -44,7 +44,7 @@ public class RevCommitTextSerializationTest extends RevCommitSerializationTest {
         writer.flush();
 
         try {
-            serializer.read(RevObjects.forString("ID_STRING"),
+            serializer.read(RevObjectTestSupport.hashString("ID_STRING"),
                     new ByteArrayInputStream(out.toByteArray()));
             fail();
         } catch (Exception e) {
@@ -55,8 +55,8 @@ public class RevCommitTextSerializationTest extends RevCommitSerializationTest {
         out = new ByteArrayOutputStream();
         writer = new OutputStreamWriter(out, "UTF-8");
         writer.write(TYPE.COMMIT.name() + "\n");
-        writer.write("tree\t" + RevObjects.forString("TREE_ID_STRING") + "\n");
-        writer.write("parents\t" + RevObjects.forString("PARENT_ID_STRING") + "\n");
+        writer.write("tree\t" + RevObjectTestSupport.hashString("TREE_ID_STRING") + "\n");
+        writer.write("parents\t" + RevObjectTestSupport.hashString("PARENT_ID_STRING") + "\n");
         writer.write("author\tvolaya volaya@boundlessgeo.com\n");
         writer.write("commiter\tvolaya volaya@boundlessgeo.com\n");
         writer.write("timestamp\t" + Long.toString(12345678) + "\n");
@@ -64,7 +64,7 @@ public class RevCommitTextSerializationTest extends RevCommitSerializationTest {
         writer.flush();
 
         try {
-            serializer.read(RevObjects.forString("ID_STRING"),
+            serializer.read(RevObjectTestSupport.hashString("ID_STRING"),
                     new ByteArrayInputStream(out.toByteArray()));
             fail();
         } catch (Exception e) {

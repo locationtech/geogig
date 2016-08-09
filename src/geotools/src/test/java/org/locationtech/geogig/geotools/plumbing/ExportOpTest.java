@@ -23,7 +23,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.junit.Test;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.model.RevFeatureTypeBuilder;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
@@ -318,7 +318,7 @@ public class ExportOpTest extends RepositoryTestCase {
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
         try {
             geogig.command(ExportOp.class).setFeatureStore(featureStore).setPath(pointsName)
-                    .setFilterFeatureTypeId(RevObjects.forString("fake")).call();
+                    .setFilterFeatureTypeId(RevObjectTestSupport.hashString("fake")).call();
             fail();
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage(), e.getMessage().contains("filter feature type"));

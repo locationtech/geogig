@@ -24,7 +24,7 @@ import org.junit.runners.MethodSorters;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
@@ -48,7 +48,7 @@ public class RevTreeBuilderPerformanceTest {
 
     private HeapObjectStore odb;
 
-    private static final ObjectId FAKE_ID = RevObjects.forString("fake");
+    private static final ObjectId FAKE_ID = RevObjectTestSupport.hashString("fake");
 
     @Rule
     public TestName testName = new TestName();

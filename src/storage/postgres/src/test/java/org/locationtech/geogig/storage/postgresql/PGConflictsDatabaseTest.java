@@ -28,7 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.mockito.Answers;
@@ -44,8 +44,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class PGConflictsDatabaseTest {
 
-    private static final Conflict c1 = new Conflict("Rivers/1", NULL, RevObjects.forString("ours"),
-            RevObjects.forString("theirs"));
+    private static final Conflict c1 = new Conflict("Rivers/1", NULL, RevObjectTestSupport.hashString("ours"),
+            RevObjectTestSupport.hashString("theirs"));
 
     @Rule
     public ExpectedException expected = ExpectedException.none();

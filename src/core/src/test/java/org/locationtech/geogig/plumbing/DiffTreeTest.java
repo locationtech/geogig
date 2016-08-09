@@ -31,7 +31,7 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
@@ -210,7 +210,7 @@ public class DiffTreeTest extends Assert {
                 if (i % 2 == 0) {
                     builder.remove(String.valueOf(i));
                 } else {
-                    builder.put(feature(i, RevObjects.forString("changed" + i)));
+                    builder.put(feature(i, RevObjectTestSupport.hashString("changed" + i)));
                 }
             }
             tree2Changed = builder.build();
@@ -246,7 +246,7 @@ public class DiffTreeTest extends Assert {
                 if (i % 2 == 0) {
                     builder.remove(String.valueOf(i));
                 } else {
-                    builder.put(feature(i, RevObjects.forString("changed" + i)));
+                    builder.put(feature(i, RevObjectTestSupport.hashString("changed" + i)));
                 }
             }
             tree2Changed = builder.build();
@@ -333,7 +333,7 @@ public class DiffTreeTest extends Assert {
     }
 
     private Node feature(int i) {
-        return feature(i, RevObjects.forString(String.valueOf(i)));
+        return feature(i, RevObjectTestSupport.hashString(String.valueOf(i)));
     }
 
     private Node feature(int i, ObjectId oid) {

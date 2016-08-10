@@ -64,6 +64,11 @@ public class Branch extends AbstractWebAPICommand {
      */
     String source;
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     public Branch(ParameterSet options) {
         super(options);
         setList(Boolean.valueOf(options.getFirstValue("list", "false")));
@@ -151,7 +156,7 @@ public class Branch extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         if (list) {
-            final Context geogig = this.getCommandLocator(context);
+            final Context geogig = this.getRepositoryContext(context);
             final List<Ref> localBranches = geogig.command(BranchListOp.class).call();
             final List<Ref> remoteBranches;
             if (remotes) {
@@ -170,7 +175,7 @@ public class Branch extends AbstractWebAPICommand {
             });
         } else if (branchName != null) {
             // branchName provided, must be a create branch request
-            final Context geogig = this.getCommandLocator(context);
+            final Context geogig = this.getRepositoryContext(context);
             Ref createdBranch = geogig.command(BranchCreateOp.class).setName(branchName)
                     .setAutoCheckout(autoCheckout).setForce(force).setOrphan(orphan)
                     .setSource(source).call();

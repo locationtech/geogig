@@ -61,11 +61,7 @@ public class EndTransaction extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (this.getTransactionId() == null) {
-            throw new CommandSpecException("No transaction was specified.");
-        }
-
-        final Context transaction = this.getCommandLocator(context);
+        final Context transaction = this.getRepositoryContext(context);
 
         TransactionEnd endTransaction = context.getRepository().command(TransactionEnd.class);
         try {

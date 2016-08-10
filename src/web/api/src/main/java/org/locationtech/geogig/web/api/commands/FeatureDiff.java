@@ -53,6 +53,11 @@ public class FeatureDiff extends AbstractWebAPICommand {
         setAll(Boolean.valueOf(options.getFirstValue("all", "false")));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator of the path variable
      * 
@@ -119,7 +124,7 @@ public class FeatureDiff extends AbstractWebAPICommand {
             throw new CommandSpecException("No path for feature name specifed");
         }
 
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
         ObjectId newId = geogig.command(ResolveTreeish.class).setTreeish(newTreeish).call().get();
 
         ObjectId oldId = geogig.command(ResolveTreeish.class).setTreeish(oldTreeish).call().get();

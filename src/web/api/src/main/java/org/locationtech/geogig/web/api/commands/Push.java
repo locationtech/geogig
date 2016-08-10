@@ -39,6 +39,11 @@ public class Push extends AbstractWebAPICommand {
         setRemoteName(options.getFirstValue("remoteName", null));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the remoteName variable
      * 
@@ -73,7 +78,7 @@ public class Push extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         PushOp command = geogig.command(PushOp.class);
 

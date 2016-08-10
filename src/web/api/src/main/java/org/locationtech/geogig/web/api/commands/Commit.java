@@ -89,11 +89,7 @@ public class Commit extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (this.getTransactionId() == null) {
-            throw new CommandSpecException(
-                    "No transaction was specified, commit requires a transaction to preserve the stability of the repository.");
-        }
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
         RevCommit commit;
         commit = geogig.command(CommitOp.class).setAuthor(authorName.orNull(), authorEmail.orNull())
                 .setMessage(message).setAllowEmpty(true).setAll(all).call();

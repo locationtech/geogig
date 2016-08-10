@@ -55,6 +55,11 @@ public class Statistics extends AbstractWebAPICommand {
         setUntil(options.getFirstValue("branch", null));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     public void setPath(String path) {
         this.path = path;
     }
@@ -74,7 +79,7 @@ public class Statistics extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
         final List<FeatureTypeStats> stats = Lists.newArrayList();
         LogOp logOp = geogig.command(LogOp.class).setFirstParentOnly(true);
         final Iterator<RevCommit> log;

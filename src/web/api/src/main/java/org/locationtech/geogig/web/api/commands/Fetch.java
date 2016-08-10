@@ -40,6 +40,11 @@ public class Fetch extends AbstractWebAPICommand {
         setRemote(options.getFirstValue("remote", null));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the prune variable
      * 
@@ -79,7 +84,7 @@ public class Fetch extends AbstractWebAPICommand {
         if (remote == null && fetchAll == false) {
             throw new CommandSpecException("Nothing specified to fetch from.");
         }
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         FetchOp command = geogig.command(FetchOp.class);
 

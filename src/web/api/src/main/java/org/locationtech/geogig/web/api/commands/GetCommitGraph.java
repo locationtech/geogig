@@ -48,6 +48,11 @@ public class GetCommitGraph extends AbstractWebAPICommand {
         setElementsPerPage(parseInt(options, "show", 30));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the commitId variable
      * 

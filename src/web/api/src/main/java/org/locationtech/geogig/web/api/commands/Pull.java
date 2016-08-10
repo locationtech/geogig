@@ -64,6 +64,11 @@ public class Pull extends AbstractWebAPICommand {
         setAuthorEmail(options.getFirstValue("authorEmail", null));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the remoteName variable
      * 
@@ -112,7 +117,7 @@ public class Pull extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         PullOp command = geogig.command(PullOp.class)
                 .setAuthor(authorName.orNull(), authorEmail.orNull()).setRemote(remoteName)

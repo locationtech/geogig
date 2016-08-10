@@ -35,6 +35,11 @@ public class RebuildGraph extends AbstractWebAPICommand {
         setQuiet(Boolean.valueOf(options.getFirstValue("quiet", "false")));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the quiet variable
      * 
@@ -51,7 +56,7 @@ public class RebuildGraph extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         final ImmutableList<ObjectId> updatedObjects = geogig.command(RebuildGraphOp.class).call();
 

@@ -34,17 +34,17 @@ import com.vividsolutions.jts.geom.Geometry;
  * When traversing a revision graph, a "feature {@link RevTree tree}" is pointed out by a root
  * object, and the {@link Node} pointing to the feature tree that points to the {@code RevFeature}
  * has it's {@link Node#getMetadataId()} set to the "feature tree" {@code RevFeatureType}. That is,
- * the tree node for the tree that contains the feature has the "layer"'s default feature type.
+ * the tree node for the tree that contains the feature has the "layer's" default feature type.
  * <p>
  * A feature {@link Node} pointed out by a "feature tree" (a.k.a. Feature Class, or Layer, in
  * traditional GIS systems), should have its {@link Node#getMetadataId()} unset if it complies to
  * the feature tree's default feature type, and shall have the node's alternate
  * {@code RevFeatureType} id if it doesn't comply to the tree's default feature type.
  * 
- * @implNote since a {@code RevFeature} shall be immutable and some of it's internal value instances
+ * @implNote Since a {@code RevFeature} shall be immutable and some of it's internal value instances
  *           may be of a mutable type (such as {@link Map} or {@link Geometry}), implementations are
- *           advised to use {@link FieldType#safeCopy(Object)} to return a safe copy of any possibly
- *           mutable internal value.
+ *           strongly advised to use {@link FieldType#safeCopy(Object)} to return a safe copy of any
+ *           possibly mutable internal values.
  * 
  * @since 1.0
  */

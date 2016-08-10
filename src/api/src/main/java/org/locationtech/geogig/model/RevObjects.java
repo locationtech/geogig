@@ -29,7 +29,7 @@ public class RevObjects {
     private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
 
     /**
-     * Creates an hexadecimal encoding representation of the first {@code numBytes} bytes of the
+     * Creates a hexadecimal encoding representation of the first {@code numBytes} bytes of the
      * SHA-1 hashcode represented by {@code id} and appends it to {@code target}.
      * 
      * @pre {@code 0 < numBytes <= 20 }

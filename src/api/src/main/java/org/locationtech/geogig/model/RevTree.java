@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableSortedMap;
  * {@link RevTree#trees() tree}, {@link RevTree#features() feature}, and {@link RevTree#buckets()
  * bucket} pointers as mandated by {@link HashObjectFunnels}.
  * <p>
- * Two trees that contains the same values hash out to the same {@link ObjectId}, as long as they
+ * Two trees that contain the same values hash out to the same {@link ObjectId}, as long as they
  * have been built using the same "clustering strategy". That is, the same limits to split a tree
  * into subtrees (buckets) and the same ordering of it's nodes have been applied. The two trees,
  * hence, will only differ in what have actually changed, as only the changed buckets, or the tree
@@ -53,7 +53,7 @@ import com.google.common.collect.ImmutableSortedMap;
  * <p>
  * A "feature tree" node will have a {@link Node#getMetadataId() metadata id} that's a pointer to
  * the layer's default {@link RevFeatureType Feature Type}. Feature nodes that are children of such
- * tree that have a {@link ObjectId#NULL} metadata id are deemed to pertain the their parent tree's
+ * trees that have a {@link ObjectId#NULL} metadata id are deemed to pertain the their parent tree's
  * feature type. The feature nodes that have a non {@link ObjectId#NULL} metadata id are deemed
  * pointers to {@link RevFeature features} that comply to a different feature type than the tree's
  * default.

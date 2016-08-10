@@ -9,7 +9,7 @@
  * {@link org.locationtech.geogig.model.RevTag tags}, {@link org.locationtech.geogig.model.RevTree
  * trees}, {@link org.locationtech.geogig.model.RevFeatureType feature types}, and
  * {@link org.locationtech.geogig.model.RevFeature features}; immutable data structures whose
- * relationships conform a repository's "revision graph".
+ * relationships comprise a repository's "revision graph".
  * <p>
  * A repository is, hence, a collection of revision objects that together allow to track history and
  * lineage of geospatial datasets.
@@ -23,7 +23,7 @@
  * whose entry points are commits.
  * 
  * 
- * @apiNote all method arguments ans return values are non-null by default, except if they're
+ * @apiNote all method arguments and return values are non-null by default, except if they're
  *          annotated with {@code @org.eclipse.jdt.annotation.Nullable}
  */
 @org.eclipse.jdt.annotation.NonNullByDefault

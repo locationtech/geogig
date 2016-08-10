@@ -190,7 +190,7 @@ public enum FieldType {
     }
 
     /**
-     * A unique identifier for this enum member, in order not to rely in {@link #ordinal()}, that
+     * A unique identifier for this enum member, in order to not rely on {@link #ordinal()}, that
      * can be used, for example, by serializers to identify the kind of value that's to be encoded.
      */
     public byte getTag() {

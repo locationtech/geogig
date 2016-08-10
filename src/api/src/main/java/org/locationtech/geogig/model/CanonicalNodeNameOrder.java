@@ -59,7 +59,7 @@ import com.google.common.primitives.UnsignedLong;
  * defined by this class, for the first eight levels of depth, after which {@code buckets per node}
  * is always {@code 2} and {@code #features per leaf tree} always {@code 256}.
  * <p>
- * This structure is fixes and intends to balance out the growth of the trees as feature nodes are
+ * This structure is fixed and intends to balance out the growth of the trees as feature nodes are
  * added to provide for a good maximum capacity without too many levels of nesting, nor too few at
  * the cost of an exponential growth on the number of internal tree nodes.
  * 
@@ -192,7 +192,7 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
     }
 
     /**
-     * Given feature name's {@link #hashCodeLong(String) long hashcode}, computes the bucket index
+     * Given a feature name's {@link #hashCodeLong(String) long hashcode}, computes the bucket index
      * that corresponds to the node name at the given depth.
      * 
      * @return and Integer between zero and {@link #maxBucketsForLevel

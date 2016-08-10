@@ -17,9 +17,9 @@ import com.vividsolutions.jts.geom.Envelope;
 /**
  * A Bucket is merely a bounded pointer to another tree in a {@link RevTree} data structure.
  * <p>
- * {@link Node}s are pointers to named objects such as feature trees or features, while buckets are
- * pointers to the {@link RevTree}s it's parent tree is split into when the builder's imposed split
- * threshold is overcame.
+ * {@link Node}s are pointers to named objects such as feature trees or features, while a Bucket is a
+ * pointer to the {@link RevTree}s it's parent tree is split into when the builder's imposed split
+ * threshold is surpassed.
  * 
  * @see RevTree#buckets()
  * @since 1.0

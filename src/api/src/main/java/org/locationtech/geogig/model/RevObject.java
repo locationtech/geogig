@@ -20,13 +20,13 @@ import com.google.common.hash.HashFunction;
  * All {@code RevObject}s have a {@link #getType() type} and {@link #getId() id}.
  * <p>
  * The id is an {@link ObjectId} computed algorithmically by {@link HashObjectFunnels} with a SHA-1
- * {@link HashFunction HashFunction}, the the type is given by the concrete kind of revision object.
+ * {@link HashFunction HashFunction}, the type is given by the concrete kind of revision object.
  * 
  * @apiNote all revision objects are immutable data structures that describe the contents of an
  *          instance of the specific type. When stored in a repository, the id shall not be included
  *          as part of its serialized form, but only its contents. Given the case, specific checks
  *          can be implemented to ensure a revision object obtained from the repository for a given
- *          {@link ObjectId} do hash out to the expected id.
+ *          {@link ObjectId} hashes out to the expected id.
  * @implNote Given any two objects of the same type with the same exact contents shall hash out to
  *           the same {@link ObjectId}, {@link #equals(Object) equality} checks can merely compare
  *           the two {@link ObjectId}s for equality.

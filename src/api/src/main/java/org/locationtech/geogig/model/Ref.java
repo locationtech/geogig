@@ -12,7 +12,7 @@ package org.locationtech.geogig.model;
 import com.google.common.base.Preconditions;
 
 /**
- * A named pointer to {@link RevObject} that represents an entry point in a repository's revision
+ * A named pointer to a {@link RevObject} that represents an entry point in a repository's revision
  * graph.
  * <p>
  * The commit history consists of a DAG of commits, each one pointing to it's parent(s) commit(s).

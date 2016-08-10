@@ -26,17 +26,17 @@ import com.google.common.collect.ImmutableList;
  * {@link RevTree tree}, it represents a whole dataset (i.e. a full snapshot of the repository at a
  * given point in time).
  * <p>
- * Since a commit also have pointer(s) to it's parent(s) commit(s) ({@link #getParentIds()}), the
- * set of changes between a given commit and any of its parent commits is to be computed by
- * computing the differences between the tree the commit points to and one of its parents'. In fact,
- * the differences between one commit an any other can be computed just as easily.
+ * Since a commit also has pointer(s) to it's parent(s) commit(s) ({@link #getParentIds()}), the set
+ * of changes between a given commit and any of its parent commits is to be computed by computing
+ * the differences between the tree the commit points to and one of its parents'. In fact, the
+ * differences between one commit an any other can be computed just as easily.
  * <p>
  * A {@code RevCommit} contains information about the {@link #getAuthor() author} and
  * {@link #getCommitter() committer}.
  * <p>
  * The <b>author</b> is the individual that created the repository snapshot (i.e. the root tree a
  * commit points to). What exactly the author contributed is to be determined by computing the
- * differences between the snapshot and the commit's parents'.
+ * differences between the snapshot and the commit's parents.
  * <p>
  * The <b>committer</b> is the individual that created the commit object itself, as opposed to the
  * data it points to.
@@ -84,9 +84,6 @@ public interface RevCommit extends RevObject {
      * mention of merging branches is because that's the most common use case, but it doesn't really
      * need to be the tip of an actual branch, the merged commits may have been selected
      * individually regardless of being the tip of a branch or not).
-     * <p>
-     * The most common case for a merge commit is the result of merging two branches that have
-     * diverged at one point (hence having a common ancestor). In that case
      * 
      * @implNote currently GeoGig does not support creating an octopus merge if there are merge
      *           conflicts between any of the commits to be merged.

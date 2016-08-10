@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList;
  * {@code RevFeatureType} define a set of properties of a certain type of feature instances (that
  * is, a list of property names and value types). The {@link #getId() id} of a
  * {@code RevFeatureType} is used as the {@link Node#getMetadataId() metadataId} for nodes contained
- * in {@link RevTree}s, in order to determine which schema a given feature comply to.
+ * in {@link RevTree}s, in order to determine which schema a given feature complies to.
  * <p>
  * In traditional GIS systems, layers (a.k.a. FeatureClasses, or FeatureTypes) represent a dataset
  * whose features share a common schema, such as property names and types, including geometry type.
@@ -39,7 +39,7 @@ import com.google.common.collect.ImmutableList;
  * the tree's default metadata id have their {@link Node#getMetadataId()} unset (i.e.
  * {@code Optional.absent()}).
  * <p>
- * GeoGig's object model, however, allows to structure datasets such that there can be nested
+ * GeoGig's object model, however, allows datasets to be structured such that there can be nested
  * feature trees (for example, the {@code roads} feature tree may contain feature nodes as well as
  * nested feature tree nodes such as {@code roads/highways} and {@code roads/interstate}, which may
  * have a different schema than their parent's.
@@ -47,14 +47,14 @@ import com.google.common.collect.ImmutableList;
  * More over, GeoGig's object model allows feature trees to contain feature node pointers to
  * features that do not comply to their parent tree schema. In such cases, by specification such
  * {@link Node}s shall have their {@link Node#getMetadataId() metatadaId} set to the
- * {@link ObjectId} of the actual {@code RevFeatureType} the feature comply to.
+ * {@link ObjectId} of the actual {@code RevFeatureType} to which the feature complies.
  * <p>
  * Note {@link RevFeature} instances are pure value objects and hold no reference to the schema or
- * {@code RevFeatureType} the comply to. Instead, that information is to be retrieved by traversing
- * the {@link RevTree tree} that holds the {@code Node} pointers, resolving each {@code RevFeature}
- * identifier from the node's {@link Node#getObjectId() objectId}, and the schema they comply to
- * from the feature node's {@link Node#getMetadataId() metadataId}, defaulting to the tree node's
- * {@link Node#getMetadataId() metadataId} when unset.
+ * {@code RevFeatureType} to which they comply. Instead, that information is to be retrieved by
+ * traversing the {@link RevTree tree} that holds the {@code Node} pointers, resolving each
+ * {@code RevFeature} identifier from the node's {@link Node#getObjectId() objectId}, and the schema
+ * they comply to from the feature node's {@link Node#getMetadataId() metadataId}, defaulting to the
+ * tree node's {@link Node#getMetadataId() metadataId} when unset.
  * 
  * @since 1.0
  */

@@ -12,13 +12,13 @@ package org.locationtech.geogig.model;
 /**
  * An immutable data structure used to permanently mark a named repository snapshot.
  * <p>
- * The same way {@link RevCommit commits} point to a root {@link RevTree tree}, representing a full
- * repository datasets snapshot at a given point in time, {@link RevTag tags} point to a commit in
- * order to permanently signal a repository datasets snapshot of interest.
+ * In the same way {@link RevCommit commits} point to a root tree, representing a snapshot of a full
+ * repository dataset at a given point in time, {@code RevTag}s point to a commit in order to
+ * permanently signal a snapshot of interest of a repository dataset.
  * <p>
- * For example, as the datasets in the repository evolves, tags may be used to mark production
+ * For example, as the datasets in the repository evolve, tags may be used to mark production
  * versions. A tag has a name and a pointer to a commit. So a versioning scheme could be defined to
- * track datasets snapshots, such as tags named {@code version-1.0}, {@code version-2.0}, etc.
+ * track snapshots of datasets, such as tags named {@code version-1.0}, {@code version-2.0}, etc.
  * <p>
  * The same way the current tip commit of a branch is referred to by a {@link Ref} object in the
  * {@code refs/heads} namespace, tags are referred to by {@link Ref}s in the {@code refs/tags}

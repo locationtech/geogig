@@ -10,6 +10,10 @@
 package org.locationtech.geogig.test.integration;
 
 import static org.locationtech.geogig.repository.NodeRef.appendChild;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Iterator;
 import java.util.List;
@@ -45,8 +49,11 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.porcelain.PullOp;
+import org.locationtech.geogig.porcelain.StatusOp;
+import org.locationtech.geogig.porcelain.StatusOp.StatusSummary;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.repository.ProgressListener;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -177,6 +184,150 @@ public class MergeOpTest extends RepositoryTestCase {
         assertEquals(c1.getTreeId(), logC1.getTreeId());
 
     }
+
+    private void verifyCancelledCleanly(RevCommit oldHeadCommit) {
+        StatusSummary summary = geogig.command(StatusOp.class).call();
+        assertEquals(0, summary.getCountConflicts());
+        assertEquals(0, summary.getCountStaged());
+        assertEquals(0, summary.getCountUnstaged());
+
+        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        assertTrue(log.hasNext());
+        assertEquals(oldHeadCommit, log.next());
+    }
+
+    @Test
+    public void testCancelScenario1() throws Exception {
+        // Test cancel before merge work begins
+        ProgressListener listener = mock(ProgressListener.class);
+        when(listener.isCanceled()).thenReturn(true);
+
+        insertAndAdd(points1);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+
+        // create branch1 and checkout
+        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        insertAndAdd(points2);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+
+        // checkout master
+        geogig.command(CheckoutOp.class).setSource("master").call();
+        insertAndAdd(points3);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        insertAndAdd(lines1);
+        RevCommit master = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+
+        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
+                .setMessage("My merge message.").setProgressListener(listener).call();
+
+        assertNull(mergeReport);
+        verify(listener, times(1)).isCanceled();
+
+        verifyCancelledCleanly(master);
+    }
+
+    @Test
+    public void testCancelScenario2() throws Exception {
+        // Test cancel while merging with conflicts
+        ProgressListener listener = mock(ProgressListener.class);
+        when(listener.isCanceled()).thenReturn(false, true);
+
+        insertAndAdd(points2);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+
+        // create branch1 and checkout
+        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        insertAndAdd(points1);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+
+        // checkout master
+        geogig.command(CheckoutOp.class).setSource("master").call();
+        insertAndAdd(points1_modified);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP1 + " modified").call();
+        insertAndAdd(lines1);
+        RevCommit master = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+
+        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
+                .setMessage("My merge message.").setProgressListener(listener).call();
+
+        assertNull(mergeReport);
+        verify(listener, times(2)).isCanceled();
+
+        verifyCancelledCleanly(master);
+    }
+
+    @Test
+    public void testCancelScenario3() throws Exception {
+        // Test cancel during non-conflicting merge
+        ProgressListener listener = mock(ProgressListener.class);
+        when(listener.isCanceled()).thenReturn(false, true);
+
+        insertAndAdd(points1);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+
+        // create branch1 and checkout
+        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        insertAndAdd(points2);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+
+        // checkout master
+        geogig.command(CheckoutOp.class).setSource("master").call();
+        insertAndAdd(points3);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        insertAndAdd(lines1);
+        RevCommit master = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+
+        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
+        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
+                .setMessage("My merge message.").setProgressListener(listener).call();
+
+        assertNull(mergeReport);
+        verify(listener, times(2)).isCanceled();
+
+        verifyCancelledCleanly(master);
+    }
+
+    @Test
+    public void testCancelScenario4() throws Exception {
+        // Test cancel during octopus merge
+        ProgressListener listener = mock(ProgressListener.class);
+        when(listener.isCanceled()).thenReturn(false, false, true);
+
+        insertAndAdd(points1);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+
+        // create branch1 and checkout
+        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        insertAndAdd(points2);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+
+        // checkout master, then create branch2 and checkout
+        geogig.command(CheckoutOp.class).setSource("master").call();
+        insertAndAdd(points3);
+        geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
+        insertAndAdd(lines1);
+        geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+
+        geogig.command(CheckoutOp.class).setSource("master").call();
+        insertAndAdd(lines2);
+        final RevCommit master = geogig.command(CommitOp.class).setMessage("commit for " + idL2)
+                .call();
+
+        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
+        Ref branch2 = geogig.command(RefParse.class).setName("branch2").call().get();
+        final MergeReport mergeReport = geogig.command(MergeOp.class)
+                .addCommit(branch1.getObjectId()).addCommit(branch2.getObjectId())
+                .setMessage("My merge message.").setProgressListener(listener).call();
+
+        assertNull(mergeReport);
+        verify(listener, times(3)).isCanceled();
+
+        verifyCancelledCleanly(master);
+    }
+
 
     @Test
     public void testSpecifyAuthor() throws Exception {

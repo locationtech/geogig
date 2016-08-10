@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.geotools.data.EmptyFeatureReader;
 import org.geotools.data.FeatureReader;
@@ -46,10 +47,13 @@ import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.identity.FeatureId;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 
 /**
  *
@@ -291,13 +295,25 @@ class GeogigFeatureStore extends ContentFeatureStore {
      * {@link Feature#getUserData() user data} map is set to {@code Boolean.TRUE}, and only if so
      * let the feature unchanged, otherwise return a feature with the exact same contents but a
      * newly generaged feature id.
+     * <p>
+     * This class also creates a feature with the full native schema in case the input feature is a
+     * reduced version.
      */
     private static class SchemaInforcer implements Function<SimpleFeature, SimpleFeature> {
 
         private SimpleFeatureBuilder builder;
 
+        private final AtomicLong seq = new AtomicLong();
+
+        private final String baseId;
+
         public SchemaInforcer(final SimpleFeatureType targetSchema) {
             this.builder = new SimpleFeatureBuilder(targetSchema);
+            Hasher hasher = Hashing.murmur3_32().newHasher();
+            hasher.putString(targetSchema.getName().getLocalPart(), Charsets.UTF_8);
+            hasher.putLong(System.currentTimeMillis());
+            hasher.putLong(System.nanoTime());
+            baseId = hasher.hash().toString();
         }
 
         @Override
@@ -313,7 +329,7 @@ class GeogigFeatureStore extends ContentFeatureStore {
             if (Boolean.TRUE.equals(input.getUserData().get(Hints.USE_PROVIDED_FID))) {
                 id = input.getID();
             } else {
-                id = null;
+                id = baseId + seq.incrementAndGet();
             }
 
             SimpleFeature feature = builder.buildFeature(id);

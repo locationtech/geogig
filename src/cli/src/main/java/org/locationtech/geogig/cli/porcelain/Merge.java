@@ -123,10 +123,10 @@ public class Merge extends AbstractCommand implements CLICommand {
                 checkParameter(commitId.isPresent(), "Commit not found '%s'", commitish);
                 merge.addCommit(commitId.get());
             }
+            MergeReport report = merge.call();
             if (progress.isCanceled()) {
                 return;
             }
-            MergeReport report = merge.call();
             commit = report.getMergeCommit();
         } catch (RuntimeException e) {
             if (e instanceof NothingToCommitException || e instanceof IllegalArgumentException

@@ -73,6 +73,17 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
     private Optional<String> authorEmail = Optional.absent();
 
     /**
+     * Original values
+     */
+    private Ref origHead = null;
+
+    private Ref origCurrentBranch = null;
+
+    private Ref origWorkHead = null;
+
+    private Ref origStageHead = null;
+
+    /**
      * @param message the message for the merge commit
      * @return {@code this}
      */
@@ -178,6 +189,15 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         checkState(workingTree().isClean(),
                 "Merge cannot run if there are unstaged changes in the working tree");
 
+        // capture original values in case the operation is cancelled
+        origHead = currHead.get();
+        if (origHead instanceof SymRef) {
+            final String currentBranch = ((SymRef) origHead).getTarget();
+            origCurrentBranch = command(RefParse.class).setName(currentBranch).call().get();
+        }
+        origWorkHead = command(RefParse.class).setName(Ref.WORK_HEAD).call().get();
+        origStageHead = command(RefParse.class).setName(Ref.STAGE_HEAD).call().get();
+
         Ref headRef = currHead.get();
         final ObjectId oursId = headRef.getObjectId();// on top of which commit to merge
         // checkState(currHead.get() instanceof SymRef,
@@ -207,6 +227,12 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         mightHaveConflicts = command(CheckMergeScenarioOp.class).setCommits(revCommits).call();
         checkState(!(mightHaveConflicts && fastForwardOnly),
                 "The flag --ff-only was specified but no fast forward merge could be executed");
+
+        if (progress.isCanceled()) {
+            cancel();
+            return null;
+        }
+
         if (mightHaveConflicts && !theirs) {
             checkState(commits.size() < 2,
                     "Conflicted merge.\nCannot merge more than two commits when conflicts exist"
@@ -227,6 +253,11 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
             progress.setDescription("Possible conflicts. Creating intermediate merge status...");
             mergeScenario = command(ReportMergeScenarioOp.class).setMergeIntoCommit(headCommit)
                     .setToMergeCommit(targetCommit).setConsumer(mergeStatusBuilder).call();
+
+            if (progress.isCanceled()) {
+                cancel();
+                return null;
+            }
 
             workingTree().updateWorkHead(index().getTree().getId());
 
@@ -287,6 +318,10 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 if (commits.size() == 1) {
                     mergeScenario = command(ReportMergeScenarioOp.class)
                             .setMergeIntoCommit(headCommit).setToMergeCommit(targetCommit).call();
+                    if (progress.isCanceled()) {
+                        cancel();
+                        return null;
+                    }
                     if (ancestorCommit.get().equals(headCommit.getId()) && !noFastForward) {
                         // Fast-forward
                         if (headRef instanceof SymRef) {
@@ -307,6 +342,11 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                         continue;
                     } else if (ancestorCommit.get().equals(commitId)) {
                         continue;
+                    }
+                } else {
+                    if (progress.isCanceled()) {
+                        cancel();
+                        return null;
                     }
                 }
 
@@ -339,6 +379,31 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 oursId, pairs);
 
         return result;
+
+    }
+
+    private void cancel() {
+        // Restore original refs
+        if (origHead != null) {
+            if (origHead instanceof SymRef) {
+                command(UpdateRef.class).setName(origCurrentBranch.getName())
+                        .setNewValue(origCurrentBranch.getObjectId()).call();
+            } else {
+                command(UpdateRef.class).setName(origHead.getName())
+                        .setNewValue(origHead.getObjectId()).call();
+            }
+        }
+        if (origWorkHead != null) {
+            command(UpdateRef.class).setName(origWorkHead.getName())
+                    .setNewValue(origWorkHead.getObjectId()).call();
+        }
+        if (origStageHead != null) {
+            command(UpdateRef.class).setName(origStageHead.getName())
+                    .setNewValue(origStageHead.getObjectId()).call();
+        }
+
+        // Remove any conflicts that were generated.
+        conflictsDatabase().removeConflicts(null);
 
     }
 

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +23,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.TransactionEnd;
+import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.merge.ConflictsCountOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
@@ -31,6 +33,8 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RemoteAddOp;
 import org.locationtech.geogig.repository.GeogigTransaction;
+
+import com.google.common.base.Optional;
 
 public class GeogigTransactionTest extends RepositoryTestCase {
     @Rule
@@ -91,6 +95,24 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         assertEquals(expectedTransaction, logged);
 
+    }
+
+    @Test
+    public void testResolveTransaction() throws Exception {
+        GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
+
+        Optional<GeogigTransaction> txNew = geogig.command(TransactionResolve.class)
+                .setId(tx.getTransactionId()).call();
+
+        assertTrue(txNew.isPresent());
+    }
+
+    @Test
+    public void testResolveNonexistentTransaction() throws Exception {
+        Optional<GeogigTransaction> txNew = geogig.command(TransactionResolve.class)
+                .setId(UUID.randomUUID()).call();
+
+        assertFalse(txNew.isPresent());
     }
 
     @Test
@@ -521,11 +543,13 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         // can be used to perform other actions such as pull, push, and end. The web api
         // for example needs a way to retrieve/recreate a transaction object using a transactionId
         // without calling GeogigTransaction.create() since the transaction was previously created.
-        GeogigTransaction txNew = new GeogigTransaction(geogig.getContext(), tx.getTransactionId());
+        Optional<GeogigTransaction> txNew = geogig.command(TransactionResolve.class)
+                .setId(tx.getTransactionId()).call();
+
+        assertTrue(txNew.isPresent());
 
         TransactionEnd endTransaction = geogig.command(TransactionEnd.class);
-        boolean closed = endTransaction.setCancel(false).setTransaction((GeogigTransaction) txNew)
-                .call();
+        boolean closed = endTransaction.setCancel(false).setTransaction(txNew.get()).call();
         assertTrue(closed);
     }
 }

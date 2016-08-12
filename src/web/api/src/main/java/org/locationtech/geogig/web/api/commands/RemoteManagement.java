@@ -74,6 +74,11 @@ public class RemoteManagement extends AbstractWebAPICommand {
         setPassword(options.getFirstValue("password", null));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the list variable
      * 
@@ -171,7 +176,7 @@ public class RemoteManagement extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
         if (list) {
             remoteList(context, geogig);
         } else if (ping) {

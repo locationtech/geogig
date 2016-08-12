@@ -20,7 +20,7 @@ import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -97,24 +97,21 @@ public class Merge extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (this.getTransactionId() == null) {
-            throw new CommandSpecException(
-                    "No transaction was specified, merge requires a transaction to preserve the stability of the repository.");
-        } else if (this.commit == null) {
+        final Context geogig = this.getRepositoryContext(context);
+
+        if (this.commit == null) {
             throw new CommandSpecException("No commits were specified for merging.");
         }
 
-        final GeogigTransaction transaction = (GeogigTransaction) this.getCommandLocator(context);
-
-        final Optional<Ref> currHead = transaction.command(RefParse.class).setName(Ref.HEAD).call();
+        final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.HEAD).call();
         if (!currHead.isPresent()) {
             throw new CommandSpecException("Repository has no HEAD, can't merge.");
         }
 
-        MergeOp merge = transaction.command(MergeOp.class);
+        MergeOp merge = geogig.command(MergeOp.class);
         merge.setAuthor(authorName.orNull(), authorEmail.orNull());
 
-        final Optional<ObjectId> oid = transaction.command(RevParse.class).setRefSpec(commit)
+        final Optional<ObjectId> oid = geogig.command(RevParse.class).setRefSpec(commit)
                 .call();
         if (oid.isPresent()) {
             merge.addCommit(oid.get());
@@ -140,17 +137,17 @@ public class Merge extends AbstractWebAPICommand {
             Repository repository = context.getRepository();
             final RevCommit ours = repository.getCommit(currHead.get().getObjectId());
             final RevCommit theirs = repository.getCommit(oid.get());
-            final Optional<ObjectId> ancestor = transaction.command(FindCommonAncestor.class)
+            final Optional<ObjectId> ancestor = geogig.command(FindCommonAncestor.class)
                     .setLeft(ours).setRight(theirs).call();
             final PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);
-            final MergeScenarioReport report = transaction.command(ReportMergeScenarioOp.class)
+            final MergeScenarioReport report = geogig.command(ReportMergeScenarioOp.class)
                     .setMergeIntoCommit(ours).setConsumer(consumer).setToMergeCommit(theirs).call();
             context.setResponseContent(new CommandResponse() {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
                     Optional<RevCommit> mergeCommit = Optional.absent();
-                    out.writeMergeConflictsResponse(mergeCommit, report, transaction, ours.getId(),
+                    out.writeMergeConflictsResponse(mergeCommit, report, geogig, ours.getId(),
                             theirs.getId(), ancestor.get(), consumer);
                     out.finish();
                 }

@@ -15,6 +15,7 @@ import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
 
 import java.util.UUID;
 
+import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Repository;
@@ -48,9 +49,14 @@ public class TransactionalResource extends Resource {
         Form options = getRequest().getResourceRef().getQueryAsForm();
         String txId = options.getFirstValue("transactionId");
         if (txId != null) {
-            UUID transactionId = UUID.fromString(txId);
-            GeogigTransaction tx = new GeogigTransaction(geogigContext, transactionId);
-            geogigContext = tx;
+            Optional<GeogigTransaction> transaction = geogig.get().command(TransactionResolve.class)
+                    .setId(UUID.fromString(txId)).call();
+            if (transaction.isPresent()) {
+                geogigContext = transaction.get();
+            } else {
+                throw new RestletException("A transaction with the provided ID could not be found.",
+                        org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST);
+            }
         }
         return geogigContext;
     }

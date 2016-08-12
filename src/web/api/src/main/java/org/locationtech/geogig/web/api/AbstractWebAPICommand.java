@@ -11,12 +11,15 @@ package org.locationtech.geogig.web.api;
 
 import java.util.UUID;
 
+import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.RestletException;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
+
+import com.google.common.base.Optional;
 
 /**
  * An abstract command that allows WebAPICommands to support long transactions.
@@ -43,6 +46,15 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
      * @return whether or not this command requires an open repository.
      */
     protected boolean requiresOpenRepo() {
+        return true;
+    }
+
+    /**
+     * Check for commands that require a transaction.
+     * 
+     * @return whether or not this command requires a transaction.
+     */
+    protected boolean requiresTransaction() {
         return true;
     }
 
@@ -92,11 +104,27 @@ public abstract class AbstractWebAPICommand implements WebAPICommand {
      * @param context - the context to get the information needed to get the commandLocator
      * @return
      */
-    public Context getCommandLocator(CommandContext context) {
-        if (transactionId != null) {
-            return new GeogigTransaction(context.context(), transactionId);
+    public Context getRepositoryContext(CommandContext context) {
+        if (requiresTransaction() || transactionId != null) {
+            return getTransactionContext(context);
         }
         return context.context();
+    }
+    
+    private Context getTransactionContext(CommandContext context) {
+        if (transactionId == null) {
+            throw new CommandSpecException(
+                    "No transaction was specified, this command requires a transaction to preserve the stability of the repository.");
+        } else {
+            Optional<GeogigTransaction> transaction = context.context()
+                    .command(TransactionResolve.class).setId(transactionId).call();
+            if (transaction.isPresent()) {
+                return transaction.get();
+            } else {
+                throw new RestletException("A transaction with the provided ID could not be found.",
+                        org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+        }
     }
 
     public void run(CommandContext context) {

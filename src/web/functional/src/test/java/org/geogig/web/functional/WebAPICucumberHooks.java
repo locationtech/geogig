@@ -48,6 +48,7 @@ import org.geotools.geopkg.GeoPackage;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.TransactionEnd;
+import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.AsyncContext;
@@ -245,8 +246,8 @@ public class WebAPICucumberHooks {
     @When("^I end the transaction with id \"([^\"]*)\" on the \"([^\"]*)\" repo$")
     public void endTransaction(final String variableName, final String repoName) {
         Repository repo = context.getRepo(repoName);
-        GeogigTransaction transaction = new GeogigTransaction(repo.context(),
-                UUID.fromString(context.getVariable(variableName)));
+        GeogigTransaction transaction = repo.command(TransactionResolve.class)
+                .setId(UUID.fromString(context.getVariable(variableName))).call().get();
         repo.command(TransactionEnd.class).setTransaction(transaction).call();
     }
 

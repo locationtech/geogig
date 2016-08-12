@@ -46,6 +46,11 @@ public class LsTree extends AbstractWebAPICommand {
         setRef(options.getFirstValue("path", null));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the includeTrees variable
      * 
@@ -113,7 +118,7 @@ public class LsTree extends AbstractWebAPICommand {
             }
         }
 
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         final Iterator<NodeRef> iter = geogig.command(LsTreeOp.class).setReference(ref)
                 .setStrategy(lsStrategy).call();

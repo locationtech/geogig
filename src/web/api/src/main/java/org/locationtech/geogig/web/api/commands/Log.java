@@ -101,6 +101,11 @@ public class Log extends AbstractWebAPICommand {
         setSummary(Boolean.valueOf(options.getFirstValue("summary", "false")));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the limit variable
      * 
@@ -229,7 +234,7 @@ public class Log extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(final CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         LogOp op = geogig.command(LogOp.class).setFirstParentOnly(firstParentOnly);
 

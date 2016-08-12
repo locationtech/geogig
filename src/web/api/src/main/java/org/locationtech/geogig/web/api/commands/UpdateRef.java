@@ -46,6 +46,11 @@ public class UpdateRef extends AbstractWebAPICommand {
         setNewValue(options.getFirstValue("newValue", null));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the name variable
      * 
@@ -89,7 +94,7 @@ public class UpdateRef extends AbstractWebAPICommand {
                     "Nothing specified to update with, must specify either deletion or new value to update to.");
         }
 
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
         Optional<Ref> ref = geogig.command(RefParse.class).setName(name).call();
 
         if (!ref.isPresent()) {

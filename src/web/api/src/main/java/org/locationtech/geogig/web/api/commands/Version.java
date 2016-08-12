@@ -30,6 +30,11 @@ public class Version extends AbstractWebAPICommand {
         super(options);
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Runs the command and builds the appropriate response.
      * 
@@ -37,7 +42,7 @@ public class Version extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         final VersionInfo info = geogig.command(VersionOp.class).call();
 

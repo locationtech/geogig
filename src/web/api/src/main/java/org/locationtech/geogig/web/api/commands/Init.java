@@ -53,6 +53,11 @@ public class Init extends AbstractWebAPICommand {
         return false;
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Runs the command and builds the appropriate response
      * 
@@ -68,7 +73,7 @@ public class Init extends AbstractWebAPICommand {
                     Status.CLIENT_ERROR_CONFLICT);
         }
 
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         InitOp command = geogig.command(InitOp.class);
 

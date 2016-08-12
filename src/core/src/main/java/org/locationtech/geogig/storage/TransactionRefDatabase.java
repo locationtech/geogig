@@ -62,17 +62,21 @@ public class TransactionRefDatabase implements RefDatabase {
 
     private RefDatabase refDb;
 
-    private final String txRootNamespace;
-
     private final String txNamespace;
+
+    private final String txChangedNamespace;
 
     private final String txOrigNamespace;
 
     public TransactionRefDatabase(final RefDatabase refDb, final UUID transactionId) {
         this.refDb = refDb;
-        this.txRootNamespace = append(TRANSACTIONS_PREFIX, transactionId.toString());
-        this.txNamespace = append(txRootNamespace, "changed");
-        this.txOrigNamespace = append(txRootNamespace, "orig");
+        this.txNamespace = buildTransactionNamespace(transactionId);
+        this.txChangedNamespace = append(txNamespace, "changed");
+        this.txOrigNamespace = append(txNamespace, "orig");
+    }
+
+    public static String buildTransactionNamespace(final UUID transactionId) {
+        return append(TRANSACTIONS_PREFIX, transactionId.toString());
     }
 
     @Override
@@ -141,7 +145,7 @@ public class TransactionRefDatabase implements RefDatabase {
      */
     @Override
     public void close() {
-        refDb.removeAll(this.txRootNamespace);
+        refDb.removeAll(this.txNamespace);
     }
 
     /**
@@ -152,7 +156,7 @@ public class TransactionRefDatabase implements RefDatabase {
         String internalName;
         String value;
         if (name.startsWith("changed") || name.startsWith("orig")) {
-            internalName = append(txRootNamespace, name);
+            internalName = append(txNamespace, name);
             value = refDb.getRef(internalName);
         } else {
             internalName = toInternal(name);
@@ -170,7 +174,7 @@ public class TransactionRefDatabase implements RefDatabase {
         String internalName;
         String value;
         if (name.startsWith("changed") || name.startsWith("orig")) {
-            internalName = append(txRootNamespace, name);
+            internalName = append(txNamespace, name);
             value = refDb.getSymRef(internalName);
         } else {
             internalName = toInternal(name);
@@ -212,7 +216,7 @@ public class TransactionRefDatabase implements RefDatabase {
     @Override
     public Map<String, String> getAll(final String prefix) {
         Map<String, String> originals = refDb.getAll(append(this.txOrigNamespace, prefix));
-        Map<String, String> changed = refDb.getAll(append(this.txNamespace, prefix));
+        Map<String, String> changed = refDb.getAll(append(this.txChangedNamespace, prefix));
 
         Map<String, String> externalOriginals = toExternal(originals);
         Map<String, String> externalChanged = toExternal(changed);
@@ -233,7 +237,7 @@ public class TransactionRefDatabase implements RefDatabase {
         Map<String, String> externalChanged;
         {
             Map<String, String> originals = refDb.getAll(this.txOrigNamespace);
-            Map<String, String> changed = refDb.getAll(this.txNamespace);
+            Map<String, String> changed = refDb.getAll(this.txChangedNamespace);
 
             externalOriginals = toExternal(originals);
             externalChanged = toExternal(changed);
@@ -280,12 +284,12 @@ public class TransactionRefDatabase implements RefDatabase {
     }
 
     private String toInternal(String name) {
-        return append(txNamespace, name);
+        return append(txChangedNamespace, name);
     }
 
     private String toExternal(String name) {
-        if (name.startsWith(this.txNamespace)) {
-            return Ref.child(this.txNamespace, name);
+        if (name.startsWith(this.txChangedNamespace)) {
+            return Ref.child(this.txChangedNamespace, name);
         } else if (name.startsWith(this.txOrigNamespace)) {
             return Ref.child(this.txOrigNamespace, name);
         }
@@ -318,8 +322,8 @@ public class TransactionRefDatabase implements RefDatabase {
         boolean isSymRef = origValue.startsWith("ref: ");
         if (isSymRef) {
             String val = origValue.substring("ref: ".length());
-            if (val.startsWith(this.txNamespace)) {
-                val = val.substring(this.txNamespace.length());
+            if (val.startsWith(this.txChangedNamespace)) {
+                val = val.substring(this.txChangedNamespace.length());
                 if (val.length() > 0 && val.charAt(0) == '/') {
                     val = val.substring(1);
                 }

@@ -40,6 +40,11 @@ public class RequestDeleteRepositoryToken extends AbstractWebAPICommand {
         super(options);
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Runs the command and builds the appropriate response
      * 
@@ -49,7 +54,7 @@ public class RequestDeleteRepositoryToken extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         SecureRandom rnd = new SecureRandom();
         byte[] bytes = new byte[128];

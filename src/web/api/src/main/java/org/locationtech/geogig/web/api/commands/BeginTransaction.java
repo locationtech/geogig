@@ -31,6 +31,11 @@ public class BeginTransaction extends AbstractWebAPICommand {
         super(options);
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Runs the command and builds the appropriate response.
      * 

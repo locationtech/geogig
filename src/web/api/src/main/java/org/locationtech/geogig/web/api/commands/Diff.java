@@ -50,6 +50,11 @@ public class Diff extends AbstractWebAPICommand {
         setElementsPerPage(parseInt(options, "show", 30));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the oldRefSpec variable
      * 
@@ -117,7 +122,7 @@ public class Diff extends AbstractWebAPICommand {
             throw new CommandSpecException("No old ref spec");
         }
 
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         final AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
                 .setOldVersion(oldRefSpec).setNewVersion(newRefSpec).setFilter(pathFilter).call();

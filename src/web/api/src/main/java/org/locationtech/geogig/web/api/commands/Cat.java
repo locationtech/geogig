@@ -44,6 +44,11 @@ public class Cat extends AbstractWebAPICommand {
         }
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the object variable
      * 
@@ -64,7 +69,7 @@ public class Cat extends AbstractWebAPICommand {
     protected void runInternal(CommandContext context) {
         Preconditions.checkArgument(object != null && !object.equals(ObjectId.NULL),
                 "You must specify a non-null ObjectId.");
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         Preconditions.checkState(geogig.objectDatabase().exists(object));
         final RevObject revObject = geogig.objectDatabase().get(object);

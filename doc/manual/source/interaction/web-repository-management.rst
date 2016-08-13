@@ -35,6 +35,18 @@ This will enable all three repositories to be accessed through the ``http://loca
 
 The rest of this document will use this repository configuration for demonstration purposes.
 
+You can also serve Postgres repositories by providing the repository URI to the command:
+
+::
+
+    $ geogig serve "postgresql://localhost/<database>/<repoName>?user=<postgres_username>&password=<postgres_password>"
+    
+Or multiple by specifying the root URI:
+
+::
+
+    $ geogig serve --multirepo "postgresql://localhost/<database>?user=<postgres_username>&password=<postgres_password>"
+
 
 Repository Management
 ---------------------
@@ -127,7 +139,7 @@ Now that we have the delete token, we can issue a ``DELETE`` request to the repo
 
 ::
 
-	$ curl -X DELTE -v "http://localhost:8182/repos/betterName?token=db431217519a4c72" | xmllint --format -
+	$ curl -X DELETE -v "http://localhost:8182/repos/betterName?token=db431217519a4c72" | xmllint --format -
 	< HTTP/1.1 200 OK
 	< Content-Type: application/xml
 	<?xml version="1.0" encoding="UTF-8"?>

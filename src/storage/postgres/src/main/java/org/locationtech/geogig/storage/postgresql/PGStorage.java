@@ -34,6 +34,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
  * Utility class for PostgreSQL storage.
@@ -129,6 +130,38 @@ public class PGStorage {
         } catch (SQLException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    /**
+     * List the names of all repositories in the given {@link Environment}.
+     * 
+     * @param config the environment
+     * @return the list of repository names
+     */
+    public static List<String> listRepos(final Environment config) {
+        checkNotNull(config);
+
+        List<String> repoNames = Lists.newLinkedList();
+        final DataSource dataSource = PGStorage.newDataSource(config);
+
+        try (Connection cx = dataSource.getConnection()) {
+            final String repoNamesTable = config.getTables().repositories() + "_name";
+            String sql = format("SELECT name FROM %s", repoNamesTable);
+            try (Statement st = cx.createStatement()) {
+                st.execute(sql);
+                try (ResultSet repos = st.getResultSet()) {
+                    while (repos.next()) {
+                        repoNames.add(repos.getString(1));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        } finally {
+            PGStorage.closeDataSource(dataSource);
+        }
+
+        return repoNames;
     }
 
     /**

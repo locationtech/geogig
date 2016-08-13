@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.junit.Test;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -55,6 +56,16 @@ public class RepositoryResolverTest {
 
         @Override
         public boolean delete(URI repositoryLocation) throws Exception {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public URI buildRepoURI(URI rootRepoURI, String repoId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<String> listRepoNamesUnderRootURI(URI rootRepoURI) {
             throw new UnsupportedOperationException();
         }
 

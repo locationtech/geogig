@@ -178,7 +178,7 @@ public class Main extends Application {
     static void startServer(String path, boolean multiRepo) throws Exception {
         final RepositoryProvider provider;
         if (multiRepo) {
-            provider = new DirectoryRepositoryProvider(new File(path));
+            provider = new MultiRepositoryProvider(new File(path).toURI());
         } else {
             provider = new SingleRepositoryProvider(loadGeoGIG(path));
         }

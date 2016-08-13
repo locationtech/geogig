@@ -21,8 +21,8 @@ import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestPlatform;
-import org.locationtech.geogig.web.DirectoryRepositoryProvider;
 import org.locationtech.geogig.web.Main;
+import org.locationtech.geogig.web.MultiRepositoryProvider;
 import org.locationtech.geogig.web.api.TestData;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
@@ -44,7 +44,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
     private Main app;
 
-    private DirectoryRepositoryProvider repoProvider;
+    private MultiRepositoryProvider repoProvider;
 
     private Response lastResponse;
 
@@ -55,7 +55,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     protected void setUp() throws Exception {
         if (app == null) {
             File rootFolder = tempFolder.getRoot();
-            repoProvider = new DirectoryRepositoryProvider(rootFolder);
+            repoProvider = new MultiRepositoryProvider(rootFolder.toURI());
 
             TestPlatform platform = new TestPlatform(rootFolder);
             GlobalContextBuilder.builder(new FunctionalRepoContextBuilder(platform));

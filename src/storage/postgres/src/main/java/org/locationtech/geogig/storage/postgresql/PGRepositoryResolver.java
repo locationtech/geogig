@@ -10,6 +10,8 @@
 package org.locationtech.geogig.storage.postgresql;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Properties;
 
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.GeoGIG;
@@ -37,6 +39,20 @@ public class PGRepositoryResolver extends RepositoryResolver {
         Environment config = parseConfig(repoURI);
         boolean exists = PGStorage.repoExists(config);
         return exists;
+    }
+
+    @Override
+    public URI buildRepoURI(URI rootRepoURI, String repoName) {
+        Properties properties = EnvironmentBuilder.getRootURIProperties(rootRepoURI);
+
+        return EnvironmentBuilder.buildRepoURI(properties, repoName);
+    }
+
+    @Override
+    public List<String> listRepoNamesUnderRootURI(URI rootRepoURI) {
+        Properties properties = EnvironmentBuilder.getRootURIProperties(rootRepoURI);
+        EnvironmentBuilder builder = new EnvironmentBuilder(properties);
+        return PGStorage.listRepos(builder.build());
     }
 
     @Override

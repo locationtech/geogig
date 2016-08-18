@@ -145,11 +145,10 @@ public class PGStorage {
         final DataSource dataSource = PGStorage.newDataSource(config);
 
         try (Connection cx = dataSource.getConnection()) {
-            final String repoNamesTable = config.getTables().repositories() + "_name";
-            String sql = format("SELECT name FROM %s", repoNamesTable);
+            final String repoNamesView = config.getTables().repositoryNamesView();
+            String sql = format("SELECT name FROM %s", repoNamesView);
             try (Statement st = cx.createStatement()) {
-                st.execute(sql);
-                try (ResultSet repos = st.getResultSet()) {
+                try (ResultSet repos = st.executeQuery(sql)) {
                     while (repos.next()) {
                         repoNames.add(repos.getString(1));
                     }
@@ -347,6 +346,7 @@ public class PGStorage {
     }
 
     private static void createConfigTable(Connection cx, TableNames tables) throws SQLException {
+        final String viewName = tables.repositoryNamesView();
         final String repositories = tables.repositories();
         String configTable = tables.config();
         String sql = format(
@@ -360,9 +360,9 @@ public class PGStorage {
         run(cx, sql);
         try {
             sql = format(
-                    "CREATE VIEW %s_name " + "AS SELECT r.*, c.value AS name FROM "
+                    "CREATE VIEW %s " + "AS SELECT r.*, c.value AS name FROM "
                             + "%s r INNER JOIN %s c ON r.repository = c.repository WHERE c.section = 'repo' AND c.key = 'name'",
-                    repositories, repositories, configTable);
+                    viewName, repositories, configTable);
             run(cx, sql);
         } catch (SQLException alreadyExists) {
             // ignore

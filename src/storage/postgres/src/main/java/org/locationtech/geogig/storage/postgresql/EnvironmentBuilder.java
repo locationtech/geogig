@@ -26,6 +26,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 
 class EnvironmentBuilder {
 
@@ -48,6 +49,15 @@ class EnvironmentBuilder {
      */
     public EnvironmentBuilder(URI repoUrl) {
         init(repoUrl);
+    }
+
+    private static Map<String, String> extractShortKeys(String query) {
+        Map<String, String> shortKeys = new HashMap<>();
+        for (String pair : Splitter.on('&').split(query)) {
+            List<String> p = Splitter.on('=').splitToList(pair);
+            shortKeys.put(p.get(0), p.get(1));
+        }
+        return shortKeys;
     }
 
     private void init(URI repoUrl) {
@@ -78,11 +88,7 @@ class EnvironmentBuilder {
         dbName = path.get(0);
         schema = path.size() == 2 ? "public" : path.get(1);
         repsitoryId = path.size() == 2 ? path.get(1) : path.get(2);
-        Map<String, String> shortKeys = new HashMap<>();
-        for (String pair : Splitter.on('&').split(repoUrl.getQuery())) {
-            List<String> p = Splitter.on('=').splitToList(pair);
-            shortKeys.put(p.get(0), p.get(1));
-        }
+        Map<String, String> shortKeys = extractShortKeys(repoUrl.getQuery());
         user = shortKeys.get("user");
         password = shortKeys.get("password");
         tablePrefix = shortKeys.get("tablePrefix");
@@ -137,6 +143,109 @@ class EnvironmentBuilder {
 
     public Environment build() {
         return config;
+    }
+
+    /**
+     * Extracts all of the {@link Environment} properties from a given root URI.
+     * 
+     * @param rootRepoURI the root URI
+     * @return the extracted properties
+     */
+    public static Properties getRootURIProperties(final URI rootRepoURI) {
+        // postgresql://<server>[:<port>]/database[/<schema>]?user=<username>&password=<pwd>
+        Preconditions.checkNotNull(rootRepoURI);
+        final String uriScheme = rootRepoURI.getScheme();
+        Preconditions.checkArgument("postgresql".equals(uriScheme),
+                "Wrong URL protocol. Expected postgresql, got ", uriScheme);
+        final String host = rootRepoURI.getHost();
+        final String portNumber;
+        final String dbName;
+        final String schema;
+        final String user, password;
+        final String tablePrefix;// mainly used for unit testing
+
+        int port = rootRepoURI.getPort();
+        if (-1 == port) {
+            port = 5432;
+        }
+        portNumber = String.valueOf(port);
+
+        List<String> path = Splitter.on('/').omitEmptyStrings().splitToList(rootRepoURI.getPath());
+        Preconditions.checkArgument(path.size() >= 1 && path.size() <= 2,
+                "Path in URI must be like postgresql://<server>[:<port>]/database[/<schema>]?user=<username>&password=<pwd>",
+                rootRepoURI);
+
+        dbName = path.get(0);
+        schema = path.size() == 1 ? "public" : path.get(1);
+        Map<String, String> shortKeys = extractShortKeys(rootRepoURI.getQuery());
+        user = shortKeys.get("user");
+        password = shortKeys.get("password");
+        tablePrefix = shortKeys.get("tablePrefix");
+
+        Properties props = new Properties();
+        props.setProperty(Environment.KEY_DB_SERVER, host);
+        props.setProperty(Environment.KEY_DB_PORT, portNumber);
+        props.setProperty(Environment.KEY_DB_NAME, dbName);
+        props.setProperty(Environment.KEY_DB_SCHEMA, schema);
+        props.setProperty(Environment.KEY_DB_USERNAME, user);
+        props.setProperty(Environment.KEY_DB_PASSWORD, password);
+        if (!Strings.isNullOrEmpty(tablePrefix)) {
+            props.setProperty("tablePrefix", tablePrefix);
+        }
+
+        return props;
+    }
+
+    /**
+     * Constructs a repository URI from the given {@link Environment} properties and repository
+     * name.
+     * 
+     * @param props the properties
+     * @param repoName the repository name
+     * @return the resolved URI of the repository
+     */
+    public static URI buildRepoURI(Properties props, String repoName) {
+        String server = props.getProperty(Environment.KEY_DB_SERVER);
+        String portNumber = props.getProperty(Environment.KEY_DB_PORT);
+        String databaseName = props.getProperty(Environment.KEY_DB_NAME);
+        String schema = props.getProperty(Environment.KEY_DB_SCHEMA);
+        String userName = props.getProperty(Environment.KEY_DB_USERNAME);
+        String password = props.getProperty(Environment.KEY_DB_PASSWORD);
+        String tablePrefix = props.getProperty("tablePrefix");
+        if (tablePrefix != null && tablePrefix.trim().isEmpty()) {
+            tablePrefix = null;
+        }
+        // postgresql://<server>[:<port>]/database[/<schema>]/<repoid>?user=<username>&password=<pwd>
+        StringBuilder sb = new StringBuilder("postgresql://").append(server).append(":")
+                .append(portNumber).append("/").append(databaseName).append("/").append(schema)
+                .append("/").append(repoName);
+        StringBuilder args = new StringBuilder("");
+        if (userName != null) {
+            args.append("user=").append(userName);
+        }
+        if (password != null) {
+            if (args.length() > 0) {
+                args.append("&");
+            }
+            args.append("password=").append(password);
+        }
+        if (tablePrefix != null) {
+            if (args.length() > 0) {
+                args.append("&");
+            }
+            args.append("tablePrefix=").append(tablePrefix);
+        }
+        if (args.length() > 0) {
+            sb.append("?").append(args);
+        }
+
+        URI repoURI = null;
+        try {
+            repoURI = new URI(sb.toString());
+        } catch (URISyntaxException e) {
+            Throwables.propagate(e);
+        }
+        return repoURI;
     }
 
 }

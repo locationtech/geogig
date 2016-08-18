@@ -34,6 +34,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
  * Utility class for PostgreSQL storage.
@@ -129,6 +130,37 @@ public class PGStorage {
         } catch (SQLException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    /**
+     * List the names of all repositories in the given {@link Environment}.
+     * 
+     * @param config the environment
+     * @return the list of repository names
+     */
+    public static List<String> listRepos(final Environment config) {
+        checkNotNull(config);
+
+        List<String> repoNames = Lists.newLinkedList();
+        final DataSource dataSource = PGStorage.newDataSource(config);
+
+        try (Connection cx = dataSource.getConnection()) {
+            final String repoNamesView = config.getTables().repositoryNamesView();
+            String sql = format("SELECT name FROM %s", repoNamesView);
+            try (Statement st = cx.createStatement()) {
+                try (ResultSet repos = st.executeQuery(sql)) {
+                    while (repos.next()) {
+                        repoNames.add(repos.getString(1));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        } finally {
+            PGStorage.closeDataSource(dataSource);
+        }
+
+        return repoNames;
     }
 
     /**
@@ -314,6 +346,7 @@ public class PGStorage {
     }
 
     private static void createConfigTable(Connection cx, TableNames tables) throws SQLException {
+        final String viewName = tables.repositoryNamesView();
         final String repositories = tables.repositories();
         String configTable = tables.config();
         String sql = format(
@@ -327,9 +360,9 @@ public class PGStorage {
         run(cx, sql);
         try {
             sql = format(
-                    "CREATE VIEW %s_name " + "AS SELECT r.*, c.value AS name FROM "
+                    "CREATE VIEW %s " + "AS SELECT r.*, c.value AS name FROM "
                             + "%s r INNER JOIN %s c ON r.repository = c.repository WHERE c.section = 'repo' AND c.key = 'name'",
-                    repositories, repositories, configTable);
+                    viewName, repositories, configTable);
             run(cx, sql);
         } catch (SQLException alreadyExists) {
             // ignore

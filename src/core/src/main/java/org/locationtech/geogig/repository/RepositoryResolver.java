@@ -11,6 +11,7 @@ package org.locationtech.geogig.repository;
 
 import java.net.URI;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ServiceLoader;
 
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -50,6 +51,24 @@ public abstract class RepositoryResolver {
     public abstract boolean canHandle(URI repoURI);
 
     public abstract boolean repoExists(URI repoURI) throws IllegalArgumentException;
+
+    /**
+     * Builds the URI of a repository with the given name and root URI.
+     * 
+     * @param rootRepoURI the root URI
+     * @param repoName the repository name
+     * @return the URI of the repository
+     */
+    public abstract URI buildRepoURI(URI rootRepoURI, String repoName);
+
+    /**
+     * List all repositories under the root URI. The list will contain the names of all the
+     * repositories.
+     * 
+     * @param rootRepoURI the root URI
+     * @return a list of repository names under the root URI.
+     */
+    public abstract List<String> listRepoNamesUnderRootURI(URI rootRepoURI);
 
     public abstract String getName(URI repoURI);
 

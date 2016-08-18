@@ -15,6 +15,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.locationtech.geogig.hooks.Hookables;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
@@ -24,6 +34,8 @@ import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import com.google.common.io.Resources;
 
 public class DefaultRepositoryResolver extends RepositoryResolver {
@@ -57,6 +69,61 @@ public class DefaultRepositoryResolver extends RepositoryResolver {
         File directory = toFile(repoURI);
         Optional<URI> lookup = ResolveGeogigURI.lookup(directory);
         return lookup.isPresent();
+    }
+
+    private Map<String, String> reposUnderRootDirectory(File rootDirectory) {
+        Path basePath = rootDirectory.toPath();
+        final Map<String, String> repoNameToRepoIds = new HashMap<String, String>();
+        final List<Path> subdirs = new ArrayList<Path>();
+        try {
+            Files.walkFileTree(basePath, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                        throws IOException {
+                    if (dir.equals(basePath)) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                    if (!dir.getFileName().toString().startsWith(".")) {
+                        subdirs.add(dir);
+                    }
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+            });
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
+
+        for (Path dir : subdirs) {
+            final String repoId = dir.getFileName().toString();
+            if (repoExists(dir.toUri())) {
+                repoNameToRepoIds.put(getName(dir.toUri()), repoId);
+            }
+        }
+
+        return repoNameToRepoIds;
+    }
+
+    @Override
+    public URI buildRepoURI(URI rootRepoURI, String repoName) {
+        final File rootDirectory = toFile(rootRepoURI);
+        // Look up repo ID for repo name, if it does not exist, generate a new one
+        String repoId = reposUnderRootDirectory(rootDirectory).get(repoName);
+        if (repoId == null) {
+            SecureRandom rnd = new SecureRandom();
+            byte[] bytes = new byte[128];
+            rnd.nextBytes(bytes);
+            repoId = Hashing.sipHash24().hashBytes(bytes).toString();
+        }
+
+        File repoDirectory = new File(rootDirectory, repoId);
+        return repoDirectory.toURI();
+    }
+
+    @Override
+    public List<String> listRepoNamesUnderRootURI(URI rootRepoURI) {
+        final File rootDirectory = toFile(rootRepoURI);
+
+        return Lists.newLinkedList(reposUnderRootDirectory(rootDirectory).keySet());
     }
 
     @Override

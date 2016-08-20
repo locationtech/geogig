@@ -30,6 +30,7 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.remote.AbstractMappedRemoteRepo;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
@@ -344,9 +345,7 @@ public class RepositoryImpl implements Repository {
      */
     @Override
     public boolean isSparse() {
-        Optional<Map<String, String>> sparseResult = command(ConfigOp.class)
-                .setAction(ConfigAction.CONFIG_GET).setName("sparse.filter").call();
-        return sparseResult.isPresent();
+        return blobStore().getBlob(AbstractMappedRemoteRepo.SPARSE_FILTER_BLOB_KEY).isPresent();
     }
 
     @Override

@@ -16,7 +16,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,9 +39,6 @@ import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.porcelain.ConfigOp;
-import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
@@ -133,23 +129,17 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
     }
 
     private void createFilterFile(Map<String, String> filters) {
-        String filterFile = "";
+        String filterBlob = "";
         for (Entry<String, String> entry : filters.entrySet()) {
             String featurePath = entry.getKey();
             String filter = entry.getValue();
-            filterFile += "[" + featurePath + "]\n";
-            filterFile += "type = CQL\n";
-            filterFile += "filter = " + filter + "\n";
+            filterBlob += "[" + featurePath + "]\n";
+            filterBlob += "type = CQL\n";
+            filterBlob += "filter = " + filter + "\n";
         }
         try {
-            String path = this.localGeogig.geogig.getPlatform().pwd().getAbsolutePath()
-                    + "/.geogig/";
-            PrintWriter out = new PrintWriter(path + "filter.ini");
-            out.println(filterFile);
-            out.close();
-            localGeogig.geogig.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET)
-                    .setName("sparse.filter").setValue("filter.ini").setScope(ConfigScope.LOCAL)
-                    .call();
+            localGeogig.repo.blobStore().putBlob(AbstractMappedRemoteRepo.SPARSE_FILTER_BLOB_KEY,
+                    filterBlob.getBytes());
 
             LocalMappedRemoteRepo remoteRepo = spy(
                     new LocalMappedRemoteRepo(remoteGeogig.envHome.toURI(), localGeogig.repo));

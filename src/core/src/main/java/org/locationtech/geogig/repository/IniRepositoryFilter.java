@@ -9,56 +9,63 @@
  */
 package org.locationtech.geogig.repository;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.locationtech.geogig.storage.fs.INIFile;
+import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.INIBlob;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 
 /**
- * Provides a means of loading a RepositoryFilter from an Ini file.
+ * Provides a means of loading a RepositoryFilter from a blob store.
  * 
  * @see RepositoryFilter
+ * @see INIBlob
  */
 public class IniRepositoryFilter extends RepositoryFilter {
 
     /**
-     * Constructs a new {@code IniRepositoryFilter} from the provided file.
+     * Constructs a new {@code IniRepositoryFilter} from the blob with the specified key.
      * 
-     * @param filterFile the file with the filter definition
-     * @throws FileNotFoundException
+     * @param blobStore the blob store
+     * @param filterKey the key of the blob that contains the filter
      */
-    public IniRepositoryFilter(final String filterFile) throws FileNotFoundException {
-        final File f = new File(filterFile);
-        if (f.exists()) {
-            try {
-                final INIFile ini = new INIFile() {
-                    @Override
-                    public File iniFile() {
-                        return f;
-                    }
-                };
-
-                final Map<String, String> pairs = ini.getAll();
-
-                Set<String> seen = new HashSet<String>();
-                for (Entry<String, String> pair : pairs.entrySet()) {
-                    String qualifiedName = pair.getKey();
-                    String[] split = qualifiedName.split("\\.");
-                    if (split.length == 2 && seen.add(split[0])) {
-                        parseFilter(split[0], pairs);
+    public IniRepositoryFilter(BlobStore blobStore, String filterKey) {
+        try {
+            final INIBlob ini = new INIBlob() {
+                @Override
+                public byte[] iniBytes() throws IOException {
+                    Optional<byte[]> bytes = blobStore.getBlob(filterKey);
+                    if (bytes.isPresent()) {
+                        return bytes.get();
+                    } else {
+                        throw new IOException("Filter blob did not exist.");
                     }
                 }
-            } catch (Exception e) {
-                Throwables.propagate(e);
+
+                @Override
+                public void setBytes(byte[] bytes) {
+                    blobStore.putBlob(filterKey, bytes);
+                }
+            };
+
+            final Map<String, String> pairs = ini.getAll();
+
+            Set<String> seen = new HashSet<String>();
+            for (Entry<String, String> pair : pairs.entrySet()) {
+                String qualifiedName = pair.getKey();
+                String[] split = qualifiedName.split("\\.");
+                if (split.length == 2 && seen.add(split[0])) {
+                    parseFilter(split[0], pairs);
+                }
             }
-        } else {
-            throw new FileNotFoundException();
+        } catch (Exception e) {
+            Throwables.propagate(e);
         }
     }
 

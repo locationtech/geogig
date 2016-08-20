@@ -48,6 +48,7 @@ public class HttpFilteredDiffIterator extends FilteredDiffIterator {
      * 
      * @return the next {@code DiffEntry}
      */
+    @Override
     protected DiffEntry computeNext() {
         if (objects.peek() != null) {
             return objects.poll();

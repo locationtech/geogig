@@ -153,28 +153,24 @@ public class FilteredChangesResource extends Finder {
                     parent = commit.getParentIds().get(0);
                 }
 
-                try (AutoCloseableIterator<DiffEntry> changes = repository.command(DiffOp.class)
+                AutoCloseableIterator<DiffEntry> changes = repository.command(DiffOp.class)
                         .setNewVersion(commit.getId()).setOldVersion(parent).setReportTrees(true)
-                        .call()) {
-                    FilteredDiffIterator filteredChanges = new FilteredDiffIterator(changes,
-                            repository, filter) {
-                        @Override
-                        protected boolean trackingObject(ObjectId objectId) {
-                            return tracked.contains(objectId);
-                        }
-                    };
+                        .call();
+                FilteredDiffIterator filteredChanges = new FilteredDiffIterator(changes, repository,
+                        filter) {
+                    @Override
+                    protected boolean trackingObject(ObjectId objectId) {
+                        return tracked.contains(objectId);
+                    }
+                };
 
-                    getResponse().setEntity(new FilteredDiffIteratorRepresentation(
-                            new BinaryPackedChanges(repository), filteredChanges));
-                }
+                getResponse().setEntity(new FilteredDiffIteratorRepresentation(
+                        new BinaryPackedChanges(repository), filteredChanges));
 
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
-
-        private static final MediaType PACKED_OBJECTS = new MediaType(
-                "application/x-geogig-packed");
 
         private class FilteredDiffIteratorRepresentation extends OutputRepresentation {
 
@@ -184,7 +180,7 @@ public class FilteredChangesResource extends Finder {
 
             public FilteredDiffIteratorRepresentation(BinaryPackedChanges packer,
                     FilteredDiffIterator changes) {
-                super(PACKED_OBJECTS);
+                super(MediaType.APPLICATION_OCTET_STREAM);
                 this.changes = changes;
                 this.packer = packer;
             }
@@ -200,6 +196,7 @@ public class FilteredChangesResource extends Finder {
                 } else {
                     out.write(0);
                 }
+                changes.close();
             }
         }
     }

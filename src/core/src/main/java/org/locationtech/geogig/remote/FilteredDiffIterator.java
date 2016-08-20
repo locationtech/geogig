@@ -30,7 +30,7 @@ public abstract class FilteredDiffIterator implements AutoCloseableIterator<Diff
 
     protected boolean filtered = false;
 
-    private AutoCloseableIterator<DiffEntry> source;
+    private AutoCloseableIterator<DiffEntry> source = null;
 
     private Repository sourceRepo;
 
@@ -77,13 +77,15 @@ public abstract class FilteredDiffIterator implements AutoCloseableIterator<Diff
 
     @Override
     public void close() {
-        source.close();
+        if (source != null) {
+            source.close();
+        }
     }
 
     /**
      * Compute the next {@link DiffEntry} that matches our {@link RepositoryFilter}.
      */
-    private DiffEntry computeNext() {
+    protected DiffEntry computeNext() {
         while (source.hasNext()) {
             DiffEntry input = source.next();
 

@@ -105,7 +105,7 @@ public class Clone extends AbstractCommand implements CLICommand {
         final Platform platform = cli.getPlatform();
         final String remoteArg = args.get(0);
         try {
-            remoteURI = checkAbsolute(remoteArg, platform);
+            remoteURI = RepositoryResolver.resolveRepoUriFromString(platform, remoteArg);
         } catch (URISyntaxException e) {
             throw new CommandFailedException("Can't parse remote URI '" + remoteArg + "'", true);
         }
@@ -114,7 +114,7 @@ public class Clone extends AbstractCommand implements CLICommand {
         if (args.size() == 2) {
             targetArg = args.get(1);
             try {
-                cloneURI = checkAbsolute(targetArg, platform);
+                cloneURI = RepositoryResolver.resolveRepoUriFromString(platform, targetArg);
             } catch (URISyntaxException e) {
                 throw new CommandFailedException("Can't parse target URI '" + targetArg + "'",
                         true);
@@ -164,22 +164,5 @@ public class Clone extends AbstractCommand implements CLICommand {
             cloneRepo.close();
         }
         console.println("Done.");
-    }
-
-    private URI checkAbsolute(String repoUri, Platform platform) throws URISyntaxException {
-        URI uri;
-
-        uri = new URI(repoUri.replace('\\', '/').replaceAll(" ", "%20"));
-
-        String scheme = uri.getScheme();
-        if (null == scheme) {
-            uri = new File(platform.pwd(), repoUri).toURI();
-        } else if ("file".equals(scheme)) {
-            File f = new File(uri);
-            if (!f.isAbsolute()) {
-                uri = new File(platform.pwd(), repoUri).toURI();
-            }
-        }
-        return uri;
     }
 }

@@ -268,7 +268,7 @@ public class Index implements StagingArea {
                 }
 
                 if (pathsForConflictCleanup.size() > 0L) {
-                    progress.setDescription(String.format("Removing %,d merged conflcits...",
+                    progress.setDescription(String.format("Removing %,d merged conflicts...",
                             pathsForConflictCleanup.size()));
                     // Stopwatch sw = Stopwatch.createStarted();
                     conflictsDb.removeConflicts(null, pathsForConflictCleanup);

@@ -47,7 +47,8 @@ public class DefaultRepositoryResolver extends RepositoryResolver {
             File file = toFile(repoURI);
             boolean exists = file.exists();
             boolean directory = file.isDirectory();
-            boolean parentExists = file.getParentFile().exists();
+            boolean parentExists = file.getParentFile() != null ? file.getParentFile().exists()
+                    : false;
             return (exists && directory) || parentExists;
         }
         return "file".equals(scheme);
@@ -241,6 +242,13 @@ public class DefaultRepositoryResolver extends RepositoryResolver {
         }
 
         File workingDir = toFile(repositoryLocation);
+        if (workingDir.getName().equals(".geogig")) {
+            workingDir = workingDir.getParentFile();
+        }
+        // If there are other files in the repository folder, only delete the .geogig directory.
+        if (workingDir.listFiles().length > 1) {
+            workingDir = new File(workingDir, ".geogig");
+        }
         deleteDirectoryAndContents(workingDir);
 
         return true;

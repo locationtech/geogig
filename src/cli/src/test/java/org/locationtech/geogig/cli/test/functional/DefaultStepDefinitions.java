@@ -233,6 +233,14 @@ public class DefaultStepDefinitions {
         assertTrue("Repository does not exist: " + uri, exists);
     }
 
+    @Then("^the repository at \"([^\"]*)\" shall not exist$")
+    public void the_repository_at_shall_not_exist(String repoUri) throws Throwable {
+        repoUri = replaceKnownVariables(repoUri);
+        URI uri = URI.create(repoUri);
+        boolean exists = RepositoryResolver.lookup(uri).repoExists(uri);
+        assertFalse("Repository exists: " + uri, exists);
+    }
+
     @Given("^I have a remote ref called \"([^\"]*)\"$")
     public void i_have_a_remote_ref_called(String expected) throws Throwable {
         String ref = "refs/remotes/origin/" + expected;

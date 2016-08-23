@@ -28,6 +28,7 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
@@ -113,15 +114,20 @@ public class Clone extends AbstractCommand implements CLICommand {
         final String targetArg;
         if (args.size() == 2) {
             targetArg = args.get(1);
-            try {
-                cloneURI = RepositoryResolver.resolveRepoUriFromString(platform, targetArg);
-            } catch (URISyntaxException e) {
-                throw new CommandFailedException("Can't parse target URI '" + targetArg + "'",
-                        true);
-            }
         } else {
-            cloneURI = platform.pwd().toURI();
-            targetArg = cloneURI.getPath();
+            RepositoryResolver remoteResolver = RepositoryResolver.lookup(remoteURI);
+            targetArg = remoteResolver.getName(remoteURI);
+        }
+
+        try {
+            cloneURI = RepositoryResolver.resolveRepoUriFromString(platform, targetArg);
+        } catch (URISyntaxException e) {
+            throw new CommandFailedException("Can't parse target URI '" + targetArg + "'", true);
+        }
+
+        if (cloneURI.normalize().equals(platform.pwd().toURI().normalize())) {
+            throw new CommandFailedException("Cannot clone into your current working directory.",
+                    true);
         }
 
         RepositoryResolver cloneInitializer = RepositoryResolver.lookup(cloneURI);
@@ -144,6 +150,7 @@ public class Clone extends AbstractCommand implements CLICommand {
 
         Repository cloneRepo = cloneContext.command(InitOp.class)
                 .setConfig(Init.splitConfig(config)).setFilterFile(filterFile).call();
+        boolean succeeded = false;
         try {
             console.println("Cloning into '" + targetArg + "'...");
             console.flush();
@@ -155,6 +162,7 @@ public class Clone extends AbstractCommand implements CLICommand {
             clone.setDepth(depth);
 
             clone.call();
+            succeeded = true;
         } catch (RuntimeException e) {
             if (e.getCause() instanceof RepositoryConnectionException) {
                 throw new CommandFailedException(e.getMessage(), true);
@@ -162,6 +170,13 @@ public class Clone extends AbstractCommand implements CLICommand {
             throw e;
         } finally {
             cloneRepo.close();
+            if (!succeeded) {
+                try {
+                    GeoGIG.delete(cloneURI);
+                } catch (Exception ex) {
+                    // Do nothing, the original exception will be thrown
+                }
+            }
         }
         console.println("Done.");
     }

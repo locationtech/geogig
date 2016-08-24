@@ -83,7 +83,7 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
      */
     @Override
     protected void runInternal(GeogigCLI cli) throws IOException {
-        if (args.isEmpty()) {
+        if (args.size() != 2) {
             printUsage(cli);
             throw new CommandFailedException();
         }

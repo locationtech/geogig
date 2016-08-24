@@ -73,6 +73,24 @@ public class ShpExportTest extends RepositoryTestCase {
     }
 
     @Test
+    public void testExportNoArgs() throws Exception {
+        ShpExport exportCommand = new ShpExport();
+        exportCommand.args = Arrays.asList();
+        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exception.expect(CommandFailedException.class);
+        exportCommand.run(cli);
+    }
+
+    @Test
+    public void testExportNotEnoughArgs() throws Exception {
+        ShpExport exportCommand = new ShpExport();
+        exportCommand.args = Arrays.asList("TestPoints.shp");
+        exportCommand.dataStoreFactory = TestHelper.createTestFactory();
+        exception.expect(CommandFailedException.class);
+        exportCommand.run(cli);
+    }
+
+    @Test
     public void testExport() throws Exception {
         ShpExport exportCommand = new ShpExport();
         String shapeFileName = new File(geogig.getPlatform().pwd(), "TestPoints.shp")

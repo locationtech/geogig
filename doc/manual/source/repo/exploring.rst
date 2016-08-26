@@ -180,20 +180,3 @@ You can also use a reference like ``HEAD`` to show the current state of the repo
 
    geogig show HEAD
 
-Globbing
---------
-
-Some commands in GeoGig, such as ``ls`` and ``show``, support using wildcards. This way, you can more easily select a set of objects without having to type the name of each of them.
-
-GeoGig uses globbing notation similar to the program `ant <http://ant.apache.org>`_, supporting the most common wildcards, namely ``*``, ``?`` and ``**``.
-
-* The ``*`` character can be any string of any length (including zero)
-* The ``?`` represents a single character.
-* The ``**`` string is used to indicate any path, so it will cause the command to recursively search into a given path.
-
-For instance, the string ``roads/**/???`` will return all features with a name containing only three characters in any path under ``roads``. That includes ``roads/N501``, and also ``roads/spain/madrid/N501``
-
-Since objects are not stored in the filesystem, but in the repository database, the expansion of wildcards is not (and should not be) performed by the command-line interpreter, but by the GeoGig interpreter itself.
-
-.. note:: For more information, please see the section about `directory-based tasks <http://ant.apache.org/manual/dirtasks.html>`_ in the ant manual.
-

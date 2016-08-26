@@ -9,7 +9,11 @@
  */
 package org.locationtech.geogig.repository;
 
+import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -80,6 +84,29 @@ public abstract class RepositoryResolver {
     public static ConfigDatabase resolveConfigDatabase(URI repoURI, Context repoContext) {
         RepositoryResolver initializer = RepositoryResolver.lookup(repoURI);
         return initializer.getConfigDatabase(repoURI, repoContext);
+    }
+
+    public static URI resolveRepoUriFromString(Platform platform, String repoURI)
+            throws URISyntaxException {
+        URI uri;
+
+        uri = new URI(repoURI.replace('\\', '/').replaceAll(" ", "%20"));
+
+        String scheme = uri.getScheme();
+        if (null == scheme) {
+            Path p = Paths.get(repoURI);
+            if (p.isAbsolute()) {
+                uri = p.toUri();
+            } else {
+                uri = new File(platform.pwd(), repoURI).toURI();
+            }
+        } else if ("file".equals(scheme)) {
+            File f = new File(uri);
+            if (!f.isAbsolute()) {
+                uri = new File(platform.pwd(), repoURI).toURI();
+            }
+        }
+        return uri;
     }
 
     /**

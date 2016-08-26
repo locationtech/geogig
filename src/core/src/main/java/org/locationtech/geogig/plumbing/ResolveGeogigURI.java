@@ -101,7 +101,7 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
      *         if not inside a working directory
      */
     private static URI lookupGeogigDirectory(@Nullable File file) throws IOException {
-        if (file == null) {
+        if (file == null || !file.exists()) {
             return null;
         }
         if (file.isDirectory()) {

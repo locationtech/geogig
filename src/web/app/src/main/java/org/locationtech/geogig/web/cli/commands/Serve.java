@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.web.cli.commands;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.URI;
@@ -24,8 +23,8 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.locationtech.geogig.web.Main;
@@ -70,7 +69,7 @@ public class Serve extends AbstractCommand {
 
         URI repoURI = null;
         try {
-            repoURI = checkAbsolute(loc, cli.getPlatform());
+            repoURI = RepositoryResolver.resolveRepoUriFromString(cli.getPlatform(), loc);
         } catch (URISyntaxException e) {
             throw new CommandFailedException("Unable to parse the root repository URI.", e);
         }
@@ -111,22 +110,5 @@ public class Serve extends AbstractCommand {
         }
 
         return geogig.getRepository();
-    }
-
-    private URI checkAbsolute(String repoUri, Platform platform) throws URISyntaxException {
-        URI uri;
-
-        uri = new URI(repoUri.replace('\\', '/').replaceAll(" ", "%20"));
-
-        String scheme = uri.getScheme();
-        if (null == scheme) {
-            uri = new File(platform.pwd(), repoUri).toURI();
-        } else if ("file".equals(scheme)) {
-            File f = new File(uri);
-            if (!f.isAbsolute()) {
-                uri = new File(platform.pwd(), repoUri).toURI();
-            }
-        }
-        return uri;
     }
 }

@@ -28,6 +28,7 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
@@ -105,7 +106,7 @@ public class Clone extends AbstractCommand implements CLICommand {
         final Platform platform = cli.getPlatform();
         final String remoteArg = args.get(0);
         try {
-            remoteURI = checkAbsolute(remoteArg, platform);
+            remoteURI = RepositoryResolver.resolveRepoUriFromString(platform, remoteArg);
         } catch (URISyntaxException e) {
             throw new CommandFailedException("Can't parse remote URI '" + remoteArg + "'", true);
         }
@@ -113,15 +114,20 @@ public class Clone extends AbstractCommand implements CLICommand {
         final String targetArg;
         if (args.size() == 2) {
             targetArg = args.get(1);
-            try {
-                cloneURI = checkAbsolute(targetArg, platform);
-            } catch (URISyntaxException e) {
-                throw new CommandFailedException("Can't parse target URI '" + targetArg + "'",
-                        true);
-            }
         } else {
-            cloneURI = platform.pwd().toURI();
-            targetArg = cloneURI.getPath();
+            RepositoryResolver remoteResolver = RepositoryResolver.lookup(remoteURI);
+            targetArg = remoteResolver.getName(remoteURI);
+        }
+
+        try {
+            cloneURI = RepositoryResolver.resolveRepoUriFromString(platform, targetArg);
+        } catch (URISyntaxException e) {
+            throw new CommandFailedException("Can't parse target URI '" + targetArg + "'", true);
+        }
+
+        if (cloneURI.normalize().equals(platform.pwd().toURI().normalize())) {
+            throw new CommandFailedException("Cannot clone into your current working directory.",
+                    true);
         }
 
         RepositoryResolver cloneInitializer = RepositoryResolver.lookup(cloneURI);
@@ -144,6 +150,7 @@ public class Clone extends AbstractCommand implements CLICommand {
 
         Repository cloneRepo = cloneContext.command(InitOp.class)
                 .setConfig(Init.splitConfig(config)).setFilterFile(filterFile).call();
+        boolean succeeded = false;
         try {
             console.println("Cloning into '" + targetArg + "'...");
             console.flush();
@@ -155,6 +162,7 @@ public class Clone extends AbstractCommand implements CLICommand {
             clone.setDepth(depth);
 
             clone.call();
+            succeeded = true;
         } catch (RuntimeException e) {
             if (e.getCause() instanceof RepositoryConnectionException) {
                 throw new CommandFailedException(e.getMessage(), true);
@@ -162,24 +170,14 @@ public class Clone extends AbstractCommand implements CLICommand {
             throw e;
         } finally {
             cloneRepo.close();
-        }
-        console.println("Done.");
-    }
-
-    private URI checkAbsolute(String repoUri, Platform platform) throws URISyntaxException {
-        URI uri;
-
-        uri = new URI(repoUri.replace('\\', '/').replaceAll(" ", "%20"));
-
-        String scheme = uri.getScheme();
-        if (null == scheme) {
-            uri = new File(platform.pwd(), repoUri).toURI();
-        } else if ("file".equals(scheme)) {
-            File f = new File(uri);
-            if (!f.isAbsolute()) {
-                uri = new File(platform.pwd(), repoUri).toURI();
+            if (!succeeded) {
+                try {
+                    GeoGIG.delete(cloneURI);
+                } catch (Exception ex) {
+                    // Do nothing, the original exception will be thrown
+                }
             }
         }
-        return uri;
+        console.println("Done.");
     }
 }

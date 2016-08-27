@@ -25,7 +25,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.rest.TaskResultDownloadResource;
 import org.locationtech.geogig.rest.TaskStatusResource;
-import org.locationtech.geogig.rest.osm.OSMRouter;
 import org.locationtech.geogig.rest.postgis.PGRouter;
 import org.locationtech.geogig.rest.repository.CommandResource;
 import org.locationtech.geogig.rest.repository.DeleteRepository;
@@ -126,11 +125,9 @@ public class Main extends Application {
                 singleRepoRouter);
 
         Router repo = new RepositoryRouter();
-        Router osm = new OSMRouter();
         Router postgis = new PGRouter();
         singleRepoRouter.attach("", DeleteRepository.class);
 
-        singleRepoRouter.attach("/osm", osm);
         singleRepoRouter.attach("/postgis", postgis);
         singleRepoRouter.attach("/repo", repo);
         singleRepoRouter.attach("/import.{extension}", UploadCommandResource.class);

@@ -74,6 +74,7 @@ public class DefaultProgressListener implements ProgressListener {
 
     @Override
     public void complete() {
+        this.progress = getMaxProgress();
         this.completed = true;
     }
 

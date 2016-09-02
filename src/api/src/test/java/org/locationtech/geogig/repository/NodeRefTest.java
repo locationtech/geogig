@@ -11,6 +11,7 @@ package org.locationtech.geogig.repository;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -26,8 +27,8 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.vividsolutions.jts.geom.Envelope;
 
 public class NodeRefTest {
 
@@ -157,9 +158,12 @@ public class NodeRefTest {
     @Test
     public void testAppendChild() {
         String fullString = NodeRef.appendChild("Points", "Points.1");
-        assertEquals(fullString, "Points/Points.1");
+        assertEquals("Points/Points.1", fullString);
         fullString = NodeRef.appendChild("", "refs");
-        assertEquals(fullString, "refs");
+        assertEquals("refs", fullString);
+        assertEquals("", NodeRef.appendChild(null, ""));
+        exception.expect(IllegalArgumentException.class);
+        NodeRef.appendChild(null, "someValue");
     }
 
     @Test
@@ -168,13 +172,17 @@ public class NodeRefTest {
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
                 TYPE.FEATURE, null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
-        assertEquals(node.getMetadataId(), Optional.absent());
+        assertEquals(ObjectId.NULL, nodeRef.getMetadataId());
+        assertEquals(ObjectId.NULL, nodeRef.getDefaultMetadataId());
         assertEquals(node.getName(), nodeRef.name());
         assertEquals(node.getObjectId(), nodeRef.getObjectId());
         assertEquals(node, nodeRef.getNode());
         assertEquals(node.getType(), nodeRef.getType());
-        assertEquals(nodeRef.getParentPath(), "Points");
-        assertEquals(nodeRef.path(), "Points/Points.1");
+        assertEquals("Points", nodeRef.getParentPath());
+        assertEquals("Points/Points.1", nodeRef.path());
+
+        exception.expect(IllegalArgumentException.class);
+        new NodeRef(node, null, ObjectId.NULL);
     }
 
     @Test
@@ -213,7 +221,7 @@ public class NodeRefTest {
         Node node = Node.create("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
                 TYPE.FEATURE, null);
-        NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
+        NodeRef nodeRef = NodeRef.create("Points", node);
         assertFalse(nodeRef.equals(node));
         Node node2 = Node.create("Lines.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
@@ -224,4 +232,111 @@ public class NodeRefTest {
         assertTrue(nodeRef.compareTo(nodeRef) == 0);
     }
 
+    @Test
+    public void testUpdate() {
+        Node node = Node.create("Points.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
+                TYPE.FEATURE, null);
+        NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
+        NodeRef updated = nodeRef.update(
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
+                new Envelope(0, 1, 2, 3));
+
+        assertNotSame(nodeRef, updated);
+        assertEquals(ObjectId.valueOf("abc123000000000000001234567890abcdef0001"),
+                updated.getObjectId());
+        assertEquals(new Envelope(0, 1, 2, 3), updated.bounds().get());
+    }
+
+    @Test
+    public void testCreateRoot() {
+        Node node = Node.create(NodeRef.ROOT,
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
+                TYPE.FEATURE, null);
+        NodeRef root = NodeRef.createRoot(node);
+        assertEquals(node, root.getNode());
+
+        Node node2 = Node.create("nonRootPath",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
+                TYPE.FEATURE, null);
+        exception.expect(IllegalArgumentException.class);
+        NodeRef.createRoot(node2);
+
+    }
+
+    @Test
+    public void testSplit() {
+        assertEquals(ImmutableList.of("Points", "sub", "points.1"),
+                NodeRef.split("Points/sub/points.1"));
+        assertEquals(ImmutableList.of(), NodeRef.split(""));
+
+        exception.expect(NullPointerException.class);
+        NodeRef.split(null);
+    }
+
+    @Test
+    public void testDepth() {
+        assertEquals(3, NodeRef.depth("Points/sub/points.1"));
+        assertEquals(2, NodeRef.depth("Points/points.1"));
+        assertEquals(1, NodeRef.depth("Points"));
+        assertEquals(0, NodeRef.depth(""));
+    }
+
+    @Test
+    public void testRemoveParent() {
+        assertEquals("sub/points.1", NodeRef.removeParent("Points", "Points/sub/points.1"));
+        assertEquals("points.1", NodeRef.removeParent("Points", "Points/points.1"));
+        exception.expect(IllegalArgumentException.class);
+        NodeRef.removeParent("Lines", "Points/points.1");
+    }
+
+    @Test
+    public void testTree() {
+        ObjectId oId = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
+        ObjectId metadataId = ObjectId.valueOf("abc123000000000000001234567890abcdef0001");
+        NodeRef nodeRef = NodeRef.tree("Points", oId, metadataId);
+        assertEquals(oId, nodeRef.getObjectId());
+        assertEquals(metadataId, nodeRef.getMetadataId());
+        assertEquals("Points", nodeRef.getNode().getName());
+    }
+
+    @Test
+    public void testHashCode() {
+        Node node = Node.create("Points.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
+                TYPE.FEATURE, null);
+        NodeRef nodeRef = NodeRef.create("Points", node);
+        Node node2 = Node.create("Lines.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0001"), ObjectId.NULL,
+                TYPE.FEATURE, null);
+        NodeRef nodeRef2 = new NodeRef(node2, "Lines", ObjectId.NULL);
+        assertNotSame(nodeRef.hashCode(), nodeRef2.hashCode());
+
+        Node node3 = Node.create(NodeRef.ROOT,
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
+                TYPE.FEATURE, null);
+        NodeRef root = NodeRef.createRoot(node3);
+        root.hashCode();
+    }
+
+    @Test
+    public void testIntersects() {
+        Node node = Node.create("Points.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
+                TYPE.FEATURE, new Envelope(0, 1, 2, 3));
+        NodeRef nodeRef = NodeRef.create("Points", node);
+        assertTrue(nodeRef.intersects(new Envelope(0, 0.5, 2, 2.5)));
+        assertFalse(nodeRef.intersects(new Envelope(2, 3, 2, 3)));
+    }
+
+    @Test
+    public void testExpand() {
+        Node node = Node.create("Points.1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
+                TYPE.FEATURE, new Envelope(0, 1, 2, 3));
+        NodeRef nodeRef = NodeRef.create("Points", node);
+        Envelope env = new Envelope(1, 3, 1, 2);
+        nodeRef.expand(env);
+        assertEquals(new Envelope(0, 3, 1, 3), env);
+    }
 }

@@ -22,8 +22,7 @@ import javax.crypto.spec.PBEParameterSpec;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
+import com.google.common.base.Preconditions;
 
 /**
  * Internal representation of a GeoGig remote repository.
@@ -71,14 +70,12 @@ public class Remote {
     }
 
     private String checkURL(String url) {
-        if (Strings.isNullOrEmpty(url)) {
-            return url;
-        }
+        Preconditions.checkArgument(url != null, "Invalid remote URL.");
 
         try {
             new URI(url);
         } catch (URISyntaxException e) {
-            throw Throwables.propagate(e);
+            throw new IllegalArgumentException("Invalid remote URL.");
         }
         //
         // // we were just checking to see whether the url was already valid. if not, we'll try to

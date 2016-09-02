@@ -78,12 +78,12 @@ public abstract class SQLiteObjectDatabase<C> implements ObjectDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.configure(configdb, FORMAT_NAME, VERSION);
+        StorageType.OBJECT.configure(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
+        StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override

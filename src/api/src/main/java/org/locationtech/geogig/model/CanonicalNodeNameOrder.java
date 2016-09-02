@@ -269,8 +269,6 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
 
         private int bucket(long longBits, int depthIndex) {
             final int byteN = byteN(longBits, depthIndex);
-            Preconditions.checkState(byteN >= 0);
-            Preconditions.checkState(byteN < 256);
 
             final int maxBuckets = CanonicalNodeNameOrder.maxBucketsForLevel(depthIndex);
 

@@ -36,6 +36,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.StorageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,14 +108,12 @@ public class PGGraphDatabase implements GraphDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.GRAPH.configure(configdb, FORMAT_NAME,
-                formatVersion);
+        StorageType.GRAPH.configure(configdb, FORMAT_NAME, formatVersion);
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.GRAPH.verify(configdb, FORMAT_NAME,
-                formatVersion);
+        StorageType.GRAPH.verify(configdb, FORMAT_NAME, formatVersion);
     }
 
     /**

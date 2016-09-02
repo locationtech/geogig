@@ -122,4 +122,23 @@ public class RefTest {
 
         assertEquals("refs/heads/ref1", Ref.append("refs/heads/ref1", ""));
     }
+
+    @Test
+    public void testParentPath() {
+        assertEquals("refs/heads", Ref.parentPath("refs/heads/ref1"));
+        assertEquals("refs", Ref.parentPath("refs/heads"));
+        assertEquals("", Ref.parentPath("refs"));
+    }
+
+    @Test
+    public void testSimpleName() {
+        assertEquals("ref1", Ref.simpleName("refs/heads/ref1"));
+        assertEquals("HEAD", Ref.simpleName("HEAD"));
+    }
+
+    @Test
+    public void testHashCode() {
+        assertFalse(new Ref("refs/heads/master", oid)
+                .hashCode() == new Ref("refs/heads/branch1", oid2).hashCode());
+    }
 }

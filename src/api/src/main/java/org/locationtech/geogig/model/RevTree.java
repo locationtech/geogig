@@ -82,11 +82,6 @@ public interface RevTree extends RevObject {
     RevTree EMPTY = new RevTree() {
 
         @Override
-        public TYPE getType() {
-            return TYPE.TREE;
-        }
-
-        @Override
         public ObjectId getId() {
             return EMPTY_TREE_ID;
         }

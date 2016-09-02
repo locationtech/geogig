@@ -30,6 +30,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.AbstractRefDatabase;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.StorageType;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -376,12 +377,12 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.REF.configure(configDB, "file", "1.0");
+        StorageType.REF.configure(configDB, "file", "1.0");
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.REF.verify(configDB, "file", "1.0");
+        StorageType.REF.verify(configDB, "file", "1.0");
     }
 
     @Override

@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +63,7 @@ import com.google.common.base.Optional;
 public class ShpExport extends AbstractShpCommand implements CLICommand {
 
     @Parameter(description = "<path> <shapefile>", arity = 2)
-    public List<String> args;
+    public List<String> args = new ArrayList<>();
 
     @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output file")
     public boolean overwrite;
@@ -92,7 +93,7 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
      */
     @Override
     protected void runInternal(GeogigCLI cli) throws IOException {
-        if (args.isEmpty()) {
+        if (args.size() != 2) {
             printUsage(cli);
             throw new CommandFailedException();
         }

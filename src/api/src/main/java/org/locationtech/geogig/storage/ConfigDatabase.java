@@ -17,6 +17,8 @@ import com.google.common.base.Optional;
 
 /**
  * Provides an interface for implementations of config databases, which manage GeoGig config files.
+ * 
+ * @since 1.0
  */
 public interface ConfigDatabase extends Closeable{
 

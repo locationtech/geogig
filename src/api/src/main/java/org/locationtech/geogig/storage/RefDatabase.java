@@ -19,6 +19,7 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 /**
  * Provides an interface for GeoGig reference databases.
  * 
+ * @since 1.0
  */
 public interface RefDatabase extends Closeable {
 
@@ -53,18 +54,24 @@ public interface RefDatabase extends Closeable {
     public abstract void close();
 
     /**
+     * Retrieves a ref with the specified name.
+     * 
      * @param name the name of the ref (e.g. {@code "refs/remotes/origin"}, etc).
      * @return the ref, or {@code null} if it doesn't exist
      */
     public abstract String getRef(String name);
 
     /**
+     * Retrieves a symbolic ref with the specified name.
+     * 
      * @param name the name of the symbolic ref (e.g. {@code "HEAD"}, etc).
      * @return the ref, or {@code null} if it doesn't exist
      */
     public abstract String getSymRef(String name);
 
     /**
+     * Adds a ref to the database.
+     * 
      * @param refName the name of the ref
      * @param refValue the value of the ref
      * @return {@code null} if the ref didn't exist already, its old value otherwise
@@ -72,6 +79,8 @@ public interface RefDatabase extends Closeable {
     public abstract void putRef(String refName, String refValue);
 
     /**
+     * Adds a symbolic ref to the database.
+     * 
      * @param name the name of the ref
      * @param val the value of the ref
      * @return {@code null} if the ref didn't exist already, its old value otherwise
@@ -79,6 +88,8 @@ public interface RefDatabase extends Closeable {
     public abstract void putSymRef(String name, String val);
 
     /**
+     * Removes a ref from the database.
+     * 
      * @param refName the name of the ref to remove (e.g. {@code "HEAD"},
      *        {@code "refs/remotes/origin"}, etc).
      * @return the value of the ref before removing it, or {@code null} if it didn't exist
@@ -93,10 +104,11 @@ public interface RefDatabase extends Closeable {
     public abstract Map<String, String> getAll();
 
     /**
-     * All refs under a specific prefix (.e.g. {@code /}, {@code /refs}, {@code /refs/remotes}, etc
+     * Retrieves all refs under a specific prefix (.e.g. {@code /}, {@code /refs},
+     * {@code /refs/remotes}, etc.
      * 
-     * @param prefix
-     * @return
+     * @param prefix the prefix
+     * @return the refs that matched the prefix
      */
     public abstract Map<String, String> getAll(final String prefix);
 

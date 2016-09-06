@@ -84,13 +84,6 @@ public class GraphDatabaseTest {
         assertEquals(GraphDatabase.Direction.BOTH, GraphDatabase.Direction.valueOf("BOTH"));
         assertEquals(GraphDatabase.Direction.IN, GraphDatabase.Direction.valueOf("IN"));
         assertEquals(GraphDatabase.Direction.OUT, GraphDatabase.Direction.valueOf("OUT"));
-        assertEquals(GraphDatabase.Relationship.MAPPED_TO,
-                GraphDatabase.Relationship.valueOf("MAPPED_TO"));
-        assertEquals(GraphDatabase.Relationship.PARENT,
-                GraphDatabase.Relationship.valueOf("PARENT"));
-        assertEquals(GraphDatabase.Relationship.TOROOT,
-                GraphDatabase.Relationship.valueOf("TOROOT"));
         assertEquals(3, GraphDatabase.Direction.values().length);
-        assertEquals(3, GraphDatabase.Relationship.values().length);
     }
 }

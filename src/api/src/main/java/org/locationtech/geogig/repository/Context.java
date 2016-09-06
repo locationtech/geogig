@@ -20,6 +20,8 @@ import org.locationtech.geogig.storage.RefDatabase;
 /**
  * A context object for a single repository, provides access to the different repository objects,
  * and a factory method for commands.
+ * 
+ * @since 1.0
  */
 public interface Context {
 
@@ -31,29 +33,55 @@ public interface Context {
      */
     public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass);
 
+    /**
+     * @return the {@link WorkingTree} for this context
+     */
     public WorkingTree workingTree();
 
     /**
-     * @return
+     * @return the {@link StagingArea} for this context
      */
     public StagingArea index();
 
     /**
-     * @return
+     * @return the {@link RefDatabase} for this context
      */
     public RefDatabase refDatabase();
 
+    /**
+     * @return the {@link Platform} for this context
+     */
     public Platform platform();
 
+    /**
+     * @return the {@link ObjectDatabase} for this context
+     */
     public ObjectDatabase objectDatabase();
 
+    /**
+     * @return the {@link ConflictsDatabase} for this context
+     */
     public ConflictsDatabase conflictsDatabase();
 
+    /**
+     * @return the {@link ConfigDatabase} for this context
+     */
     public ConfigDatabase configDatabase();
 
+    /**
+     * @return the {@link GraphDatabase} for this context
+     */
     public GraphDatabase graphDatabase();
 
+    /**
+     * @return the {@link Repository} for this context
+     */
     public Repository repository();
+
+    /**
+     * @return the {@link BlobStore} for this context
+     */
+    public BlobStore blobStore();
 
     /**
      * @TODO find a better way of accessing plugins and defaults. This method is currently here for
@@ -61,7 +89,5 @@ public interface Context {
      *       method in Injector
      */
     public PluginDefaults pluginDefaults();
-
-    public BlobStore blobStore();
 
 }

@@ -26,6 +26,7 @@ import org.locationtech.geogig.storage.RefDatabase;
  * Provides a base implementation for internal GeoGig operations.
  * 
  * @param <T> the type of the result of the execution of the command
+ * @since 1.0
  */
 public abstract class AbstractGeoGigOp<T> {
 
@@ -39,9 +40,24 @@ public abstract class AbstractGeoGigOp<T> {
 
     private Map<Serializable, Serializable> metadata;
 
+    /**
+     * Interface for a listener that will be notified before and after the op is called.
+     */
     public static interface CommandListener {
+        /**
+         * Called prior to the operation's {@link AbstractGeoGigOp#call()} method.
+         * 
+         * @param command the command that is going to be called
+         */
         public void preCall(AbstractGeoGigOp<?> command);
 
+        /**
+         * Called after the operation's {@link AbstractGeoGigOp#call()} method.
+         * 
+         * @param command the command that was called
+         * @param result the value returned from the {@code call} method.
+         * @param exception the exception thrown by the command, or {@code null}.
+         */
         public void postCall(AbstractGeoGigOp<?> command, @Nullable Object result,
                 @Nullable RuntimeException exception);
     }
@@ -53,6 +69,11 @@ public abstract class AbstractGeoGigOp<T> {
         //
     }
 
+    /**
+     * Adds a {@link CommandListener} to this operation.
+     * 
+     * @param l the listener to add
+     */
     public void addListener(CommandListener l) {
         if (listeners == null) {
             listeners = new ArrayList<AbstractGeoGigOp.CommandListener>(2);
@@ -88,6 +109,9 @@ public abstract class AbstractGeoGigOp<T> {
         return this;
     }
 
+    /**
+     * @return the {@link Context} for this command
+     */
     public Context context() {
         return this.context;
     }
@@ -156,46 +180,64 @@ public abstract class AbstractGeoGigOp<T> {
     }
 
     /**
-     * Shortcut for {@link Context#workingTree() getCommandLocator().getWorkingTree()}
+     * Shortcut for {@link Context#workingTree()}
      */
     protected WorkingTree workingTree() {
         return context.workingTree();
     }
 
     /**
-     * Shortcut for {@link Context#index() getCommandLocator().getIndex()}
+     * Shortcut for {@link Context#index()}
      */
     protected StagingArea index() {
         return context.index();
     }
 
     /**
-     * Shortcut for {@link Context#refDatabase() getCommandLocator().getRefDatabase()}
+     * Shortcut for {@link Context#refDatabase()}
      */
     protected RefDatabase refDatabase() {
         return context.refDatabase();
     }
 
+    /**
+     * Shortcut for {@link Context#platform()}
+     */
     protected Platform platform() {
         return context.platform();
     }
 
+    /**
+     * Shortcut for {@link Context#objectDatabase()}
+     */
     protected ObjectDatabase objectDatabase() {
         return context.objectDatabase();
     }
 
+    /**
+     * Shortcut for {@link Context#conflictsDatabase()}
+     */
     protected ConflictsDatabase conflictsDatabase() {
         return context.conflictsDatabase();
     }
 
+    /**
+     * Shortcut for {@link Context#configDatabase()}
+     */
     protected ConfigDatabase configDatabase() {
         return context.configDatabase();
     }
 
+    /**
+     * Shortcut for {@link Context#graphDatabase()}
+     */
     protected GraphDatabase graphDatabase() {
         return context.graphDatabase();
     }
 
+    /**
+     * Shortcut for {@link Context#repository()}
+     */
     protected Repository repository() {
         return context.repository();
     }

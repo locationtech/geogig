@@ -18,6 +18,7 @@ import org.locationtech.geogig.model.RevFeatureType;
  * is to be used in the context of applying patches or performing a merge operation, where this type
  * of information is needed.
  * 
+ * @since 1.0
  */
 public class FeatureInfo {
 
@@ -27,6 +28,13 @@ public class FeatureInfo {
 
     private String path;
 
+    /**
+     * Constructs a new {@code FeatureInfo} with the provided parameters.
+     * 
+     * @param feature the feature object
+     * @param featureTypeId the {@link ObjectId} of the feature's type
+     * @param path the path of the feature
+     */
     public FeatureInfo(RevFeature feature, ObjectId featureTypeId, String path) {
         this.path = path;
         this.feature = feature;

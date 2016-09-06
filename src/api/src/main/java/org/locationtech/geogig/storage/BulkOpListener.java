@@ -14,8 +14,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 
+/**
+ * Base listener implementation for bulk operation on an {@link ObjectDatabase}. This can be used to
+ * be notified when objects are found, inserted, deleted, or not found during bulk operations.
+ * 
+ * @since 1.0
+ */
 public abstract class BulkOpListener {
 
+    /**
+     * Implementation of {@code BulkOpListener} that does not do anything.
+     */
     public static final BulkOpListener NOOP_LISTENER = new BulkOpListener() {
     };
 
@@ -64,12 +73,21 @@ public abstract class BulkOpListener {
         // no-op
     }
 
+    /**
+     * Constructs a new {@code CountingListener}.
+     * 
+     * @return the new listener
+     */
     public static CountingListener newCountingListener() {
         return new CountingListener();
     }
 
     /**
      * Returns a composite listener that dispatches each signal to both listeners
+     * 
+     * @param b1 the first listener
+     * @param b2 the second listener
+     * @return the composite listener
      */
     public static BulkOpListener composite(final BulkOpListener b1, final BulkOpListener b2) {
         if (b1 == NOOP_LISTENER) {
@@ -105,6 +123,9 @@ public abstract class BulkOpListener {
         };
     }
 
+    /**
+     * Implementation of {@code BulkOpListener} that passes on all calls to a parent listener.
+     */
     public static class ForwardingListener extends BulkOpListener {
 
         private BulkOpListener target;
@@ -133,6 +154,10 @@ public abstract class BulkOpListener {
         }
     }
 
+    /**
+     * Implementation of {@code BulkOpListener} that keeps track of the number of times each
+     * function is called.
+     */
     public static class CountingListener extends BulkOpListener {
         private AtomicInteger found = new AtomicInteger();
 

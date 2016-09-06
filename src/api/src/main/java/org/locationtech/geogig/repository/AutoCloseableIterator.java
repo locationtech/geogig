@@ -18,6 +18,8 @@ import com.google.common.base.Predicate;
 /**
  * Interface for an iterator that can do some cleanup or other work when it is no longer needed. Can
  * be used in conjunction with a try-with-resources block.
+ * 
+ * @since 1.0
  */
 public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
 
@@ -65,10 +67,10 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
 
     /**
      * Wraps an {@code Iterator} that does nothing on close. Useful if you want to concatenate it
-     * with an {@code AutoClosableIterator}.
+     * with an {@code AutoCloseableIterator}.
      * 
      * @param source the iterator to wrap
-     * @return an {@code AutoClosableIterator} that wraps the original
+     * @return an {@code AutoCloseableIterator} that wraps the original
      */
     public static <T> AutoCloseableIterator<T> fromIterator(Iterator<T> source) {
         return new AutoCloseableIterator<T>() {
@@ -170,7 +172,7 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
     }
 
     /**
-     * Concatenates two {@code AutoClosableIterators} into a single one, closing both when closed.
+     * Concatenates two {@code AutoCloseableIterators} into a single one, closing both when closed.
      * 
      * @param first the first iterator
      * @param second the second iterator

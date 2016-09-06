@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
  * {@link ServiceLoader service provider interface (SPI)} mechanism, by loading the classes defined
  * in all {@code META-INF/services/org.locationtech.geogig.storage.StorageProvider} text files.
  *
+ * @since 1.0
  */
 public abstract class StorageProvider {
 
@@ -40,10 +41,19 @@ public abstract class StorageProvider {
      */
     public abstract String getDescription();
 
+    /**
+     * @return the format of the {@link ObjectDatabase}
+     */
     public abstract VersionedFormat getObjectDatabaseFormat();
 
+    /**
+     * @return the format of the {@link GraphDatabase}
+     */
     public abstract VersionedFormat getGraphDatabaseFormat();
 
+    /**
+     * @return the format of the {@link RefDatabase}
+     */
     public abstract VersionedFormat getRefsDatabaseFormat();
 
     /**

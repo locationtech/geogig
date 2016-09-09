@@ -34,6 +34,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.Varint;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -90,12 +91,12 @@ public class RocksdbGraphDatabase implements GraphDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.GRAPH.configure(configdb, FORMAT_NAME, VERSION);
+        StorageType.GRAPH.configure(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.GRAPH.verify(configdb, FORMAT_NAME, VERSION);
+        StorageType.GRAPH.verify(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override

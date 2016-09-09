@@ -122,10 +122,10 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      */
     @Override
     public int hashCode() {
-        return (hashCode[0] & 0xFF)//
+        return 17 ^ ((hashCode[0] & 0xFF)//
                 | ((hashCode[1] & 0xFF) << 8)//
                 | ((hashCode[2] & 0xFF) << 16)//
-                | ((hashCode[3] & 0xFF) << 24);
+                | ((hashCode[3] & 0xFF) << 24));
     }
 
     /**

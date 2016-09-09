@@ -36,6 +36,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.storage.StorageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,12 +77,12 @@ public class PGRefDatabase implements RefDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.configure(configDB, FORMAT_NAME, VERSION);
+        StorageType.OBJECT.configure(configDB, FORMAT_NAME, VERSION);
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.verify(configDB, FORMAT_NAME, VERSION);
+        StorageType.OBJECT.verify(configDB, FORMAT_NAME, VERSION);
     }
 
     @Override

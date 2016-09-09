@@ -18,7 +18,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -207,7 +206,6 @@ public abstract class Node implements Bounded, Comparable<Node> {
         public BoundedTreeNode(String name, ObjectId oid, ObjectId mdid, Envelope env,
                 Map<String, Object> extraData) {
             super(name, oid, mdid, extraData);
-            Preconditions.checkArgument(!env.isNull());
 
             if (env.getWidth() == 0 && env.getHeight() == 0) {
                 bounds = new float[2];
@@ -246,7 +244,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
             if (bounds.length == 2) {
                 b = new Envelope(bounds[0], bounds[0], bounds[1], bounds[1]);
             } else {
-                b = new Envelope(bounds[0], bounds[1], bounds[2], bounds[3]);
+                b = new Envelope(bounds[0], bounds[2], bounds[1], bounds[3]);
             }
             return Optional.of(b);
         }
@@ -279,7 +277,6 @@ public abstract class Node implements Bounded, Comparable<Node> {
         public BoundedFeatureNode(String name, ObjectId oid, ObjectId mdid, Envelope env,
                 Map<String, Object> extraData) {
             super(name, oid, mdid, extraData);
-            Preconditions.checkArgument(!env.isNull());
 
             if (env.getWidth() == 0 && env.getHeight() == 0) {
                 bounds = new float[2];
@@ -318,7 +315,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
             if (bounds.length == 2) {
                 b = new Envelope(bounds[0], bounds[0], bounds[1], bounds[1]);
             } else {
-                b = new Envelope(bounds[0], bounds[1], bounds[2], bounds[3]);
+                b = new Envelope(bounds[0], bounds[2], bounds[1], bounds[3]);
             }
             return Optional.of(b);
         }

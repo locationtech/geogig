@@ -163,13 +163,13 @@ public class DiffEntry {
     public String toString() {
         StringBuilder sb = new StringBuilder(changeType().toString());
         if (!isAdd()) {
-            sb.append(" [").append(oldObject).append("]");
+            sb.append(" [").append(oldObject).append("] ");
         }
         if (isChange()) {
-            sb.append(" -> ");
+            sb.append("->");
         }
         if (!isDelete()) {
-            sb.append(" [").append(newObject).append(']');
+            sb.append(" [").append(newObject).append("]");
         }
         return sb.toString();
     }
@@ -274,18 +274,22 @@ public class DiffEntry {
     };
 
     public TYPE newObjectType() {
-        return getNewObject().getType();
+        NodeRef newObject = getNewObject();
+        return newObject != null ? newObject.getType() : null;
     }
 
     public TYPE oldObjectType() {
-        return getOldObject().getType();
+        NodeRef oldObject = getOldObject();
+        return oldObject != null ? oldObject.getType() : null;
     }
 
     public ObjectId newMetadataId() {
-        return getNewObject().getMetadataId();
+        NodeRef newObject = getNewObject();
+        return newObject != null ? newObject.getMetadataId() : ObjectId.NULL;
     }
 
     public ObjectId oldMetadataId() {
-        return getOldObject().getMetadataId();
+        NodeRef oldObject = getOldObject();
+        return oldObject != null ? oldObject.getMetadataId() : ObjectId.NULL;
     }
 }

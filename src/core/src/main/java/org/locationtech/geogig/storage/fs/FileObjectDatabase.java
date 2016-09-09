@@ -35,6 +35,7 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
 
@@ -305,12 +306,12 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.configure(configDB, "file", "1.0");
+        StorageType.OBJECT.configure(configDB, "file", "1.0");
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.verify(configDB, "file", "1.0");
+        StorageType.OBJECT.verify(configDB, "file", "1.0");
     }
 
     @Override

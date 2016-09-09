@@ -19,6 +19,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.StorageType;
 
 import com.google.inject.Inject;
 
@@ -38,12 +39,12 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.configure(configdb, FORMAT_NAME, VERSION);
+        StorageType.OBJECT.configure(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
+        StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override

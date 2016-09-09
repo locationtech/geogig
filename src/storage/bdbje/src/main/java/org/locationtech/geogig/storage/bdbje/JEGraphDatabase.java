@@ -25,6 +25,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.SynchronizedGraphDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -183,13 +184,13 @@ abstract class JEGraphDatabase extends SynchronizedGraphDatabase {
 
         @Override
         public void configure() throws RepositoryConnectionException {
-            RepositoryConnectionException.StorageType.GRAPH.configure(configDb, "bdbje",
+            StorageType.GRAPH.configure(configDb, "bdbje",
                     formatVersion);
         }
 
         @Override
         public void checkConfig() throws RepositoryConnectionException {
-            RepositoryConnectionException.StorageType.GRAPH.verify(configDb, "bdbje",
+            StorageType.GRAPH.verify(configDb, "bdbje",
                     formatVersion);
         }
 

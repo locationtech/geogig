@@ -58,12 +58,12 @@ public abstract class SQLiteGraphDatabase<T> implements GraphDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.GRAPH.configure(configdb, FORMAT_NAME, VERSION);
+        StorageType.GRAPH.configure(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.GRAPH.verify(configdb, FORMAT_NAME, VERSION);
+        StorageType.GRAPH.verify(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override

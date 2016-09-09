@@ -197,7 +197,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      */
     @Override
     public int hashCode() {
-        return 17 ^ parentPath.hashCode() * node.getObjectId().hashCode()
+        return 17 ^ (parentPath != null ? parentPath.hashCode() : 1) * node.getObjectId().hashCode()
                 * getMetadataId().hashCode();
     }
 
@@ -397,7 +397,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         child = child.subList(parent.size(), child.size());
         String strippedChildPath = child.get(0);
         for (int i = 1; i < child.size(); i++) {
-            appendChild(strippedChildPath, child.get(i));
+            strippedChildPath = appendChild(strippedChildPath, child.get(i));
         }
         return strippedChildPath;
     }

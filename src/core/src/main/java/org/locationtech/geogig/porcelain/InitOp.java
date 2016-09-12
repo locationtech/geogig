@@ -26,6 +26,7 @@ import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.remote.AbstractMappedRemoteRepo;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
@@ -131,33 +132,14 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
 
         if (filterFile != null) {
             try {
-                final String FILTER_FILE = "filter.ini";
 
                 File oldFilterFile = new File(filterFile);
                 if (!oldFilterFile.exists()) {
                     throw new FileNotFoundException("No filter file found at " + filterFile + ".");
                 }
 
-                Optional<URI> envHomeURL = new ResolveGeogigURI(platform, hints).call();
-                Preconditions.checkState(envHomeURL.isPresent(), "Not inside a geogig directory");
-                final URI url = envHomeURL.get();
-                if (!"file".equals(url.getScheme())) {
-                    throw new UnsupportedOperationException(
-                            "Sparse clone works only against file system repositories. "
-                                    + "Repository location: " + url);
-                }
-
-                File repoDir;
-                try {
-                    repoDir = new File(url);
-                } catch (Exception e) {
-                    throw new IllegalStateException("Unable to access directory " + url, e);
-                }
-
-                File newFilterFile = new File(repoDir, FILTER_FILE);
-
-                Files.copy(oldFilterFile, newFilterFile);
-                effectiveConfigBuilder.put("sparse.filter", FILTER_FILE);
+                repository().blobStore().putBlob(AbstractMappedRemoteRepo.SPARSE_FILTER_BLOB_KEY,
+                        Files.toByteArray(oldFilterFile));
             } catch (Exception e) {
                 throw new IllegalStateException("Unable to copy filter file at path " + filterFile
                         + " to the new repository.", e);

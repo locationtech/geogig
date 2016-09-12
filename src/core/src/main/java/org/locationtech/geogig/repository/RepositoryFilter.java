@@ -138,7 +138,7 @@ public class RepositoryFilter {
             if (typeFilter == null) {
                 typeFilter = repositoryFilters.get("default");
             }
-            if (typeFilter.evaluate(feature)) {
+            if (typeFilter == null || typeFilter.evaluate(feature)) {
                 return true;
             }
         }

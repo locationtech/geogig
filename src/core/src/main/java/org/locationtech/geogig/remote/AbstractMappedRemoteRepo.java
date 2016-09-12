@@ -11,12 +11,8 @@ package org.locationtech.geogig.remote;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import org.locationtech.geogig.model.CommitBuilder;
@@ -28,11 +24,8 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
-import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.WriteTree;
-import org.locationtech.geogig.porcelain.ConfigOp;
-import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.SynchronizationException;
 import org.locationtech.geogig.porcelain.SynchronizationException.StatusCode;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
@@ -58,6 +51,8 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
 
     public static String PLACEHOLDER_COMMIT_MESSAGE = "Placeholder Sparse Commit";
 
+    public static String SPARSE_FILTER_BLOB_KEY = "sparse_filter";
+
     protected Repository localRepository;
 
     protected RepositoryFilter filter;
@@ -69,26 +64,11 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      */
     public AbstractMappedRemoteRepo(Repository localRepository) {
         this.localRepository = localRepository;
-        Optional<Map<String, String>> filterResult = localRepository.command(ConfigOp.class)
-                .setAction(ConfigAction.CONFIG_GET).setName("sparse.filter").call();
-        Preconditions.checkState(filterResult.isPresent(), "No filter found for sparse clone.");
-        String filterFile = filterResult.get().get("sparse.filter");
-        Preconditions.checkState(filterFile != null, "No filter found for sparse clone.");
-        try {
-            Optional<URI> envHome = localRepository.command(ResolveGeogigURI.class).call();
-            checkState(envHome.isPresent(), "Not inside a geogig directory");
-            final URI envLocation = envHome.get();
-            if (!"file".equals(envLocation.getScheme())) {
-                throw new UnsupportedOperationException(
-                        "Sparse clone works only against file system repositories. "
-                                + "Repository location: " + envLocation);
-            }
-            File repoDir = new File(envLocation);
-            File newFilterFile = new File(repoDir, filterFile);
-            filter = new IniRepositoryFilter(newFilterFile.getAbsolutePath());
-        } catch (FileNotFoundException e) {
-            Throwables.propagate(e);
-        }
+
+        Optional<byte[]> filterBlob = localRepository.blobStore().getBlob(SPARSE_FILTER_BLOB_KEY);
+        checkState(filterBlob.isPresent(), "No filter found for sparse clone.");
+
+        filter = new IniRepositoryFilter(localRepository.blobStore(), SPARSE_FILTER_BLOB_KEY);
     }
 
     /**

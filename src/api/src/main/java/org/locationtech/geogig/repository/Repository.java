@@ -25,23 +25,53 @@ import com.google.common.base.Optional;
  * stemmed from. Lastly, it contains a set of branches and tags, to identify certain commits by
  * name.
  * </p>
+ * 
+ * @since 1.0
  */
 public interface Repository {
 
     String DEPTH_CONFIG_KEY = "core.depth";
 
+    /**
+     * Provides an interface for listening for when a repository is opened and closed.
+     */
     public static interface RepositoryListener {
+
+        /**
+         * Called when the repository was opened.
+         * 
+         * @param repo the repository that was opened
+         */
         public void opened(Repository repo);
 
+        /**
+         * Called when the repository was closed.
+         */
         public void closed();
     }
 
+    /**
+     * Adds a {@link RepositoryListener} to the repository.
+     * 
+     * @param listener the listener to add
+     */
     void addListener(RepositoryListener listener);
 
+    /**
+     * Performs any setup required before first open() including default configuration.
+     */
     void configure() throws RepositoryConnectionException;
 
+    /**
+     * @return {@code true} if the repository is open
+     */
     boolean isOpen();
 
+    /**
+     * Opens the repository.
+     * 
+     * @throws RepositoryConnectionException
+     */
     void open() throws RepositoryConnectionException;
 
     /**
@@ -49,6 +79,9 @@ public interface Repository {
      */
     void close();
 
+    /**
+     * @return the URI of the repository
+     */
     URI getLocation();
 
     /**
@@ -155,32 +188,54 @@ public interface Repository {
      */
     boolean isSparse();
 
+    /**
+     * @return the context of this repository
+     */
     Context context();
 
-    // @Override
+    /**
+     * @return the repository {@link WorkingTree}
+     */
     WorkingTree workingTree();
 
-    // @Override
+    /**
+     * @return the repository {@link StagingArea}
+     */
     StagingArea index();
 
-    // @Override
+    /**
+     * @return the repository {@link RefDatabase}
+     */
     RefDatabase refDatabase();
 
-    // @Override
+    /**
+     * @return the repository {@link Platform}
+     */
     Platform platform();
 
-    // @Override
+    /**
+     * @return the repository {@link ObjectDatabase}
+     */
     ObjectDatabase objectDatabase();
 
-    // @Override
+    /**
+     * @return the repository {@link ConflictsDatabase}
+     */
     ConflictsDatabase conflictsDatabase();
 
-    // @Override
+    /**
+     * @return the repository {@link ConfigDatabase}
+     */
     ConfigDatabase configDatabase();
 
-    // @Override
+    /**
+     * @return the repository {@link GraphDatabase}
+     */
     GraphDatabase graphDatabase();
 
+    /**
+     * @return the repository {@link BlobStore}
+     */
     BlobStore blobStore();
 
 }

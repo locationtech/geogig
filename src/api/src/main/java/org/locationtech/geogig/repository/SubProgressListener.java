@@ -9,18 +9,22 @@
  */
 package org.locationtech.geogig.repository;
 
+/**
+ * A progress listener that can be used to track the progress of a subtask of a parent
+ * {@link ProgressListener}. This listener's full range will be mapped to a portion of the progress
+ * of the parent listener.
+ * 
+ * @since 1.0
+ */
 public class SubProgressListener extends DefaultProgressListener {
 
     /** Initial starting value */
-    float start;
+    private float start;
 
     /** Amount of work we have been asked to perform */
-    float amount;
+    private float amount;
 
-    /** Scale between subprogress and delegate */
-    float scale;
-
-    ProgressListener parentProgressListener;
+    private ProgressListener parentProgressListener;
 
     /**
      * Create a sub progress monitor, used to delegate work to a separate process.
@@ -33,69 +37,109 @@ public class SubProgressListener extends DefaultProgressListener {
         parentProgressListener = progress;
         this.start = progress.getProgress();
         this.amount = (amount > 0.0f) ? amount : 0.0f;
-        float max = parentProgressListener.getMaxProgress();
-        this.scale = this.amount / max;
     }
 
+    /**
+     * Called when a task begins tracking progress.
+     */
     @Override
     public void started() {
-        super.progress = 0.0f;
+        setProgress(0.f);
     }
 
+    /**
+     * Called when the task is completed. This will update the progress to the maximum progress
+     * value. Also updates the parent progress listener accordingly.
+     */
     @Override
     public void complete() {
         parentProgressListener.setProgress(start + amount);
         super.complete();
     }
 
+    /**
+     * @return the current progress of the task
+     */
     @Override
     public float getProgress() {
         return progress;
     }
 
+    /**
+     * Update the progress of the task. Also updates the parent progress listener accordingly.
+     * 
+     * @param progress the new progress
+     */
     @Override
     public void setProgress(float progress) {
         this.progress = progress;
-        parentProgressListener.setProgress(start + (scale * progress));
+        float percent = progress / getMaxProgress();
+        parentProgressListener.setProgress(start + (amount * percent));
     }
 
+    /**
+     * Sets the description of the task.
+     * 
+     * @param description the text to use for the description
+     */
     @Override
     public void setDescription(String description) {
         parentProgressListener.setDescription(description);
     }
 
+    /**
+     * @return the description of the current task
+     */
     @Override
     public String getDescription() {
         return parentProgressListener.getDescription();
     }
 
+    /**
+     * Sets the maximum value for the progress listener.
+     * 
+     * @param maxProgress the new maximum value
+     */
     @Override
     public void setMaxProgress(float maxProgress) {
         super.setMaxProgress(maxProgress);
-
-        this.scale = this.amount / maxProgress;
     }
 
+    /**
+     * @return the maximum value of the progress listener
+     */
     @Override
     public float getMaxProgress() {
         return super.getMaxProgress();
     }
 
+    /**
+     * @return {@code true} if the task is complete
+     */
     @Override
     public boolean isCompleted() {
         return super.isCompleted();
     }
 
+    /**
+     * Called when the progress listener is no longer needed.
+     */
     @Override
     public void dispose() {
         super.dispose();
     }
 
+    /**
+     * @return {@code true} if the task was cancelled
+     */
     @Override
     public boolean isCanceled() {
         return parentProgressListener.isCanceled();
     }
 
+    /**
+     * Called to indicate that the current task has been cancelled.
+     */
     @Override
     public void cancel() {
         parentProgressListener.cancel();

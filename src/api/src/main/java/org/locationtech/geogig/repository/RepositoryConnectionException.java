@@ -9,10 +9,20 @@
  */
 package org.locationtech.geogig.repository;
 
+/**
+ * Exception to be thrown when the repository was unable to connect to one of its databases.
+ * 
+ * @since 1.0
+ */
 public class RepositoryConnectionException extends Exception {
 
     private static final long serialVersionUID = -4046351627917194599L;
 
+    /**
+     * Constructs a new {@code RepositoryConnectionException} with the provided message.
+     * 
+     * @param message the exception message
+     */
     public RepositoryConnectionException(String message) {
         super(message);
     }

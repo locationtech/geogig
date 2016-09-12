@@ -19,8 +19,9 @@ import org.locationtech.geogig.repository.Conflict;
 import com.google.common.base.Optional;
 
 /**
- * Provides an interface for GeoGig staging databases.
+ * Provides an interface for implementations of conflict databases, which manage GeoGig conflicts.
  * 
+ * @since 1.0
  */
 public interface ConflictsDatabase {
 
@@ -54,6 +55,8 @@ public interface ConflictsDatabase {
     public List<Conflict> getConflicts(@Nullable String namespace, @Nullable String pathFilter);
 
     /**
+     * Retrieves all conflicts that match the specified path filter.
+     * 
      * @param namespace optional namespace (i.e. transaction id), to filter conflicts by.
      * @param treePath optional prefix path filter. If not given, all conflicts matching the given
      *        namespace are returned. If given, the {@code treePath} is the path of the parent tree
@@ -69,6 +72,13 @@ public interface ConflictsDatabase {
     public Iterator<Conflict> getByPrefix(@Nullable String namespace,
             @Nullable String prefixFilter);
 
+    /**
+     * Gets the number of conflicts in the given path.
+     * 
+     * @param namespace the namespace of the conflicts
+     * @param treePath the path to count
+     * @return the number of conflicts
+     */
     public long getCountByPrefix(@Nullable String namespace, @Nullable String treePath);
 
     /**

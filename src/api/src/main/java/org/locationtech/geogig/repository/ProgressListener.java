@@ -9,6 +9,12 @@
  */
 package org.locationtech.geogig.repository;
 
+/**
+ * Interface for a GeoGig progress listener. Used for tracking the progress of various tasks and
+ * operations.
+ *
+ * @since 1.0
+ */
 public interface ProgressListener {
 
     /**

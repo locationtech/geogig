@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
  * A {@link ObjectId#NULL null} ObjectId indicates that, for the corresponding version, the element
  * did not exist
  * 
+ * @since 1.0
  */
 public final class Conflict {
 
@@ -35,6 +36,14 @@ public final class Conflict {
 
     private final String path;
 
+    /**
+     * Create a new {@code Conflict} with the provided parameters.
+     * 
+     * @param path the feature path that is conflicted
+     * @param ancestor the {@code ObjectId} of the ancestor feature
+     * @param ours the {@code ObjectId} of the feature on the 'ours' side of the merge
+     * @param theirs the {@code ObjectId} of the feature on the 'theirs' side of the merge
+     */
     public Conflict(String path, ObjectId ancestor, ObjectId ours, ObjectId theirs) {
         checkNotNull(path, "path");
         checkNotNull(ancestor, "ancestor");
@@ -47,22 +56,39 @@ public final class Conflict {
         this.theirs = theirs;
     }
 
+    /**
+     * @return the {@code ObjectId} of the ancestor feature
+     */
     public ObjectId getAncestor() {
         return ancestor;
     }
 
+    /**
+     * @return the {@code ObjectId} of the feature on the 'ours' side of the merge
+     */
     public ObjectId getOurs() {
         return ours;
     }
 
+    /**
+     * @return the {@code ObjectId} of the feature on the 'theirs' side of the merge
+     */
     public ObjectId getTheirs() {
         return theirs;
     }
 
+    /**
+     * @return the path of the conflicted feature
+     */
     public String getPath() {
         return path;
     }
 
+    /**
+     * Determines if this conflict is the same as another.
+     * 
+     * @param x the other object
+     */
     public boolean equals(Object x) {
         if (x instanceof Conflict) {
             Conflict that = (Conflict) x;
@@ -74,10 +100,16 @@ public final class Conflict {
         }
     }
 
+    /**
+     * Generates a hash code for the conflict.
+     */
     public int hashCode() {
         return Objects.hashCode(ancestor, theirs, ours, path);
     }
 
+    /**
+     * @return the Conflict represented as a readable string.
+     */
     public String toString() {
         return path + "\t" + ancestor.toString() + "\t" + ours.toString() + "\t"
                 + theirs.toString();

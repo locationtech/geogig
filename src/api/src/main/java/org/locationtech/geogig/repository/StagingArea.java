@@ -24,6 +24,7 @@ import com.google.common.base.Optional;
  * Serves as an interface for the index of the GeoGig repository.
  * 
  * @see StagingDatabase
+ * @since 1.0
  */
 public interface StagingArea {
 
@@ -46,29 +47,30 @@ public interface StagingArea {
     public RevTree getTree();
 
     /**
-     * @return true if there are no uncommitted features in the index. False otherwise
+     * @return {@code true} if there are no uncommitted features in the index, {@code false}
+     *         otherwise
      */
     public boolean isClean();
 
     /**
-     * @param path
-     * @return the Node for the feature at the specified path if it exists in the index, otherwise
-     *         Optional.absent()
+     * @param path the path of the {@link Node}
+     * @return the {@link Node} for the feature at the specified path if it exists in the index,
+     *         otherwise {@link Optional#absent()}
      */
     public abstract Optional<Node> findStaged(final String path);
 
     /**
      * Stages the changes indicated by the {@link DiffEntry} iterator.
      * 
-     * @param progress
-     * @param unstaged
-     * @param numChanges
+     * @param progress the listener to track progress with
+     * @param unstaged the unstaged changes
+     * @param numChanges the number of changes
      */
     public abstract void stage(final ProgressListener progress, final Iterator<DiffEntry> unstaged,
             final long numChanges);
 
     /**
-     * @param pathFilter
+     * @param pathFilter the path filter for the changes
      * @return an iterator for all of the differences between STAGE_HEAD and HEAD based on the path
      *         filter.
      */
@@ -76,24 +78,26 @@ public interface StagingArea {
             final @Nullable List<String> pathFilters);
 
     /**
-     * @param pathFilter
-     * @return the number differences between STAGE_HEAD and HEAD based on the path filter.
+     * Returns the number of differences between STAGE_HEAD and HEAD based on the path filter.
+     * 
+     * @param pathFilters the path filters for the changes
+     * @return the number differences
      */
     public abstract DiffObjectCount countStaged(final @Nullable List<String> pathFilters);
 
     /**
-     * returns the number of conflicted objects in the index, for the given path filter
+     * Returns the number of conflicted objects in the index, for the given path filter.
      * 
-     * @param pathFilter
-     * @return
+     * @param pathFilter the path filter for the conflicts
+     * @return the number of conflicted objects
      */
     public long countConflicted(final @Nullable String pathFilter);
 
     /**
-     * returns the list of conflicted objects in the index, for the given path filter
+     * Returns the list of conflicted objects in the index for the given path filter.
      * 
-     * @param pathFilter
-     * @return
+     * @param pathFilter the path filter for the conflicts
+     * @return the list of conflicts
      */
     public Iterator<Conflict> getConflicted(final @Nullable String pathFilter);
 

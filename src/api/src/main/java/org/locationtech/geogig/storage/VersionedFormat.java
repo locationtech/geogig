@@ -13,6 +13,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Objects;
 
+/**
+ * Associates a format name and version with a java class.
+ * 
+ * @since 1.0
+ */
 public final class VersionedFormat {
     private final String version;
 
@@ -20,6 +25,13 @@ public final class VersionedFormat {
 
     private Class<?> clazz;
 
+    /**
+     * Construct a new {@code VersionedFormat} with the provided parameters.
+     * 
+     * @param format the format of the class
+     * @param version the version of the format
+     * @param clazz the class
+     */
     public VersionedFormat(String format, String version, Class<?> clazz) {
         checkNotNull(format);
         checkNotNull(version);
@@ -28,10 +40,16 @@ public final class VersionedFormat {
         this.clazz = clazz;
     }
 
+    /**
+     * @return the version of the format
+     */
     public String getVersion() {
         return version;
     }
 
+    /**
+     * @return the format name
+     */
     public String getFormat() {
         return format;
     }
@@ -57,11 +75,17 @@ public final class VersionedFormat {
         return Objects.hashCode(version, format);
     }
 
+    /**
+     * Combines {@code format} and {@code version} into a single string.
+     */
     @Override
     public String toString() {
         return format + ";v=" + version;
     }
 
+    /**
+     * @return the class associated with this format
+     */
     public Class<?> getImplementingClass() {
         return clazz;
     }

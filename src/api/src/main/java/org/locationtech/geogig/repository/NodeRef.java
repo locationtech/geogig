@@ -29,9 +29,14 @@ import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * The basic leaf element of a revision tree.
+ * 
+ * @since 1.0
  */
 public class NodeRef implements Bounded, Comparable<NodeRef> {
 
+    /**
+     * String representing the root node ref.
+     */
     public static final String ROOT = "";
 
     /**
@@ -79,14 +84,23 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         this.metadataId = metadataId;
     }
 
+    /**
+     * Creates a new {@code NodeRef} with the updated {@link ObjectId} and {@link Envelope}.
+     * 
+     * @param newId the updated {@link ObjectId}
+     * @param newBounds the updated bounds
+     * @return the newly created {@code NodeRef}
+     */
     public NodeRef update(final ObjectId newId, final @Nullable Envelope newBounds) {
         Node newNode = node.update(newId, newBounds);
         return NodeRef.create(parentPath, newNode, metadataId);
     }
 
     /**
-     * Creates a {@link NodeRef} pointing to {@code node} with a {@code null} parent path, which is
-     * the only exception
+     * Creates a {@code NodeRef} pointing to the provided {@code Node} with a {@code null} parent
+     * path, the provided {@code Node} must be a root node.
+     * 
+     * @param node the {@code Node} to point to
      */
     public static NodeRef createRoot(Node node) {
         Preconditions.checkArgument(NodeRef.ROOT.equals(node.getName()),
@@ -94,26 +108,38 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         return new NodeRef(node, null, ObjectId.NULL);
     }
 
+    /**
+     * Creates a {@code NodeRef} pointing to the provided {@code node} and parent path.
+     * 
+     * @param parentPath the parent path of the node
+     * @param node the {@code Node} to point to
+     * @return the new {@code NodeRef}
+     */
     public static NodeRef create(String parentPath, Node node) {
         return new NodeRef(node, parentPath, ObjectId.NULL);
     }
 
+    /**
+     * Creates a {@code NodeRef} pointing to the provided {@code node} and parent path and metadata
+     * id.
+     * 
+     * @param parentPath the parent path of the node
+     * @param node the {@code Node} to point to
+     * @param metadataId the metadata id
+     * @return the new {@code NodeRef}
+     */
     public static NodeRef create(String parentPath, Node node, ObjectId metadataId) {
         return new NodeRef(node, parentPath, metadataId);
     }
 
     /**
-     * Returns the parent path of the object this ref points to
-     * 
-     * @return
+     * @return the parent path of the object this ref points to
      */
     public String getParentPath() {
         return parentPath;
     }
 
     /**
-     * Returns the {@code Node} this object points to
-     * 
      * @return the {@code Node} this object points to
      */
     public Node getNode() {
@@ -131,7 +157,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     }
 
     /**
-     * @return the simple name of the {@link Node} this noderef points to
+     * @return the simple name of the {@link Node} this object points to
      */
     public String name() {
         return node.getName();
@@ -145,6 +171,9 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         return node.getObjectId();
     }
 
+    /**
+     * @return the {@link ObjectId} of the {@code Node} this object points to
+     */
     @Override
     public ObjectId getObjectId() {
         return node.getObjectId();
@@ -166,12 +195,17 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         }
     }
 
+    /**
+     * @return the metadata id of this object, not the node it points to
+     * 
+     * @see NodeRef#getMetadataId()
+     */
     public ObjectId getDefaultMetadataId() {
         return this.metadataId;
     }
 
     /**
-     * type of object this ref points to
+     * @return the {@link RevObject.TYPE} of the {@code Node} this object points to
      */
     public RevObject.TYPE getType() {
         return node.getType();
@@ -246,7 +280,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     /**
      * Determines if the input path is valid.
      * 
-     * @param path
+     * @param path the path to check
      * @throws IllegalArgumentException
      */
     public static void checkValidPath(final String path) {
@@ -285,9 +319,9 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     /**
      * Determines if the given node path is a direct child of the parent path.
      * 
-     * @param parentPath
-     * @param nodePath
-     * @return true of {@code nodePath} is a direct child of {@code parentPath}, {@code false} if
+     * @param parentPath the parent path
+     * @param nodePath the path of the node
+     * @return true if {@code nodePath} is a direct child of {@code parentPath}, {@code false} if
      *         unrelated, sibling, same path, or nested child
      */
     public static boolean isDirectChild(String parentPath, String nodePath) {
@@ -303,9 +337,9 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     /**
      * Determines if the given node path is a child of the given parent path.
      * 
-     * @param parentPath
-     * @param nodePath
-     * @return true of {@code nodePath} is a child of {@code parentPath} at any depth level,
+     * @param parentPath the parent path
+     * @param nodePath the path of the node
+     * @return true if {@code nodePath} is a child of {@code parentPath} at any depth level,
      *         {@code false} if unrelated, sibling, or same path
      */
     public static boolean isChild(String parentPath, String nodePath) {
@@ -372,11 +406,22 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
                         .toString();
     }
 
+    /**
+     * Determines if the {@code Node} this object points to intersects the given {@link Envelope}
+     * 
+     * @param env the {@link Envelope} to check against
+     * @return {@code true} if the {@code Node} intersects the {@link Envelope}
+     */
     @Override
     public boolean intersects(Envelope env) {
         return node.intersects(env);
     }
 
+    /**
+     * Expands the provided {@link Envelope} to encompass the {@code Node} this object points to.
+     * 
+     * @param env the {@link Envelope} to expand
+     */
     @Override
     public void expand(Envelope env) {
         node.expand(env);
@@ -390,6 +435,13 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         return split(path).size();
     }
 
+    /**
+     * Remove the parent path from the given child path.
+     * 
+     * @param parentPath the parent path to remove
+     * @param childPath the child path to remove from
+     * @return the stripped child path
+     */
     public static String removeParent(final String parentPath, final String childPath) {
         checkArgument(isChild(parentPath, childPath));
         ImmutableList<String> parent = split(parentPath);
@@ -402,11 +454,23 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         return strippedChildPath;
     }
 
+    /**
+     * @return and {@link Optional} containing the bounds of the {@code Node} this object points to,
+     *         or {@link Optional#absent()} if the {@code Node} has no bounds
+     */
     @Override
     public Optional<Envelope> bounds() {
         return node.bounds();
     }
 
+    /**
+     * Constructs a new {@code NodeRef} that points to the tree with the provided parameters.
+     * 
+     * @param treePath the path of the tree
+     * @param id the {@link ObjectId} of the tree
+     * @param metadataId the metadata id of the tree
+     * @return the newly constructed {@code NodeRef}
+     */
     public static NodeRef tree(String treePath, ObjectId id, ObjectId metadataId) {
         NodeRef.checkValidPath(treePath);
         checkNotNull(id);

@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage;
 /**
  * Exception thrown by ConfigDatabase that contains the error status code.
  * 
+ * @since 1.0
  */
 @SuppressWarnings("serial")
 public class ConfigException extends RuntimeException {
@@ -22,6 +23,9 @@ public class ConfigException extends RuntimeException {
         INVALID_LOCATION, CANNOT_WRITE, SECTION_OR_NAME_NOT_PROVIDED, SECTION_OR_KEY_INVALID, OPTION_DOES_NOT_EXIST, MULTIPLE_OPTIONS_MATCH, INVALID_REGEXP, USERHOME_NOT_SET, TOO_MANY_ACTIONS, MISSING_SECTION, TOO_MANY_ARGS
     }
 
+    /**
+     * The status code for this exception.
+     */
     public StatusCode statusCode;
 
     /**

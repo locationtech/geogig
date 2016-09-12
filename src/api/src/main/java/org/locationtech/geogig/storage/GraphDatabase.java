@@ -18,50 +18,96 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableList;
 
+/**
+ * Provides an interface for implementations of a graph database, which keeps track of the
+ * repository commit graph and performs various algorithms on it.
+ * 
+ * @since 1.0
+ */
 @Beta
 public interface GraphDatabase extends Closeable {
 
+    /**
+     * Flag key that indicates if a node is sparse, or contains only partial data from the node it
+     * originated from.
+     */
     public static final String SPARSE_FLAG = "sparse";
 
+    /**
+     * Enumeration describing a relationship direction between two {@code GraphNode}s.
+     */
     public enum Direction {
         OUT, IN, BOTH
     }
 
-    public enum Relationship {
-        TOROOT, PARENT, MAPPED_TO
-    }
-
+    /**
+     * Represents a single connection between two {@code GraphNode}s.
+     */
     public class GraphEdge {
         GraphNode from;
 
         GraphNode to;
 
+        /**
+         * Constructs a new {@code GraphEdge} between two {@code GraphNode}s
+         * 
+         * @param from the first node
+         * @param to the second node
+         */
         public GraphEdge(GraphNode from, GraphNode to) {
             this.from = from;
             this.to = to;
         }
 
+        /**
+         * @return the first node
+         */
         public GraphNode getFromNode() {
             return from;
         }
 
+        /**
+         * @return the second node
+         */
         public GraphNode getToNode() {
             return to;
         }
 
+        /**
+         * @return a readable form of this edge
+         */
         @Override
         public String toString() {
             return "" + from + ":" + to;
         }
     }
 
+    /**
+     * Represents a single commit in the repository commit graph.
+     */
     public abstract class GraphNode {
+
+        /**
+         * @return the {@link ObjectId} associated with this node
+         */
         public abstract ObjectId getIdentifier();
 
+        /**
+         * Gets all of the edges that match the provided {@code Direction}
+         * 
+         * @param direction the direction
+         * @return the list of edges
+         */
         public abstract Iterator<GraphEdge> getEdges(final Direction direction);
 
+        /**
+         * @return {@code true} if this node represents a sparse commit
+         */
         public abstract boolean isSparse();
 
+        /**
+         * Determine if this {@code GraphNode} is the same as another one.
+         */
         @Override
         public boolean equals(Object obj) {
             if (obj == this) {
@@ -76,6 +122,9 @@ public interface GraphDatabase extends Closeable {
             return otherNode.getIdentifier().equals(this.getIdentifier());
         }
 
+        /**
+         * Generate a hash code for this node.
+         */
         @Override
         public int hashCode() {
             return getIdentifier().hashCode();
@@ -176,7 +225,16 @@ public interface GraphDatabase extends Closeable {
      */
     public void setProperty(ObjectId commitId, String propertyName, String propertyValue);
 
+    /**
+     * Retrieves the {@code GraphNode} that represents the provided identifier.
+     * 
+     * @param id the identifier
+     * @return the {@code GraphNode}
+     */
     public GraphNode getNode(ObjectId id);
 
+    /**
+     * Drops all data from the graph database. Usually used when rebuilding the graph.
+     */
     public void truncate();
 }

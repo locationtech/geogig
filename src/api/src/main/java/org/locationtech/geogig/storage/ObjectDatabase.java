@@ -15,6 +15,8 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
  * The {@code ObjectDatabase} must be per repository singleton instance providing access to the main
  * repository {@link ObjectStore} as well as extra services such as access to the conflicts and
  * blobs stores.
+ * 
+ * @since 1.0
  */
 public interface ObjectDatabase extends ObjectStore {
 
@@ -23,6 +25,9 @@ public interface ObjectDatabase extends ObjectStore {
      */
     public void configure() throws RepositoryConnectionException;
 
+    /**
+     * @return {@code true} if the {@code ObjectDatabase} is read-only
+     */
     public boolean isReadOnly();
 
     /**
@@ -30,7 +35,13 @@ public interface ObjectDatabase extends ObjectStore {
      */
     public void checkConfig() throws RepositoryConnectionException;
 
+    /**
+     * @return the {@link ConflictsDatabase} associated with this {@code ObjectDatabase}
+     */
     public ConflictsDatabase getConflictsDatabase();
 
+    /**
+     * @return the {@link BlobStore} associated with this {@code ObjectDatabase}
+     */
     public BlobStore getBlobStore();
 }

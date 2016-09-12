@@ -13,6 +13,12 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Optional;
 
+/**
+ * Enumeration for the various types of storage used by GeoGig. Provides utility functions for
+ * configuring a {@link ConfigDatabase} with a format name and version for each storage type.
+ * 
+ * @since 1.0
+ */
 public enum StorageType {
     GRAPH("graph"), OBJECT("objects"), REF("refs"), STAGING("staging");
 
@@ -22,6 +28,15 @@ public enum StorageType {
 
     public final String key;
 
+    /**
+     * Adds configuration properties to the {@link ConfigDatabase} with the format name and version
+     * of this storage type.
+     * 
+     * @param configDB the config database
+     * @param formatName the format name of the storage type
+     * @param version the version of the storage format
+     * @throws RepositoryConnectionException
+     */
     public void configure(ConfigDatabase configDB, String formatName, String version)
             throws RepositoryConnectionException {
         Optional<String> storageName = configDB.get("storage." + key);
@@ -40,6 +55,15 @@ public enum StorageType {
         configDB.put(formatName + ".version", version);
     }
 
+    /**
+     * Verifies that the repository is compatible with the provided format name and version for this
+     * storage type.
+     * 
+     * @param configDB the config database
+     * @param formatName the format name of the storage type
+     * @param version the version of the storage format
+     * @throws RepositoryConnectionException
+     */
     public void verify(ConfigDatabase configDB, String formatName, String version)
             throws RepositoryConnectionException {
         Optional<String> storageName = configDB.get("storage." + key);

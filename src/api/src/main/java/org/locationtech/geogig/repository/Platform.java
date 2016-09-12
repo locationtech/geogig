@@ -14,6 +14,8 @@ import java.io.Serializable;
 
 /**
  * Interface for a GeoGig platform.
+ * 
+ * @since 1.0
  */
 public interface Platform extends Serializable{
 

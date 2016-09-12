@@ -17,6 +17,20 @@ import org.opengis.feature.type.Name;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 
+/**
+ * Provides an interface for a working tree of a GeoGig repository.
+ * <p>
+ * <ul>
+ * <li>A WorkingTree represents the current working copy of the versioned feature types
+ * <li>You perform work on the working tree (insert/delete/update features)
+ * <li>Then you commit to the current Repository's branch
+ * <li>You can checkout a different branch from the Repository and the working tree will be updated
+ * to reflect the state of that branch
+ * </ul>
+ * 
+ * @see Repository
+ * @since 1.0
+ */
 public interface WorkingTree {
 
     /**
@@ -61,17 +75,44 @@ public interface WorkingTree {
     ObjectId delete(String path);
 
     /**
+     * Deletes a collection of features from the working tree.
      * 
      * @param features the features to delete
      */
     void delete(Iterator<String> features);
 
+    /**
+     * Deletes a collection of features from the working tree and updates the provided
+     * {@link ProgressListener} as it does so.
+     * 
+     * @param features the features to delete
+     * @param progress the progress listener to update
+     */
     void delete(Iterator<String> features, ProgressListener progress);
 
+    /**
+     * Creates a new type tree in the working tree with the provided path and feature type.
+     * 
+     * @param treePath the path of the new feature type tree
+     * @param featureType the feature type
+     * @return the {@link NodeRef} of the new type tree
+     */
     NodeRef createTypeTree(String treePath, FeatureType featureType);
 
+    /**
+     * Insert a single feature into the working tree.
+     * 
+     * @param featureInfo the {@link FeatureInfo} of the feature to insert
+     */
     void insert(FeatureInfo featureInfo);
 
+    /**
+     * Insert a collection of features into the working tree and updates the provided
+     * {@link ProgressListener} as it does so.
+     * 
+     * @param featureInfos the {@link FeatureInfo} of the features to insert
+     * @param progress the progress listener to update
+     */
     void insert(Iterator<FeatureInfo> featureInfos, ProgressListener progress);
 
     /**
@@ -82,6 +123,16 @@ public interface WorkingTree {
      */
     Node insert(String parentTreePath, Feature feature);
 
+    /**
+     * Inserts a collection of features from the given source into the working tree using the
+     * provided query.
+     * 
+     * @param treePath the path of the tree to insert the features into
+     * @param source the source of the features
+     * @param query the query to use
+     * @param listener the progress listener to update
+     * @throws Exception
+     */
     void insert(String treePath, FeatureSource source, Query query, ProgressListener listener);
 
     /**
@@ -149,7 +200,7 @@ public interface WorkingTree {
     DiffObjectCount countUnstaged(@Nullable String pathFilter);
 
     /**
-     * Returns true if there are no unstaged changes, false otherwise
+     * @return {@code true} if there are no unstaged changes, false otherwise
      */
     boolean isClean();
 

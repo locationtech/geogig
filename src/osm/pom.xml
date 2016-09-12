@@ -40,12 +40,6 @@
       <artifactId>org.eclipse.jdt.annotation</artifactId>
     </dependency>
 
-    <dependency>
-      <!-- for mapdb point cache -->
-      <groupId>org.mapdb</groupId>
-      <artifactId>mapdb</artifactId>
-    </dependency>
-
     <!-- used to implement a point cache as a temporary database -->
     <dependency>
       <groupId>com.sleepycat</groupId>

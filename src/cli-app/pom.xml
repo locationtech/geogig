@@ -207,15 +207,6 @@
       </dependencies>
     </profile>
     <profile>
-      <id>sqlServer</id>
-      <dependencies>
-        <dependency>
-          <groupId>com.microsoft</groupId>
-          <artifactId>sqljdbc4</artifactId> 
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
       <id>experimental</id>
         <dependencies>
           <dependency>

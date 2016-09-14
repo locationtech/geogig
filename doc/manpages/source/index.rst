@@ -59,10 +59,6 @@ Contents:
     shp.rst
     shpexport.rst
     shpimport.rst
-    sqlserverdescribe.rst
-    sqlserverexport.rst
-    sqlserverimport.rst
-    sqlserverlist.rst
     status.rst
     tag.rst
 

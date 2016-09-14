@@ -15,7 +15,6 @@ import org.locationtech.geogig.geotools.cli.geopkg.GeopkgCommandProxy;
 import org.locationtech.geogig.geotools.cli.oracle.OracleCommandProxy;
 import org.locationtech.geogig.geotools.cli.postgis.PGCommandProxy;
 import org.locationtech.geogig.geotools.cli.shp.ShpCommandProxy;
-import org.locationtech.geogig.geotools.cli.sqlserver.SQLServerCommandProxy;
 
 import com.google.inject.Binder;
 
@@ -40,7 +39,6 @@ public class GeoToolsModule implements CLIModule {
         binder.bind(PGCommandProxy.class);
         binder.bind(ShpCommandProxy.class);
         binder.bind(OracleCommandProxy.class);
-        binder.bind(SQLServerCommandProxy.class);
         binder.bind(GeoJsonCommandProxy.class);
         binder.bind(GeopkgCommandProxy.class);
     }

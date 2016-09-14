@@ -29,24 +29,6 @@
 
   To build additional support for commercial databases:
 
-  * For SQL Server:
-
-    mvn clean install -PsqlServer
-
-    Note: the jdbc driver for SQL Server must be in your
-    local Maven repository, you can install it by issuing:
-
-    mvn install:install-file  -Dfile=<path to sqljdbc4.jar>
-         -DartifactId=sqljdbc4 \
-         -DgroupId=com.microsoft \
-         -Dversion=3.0 \
-         -Dpackaging=jar \
-         -DgeneratePom=true
-
-    Online tests can be performed by issuing the following:
-
-    mvn clean install -PsqlServer,sqlServerOnline
-
   * For Oracle:
 
     mvn clean install -Poracle
@@ -126,7 +108,6 @@
     <maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
     <build.timestamp>${maven.build.timestamp}</build.timestamp>
     <online.skip.pattern>**/*OnlineTest.java</online.skip.pattern>
-    <sqlServerOnline.skip.pattern>**/*SQLServerFunctionalTest.java</sqlServerOnline.skip.pattern>
     <postgresOnline.skip.pattern>org/locationtech/geogig/storage/postgresql/**</postgresOnline.skip.pattern>
     <allow.test.skip>true</allow.test.skip>
     <argLine>-Xms256m -Xmx512m</argLine>
@@ -449,7 +430,6 @@
           </includes>
           <excludes>
             <exclude>${online.skip.pattern}</exclude>
-	    <exclude>${sqlServerOnline.skip.pattern}</exclude>
 	    <exclude>${postgresOnline.skip.pattern}</exclude>
           </excludes>
           <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
@@ -572,7 +552,6 @@
               </includes>
               <excludes>
                 <exclude>${online.skip.pattern}</exclude>
-                <exclude>${sqlServerOnline.skip.pattern}</exclude>
                 <!--exclude>${postgresOnline.skip.pattern}</exclude-->
               </excludes>
               <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
@@ -595,7 +574,6 @@
               </systemPropertyVariables>
               <!--excludes>
                 <exclude>${online.skip.pattern}</exclude>
-                <exclude>${sqlServerOnline.skip.pattern}</exclude>
                 <exclude>${postgresOnline.skip.pattern}</exclude>
               </excludes-->
               <includes>

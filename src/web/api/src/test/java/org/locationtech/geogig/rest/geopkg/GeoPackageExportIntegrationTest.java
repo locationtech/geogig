@@ -329,31 +329,32 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
     private void assertFeatures(DataStore store, String typeName,
             SimpleFeature... expected)
             throws Exception {
-        Connection connection = ((JDBCDataStore) store).getConnection(Transaction.AUTO_COMMIT);
-        GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
-        Map<String, String> mappings = metadata.getFidMappings(typeName);
-
-        SimpleFeatureSource source = store.getFeatureSource(typeName);
-        SimpleFeatureCollection features = source.getFeatures();
-
-        Map<String, SimpleFeature> expectedFeatures;
-        {
-            List<SimpleFeature> list = Lists.newArrayList(expected);
-            expectedFeatures = Maps.uniqueIndex(list, (f) -> f.getID());
+        try(Connection connection = ((JDBCDataStore) store).getConnection(Transaction.AUTO_COMMIT)) {
+	        GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+	        Map<String, String> mappings = metadata.getFidMappings(typeName);
+	
+	        SimpleFeatureSource source = store.getFeatureSource(typeName);
+	        SimpleFeatureCollection features = source.getFeatures();
+	
+	        Map<String, SimpleFeature> expectedFeatures;
+	        {
+	            List<SimpleFeature> list = Lists.newArrayList(expected);
+	            expectedFeatures = Maps.uniqueIndex(list, (f) -> f.getID());
+	        }
+	        Set<String> actualFeatureIDs = new HashSet<String>();
+	        {
+	            try (SimpleFeatureIterator fiter = features.features()) {
+	                while (fiter.hasNext()) {
+	                    SimpleFeature feature = fiter.next();
+	                    actualFeatureIDs.add(mappings.get(feature.getID().split("\\.")[1]));
+	                }
+	            }
+	        }
+	
+	        Set<String> expectedFeatureIDs = expectedFeatures.keySet();
+	
+	        assertEquals(expectedFeatureIDs, actualFeatureIDs);
         }
-        Set<String> actualFeatureIDs = new HashSet<String>();
-        {
-            try (SimpleFeatureIterator fiter = features.features()) {
-                while (fiter.hasNext()) {
-                    SimpleFeature feature = fiter.next();
-                    actualFeatureIDs.add(mappings.get(feature.getID().split("\\.")[1]));
-                }
-            }
-        }
-
-        Set<String> expectedFeatureIDs = expectedFeatures.keySet();
-
-        assertEquals(expectedFeatureIDs, actualFeatureIDs);
     }
 
     private Set<String> getAuditTableNames(File gpkg) throws IOException, SQLException {

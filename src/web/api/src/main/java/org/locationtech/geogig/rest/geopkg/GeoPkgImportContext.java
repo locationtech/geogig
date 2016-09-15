@@ -133,6 +133,7 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
 
         @Override
         public void cleanupResources() {
+            dataStore = null;
             if (uploadedFile != null) {
                 uploadedFile.delete();
             }

@@ -219,6 +219,8 @@ public class InterchangeFormat {
             GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
             metadata.createChangeLog(targetTableName);
             metadata.populateChangeLog(targetTableName, changedNodes);
+        } finally {
+        	geopackage.close();
         }
 
     }

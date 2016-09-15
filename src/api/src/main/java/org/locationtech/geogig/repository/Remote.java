@@ -83,7 +83,12 @@ public class Remote {
         try {
             new URI(url);
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Invalid remote URL.");
+            // See if it's a valid file URI
+            try {
+                new URI("file:/" + url);
+            } catch (URISyntaxException ex) {
+                throw new IllegalArgumentException("Invalid remote URL.");
+            }
         }
         //
         // // we were just checking to see whether the url was already valid. if not, we'll try to

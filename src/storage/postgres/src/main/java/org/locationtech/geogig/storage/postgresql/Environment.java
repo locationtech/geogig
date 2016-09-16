@@ -47,6 +47,8 @@ public class Environment {
 
     public static final String KEY_THREADPOOL_SIZE = "postgres.threadPoolSize";
 
+    public static final String KEY_MAX_CONNECTIONS = "postgres.maxConnections";
+
     public static final String KEY_GETALL_BATCH_SIZE = "postgres.getAllBatchSize";
 
     public static final String KEY_PUTALL_BATCH_SIZE = "postgres.putAllBatchSize";

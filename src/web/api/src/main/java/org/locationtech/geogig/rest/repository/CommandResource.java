@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryBusyException;
 import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -172,6 +173,9 @@ public class CommandResource extends Resource {
             command.run(ctx);
             rep = ctx.getRepresentation(format, getJSONPCallback());
             getResponse().setStatus(command.getStatus());
+        } catch (RepositoryBusyException ex) {
+            rep = formatBusyException(ex, format);
+            getResponse().setStatus(Status.SERVER_ERROR_SERVICE_UNAVAILABLE);
         } catch (CommandSpecException ex) {
             rep = formatException(ex, format);
             getResponse().setStatus(ex.getStatus());
@@ -187,6 +191,18 @@ public class CommandResource extends Resource {
         }
 
         return rep;
+    }
+
+    private Representation formatBusyException(RepositoryBusyException ex, MediaType format) {
+        Logger logger = getLogger();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "RepositoryBusyException", ex);
+        }
+        if (format == CSV_MEDIA_TYPE) {
+            return new StreamWriterRepresentation(format, StreamResponse.error(ex.getMessage()));
+        }
+        return new CommandResponseJettisonRepresentation(format,
+                CommandResponse.error(ex.getMessage()), getJSONPCallback());
     }
 
     private Representation formatException(IllegalArgumentException ex, MediaType format) {

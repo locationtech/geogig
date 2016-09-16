@@ -197,7 +197,7 @@ public class PGRefDatabase implements RefDatabase {
     }
 
     private String getInternal(final String refPath) {
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             return doGet(refPath, cx);
         } catch (SQLException e) {
             throw propagate(e);
@@ -252,7 +252,7 @@ public class PGRefDatabase implements RefDatabase {
         final String insert = format(
                 "INSERT INTO %s (repository, path, name, value) VALUES (?, ?, ?, ?)", refsTable);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement ds = cx
@@ -288,7 +288,7 @@ public class PGRefDatabase implements RefDatabase {
         final String path = Ref.parentPath(refName) + "/";
         final String localName = Ref.simpleName(refName);
         final String refsTable = refsTableName;
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             String oldval;
             int updateCount = 0;
@@ -335,7 +335,7 @@ public class PGRefDatabase implements RefDatabase {
     }
 
     private Map<String, String> getAll(final String... prefixes) {
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             return doGetall(cx, prefixes);
         } catch (SQLException e) {
             throw propagate(e);
@@ -377,7 +377,7 @@ public class PGRefDatabase implements RefDatabase {
     @Override
     public Map<String, String> removeAll(final String namespace) {
         Preconditions.checkNotNull(namespace, "provided namespace is null");
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             Map<String, String> oldvalues;
             try {

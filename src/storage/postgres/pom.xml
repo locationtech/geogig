@@ -29,7 +29,6 @@
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
     </dependency>
-    
     <!-- Test scope dependencies -->
 
     <dependency>
@@ -78,6 +77,11 @@
       <artifactId>geogig-cli</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

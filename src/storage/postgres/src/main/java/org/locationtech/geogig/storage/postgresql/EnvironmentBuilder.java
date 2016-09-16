@@ -12,8 +12,11 @@ package org.locationtech.geogig.storage.postgresql;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,11 +54,16 @@ class EnvironmentBuilder {
         init(repoUrl);
     }
 
-    private static Map<String, String> extractShortKeys(String query) {
+    private static Map<String, String> extractShortKeys(String rawQuery) {
         Map<String, String> shortKeys = new HashMap<>();
-        for (String pair : Splitter.on('&').split(query)) {
+        for (String pair : Splitter.on('&').split(rawQuery)) {
             List<String> p = Splitter.on('=').splitToList(pair);
-            shortKeys.put(p.get(0), p.get(1));
+            // it should be the raw query, URL decode the values
+            try {
+                shortKeys.put(p.get(0), URLDecoder.decode(p.get(1), StandardCharsets.UTF_8.name()));
+            } catch (UnsupportedEncodingException uee) {
+                Throwables.propagate(uee);
+            }
         }
         return shortKeys;
     }
@@ -88,7 +96,7 @@ class EnvironmentBuilder {
         dbName = path.get(0);
         schema = path.size() == 2 ? "public" : path.get(1);
         repsitoryId = path.size() == 2 ? path.get(1) : path.get(2);
-        Map<String, String> shortKeys = extractShortKeys(repoUrl.getQuery());
+        Map<String, String> shortKeys = extractShortKeys(repoUrl.getRawQuery());
         user = shortKeys.get("user");
         password = shortKeys.get("password");
         tablePrefix = shortKeys.get("tablePrefix");
@@ -177,7 +185,7 @@ class EnvironmentBuilder {
 
         dbName = path.get(0);
         schema = path.size() == 1 ? "public" : path.get(1);
-        Map<String, String> shortKeys = extractShortKeys(rootRepoURI.getQuery());
+        Map<String, String> shortKeys = extractShortKeys(rootRepoURI.getRawQuery());
         user = shortKeys.get("user");
         password = shortKeys.get("password");
         tablePrefix = shortKeys.get("tablePrefix");

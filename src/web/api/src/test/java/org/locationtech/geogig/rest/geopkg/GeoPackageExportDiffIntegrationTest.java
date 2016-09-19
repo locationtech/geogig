@@ -212,31 +212,33 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
 
     private void assertFeatures(DataStore store, String typeName, SimpleFeature... expected)
             throws Exception {
-        Connection connection = ((JDBCDataStore) store).getConnection(Transaction.AUTO_COMMIT);
-        GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
-        Map<String, String> mappings = metadata.getFidMappings(typeName);
+        try (Connection connection = ((JDBCDataStore) store)
+                .getConnection(Transaction.AUTO_COMMIT)) {
+            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+            Map<String, String> mappings = metadata.getFidMappings(typeName);
 
-        SimpleFeatureSource source = store.getFeatureSource(typeName);
-        SimpleFeatureCollection features = source.getFeatures();
+            SimpleFeatureSource source = store.getFeatureSource(typeName);
+            SimpleFeatureCollection features = source.getFeatures();
 
-        Map<String, SimpleFeature> expectedFeatures;
-        {
-            List<SimpleFeature> list = Lists.newArrayList(expected);
-            expectedFeatures = Maps.uniqueIndex(list, (f) -> f.getID());
-        }
-        Set<String> actualFeatureIDs = new HashSet<String>();
-        {
-            try (SimpleFeatureIterator fiter = features.features()) {
-                while (fiter.hasNext()) {
-                    SimpleFeature feature = fiter.next();
-                    actualFeatureIDs.add(mappings.get(feature.getID().split("\\.")[1]));
+            Map<String, SimpleFeature> expectedFeatures;
+            {
+                List<SimpleFeature> list = Lists.newArrayList(expected);
+                expectedFeatures = Maps.uniqueIndex(list, (f) -> f.getID());
+            }
+            Set<String> actualFeatureIDs = new HashSet<String>();
+            {
+                try (SimpleFeatureIterator fiter = features.features()) {
+                    while (fiter.hasNext()) {
+                        SimpleFeature feature = fiter.next();
+                        actualFeatureIDs.add(mappings.get(feature.getID().split("\\.")[1]));
+                    }
                 }
             }
+
+            Set<String> expectedFeatureIDs = expectedFeatures.keySet();
+
+            assertEquals(expectedFeatureIDs, actualFeatureIDs);
         }
-
-        Set<String> expectedFeatureIDs = expectedFeatures.keySet();
-
-        assertEquals(expectedFeatureIDs, actualFeatureIDs);
     }
 
     private Map<String, ChangeType> getChangesForTable(String tableName, File gpkg)

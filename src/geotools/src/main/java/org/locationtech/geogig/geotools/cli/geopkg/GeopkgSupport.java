@@ -60,9 +60,9 @@ class GeopkgSupport {
             }
 
             if (dataStore instanceof JDBCDataStore) {
-                Connection con = null;
-                con = ((JDBCDataStore) dataStore).getDataSource().getConnection();
-                ((JDBCDataStore) dataStore).closeSafe(con);
+                try (Connection con =((JDBCDataStore) dataStore).getDataSource().getConnection()) {
+                    ((JDBCDataStore) dataStore).closeSafe(con);
+                }
             }
             return dataStore;
         } catch (IOException e) {

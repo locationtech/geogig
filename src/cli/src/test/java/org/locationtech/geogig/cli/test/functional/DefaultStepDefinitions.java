@@ -29,6 +29,7 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.pointsTyp
 import java.io.BufferedWriter;
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -78,7 +79,7 @@ import cucumber.runtime.java.StepDefAnnotation;
 public class DefaultStepDefinitions {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultStepDefinitions.class);
 
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String LINE_SEPARATOR = "\n";
 
     private CLIContextProvider contextProvider;
 
@@ -87,7 +88,7 @@ public class DefaultStepDefinitions {
     private String replaceKnownVariables(String s) {
         if (s.contains("${currentdir}")) {
             File pwd = localRepo.platform.pwd();
-            s = s.replace("${currentdir}", pwd.getAbsolutePath());
+            s = s.replace("${currentdir}", pwd.getAbsolutePath().replace("\\", "/"));
             s = s.replace("\"", "");
         }
         if (s.contains("${repoURI}")) {
@@ -140,6 +141,21 @@ public class DefaultStepDefinitions {
     @cucumber.api.java.After
     public void after() {
         contextProvider.after();
+    }
+
+    private URI resolveURI(String repoParam) {
+        URI repoUri = null;
+        try {
+            repoUri = new URI(repoParam);
+        } catch (URISyntaxException e) {
+            // See if it's a valid file URI
+            try {
+                repoUri = new URI("file:/" + repoParam.replace("\\", "/"));
+            } catch (URISyntaxException ex) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+        return repoUri;
     }
 
     @Given("^I am in an empty directory$")
@@ -220,7 +236,7 @@ public class DefaultStepDefinitions {
         assertEquals(output.toString(), 1, output.size());
         String location = output.get(0);
         assertNotNull(location);
-        URI repoURI = URI.create(location);
+        URI repoURI = resolveURI(location);
         boolean repoExists = RepositoryResolver.lookup(repoURI).repoExists(repoURI);
         assertTrue("Repository not found: " + repoURI, repoExists);
     }
@@ -228,7 +244,7 @@ public class DefaultStepDefinitions {
     @Then("^the repository at \"([^\"]*)\" shall exist$")
     public void the_repository_at_shall_exist(String repoUri) throws Throwable {
         repoUri = replaceKnownVariables(repoUri);
-        URI uri = URI.create(repoUri);
+        URI uri = resolveURI(repoUri);
         boolean exists = RepositoryResolver.lookup(uri).repoExists(uri);
         assertTrue("Repository does not exist: " + uri, exists);
     }
@@ -236,7 +252,7 @@ public class DefaultStepDefinitions {
     @Then("^the repository at \"([^\"]*)\" shall not exist$")
     public void the_repository_at_shall_not_exist(String repoUri) throws Throwable {
         repoUri = replaceKnownVariables(repoUri);
-        URI uri = URI.create(repoUri);
+        URI uri = resolveURI(repoUri);
         boolean exists = RepositoryResolver.lookup(uri).repoExists(uri);
         assertFalse("Repository exists: " + uri, exists);
     }

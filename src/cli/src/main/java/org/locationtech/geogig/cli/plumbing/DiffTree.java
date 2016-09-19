@@ -55,7 +55,7 @@ import com.google.common.collect.Sets;
 @Parameters(commandNames = "diff-tree", commandDescription = "Show changes between trees")
 public class DiffTree extends AbstractCommand implements CLICommand {
 
-    private static final String LINE_BREAK = System.getProperty("line.separator");
+    private static final String LINE_BREAK = "\n";
 
     @Parameter(description = "[<treeish> [<treeish>]] [-- <path>...]", arity = 2)
     private List<String> refSpec = Lists.newArrayList();

@@ -283,6 +283,9 @@ class ChangesetDownloader {
     }
 
     private String changesetsUrl(List<Long> ids) {
+        if (osmAPIUrl.startsWith("file:")) {
+            return osmAPIUrl + (osmAPIUrl.endsWith("/") ? "" : "/") + "changesets";
+        }
         String url = osmAPIUrl + (osmAPIUrl.endsWith("/") ? "" : "/") + "changesets?changesets=";
         StringBuilder sb = new StringBuilder(url);
         Long id;

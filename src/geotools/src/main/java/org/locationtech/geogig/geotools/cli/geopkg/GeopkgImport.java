@@ -71,6 +71,8 @@ public class GeopkgImport extends DataStoreImport implements CLICommand {
             super.runInternal(cli);
         } catch (SQLException e) {
             Throwables.propagate(e);
+        } finally {
+            geopackage.close();
         }
     }
 

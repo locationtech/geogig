@@ -102,7 +102,8 @@
     <slf4j.version>1.7.5</slf4j.version>
     <sqljdbc4.version>3.0</sqljdbc4.version>
     <osmosis.version>0.43.1</osmosis.version>
-    <hikaricp.version>2.4.2</hikaricp.version>    
+    <hikaricp.version>2.4.2</hikaricp.version>
+    <springweb.version>4.2.5.RELEASE</springweb.version>
 
     <test.maxHeapSize>512M</test.maxHeapSize>
     <maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
@@ -360,7 +361,11 @@
         <artifactId>py4j</artifactId>
         <version>0.8.1</version>
       </dependency>
-
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>${springweb.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

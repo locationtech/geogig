@@ -217,4 +217,13 @@ public class ConfigOp extends AbstractGeoGigOp<Optional<Map<String, String>>> {
         return this;
     }
 
+    /**
+     * @param configDb the config database to use for the operation
+     * @return {@code this}
+     */
+    public ConfigOp setConfigDatabase(ConfigDatabase configDb) {
+        this.configDbOverride = configDb;
+        return this;
+    }
+
 }

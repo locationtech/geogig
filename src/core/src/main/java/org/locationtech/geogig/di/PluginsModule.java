@@ -65,7 +65,7 @@ public class PluginsModule extends AbstractModule {
             Optional<URI> uri = new ResolveGeogigURI(platform, hints).call();
             ConfigDatabase config = null;
             if (uri.isPresent()) {
-                config = RepositoryResolver.resolveConfigDatabase(uri.get(), context);
+                config = RepositoryResolver.resolveConfigDatabase(uri.get(), context, false);
             } else {
                 // if there's no repository URI, then we can only do global operations
                 config = IniFileConfigDatabase.globalOnly(platform);

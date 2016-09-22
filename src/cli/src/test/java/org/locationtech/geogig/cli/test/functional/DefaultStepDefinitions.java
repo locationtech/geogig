@@ -109,6 +109,10 @@ public class DefaultStepDefinitions {
             URI remoteURI = remote.repositoryURI;
             s = s.replace("${remote repo}", remoteURI.toString());
         }
+        if (s.contains("${rootRepoURI}")) {
+            URI rootRepoURI = contextProvider.getURIBuilder().buildRootURI(localRepo.platform);
+            s = s.replace("${rootRepoURI}", rootRepoURI.toString());
+        }
         return s;
     }
 

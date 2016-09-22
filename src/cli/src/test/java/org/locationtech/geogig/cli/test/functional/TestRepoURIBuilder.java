@@ -44,6 +44,11 @@ public abstract class TestRepoURIBuilder {
      */
     public abstract URI newRepositoryURI(String name, Platform platform) throws Exception;
 
+    /**
+     * Gets the root URI of a given platform.
+     */
+    public abstract URI buildRootURI(Platform platform);
+
     public static TestRepoURIBuilder createDefault() {
 
         return new DefaultTestRepoURIBuilder();
@@ -66,6 +71,11 @@ public abstract class TestRepoURIBuilder {
             // dir.mkdir();
             // platform.setWorkingDir(dir);
             return dir.toURI();
+        }
+
+        @Override
+        public URI buildRootURI(Platform platform) {
+            return platform.pwd().toURI();
         }
     }
 

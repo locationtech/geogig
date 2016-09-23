@@ -1,7 +1,0 @@
-(
-  way
-    ["name"="Gielgenstraße"]
-    (50.7,7.1,50.8,7.25);
-  >;
-);
-out meta;

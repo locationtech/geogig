@@ -101,7 +101,6 @@
     <restlet.version>1.0.8</restlet.version> <!-- matches version used in geoserver -->
     <slf4j.version>1.7.5</slf4j.version>
     <sqljdbc4.version>3.0</sqljdbc4.version>
-    <osmosis.version>0.43.1</osmosis.version>
     <hikaricp.version>2.4.2</hikaricp.version>
     <springweb.version>4.2.5.RELEASE</springweb.version>
 
@@ -692,7 +691,6 @@
    <module>../datastore</module>
    <module>../storage</module>
    <module>../cli</module>
-   <module>../osm</module>
    <module>../geotools</module>
    <module>../web</module>
    <module>../cli-app</module>

@@ -45,7 +45,8 @@ public class RepositoryResolverTest {
         }
 
         @Override
-        public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext) {
+        public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext,
+                boolean globalOnly) {
             throw new UnsupportedOperationException();
         }
 

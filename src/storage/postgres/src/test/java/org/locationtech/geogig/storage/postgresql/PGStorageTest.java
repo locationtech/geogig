@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.postgresql;
 import static java.lang.String.format;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -25,6 +26,7 @@ import javax.sql.DataSource;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.locationtech.geogig.repository.RepositoryBusyException;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 
 import com.google.common.base.Throwables;
@@ -115,6 +117,41 @@ public class PGStorageTest {
         } finally {
             PGStorage.closeDataSource(ds);
         }
+    }
+
+    @Test
+    public void testConnectionPoolConfig() throws SQLException {
+        // Try only allowing a single connection
+        try (PGConfigDatabase globalOnlydb = new PGConfigDatabase(config)) {
+            globalOnlydb.putGlobal(Environment.KEY_MAX_CONNECTIONS, "1");
+        }
+        DataSource source = PGStorage.newDataSource(config);
+        try (Connection c1 = PGStorage.newConnection(source)) {
+            try {
+                PGStorage.newConnection(source);
+                fail();
+            } catch (RepositoryBusyException e) {
+                // expected;
+            }
+        }
+        PGStorage.closeDataSource(source);
+
+        // Try allowing two connections
+        try (PGConfigDatabase globalOnlydb = new PGConfigDatabase(config)) {
+            globalOnlydb.putGlobal(Environment.KEY_MAX_CONNECTIONS, "2");
+        }
+        source = PGStorage.newDataSource(config);
+        try (Connection c1 = PGStorage.newConnection(source)) {
+            try (Connection c2 = PGStorage.newConnection(source)) {
+                try {
+                    PGStorage.newConnection(source);
+                    fail();
+                } catch (RepositoryBusyException e) {
+                    // expected;
+                }
+            }
+        }
+        PGStorage.closeDataSource(source);
     }
 
     private void assertTableExist(DataSource ds, String table) {

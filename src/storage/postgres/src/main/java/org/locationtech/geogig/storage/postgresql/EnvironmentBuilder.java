@@ -31,7 +31,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
-class EnvironmentBuilder {
+public class EnvironmentBuilder {
 
     private Environment config;
 

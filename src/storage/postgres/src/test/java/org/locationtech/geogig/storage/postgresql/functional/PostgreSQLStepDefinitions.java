@@ -63,5 +63,18 @@ public class PostgreSQLStepDefinitions {
             String repoURI = testConfig.getRepoURL();
             return new URI(repoURI);
         }
+
+        @Override
+        public URI buildRootURI(Platform platform) {
+            String rootURI = testConfig.getRepoURL()
+                    .replace("/" + testConfig.getEnvironment().getRepositoryName(), "");
+            URI rootUri = null;
+            try {
+                rootUri = new URI(rootURI);
+            } catch (URISyntaxException e) {
+                Throwables.propagate(e);
+            }
+            return rootUri;
+        }
     }
 }

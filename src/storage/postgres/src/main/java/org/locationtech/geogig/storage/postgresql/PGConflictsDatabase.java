@@ -99,7 +99,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
                 "INSERT INTO %s (repository, namespace, path, ancestor, ours, theirs) VALUES (?,?,?,?,?,?)",
                 conflictsTable);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             log(sql, LOG, namespace, path, conflict);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
@@ -137,7 +137,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
                 "INSERT INTO %s (repository, namespace, path, ancestor, ours, theirs) VALUES (?,?,?,?,?,?)",
                 conflictsTable);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 for (Conflict conflict : conflicts) {
@@ -184,7 +184,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
 
         Conflict conflict = null;
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, namespace(namespace));
@@ -214,7 +214,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
                 conflictsTable);
 
         boolean hasConflicts;
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, namespace))) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, namespace(namespace));
@@ -246,7 +246,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
                     conflictsTable);
         }
         List<Conflict> conflicts = new ArrayList<>();
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, namespace);
@@ -301,7 +301,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
         }
 
         List<Conflict> batch = new ArrayList<>();
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, namespace(namespace));
@@ -390,7 +390,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
         }
 
         int count;
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, namespace))) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, namespace);
@@ -424,7 +424,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
                 conflictsTable);
         log(sql, LOG, namespace, path);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 ps.setInt(1, repositoryId);
@@ -452,7 +452,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
                 "DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ANY(?)",
                 conflictsTable);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 final int partitionSize = 1000;
@@ -486,7 +486,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
         sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ?", conflictsTable);
         log(sql, LOG, namespace);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 ps.setInt(1, repositoryId);
@@ -518,7 +518,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
                 "SELECT path FROM %s WHERE repository = ? AND namespace = ? AND path = ANY(?)",
                 conflictsTable);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(true);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 Iterable<List<String>> partitions = Iterables.partition(paths, partitionSize);
@@ -561,7 +561,7 @@ class PGConflictsDatabase implements ConflictsDatabase {
             sql = sb.toString();
         }
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, namespace(namespace));

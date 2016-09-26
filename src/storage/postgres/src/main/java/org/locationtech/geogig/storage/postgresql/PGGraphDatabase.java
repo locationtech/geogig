@@ -124,7 +124,7 @@ public class PGGraphDatabase implements GraphDatabase {
     @Override
     public boolean exists(ObjectId commitId) {
         final PGId node = PGId.valueOf(commitId);
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             return exists(node, cx);
         } catch (SQLException e) {
             throw propagate(e);
@@ -163,7 +163,7 @@ public class PGGraphDatabase implements GraphDatabase {
     public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
         final PGId node = PGId.valueOf(commitId);
         final boolean exists;
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             exists = exists(node, cx);
             // NOTE: runs in autoCommit mode to ignore statement failures due to duplicates (?)
             // TODO: if node was node added should we severe existing parent relationships?
@@ -213,7 +213,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 MAPPINGS);
         String insert = format("INSERT INTO %s (alias, nid) VALUES ( ROW(?,?,?), ROW(?,?,?) )",
                 MAPPINGS);
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement deleteSt = cx.prepareStatement(log(delete, LOG, from))) {
@@ -254,7 +254,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 MAPPINGS);
 
         final ObjectId mapped;
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
                 node.setArgs(ps, 1);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -273,7 +273,7 @@ public class PGGraphDatabase implements GraphDatabase {
         int depth = 0;
 
         Queue<PGId> q = Lists.newLinkedList();
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             Iterables.addAll(q, outgoing(PGId.valueOf(commitId), cx));
 
             List<PGId> next = Lists.newArrayList();
@@ -309,7 +309,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 "DELETE FROM %s WHERE nid = CAST(ROW(?,?,?) AS OBJECTID) AND  key = ?", PROPS);
         final String insert = format("INSERT INTO %s (nid,key,val) VALUES (ROW(?,?,?), ?, ?)",
                 PROPS);
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement ds = cx.prepareStatement(log(delete, LOG, node, name))) {
@@ -338,7 +338,7 @@ public class PGGraphDatabase implements GraphDatabase {
 
     @Override
     public void truncate() {
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try {
                 try (Statement st = cx.createStatement()) {
@@ -377,7 +377,7 @@ public class PGGraphDatabase implements GraphDatabase {
         final String sql = format(
                 "SELECT val FROM %s WHERE nid = CAST(ROW(?,?,?) AS OBJECTID) AND key = ?", PROPS);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node, key))) {
                 node.setArgs(ps, 1);
                 ps.setString(4, key);
@@ -392,7 +392,7 @@ public class PGGraphDatabase implements GraphDatabase {
     }
 
     Iterable<PGId> outgoing(final PGId node) {
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             return outgoing(node, cx);
         } catch (SQLException e) {
             throw propagate(e);
@@ -432,7 +432,7 @@ public class PGGraphDatabase implements GraphDatabase {
                 EDGES);
 
         List<PGId> incoming = new ArrayList<>(2);
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
                 node.setArgs(ps, 1);
                 try (ResultSet rs = ps.executeQuery()) {

@@ -79,11 +79,42 @@ public abstract class RepositoryResolver {
     public abstract void initialize(URI repoURI, Context repoContext)
             throws IllegalArgumentException;
 
-    public abstract ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext);
+    /**
+     * Gets a config database for the given URI.
+     * 
+     * @param repoURI the repository URI
+     * @param repoContext the repository context
+     * @param rootUri {@code true} if {@code repoURI} represents a root URI to a group of
+     *        repositories
+     * @return the config database
+     */
+    public abstract ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext,
+            boolean rootUri);
 
-    public static ConfigDatabase resolveConfigDatabase(URI repoURI, Context repoContext) {
+    /**
+     * Gets a config database for a single repository.
+     * 
+     * @param repoURI the repository URI
+     * @param repoContext the repository context
+     * @return the config database
+     */
+    public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext) {
+        return getConfigDatabase(repoURI, repoContext, false);
+    }
+
+    /**
+     * Resolve the config database using the provided parameters.
+     * 
+     * @param repoURI the repository URI
+     * @param repoContext the repository context
+     * @param rootUri {@code true} if {@code repoURI} represents a root URI to a group of
+     *        repositories
+     * @return the config database
+     */
+    public static ConfigDatabase resolveConfigDatabase(URI repoURI, Context repoContext,
+            boolean rootUri) {
         RepositoryResolver initializer = RepositoryResolver.lookup(repoURI);
-        return initializer.getConfigDatabase(repoURI, repoContext);
+        return initializer.getConfigDatabase(repoURI, repoContext, rootUri);
     }
 
     public static URI resolveRepoUriFromString(Platform platform, String repoURI)

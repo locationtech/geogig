@@ -166,3 +166,16 @@ Feature: "config" command
       And the response should contain "testing.local2=false"  
       And the response should contain "testing.local3=true"
       And the response should contain "testing.local4=false"    
+      
+  Scenario: Specify root URI and set a global config option
+    Given I have a repository
+     When I run the command "config --rootUri ${rootRepoURI} --global testing.global true"
+      And I run the command "config testing.local true"
+      And I run the command "config --rootUri ${rootRepoURI} --list"
+     Then the response should contain "testing.global=true"
+      And the response should not contain "testing.local=true"
+      
+  Scenario: Try to add a local config value when using a root URI
+    Given I have a repository
+     When I run the command "config --rootUri ${rootRepoURI} testing.local true"
+     Then it should answer "The config location is invalid"

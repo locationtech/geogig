@@ -55,7 +55,15 @@ Advise from http://www.slideshare.net/PGExperts/really-big-elephants-postgresql-
 few max connections
 ===================
 
-10 to 40 (note the geogig connection pool is up to 10, beware of concurrent instances)
+10 to 40 (note the default geogig connection pool is 10 connections, beware of concurrent instances)
+
+This can be configured by setting the ``postgres.maxConnections`` property in the global config.
+
+Example:
+
+``$ geogig config —rootUri "postgresql://localhost/geogig?user=postgres&password=secret" —global postgres.maxConnections 20``
+
+
 
 raise memory limits!
 ====================

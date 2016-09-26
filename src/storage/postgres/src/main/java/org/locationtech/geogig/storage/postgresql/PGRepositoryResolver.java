@@ -62,8 +62,15 @@ public class PGRepositoryResolver extends RepositoryResolver {
     }
 
     @Override
-    public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext) {
-        Environment config = parseConfig(repoURI);
+    public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext, boolean rootUri) {
+        final Environment config;
+        if (rootUri) {
+            Properties properties = EnvironmentBuilder.getRootURIProperties(repoURI);
+            EnvironmentBuilder builder = new EnvironmentBuilder(properties);
+            config = builder.build();
+        } else {
+            config = parseConfig(repoURI);
+        }
         PGConfigDatabase configDb = new PGConfigDatabase(config);
         if (config.getRepositoryName() != null) {
             Optional<String> refsFormat = configDb.get("storage.refs");

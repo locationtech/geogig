@@ -51,7 +51,7 @@ public class IniFileConfigDatabase implements ConfigDatabase {
         this(platform, hints, false);
     }
 
-    private IniFileConfigDatabase(final Platform platform, final Hints hints,
+    public IniFileConfigDatabase(final Platform platform, final Hints hints,
             final boolean globalOnly) {
         this.globalOnly = globalOnly;
         {

@@ -9,7 +9,12 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
+import static java.lang.String.format;
+import static org.locationtech.geogig.storage.postgresql.PGStorage.log;
+
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
@@ -23,18 +28,18 @@ import com.google.common.base.Throwables;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, DataSource> {
+class DataSourceManager extends ConnectionManager<Environment, DataSource> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceManager.class);
 
     @Override
-    protected DataSource connect(Environment.ConnectionConfig config) {
+    protected DataSource connect(Environment config) {
         HikariConfig hc = new HikariConfig();
         hc.setConnectionInitSql("SELECT NOW()");
         hc.setConnectionTestQuery("SELECT NOW()");
         hc.setDriverClassName("org.postgresql.Driver");
 
-        final String jdbcUrl = getUrl(config);
+        final String jdbcUrl = getUrl(config.connectionConfig);
         hc.setJdbcUrl(jdbcUrl);
 
         hc.setMaximumPoolSize(10);
@@ -47,6 +52,27 @@ class DataSourceManager extends ConnectionManager<Environment.ConnectionConfig, 
         LOG.debug("Connecting to " + jdbcUrl + " as user " + config.getUser());
         HikariDataSource ds = new HikariDataSource(hc);
         try (Connection c = ds.getConnection()) {
+            final String sql = format(
+                    "SELECT value FROM %s WHERE repository = ? AND section = ? AND key = ?",
+                    config.getTables().config());
+            String[] maxConnections = Environment.KEY_MAX_CONNECTIONS.split("\\.");
+            String section = maxConnections[0];
+            String key = maxConnections[1];
+            try (PreparedStatement ps = c
+                    .prepareStatement(log(sql, LOG, PGConfigDatabase.GLOBAL_KEY, section, key))) {
+                ps.setInt(1, PGConfigDatabase.GLOBAL_KEY);
+                ps.setString(2, section);
+                ps.setString(3, key);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        ds.setMaximumPoolSize(Integer.parseInt(rs.getString(1)));
+                    }
+                }
+            } catch (SQLException e) {
+                // tables weren't set up yet
+            }
+
             LOG.debug("Connected to " + jdbcUrl + " as " + config.getUser());
         } catch (SQLException e) {
             LOG.error("Unable to connect to " + jdbcUrl + " as " + config.getUser(), e);

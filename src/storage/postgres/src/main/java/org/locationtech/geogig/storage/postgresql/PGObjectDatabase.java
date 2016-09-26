@@ -256,7 +256,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                 "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE ((id).h1) = ? AND id = CAST(ROW(?,?,?) AS OBJECTID) )",
                 config.getTables().objects());
         final PGId pgid = PGId.valueOf(id);
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
                 ps.setInt(1, pgid.hash1());
                 pgid.setArgs(ps, 2);
@@ -283,7 +283,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         final String sql = format(
                 "SELECT ((id).h2), ((id).h3) FROM %s WHERE ((id).h1) = ? LIMIT 1000", objects);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 ps.setInt(1, hash1);
 
@@ -513,7 +513,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         final String tableName = tableName(config.getTables(), object.getType(), pgid.hash1());
         final String sql = format("INSERT INTO %s (id, object) VALUES (ROW(?,?,?),?)", tableName);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(true);
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id, object))) {
                 pgid.setArgs(ps, 1);
@@ -613,7 +613,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
         byte[] bytes = null;
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
                 ps.setInt(1, pgid.hash1());
                 pgid.setArgs(ps, 2);
@@ -727,7 +727,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                     "SELECT ((id).h1), ((id).h2),((id).h3), object FROM %s WHERE ((id).h1) = ANY(?)",
                     tableName);
 
-            try (Connection cx = db.dataSource.getConnection()) {
+            try (Connection cx = PGStorage.newConnection(db.dataSource)) {
                 try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, queryIds))) {
 
                     final Array array = toJDBCArray(cx, queryIds);
@@ -798,7 +798,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
                 config.getTables().objects());
 
-        try (Connection cx = ds.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(ds)) {
             cx.setAutoCommit(true);
             try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG, id))) {
                 PGId.valueOf(id).setArgs(stmt, 1);
@@ -851,7 +851,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
         @Override
         public Void call() {
-            try (Connection cx = ds.getConnection()) {
+            try (Connection cx = PGStorage.newConnection(ds)) {
                 cx.setAutoCommit(false);
                 try {
                     doInsert(cx);
@@ -1057,7 +1057,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                 config.getTables().objects());
 
         long count = 0;
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG))) {
                 // partition the objects into chunks for batch processing

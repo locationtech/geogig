@@ -186,10 +186,10 @@ public class DefaultRepositoryResolver extends RepositoryResolver {
     }
 
     @Override
-    public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext) {
+    public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext, boolean rootUri) {
         Hints hints = new Hints().uri(repoURI);
         Platform platform = repoContext.platform();
-        return new IniFileConfigDatabase(platform, hints);
+        return new IniFileConfigDatabase(platform, hints, rootUri);
     }
 
     private void createSampleHooks(File envHome) {

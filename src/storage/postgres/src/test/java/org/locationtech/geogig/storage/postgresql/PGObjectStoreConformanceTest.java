@@ -10,23 +10,29 @@
 package org.locationtech.geogig.storage.postgresql;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.ObjectStoreConformanceTest;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 
 public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
 
@@ -77,5 +83,35 @@ public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
         ((PGObjectDatabase) db).setPutAllBatchSize(1);
         db.putAll(objects.iterator());
         assertEquals(object, db.get(object.getId()));
+    }
+
+    /**
+     * Test concurrency by calling getAll within the only thread available to the object database.
+     * The subquery should finish, allowing the original query to continue without deadlocking.
+     */
+    @Test(timeout = 30000)
+    public void testGetAllConcurrency() {
+        configdb.put(Environment.KEY_THREADPOOL_SIZE, 1);
+        db.close();
+
+        Environment config = testConfig.getEnvironment();
+        db = new PGObjectDatabase(configdb, config, false);
+        db.open();
+
+        RevObject originalObject = RevObjectTestSupport.feature(0, null, "some value");
+
+        db.put(originalObject);
+
+        Iterator<RevObject> objects = db.getAll(Lists.newArrayList(originalObject.getId()),
+                new BulkOpListener() {
+            public void found(ObjectId object, @Nullable Integer storageSizeBytes) {
+                        Iterator<RevObject> subQueryObjects = db.getAll(Lists.newArrayList(object));
+                        assertTrue(subQueryObjects.hasNext());
+                        assertEquals(originalObject, subQueryObjects.next());
+            }
+        });
+
+        assertTrue(objects.hasNext());
+        assertEquals(originalObject, objects.next());
     }
 }

@@ -45,6 +45,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -82,6 +83,7 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 
@@ -115,6 +117,8 @@ public class PGObjectDatabase implements ObjectDatabase {
     private Cache<ObjectId, byte[]> byteCache = null;
 
     private int threadPoolSize = 2;
+
+    private ThreadGroup threadGroup = null;
 
     private int getAllBatchSize = DEFAULT_GET_ALL_PARTITION_SIZE;
 
@@ -188,6 +192,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         executor = ObjectDatabaseSharedResources.getExecutor(connectionConfig, prefix);
         byteCache = ObjectDatabaseSharedResources.getByteCache(connectionConfig, prefix);
         threadPoolSize = ObjectDatabaseSharedResources.getThreadPoolSize(connectionConfig, prefix);
+        threadGroup = ObjectDatabaseSharedResources.getThreadGroup(connectionConfig, prefix);
 
         conflicts = new PGConflictsDatabase(dataSource, conflictsTable, repositoryId);
         blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
@@ -639,6 +644,16 @@ public class PGObjectDatabase implements ObjectDatabase {
         checkState(isOpen(), "Database is closed");
 
         GetAllOp getAllOp = new GetAllOp(ids, listener, this, type);
+        // Avoid deadlocking by running the task synchronously if we are already in one of the
+        // threads on the executor.
+        if (Thread.currentThread().getThreadGroup().equals(threadGroup)) {
+            try {
+                List<RevObject> objects = getAllOp.call();
+                return Futures.immediateFuture(objects);
+            } catch (Exception e) {
+                propagate(e);
+            }
+        }
         Future<List<RevObject>> future = executor.submit(getAllOp);
         return future;
     }
@@ -1145,13 +1160,16 @@ public class PGObjectDatabase implements ObjectDatabase {
 
             final int threadPoolSize;
 
+            final ThreadGroup threadGroup;
+
             int refCount = 1;
 
             SharedResourceReference(Cache<ObjectId, byte[]> byteCache, ExecutorService executor,
-                    int threadPoolSize) {
+                    int threadPoolSize, ThreadGroup threadGroup) {
                 this.executor = executor;
                 this.byteCache = byteCache;
                 this.threadPoolSize = threadPoolSize;
+                this.threadGroup = threadGroup;
             }
         }
 
@@ -1172,10 +1190,19 @@ public class PGObjectDatabase implements ObjectDatabase {
                 } else {
                     threadPoolSize = Math.max(Runtime.getRuntime().availableProcessors(), 2);
                 }
-
-                ExecutorService databaseExecutor = createExecutorService(config, threadPoolSize);
+                final String threadGroupName = String.format("PG ODB threads for %s:%d/%s",
+                        config.getServer(), config.getPortNumber(), config.getDatabaseName());
+                final ThreadGroup threadGroup = new ThreadGroup(threadGroupName);
+                final ThreadFactory threadFactory = new ThreadFactory() {
+                    public Thread newThread(Runnable r) {
+                        return new Thread(threadGroup, r);
+                    }
+                };
+                ExecutorService databaseExecutor = createExecutorService(threadFactory, config,
+                        threadPoolSize);
                 Cache<ObjectId, byte[]> byteCache = createCache(configdb);
-                ref = new SharedResourceReference(byteCache, databaseExecutor, threadPoolSize);
+                ref = new SharedResourceReference(byteCache, databaseExecutor, threadPoolSize,
+                        threadGroup);
                 sharedResources.put(key, ref);
             } else {
                 ref.refCount++;
@@ -1200,6 +1227,12 @@ public class PGObjectDatabase implements ObjectDatabase {
                 String tableNamesPrefix) {
             final Key key = new Key(config, tableNamesPrefix);
             return sharedResources.get(key).executor;
+        }
+
+        public static ThreadGroup getThreadGroup(Environment.ConnectionConfig config,
+                String tableNamesPrefix) {
+            final Key key = new Key(config, tableNamesPrefix);
+            return sharedResources.get(key).threadGroup;
         }
 
         public static Cache<ObjectId, byte[]> getByteCache(
@@ -1244,12 +1277,14 @@ public class PGObjectDatabase implements ObjectDatabase {
 
         }
 
-        private static ExecutorService createExecutorService(Environment.ConnectionConfig config,
+        private static ExecutorService createExecutorService(ThreadFactory threadFactory,
+                Environment.ConnectionConfig config,
                 int threadPoolSize) {
             String poolName = String.format("GeoGig PG ODB pool for %s:%d/%s", config.getServer(),
                     config.getPortNumber(), config.getDatabaseName()) + "-%d";
             return Executors.newFixedThreadPool(threadPoolSize,
-                    new ThreadFactoryBuilder().setNameFormat(poolName).setDaemon(true).build());
+                    new ThreadFactoryBuilder().setThreadFactory(threadFactory)
+                            .setNameFormat(poolName).setDaemon(true).build());
         }
 
         private static long defaultCacheSize() {

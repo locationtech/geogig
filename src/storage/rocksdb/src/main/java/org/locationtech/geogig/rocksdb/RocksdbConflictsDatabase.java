@@ -67,10 +67,14 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
     }
 
     private Optional<RocksDB> getDb(@Nullable String txId) {
-        String id = txId == null ? NULL_TX_ID : txId;
+        final String id = txId == null ? NULL_TX_ID : txId;
         DBHandle dbHandle = dbsByTransaction.get(id);
         if (dbHandle == null) {
-            return Optional.absent();
+            if (RocksConnectionManager.INSTANCE.exists(dbPath(txId))) {
+                return Optional.of(getOrCreateDb(txId));
+            } else {
+                return Optional.absent();
+            }
         }
         return Optional.of(dbHandle.db);
     }

@@ -84,7 +84,6 @@
   </repositories>
 
   <properties>
-    <bdbje.version>5.0.84</bdbje.version>
     <compress-lzf.version>1.0.3</compress-lzf.version>
     <cucumber-java.version>1.2.4</cucumber-java.version>
     <gson.version>2.4</gson.version>
@@ -227,13 +226,6 @@
         <groupId>com.ning</groupId>
         <artifactId>compress-lzf</artifactId>
         <version>${compress-lzf.version}</version>
-      </dependency>
-
-      <!-- Berkeley DB JE -->
-      <dependency>
-        <groupId>com.sleepycat</groupId>
-        <artifactId>je</artifactId>
-        <version>${bdbje.version}</version>
       </dependency>
 
       <dependency>
@@ -628,7 +620,6 @@
      <id>experimental</id>
      <modules>
        <module>../ql</module>
-       <module>../storage/rocksdb</module>
      </modules>
     </profile>
   </profiles>

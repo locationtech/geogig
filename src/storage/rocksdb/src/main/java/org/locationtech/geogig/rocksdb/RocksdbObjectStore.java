@@ -36,6 +36,7 @@ import org.locationtech.geogig.storage.AbstractObjectStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
+import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -67,7 +68,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     @Inject
     public RocksdbObjectStore(Platform platform, @Nullable Hints hints) {
-        super(DataStreamSerializationFactoryV2.INSTANCE);
+        super(new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE));
 
         Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
         checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
@@ -341,7 +342,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                 byte[] key = it.key();
                 for (int i = 0; i < idprefix.length; i++) {
                     if (idprefix[i] != key[i]) {
-                        break;
+                        return matches;
                     }
                 }
                 ObjectId id = ObjectId.createNoClone(key);

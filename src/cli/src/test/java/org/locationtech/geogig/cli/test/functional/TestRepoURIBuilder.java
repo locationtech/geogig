@@ -18,7 +18,7 @@ import org.locationtech.geogig.repository.Platform;
  * A repository URI builder for functional tests to create repos of a specific storage backend kind.
  * <p>
  * The {@link #createDefault() default} URI builder creates {@code file://} URI's and uses whatever
- * the default file storage backend is configured by the geogig plugin system (currenlty BDBJE).
+ * the default file storage backend is configured by the geogig plugin system (currently Rocksdb).
  * <p>
  * A concrete subclass must implement {@link #newRepositoryURI} to return an appropriate URI for the
  * kind of storage backend it intends to run the CLI functional tests against, and to set up any

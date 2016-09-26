@@ -83,7 +83,7 @@ public class Clone extends AbstractCommand implements CLICommand {
     private String filterFile;
 
     @Parameter(names = {
-            "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=bdbje:bdbje.version=0.1")
+            "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=rocksdb:rocksdb.version=1")
     private String config;
 
     @Parameter(description = "<repository> [<directory>|<clone URI>]")

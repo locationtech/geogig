@@ -32,23 +32,31 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.repository.FeatureToDelete;
 import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.TestPlatform;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.geometry.BoundingBox;
@@ -56,6 +64,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -263,14 +272,44 @@ public abstract class RepositoryTestCase extends Assert {
         return geogig;
     }
 
-    protected Feature feature(SimpleFeatureType type, String id, Object... values)
-            throws ParseException {
+    public FeatureInfo featureInfo(Feature f) {
+        FeatureType type = f.getType();
+        String treePath = type.getName().getLocalPart();
+        return featureInfo(treePath, f);
+    }
+
+    public FeatureInfo featureInfo(String treePath, Feature f) {
+        final String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
+        RevFeature feature = RevFeatureBuilder.build(f);
+        FeatureType type = f.getType();
+        RevFeatureType ftype = RevFeatureTypeBuilder.build(type);
+        repo.objectDatabase().put(ftype);
+        return FeatureInfo.insert(feature, ftype.getId(), path);
+    }
+
+    protected FeatureInfo featureInfo(SimpleFeatureType type, String id, Object... values) {
+        RevFeature feature = RevFeatureBuilder.build(feature(type, id, values));
+        RevFeatureType ftype = RevFeatureTypeBuilder.build(type);
+        repo.objectDatabase().put(ftype);
+        String path = NodeRef.appendChild(type.getName().getLocalPart(), id);
+        return FeatureInfo.insert(feature, ftype.getId(), path);
+    }
+
+    protected Iterator<FeatureInfo> asFeatureInfos(Iterator<Feature> features) {
+        return Iterators.transform(features, (f) -> featureInfo(f));
+    }
+
+    protected Feature feature(SimpleFeatureType type, String id, Object... values) {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
             if (type.getDescriptor(i) instanceof GeometryDescriptor) {
                 if (value instanceof String) {
-                    value = new WKTReader2().read((String) value);
+                    try {
+                        value = new WKTReader2().read((String) value);
+                    } catch (ParseException e) {
+                        throw Throwables.propagate(e);
+                    }
                 }
             }
             builder.set(i, value);
@@ -337,16 +376,42 @@ public abstract class RepositoryTestCase extends Assert {
         return insert(null, f);
     }
 
+    public List<FeatureInfo> insert(List<Feature> features) {
+        Map<FeatureType, RevFeatureType> types = new HashMap<>();
+
+        List<FeatureInfo> rfIds = new ArrayList<>();
+        List<FeatureInfo> infos = Lists.transform(features, (f) -> {
+            final String path = NodeRef.appendChild(f.getType().getName().getLocalPart(),
+                    f.getIdentifier().getID());
+            FeatureInfo fi;
+            if (f instanceof FeatureToDelete) {
+                fi = FeatureInfo.delete(path);
+            } else {
+                RevFeatureType rft = types.get(f.getType());
+                if (rft == null) {
+                    rft = RevFeatureTypeBuilder.build(f.getType());
+                    repo.objectDatabase().put(rft);
+                    types.put(f.getType(), rft);
+                }
+                fi = FeatureInfo.insert(RevFeatureBuilder.build(f), rft.getId(), path);
+                rfIds.add(fi);
+            }
+            return fi;
+        });
+        repo.workingTree().insert(infos.iterator(), DefaultProgressListener.NULL);
+        return rfIds;
+    }
+
     /**
      * Inserts the feature to the index but does not stages it to be committed
      */
     public ObjectId insert(GeogigTransaction transaction, Feature f) throws Exception {
         final WorkingTree workTree = (transaction != null ? transaction.workingTree()
                 : repo.workingTree());
-        Name name = f.getType().getName();
-        String parentPath = name.getLocalPart();
-        Node ref = workTree.insert(parentPath, f);
-        ObjectId objectId = ref.getObjectId();
+
+        FeatureInfo feature = featureInfo(f);
+        workTree.insert(feature);
+        ObjectId objectId = feature.getFeature().getId();
         return objectId;
     }
 

@@ -388,7 +388,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             String path = in.readUTF();
             ObjectId featureTypeId = OID.read(in);
             RevFeature feature = (RevFeature) DataStreamSerializationFactoryV2.INSTANCE.read(in);
-            return new FeatureInfo(feature, featureTypeId, path);
+            return FeatureInfo.insert(feature, featureTypeId, path);
         }
 
     }

@@ -57,7 +57,7 @@ public class FeatureInfoTest {
             public void forEach(Consumer<Object> consumer) {
             }
         };
-        FeatureInfo info = new FeatureInfo(testFeature, oid1, "Points/1");
+        FeatureInfo info = FeatureInfo.insert(testFeature, oid1, "Points/1");
         assertEquals(testFeature, info.getFeature());
         assertEquals(oid1, info.getFeatureTypeId());
         assertEquals("Points/1", info.getPath());

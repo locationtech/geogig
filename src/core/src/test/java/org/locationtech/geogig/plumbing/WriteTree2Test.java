@@ -44,7 +44,6 @@ import org.opengis.feature.Feature;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -54,7 +53,6 @@ import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.io.ParseException;
 
 public class WriteTree2Test extends RepositoryTestCase {
 
@@ -704,11 +702,8 @@ public class WriteTree2Test extends RepositoryTestCase {
     private Node feature(ObjectStore db, String idPrefix, int index) {
         final String id = idPrefix + "." + index;
         final Feature feature;
-        try {
-            feature = super.feature(pointsType, id, id, index, point(index));
-        } catch (ParseException e) {
-            throw Throwables.propagate(e);
-        }
+        feature = super.feature(pointsType, id, id, index, point(index));
+
         RevFeature revFeature = RevFeatureBuilder.build(feature);
         db.put(revFeature);
         Envelope bounds = (Envelope) feature.getBounds();

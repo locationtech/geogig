@@ -22,18 +22,25 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.TestPlatform;
 import org.opengis.feature.Feature;
+import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 
 import com.google.common.base.Charsets;
@@ -173,9 +180,15 @@ public class CLIContext {
         try {
             final WorkingTree workTree = geogig.getRepository().workingTree();
             workTree.delete(points1.getType().getName().getLocalPart());
-            Name name = points1_FTmodified.getType().getName();
+            FeatureType newType = points1_FTmodified.getType();
+            Name name = newType.getName();
             String parentPath = name.getLocalPart();
-            workTree.insert(parentPath, points1_FTmodified);
+            RevFeatureType rft = RevFeatureTypeBuilder.build(newType);
+            geogig.getRepository().objectDatabase().put(rft);
+            String path = NodeRef.appendChild(parentPath,
+                    points1_FTmodified.getIdentifier().getID());
+            FeatureInfo fi = FeatureInfo.insert(RevFeatureBuilder.build(points1_FTmodified), rft.getId(), path);
+            workTree.insert(fi);
         } finally {
             geogig.close();
         }
@@ -209,14 +222,27 @@ public class CLIContext {
         GeoGIG geogig = geogigCLI.newGeoGIG(Hints.readWrite());
         Preconditions.checkNotNull(geogig);
         List<ObjectId> ids = Lists.newArrayListWithCapacity(features.length);
+        Map<FeatureType, RevFeatureType> types = new HashMap<>();
+        for (Feature f : features) {
+            FeatureType type = f.getType();
+            RevFeatureType rft = types.get(type);
+            if (rft == null) {
+                rft = RevFeatureTypeBuilder.build(type);
+                geogig.getRepository().objectDatabase().put(rft);
+                types.put(type, rft);
+            }
+        }
         try {
             Repository repository = geogig.getRepository();
             final WorkingTree workTree = repository.workingTree();
             for (Feature f : features) {
-                Name name = f.getType().getName();
-                String parentPath = name.getLocalPart();
-                Node ref = workTree.insert(parentPath, f);
-                ObjectId objectId = ref.getObjectId();
+                FeatureType ft = f.getType();
+                RevFeatureType rft = types.get(ft);
+                String parentPath = ft.getName().getLocalPart();
+                String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
+                FeatureInfo fi = FeatureInfo.insert(RevFeatureBuilder.build(f), rft.getId(), path);
+                workTree.insert(fi);
+                ObjectId objectId = fi.getFeature().getId();
                 ids.add(objectId);
             }
         } finally {

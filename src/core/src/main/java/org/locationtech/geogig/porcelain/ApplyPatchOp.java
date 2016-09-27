@@ -19,6 +19,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.RevObjectParse;
@@ -195,8 +196,10 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
 
             }
 
-            SimpleFeature featureToInsert = featureBuilder.buildFeature(NodeRef.nodeFromPath(path));
-            workTree.insert(NodeRef.parentPath(path), featureToInsert);
+            SimpleFeature f = featureBuilder.buildFeature(NodeRef.nodeFromPath(path));
+            RevFeature featureToInsert = RevFeatureBuilder.build(f);
+            FeatureInfo featureInfo = FeatureInfo.insert(featureToInsert, newRevFeatureType.getId(), path);
+            workTree.insert(featureInfo);
 
         }
         ImmutableList<FeatureTypeDiff> alteredTrees = patch.getAlteredTrees();

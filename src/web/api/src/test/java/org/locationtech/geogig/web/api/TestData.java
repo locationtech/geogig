@@ -12,8 +12,10 @@ package org.locationtech.geogig.web.api;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.memory.MemoryDataStore;
@@ -24,6 +26,9 @@ import org.locationtech.geogig.geotools.test.storage.MemoryDataStoreWithProvided
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.LsTreeOp;
@@ -38,6 +43,7 @@ import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.NodeRef;
@@ -45,6 +51,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -289,9 +296,19 @@ public class TestData {
 
     public TestData insert(SimpleFeature... features) {
         WorkingTree workingTree = getContext().workingTree();
+        Map<FeatureType, RevFeatureType> types = new HashMap<>();
         for (SimpleFeature sf : features) {
-            String parentTreePath = sf.getType().getName().getLocalPart();
-            workingTree.insert(parentTreePath, sf);
+            SimpleFeatureType ft = sf.getType();
+            RevFeatureType rft = types.get(ft);
+            if (null == rft) {
+                rft = RevFeatureTypeBuilder.build(ft);
+                types.put(ft, rft);
+                getContext().objectDatabase().put(rft);
+            }
+            String parentTreePath = ft.getName().getLocalPart();
+            String path = NodeRef.appendChild(parentTreePath, sf.getID());
+            FeatureInfo fi = FeatureInfo.insert(RevFeatureBuilder.build(sf), rft.getId(), path);
+            workingTree.insert(fi);
         }
         return this;
     }

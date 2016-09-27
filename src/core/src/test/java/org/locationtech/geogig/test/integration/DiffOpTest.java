@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
-import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -26,8 +25,8 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -508,8 +507,7 @@ public class DiffOpTest extends RepositoryTestCase {
         WorkingTree workTree = repo.workingTree();
         Name name = lines1.getType().getName();
         String parentPath = name.getLocalPart();
-        @SuppressWarnings("unused")
-        Node ref = workTree.insert(parentPath, lines1B);
+        workTree.insert(featureInfo(parentPath, lines1B));
         geogig.command(AddOp.class).call();
         RevCommit commit2 = geogig.command(CommitOp.class).setAll(true).call();
 

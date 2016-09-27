@@ -11,6 +11,7 @@ package org.locationtech.geogig.repository;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -93,6 +94,29 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
         };
     }
 
+    public static <T, I extends Iterator<T>> AutoCloseableIterator<T> fromIterator(
+            I source, Consumer<I> closeAction) {
+        
+        return new AutoCloseableIterator<T>() {
+
+            @Override
+            public boolean hasNext() {
+                return source.hasNext();
+            }
+
+            @Override
+            public T next() {
+                return source.next();
+            }
+
+            @Override
+            public void close() {
+                closeAction.accept(source);
+            }
+
+        };
+    }
+
     /**
      * Transforms each element in the source iterator with the provided function.
      * 
@@ -119,7 +143,7 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
             public void close() {
                 source.close();
             }
-            
+
         };
     }
 
@@ -204,5 +228,3 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
         };
     }
 }
-
-

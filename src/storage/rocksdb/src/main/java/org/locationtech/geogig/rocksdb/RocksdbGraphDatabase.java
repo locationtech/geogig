@@ -204,7 +204,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         }
         node.mappedTo = original;
         try {
-            putNodeInternal(null, mapped, node);
+            putNodeInternal(mapped, node);
         } catch (Exception e) {
             throw propagate(e);
         }
@@ -250,7 +250,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         NodeData node = getNodeInternal(commitId, true);
         node.properties.put(propertyName, propertyValue);
         try {
-            putNodeInternal(null, commitId, node);
+            putNodeInternal(commitId, node);
         } catch (Exception e) {
             throw propagate(e);
         }
@@ -299,18 +299,13 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         return node;
     }
 
-    private void putNodeInternal(final @Nullable WriteOptions writeOpts, final ObjectId id,
-            final NodeData node) throws IOException {
+    private void putNodeInternal(final ObjectId id, final NodeData node) throws IOException {
 
         byte[] key = id.getRawValue();
         byte[] data = BINDING.objectToEntry(node);
 
         try {
-            if (writeOpts == null) {
-                db.put(key, data);
-            } else {
-                db.put(writeOpts, key, data);
-            }
+            db.put(key, data);
         } catch (RocksDBException e) {
             propagate(e);
         }

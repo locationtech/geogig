@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -144,7 +143,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
     protected InputStream getRawInternal(ObjectId id, boolean failIfNotFound)
             throws IllegalArgumentException {
 
-        byte[] bytes = getRawInternal(id.getRawValue(), null, null);
+        byte[] bytes = getRawInternal(id.getRawValue());
 
         if (bytes != null) {
             return new ByteArrayInputStream(bytes);
@@ -156,30 +155,12 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
     }
 
     @Nullable
-    private byte[] getRawInternal(byte[] key, @Nullable byte[] outBuff,
-            @Nullable AtomicInteger outSize) throws IllegalArgumentException {
-
+    private byte[] getRawInternal(byte[] key) throws IllegalArgumentException {
         try {
-            if (outBuff == null) {
-                outBuff = db.get(key);
-            } else {
-                final int size = db.get(key, outBuff);
-                if (size == RocksDB.NOT_FOUND) {
-                    outBuff = null;
-                } else if (size > outBuff.length) {
-                    int newBuffSize = 1024 * (1 + (size / 1024));
-                    outBuff = new byte[newBuffSize];
-                    db.get(key, outBuff);
-                }
-                if (outSize != null) {
-                    outSize.set(size);
-                }
-            }
+            return db.get(key);
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }
-
-        return outBuff;
     }
 
     @Override

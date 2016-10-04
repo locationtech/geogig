@@ -9,24 +9,41 @@
  */
 package org.locationtech.geogig.rocksdb;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 
+import org.junit.Test;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabaseTest;
+import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
 public class RocksdbGraphDatabaseConformanceTest extends GraphDatabaseTest {
 
+    private ConfigDatabase configDB = null;
+
     @Override
     protected RocksdbGraphDatabase createDatabase(Platform platform) throws Exception {
-
-        ConfigDatabase configdb = new IniFileConfigDatabase(platform);
+        configDB = new IniFileConfigDatabase(platform);
         File dbdir = new File(platform.getUserHome(), "graph.rocksdb");
         boolean readOnly = false;
-        RocksdbGraphDatabase db = new RocksdbGraphDatabase(configdb, dbdir, readOnly);
+        RocksdbGraphDatabase db = new RocksdbGraphDatabase(configDB, dbdir, readOnly);
 
         return db;
+    }
+
+    @Test
+    public void testConfigure() throws Exception {
+        database.configure();
+        assertEquals(RocksdbStorageProvider.VERSION,
+                configDB.get(RocksdbStorageProvider.FORMAT_NAME + ".version").get());
+        assertEquals(RocksdbStorageProvider.FORMAT_NAME,
+                configDB.get("storage." + StorageType.GRAPH.key).get());
+
+        database.checkConfig();
+
     }
 
 }

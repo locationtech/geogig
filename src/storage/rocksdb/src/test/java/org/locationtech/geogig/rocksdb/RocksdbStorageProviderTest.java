@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.rocksdb;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -27,6 +29,24 @@ public class RocksdbStorageProviderTest {
             }
         }
         assertTrue("RocksdbStorageProvider not found using SPI", found);
+    }
+
+    @Test
+    public void testAccessors() {
+        Iterable<StorageProvider> providers = StorageProvider.findProviders();
+        RocksdbStorageProvider provider = null;
+        for (StorageProvider p : providers) {
+            if (p instanceof RocksdbStorageProvider) {
+                provider = (RocksdbStorageProvider) p;
+            }
+        }
+        assertNotNull(provider);
+        assertEquals("rocksdb", provider.getName());
+        assertEquals("1", provider.getVersion());
+        assertEquals("RocksDB backend store", provider.getDescription());
+        assertEquals(RocksdbStorageProvider.OBJECTS, provider.getObjectDatabaseFormat());
+        assertEquals(RocksdbStorageProvider.REFS, provider.getRefsDatabaseFormat());
+        assertEquals(RocksdbStorageProvider.GRAPH, provider.getGraphDatabaseFormat());
     }
 
 }

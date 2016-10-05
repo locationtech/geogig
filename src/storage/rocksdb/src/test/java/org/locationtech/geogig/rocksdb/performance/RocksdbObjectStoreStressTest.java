@@ -10,7 +10,7 @@
 package org.locationtech.geogig.rocksdb.performance;
 
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.rocksdb.RocksdbObjectStore;
+import org.locationtech.geogig.rocksdb.RocksdbObjectDatabase;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.performance.AbstractObjectStoreStressTest;
@@ -19,9 +19,8 @@ public class RocksdbObjectStoreStressTest extends AbstractObjectStoreStressTest 
 
     @Override
     protected ObjectStore createDb(Platform platform, ConfigDatabase config) {
-        RocksdbObjectStore store = new RocksdbObjectStore(platform, null);
-        store.open();
-        return store;
+        RocksdbObjectDatabase database = new RocksdbObjectDatabase(platform, null, config);
+        return database;
     }
 
 }

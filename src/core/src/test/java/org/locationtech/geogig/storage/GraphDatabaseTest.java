@@ -16,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.After;
@@ -105,7 +106,6 @@ public abstract class GraphDatabaseTest {
         ObjectId commitId = RevObjectTestSupport.hashString("commitId");
         ObjectId mappedId = RevObjectTestSupport.hashString("mapped");
         database.put(commitId, new ImmutableList.Builder<ObjectId>().build());
-        database.put(mappedId, new ImmutableList.Builder<ObjectId>().build());
         database.map(mappedId, commitId);
         ObjectId mapping = database.getMapping(mappedId);
         assertEquals(commitId + " : " + mappedId + " : " + mapping, commitId, mapping);
@@ -262,5 +262,97 @@ public abstract class GraphDatabaseTest {
         assertFalse(database.exists(rootId));
         assertFalse(database.exists(commit1));
         assertFalse(database.exists(commit2));
+    }
+
+    @Test
+    public void testGetChildren() {
+        ObjectId rootId = RevObjectTestSupport.hashString("root");
+        database.put(rootId, ImmutableList.of());
+        ObjectId commit1 = RevObjectTestSupport.hashString("c1");
+        database.put(commit1, ImmutableList.of(rootId));
+        ObjectId commit2 = RevObjectTestSupport.hashString("c2");
+        database.put(commit2, ImmutableList.of(commit1, rootId));
+
+        ImmutableList<ObjectId> children = database.getChildren(rootId);
+        assertEquals(2, children.size());
+        assertTrue(children.contains(commit1));
+        assertTrue(children.contains(commit2));
+
+        children = database.getChildren(commit1);
+        assertEquals(1, children.size());
+        assertTrue(children.contains(commit2));
+
+        children = database.getChildren(commit2);
+        assertEquals(0, children.size());
+
+        children = database.getChildren(RevObjectTestSupport.hashString("nonexistent"));
+        assertEquals(0, children.size());
+    }
+
+    @Test
+    public void testGetParents() {
+        ObjectId rootId = RevObjectTestSupport.hashString("root");
+        database.put(rootId, ImmutableList.of());
+        ObjectId commit1 = RevObjectTestSupport.hashString("c1");
+        database.put(commit1, ImmutableList.of(rootId));
+        ObjectId commit2 = RevObjectTestSupport.hashString("c2");
+        database.put(commit2, ImmutableList.of(commit1, rootId));
+
+        ImmutableList<ObjectId> parents = database.getParents(rootId);
+        assertEquals(0, parents.size());
+
+        parents = database.getParents(commit1);
+        assertEquals(1, parents.size());
+        assertTrue(parents.contains(rootId));
+
+        parents = database.getParents(commit2);
+        assertEquals(2, parents.size());
+        assertTrue(parents.contains(rootId));
+        assertTrue(parents.contains(commit1));
+
+        parents = database.getParents(RevObjectTestSupport.hashString("nonexistent"));
+        assertEquals(0, parents.size());
+    }
+
+    @Test
+    public void testUpdateNode() {
+        ObjectId nodeId = RevObjectTestSupport.hashString("node");
+        ObjectId nodeParent = RevObjectTestSupport.hashString("nodeParent");
+        boolean updated = database.put(nodeId, ImmutableList.of());
+        assertTrue(updated);
+
+        GraphNode node = database.getNode(nodeId);
+        assertFalse(node.getEdges(Direction.BOTH).hasNext());
+
+        updated = database.put(nodeId, ImmutableList.of(nodeParent));
+        assertTrue(updated);
+        node = database.getNode(nodeId);
+        Iterator<GraphEdge> edges = node.getEdges(Direction.BOTH);
+        assertTrue(edges.hasNext());
+        GraphEdge edge = edges.next();
+        assertEquals(nodeId, edge.getFromNode().getIdentifier());
+        assertEquals(nodeParent, edge.getToNode().getIdentifier());
+
+        updated = database.put(nodeId, ImmutableList.of(nodeParent));
+        assertFalse(updated);
+    }
+
+    @Test
+    public void testSparseNode() {
+        ObjectId nodeId = RevObjectTestSupport.hashString("node");
+        database.put(nodeId, ImmutableList.of());
+
+        GraphNode node = database.getNode(nodeId);
+        assertFalse(node.isSparse());
+
+        database.setProperty(nodeId, GraphDatabase.SPARSE_FLAG, "true");
+
+        node = database.getNode(nodeId);
+        assertTrue(node.isSparse());
+
+        database.setProperty(nodeId, GraphDatabase.SPARSE_FLAG, "false");
+
+        node = database.getNode(nodeId);
+        assertFalse(node.isSparse());
     }
 }

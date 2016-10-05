@@ -517,6 +517,12 @@ public abstract class ObjectStoreConformanceTest {
 
         HashSet<ObjectId> matches;
 
+        matches = Sets.newHashSet(db.lookUp("00000000"));
+        assertEquals(Sets.newHashSet(), matches);
+
+        matches = Sets.newHashSet(db.lookUp("ffffffff"));
+        assertEquals(Sets.newHashSet(), matches);
+
         matches = Sets.newHashSet(db.lookUp("01234567"));
         assertEquals(Sets.newHashSet(id1, id2, id3, id4, id5), matches);
 

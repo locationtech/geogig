@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.rocksdb;
 
+import java.io.File;
+
 import org.locationtech.geogig.storage.ConnectionManager;
 import org.rocksdb.CompactionStyle;
 import org.rocksdb.CompressionType;
@@ -25,6 +27,16 @@ class RocksConnectionManager extends ConnectionManager<DBOptions, DBHandle> {
     private static final Logger LOG = LoggerFactory.getLogger(RocksConnectionManager.class);
 
     static final RocksConnectionManager INSTANCE = new RocksConnectionManager();
+    
+    /**
+     * Determine if a database exists at the given path.
+     * 
+     * @param path the path to the database
+     * @return {@code true} if the database existed, {@code false} otherwise
+     */
+    public boolean exists(String path) {
+        return new File(path).exists();
+    }
 
     @Override
     protected DBHandle connect(DBOptions dbopts) {
@@ -41,7 +53,7 @@ class RocksConnectionManager extends ConnectionManager<DBOptions, DBHandle> {
                 .setAllowOsBuffer(true)//
                 .setBytesPerSync(64 * 1024 * 1024)//
                 .setCompactionStyle(CompactionStyle.LEVEL)
-                .setCompressionType(CompressionType.SNAPPY_COMPRESSION);
+                .setCompressionType(CompressionType.NO_COMPRESSION);
 
         RocksDB db;
         final String path = dbopts.getDbPath();

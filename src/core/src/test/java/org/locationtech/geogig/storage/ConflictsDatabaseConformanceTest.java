@@ -43,13 +43,14 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
     @Rule
     public ExpectedException expected = ExpectedException.none();
 
-    private T conflicts;
+    protected T conflicts;
 
     protected final Conflict c1 = new Conflict("Rivers/1", NULL, RevObjectTestSupport.hashString("ours"),
             RevObjectTestSupport.hashString("theirs"));
 
-    protected final Conflict c2 = new Conflict("Rivers/2", RevObjectTestSupport.hashString("ancestor"),
-            RevObjectTestSupport.hashString("ours2"), RevObjectTestSupport.hashString("theirs2"));
+    protected final Conflict c2 = new Conflict("Rivers/2",
+            RevObjectTestSupport.hashString("ancestor"), NULL,
+            RevObjectTestSupport.hashString("theirs2"));
 
     protected final Conflict c3 = new Conflict("Rivers/3", RevObjectTestSupport.hashString("ancestor"),
             RevObjectTestSupport.hashString("ours3"), RevObjectTestSupport.hashString("theirs3"));
@@ -57,8 +58,9 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
     protected final Conflict b1 = new Conflict("buildings/1", NULL, RevObjectTestSupport.hashString("ours"),
             RevObjectTestSupport.hashString("theirs"));
 
-    protected final Conflict b2 = new Conflict("buildings/2", RevObjectTestSupport.hashString("ancestor"),
-            RevObjectTestSupport.hashString("ours2"), RevObjectTestSupport.hashString("theirs2"));
+    protected final Conflict b2 = new Conflict("buildings/2",
+            RevObjectTestSupport.hashString("ancestor"), RevObjectTestSupport.hashString("ours2"),
+            NULL);
 
     protected final Conflict b3 = new Conflict("buildings/3", RevObjectTestSupport.hashString("ancestor"),
             RevObjectTestSupport.hashString("ours3"), RevObjectTestSupport.hashString("theirs3"));
@@ -135,11 +137,14 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
     @Test
     public void testAddConflicts() {
         final String ns = null;
-        Iterable<Conflict> list = ImmutableList.of(c1, c2, c3);
+        Iterable<Conflict> list = ImmutableList.of(c1, c2, c3, b1, b2, b3);
         conflicts.addConflicts(ns, list);
         assertEquals(c1, conflicts.getConflict(ns, c1.getPath()).get());
         assertEquals(c2, conflicts.getConflict(ns, c2.getPath()).get());
         assertEquals(c3, conflicts.getConflict(ns, c3.getPath()).get());
+        assertEquals(b1, conflicts.getConflict(ns, b1.getPath()).get());
+        assertEquals(b2, conflicts.getConflict(ns, b2.getPath()).get());
+        assertEquals(b3, conflicts.getConflict(ns, b3.getPath()).get());
     }
 
     @Test

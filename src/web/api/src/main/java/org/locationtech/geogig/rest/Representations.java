@@ -19,7 +19,7 @@ public class Representations {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static <T> AsyncCommandRepresentation<T> newRepresentation(AsyncCommand<T> cmd,
-            MediaType mediaType, String baseURL) {
+            MediaType mediaType, String baseURL, boolean cleanup) {
 
         ServiceLoader<CommandRepresentationFactory> serviceLoader;
         serviceLoader = ServiceLoader.load(CommandRepresentationFactory.class);
@@ -29,11 +29,11 @@ public class Representations {
             factory = it.next();
             if (factory.supports(cmd.getCommandClass())) {
                 AsyncCommandRepresentation<T> rep = factory.newRepresentation(cmd, mediaType,
-                        baseURL);
+                        baseURL, cleanup);
                 return rep;
             }
         }
 
-        return new SimpleAsyncCommandRepresentation<T>(mediaType, cmd, baseURL);
+        return new SimpleAsyncCommandRepresentation<T>(mediaType, cmd, baseURL, cleanup);
     }
 }

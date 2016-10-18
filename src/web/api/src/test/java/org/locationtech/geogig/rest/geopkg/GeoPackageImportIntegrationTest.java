@@ -123,6 +123,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         Assert.assertNotNull(result.getStatus());
         Status resultStatus = waitForTask(result);
         Assert.assertEquals(Status.FAILED, resultStatus);
+        result.close();
     }
 
     @Test
@@ -141,6 +142,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         Assert.assertNotNull(result.getStatus());
         Status resultStatus = waitForTask(result);
         Assert.assertEquals(Status.FAILED, resultStatus);
+        result.close();
     }
 
     @Test
@@ -173,6 +175,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         verifyDbFileDeleted(dbFile);
         // verify data was imported
         verifyImport(Sets.newHashSet("Lines"));
+        result.close();
     }
 
     @Test
@@ -204,6 +207,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         verifyDbFileDeleted(dbFile);
         // verify data was imported
         verifyImport(Sets.newHashSet("newLines"));
+        result.close();
     }
 
     @Test
@@ -244,6 +248,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         // verify data was imported on branch1
         testData.checkout("branch1");
         verifyImport(Sets.newHashSet("Lines"));
+        result.close();
     }
 
     @Test
@@ -298,6 +303,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         verifyDbFileDeleted(dbFileCopy);
         // verify data was imported
         verifyImport(Sets.newHashSet("newLines", "newLines2"));
+        result.close();
     }
 
     @Test
@@ -332,6 +338,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         repo.command(TransactionEnd.class).setTransaction(transaction).call();
         // verify data was imported
         verifyImport(Sets.newHashSet("Points", "Lines", "Polygons"));
+        result.close();
     }
 
     @Test
@@ -420,6 +427,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         assertEquals(2, nodeList.size());
         assertTrue(nodeList.contains("Point.1"));
         assertTrue(nodeList.contains("Point.2"));
+        importResult.close();
     }
 
     @Test
@@ -515,6 +523,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         assertEquals(2, nodeList.size());
         assertTrue(nodeList.contains("Point.1"));
         assertTrue(nodeList.contains("Point.2"));
+        importResult.close();
     }
 
     @Test
@@ -585,6 +594,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         JsonObject conflictedFeature = featureArray.getJsonObject(0);
         assertEquals("CONFLICT", conflictedFeature.getString("change"));
         assertEquals("Points/Point.1", conflictedFeature.getString("id"));
+        result.close();
     }
 
     private Status waitForTask(AsyncContext.AsyncCommand<?> result) {

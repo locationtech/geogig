@@ -16,8 +16,9 @@ import org.locationtech.geogig.web.api.StreamingWriter;
 
 public class SimpleAsyncCommandRepresentation<T> extends AsyncCommandRepresentation<T> {
 
-    public SimpleAsyncCommandRepresentation(MediaType mediaType, AsyncCommand<T> c, String baseURL) {
-        super(mediaType, c, baseURL);
+    public SimpleAsyncCommandRepresentation(MediaType mediaType, AsyncCommand<T> c, String baseURL,
+            boolean cleanup) {
+        super(mediaType, c, baseURL, cleanup);
     }
 
     @Override

@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.geotools.data.DataStore;
@@ -31,12 +30,14 @@ import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.geotools.DataStoreImportContextService;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
+import org.locationtech.geogig.rocksdb.RocksdbMap;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
@@ -150,10 +151,10 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
 
         @Override
         public AsyncCommandRepresentation<GeopkgImportResult> newRepresentation(
-                AsyncCommand<GeopkgImportResult> cmd,
-                MediaType mediaType, String baseURL) {
+                AsyncCommand<GeopkgImportResult> cmd, MediaType mediaType, String baseURL,
+                boolean cleanup) {
 
-            return new GeopkgAuditImportRepresentation(mediaType, cmd, baseURL);
+            return new GeopkgAuditImportRepresentation(mediaType, cmd, baseURL, cleanup);
         }
     }
 
@@ -161,9 +162,8 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             extends AsyncCommandRepresentation<GeopkgImportResult> {
 
         public GeopkgAuditImportRepresentation(MediaType mediaType,
-                AsyncCommand<GeopkgImportResult> cmd,
-                String baseURL) {
-            super(mediaType, cmd, baseURL);
+                AsyncCommand<GeopkgImportResult> cmd, String baseURL, boolean cleanup) {
+            super(mediaType, cmd, baseURL, cleanup);
         }
 
         @Override
@@ -208,18 +208,22 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             out.writeCommit(result.importCommit, "importCommit", null, null, null);
             w.writeStartElement("NewFeatures");
             w.writeStartArray("type");
-            for (Entry<String, Map<String, String>> layerMappings : result.newMappings.entrySet()) {
+            for (Entry<String, RocksdbMap<String, String>> layerMappings : result.newMappings
+                    .entrySet()) {
                 w.writeStartArrayElement("type");
                 w.writeAttribute("name", layerMappings.getKey());
                 w.writeStartArray("id");
-                for (Entry<String, String> mapping : layerMappings.getValue().entrySet()) {
-                    w.writeStartArrayElement("id");
-                    w.writeAttribute("provided", mapping.getKey());
-                    w.writeAttribute("assigned", mapping.getValue());
-                    w.writeEndArrayElement();
+                try (AutoCloseableIterator<Entry<String, String>> mappingIterator = layerMappings
+                        .getValue().entryIterator()) {
+                    while (mappingIterator.hasNext()) {
+                        Entry<String, String> mapping = mappingIterator.next();
+                        w.writeStartArrayElement("id");
+                        w.writeAttribute("provided", mapping.getKey());
+                        w.writeAttribute("assigned", mapping.getValue());
+                        w.writeEndArrayElement();
+                    }
                 }
-                w.writeEndArray();
-                w.writeEndArrayElement();
+                w.writeEndElement();
             }
             w.writeEndArray();
             w.writeEndElement();

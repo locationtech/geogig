@@ -61,6 +61,7 @@ Feature: Import GeoPackage
           |    Point.1   |   Line.1   |    Polygon.1    | 
           |    Point.2   |   Line.2   |    Polygon.2    | 
           |    Point.3   |   Line.3   |    Polygon.3    | 
+      And I prune the task @taskId
           
   Scenario: Import an interchange geopackage with fast-forward merge
     Given There is a default multirepo server
@@ -86,6 +87,7 @@ Feature: Import GeoPackage
           |    Point.2   |   Line.2   |    Polygon.2    | 
           |    Point.3   |   Line.3   |    Polygon.3    | 
           |    ?         |            |                 |
+      And I prune the task @taskId
       
   Scenario: Import an interchange geopackage with non-conflicting merge
     Given There is a default multirepo server
@@ -111,6 +113,7 @@ Feature: Import GeoPackage
           |    Point.2   |   Line.1   |    Polygon.1    | 
           |    Point.3   |   Line.2   |    Polygon.2    | 
           |    ?         |   Line.3   |    Polygon.3    | 
+      And I prune the task @taskId
       
   Scenario: Import an interchange geopackage with conflicting merge
     Given There is a default multirepo server
@@ -132,6 +135,7 @@ Feature: Import GeoPackage
       And the xml response should contain "/task/result/import/importCommit/tree"
       And the xpath "/task/result/import/importCommit/message" equals "Imported Geopackage"
       And the xpath "/task/result/Merge/conflicts" equals "1"
+      And I prune the task @taskId
 
 
 #<task><id>1</id><status>FINISHED</status><transactionId>c4da5a9b-5b09-4cb6-9055-e340d02b57ac</transactionId><description>Importing GeoPackage database file.</description><atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="/tasks/1.xml" type="application/xml"/><result><RevCommit><id>a1cde458d0658e096998b740b2eaa7b10796e624</id><treeId>37987a1d4afbf60be906d55576392965654d5d9c</treeId></RevCommit></result></task>

@@ -516,6 +516,17 @@ public class WebAPICucumberHooks {
         return status;
     }
 
+    @Then("^I prune the task (@[^\"]*)$")
+    public void prune_task(String taskIdVariable) throws Throwable {
+        checkNotNull(taskIdVariable);
+
+        final Integer taskId = Integer.valueOf(context.getVariable(taskIdVariable));
+        String url = String.format("/tasks/%d?prune=true", taskId);
+        context.call(Method.GET, url);
+        context.getLastResponseText();
+
+    }
+
     ////////////////////// GeoPackage step definitions //////////////////////////
 
     @Then("^the result is a valid GeoPackage file$")

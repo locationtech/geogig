@@ -200,6 +200,29 @@ public class AsyncContext {
             return description;
         }
 
+        /**
+         * Clean up any resources used by the command results, if applicable.
+         */
+        public void close() {
+            if (future.isDone()) {
+                try {
+                    T result = future.get();
+                    if (result instanceof AutoCloseable) {
+                        ((AutoCloseable) result).close();
+                    }
+                } catch (Exception e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof AutoCloseable) {
+                        try {
+                            ((AutoCloseable) cause).close();
+                        } catch (Exception ex) {
+                            // Do nothing
+                        }
+                    }
+                }
+            }
+        }
+
         @SuppressWarnings("unchecked")
         public Class<? extends AbstractGeoGigOp<?>> getCommandClass() {
             return (Class<? extends AbstractGeoGigOp<?>>) command.commandClass;

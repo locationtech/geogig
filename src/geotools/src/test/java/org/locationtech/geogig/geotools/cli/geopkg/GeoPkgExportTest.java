@@ -201,9 +201,9 @@ public class GeoPkgExportTest extends RepositoryTestCase {
             assertFeatures(store, pointsType.getTypeName(), points1, points2, points3);
 
             Transaction gttx = new DefaultTransaction();
-            try (Connection connection = store.getConnection(gttx)) {
+            try (Connection connection = store.getConnection(gttx);
+                    GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
                 // Verify audit table
-                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
                 List<AuditTable> auditTables = metadata.getAuditTables();
                 assertEquals(1, auditTables.size());
                 AuditTable table = auditTables.get(0);
@@ -227,9 +227,8 @@ public class GeoPkgExportTest extends RepositoryTestCase {
 
     private void assertFeatures(DataStore store, String typeName, Feature... expected)
             throws Exception {
-        try (Connection connection = ((JDBCDataStore) store)
-                .getConnection(Transaction.AUTO_COMMIT)) {
-            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+        try (Connection connection = ((JDBCDataStore) store).getConnection(Transaction.AUTO_COMMIT);
+                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
             Map<String, String> mappings = metadata.getFidMappings(typeName);
 
             SimpleFeatureSource source = store.getFeatureSource(typeName);

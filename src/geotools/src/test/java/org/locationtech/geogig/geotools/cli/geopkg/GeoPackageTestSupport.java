@@ -148,8 +148,8 @@ public class GeoPackageTestSupport {
             throws IOException, SQLException {
 
         JDBCDataStore gpkgStore = (JDBCDataStore) gpkg;
-        try (Connection cx = gpkgStore.getConnection(Transaction.AUTO_COMMIT)) {
-            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(cx);
+        try (Connection cx = gpkgStore.getConnection(Transaction.AUTO_COMMIT);
+                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(cx)) {
             Transaction gttx = new DefaultTransaction();
             try {
                 gpkg.createSchema(source.getSchema());

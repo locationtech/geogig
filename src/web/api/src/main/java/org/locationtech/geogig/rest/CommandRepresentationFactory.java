@@ -23,6 +23,6 @@ public interface CommandRepresentationFactory<R> {
 
     public boolean supports(Class<? extends AbstractGeoGigOp<?>> cmdClass);
 
-    public AsyncCommandRepresentation<R> newRepresentation(AsyncCommand<R> cmd,
-            MediaType mediaType, String baseURL);
+    public AsyncCommandRepresentation<R> newRepresentation(AsyncCommand<R> cmd, MediaType mediaType,
+            String baseURL, boolean cleanup);
 }

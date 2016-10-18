@@ -29,9 +29,9 @@ import org.locationtech.geogig.web.api.StreamingWriter;
  */
 public class ImportRepresentation extends AsyncCommandRepresentation<RevTree> {
 
-    public ImportRepresentation(MediaType mediaType, AsyncCommand<RevTree> cmd,
-            String baseURL) {
-        super(mediaType, cmd, baseURL);
+    public ImportRepresentation(MediaType mediaType, AsyncCommand<RevTree> cmd, String baseURL,
+            boolean cleanup) {
+        super(mediaType, cmd, baseURL, cleanup);
     }
 
     @Override
@@ -53,9 +53,9 @@ public class ImportRepresentation extends AsyncCommandRepresentation<RevTree> {
 
         @Override
         public AsyncCommandRepresentation<RevTree> newRepresentation(AsyncCommand<RevTree> cmd,
-                MediaType mediaType, String baseURL) {
+                MediaType mediaType, String baseURL, boolean cleanup) {
 
-            return new ImportRepresentation(mediaType, cmd, baseURL);
+            return new ImportRepresentation(mediaType, cmd, baseURL, cleanup);
         }
 
     }

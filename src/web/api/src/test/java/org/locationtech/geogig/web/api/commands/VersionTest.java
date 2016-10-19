@@ -11,7 +11,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
@@ -40,7 +41,7 @@ public class VersionTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of();
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertNotNull(response.getString("ProjectVersion"));
         assertNotNull(response.getString("BuildTime"));

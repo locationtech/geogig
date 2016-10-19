@@ -27,8 +27,6 @@ import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.feature.SchemaException;
@@ -77,10 +75,10 @@ import com.vividsolutions.jts.io.ParseException;
  * A helper class to set repositories to a desired state to aid in integration testing.
  * <p>
  * The test data is as follows:
- * 
+ *
  * <pre>
  * <code>
- * 
+ *
  *                              ______ (11, 11)
  *                              |    /|
  *                            Line.2/ |
@@ -88,8 +86,8 @@ import com.vividsolutions.jts.io.ParseException;
  *                              | /   |
  *                              |/____| Polygon.2
  *                           (9, 9)
- *        
- * 
+ *
+ *
  *                 ______ (1, 1)
  *                 |    /|
  *               Line.1/ |
@@ -97,9 +95,9 @@ import com.vividsolutions.jts.io.ParseException;
  *                 | /   |
  *                 |/____| Polygon.1
  *              (-1, -1)
- *        
- *        
- * 
+ *
+ *
+ *
  *     ______ (-9, -9)
  *     |    /|
  *   Line.3/ |
@@ -213,7 +211,7 @@ public class TestData {
      * <p>
      * As long as the repository given to this class' constructor is empty, creates the following
      * repository layout:
-     * 
+     *
      * <pre>
      * <code>
      *             (adds Points/2, Lines/2, Polygons/2)
@@ -223,11 +221,11 @@ public class TestData {
      *  master o------------------------------------------o-----------------o
      *          \  (initial commit has                                     / no ff merge
      *           \     Points/1, Lines/1, Polygons/1)                     /
-     *            \                                                      /  
+     *            \                                                      /
      *             \                                                    /
      *     branch2  o--------------------------------------------------
      *             (adds Points/3, Lines/3, Polygons/3)
-     *        
+     *
      * </code>
      * </pre>
      */
@@ -373,16 +371,6 @@ public class TestData {
         return jsonReader.readArray();
     }
 
-    // Temporary helper function until jettison classes are replaced
-    public static boolean jsonEquals(JsonArray expected, JSONArray actual, boolean strict) {
-        return compare(expected, toJSONArray(actual.toString()), strict);
-    }
-
-    // Temporary helper function until jettison classes are replaced
-    public static boolean jsonEquals(JsonObject expected, JSONObject actual, boolean strict) {
-        return jsonEquals(expected, toJSON(actual.toString()), strict);
-    }
-
     public static boolean jsonEquals(JsonArray expected, JsonArray actual, boolean strict) {
         return compare(expected, actual, strict);
     }
@@ -391,7 +379,7 @@ public class TestData {
      * Compare two JSON objects. Extra fields are allowed on the actual object if strict is set to
      * {@code false}. Additionally, array ordering does not matter when strict is set to
      * {@code false}.
-     * 
+     *
      * @param expected expected object
      * @param actual actual object
      * @param strict whether or not to perform a strict comparison
@@ -478,7 +466,7 @@ public class TestData {
 
         return false;
     }
-    
+
     private static Double toDouble(Object input) {
         return ((JsonNumber) input).doubleValue();
     }

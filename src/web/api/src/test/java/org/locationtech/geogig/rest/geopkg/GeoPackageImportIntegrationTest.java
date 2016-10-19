@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.codehaus.jettison.json.JSONObject;
 import org.geotools.data.DataStore;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
@@ -577,11 +577,12 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         Status resultStatus = waitForTask(result);
         Assert.assertEquals(Status.FAILED, resultStatus);
 
-        JSONObject response = getJSONResponse();
-        JSONObject task = response.getJSONObject("task");
-        JSONObject merge = task.getJSONObject("result").getJSONObject("Merge");
+        JsonObject response = getJSONResponse();
+        JsonObject task = response.getJsonObject("task");
+        JsonObject merge = task.getJsonObject("result").getJsonObject("Merge");
         assertEquals(1, merge.getInt("conflicts"));
-        JSONObject conflictedFeature = merge.getJSONObject("Feature");
+        JsonArray featureArray = merge.getJsonArray("Feature");
+        JsonObject conflictedFeature = featureArray.getJsonObject(0);
         assertEquals("CONFLICT", conflictedFeature.getString("change"));
         assertEquals("Points/Point.1", conflictedFeature.getString("id"));
     }
@@ -619,14 +620,14 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
     }
 
     private AsyncContext.AsyncCommand<?> run(Import op) throws InterruptedException,
-            ExecutionException, org.codehaus.jettison.json.JSONException {
+            ExecutionException {
         return run(op, "1");
     }
 
     private AsyncContext.AsyncCommand<?> run(Import op, String taskId)
             throws InterruptedException, ExecutionException {
         op.run(context);
-        JSONObject response = getJSONResponse();
+        JsonObject response = getJSONResponse();
         JsonObject expected = TestData.toJSON(String.format(
                 "{'task':{'id':%s,'description':'Importing GeoPackage database file.','href':'/geogig/tasks/%s.json'}}",
                 taskId, taskId));

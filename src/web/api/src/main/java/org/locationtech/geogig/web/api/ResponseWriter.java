@@ -6,6 +6,7 @@
  *
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
+ * Erik Merkle (Boundless) - Jettison to JSR-353 conversion
  */
 package org.locationtech.geogig.web.api;
 
@@ -18,10 +19,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.codehaus.jettison.AbstractXMLStreamWriter;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.metadata.iso.citation.Citations;
 import org.geotools.referencing.CRS;
@@ -60,7 +57,6 @@ import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Remote;
-import org.locationtech.geogig.rest.repository.RESTUtils;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.locationtech.geogig.web.api.commands.Branch;
@@ -91,7 +87,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class ResponseWriter {
 
-    protected final XMLStreamWriter out;
+    protected final StreamingWriter out;
 
     private final MediaType format;
 
@@ -99,32 +95,24 @@ public class ResponseWriter {
      * Constructs a new {code ResponseWriter} with the given {@link XMLStreamWriter}.
      * 
      * @param out the output stream to write to
+     * @param format the output format
      */
-    public ResponseWriter(XMLStreamWriter out) {
+    public ResponseWriter(StreamingWriter out, MediaType format) {
         this.out = out;
-        if (out instanceof AbstractXMLStreamWriter) {
-            configureJSONOutput((AbstractXMLStreamWriter) out);
-            format = MediaType.APPLICATION_JSON;
-        } else {
-            format = MediaType.APPLICATION_XML;
-        }
+        this.format = format;
     }
 
-    private void configureJSONOutput(AbstractXMLStreamWriter out) {
-    }
-
-    public void encodeAlternateAtomLink(XMLStreamWriter w, String baseURL, String link)
-            throws XMLStreamException {
+    public void encodeAlternateAtomLink(String baseURL, String link) throws StreamWriterException {
         String href = RESTUtils.buildHref(baseURL, link, format);
-        RESTUtils.encodeAlternateAtomLink(format, w, href);
+        RESTUtils.encodeAlternateAtomLink(format, out, href);
     }
 
     /**
      * Ends the document stream.
      * 
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void finish() throws XMLStreamException {
+    public void finish() throws StreamWriterException {
         out.writeEndElement(); // results
         out.writeEndDocument();
     }
@@ -132,9 +120,9 @@ public class ResponseWriter {
     /**
      * Begins the document stream.
      * 
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void start() throws XMLStreamException {
+    public void start() throws StreamWriterException {
         start(true);
     }
 
@@ -142,9 +130,9 @@ public class ResponseWriter {
      * Begins the document stream with the provided success flag.
      * 
      * @param success whether or not the operation was successful
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void start(boolean success) throws XMLStreamException {
+    public void start(boolean success) throws StreamWriterException {
         out.writeStartDocument();
         out.writeStartElement("response");
         writeElement("success", Boolean.toString(success));
@@ -155,9 +143,9 @@ public class ResponseWriter {
      * pairs. For example {@code [key, value, key, value]}.
      * 
      * @param els the elements to write
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeHeaderElements(String... els) throws XMLStreamException {
+    public void writeHeaderElements(String... els) throws StreamWriterException {
         out.writeStartElement("header");
         for (int i = 0; i < els.length; i += 2) {
             writeElement(els[i], els[i + 1]);
@@ -170,9 +158,9 @@ public class ResponseWriter {
      * pairs. For example {@code [key, value, key, value]}.
      * 
      * @param errors the errors to write
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeErrors(String... errors) throws XMLStreamException {
+    public void writeErrors(String... errors) throws StreamWriterException {
         out.writeStartElement("errors");
         for (int i = 0; i < errors.length; i += 2) {
             writeElement(errors[i], errors[i + 1]);
@@ -181,25 +169,14 @@ public class ResponseWriter {
     }
 
     /**
-     * @return the {@link XMLStreamWriter} for this instance
-     */
-    public XMLStreamWriter getWriter() {
-        return out;
-    }
-
-    /**
      * Writes the given element to the stream.
      * 
      * @param element the element name
      * @param content the element content
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeElement(String element, @Nullable String content) throws XMLStreamException {
-        out.writeStartElement(element);
-        if (content != null) {
-            out.writeCharacters(content);
-        }
-        out.writeEndElement();
+    public void writeElement(String element, @Nullable String content) throws StreamWriterException {
+        out.writeElement(element, content);
     }
 
     /**
@@ -208,9 +185,9 @@ public class ResponseWriter {
      * @param setFilter the configured {@link DiffIndex} command
      * @param start the change number to start writing from
      * @param length the number of changes to write
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeStaged(DiffIndex setFilter, int start, int length) throws XMLStreamException {
+    public void writeStaged(DiffIndex setFilter, int start, int length) throws StreamWriterException {
         writeDiffEntries("staged", start, length, setFilter.call());
     }
 
@@ -220,30 +197,32 @@ public class ResponseWriter {
      * @param setFilter the configured {@link DiffWorkTree} command
      * @param start the change number to start writing from
      * @param length the number of changes to write
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeUnstaged(DiffWorkTree setFilter, int start, int length)
-            throws XMLStreamException {
+            throws StreamWriterException {
         writeDiffEntries("unstaged", start, length, setFilter.call());
     }
 
     public void writeUnmerged(Iterator<Conflict> conflicts, int start, int length)
-            throws XMLStreamException {
+            throws StreamWriterException {
 
         Iterators.advance(conflicts, start);
         if (length >= 0) {
             conflicts = Iterators.limit(conflicts, length);
         }
+        out.writeStartArray("unmerged");
         while (conflicts.hasNext()) {
             Conflict entry = conflicts.next();
-            out.writeStartElement("unmerged");
+            out.writeStartArrayElement("unmerged");
             writeElement("changeType", "CONFLICT");
             writeElement("path", entry.getPath());
             writeElement("ours", entry.getOurs().toString());
             writeElement("theirs", entry.getTheirs().toString());
             writeElement("ancestor", entry.getAncestor().toString());
-            out.writeEndElement();
+            out.writeEndArrayElement();
         }
+        out.writeEndArray();
     }
 
     /**
@@ -253,18 +232,19 @@ public class ResponseWriter {
      * @param start the change number to start writing from
      * @param length the number of changes to write
      * @param entries an iterator for the DiffEntries to write
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeDiffEntries(String name, int start, int length, Iterator<DiffEntry> entries)
-            throws XMLStreamException {
+            throws StreamWriterException {
         Iterators.advance(entries, start);
         if (length < 0) {
             length = Integer.MAX_VALUE;
         }
         int counter = 0;
+        out.writeStartArray(name);
         while (entries.hasNext() && counter < length) {
             DiffEntry entry = entries.next();
-            out.writeStartElement(name);
+            out.writeStartArrayElement(name);
             writeElement("changeType", entry.changeType().toString());
             NodeRef oldObject = entry.getOldObject();
             NodeRef newObject = entry.getNewObject();
@@ -284,25 +264,32 @@ public class ResponseWriter {
                 writeElement("path", oldObject.path());
                 writeElement("oldObjectId", oldObject.getObjectId().toString());
             }
-            out.writeEndElement();
+            out.writeEndArrayElement();
             counter++;
         }
+        out.writeEndArray();
         if (entries.hasNext()) {
             writeElement("nextPage", "true");
         }
     }
 
     public void writeCommit(RevCommit commit, String tag, @Nullable Integer adds,
-            @Nullable Integer modifies, @Nullable Integer removes) throws XMLStreamException {
-        out.writeStartElement(tag);
+            @Nullable Integer modifies, @Nullable Integer removes) throws StreamWriterException {
+        writeCommit(commit, tag, adds, modifies, removes, false);
+    }
+
+    private void writeCommitImpl(RevCommit commit, String tag, @Nullable Integer adds,
+            @Nullable Integer modifies, @Nullable Integer removes) throws StreamWriterException {
         writeElement("id", commit.getId().toString());
         writeElement("tree", commit.getTreeId().toString());
 
         ImmutableList<ObjectId> parentIds = commit.getParentIds();
         out.writeStartElement("parents");
+        out.writeStartArray("id");
         for (ObjectId parentId : parentIds) {
-            writeElement("id", parentId.toString());
+            out.writeArrayElement("id", parentId.toString());
         }
+        out.writeEndArray();
         out.writeEndElement();
 
         writePerson("author", commit.getAuthor());
@@ -318,39 +305,56 @@ public class ResponseWriter {
             writeElement("removes", removes.toString());
         }
 
-        out.writeStartElement("message");
-        if (commit.getMessage() != null) {
-            out.writeCData(commit.getMessage());
-        }
-        out.writeEndElement();
-
-        out.writeEndElement();
+        out.writeLargeElement("message", commit.getMessage());
     }
 
-    private void writeNode(Node node, String tag) throws XMLStreamException {
-        out.writeStartElement(tag);
+    private void writeCommit(RevCommit commit, String tag, @Nullable Integer adds,
+            @Nullable Integer modifies, @Nullable Integer removes, boolean isListCommit) throws StreamWriterException {
+        if (isListCommit) {
+            // in a list, write to an array
+            out.writeStartArrayElement(tag);
+        } else {
+            out.writeStartElement(tag);
+        }
+        // write the commit
+        writeCommitImpl(commit, tag, adds, modifies, removes);
+        if (isListCommit) {
+            // in a list, write to an array
+            out.writeEndArray();
+        } else {
+            out.writeEndElement();
+        }
+    }
+
+    private void writeNode(Node node, String tag) throws StreamWriterException {
+        out.writeStartArrayElement(tag);
         writeElement("name", node.getName());
         writeElement("type", node.getType().name());
         writeElement("objectid", node.getObjectId().toString());
         writeElement("metadataid", node.getMetadataId().or(ObjectId.NULL).toString());
-        out.writeEndElement();
+        out.writeEndArrayElement();
     }
 
-    public void writeTree(RevTree tree, String tag) throws XMLStreamException {
+    public void writeTree(RevTree tree, String tag) throws StreamWriterException {
         out.writeStartElement(tag);
         writeElement("id", tree.getId().toString());
         writeElement("size", Long.toString(tree.size()));
         writeElement("numtrees", Integer.toString(tree.numTrees()));
+        out.writeStartArray("subtree");
         for (Node ref : tree.trees()) {
             writeNode(ref, "subtree");
         }
+        out.writeEndArray();
+        out.writeStartArray("feature");
         for (Node ref : tree.features()) {
             writeNode(ref, "feature");
         }
+        out.writeEndArray();
+        out.writeStartArray("bucket");
         for (Entry<Integer, Bucket> entry : tree.buckets().entrySet()) {
             Integer bucketIndex = entry.getKey();
             Bucket bucket = entry.getValue();
-            out.writeStartElement("bucket");
+            out.writeStartArrayElement("bucket");
             writeElement("bucketindex", bucketIndex.toString());
             writeElement("bucketid", bucket.getObjectId().toString());
             Envelope env = new Envelope();
@@ -362,35 +366,37 @@ public class ResponseWriter {
             writeElement("miny", Double.toString(env.getMinY()));
             writeElement("maxy", Double.toString(env.getMaxY()));
             out.writeEndElement();
-            out.writeEndElement();
+            out.writeEndArrayElement();
         }
-
+        out.writeEndArray();
         out.writeEndElement();
     }
 
-    public void writeFeature(RevFeature feature, String tag) throws XMLStreamException {
+    public void writeFeature(RevFeature feature, String tag) throws StreamWriterException {
         out.writeStartElement(tag);
         writeElement("id", feature.getId().toString());
+        out.writeStartArray("attribute");
         for (int i = 0; i < feature.size(); i++) {
             Object value = feature.get(i).orNull();
             final FieldType type = FieldType.forValue(value);
             String valueString = TextValueSerializer.asString(value);
-            out.writeStartElement("attribute");
+            out.writeStartArrayElement("attribute");
             writeElement("type", type.toString());
             writeElement("value", valueString);
-            out.writeEndElement();
+            out.writeEndArrayElement();
         }
-
+        out.writeEndArray();
         out.writeEndElement();
     }
 
-    public void writeFeatureType(RevFeatureType featureType, String tag) throws XMLStreamException {
+    public void writeFeatureType(RevFeatureType featureType, String tag) throws StreamWriterException {
         out.writeStartElement(tag);
         writeElement("id", featureType.getId().toString());
         writeElement("name", featureType.getName().toString());
         ImmutableList<PropertyDescriptor> descriptors = featureType.descriptors();
+        out.writeStartArray("attribute");
         for (PropertyDescriptor descriptor : descriptors) {
-            out.writeStartElement("attribute");
+            out.writeStartArrayElement("attribute");
             writeElement("name", descriptor.getName().toString());
             writeElement("type", FieldType.forBinding(descriptor.getType().getBinding()).name());
             writeElement("minoccurs", Integer.toString(descriptor.getMinOccurs()));
@@ -403,20 +409,39 @@ public class ResponseWriter {
                 String crsText = CrsTextSerializer.serialize(crs);
                 writeElement("crs", crsText);
             }
-            out.writeEndElement();
+            out.writeEndArrayElement();
         }
-
+        out.writeEndArray();
         out.writeEndElement();
     }
 
-    public void writeTag(RevTag revTag, String tag) throws XMLStreamException {
-        out.writeStartElement(tag);
+    public void writeTag(RevTag revTag, String tag) throws StreamWriterException {
+        writeTag(revTag, tag, false);
+    }
+
+    private void writeTagImpl(RevTag revTag, String tag) throws StreamWriterException {
         writeElement("id", revTag.getId().toString());
         writeElement("commitid", revTag.getCommitId().toString());
         writeElement("name", revTag.getName());
         writeElement("message", revTag.getMessage());
         writePerson("tagger", revTag.getTagger());
-        out.writeEndElement();
+    }
+
+    private void writeTag(RevTag revTag, String tag, boolean isListTag) throws StreamWriterException {
+        if (isListTag) {
+            // Tag is in a List
+            out.writeStartArrayElement(tag);
+        } else {
+            // not in a list
+            out.writeStartElement(tag);
+        }
+        // write the Tag
+        writeTagImpl(revTag, tag);
+        if (isListTag) {
+            out.writeEndArrayElement();
+        } else {
+            out.writeEndElement();
+        }
     }
 
     /**
@@ -425,10 +450,10 @@ public class ResponseWriter {
      * @param entries an iterator for the RevCommits to write
      * @param elementsPerPage the number of commits per page
      * @param returnRange only return the range if true
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeCommits(Iterator<RevCommit> entries, int elementsPerPage, boolean returnRange)
-            throws XMLStreamException {
+            throws StreamWriterException {
         int counter = 0;
         RevCommit lastCommit = null;
         if (returnRange) {
@@ -438,18 +463,20 @@ public class ResponseWriter {
                 counter++;
             }
         }
+        out.writeStartArray("commit");
         while (entries.hasNext() && (returnRange || counter < elementsPerPage)) {
             lastCommit = entries.next();
 
             if (!returnRange) {
-                writeCommit(lastCommit, "commit", null, null, null);
+                writeCommit(lastCommit, "commit", null, null, null, true);
             }
 
             counter++;
         }
+        out.writeEndArray();
         if (returnRange) {
             if (lastCommit != null) {
-                writeCommit(lastCommit, "sinceCommit", null, null, null);
+                writeCommit(lastCommit, "sinceCommit", null, null, null, false);
             }
             writeElement("numCommits", Integer.toString(counter));
         }
@@ -459,18 +486,19 @@ public class ResponseWriter {
     }
 
     public void writeCommitsWithChangeCounts(Iterator<CommitWithChangeCounts> entries,
-            int elementsPerPage) throws XMLStreamException {
+            int elementsPerPage) throws StreamWriterException {
         int counter = 0;
 
+        out.writeStartArray("commit");
         while (entries.hasNext() && counter < elementsPerPage) {
             CommitWithChangeCounts entry = entries.next();
 
             writeCommit(entry.getCommit(), "commit", entry.getAdds(), entry.getModifies(),
-                    entry.getRemoves());
+                    entry.getRemoves(), true);
 
             counter++;
         }
-
+        out.writeEndArray();
         if (entries.hasNext()) {
             writeElement("nextPage", "true");
         }
@@ -482,9 +510,9 @@ public class ResponseWriter {
      * 
      * @param enclosingElement the element name
      * @param p the RevPerson to writes
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writePerson(String enclosingElement, RevPerson p) throws XMLStreamException {
+    public void writePerson(String enclosingElement, RevPerson p) throws StreamWriterException {
         out.writeStartElement(enclosingElement);
         writeElement("name", p.getName().orNull());
         writeElement("email", p.getEmail().orNull());
@@ -498,10 +526,10 @@ public class ResponseWriter {
      * 
      * @param commit the commit
      * @param diff the changes returned from the command
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeCommitResponse(RevCommit commit, Iterator<DiffEntry> diff)
-            throws XMLStreamException {
+            throws StreamWriterException {
         int adds = 0, deletes = 0, changes = 0;
         DiffEntry diffEntry;
         while (diff.hasNext()) {
@@ -529,32 +557,33 @@ public class ResponseWriter {
      * 
      * @param iter the iterator of {@link NodeRefs}
      * @param verbose if true, more detailed information about each node will be provided
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeLsTreeResponse(Iterator<NodeRef> iter, boolean verbose)
-            throws XMLStreamException {
+            throws StreamWriterException {
 
+        out.writeStartArray("node");
         while (iter.hasNext()) {
             NodeRef node = iter.next();
-            out.writeStartElement("node");
+            out.writeStartArrayElement("node");
             writeElement("path", node.path());
             if (verbose) {
                 writeElement("metadataId", node.getMetadataId().toString());
                 writeElement("type", node.getType().toString().toLowerCase());
                 writeElement("objectId", node.getObjectId().toString());
             }
-            out.writeEndElement();
+            out.writeEndArrayElement();
         }
-
+        out.writeEndArray();
     }
 
     /**
      * Writes the response for the {@link UpdateRef} command to the stream.
      * 
      * @param ref the ref returned from the command
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeUpdateRefResponse(Ref ref) throws XMLStreamException {
+    public void writeUpdateRefResponse(Ref ref) throws StreamWriterException {
         out.writeStartElement("ChangedRef");
         writeElement("name", ref.getName());
         writeElement("objectId", ref.getObjectId().toString());
@@ -568,9 +597,9 @@ public class ResponseWriter {
      * Writes the response for the {@link RefParse} command to the stream.
      * 
      * @param ref the ref returned from the command
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeRefParseResponse(Ref ref) throws XMLStreamException {
+    public void writeRefParseResponse(Ref ref) throws StreamWriterException {
         out.writeStartElement("Ref");
         writeElement("name", ref.getName());
         writeElement("objectId", ref.getObjectId().toString());
@@ -583,9 +612,9 @@ public class ResponseWriter {
     /**
      * Writes an empty ref response for when a {@link Ref} was not found.
      * 
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeEmptyRefResponse() throws XMLStreamException {
+    public void writeEmptyRefResponse() throws StreamWriterException {
         out.writeStartElement("RefNotFound");
         out.writeEndElement();
     }
@@ -595,34 +624,38 @@ public class ResponseWriter {
      * 
      * @param localBranches the local branches of the repository
      * @param remoteBranches the remote branches of the repository
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeBranchListResponse(List<Ref> localBranches, List<Ref> remoteBranches)
-            throws XMLStreamException {
+            throws StreamWriterException {
 
         out.writeStartElement("Local");
+        out.writeStartArray("Branch");
         for (Ref branch : localBranches) {
-            out.writeStartElement("Branch");
+            out.writeStartArrayElement("Branch");
             writeElement("name", branch.localName());
-            out.writeEndElement();
+            out.writeEndArrayElement();
         }
+        out.writeEndArray();
         out.writeEndElement();
 
         out.writeStartElement("Remote");
+        out.writeStartArray("Branch");
         for (Ref branch : remoteBranches) {
             if (!(branch instanceof SymRef)) {
-                out.writeStartElement("Branch");
+                out.writeStartArrayElement("Branch");
                 writeElement("remoteName",
                         branch.namespace().replace(Ref.REMOTES_PREFIX + "/", ""));
                 writeElement("name", branch.localName());
-                out.writeEndElement();
+                out.writeEndArrayElement();
             }
         }
+        out.writeEndArray();
         out.writeEndElement();
 
     }
 
-    public void writeBranchCreateResponse(Ref createdBranch) throws XMLStreamException {
+    public void writeBranchCreateResponse(Ref createdBranch) throws StreamWriterException {
         out.writeStartElement("BranchCreated");
         writeElement("name", createdBranch.localName());
         writeElement("source", createdBranch.getObjectId().toString());
@@ -633,12 +666,13 @@ public class ResponseWriter {
      * Writes the response for the {@link RemoteManagement} command to the stream.
      * 
      * @param remotes the list of the {@link Remote}s of this repository
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeRemoteListResponse(List<Remote> remotes, boolean verbose)
-            throws XMLStreamException {
+            throws StreamWriterException {
+        out.writeStartArray("Remote");
         for (Remote remote : remotes) {
-            out.writeStartElement("Remote");
+            out.writeStartArrayElement("Remote");
             writeElement("name", remote.getName());
             if (verbose) {
                 writeElement("url", remote.getFetchURL());
@@ -646,17 +680,18 @@ public class ResponseWriter {
                     writeElement("username", remote.getUserName());
                 }
             }
-            out.writeEndElement();
+            out.writeEndArrayElement();
         }
+        out.writeEndArray();
     }
 
     /**
      * Writes the response for the {@link RemoteManagement} command to the stream.
      * 
      * @param success whether or not the ping was successful
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeRemotePingResponse(boolean success) throws XMLStreamException {
+    public void writeRemotePingResponse(boolean success) throws StreamWriterException {
         out.writeStartElement("ping");
         writeElement("success", Boolean.toString(success));
         out.writeEndElement();
@@ -666,45 +701,49 @@ public class ResponseWriter {
      * Writes the list response for the {@link Tag} command to the stream.
      * 
      * @param tags the list of {@link RevTag}s of this repository
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeTagListResponse(List<RevTag> tags) throws XMLStreamException {
+    public void writeTagListResponse(List<RevTag> tags) throws StreamWriterException {
+        out.writeStartArray("Tag");
         for (RevTag tag : tags) {
-            writeTag(tag, "Tag");
+            writeTag(tag, "Tag", true);
         }
+        out.writeEndArray();
     }
 
     /**
      * Writes the delete response for the {@link Tag} command to the stream.
      * 
      * @param tag the removed {@link RevTag}
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeTagDeleteResponse(RevTag tag) throws XMLStreamException {
-        writeTag(tag, "DeletedTag");
+    public void writeTagDeleteResponse(RevTag tag) throws StreamWriterException {
+        writeTag(tag, "DeletedTag", false);
     }
 
     /**
      * Writes the create response for the {@link Tag} command to the stream.
      * 
      * @param tag the created {@link RevTag}
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeTagCreateResponse(RevTag tag) throws XMLStreamException {
-        writeTag(tag, "Tag");
+    public void writeTagCreateResponse(RevTag tag) throws StreamWriterException {
+        writeTag(tag, "Tag", false);
     }
 
     public void writeRebuildGraphResponse(ImmutableList<ObjectId> updatedObjects, boolean quiet)
-            throws XMLStreamException {
+            throws StreamWriterException {
         out.writeStartElement("RebuildGraph");
         if (updatedObjects.size() > 0) {
             writeElement("updatedGraphElements", Integer.toString(updatedObjects.size()));
             if (!quiet) {
+                out.writeStartArray("UpdatedObject");
                 for (ObjectId object : updatedObjects) {
-                    out.writeStartElement("UpdatedObject");
+                    out.writeStartArrayElement("UpdatedObject");
                     writeElement("ref", object.toString());
-                    out.writeEndElement();
+                    out.writeEndArrayElement();
                 }
+                out.writeEndArray();
             }
         } else {
             writeElement("response",
@@ -713,14 +752,15 @@ public class ResponseWriter {
         out.writeEndElement();
     }
 
-    public void writeFetchResponse(TransferSummary result) throws XMLStreamException {
+    public void writeFetchResponse(TransferSummary result) throws StreamWriterException {
         out.writeStartElement("Fetch");
         if (result.getChangedRefs().entrySet().size() > 0) {
             for (Entry<String, Collection<ChangedRef>> entry : result.getChangedRefs().entrySet()) {
                 out.writeStartElement("Remote");
                 writeElement("remoteURL", entry.getKey());
+                out.writeStartArray("Branch");
                 for (ChangedRef ref : entry.getValue()) {
-                    out.writeStartElement("Branch");
+                    out.writeStartArrayElement("Branch");
 
                     writeElement("changeType", ref.getType().toString());
                     if (ref.getOldRef() != null) {
@@ -733,8 +773,9 @@ public class ResponseWriter {
                         }
                         writeElement("newValue", ref.getNewRef().getObjectId().toString());
                     }
-                    out.writeEndElement();
+                    out.writeEndArrayElement();
                 }
+                out.writeEndArray();
                 out.writeEndElement();
             }
         }
@@ -742,7 +783,7 @@ public class ResponseWriter {
     }
 
     public void writePullResponse(PullResult result, Iterator<DiffEntry> iter)
-            throws XMLStreamException {
+            throws StreamWriterException {
         out.writeStartElement("Pull");
         writeFetchResponse(result.getFetchResult());
         if (iter != null) {
@@ -780,15 +821,16 @@ public class ResponseWriter {
      * 
      * @param diffs a map of {@link PropertyDescriptor} to {@link AttributeDiffs} that specify the
      *        difference between two features
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeFeatureDiffResponse(Map<PropertyDescriptor, AttributeDiff> diffs)
-            throws XMLStreamException {
+            throws StreamWriterException {
         Set<Entry<PropertyDescriptor, AttributeDiff>> entries = diffs.entrySet();
         Iterator<Entry<PropertyDescriptor, AttributeDiff>> iter = entries.iterator();
+        out.writeStartArray("diff");
         while (iter.hasNext()) {
             Entry<PropertyDescriptor, AttributeDiff> entry = iter.next();
-            out.writeStartElement("diff");
+            out.writeStartArrayElement("diff");
             PropertyType attrType = entry.getKey().getType();
             if (attrType instanceof GeometryType) {
                 writeElement("geometry", "true");
@@ -815,8 +857,9 @@ public class ResponseWriter {
                     && !entry.getValue().getType().equals(TYPE.NO_CHANGE)) {
                 writeElement("newvalue", entry.getValue().getNewValue().toString());
             }
-            out.writeEndElement();
+            out.writeEndArrayElement();
         }
+        out.writeEndArray();
     }
 
     /**
@@ -824,10 +867,15 @@ public class ResponseWriter {
      * 
      * @param geogig - a CommandLocator to call commands from
      * @param diff - a DiffEntry iterator to build the response from
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeGeometryChanges(final Context geogig, Iterator<DiffEntry> diff, int page,
-            int elementsPerPage) throws XMLStreamException {
+            int elementsPerPage) throws StreamWriterException {
+        writeGeometryChanges(geogig, diff, page, elementsPerPage, false);
+    }
+
+    private void writeGeometryChanges(final Context geogig, Iterator<DiffEntry> diff, int page,
+            int elementsPerPage, boolean alreadyInArray) throws StreamWriterException {
 
         Iterators.advance(diff, page * elementsPerPage);
         int counter = 0;
@@ -893,28 +941,35 @@ public class ResponseWriter {
                         return change;
                     }
                 });
-
+        if (!alreadyInArray) {
+            out.writeStartArray("Feature");
+        }
         while (changeIterator.hasNext() && (elementsPerPage == 0 || counter < elementsPerPage)) {
             GeometryChange next = changeIterator.next();
             if (next != null) {
                 GeogigSimpleFeature feature = next.getFeature();
                 ChangeType change = next.getChangeType();
-                out.writeStartElement("Feature");
+                out.writeStartArrayElement("Feature");
                 writeElement("change", change.toString());
                 writeElement("id", next.getPath());
                 List<Object> attributes = feature.getAttributes();
+                out.writeStartArray("geometry");
                 for (Object attribute : attributes) {
                     if (attribute instanceof Geometry) {
-                        writeElement("geometry", ((Geometry) attribute).toText());
+                        out.writeArrayElement("geometry", ((Geometry) attribute).toText());
                         break;
                     }
                 }
+                out.writeEndArray();
                 if (next.getCRS() != null) {
                     writeElement("crs", next.getCRS());
                 }
-                out.writeEndElement();
+                out.writeEndArrayElement();
                 counter++;
             }
+        }
+        if (!alreadyInArray) {
+            out.writeEndArray();
         }
         if (changeIterator.hasNext()) {
             writeElement("nextPage", "true");
@@ -926,10 +981,15 @@ public class ResponseWriter {
      * 
      * @param geogig - a CommandLocator to call commands from
      * @param conflicts - a Conflict iterator to build the response from
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeConflicts(final Context geogig, Iterator<Conflict> conflicts,
-            final ObjectId ours, final ObjectId theirs) throws XMLStreamException {
+            final ObjectId ours, final ObjectId theirs) throws StreamWriterException {
+        writeConflicts(geogig, conflicts, ours, theirs, false);
+    }
+
+    private void writeConflicts(final Context geogig, Iterator<Conflict> conflicts,
+            final ObjectId ours, final ObjectId theirs, boolean alreadyInArray) throws StreamWriterException {
         Iterator<GeometryConflict> conflictIterator = Iterators.transform(conflicts,
                 new Function<Conflict, GeometryConflict>() {
                     @Override
@@ -1026,20 +1086,28 @@ public class ResponseWriter {
                     }
                 });
 
+        if (!alreadyInArray) {
+            out.writeStartArray("Feature");
+        }
         while (conflictIterator.hasNext()) {
             GeometryConflict next = conflictIterator.next();
             if (next != null) {
-                out.writeStartElement("Feature");
+                out.writeStartArrayElement("Feature");
                 writeElement("change", "CONFLICT");
                 writeElement("id", next.getConflict().getPath());
                 writeElement("ourvalue", next.getConflict().getOurs().toString());
                 writeElement("theirvalue", next.getConflict().getTheirs().toString());
-                writeElement("geometry", next.getGeometry().toText());
+                out.writeStartArray("geometry");
+                out.writeArrayElement("geometry", next.getGeometry().toText());
+                out.writeEndArray();
                 if (next.getCRS() != null) {
                     writeElement("crs", next.getCRS());
                 }
-                out.writeEndElement();
+                out.writeEndArrayElement();
             }
+        }
+        if (!alreadyInArray) {
+            out.writeEndArray();
         }
     }
 
@@ -1048,10 +1116,15 @@ public class ResponseWriter {
      * 
      * @param geogig - a CommandLocator to call commands from
      * @param features - a FeatureInfo iterator to build the response from
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeMerged(final Context geogig, Iterator<FeatureInfo> features)
-            throws XMLStreamException {
+            throws StreamWriterException {
+        writeMerged(geogig, features, false);
+    }
+
+    private void writeMerged(final Context geogig, Iterator<FeatureInfo> features, boolean alreadyInArray)
+            throws StreamWriterException {
         Iterator<GeometryChange> changeIterator = Iterators.transform(features,
                 new Function<FeatureInfo, GeometryChange>() {
 
@@ -1099,25 +1172,33 @@ public class ResponseWriter {
                     }
                 });
 
+        if (!alreadyInArray) {
+            out.writeStartArray("Feature");
+        }
         while (changeIterator.hasNext()) {
             GeometryChange next = changeIterator.next();
             if (next != null) {
                 GeogigSimpleFeature feature = next.getFeature();
-                out.writeStartElement("Feature");
+                out.writeStartArrayElement("Feature");
                 writeElement("change", "MERGED");
                 writeElement("id", next.getPath());
                 List<Object> attributes = feature.getAttributes();
+                out.writeStartArray("geometry");
                 for (Object attribute : attributes) {
                     if (attribute instanceof Geometry) {
-                        writeElement("geometry", ((Geometry) attribute).toText());
+                        out.writeArrayElement("geometry", ((Geometry) attribute).toText());
                         break;
                     }
                 }
+                out.writeEndArray();
                 if (next.getCRS() != null) {
                     writeElement("crs", next.getCRS());
                 }
-                out.writeEndElement();
+                out.writeEndArrayElement();
             }
+        }
+        if (!alreadyInArray) {
+            out.writeEndArray();
         }
     }
 
@@ -1129,10 +1210,10 @@ public class ResponseWriter {
      * @param ours - our commit id
      * @param theirs - their commit id
      * @param ancestor - the ancestor commit id
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeMergeResponse(Optional<RevCommit> mergeCommit, MergeScenarioReport report,
-            ObjectId ours, ObjectId theirs, ObjectId ancestor) throws XMLStreamException {
+            ObjectId ours, ObjectId theirs, ObjectId ancestor) throws StreamWriterException {
         out.writeStartElement("Merge");
         writeElement("ours", ours.toString());
         writeElement("theirs", theirs.toString());
@@ -1157,11 +1238,11 @@ public class ResponseWriter {
      * @param theirs - their commit id
      * @param ancestor - the ancestor commit id
      * @param consumer - the page of features
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeMergeConflictsResponse(Optional<RevCommit> mergeCommit,
             MergeScenarioReport report, Context context, ObjectId ours, ObjectId theirs,
-            ObjectId ancestor, PagedMergeScenarioConsumer consumer) throws XMLStreamException {
+            ObjectId ancestor, PagedMergeScenarioConsumer consumer) throws StreamWriterException {
         out.writeStartElement("Merge");
         writeElement("ours", ours.toString());
         writeElement("theirs", theirs.toString());
@@ -1172,9 +1253,12 @@ public class ResponseWriter {
         if (report.getConflicts() > 0) {
             writeElement("conflicts", Long.toString(report.getConflicts()));
         }
-        writeGeometryChanges(context, consumer.getUnconflicted(), 0, 0);
-        writeConflicts(context, consumer.getConflicted(), ours, theirs);
-        writeMerged(context, consumer.getMerged());
+        // start the Feature array
+        out.writeStartArray("Feature");
+        writeGeometryChanges(context, consumer.getUnconflicted(), 0, 0, true);
+        writeConflicts(context, consumer.getConflicted(), ours, theirs, true);
+        writeMerged(context, consumer.getMerged(), true);
+        out.writeEndArray();
         if (!consumer.didFinish()) {
             writeElement("additionalChanges", Boolean.toString(true));
         }
@@ -1188,14 +1272,17 @@ public class ResponseWriter {
      * @param ours our commit id
      * @param theirs their commit id
      * @param consumer the page of features
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
     public void writeReportMergeScenarioResponse(Context context, ObjectId ours, ObjectId theirs,
-            PagedMergeScenarioConsumer consumer) throws XMLStreamException {
+            PagedMergeScenarioConsumer consumer) throws StreamWriterException {
         out.writeStartElement("Merge");
-        writeGeometryChanges(context, consumer.getUnconflicted(), 0, 0);
-        writeConflicts(context, consumer.getConflicted(), ours, theirs);
-        writeMerged(context, consumer.getMerged());
+        // start the Feature array
+        out.writeStartArray("Feature");
+        writeGeometryChanges(context, consumer.getUnconflicted(), 0, 0, true);
+        writeConflicts(context, consumer.getConflicted(), ours, theirs, true);
+        writeMerged(context, consumer.getMerged(), true);
+        out.writeEndArray();
         if (!consumer.didFinish()) {
             writeElement("additionalChanges", Boolean.toString(true));
         }
@@ -1207,9 +1294,9 @@ public class ResponseWriter {
      * 
      * @param transactionId - the id of the transaction or null if the transaction was closed
      *        successfully
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeTransactionId(UUID transactionId) throws XMLStreamException {
+    public void writeTransactionId(UUID transactionId) throws StreamWriterException {
         out.writeStartElement("Transaction");
         if (transactionId != null) {
             writeElement("ID", transactionId.toString());
@@ -1221,43 +1308,47 @@ public class ResponseWriter {
      * Writes the response for the blame operation.
      * 
      * @param report - the result of the blame operation
-     * @throws XMLStreamException
+     * @throws StreamWriterException
      */
-    public void writeBlameReport(BlameReport report) throws XMLStreamException {
+    public void writeBlameReport(BlameReport report) throws StreamWriterException {
         out.writeStartElement("Blame");
         Map<String, ValueAndCommit> changes = report.getChanges();
         Iterator<String> iter = changes.keySet().iterator();
+        out.writeStartArray("Attribute");
         while (iter.hasNext()) {
             String attrib = iter.next();
             ValueAndCommit valueAndCommit = changes.get(attrib);
             RevCommit commit = valueAndCommit.commit;
             Optional<?> value = valueAndCommit.value;
-            out.writeStartElement("Attribute");
+            out.writeStartArrayElement("Attribute");
             writeElement("name", attrib);
             writeElement("value",
                     TextValueSerializer.asString(Optional.fromNullable((Object) value.orNull())));
             writeCommit(commit, "commit", null, null, null);
-            out.writeEndElement();
+            out.writeEndArrayElement();
         }
+        out.writeEndArray();
         out.writeEndElement();
     }
 
     public void writeStatistics(List<Statistics.FeatureTypeStats> stats, RevCommit firstCommit,
             RevCommit lastCommit, int totalCommits, List<RevPerson> authors, int totalAdded,
-            int totalModified, int totalRemoved) throws XMLStreamException {
+            int totalModified, int totalRemoved) throws StreamWriterException {
         out.writeStartElement("Statistics");
         int numFeatureTypes = 0;
         int totalNumFeatures = 0;
         if (!stats.isEmpty()) {
             out.writeStartElement("FeatureTypes");
+            out.writeStartArray("FeatureType");
             for (Statistics.FeatureTypeStats stat : stats) {
                 numFeatureTypes++;
-                out.writeStartElement("FeatureType");
+                out.writeStartArrayElement("FeatureType");
                 writeElement("name", stat.getName());
                 writeElement("numFeatures", Long.toString(stat.getNumFeatures()));
                 totalNumFeatures += stat.getNumFeatures();
-                out.writeEndElement();
+                out.writeEndArrayElement();
             }
+            out.writeEndArray();
             if (numFeatureTypes > 1) {
                 writeElement("totalFeatureTypes", Integer.toString(numFeatureTypes));
                 writeElement("totalFeatures", Integer.toString(totalNumFeatures));
@@ -1284,25 +1375,44 @@ public class ResponseWriter {
         }
         {
             out.writeStartElement("Authors");
-
+            out.writeStartArray("Author");
             for (RevPerson author : authors) {
                 if (author.getName().isPresent() || author.getEmail().isPresent()) {
-                    out.writeStartElement("Author");
+                    out.writeStartArrayElement("Author");
                     if (author.getName().isPresent()) {
                         writeElement("name", author.getName().get());
                     }
                     if (author.getEmail().isPresent()) {
                         writeElement("email", author.getEmail().get());
                     }
-                    out.writeEndElement();
+                    out.writeEndArrayElement();
                 }
             }
-
+            out.writeEndArray();
             writeElement("totalAuthors", Integer.toString(authors.size()));
             out.writeEndElement();
         }
         out.writeEndElement();
 
+    }
+
+    public void writeConfigList(Iterator<Map.Entry<String, String>> configListIterator) {
+        out.writeStartArray("config");
+        while (configListIterator.hasNext()) {
+            Map.Entry<String, String> pairs = (Map.Entry<String, String>) configListIterator.next();
+            out.writeStartArrayElement("config");
+            out.writeElement("name", pairs.getKey());
+            out.writeElement("value", pairs.getValue());
+            out.writeEndArrayElement();
+        }
+        out.writeEndArray();
+    }
+
+    public void writeRepoInitResponse(String repositoryName, String baseUrl, String link) {
+        out.writeStartElement("repo");
+        out.writeElement("name", repositoryName);
+        encodeAlternateAtomLink(baseUrl, link);
+        out.writeEndElement();
     }
 
     private class GeometryChange {

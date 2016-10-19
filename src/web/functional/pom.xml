@@ -30,10 +30,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.jettison</groupId>
-      <artifactId>jettison</artifactId>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -80,7 +76,6 @@
     <dependency>
       <groupId>org.glassfish</groupId>
       <artifactId>javax.json</artifactId>
-      <version>1.0.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>

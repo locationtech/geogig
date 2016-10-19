@@ -14,8 +14,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
@@ -103,11 +104,11 @@ public class FetchTest extends AbstractWebOpTest {
         assertEquals(remoteBranch1.getObjectId(), branch1.getObjectId());
         assertEquals(remoteBranch2.getObjectId(), branch2.getObjectId());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject remoteObject = response.getJSONObject("Fetch").getJSONObject("Remote");
+        JsonObject remoteObject = response.getJsonObject("Fetch").getJsonObject("Remote");
         assertEquals(remote.getFetchURL(), remoteObject.getString("remoteURL"));
-        JSONArray branch = remoteObject.getJSONArray("Branch");
+        JsonArray branch = remoteObject.getJsonArray("Branch");
         String expected = "[{'changeType':'ADDED_REF','name':'branch1','newValue':'"
                 + branch1.getObjectId().toString() + "'},"
                 + "{'changeType':'ADDED_REF','name':'branch2','newValue':'"
@@ -157,11 +158,11 @@ public class FetchTest extends AbstractWebOpTest {
         assertEquals(remoteBranch1.getObjectId(), branch1.getObjectId());
         assertEquals(remoteBranch2.getObjectId(), branch2.getObjectId());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject remoteObject = response.getJSONObject("Fetch").getJSONObject("Remote");
+        JsonObject remoteObject = response.getJsonObject("Fetch").getJsonObject("Remote");
         assertEquals(remote.getFetchURL(), remoteObject.getString("remoteURL"));
-        JSONArray branch = remoteObject.getJSONArray("Branch");
+        JsonArray branch = remoteObject.getJsonArray("Branch");
         String expected = "[{'changeType':'ADDED_REF','name':'branch1','newValue':'"
                 + branch1.getObjectId().toString() + "'},"
                 + "{'changeType':'ADDED_REF','name':'branch2','newValue':'"

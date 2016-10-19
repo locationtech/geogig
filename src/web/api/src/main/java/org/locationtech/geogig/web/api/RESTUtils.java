@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -7,15 +7,13 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.rest.repository;
+package org.locationtech.geogig.web.api;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 
@@ -55,9 +53,9 @@ public class RESTUtils {
         }
     }
 
-    public static void encodeAlternateAtomLink(MediaType format, XMLStreamWriter w, String href)
-            throws XMLStreamException {
-        if (MediaType.TEXT_XML.equals(format) || MediaType.APPLICATION_XML.equals(format)) {
+    public static void encodeAlternateAtomLink(MediaType format, StreamingWriter w, String href)
+            throws StreamWriterException {
+        if ("xml".equalsIgnoreCase(format.getSubType())) {
             w.writeStartElement("atom:link");
             w.writeAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
             w.writeAttribute("rel", "alternate");
@@ -67,9 +65,7 @@ public class RESTUtils {
             }
             w.writeEndElement();
         } else if (MediaType.APPLICATION_JSON.equals(format)) {
-            w.writeStartElement("href");
-            w.writeCharacters(href);
-            w.writeEndElement();
+            w.writeAttribute("href", href);
         }
     }
 

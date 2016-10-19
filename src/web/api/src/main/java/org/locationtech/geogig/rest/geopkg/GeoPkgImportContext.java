@@ -16,9 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.geotools.data.DataStore;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
@@ -44,9 +41,12 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
+import org.locationtech.geogig.web.api.StreamWriterException;
 import org.restlet.data.MediaType;
 
 import com.google.common.base.Optional;
+
+import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
  * Geopackage specific implementation of {@link DataStoreImportContextService}.
@@ -167,14 +167,14 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
         }
 
         @Override
-        protected void writeResultBody(XMLStreamWriter w, GeopkgImportResult result)
-                throws XMLStreamException {
-            ResponseWriter out = new ResponseWriter(w);
+        protected void writeResultBody(StreamingWriter w, GeopkgImportResult result)
+                throws StreamWriterException {
+            ResponseWriter out = new ResponseWriter(w, getMediaType());
             writeImportResult(result, w, out);
         }
 
         @Override
-        protected void writeError(XMLStreamWriter w, Throwable cause) throws XMLStreamException {
+        protected void writeError(StreamingWriter w, Throwable cause) throws StreamWriterException {
             if (cause instanceof GeopkgMergeConflictsException) {
                 Context context = cmd.getContext();
                 GeopkgMergeConflictsException m = (GeopkgMergeConflictsException) cause;
@@ -186,7 +186,7 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
                 final MergeScenarioReport report = context.command(ReportMergeScenarioOp.class)
                         .setMergeIntoCommit(ours).setToMergeCommit(theirs).setConsumer(consumer)
                         .call();
-                ResponseWriter out = new ResponseWriter(w);
+                ResponseWriter out = new ResponseWriter(w, getMediaType());
                 Optional<RevCommit> mergeCommit = Optional.absent();
                 w.writeStartElement("result");
                 out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
@@ -200,24 +200,28 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             }
         }
 
-        private void writeImportResult(GeopkgImportResult result, XMLStreamWriter w,
-                ResponseWriter out) throws XMLStreamException {
+        private void writeImportResult(GeopkgImportResult result, StreamingWriter w,
+                ResponseWriter out) throws StreamWriterException {
             if (result.newCommit != null) {
                 out.writeCommit(result.newCommit, "newCommit", null, null, null);
             }
             out.writeCommit(result.importCommit, "importCommit", null, null, null);
             w.writeStartElement("NewFeatures");
+            w.writeStartArray("type");
             for (Entry<String, Map<String, String>> layerMappings : result.newMappings.entrySet()) {
-                w.writeStartElement("type");
+                w.writeStartArrayElement("type");
                 w.writeAttribute("name", layerMappings.getKey());
+                w.writeStartArray("id");
                 for (Entry<String, String> mapping : layerMappings.getValue().entrySet()) {
-                    w.writeStartElement("id");
+                    w.writeStartArrayElement("id");
                     w.writeAttribute("provided", mapping.getKey());
                     w.writeAttribute("assigned", mapping.getValue());
-                    w.writeEndElement();
+                    w.writeEndArrayElement();
                 }
-                w.writeEndElement();
+                w.writeEndArray();
+                w.writeEndArrayElement();
             }
+            w.writeEndArray();
             w.writeEndElement();
         }
     }

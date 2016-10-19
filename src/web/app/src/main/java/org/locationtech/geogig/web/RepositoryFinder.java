@@ -17,11 +17,9 @@ import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.locationtech.geogig.rest.JettisonRepresentation;
+import org.locationtech.geogig.rest.StreamingWriterRepresentation;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
+import org.locationtech.geogig.web.api.StreamWriterException;
 import org.restlet.Context;
 import org.restlet.Finder;
 import org.restlet.data.MediaType;
@@ -30,6 +28,7 @@ import org.restlet.data.Response;
 import org.restlet.resource.Representation;
 import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
+import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
  * Creates a new commit on the server with the changes provided by the client.
@@ -82,26 +81,26 @@ public class RepositoryFinder extends Finder {
             return new RepositoryListRepresentation(mediaType, rootPath);
         }
 
-        private class RepositoryListRepresentation extends JettisonRepresentation {
+        private class RepositoryListRepresentation extends StreamingWriterRepresentation {
 
             public RepositoryListRepresentation(MediaType mediaType, String baseURL) {
                 super(mediaType, baseURL);
             }
 
             @Override
-            protected void write(XMLStreamWriter w) throws XMLStreamException {
+            protected void write(StreamingWriter w) throws StreamWriterException {
                 w.writeStartElement("repos");
                 Iterator<String> repos = repoProvider.findRepositories();
+                w.writeStartArray("repo");
                 while (repos.hasNext()) {
                     String repoName = repos.next();
-                    w.writeStartElement("repo");
-                    w.writeStartElement("name");
-                    w.writeCharacters(repoName);
-                    w.writeEndElement();
+                    w.writeStartArrayElement("repo");
+                    w.writeElement("name", repoName);
                     encodeAlternateAtomLink(w,
                             RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + repoName);
-                    w.writeEndElement();
+                    w.writeEndArrayElement();
                 }
+                w.writeEndArray();
                 w.writeEndElement();
             }
 

@@ -14,7 +14,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.repository.GeogigTransaction;
@@ -86,7 +87,7 @@ public class AddTest extends AbstractWebOpTest {
 
         assertEquals(1, staging.countStaged(null).featureCount());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("Success", response.getString("Add"));
     }

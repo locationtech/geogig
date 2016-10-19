@@ -15,7 +15,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
@@ -93,7 +94,7 @@ public class PushTest extends AbstractWebOpTest {
 
         assertEquals(master.getObjectId(), remoteMaster.getObjectId());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("Success", response.getString("Push"));
         assertTrue(response.getBoolean("dataPushed"));
@@ -139,7 +140,7 @@ public class PushTest extends AbstractWebOpTest {
         assertEquals(branch1.getObjectId(), remoteBranch1.getObjectId());
         assertEquals(branch2.getObjectId(), remoteBranch2.getObjectId());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("Success", response.getString("Push"));
         assertTrue(response.getBoolean("dataPushed"));
@@ -189,7 +190,7 @@ public class PushTest extends AbstractWebOpTest {
         assertEquals(branch1.getObjectId(), remoteBranch1.getObjectId());
         assertEquals(branch2.getObjectId(), remoteBranch2.getObjectId());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("Success", response.getString("Push"));
         assertFalse(response.getBoolean("dataPushed"));

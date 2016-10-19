@@ -12,7 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -90,7 +91,7 @@ public class ResolveConflictTest extends AbstractWebOpTest {
                 "transactionId", transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("Success", response.getString("Add"));
     }

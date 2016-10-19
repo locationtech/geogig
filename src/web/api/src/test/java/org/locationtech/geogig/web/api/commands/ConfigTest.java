@@ -16,8 +16,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
@@ -88,8 +89,8 @@ public class ConfigTest extends AbstractWebOpTest {
         WebAPICommand cmd = buildCommand(options);
         cmd.run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
-        JSONArray config = response.getJSONArray("config");
+        JsonObject response = getJSONResponse().getJsonObject("response");
+        JsonArray config = response.getJsonArray("config");
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), config, false));
     }
 
@@ -103,7 +104,7 @@ public class ConfigTest extends AbstractWebOpTest {
         WebAPICommand cmd = buildCommand(options);
         cmd.run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(TestData.jsonEquals(TestData.toJSON("{'value':'value1'}"), response, false));
     }
 
@@ -117,7 +118,7 @@ public class ConfigTest extends AbstractWebOpTest {
         WebAPICommand cmd = buildCommand(options);
         cmd.run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(TestData.jsonEquals(TestData.toJSON("{'success':true}"), response, true));
     }
 
@@ -137,7 +138,7 @@ public class ConfigTest extends AbstractWebOpTest {
         assertTrue(value.isPresent());
         assertEquals("myTestValue", value.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(TestData.jsonEquals(TestData.toJSON("{'success':true}"), response, true));
     }
 

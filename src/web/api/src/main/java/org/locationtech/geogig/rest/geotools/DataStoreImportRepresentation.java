@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2016 Boundless and others.
+/* Copyright (c) 2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -10,9 +9,6 @@
  */
 package org.locationtech.geogig.rest.geotools;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.locationtech.geogig.geotools.plumbing.DataStoreImportOp;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -20,7 +16,9 @@ import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.web.api.ResponseWriter;
+import org.locationtech.geogig.web.api.StreamWriterException;
 import org.restlet.data.MediaType;
+import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
  * Representation for Commands that produce RevCommit objects (like
@@ -35,9 +33,9 @@ public class DataStoreImportRepresentation extends AsyncCommandRepresentation<Re
     }
 
     @Override
-    protected void writeResultBody(XMLStreamWriter w, RevCommit result) throws XMLStreamException {
+    protected void writeResultBody(StreamingWriter w, RevCommit result) throws StreamWriterException {
         if (result != null) {
-            ResponseWriter out = new ResponseWriter(w);
+            ResponseWriter out = new ResponseWriter(w, getMediaType());
             out.writeCommit(result, "commit", null, null, null);
         }
     }

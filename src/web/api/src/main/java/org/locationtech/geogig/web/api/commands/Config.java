@@ -113,15 +113,7 @@ public class Config extends AbstractWebAPICommand {
                 out.start();
                 if (results.isPresent()) {
                     if (action == ConfigAction.CONFIG_LIST) {
-                        Iterator<Map.Entry<String, String>> it = results.get().entrySet()
-                                .iterator();
-                        while (it.hasNext()) {
-                            Map.Entry<String, String> pairs = (Map.Entry<String, String>) it.next();
-                            out.getWriter().writeStartElement("config");
-                            out.writeElement("name", pairs.getKey());
-                            out.writeElement("value", pairs.getValue());
-                            out.getWriter().writeEndElement();
-                        }
+                        out.writeConfigList(results.get().entrySet().iterator());
                     } else if (action == ConfigAction.CONFIG_GET) {
                         out.writeElement("value", results.get().get(name));
                     }

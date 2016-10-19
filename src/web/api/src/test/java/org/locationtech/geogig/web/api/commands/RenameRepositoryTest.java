@@ -12,10 +12,11 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
-import org.locationtech.geogig.rest.repository.RESTUtils;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
@@ -72,7 +73,7 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
                 RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + "newRepoName",
                 MediaType.APPLICATION_JSON);
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(TestData.jsonEquals(TestData.toJSON(
                 "{'success':true, 'repo': {'name': 'newRepoName', 'href': '" + expectedURL + "'}}"),
                 response, true));

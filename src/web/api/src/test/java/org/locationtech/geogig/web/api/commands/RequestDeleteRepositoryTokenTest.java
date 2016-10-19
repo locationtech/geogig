@@ -11,7 +11,8 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
@@ -42,7 +43,7 @@ public class RequestDeleteRepositoryTokenTest extends AbstractWebOpTest {
         WebAPICommand cmd = buildCommand(options);
         cmd.run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         String token = response.getString("token");
         assertTrue(token.length() > 0);
     }

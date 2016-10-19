@@ -12,7 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.TransactionBegin;
@@ -65,13 +66,13 @@ public class CommitTest extends AbstractWebOpTest {
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         Ref head = transaction.command(org.locationtech.geogig.plumbing.RefParse.class)
                 .setName(Ref.HEAD).call().get();
-        assertEquals(head.getObjectId().toString(), response.get("commitId"));
-        assertEquals(1, response.get("added"));
-        assertEquals(0, response.get("changed"));
-        assertEquals(0, response.get("deleted"));
+        assertEquals(head.getObjectId().toString(), response.getString("commitId"));
+        assertEquals(1, response.getInt("added"));
+        assertEquals(0, response.getInt("changed"));
+        assertEquals(0, response.getInt("deleted"));
     }
 }

@@ -13,7 +13,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -78,11 +81,11 @@ public class EndTransactionTest extends AbstractWebOpTest {
 
         assertEquals(master, newMaster);
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertTrue(TestData.jsonEquals(
                 TestData.toJSON("{'ID':'" + transaction.getTransactionId().toString() + "'}"),
-                response.getJSONObject("Transaction"), false));
+                response.getJsonObject("Transaction"), false));
 
     }
 
@@ -114,11 +117,11 @@ public class EndTransactionTest extends AbstractWebOpTest {
 
         assertEquals(txMaster, newMaster);
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertTrue(TestData.jsonEquals(
                 TestData.toJSON("{'ID':'" + transaction.getTransactionId().toString() + "'}"),
-                response.getJSONObject("Transaction"), false));
+                response.getJsonObject("Transaction"), false));
     }
 
     @Test
@@ -149,14 +152,16 @@ public class EndTransactionTest extends AbstractWebOpTest {
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
+        JsonObject merge = response.getJsonObject("Merge");
         assertEquals(ours.getId().toString(), merge.getString("ours"));
         assertEquals(ancestor.getId().toString(), merge.getString("ancestor"));
         assertEquals(theirs.getId().toString(), merge.getString("theirs"));
         assertEquals(1, merge.getInt("conflicts"));
-        JSONObject conflictedFeature = merge.getJSONObject("Feature");
+        JsonArray featureArray = merge.getJsonArray("Feature");
+        assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
+        JsonObject conflictedFeature = featureArray.getJsonObject(0);
         assertEquals("CONFLICT", conflictedFeature.getString("change"));
         assertEquals(path, conflictedFeature.getString("id"));
         assertEquals(ObjectId.NULL.toString(), conflictedFeature.getString("ourvalue"));

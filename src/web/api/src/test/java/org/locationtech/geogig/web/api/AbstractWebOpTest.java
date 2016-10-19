@@ -13,9 +13,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
 import java.util.UUID;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.Json;
+import javax.json.JsonObject;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
@@ -100,15 +103,15 @@ public abstract class AbstractWebOpTest {
         return representation;
     }
 
-    public JSONObject getJSONResponse() {
-        JSONObject response = null;
+    public JsonObject getJSONResponse() {
+        JsonObject response = null;
         try {
             Representation representation = getResponseRepresentation(Variants.JSON.getMediaType());
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             representation.write(out);
 
             String content = out.toString();
-            response = new JSONObject(content);
+            response = Json.createReader(new StringReader(content)).readObject();
         } catch (Exception e) {
             Throwables.propagate(e);
         }

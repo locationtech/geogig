@@ -38,7 +38,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.Transaction;
@@ -172,7 +173,7 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
 
         final String expected = "{'task':{'id':1,'description':'Export changes between two commits to Geopackage database','href':'/geogig/tasks/1.json'}}";
 
-        JSONObject response = getJSONResponse();
+        JsonObject response = getJSONResponse();
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
                 TestData.toJSON(response.toString()), false));
 

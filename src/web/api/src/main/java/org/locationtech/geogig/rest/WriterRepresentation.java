@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -29,7 +29,7 @@ public abstract class WriterRepresentation extends OutputRepresentation {
 
     @Override
     public void write(OutputStream outputStream) throws IOException {
-        Writer writer = null;
+        Writer writer;
 
         if (getCharacterSet() != null) {
             writer = new OutputStreamWriter(outputStream, getCharacterSet().getName());
@@ -39,9 +39,20 @@ public abstract class WriterRepresentation extends OutputRepresentation {
         }
 
         write(writer);
-        writer.flush();
+        // try to flush and close the writer, if the underlying implementation didn't already
+        try {
+            writer.flush();
+            writer.close();
+        } catch (IOException ioe) {
+            // ignore it
+        }
     }
 
+    /**
+     * Implementation specific response write. Implementations should flush and close the Writer.
+     * @param writer
+     * @throws IOException
+     */
     public abstract void write(Writer writer) throws IOException;
 
 }

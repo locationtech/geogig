@@ -13,9 +13,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
-import org.locationtech.geogig.rest.repository.RESTUtils;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
@@ -78,7 +79,7 @@ public class InitTest extends AbstractWebOpTest {
 
         assertNotNull(testContext.get().getRepository());
         assertTrue(testContext.get().getRepository().isOpen());
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(
                 TestData.jsonEquals(
                         TestData.toJSON("{'success':true, 'repo': {'name': '"

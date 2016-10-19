@@ -13,7 +13,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
@@ -96,12 +97,12 @@ public class UpdateRefTest extends AbstractWebOpTest {
                 .setName("branch1").call();
         assertFalse(branch1.isPresent());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         String expected = "{'name':'" + refName + "', 'objectId':'" + oldObjectId + "'}";
 
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
-                response.getJSONObject("ChangedRef"), true));
+                response.getJsonObject("ChangedRef"), true));
     }
 
     @Test
@@ -128,13 +129,13 @@ public class UpdateRefTest extends AbstractWebOpTest {
                 .call();
         assertFalse(head.isPresent());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         String expected = "{'name':'" + refName + "', 'objectId':'" + oldObjectId + "', 'target':'"
                 + oldTarget + "'}";
 
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
-                response.getJSONObject("ChangedRef"), true));
+                response.getJsonObject("ChangedRef"), true));
     }
 
     @Test
@@ -172,13 +173,13 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
         assertEquals(master.getObjectId(), branch1.getObjectId());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         String expected = "{'name':'" + branch1.getName() + "', 'objectId':'"
                 + master.getObjectId().toString() + "'}";
 
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
-                response.getJSONObject("ChangedRef"), true));
+                response.getJsonObject("ChangedRef"), true));
     }
 
     @Test
@@ -221,13 +222,13 @@ public class UpdateRefTest extends AbstractWebOpTest {
         assertEquals(branch1.getName(), head.getTarget());
         assertEquals(branch1.getObjectId(), head.getObjectId());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         String expected = "{'name':'" + head.getName() + "', 'objectId':'"
                 + branch1.getObjectId().toString() + "','target':'" + branch1.getName() + "'}";
 
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
-                response.getJSONObject("ChangedRef"), true));
+                response.getJsonObject("ChangedRef"), true));
     }
 
     @Test

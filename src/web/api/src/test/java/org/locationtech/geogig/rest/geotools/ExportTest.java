@@ -32,7 +32,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.geotools.data.DataStore;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -216,13 +217,13 @@ public class ExportTest extends AbstractWebOpTest {
     }
 
     private MemoryDataStore run(Export op) throws InterruptedException,
-            ExecutionException, org.codehaus.jettison.json.JSONException {
+            ExecutionException {
 
         op.run(context);
 
         //final String expected = "{'task':{'id':1,'status':'RUNNING','description':'MemoryDataStore test output format','href':'/geogig/tasks/1.json'}}";
         final String expected = "{'task':{'id':1,'description':'MemoryDataStore test output format','href':'/geogig/tasks/1.json'}}";
-        JSONObject response = getJSONResponse();
+        JsonObject response = getJSONResponse();
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected), response, false));
 
         Optional<AsyncCommand<?>> asyncCommand = Optional.absent();

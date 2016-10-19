@@ -91,11 +91,8 @@ public class Init extends AbstractWebAPICommand {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
-                    out.getWriter().writeStartElement("repo");
-                    out.writeElement("name", repositoryName);
-                    out.encodeAlternateAtomLink(out.getWriter(), context.getBaseURL(),
+                    out.writeRepoInitResponse(repositoryName, context.getBaseURL(),
                             RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + repositoryName);
-                    out.getWriter().writeEndElement();
                     out.finish();
                 }
             });

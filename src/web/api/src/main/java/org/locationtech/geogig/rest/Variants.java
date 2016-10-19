@@ -11,7 +11,7 @@ package org.locationtech.geogig.rest;
 
 import java.util.List;
 
-import org.locationtech.geogig.rest.repository.RESTUtils;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.resource.Variant;

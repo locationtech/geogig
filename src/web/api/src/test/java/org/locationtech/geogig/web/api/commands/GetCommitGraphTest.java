@@ -27,7 +27,6 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class GetCommitGraphTest extends AbstractWebOpTest {
 
@@ -112,7 +111,8 @@ public class GetCommitGraphTest extends AbstractWebOpTest {
         expectedCommits.append("{'id': '" + commit3.getId().toString() + "'},");
         expectedCommits.append("{'id': '" + commit4.getId().toString() + "'},");
         expectedCommits.append("{'id': '" + commit5.getId().toString() + "'}]");
-        JSONAssert.assertEquals(expectedCommits.toString(), commits.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
+                false));
     }
 
     @Test
@@ -155,7 +155,8 @@ public class GetCommitGraphTest extends AbstractWebOpTest {
         expectedCommits.append("{'id': '" + commit3.getId().toString() + "'},");
         expectedCommits.append("{'id': '" + commit4.getId().toString() + "'},");
         expectedCommits.append("{'id': '" + commit5.getId().toString() + "'}]");
-        JSONAssert.assertEquals(expectedCommits.toString(), commits.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
+                false));
 
     }
 }

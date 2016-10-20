@@ -23,10 +23,10 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
+import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.restlet.data.Method;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.base.Optional;
 
@@ -72,9 +72,15 @@ public class ConfigTest extends AbstractWebOpTest {
             sb.append("{'name':'");
             sb.append(entry.getKey());
             sb.append("', 'value':");
-            sb.append(entry.getValue());
+            try {
+                Double.parseDouble(entry.getValue());
+                sb.append(entry.getValue());
+            } catch (NumberFormatException e) {
+                sb.append("'").append(entry.getValue()).append("'");
+            }
             sb.append("},");
         }
+        sb.deleteCharAt(sb.length() - 1);
         sb.append("]");
         String expected = sb.toString();
 
@@ -84,7 +90,7 @@ public class ConfigTest extends AbstractWebOpTest {
 
         JSONObject response = getJSONResponse().getJSONObject("response");
         JSONArray config = response.getJSONArray("config");
-        JSONAssert.assertEquals(expected, config.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), config, false));
     }
 
     @Test
@@ -98,7 +104,7 @@ public class ConfigTest extends AbstractWebOpTest {
         cmd.run(testContext.get());
 
         JSONObject response = getJSONResponse().getJSONObject("response");
-        JSONAssert.assertEquals("{'value':'value1'}", response.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSON("{'value':'value1'}"), response, false));
     }
 
     @Test
@@ -112,7 +118,7 @@ public class ConfigTest extends AbstractWebOpTest {
         cmd.run(testContext.get());
 
         JSONObject response = getJSONResponse().getJSONObject("response");
-        JSONAssert.assertEquals("{'success':true}", response.toString(), true);
+        assertTrue(TestData.jsonEquals(TestData.toJSON("{'success':true}"), response, true));
     }
 
     @Test
@@ -132,7 +138,7 @@ public class ConfigTest extends AbstractWebOpTest {
         assertEquals("myTestValue", value.get());
 
         JSONObject response = getJSONResponse().getJSONObject("response");
-        JSONAssert.assertEquals("{'success':true}", response.toString(), true);
+        assertTrue(TestData.jsonEquals(TestData.toJSON("{'success':true}"), response, true));
     }
 
     @Test

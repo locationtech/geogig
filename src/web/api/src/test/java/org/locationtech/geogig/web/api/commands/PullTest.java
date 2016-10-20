@@ -36,7 +36,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class PullTest extends AbstractWebOpTest {
 
@@ -124,7 +123,7 @@ public class PullTest extends AbstractWebOpTest {
                 + branch2.getObjectId().toString() + "'},"
                 + "{'changeType':'ADDED_REF','name':'master','newValue':'"
                 + master.getObjectId().toString() + "'}]";
-        JSONAssert.assertEquals(expected, branch.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
         assertEquals(remote.getFetchURL(), pull.getString("Remote"));
         assertEquals("master", pull.getString("Ref"));
         assertEquals(9, pull.getInt("Added"));
@@ -185,7 +184,7 @@ public class PullTest extends AbstractWebOpTest {
                 + branch2.getObjectId().toString() + "'},"
                 + "{'changeType':'ADDED_REF','name':'master','newValue':'"
                 + master.getObjectId().toString() + "'}]";
-        JSONAssert.assertEquals(expected, branch.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
         assertEquals(remote.getFetchURL(), pull.getString("Remote"));
         assertEquals("newbranch", pull.getString("Ref"));
         assertEquals(6, pull.getInt("Added"));
@@ -234,7 +233,7 @@ public class PullTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JSONObject pull = response.getJSONObject("Pull");
         String expected = "{'Fetch':''}";
-        JSONAssert.assertEquals(expected, pull.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expected), pull, false));
     }
 
     @Test

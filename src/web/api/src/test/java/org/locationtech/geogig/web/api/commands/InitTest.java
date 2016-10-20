@@ -21,12 +21,12 @@ import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
+import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.TestRepository;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class InitTest extends AbstractWebOpTest {
 
@@ -79,8 +79,11 @@ public class InitTest extends AbstractWebOpTest {
         assertNotNull(testContext.get().getRepository());
         assertTrue(testContext.get().getRepository().isOpen());
         JSONObject response = getJSONResponse().getJSONObject("response");
-        JSONAssert.assertEquals("{'success':true, 'repo': {'name': '" + TestRepository.REPO_NAME
-                + "', 'href': '" + expectedURL + "'}}", response.toString(), true);
+        assertTrue(
+                TestData.jsonEquals(
+                        TestData.toJSON("{'success':true, 'repo': {'name': '"
+                                + TestRepository.REPO_NAME + "', 'href': '" + expectedURL + "'}}"),
+                response, true));
 
     }
 }

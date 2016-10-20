@@ -25,7 +25,6 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class FeatureDiffTest extends AbstractWebOpTest {
 
@@ -102,7 +101,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JSONObject diff = response.getJSONObject("diff");
         String expected = "{'attributename':'ip', 'changetype':'MODIFIED', 'oldvalue':1000, 'newvalue':1500}";
-        JSONAssert.assertEquals(expected, diff.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expected), diff, false));
     }
 
     @Test
@@ -134,7 +133,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         String expected = "[{'attributename':'ip', 'changetype':'MODIFIED', 'oldvalue':1000, 'newvalue':1500},"
                 + "{'attributename':'sp', 'changetype':'NO_CHANGE', 'oldvalue':'StringProp1_1'},"
                 + "{'attributename':'geom', 'changetype':'NO_CHANGE', 'oldvalue':'POINT (0 0)', 'geometry':true, 'crs': 'EPSG:4326'}]";
-        JSONAssert.assertEquals(expected, diff.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), diff, false));
     }
 
     @Test
@@ -166,7 +165,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         String expected = "[{'attributename':'ip', 'changetype':'ADDED', 'newvalue':1000},"
                 + "{'attributename':'sp', 'changetype':'ADDED', 'newvalue':'StringProp1_1'},"
                 + "{'attributename':'geom', 'changetype':'ADDED', 'newvalue':'POINT (0 0)', 'geometry':true, 'crs': 'EPSG:4326'}]";
-        JSONAssert.assertEquals(expected, diff.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), diff, false));
     }
 
     @Test
@@ -198,7 +197,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         String expected = "[{'attributename':'ip', 'changetype':'REMOVED', 'oldvalue':1000},"
                 + "{'attributename':'sp', 'changetype':'REMOVED', 'oldvalue':'StringProp1_1'},"
                 + "{'attributename':'geom', 'changetype':'REMOVED', 'oldvalue':'POINT (0 0)', 'geometry':true, 'crs': 'EPSG:4326'}]";
-        JSONAssert.assertEquals(expected, diff.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), diff, false));
     }
 
     @Test
@@ -226,7 +225,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         String expected = "[{'attributename':'ip', 'changetype':'ADDED', 'newvalue':1000},"
                 + "{'attributename':'sp', 'changetype':'ADDED', 'newvalue':'StringProp1_1'},"
                 + "{'attributename':'geom', 'changetype':'ADDED', 'newvalue':'POINT (0 0)', 'geometry':true, 'crs': 'EPSG:4326'}]";
-        JSONAssert.assertEquals(expected, diff.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), diff, false));
     }
 
 }

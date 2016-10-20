@@ -25,7 +25,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class RebuildGraphTest extends AbstractWebOpTest {
 
@@ -101,7 +100,8 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         expectedCommits.append("{'ref': '" + commit3.getId().toString() + "'},");
         expectedCommits.append("{'ref': '" + commit4.getId().toString() + "'},");
         expectedCommits.append("{'ref': '" + commit5.getId().toString() + "'}]");
-        JSONAssert.assertEquals(expectedCommits.toString(), updatedObjects.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()),
+                updatedObjects, false));
     }
 
     @Test
@@ -141,6 +141,6 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JSONObject rebuildGraph = response.getJSONObject("RebuildGraph");
         String expectedResponse = "{'updatedGraphElements':4}";
-        JSONAssert.assertEquals(expectedResponse, rebuildGraph.toString(), true);
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedResponse), rebuildGraph, false));
     }
 }

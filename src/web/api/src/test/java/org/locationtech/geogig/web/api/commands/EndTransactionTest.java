@@ -29,7 +29,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class EndTransactionTest extends AbstractWebOpTest {
 
@@ -81,8 +80,9 @@ public class EndTransactionTest extends AbstractWebOpTest {
 
         JSONObject response = getJSONResponse().getJSONObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONAssert.assertEquals("{'ID':'" + transaction.getTransactionId().toString() + "'}",
-                response.getJSONObject("Transaction").toString(), false);
+        assertTrue(TestData.jsonEquals(
+                TestData.toJSON("{'ID':'" + transaction.getTransactionId().toString() + "'}"),
+                response.getJSONObject("Transaction"), false));
 
     }
 
@@ -116,8 +116,9 @@ public class EndTransactionTest extends AbstractWebOpTest {
 
         JSONObject response = getJSONResponse().getJSONObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONAssert.assertEquals("{'ID':'" + transaction.getTransactionId().toString() + "'}",
-                response.getJSONObject("Transaction").toString(), false);
+        assertTrue(TestData.jsonEquals(
+                TestData.toJSON("{'ID':'" + transaction.getTransactionId().toString() + "'}"),
+                response.getJSONObject("Transaction"), false));
     }
 
     @Test

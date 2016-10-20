@@ -32,7 +32,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.base.Optional;
 
@@ -117,7 +116,8 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         JSONObject response = getJSONResponse().getJSONObject("response");
         assertTrue(response.getBoolean("success"));
         String expected = "[{'name':'remote1'},{'name':'remote2'}]";
-        JSONAssert.assertEquals(expected, response.getJSONArray("Remote").toString(), true);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected),
+                response.getJSONArray("Remote"), true));
     }
 
     @Test
@@ -131,7 +131,8 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         String expected = "[{'name':'remote1', 'url':'" + remote1URI.toURL().toString()
                 + "'},{'name':'remote2','url':'" + remote2URI.toURL().toString() + "'}]";
-        JSONAssert.assertEquals(expected, response.getJSONArray("Remote").toString(), true);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected),
+                response.getJSONArray("Remote"), true));
     }
 
     @Test

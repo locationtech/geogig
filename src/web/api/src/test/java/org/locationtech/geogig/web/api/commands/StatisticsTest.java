@@ -22,7 +22,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class StatisticsTest extends AbstractWebOpTest {
 
@@ -92,8 +91,8 @@ public class StatisticsTest extends AbstractWebOpTest {
         assertEquals(2, authors.getInt("totalAuthors"));
         String expectedAuthors = "[{'name':'Author1','email':'author1@example.com'},"
                 + "{'name':'Author2','email':'author2@example.com'}]";
-        JSONAssert.assertEquals(expectedAuthors, authors.getJSONArray("Author").toString(),
-                false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
+                authors.getJSONArray("Author"), false));
     }
 
     @Test
@@ -136,7 +135,8 @@ public class StatisticsTest extends AbstractWebOpTest {
         assertEquals(2, authors.getInt("totalAuthors"));
         String expectedAuthors = "[{'name':'Author2','email':'author2@example.com'},"
                 + "{'name':'Author2','email':'author2_alternate@example.com'}]";
-        JSONAssert.assertEquals(expectedAuthors, authors.getJSONArray("Author").toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
+                authors.getJSONArray("Author"), false));
     }
 
     @Test
@@ -179,7 +179,8 @@ public class StatisticsTest extends AbstractWebOpTest {
         String expectedAuthors = "[{'name':'Author1','email':'author1@example.com'},"
                 + "{'name':'Author2','email':'author2@example.com'},"
                 + "{'name':'Author3','email':'author3@example.com'}]";
-        JSONAssert.assertEquals(expectedAuthors, authors.getJSONArray("Author").toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
+                authors.getJSONArray("Author"), false));
         JSONObject featureTypes = statistics.getJSONObject("FeatureTypes");
         assertEquals(2, featureTypes.getInt("totalFeatureTypes"));
         assertEquals(4, featureTypes.getInt("totalFeatures"));
@@ -187,7 +188,7 @@ public class StatisticsTest extends AbstractWebOpTest {
                 + "','numFeatures':3}," + "{'name':'" + TestData.linesType.getTypeName()
                 + "','numFeatures':1}]";
 
-        JSONAssert.assertEquals(expectedFeatureTypes,
-                featureTypes.getJSONArray("FeatureType").toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedFeatureTypes),
+                featureTypes.getJSONArray("FeatureType"), false));
     }
 }

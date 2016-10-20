@@ -35,7 +35,6 @@ import org.locationtech.geogig.web.api.TestContext;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -130,7 +129,7 @@ public class BranchTest extends AbstractWebOpTest {
         JSONArray localBranches = obj.getJSONObject("Local").getJSONArray("Branch");
         assertEquals(3, localBranches.length());
         String expected = "[{'name':'branch1'},{'name':'branch2'},{'name':'master'}]";
-        JSONAssert.assertEquals(expected, localBranches.toString(), true);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), localBranches, true));
         assertEquals("", obj.getString("Remote"));
     }
 
@@ -159,12 +158,12 @@ public class BranchTest extends AbstractWebOpTest {
         JSONArray localBranches = obj.getJSONObject("Local").getJSONArray("Branch");
         assertEquals(3, localBranches.length());
         String expected = "[{'name':'branch1'},{'name':'branch2'},{'name':'master'}]";
-        JSONAssert.assertEquals(expected, localBranches.toString(), true);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), localBranches, true));
 
         expected = "[{'remoteName':'origin','name':'branch1'},{'remoteName':'origin','name':'branch2'},{'remoteName':'origin','name':'master'}]";
         JSONArray remoteBranches = obj.getJSONObject("Remote").getJSONArray("Branch");
         assertEquals(3, remoteBranches.length());
-        JSONAssert.assertEquals(expected, remoteBranches.toString(), true);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), remoteBranches, true));
     }
 
     @Test

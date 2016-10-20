@@ -20,13 +20,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import javax.json.JsonObject;
+
 import org.codehaus.jettison.json.JSONObject;
 import org.geotools.data.DataStore;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.json.JSONException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,7 +53,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.opengis.filter.Filter;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -618,18 +618,19 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         Assert.assertFalse("Expected repo to be empty, but has nodes", nodeIterator.hasNext());
     }
 
-    private AsyncContext.AsyncCommand<?> run(Import op)
-            throws JSONException, InterruptedException, ExecutionException {
+    private AsyncContext.AsyncCommand<?> run(Import op) throws InterruptedException,
+            ExecutionException, org.codehaus.jettison.json.JSONException {
         return run(op, "1");
     }
 
     private AsyncContext.AsyncCommand<?> run(Import op, String taskId)
-            throws JSONException, InterruptedException, ExecutionException {
+            throws InterruptedException, ExecutionException {
         op.run(context);
         JSONObject response = getJSONResponse();
-        JSONAssert.assertEquals(String.format(
+        JsonObject expected = TestData.toJSON(String.format(
                 "{'task':{'id':%s,'description':'Importing GeoPackage database file.','href':'/geogig/tasks/%s.json'}}",
-                taskId, taskId), response.toString(), false);
+                taskId, taskId));
+        assertTrue(TestData.jsonEquals(expected, response, false));
         Optional<AsyncContext.AsyncCommand<?>> asyncCommand = Optional.absent();
         while (!asyncCommand.isPresent()) {
             asyncCommand = testAsyncContext.getAndPruneIfFinished(taskId);

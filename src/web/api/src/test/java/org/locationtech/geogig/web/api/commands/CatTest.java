@@ -34,7 +34,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CatTest extends AbstractWebOpTest {
 
@@ -98,7 +97,8 @@ public class CatTest extends AbstractWebOpTest {
         JSONObject parents = commit.getJSONObject("parents");
         String expectedParents = "['" + lastCommit.getParentIds().get(0) + "', '"
                 + lastCommit.getParentIds().get(1) + "']";
-        JSONAssert.assertEquals(expectedParents, parents.getJSONArray("id").toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedParents),
+                parents.getJSONArray("id"), false));
         RevPerson author = lastCommit.getAuthor();
         RevPerson committer = lastCommit.getCommitter();
         JSONObject authorObject = commit.getJSONObject("author");
@@ -152,7 +152,8 @@ public class CatTest extends AbstractWebOpTest {
         String expectedAttributes = "[{'type': 'STRING', 'value': 'StringProp1_1'},"
                 + "{'type': 'INTEGER', 'value': 1000},"
                 + "{'type': 'POINT', 'value': 'POINT (0 0)'}]";
-        JSONAssert.assertEquals(expectedAttributes, attributes.toString(), false);
+        assertTrue(
+                TestData.jsonEquals(TestData.toJSONArray(expectedAttributes), attributes, false));
 
     }
 
@@ -174,9 +175,10 @@ public class CatTest extends AbstractWebOpTest {
         JSONArray attributes = featureType.getJSONArray("attribute");
         assertEquals(3, attributes.length());
         String expectedAttributes = "[{'name': 'sp', 'type': 'STRING'},"
-                + "{'name': 'ip', 'type': INTEGER},"
+                + "{'name': 'ip', 'type': 'INTEGER'},"
                 + "{'name': 'geom', 'type': 'POINT', 'crs': 'urn:ogc:def:crs:EPSG::4326'}]";
-        JSONAssert.assertEquals(expectedAttributes, attributes.toString(), false);
+        assertTrue(
+                TestData.jsonEquals(TestData.toJSONArray(expectedAttributes), attributes, false));
 
     }
 

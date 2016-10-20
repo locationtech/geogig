@@ -31,7 +31,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class FetchTest extends AbstractWebOpTest {
 
@@ -115,7 +114,7 @@ public class FetchTest extends AbstractWebOpTest {
                 + branch2.getObjectId().toString() + "'},"
                 + "{'changeType':'ADDED_REF','name':'master','newValue':'"
                 + master.getObjectId().toString() + "'}]";
-        JSONAssert.assertEquals(expected, branch.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
     }
 
     @Test
@@ -169,7 +168,7 @@ public class FetchTest extends AbstractWebOpTest {
                 + branch2.getObjectId().toString() + "'},"
                 + "{'changeType':'ADDED_REF','name':'master','newValue':'"
                 + master.getObjectId().toString() + "'}]";
-        JSONAssert.assertEquals(expected, branch.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
     }
 
     @Test

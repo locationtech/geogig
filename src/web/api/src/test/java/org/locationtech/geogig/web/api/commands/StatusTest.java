@@ -24,7 +24,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class StatusTest extends AbstractWebOpTest {
 
@@ -85,7 +84,7 @@ public class StatusTest extends AbstractWebOpTest {
         String expectedStaged = "{'changeType':'ADDED','newPath':'" + point3_path
                 + "','newObjectId':'" + point3.getId().toString() + "','path':'','oldObjectId':'"
                 + ObjectId.NULL.toString() + "'}";
-        JSONAssert.assertEquals(expectedStaged, staged.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedStaged), staged, false));
 
         JSONArray unstaged = response.getJSONArray("unstaged");
         String expectedUnstaged = "[{'changeType':'MODIFIED','newPath':'" + point1_path
@@ -94,7 +93,7 @@ public class StatusTest extends AbstractWebOpTest {
                 + "'},{'changeType':'REMOVED','path':'" + point2_path + "','oldObjectId':'"
                 + point2.getId().toString() + "','newPath':'','newObjectId':'"
                 + ObjectId.NULL.toString() + "'}]";
-        JSONAssert.assertEquals(expectedUnstaged, unstaged.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedUnstaged), unstaged, false));
     }
 
 }

@@ -73,7 +73,7 @@ public class Init extends AbstractCommand implements CLICommand {
             if (cli.getRepositoryURI() == null) {
                 // current dir
                 File currDir = cli.getPlatform().pwd();
-                targetURI = currDir.getAbsoluteFile().toURI();
+                targetURI = currDir.getAbsoluteFile().getCanonicalFile().toURI();
             } else {
                 targetURI = URI.create(cli.getRepositoryURI());
             }

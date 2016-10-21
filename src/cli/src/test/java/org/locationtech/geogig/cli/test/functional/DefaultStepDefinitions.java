@@ -28,6 +28,7 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.pointsTyp
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -85,10 +86,10 @@ public class DefaultStepDefinitions {
 
     private CLIContext localRepo;
 
-    private String replaceKnownVariables(String s) {
+    private String replaceKnownVariables(String s) throws IOException {
         if (s.contains("${currentdir}")) {
             File pwd = localRepo.platform.pwd();
-            s = s.replace("${currentdir}", pwd.getAbsolutePath().replace("\\", "/"));
+            s = s.replace("${currentdir}", pwd.getCanonicalPath().replace("\\", "/"));
             s = s.replace("\"", "");
         }
         if (s.contains("${repoURI}")) {

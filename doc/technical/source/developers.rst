@@ -62,11 +62,13 @@ To work with the Eclipse IDE, follow these steps.
 
 	$mvn eclipse:eclipse
 
-- Open Eclipse and create a new workspace
+- Open Eclipse and create a new workspace by selecting *File->Switch Workspace->Other...* menu and choosing an empty directory
 
 - Select the *File->Import...* menu and then select "Existing projects from workspace". You will see the dialog shown below
 
 	.. figure:: ../img/import_eclipse.png
+
+- Select *Maven->Existing Maven Projects* and click on *Next*
 
 - In the *Select root directory* field, select the ``src`` folder where the GeoGig source code can be found (which now will also contain the Eclipse projects). The list of projects in the *Projects* field will be populated. 
 
@@ -76,7 +78,7 @@ To handle maven projects directly from Eclipse, you can use the `m2eclipse <http
 
 Once your workspace contains the GeoGig source code, configure it following these steps.
 
-- Open the preferences dialog (*Window->Preferences*) and in the left part, select the *Java->Editor->Formatter* entry.
+- Open the preferences dialog (*Eclipse->Preferences*) and in the left part, select the *Java->Code Style->Formatter* entry.
 
 	.. figure:: ../img/formatter.png
 

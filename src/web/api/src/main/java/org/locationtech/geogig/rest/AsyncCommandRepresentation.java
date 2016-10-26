@@ -91,7 +91,7 @@ public abstract class AsyncCommandRepresentation<T> extends StreamingWriterRepre
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         cause.printStackTrace(new PrintStream(out));
         String statckTrace = out.toString();
-        w.writeLargeElement("stackTrace", statckTrace);
+        w.writeCDataElement("stackTrace", statckTrace);
 
         w.writeEndElement();
     }

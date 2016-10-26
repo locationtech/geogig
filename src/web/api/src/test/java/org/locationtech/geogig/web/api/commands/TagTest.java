@@ -12,7 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTag;
@@ -26,7 +27,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.restlet.data.Method;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.collect.ImmutableList;
 
@@ -81,11 +81,12 @@ public class TagTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of();
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         String expectedTags = "[" + expectedTagString(branch1Tag) + ","
                 + expectedTagString(masterTag) + "]";
-        JSONAssert.assertEquals(expectedTags, response.getJSONArray("Tag").toString(), true);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedTags),
+                response.getJsonArray("Tag"), true));
     }
 
     @Test
@@ -157,10 +158,11 @@ public class TagTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("name", "Branch1Tag");
         testContext.setRequestMethod(Method.DELETE);
         buildCommand(options).run(testContext.get());
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         String expectedTag = expectedTagString(branch1Tag);
-        JSONAssert.assertEquals(expectedTag, response.getJSONObject("DeletedTag").toString(), true);
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedTag),
+                response.getJsonObject("DeletedTag"), true));
 
         ImmutableList<RevTag> tags = geogig.command(TagListOp.class).call();
         assertEquals(1, tags.size());
@@ -224,11 +226,12 @@ public class TagTest extends AbstractWebOpTest {
         testContext.setRequestMethod(Method.PUT);
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         String expectedTag = "{'name':'MasterTag', 'commitid':'" + master.getObjectId()
                 + "', 'message':'', 'tagger': {'name':'John Doe', 'email':'JohnDoe@example.com'}}";
-        JSONAssert.assertEquals(expectedTag, response.getJSONObject("Tag").toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedTag), response.getJsonObject("Tag"),
+                false));
 
         ImmutableList<RevTag> tags = geogig.command(TagListOp.class).call();
         assertEquals(1, tags.size());
@@ -252,11 +255,12 @@ public class TagTest extends AbstractWebOpTest {
         testContext.setRequestMethod(Method.PUT);
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         String expectedTag = "{'name':'MasterTag', 'commitid':'" + master.getObjectId()
                 + "', 'message':'My tag message', 'tagger': {'name':'John Doe', 'email':'JohnDoe@example.com'}}";
-        JSONAssert.assertEquals(expectedTag, response.getJSONObject("Tag").toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedTag), response.getJsonObject("Tag"),
+                false));
 
         ImmutableList<RevTag> tags = geogig.command(TagListOp.class).call();
         assertEquals(1, tags.size());

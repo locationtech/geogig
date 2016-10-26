@@ -10,7 +10,7 @@
 package org.locationtech.geogig.web;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.locationtech.geogig.rest.repository.RESTUtils.getStringAttribute;
+import static org.locationtech.geogig.web.api.RESTUtils.getStringAttribute;
 
 import java.io.IOException;
 import java.net.URI;

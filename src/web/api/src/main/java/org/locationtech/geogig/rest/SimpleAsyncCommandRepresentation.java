@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -9,11 +9,10 @@
  */
 package org.locationtech.geogig.rest;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
+import org.locationtech.geogig.web.api.StreamWriterException;
 import org.restlet.data.MediaType;
+import org.locationtech.geogig.web.api.StreamingWriter;
 
 public class SimpleAsyncCommandRepresentation<T> extends AsyncCommandRepresentation<T> {
 
@@ -22,12 +21,12 @@ public class SimpleAsyncCommandRepresentation<T> extends AsyncCommandRepresentat
     }
 
     @Override
-    protected void writeResult(XMLStreamWriter w, Object result) throws XMLStreamException {
+    protected void writeResult(StreamingWriter w, Object result) throws StreamWriterException {
         // do nothing
     }
 
     @Override
-    protected void writeResultBody(XMLStreamWriter w, Object result) throws XMLStreamException {
+    protected void writeResultBody(StreamingWriter w, Object result) throws StreamWriterException {
         // do nothing
     }
 }

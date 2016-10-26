@@ -12,8 +12,10 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.CommitOp;
@@ -25,7 +27,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class RebuildGraphTest extends AbstractWebOpTest {
 
@@ -87,12 +88,12 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of();
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject rebuildGraph = response.getJSONObject("RebuildGraph");
+        JsonObject rebuildGraph = response.getJsonObject("RebuildGraph");
         assertEquals(4, rebuildGraph.getInt("updatedGraphElements"));
-        JSONArray updatedObjects = rebuildGraph.getJSONArray("UpdatedObject");
-        assertEquals(4, updatedObjects.length());
+        JsonArray updatedObjects = rebuildGraph.getJsonArray("UpdatedObject");
+        assertEquals(4, updatedObjects.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
         // The root commit will not get reported because it will be added to the graph when commit2
         // is processed because it is a parent of commit2. It wont be flagged as updated because
@@ -101,7 +102,8 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         expectedCommits.append("{'ref': '" + commit3.getId().toString() + "'},");
         expectedCommits.append("{'ref': '" + commit4.getId().toString() + "'},");
         expectedCommits.append("{'ref': '" + commit5.getId().toString() + "'}]");
-        JSONAssert.assertEquals(expectedCommits.toString(), updatedObjects.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()),
+                updatedObjects, false));
     }
 
     @Test
@@ -137,10 +139,10 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("quiet", "true");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject rebuildGraph = response.getJSONObject("RebuildGraph");
+        JsonObject rebuildGraph = response.getJsonObject("RebuildGraph");
         String expectedResponse = "{'updatedGraphElements':4}";
-        JSONAssert.assertEquals(expectedResponse, rebuildGraph.toString(), true);
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedResponse), rebuildGraph, false));
     }
 }

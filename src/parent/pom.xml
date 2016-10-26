@@ -91,7 +91,7 @@
     <guava.version>18.0</guava.version>
     <guice.version>4.0</guice.version>
     <jcommander.version>1.48</jcommander.version>
-    <jettison.version>1.0.1</jettison.version> <!-- matches version used in geoserver -->
+    <jsonp.version>1.0.4</jsonp.version>
     <jdt-annotation.version>1.1.0</jdt-annotation.version>
     <jts.version>1.13</jts.version>
     <junit.version>4.12</junit.version>
@@ -277,9 +277,9 @@
         <version>${sqljdbc4.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.codehaus.jettison</groupId>
-        <artifactId>jettison</artifactId>
-        <version>${jettison.version}</version>
+        <groupId>org.glassfish</groupId>
+        <artifactId>javax.json</artifactId>
+        <version>${jsonp.version}</version>
       </dependency>
       <dependency>
         <groupId>org.restlet</groupId>

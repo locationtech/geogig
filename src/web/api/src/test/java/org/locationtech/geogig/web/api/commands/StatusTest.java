@@ -11,8 +11,10 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -24,7 +26,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class StatusTest extends AbstractWebOpTest {
 
@@ -79,22 +80,24 @@ public class StatusTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of();
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject staged = response.getJSONObject("staged");
+        JsonArray stagedArray = response.getJsonArray("staged");
+        assertEquals(1, stagedArray.getValuesAs(JsonValue.class).size());
+        JsonObject staged = stagedArray.getJsonObject(0);
         String expectedStaged = "{'changeType':'ADDED','newPath':'" + point3_path
                 + "','newObjectId':'" + point3.getId().toString() + "','path':'','oldObjectId':'"
                 + ObjectId.NULL.toString() + "'}";
-        JSONAssert.assertEquals(expectedStaged, staged.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expectedStaged), staged, false));
 
-        JSONArray unstaged = response.getJSONArray("unstaged");
+        JsonArray unstaged = response.getJsonArray("unstaged");
         String expectedUnstaged = "[{'changeType':'MODIFIED','newPath':'" + point1_path
                 + "','newObjectId':'" + point1_modified.getId().toString() + "','path':'"
                 + point1_path + "','oldObjectId':'" + point1.getId().toString()
                 + "'},{'changeType':'REMOVED','path':'" + point2_path + "','oldObjectId':'"
                 + point2.getId().toString() + "','newPath':'','newObjectId':'"
                 + ObjectId.NULL.toString() + "'}]";
-        JSONAssert.assertEquals(expectedUnstaged, unstaged.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedUnstaged), unstaged, false));
     }
 
 }

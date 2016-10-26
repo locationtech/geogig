@@ -12,8 +12,10 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObjectTestSupport;
@@ -27,7 +29,6 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class GetCommitGraphTest extends AbstractWebOpTest {
 
@@ -102,17 +103,18 @@ public class GetCommitGraphTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("commitId", commit5.getId().toString());
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONArray commits = response.getJSONArray("commit");
-        assertEquals(5, commits.length());
+        JsonArray commits = response.getJsonArray("commit");
+        assertEquals(5, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
         expectedCommits.append("{'id': '" + commit1.getId().toString() + "'},");
         expectedCommits.append("{'id': '" + commit2.getId().toString() + "'},");
         expectedCommits.append("{'id': '" + commit3.getId().toString() + "'},");
         expectedCommits.append("{'id': '" + commit4.getId().toString() + "'},");
         expectedCommits.append("{'id': '" + commit5.getId().toString() + "'}]");
-        JSONAssert.assertEquals(expectedCommits.toString(), commits.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
+                false));
     }
 
     @Test
@@ -147,15 +149,16 @@ public class GetCommitGraphTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("depth", "2", "commitId", commit5.getId().toString());
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONArray commits = response.getJSONArray("commit");
-        assertEquals(3, commits.length());
+        JsonArray commits = response.getJsonArray("commit");
+        assertEquals(3, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
         expectedCommits.append("{'id': '" + commit3.getId().toString() + "'},");
         expectedCommits.append("{'id': '" + commit4.getId().toString() + "'},");
         expectedCommits.append("{'id': '" + commit5.getId().toString() + "'}]");
-        JSONAssert.assertEquals(expectedCommits.toString(), commits.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
+                false));
 
     }
 }

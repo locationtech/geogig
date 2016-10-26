@@ -12,6 +12,7 @@ package org.locationtech.geogig.rest.geotools;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.web.api.TestData.line1;
 import static org.locationtech.geogig.web.api.TestData.line2;
 import static org.locationtech.geogig.web.api.TestData.line3;
@@ -31,14 +32,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.geotools.data.DataStore;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.store.FeatureIteratorIterator;
-import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +56,6 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.BoundingBox;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -216,15 +216,15 @@ public class ExportTest extends AbstractWebOpTest {
         }
     }
 
-    private MemoryDataStore run(Export op) throws JSONException, InterruptedException,
+    private MemoryDataStore run(Export op) throws InterruptedException,
             ExecutionException {
 
         op.run(context);
 
         //final String expected = "{'task':{'id':1,'status':'RUNNING','description':'MemoryDataStore test output format','href':'/geogig/tasks/1.json'}}";
         final String expected = "{'task':{'id':1,'description':'MemoryDataStore test output format','href':'/geogig/tasks/1.json'}}";
-        JSONObject response = getJSONResponse();
-        JSONAssert.assertEquals(expected, response.toString(), false);
+        JsonObject response = getJSONResponse();
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expected), response, false));
 
         Optional<AsyncCommand<?>> asyncCommand = Optional.absent();
         while (!asyncCommand.isPresent()) {

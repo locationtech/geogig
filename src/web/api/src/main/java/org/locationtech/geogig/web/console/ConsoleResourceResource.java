@@ -27,7 +27,7 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.rest.repository.RESTUtils;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.resource.InputRepresentation;

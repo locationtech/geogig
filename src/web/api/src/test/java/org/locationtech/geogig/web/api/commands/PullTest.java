@@ -14,8 +14,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
@@ -36,7 +38,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class PullTest extends AbstractWebOpTest {
 
@@ -112,19 +113,19 @@ public class PullTest extends AbstractWebOpTest {
         assertEquals(remoteBranch1.getObjectId(), branch1.getObjectId());
         assertEquals(remoteBranch2.getObjectId(), branch2.getObjectId());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject pull = response.getJSONObject("Pull");
-        JSONObject remoteObject = pull.getJSONObject("Fetch").getJSONObject("Remote");
+        JsonObject pull = response.getJsonObject("Pull");
+        JsonObject remoteObject = pull.getJsonObject("Fetch").getJsonObject("Remote");
         assertEquals(remote.getFetchURL(), remoteObject.getString("remoteURL"));
-        JSONArray branch = remoteObject.getJSONArray("Branch");
+        JsonArray branch = remoteObject.getJsonArray("Branch");
         String expected = "[{'changeType':'ADDED_REF','name':'branch1','newValue':'"
                 + branch1.getObjectId().toString() + "'},"
                 + "{'changeType':'ADDED_REF','name':'branch2','newValue':'"
                 + branch2.getObjectId().toString() + "'},"
                 + "{'changeType':'ADDED_REF','name':'master','newValue':'"
                 + master.getObjectId().toString() + "'}]";
-        JSONAssert.assertEquals(expected, branch.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
         assertEquals(remote.getFetchURL(), pull.getString("Remote"));
         assertEquals("master", pull.getString("Ref"));
         assertEquals(9, pull.getInt("Added"));
@@ -173,19 +174,19 @@ public class PullTest extends AbstractWebOpTest {
         assertEquals(remoteBranch2.getObjectId(), branch2.getObjectId());
         assertEquals(remoteBranch1.getObjectId(), newbranch.getObjectId());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject pull = response.getJSONObject("Pull");
-        JSONObject remoteObject = pull.getJSONObject("Fetch").getJSONObject("Remote");
+        JsonObject pull = response.getJsonObject("Pull");
+        JsonObject remoteObject = pull.getJsonObject("Fetch").getJsonObject("Remote");
         assertEquals(remote.getFetchURL(), remoteObject.getString("remoteURL"));
-        JSONArray branch = remoteObject.getJSONArray("Branch");
+        JsonArray branch = remoteObject.getJsonArray("Branch");
         String expected = "[{'changeType':'ADDED_REF','name':'branch1','newValue':'"
                 + branch1.getObjectId().toString() + "'},"
                 + "{'changeType':'ADDED_REF','name':'branch2','newValue':'"
                 + branch2.getObjectId().toString() + "'},"
                 + "{'changeType':'ADDED_REF','name':'master','newValue':'"
                 + master.getObjectId().toString() + "'}]";
-        JSONAssert.assertEquals(expected, branch.toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
         assertEquals(remote.getFetchURL(), pull.getString("Remote"));
         assertEquals("newbranch", pull.getString("Ref"));
         assertEquals(6, pull.getInt("Added"));
@@ -230,11 +231,12 @@ public class PullTest extends AbstractWebOpTest {
         assertEquals(remoteBranch1.getObjectId(), branch1.getObjectId());
         assertEquals(remoteBranch2.getObjectId(), branch2.getObjectId());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject pull = response.getJSONObject("Pull");
-        String expected = "{'Fetch':''}";
-        JSONAssert.assertEquals(expected, pull.toString(), false);
+        JsonObject pull = response.getJsonObject("Pull");
+        JsonObject fetchObj = pull.getJsonObject("Fetch");
+
+        assertTrue(TestData.jsonEquals(TestData.toJSON("{}"), fetchObj, false));
     }
 
     @Test
@@ -299,21 +301,26 @@ public class PullTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
+        JsonObject merge = response.getJsonObject("Merge");
         assertEquals(ours.getId().toString(), merge.getString("ours"));
         assertEquals(ancestor.getId().toString(), merge.getString("ancestor"));
         assertEquals(theirs.getId().toString(), merge.getString("theirs"));
         assertEquals(1, merge.getInt("conflicts"));
-        JSONObject feature = merge.getJSONObject("Feature");
-        assertEquals("CONFLICT", feature.get("change"));
+        JsonArray featureArray = merge.getJsonArray("Feature");
+        assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
+        JsonObject feature = featureArray.getJsonObject(0);
+        assertEquals("CONFLICT", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point1.getID());
-        assertEquals(path, feature.get("id"));
-        assertEquals("POINT (0 0)", feature.get("geometry"));
-        assertEquals(point1_id.toString(), feature.get("theirvalue"));
-        assertEquals(ObjectId.NULL.toString(), feature.get("ourvalue"));
+        assertEquals(path, feature.getString("id"));
+        JsonArray geometryArray = feature.getJsonArray("geometry");
+        assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
+        String geometry = geometryArray.getString(0);
+        assertEquals("POINT (0 0)", geometry);
+        assertEquals(point1_id.toString(), feature.getString("theirvalue"));
+        assertEquals(ObjectId.NULL.toString(), feature.getString("ourvalue"));
     }
 
     @Test
@@ -348,20 +355,25 @@ public class PullTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("remoteName", "origin", "ref", "master:branch1");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
+        JsonObject merge = response.getJsonObject("Merge");
         assertEquals(ours.getId().toString(), merge.getString("ours"));
         assertEquals(ancestor.getId().toString(), merge.getString("ancestor"));
         assertEquals(theirs.getId().toString(), merge.getString("theirs"));
         assertEquals(1, merge.getInt("conflicts"));
-        JSONObject feature = merge.getJSONObject("Feature");
-        assertEquals("CONFLICT", feature.get("change"));
+        JsonArray featureArray = merge.getJsonArray("Feature");
+        assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
+        JsonObject feature = featureArray.getJsonObject(0);
+        assertEquals("CONFLICT", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point1.getID());
-        assertEquals(path, feature.get("id"));
-        assertEquals("POINT (0 0)", feature.get("geometry"));
-        assertEquals(point1_id.toString(), feature.get("theirvalue"));
-        assertEquals(ObjectId.NULL.toString(), feature.get("ourvalue"));
+        assertEquals(path, feature.getString("id"));
+        JsonArray geometryArray = feature.getJsonArray("geometry");
+        assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
+        String geometry = geometryArray.getString(0);
+        assertEquals("POINT (0 0)", geometry);
+        assertEquals(point1_id.toString(), feature.getString("theirvalue"));
+        assertEquals(ObjectId.NULL.toString(), feature.getString("ourvalue"));
     }
 }

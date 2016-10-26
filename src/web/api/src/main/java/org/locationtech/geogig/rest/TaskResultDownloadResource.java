@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.rest;
 
-import static org.locationtech.geogig.rest.repository.RESTUtils.getStringAttribute;
+import static org.locationtech.geogig.web.api.RESTUtils.getStringAttribute;
 
 import java.io.File;
 import java.io.IOException;

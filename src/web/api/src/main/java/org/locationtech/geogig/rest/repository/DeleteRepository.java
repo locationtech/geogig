@@ -9,19 +9,19 @@
  */
 package org.locationtech.geogig.rest.repository;
 
+import org.locationtech.geogig.web.api.RESTUtils;
+
 import static org.locationtech.geogig.rest.Variants.JSON;
 import static org.locationtech.geogig.rest.Variants.XML;
 import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
 
 import java.util.List;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.rest.JettisonRepresentation;
+import org.locationtech.geogig.rest.StreamingWriterRepresentation;
 import org.locationtech.geogig.web.api.StreamResponse;
+import org.locationtech.geogig.web.api.StreamWriterException;
 import org.locationtech.geogig.web.api.StreamWriterRepresentation;
 import org.restlet.Context;
 import org.restlet.data.Form;
@@ -33,6 +33,8 @@ import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
 
 import com.google.common.base.Optional;
+
+import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
  * Allows a user to delete a repository.
@@ -106,7 +108,7 @@ public class DeleteRepository extends Resource {
         return "command/delete/" + token;
     }
 
-    private static class DeleteRepositoryRepresentation extends JettisonRepresentation {
+    private static class DeleteRepositoryRepresentation extends StreamingWriterRepresentation {
 
         final String repoName;
 
@@ -117,10 +119,8 @@ public class DeleteRepository extends Resource {
         }
 
         @Override
-        protected void write(XMLStreamWriter w) throws XMLStreamException {
-            w.writeStartElement("deleted");
-            w.writeCharacters(repoName);
-            w.writeEndElement();
+        protected void write(StreamingWriter w) throws StreamWriterException {
+            w.writeElement("deleted", repoName);
         }
 
     }

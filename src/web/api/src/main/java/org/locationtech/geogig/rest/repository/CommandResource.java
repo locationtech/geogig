@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +14,7 @@ import static org.locationtech.geogig.rest.Variants.CSV_MEDIA_TYPE;
 import static org.locationtech.geogig.rest.Variants.JSON;
 import static org.locationtech.geogig.rest.Variants.XML;
 import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
-import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
+import static org.locationtech.geogig.web.api.RESTUtils.getGeogig;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,9 +28,10 @@ import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
-import org.locationtech.geogig.web.api.CommandResponseJettisonRepresentation;
+import org.locationtech.geogig.web.api.CommandResponseStreamingWriterRepresentation;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.web.api.StreamResponse;
 import org.locationtech.geogig.web.api.StreamWriterRepresentation;
 import org.locationtech.geogig.web.api.WebAPICommand;
@@ -201,7 +202,7 @@ public class CommandResource extends Resource {
         if (format == CSV_MEDIA_TYPE) {
             return new StreamWriterRepresentation(format, StreamResponse.error(ex.getMessage()));
         }
-        return new CommandResponseJettisonRepresentation(format,
+        return new CommandResponseStreamingWriterRepresentation(format,
                 CommandResponse.error(ex.getMessage()), getJSONPCallback());
     }
 
@@ -213,7 +214,7 @@ public class CommandResource extends Resource {
         if (format == CSV_MEDIA_TYPE) {
             return new StreamWriterRepresentation(format, StreamResponse.error(ex.getMessage()));
         }
-        return new CommandResponseJettisonRepresentation(format,
+        return new CommandResponseStreamingWriterRepresentation(format,
                 CommandResponse.error(ex.getMessage()), getJSONPCallback());
 
     }
@@ -234,7 +235,7 @@ public class CommandResource extends Resource {
         if (format == CSV_MEDIA_TYPE) {
             return new StreamWriterRepresentation(format, StreamResponse.error(stack));
         }
-        return new CommandResponseJettisonRepresentation(format, CommandResponse.error(stack),
+        return new CommandResponseStreamingWriterRepresentation(format, CommandResponse.error(stack),
                 getJSONPCallback());
     }
 
@@ -308,7 +309,7 @@ public class CommandResource extends Resource {
                 throw new CommandSpecException(
                         "Unsupported Media Type: This response is only compatible with application/json and application/xml.");
             }
-            return new CommandResponseJettisonRepresentation(format, responseContent, callback);
+            return new CommandResponseStreamingWriterRepresentation(format, responseContent, callback);
         }
 
         @Override

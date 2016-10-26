@@ -20,13 +20,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
 import org.geotools.data.DataStore;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.json.JSONException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,7 +53,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.opengis.filter.Filter;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -577,11 +577,12 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         Status resultStatus = waitForTask(result);
         Assert.assertEquals(Status.FAILED, resultStatus);
 
-        JSONObject response = getJSONResponse();
-        JSONObject task = response.getJSONObject("task");
-        JSONObject merge = task.getJSONObject("result").getJSONObject("Merge");
+        JsonObject response = getJSONResponse();
+        JsonObject task = response.getJsonObject("task");
+        JsonObject merge = task.getJsonObject("result").getJsonObject("Merge");
         assertEquals(1, merge.getInt("conflicts"));
-        JSONObject conflictedFeature = merge.getJSONObject("Feature");
+        JsonArray featureArray = merge.getJsonArray("Feature");
+        JsonObject conflictedFeature = featureArray.getJsonObject(0);
         assertEquals("CONFLICT", conflictedFeature.getString("change"));
         assertEquals("Points/Point.1", conflictedFeature.getString("id"));
     }
@@ -618,18 +619,19 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         Assert.assertFalse("Expected repo to be empty, but has nodes", nodeIterator.hasNext());
     }
 
-    private AsyncContext.AsyncCommand<?> run(Import op)
-            throws JSONException, InterruptedException, ExecutionException {
+    private AsyncContext.AsyncCommand<?> run(Import op) throws InterruptedException,
+            ExecutionException {
         return run(op, "1");
     }
 
     private AsyncContext.AsyncCommand<?> run(Import op, String taskId)
-            throws JSONException, InterruptedException, ExecutionException {
+            throws InterruptedException, ExecutionException {
         op.run(context);
-        JSONObject response = getJSONResponse();
-        JSONAssert.assertEquals(String.format(
+        JsonObject response = getJSONResponse();
+        JsonObject expected = TestData.toJSON(String.format(
                 "{'task':{'id':%s,'description':'Importing GeoPackage database file.','href':'/geogig/tasks/%s.json'}}",
-                taskId, taskId), response.toString(), false);
+                taskId, taskId));
+        assertTrue(TestData.jsonEquals(expected, response, false));
         Optional<AsyncContext.AsyncCommand<?>> asyncCommand = Optional.absent();
         while (!asyncCommand.isPresent()) {
             asyncCommand = testAsyncContext.getAndPruneIfFinished(taskId);

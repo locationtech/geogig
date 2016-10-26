@@ -10,21 +10,23 @@
 package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
-import org.locationtech.geogig.rest.repository.RESTUtils;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
+import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.TestRepository;
 import org.locationtech.geogig.web.api.WebAPICommand;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class RenameRepositoryTest extends AbstractWebOpTest {
 
@@ -71,10 +73,10 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
                 RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + "newRepoName",
                 MediaType.APPLICATION_JSON);
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
-        JSONAssert.assertEquals(
-                "{'success':true, 'repo': {'name': 'newRepoName', 'href': '" + expectedURL + "'}}",
-                response.toString(), true);
+        JsonObject response = getJSONResponse().getJsonObject("response");
+        assertTrue(TestData.jsonEquals(TestData.toJSON(
+                "{'success':true, 'repo': {'name': 'newRepoName', 'href': '" + expectedURL + "'}}"),
+                response, true));
     }
 
     @Test

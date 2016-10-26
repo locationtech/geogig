@@ -13,7 +13,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -141,9 +144,9 @@ public class MergeTest extends AbstractWebOpTest {
         assertTrue(transaction.command(FindTreeChild.class).setChildPath(path).call()
                 .isPresent());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
+        JsonObject merge = response.getJsonObject("Merge");
         assertEquals(ours.getId().toString(), merge.getString("ours"));
         assertEquals(ancestor.getId().toString(), merge.getString("ancestor"));
         assertEquals(theirs.getId().toString(), merge.getString("theirs"));
@@ -178,21 +181,26 @@ public class MergeTest extends AbstractWebOpTest {
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
+        JsonObject merge = response.getJsonObject("Merge");
         assertEquals(ours.getId().toString(), merge.getString("ours"));
         assertEquals(ancestor.getId().toString(), merge.getString("ancestor"));
         assertEquals(theirs.getId().toString(), merge.getString("theirs"));
         assertEquals(1, merge.getInt("conflicts"));
-        JSONObject feature = merge.getJSONObject("Feature");
-        assertEquals("CONFLICT", feature.get("change"));
+        JsonArray featureArray = merge.getJsonArray("Feature");
+        assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
+        JsonObject feature = featureArray.getJsonObject(0);
+        assertEquals("CONFLICT", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point1.getID());
-        assertEquals(path, feature.get("id"));
-        assertEquals("POINT (0 0)", feature.get("geometry"));
-        assertEquals(point1_id.toString(), feature.get("ourvalue"));
-        assertEquals(ObjectId.NULL.toString(), feature.get("theirvalue"));
+        assertEquals(path, feature.getString("id"));
+        JsonArray geometryArray = feature.getJsonArray("geometry");
+        assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
+        String geometry = geometryArray.getString(0);
+        assertEquals("POINT (0 0)", geometry);
+        assertEquals(point1_id.toString(), feature.getString("ourvalue"));
+        assertEquals(ObjectId.NULL.toString(), feature.getString("theirvalue"));
     }
 
 }

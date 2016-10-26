@@ -10,10 +10,13 @@
 package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureBuilder;
@@ -121,16 +124,20 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("ourCommit", "master", "theirCommit", "branch1");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
-        System.out.println(response);
-        JSONObject feature = merge.getJSONObject("Feature");
-        assertEquals("ADDED", feature.get("change"));
+        JsonObject merge = response.getJsonObject("Merge");
+        JsonArray featureArray = merge.getJsonArray("Feature");
+        assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
+        JsonObject feature = featureArray.getJsonObject(0);
+        assertEquals("ADDED", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point3.getID());
-        assertEquals(path, feature.get("id"));
-        assertEquals("POINT (10 10)", feature.get("geometry"));
+        assertEquals(path, feature.getString("id"));
+        JsonArray geometryArray = feature.getJsonArray("geometry");
+        assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
+        String geometry = geometryArray.getString(0);
+        assertEquals("POINT (10 10)", geometry);
     }
 
     @Test
@@ -157,17 +164,22 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("ourCommit", "master", "theirCommit", "branch1");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
-        JSONObject feature = merge.getJSONObject("Feature");
-        assertEquals("CONFLICT", feature.get("change"));
+        JsonObject merge = response.getJsonObject("Merge");
+        JsonArray featureArray = merge.getJsonArray("Feature");
+        assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
+        JsonObject feature = featureArray.getJsonObject(0);
+        assertEquals("CONFLICT", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point1.getID());
-        assertEquals(path, feature.get("id"));
-        assertEquals("POINT (0 0)", feature.get("geometry"));
-        assertEquals(point1_id.toString(), feature.get("ourvalue"));
-        assertEquals(ObjectId.NULL.toString(), feature.get("theirvalue"));
+        assertEquals(path, feature.getString("id"));
+        JsonArray geometryArray = feature.getJsonArray("geometry");
+        assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
+        String geometry = geometryArray.getString(0);
+        assertEquals("POINT (0 0)", geometry);
+        assertEquals(point1_id.toString(), feature.getString("ourvalue"));
+        assertEquals(ObjectId.NULL.toString(), feature.getString("theirvalue"));
     }
 
     @Test
@@ -194,15 +206,20 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
                 "elementsPerPage", "1");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
-        JSONObject feature = merge.getJSONObject("Feature");
-        assertEquals("ADDED", feature.get("change"));
+        JsonObject merge = response.getJsonObject("Merge");
+        JsonArray featureArray = merge.getJsonArray("Feature");
+        assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
+        JsonObject feature = featureArray.getJsonObject(0);
+        assertEquals("ADDED", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point3.getID());
-        assertEquals(path, feature.get("id"));
-        assertEquals("POINT (10 10)", feature.get("geometry"));
+        assertEquals(path, feature.getString("id"));
+        JsonArray geometryArray = feature.getJsonArray("geometry");
+        assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
+        String geometry = geometryArray.getString(0);
+        assertEquals("POINT (10 10)", geometry);
         assertTrue(merge.getBoolean("additionalChanges"));
 
         // The response doesn't write out trees, so the second page will have no features
@@ -210,9 +227,9 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
                 "1", "page", "1");
         buildCommand(options).run(testContext.get());
 
-        response = getJSONResponse().getJSONObject("response");
+        response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        merge = response.getJSONObject("Merge");
+        merge = response.getJsonObject("Merge");
         assertTrue(merge.getBoolean("additionalChanges"));
 
         // Third page will have the added line feature
@@ -220,15 +237,20 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
                 "1", "page", "2");
         buildCommand(options).run(testContext.get());
 
-        response = getJSONResponse().getJSONObject("response");
+        response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        merge = response.getJSONObject("Merge");
-        feature = merge.getJSONObject("Feature");
-        assertEquals("ADDED", feature.get("change"));
+        merge = response.getJsonObject("Merge");
+        featureArray = merge.getJsonArray("Feature");
+        assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
+        feature = featureArray.getJsonObject(0);
+        assertEquals("ADDED", feature.getString("change"));
         path = NodeRef.appendChild(TestData.linesType.getTypeName(), TestData.line1.getID());
-        assertEquals(path, feature.get("id"));
-        assertEquals("LINESTRING (-1 -1, 1 1)", feature.get("geometry"));
-        assertFalse(merge.has("additionalChanges"));
+        assertEquals(path, feature.getString("id"));
+        geometryArray = feature.getJsonArray("geometry");
+        assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
+        geometry = geometryArray.getString(0);
+        assertEquals("LINESTRING (-1 -1, 1 1)", geometry);
+        assertNull(merge.getJsonObject("additionalChanges"));
     }
 
 }

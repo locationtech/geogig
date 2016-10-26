@@ -12,6 +12,7 @@ package org.locationtech.geogig.rest.geopkg;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.web.api.TestData.line1;
 import static org.locationtech.geogig.web.api.TestData.line2;
 import static org.locationtech.geogig.web.api.TestData.line3;
@@ -38,7 +39,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.Transaction;
@@ -48,7 +50,6 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
-import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,7 +64,6 @@ import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.TestData;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.geometry.BoundingBox;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -277,7 +277,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         assertEquals(Sets.newHashSet("Lines_audit", "Polygons_audit"), getAuditTableNames(result));
     }
 
-    private File run(Export op) throws JSONException, InterruptedException, ExecutionException {
+    private File run(Export op) throws InterruptedException, ExecutionException {
 
         op.run(context);
 
@@ -288,8 +288,8 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
             expected = "{'task':{'id':1,'description':'Export to Geopackage database','href':'/geogig/tasks/1.json'}}";
         }
 
-        JSONObject response = getJSONResponse();
-        JSONAssert.assertEquals(expected, response.toString(), false);
+        JsonObject response = getJSONResponse();
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expected), response, false));
 
         Optional<AsyncCommand<?>> asyncCommand = Optional.absent();
         while (!asyncCommand.isPresent()) {
@@ -302,9 +302,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         return result;
     }
 
-    private DataStore store(File result)
-            throws JSONException, InterruptedException,
-            ExecutionException {
+    private DataStore store(File result) throws InterruptedException, ExecutionException {
 
         assertNotNull(result);
 

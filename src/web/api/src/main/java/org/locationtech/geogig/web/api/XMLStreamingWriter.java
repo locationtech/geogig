@@ -11,13 +11,15 @@ package org.locationtech.geogig.web.api;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 /**
- *
+ * Implementation of StreamingWriter for writing XML.
  */
 class XMLStreamingWriter implements StreamingWriter {
 
@@ -71,8 +73,24 @@ class XMLStreamingWriter implements StreamingWriter {
     public void writeElement(String name, Object value) throws StreamWriterException {
         writeStartElement(name);
         if (value != null) {
+            String valueToWrite = value.toString();
             try {
-                xml.writeCharacters(value.toString());
+                // try to parse out numeric values
+                if (Number.class.isAssignableFrom(value.getClass())) {
+                    try {
+                        final BigInteger bigInt = new BigInteger(valueToWrite);
+                        valueToWrite = bigInt.toString();
+                    } catch (NumberFormatException nfe) {
+                        // not an Integer, try Decimal
+                        try {
+                            final BigDecimal bigDecimal = new BigDecimal(valueToWrite);
+                            valueToWrite = bigDecimal.toPlainString();
+                        } catch (NumberFormatException nfe2) {
+                            // just use the string
+                        }
+                    }
+                }
+                xml.writeCharacters(valueToWrite);
             } catch (XMLStreamException e) {
                 throw new StreamWriterException(e);
             }
@@ -81,7 +99,7 @@ class XMLStreamingWriter implements StreamingWriter {
     }
 
     @Override
-    public void writeLargeElement(String name, Object value) throws StreamWriterException {
+    public void writeCDataElement(String name, Object value) throws StreamWriterException {
         writeStartElement(name);
         if (value != null) {
             try {
@@ -121,8 +139,8 @@ class XMLStreamingWriter implements StreamingWriter {
     }
 
     @Override
-    public void writeLargeArrayElement(String name, Object value) throws StreamWriterException {
-        writeLargeElement(name, value);
+    public void writeCDataArrayElement(String name, Object value) throws StreamWriterException {
+        writeCDataElement(name, value);
     }
 
     @Override

@@ -43,7 +43,7 @@ public interface StreamingWriter extends AutoCloseable, Flushable {
 
     public void writeElement(String name, @Nullable Object value) throws StreamWriterException;
 
-    public void writeLargeElement(String name, @Nullable Object value) throws StreamWriterException;
+    public void writeCDataElement(String name, @Nullable Object value) throws StreamWriterException;
 
     /**
      * Starts a new Array. This is similar to writeStartElement, but starts an array of repeated elements.
@@ -63,7 +63,7 @@ public interface StreamingWriter extends AutoCloseable, Flushable {
 
     public void writeArrayElement(String name, @Nullable Object value) throws StreamWriterException;
 
-    public void writeLargeArrayElement(String name, @Nullable Object value) throws StreamWriterException;
+    public void writeCDataArrayElement(String name, @Nullable Object value) throws StreamWriterException;
 
     public void writeAttribute(String name, String value) throws StreamWriterException;
 }

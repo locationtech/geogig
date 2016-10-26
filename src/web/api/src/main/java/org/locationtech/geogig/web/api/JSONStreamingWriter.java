@@ -11,23 +11,22 @@ package org.locationtech.geogig.web.api;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import javax.json.Json;
+import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
 
 /**
- *
+ * Implementation of StreamingWriter for writing JSON.
  */
 class JSONStreamingWriter implements StreamingWriter {
 
     private final JsonGenerator json;
 
     JSONStreamingWriter(Writer writer) {
-        try {
-            json = Json.createGenerator(writer);
-        } catch (Exception ex) {
-            throw new StreamWriterException("Failed to create JSONStreamingWriter", ex);
-        }
+        json = Json.createGenerator(writer);
     }
 
     @Override
@@ -52,60 +51,12 @@ class JSONStreamingWriter implements StreamingWriter {
 
     @Override
     public void writeElement(String name, Object value) throws StreamWriterException {
-        if (value == null || value.toString() == null) {
-            // handle nulls first
-            json.write(name, (String) null);
-            return;
-        }
-        // figure out if the VALUE is a primitive
-        final String valStr = value.toString();
-        // try numbers first
-        try {
-            // hack for NULL ObjectId
-            int valInt = Integer.parseInt(valStr);
-            if (valInt == 0 && valStr.length() > 1) {
-                // treat a bunch of zeros as a String
-                json.write(name, valStr);
-            } else {
-                // treat it as an int
-                json.write(name, valInt);
-            }
-            return;
-        } catch (NumberFormatException nfe) {
-            // not an Integer
-        }
-        try {
-            json.write(name, Long.parseLong(valStr));
-            return;
-        } catch (NumberFormatException nfe) {
-            // not a Long
-        }
-        try {
-            json.write(name, Float.parseFloat(valStr));
-            return;
-        } catch (NumberFormatException nfe) {
-            // not a Float
-        }
-        try {
-            json.write(name, Double.parseDouble(valStr));
-            return;
-        } catch (NumberFormatException nfe) {
-            // not a Double
-        }
-        // try boolean
-        if ("true".equalsIgnoreCase(valStr)) {
-            json.write(name, true);
-        } else if ("false".equalsIgnoreCase(valStr)) {
-            json.write(name, false);
-        } else {
-            // just do a string
-            json.write(name, valStr);
-        }
+        writeElementImpl(name, value, false);
     }
 
     @Override
-    public void writeLargeElement(String name, Object value) throws StreamWriterException {
-        json.write(name, value.toString());
+    public void writeCDataElement(String name, Object value) throws StreamWriterException {
+        writeElement(name, value);
     }
 
     @Override
@@ -132,61 +83,13 @@ class JSONStreamingWriter implements StreamingWriter {
     @Override
     public void writeArrayElement(String name, Object value) throws StreamWriterException {
         // if we are already in an array, just write the object
-        if (value == null || value.toString() == null) {
-            // handle nulls first
-            json.write((String) null);
-            return;
-        }
-        // figure out if the VALUE is a primitive
-        final String valStr = value.toString();
-        // try numbers first
-        try {
-            // hack for NULL ObjectId
-            int valInt = Integer.parseInt(valStr);
-            if (valInt == 0 && valStr.length() > 1) {
-                // treat a bunch of zeros as a String
-                json.write(valStr);
-            } else {
-                // treat it as an int
-                json.write(valInt);
-            }
-            return;
-        } catch (NumberFormatException nfe) {
-            // not an Integer
-        }
-        try {
-            json.write(Long.parseLong(valStr));
-            return;
-        } catch (NumberFormatException nfe) {
-            // not a Long
-        }
-        try {
-            json.write(Float.parseFloat(valStr));
-            return;
-        } catch (NumberFormatException nfe) {
-            // not a Float
-        }
-        try {
-            json.write(Double.parseDouble(valStr));
-            return;
-        } catch (NumberFormatException nfe) {
-            // not a Double
-        }
-        // try boolean
-        if ("true".equalsIgnoreCase(valStr)) {
-            json.write(true);
-        } else if ("false".equalsIgnoreCase(valStr)) {
-            json.write(false);
-        } else {
-            // just do a string
-            json.write(valStr);
-        }
+        writeElementImpl(name, value, true);
     }
 
     @Override
-    public void writeLargeArrayElement(String name, Object value) throws StreamWriterException {
+    public void writeCDataArrayElement(String name, Object value) throws StreamWriterException {
         // if we are already in an array, just write the object
-        json.write(value.toString());
+        writeArrayElement(name, value);
     }
 
     @Override
@@ -205,4 +108,92 @@ class JSONStreamingWriter implements StreamingWriter {
         json.flush();
     }
 
+    /**
+     * Writes the supplied content to the stream. Since the JSON stream writing has separate methods for writing data
+     * inside JSON objects as compared to JSON Arrays, we need to branch for each type of write to call the correct
+     * method.
+     *
+     * @param name      The element identifier/tag to write (only used when in the context of a JsonObject).
+     * @param value     The value to write (used for both JsonObject and JsonArray contexts).
+     * @param isInArray Flag to indicate if the value is being written to a JsonArray context. Should be "true" if the
+     *                  context being written to is a JsonArray, "false" if the context is a JsonObject.
+     *
+     * @throws StreamWriterException Error writing to the output stream.
+     */
+    private void writeElementImpl(final String name, final Object value, boolean isInArray)
+            throws StreamWriterException {
+        // check for NULL values first
+        if (value == null || value.toString() == null) {
+            if (isInArray) {
+                // JsonArray context, only write the value
+                json.write(JsonValue.NULL);
+            } else {
+                // non-JsonArray context, write the name and value
+                json.write(name, JsonValue.NULL);
+            }
+            // done handling NULL
+            return;
+        }
+        // handle non-null values
+        // figure out if the VALUE is a primitive
+        final String valStr = value.toString();
+        // try numbers first
+        try {
+            // hack for NULL ObjectId. A series of zeros (i.e. 000000) will parse as Integer value 0, but we want it as
+            // a String explicitly or it won't be written to the JSON stream correclty.
+            final BigInteger valInt = new BigInteger(valStr);
+            if (valInt.compareTo(BigInteger.ZERO) == 0 && valStr.length() > 1) {
+                // treat a bunch of zeros as a String
+                if (isInArray) {
+                    json.write(valStr);
+                } else {
+                    json.write(name, valStr);
+                }
+            } else {
+                // treat it as a BigInteger
+                if (isInArray) {
+                    json.write(valInt);
+                } else {
+                    json.write(name, valInt);
+                }
+            }
+            // done handling Integer and Long
+            return;
+        } catch (NumberFormatException nfe) {
+            // not an Integer
+        }
+        try {
+            final BigDecimal doubleValue = new BigDecimal(valStr);
+            if (isInArray) {
+                json.write(doubleValue);
+            } else {
+                json.write(name, doubleValue);
+            }
+            // done handling Float and Double
+            return;
+        } catch (NumberFormatException nfe) {
+            // not a Double
+        }
+        // handle Boolean
+        if ("true".equals(valStr)) {
+            if (isInArray) {
+                json.write(true);
+            } else {
+                json.write(name, true);
+            }
+        } else if ("false".equals(valStr)) {
+            if (isInArray) {
+                json.write(false);
+            } else {
+                json.write(name, false);
+            }
+        } else {
+            // handle generic String
+            if (isInArray) {
+                json.write(valStr);
+            } else {
+                json.write(name, valStr);
+            }
+        }
+    }
 }

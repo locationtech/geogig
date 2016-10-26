@@ -305,7 +305,7 @@ public class ResponseWriter {
             writeElement("removes", removes.toString());
         }
 
-        out.writeLargeElement("message", commit.getMessage());
+        out.writeCDataElement("message", commit.getMessage());
     }
 
     private void writeCommit(RevCommit commit, String tag, @Nullable Integer adds,

@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.rocksdb.RocksdbMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * <li>{@code audit_table VARCHAR}
  * </ul>
  */
-public class GeopkgGeogigMetadata {
+public class GeopkgGeogigMetadata implements AutoCloseable {
 
     private static final Logger LOG = LoggerFactory.getLogger(GeopkgGeogigMetadata.class);
 
@@ -65,10 +66,20 @@ public class GeopkgGeogigMetadata {
 
     public static final int AUDIT_OP_DELETE = 3;
 
+    private Map<String, RocksdbMap<String, String>> fidMappings = new HashMap<String, RocksdbMap<String, String>>();
+
     private Connection cx;
 
     public GeopkgGeogigMetadata(Connection connection) {
         this.cx = connection;
+    }
+
+    @Override
+    public void close() {
+        for (RocksdbMap<String, String> map : fidMappings.values()) {
+            map.close();
+        }
+        fidMappings.clear();
     }
 
     private String log(String sql) {
@@ -132,8 +143,11 @@ public class GeopkgGeogigMetadata {
     }
 
     public Map<String, String> getFidMappings(String tableName) throws SQLException {
+        if (fidMappings.containsKey(tableName)) {
+            return fidMappings.get(tableName);
+        }
         String fidTable = tableName + "_fids";
-        Map<String, String> mappings = new HashMap<String, String>();
+        RocksdbMap<String, String> mappings = new RocksdbMap<String, String>();
         DatabaseMetaData dbm = cx.getMetaData();
         ResultSet tables = dbm.getTables(null, null, fidTable, null);
         while (tables.next()) {
@@ -151,6 +165,7 @@ public class GeopkgGeogigMetadata {
                 }
             }
         }
+        fidMappings.put(tableName, mappings);
 
         return mappings;
     }

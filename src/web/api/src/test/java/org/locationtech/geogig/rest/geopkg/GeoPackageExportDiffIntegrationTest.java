@@ -212,9 +212,8 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
 
     private void assertFeatures(DataStore store, String typeName, SimpleFeature... expected)
             throws Exception {
-        try (Connection connection = ((JDBCDataStore) store)
-                .getConnection(Transaction.AUTO_COMMIT)) {
-            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+        try (Connection connection = ((JDBCDataStore) store).getConnection(Transaction.AUTO_COMMIT);
+                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
             Map<String, String> mappings = metadata.getFidMappings(typeName);
 
             SimpleFeatureSource source = store.getFeatureSource(typeName);

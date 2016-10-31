@@ -202,7 +202,7 @@ public class Import extends AbstractWebAPICommand {
             @Override
             public Representation apply(MediaType mediaType) {
                 AsyncCommandRepresentation<?> repr;
-                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl);
+                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl, true);
                 return repr;
 
             }

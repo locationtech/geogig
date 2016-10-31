@@ -151,7 +151,7 @@ public class ExportDiff extends AbstractWebAPICommand {
             @Override
             public Representation apply(MediaType mediaType) {
                 AsyncCommandRepresentation<?> repr;
-                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl);
+                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl, false);
                 return repr;
             }
         };

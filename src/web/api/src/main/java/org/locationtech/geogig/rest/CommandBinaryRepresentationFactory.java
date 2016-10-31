@@ -22,5 +22,5 @@ public interface CommandBinaryRepresentationFactory<R> {
     public boolean supports(Class<? extends AbstractGeoGigOp<?>> cmdClass);
 
     public AsyncCommandBinaryRepresentation<R> newRepresentation(AsyncContext.AsyncCommand<R> cmd,
-            MediaType mediaType, File binary);
+            MediaType mediaType, File binary, boolean cleanup);
 }

@@ -101,7 +101,7 @@ public class TaskStatusResource extends Resource {
                 asyncContext.getAndPruneIfFinished(taskId);
             }
         }
-        return Representations.newRepresentation(command, mediaType, rootPath);
+        return Representations.newRepresentation(command, mediaType, rootPath, prune);
     }
 
     private static class TaskListResource extends StreamingWriterRepresentation {
@@ -119,7 +119,7 @@ public class TaskStatusResource extends Resource {
             w.writeStartElement("tasks");
             for (AsyncCommand<? extends Object> c : all) {
                 AsyncCommandRepresentation<?> rep = Representations.newRepresentation(c,
-                        getMediaType(), baseURL);
+                        getMediaType(), baseURL, false);
                 rep.write(w);
             }
             w.writeEndElement();

@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.geotools.geopkg;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.locationtech.geogig.rocksdb.RocksdbMap;
 
 public class AuditReport {
 
@@ -20,9 +20,16 @@ public class AuditReport {
     public final AtomicLong added = new AtomicLong(), removed = new AtomicLong(),
             changed = new AtomicLong();
 
-    public final Map<String, String> newMappings = new HashMap<String, String>();
+    public RocksdbMap<String, String> newMappings = null;
 
     AuditReport(AuditTable table) {
         this.table = table;
+    }
+
+    public void addMapping(String key, String value) {
+        if (newMappings == null) {
+            newMappings = new RocksdbMap<String, String>();
+        }
+        newMappings.put(key, value);
     }
 }

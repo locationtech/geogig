@@ -57,15 +57,16 @@ public class GeopkgDataStoreImportOp extends DataStoreImportOp<RevCommit> {
             try {
                 final DataSource dataSource = geopkg.getDataSource();
                 try (Connection connection = dataSource.getConnection()) {
-                    GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
-                    importOp.setForwardingFeatureIteratorProvider(
-                            getFeatureIteratorTransformer(metadata));
-                    importOp.setProgressListener(getProgressListener());
-                    importOp.call();
-                    // add the imported data to the staging area
-                    callAdd();
-                    // commit the staged changes
-                    revCommit = callCommit();
+                    try (GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
+                        importOp.setForwardingFeatureIteratorProvider(
+                                getFeatureIteratorTransformer(metadata));
+                        importOp.setProgressListener(getProgressListener());
+                        importOp.call();
+                        // add the imported data to the staging area
+                        callAdd();
+                        // commit the staged changes
+                        revCommit = callCommit();
+                    }
                 }
             } finally {
                 geopkg.close();

@@ -165,17 +165,17 @@ public class GeoPkgExportOutputFormat extends Export.OutputFormat {
 
         @Override
         public AsyncCommandRepresentation<File> newRepresentation(AsyncCommand<File> cmd,
-                MediaType mediaType, String baseURL) {
+                MediaType mediaType, String baseURL, boolean cleanup) {
 
-            return new GeopgkExportRepresentation(mediaType, cmd, baseURL);
+            return new GeopgkExportRepresentation(mediaType, cmd, baseURL, cleanup);
         }
     }
 
     public static class GeopgkExportRepresentation extends AsyncCommandRepresentation<File> {
 
         public GeopgkExportRepresentation(MediaType mediaType, AsyncCommand<File> cmd,
-                String baseURL) {
-            super(mediaType, cmd, baseURL);
+                String baseURL, boolean cleanup) {
+            super(mediaType, cmd, baseURL, cleanup);
         }
 
         @Override

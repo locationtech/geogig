@@ -77,7 +77,7 @@ public class SimpleFeatureStoreRepresentation extends
 
         @Override
         public AsyncCommandBinaryRepresentation<SimpleFeatureStore> newRepresentation(
-                AsyncCommand<SimpleFeatureStore> cmd, MediaType mediaType, File binary) {
+                AsyncCommand<SimpleFeatureStore> cmd, MediaType mediaType, File binary, boolean cleanup) {
             return new SimpleFeatureStoreRepresentation(mediaType, cmd, binary);
         }
 

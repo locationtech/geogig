@@ -30,11 +30,15 @@ public abstract class AsyncCommandRepresentation<T> extends StreamingWriterRepre
 
     protected final AsyncCommand<T> cmd;
 
-    public AsyncCommandRepresentation(MediaType mediaType, AsyncCommand<T> cmd, String baseURL) {
+    private final boolean cleanup;
+
+    public AsyncCommandRepresentation(MediaType mediaType, AsyncCommand<T> cmd, String baseURL,
+            boolean cleanup) {
         super(mediaType, baseURL);
         checkNotNull(mediaType);
         checkNotNull(cmd);
         this.cmd = cmd;
+        this.cleanup = cleanup;
     }
 
     @Override
@@ -75,6 +79,9 @@ public abstract class AsyncCommandRepresentation<T> extends StreamingWriterRepre
             }
         }
         w.writeEndElement();// task
+        if (cleanup) {
+            cmd.close();
+        }
     }
 
     protected void writeResult(StreamingWriter w, T result) throws StreamWriterException {

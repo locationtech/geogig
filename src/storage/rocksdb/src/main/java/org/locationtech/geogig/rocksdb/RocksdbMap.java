@@ -45,8 +45,6 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
 
     private Map<K, V> putBuffer = new HashMap<K, V>();
 
-    private DBHandle dbhandle = null;
-
     private RocksDB db = null;
 
     private File dbDir = null;

@@ -2445,6 +2445,15 @@ public class DiffMatchPatch {
       }
       return unescapeForEncodeUriCompatability(text.toString());
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Patch)) {
+            return false;
+        }
+        Patch p = (Patch) o;
+        return p.toString().equals(toString());
+    }
   }
 
   /**

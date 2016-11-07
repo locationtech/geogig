@@ -46,7 +46,7 @@ The above command creates a new branch, but does not change to be working on tha
 
    geogig checkout newbranch
 
-To create a new branch and move to that branch in one command, use the ``-c`` option::
+To create a new branch and move to that branch in one command, use the ``-c`` option:
 
 .. code-block:: console
 

@@ -49,6 +49,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -358,16 +359,25 @@ public class WorkingTreeImpl implements WorkingTree {
         features = Iterators.filter(features, Predicates.notNull());
         features = Iterators.filter(features, (f) -> !progress.isCanceled());
 
+        Stopwatch insertTime = Stopwatch.createStarted();
         indexDatabase.putAll(features);
+        insertTime.stop();
         if (progress.isCanceled()) {
             return currentWorkHead.getId();
         }
+
+        progress.setDescription(String.format("%,d features inserted in %s", p.get(), insertTime));
 
         UpdateTree updateTree = context.command(UpdateTree.class).setRoot(currentWorkHead);
         parentBuilders.forEach((path, builder) -> {
 
             final NodeRef oldTreeRef = currentTrees.get(path);
+            progress.setDescription(String.format("Building final tree %s...", oldTreeRef.name()));
+            Stopwatch treeTime = Stopwatch.createStarted();
             final RevTree newFeatureTree = builder.build();
+            treeTime.stop();
+            progress.setDescription(String.format("%,d features tree built in %s",
+                    newFeatureTree.size(), treeTime));
             final NodeRef newTreeRef = oldTreeRef.update(newFeatureTree.getId(),
                     SpatialOps.boundsOf(newFeatureTree));
             updateTree.setChild(newTreeRef);

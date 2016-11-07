@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
@@ -318,6 +319,8 @@ public class WorkingTreeImpl implements WorkingTree {
 
         Map<String, RevTreeBuilder> parentBuilders = new HashMap<>();
 
+        progress.setProgress(0);
+        final AtomicLong p = new AtomicLong();
         Function<FeatureInfo, RevFeature> treeBuildingTransformer = (fi) -> {
             final String parentPath = NodeRef.parentPath(fi.getPath());
             final String fid = NodeRef.nodeFromPath(fi.getPath());
@@ -347,6 +350,7 @@ public class WorkingTreeImpl implements WorkingTree {
 
             parentBuilder.put(featureNode);
 
+            progress.setProgress(p.incrementAndGet());
             return feature;
         };
 

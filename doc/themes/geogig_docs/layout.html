@@ -120,9 +120,6 @@
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="{{ pathto('_static/screen.css', 1) }}" type="text/css" media="screen, projection" />
   <link rel="stylesheet" href="{{ pathto('_static/print.css', 1) }}" type="text/css" media="print" />
-  <!--[if IE]>
-  <link rel="stylesheet" href="{{ pathto('_static/blueprint/ie.css', 1) }}" type="text/css" media="screen, projection" />
-  <![endif]-->
   {%- endblock %}
   {%- if builder == 'web' %}
   <link rel="stylesheet" href="{{ pathto('index') }}?do=stylesheet{%
@@ -271,7 +268,7 @@
 
   <script type="text/javascript" src="{{ pathto('_static/jquery.js', 1) }}"></script>
   <script type="text/javascript" src="{{ pathto('_static/jquery-migrate-min.js', 1) }}"></script>
-  <script type="text/javascript" src="{{ pathto('_static/bootstrap.js', 1) }}" ></script>
+  <script type="text/javascript" src="{{ pathto('_static/bootstrap.min.js', 1) }}" ></script>
   <script type="text/javascript" src="{{ pathto('_static/underscore.js', 1) }}"></script>
   <script type="text/javascript" src="{{ pathto('_static/doctools.js', 1) }}"></script>
   <script type="text/javascript" src="{{ pathto('_static/searchtools.js', 1) }}"></script>

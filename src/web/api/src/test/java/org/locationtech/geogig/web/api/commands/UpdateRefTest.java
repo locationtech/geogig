@@ -99,7 +99,7 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        String expected = "{'name':'" + refName + "', 'objectId':'" + oldObjectId + "'}";
+        String expected = "{\"name\":\"" + refName + "\", \"objectId\":\"" + oldObjectId + "\"}";
 
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
                 response.getJsonObject("ChangedRef"), true));
@@ -131,8 +131,8 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        String expected = "{'name':'" + refName + "', 'objectId':'" + oldObjectId + "', 'target':'"
-                + oldTarget + "'}";
+        String expected = "{\"name\":\"" + refName + "\", \"objectId\":\"" + oldObjectId + "\", \"target\":\""
+                + oldTarget + "\"}";
 
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
                 response.getJsonObject("ChangedRef"), true));
@@ -175,8 +175,8 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        String expected = "{'name':'" + branch1.getName() + "', 'objectId':'"
-                + master.getObjectId().toString() + "'}";
+        String expected = "{\"name\":\"" + branch1.getName() + "\", \"objectId\":\""
+                + master.getObjectId().toString() + "\"}";
 
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
                 response.getJsonObject("ChangedRef"), true));
@@ -224,8 +224,8 @@ public class UpdateRefTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        String expected = "{'name':'" + head.getName() + "', 'objectId':'"
-                + branch1.getObjectId().toString() + "','target':'" + branch1.getName() + "'}";
+        String expected = "{\"name\":\"" + head.getName() + "\", \"objectId\":\""
+                + branch1.getObjectId().toString() + "\",\"target\":\"" + branch1.getName() + "\"}";
 
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected),
                 response.getJsonObject("ChangedRef"), true));

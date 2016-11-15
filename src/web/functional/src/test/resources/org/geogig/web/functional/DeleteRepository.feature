@@ -41,4 +41,36 @@ Feature: Delete Repository
      Then the response status should be '200'
       And the response ContentType should be "application/xml"
       And the xpath "/deleted/text()" equals "repo2"
-      
+
+  Scenario: Requesting delete token with wrong HTTP Method issues 405 "Method not allowed", JSON requested response
+    Given There is a default multirepo server
+     When I call "POST /repos/repo1/delete.json"
+     Then the response status should be '405'
+      And the response allowed methods should be "GET"
+
+  Scenario: Requesting a delete token for a non existent repository issues 404 "Not found", JSON requested response
+    Given There is a default multirepo server
+     When I call "GET /repos/nonExistentRepo/delete.json"
+     Then the response status should be '404'
+      And the response ContentType should be "text/plain"
+      And the response body should contain "Repository not found"
+
+  Scenario: Try deleting a non existent repository issues 404 "Not found", JSON requested response
+    Given There is a default multirepo server
+     When I call "DELETE /repos/nonExistentRepo.json?token=someToken"
+     Then the response status should be '404'
+      And the response ContentType should be "text/plain"
+      And the response body should contain "error:No repository to delete."
+
+  Scenario: Succesfully delete a repository, JSON requested response
+    Given There is a default multirepo server
+     When I call "GET /repos/repo2/delete.json"
+     Then the response status should be '200'
+      And the response ContentType should be "application/json"
+      And the json object "response.success" equals "true"
+      And the json response "response" should contain "token"
+     Then I save the json response "response.token" as "@token"
+     When I call "DELETE /repos/repo2.json?token={@token}"
+     Then the response status should be '200'
+      And the response ContentType should be "application/json"
+      And the json object "deleted" equals "repo2"

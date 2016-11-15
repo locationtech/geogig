@@ -139,3 +139,130 @@ Feature: Import GeoPackage
 
 
 #<task><id>1</id><status>FINISHED</status><transactionId>c4da5a9b-5b09-4cb6-9055-e340d02b57ac</transactionId><description>Importing GeoPackage database file.</description><atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="/tasks/1.xml" type="application/xml"/><result><RevCommit><id>a1cde458d0658e096998b740b2eaa7b10796e624</id><treeId>37987a1d4afbf60be906d55576392965654d5d9c</treeId></RevCommit></result></task>
+
+# JSON tests
+  Scenario: Verify wrong HTTP method issues 405 "Method not allowed", JSON requested response
+    Given There is an empty multirepo server
+     When I call "GET /repos/repo1/import.json?format=gpkg"
+     Then the response status should be '405'
+      And the response allowed methods should be "POST"
+
+  Scenario: Verify missing "format=gpkg" argument issues 400 "Bad request", JSON requested response
+    Given There is an empty repository named repo1
+      And I have a transaction as "@txId" on the "repo1" repo
+     When I call "POST /repos/repo1/import.json?transactionId={@txId}"
+     Then the response status should be '400'
+      And the response ContentType should be "application/json"
+      And the json object "response.success" equals "false"
+      And the json object "response.error" equals "missing required 'format' parameter"
+
+  Scenario: Verify unsupported output format argument issues 400 "Bad request", JSON requested response
+    Given There is an empty repository named repo1
+      And I have a transaction as "@txId" on the "repo1" repo
+     When I call "POST /repos/repo1/import.json?format=badFormat&transactionId={@txId}"
+     Then the response status should be '400'
+      And the response ContentType should be "application/json"
+      And the json object "response.success" equals "false"
+      And the json object "response.error" equals "Unsupported input format: 'badFormat'"
+
+  Scenario: Verify import to a non existent repository issues 404 "Not found", JSON requested response
+    Given There is an empty multirepo server
+      And I have a geopackage file @gpkgFile
+     When I post @gpkgFile as "fileUpload" to "/repos/badRepo/import.json?format=gpkg"
+     Then the response status should be '404'
+      And the response ContentType should be "text/plain"
+      And the response body should contain "Repository not found"
+
+  Scenario: Import to an empty repository, JSON requested response
+    Given There is an empty repository named targetRepo
+      And I have a geopackage file @gpkgFile
+      And I have a transaction as "@txId" on the "targetRepo" repo
+     When I post @gpkgFile as "fileUpload" to "/repos/targetRepo/import.json?format=gpkg&transactionId={@txId}"
+     Then the response status should be '200'
+      And the response is a JSON async task @taskId
+      And the JSON task @taskId description contains "Importing GeoPackage database file."
+      And when the JSON task @taskId finishes
+     Then the JSON task @taskId status is FINISHED
+      And the json response "task.result.commit" should contain "id"
+      And the json response "task.result.commit" should contain "tree"
+      And I end the transaction with id "@txId" on the "targetRepo" repo
+      And the targetRepo repository's HEAD should have the following features:
+          |    Points    |   Lines    |    Polygons     |
+          |    Point.1   |   Line.1   |    Polygon.1    |
+          |    Point.2   |   Line.2   |    Polygon.2    |
+          |    Point.3   |   Line.3   |    Polygon.3    |
+      And I prune the task @taskId
+
+  Scenario: Import an interchange geopackage with fast-forward merge, JSON requested response
+    Given There is a default multirepo server
+      And I export Points from "repo1" to a geopackage file with audit logs as @gpkgFile
+      And I have a transaction as "@txId" on the "repo1" repo
+     When I add Points/4 to the geopackage file @gpkgFile
+      And I post @gpkgFile as "fileUpload" to "/repos/repo1/import.json?format=gpkg&message=Imported%20Geopackage&interchange=true&transactionId={@txId}"
+     Then the response status should be '200'
+      And the response is a JSON async task @taskId
+      And the JSON task @taskId description contains "Importing GeoPackage database file."
+      And when the JSON task @taskId finishes
+     Then the JSON task @taskId status is FINISHED
+      And the json response "task.result.newCommit" should contain "id"
+      And the json response "task.result.newCommit" should contain "tree"
+      And the json response "task.result.importCommit" should contain "id"
+      And the json response "task.result.importCommit" should contain "tree"
+      And the json object "task.result.newCommit.message" equals "Imported Geopackage"
+      And the json object "task.result.importCommit.message" equals "Imported Geopackage"
+      And I end the transaction with id "@txId" on the "repo1" repo
+      And the repo1 repository's HEAD should have the following features:
+          |    Points    |   Lines    |    Polygons     |
+          |    Point.1   |   Line.1   |    Polygon.1    |
+          |    Point.2   |   Line.2   |    Polygon.2    |
+          |    Point.3   |   Line.3   |    Polygon.3    |
+          |    ?         |            |                 |
+      And I prune the task @taskId
+
+  Scenario: Import an interchange geopackage with non-conflicting merge, JSON requested response
+    Given There is a default multirepo server
+      And I export Points from "repo1" to a geopackage file with audit logs as @gpkgFile
+     When I add Points/4 to the geopackage file @gpkgFile
+      And I remove Points/1 from "repo1"
+      And I have a transaction as "@txId" on the "repo1" repo
+      And I post @gpkgFile as "fileUpload" to "/repos/repo1/import.json?format=gpkg&message=Imported%20Geopackage&interchange=true&transactionId={@txId}"
+     Then the response status should be '200'
+      And the response is a JSON async task @taskId
+      And the JSON task @taskId description contains "Importing GeoPackage database file."
+      And when the JSON task @taskId finishes
+     Then the JSON task @taskId status is FINISHED
+      And the json response "task.result.newCommit" should contain "id"
+      And the json response "task.result.newCommit" should contain "tree"
+      And the json response "task.result.importCommit" should contain "id"
+      And the json response "task.result.importCommit" should contain "tree"
+      And the json object "task.result.newCommit.message" equals "Merge: Imported Geopackage"
+      And the json object "task.result.importCommit.message" equals "Imported Geopackage"
+      And I end the transaction with id "@txId" on the "repo1" repo
+      And the repo1 repository's HEAD should have the following features:
+          |    Points    |   Lines    |    Polygons     |
+          |    Point.2   |   Line.1   |    Polygon.1    |
+          |    Point.3   |   Line.2   |    Polygon.2    |
+          |    ?         |   Line.3   |    Polygon.3    |
+      And I prune the task @taskId
+
+  Scenario: Import an interchange geopackage with conflicting merge, JSON requested response
+    Given There is a default multirepo server
+      And I export Points from "repo1" to a geopackage file with audit logs as @gpkgFile
+     When I modify the Point features in the geopackage file @gpkgFile
+      And I add Points/4 to the geopackage file @gpkgFile
+      And I remove Points/1 from "repo1"
+      And I have a transaction as "@txId" on the "repo1" repo
+      And I post @gpkgFile as "fileUpload" to "/repos/repo1/import.json?format=gpkg&message=Imported%20Geopackage&interchange=true&transactionId={@txId}"
+     Then the response status should be '200'
+      And the response is a JSON async task @taskId
+      And the JSON task @taskId description contains "Importing GeoPackage database file."
+      And when the JSON task @taskId finishes
+     Then the JSON task @taskId status is FAILED
+      And the json response "task.result.Merge" should contain "ours"
+      And the json response "task.result.Merge" should contain "theirs"
+      And the json response "task.result.Merge" should contain "ancestor"
+      And the json response "task.result.import.importCommit" should contain "id"
+      And the json response "task.result.import.importCommit" should contain "tree"
+      And the json object "task.result.import.importCommit.message" equals "Imported Geopackage"
+      And the json object "task.result.Merge.conflicts" equals "1"
+      And I prune the task @taskId

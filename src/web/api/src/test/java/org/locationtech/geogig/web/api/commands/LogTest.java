@@ -117,11 +117,11 @@ public class LogTest extends AbstractWebOpTest {
         JsonArray commits = response.getJsonArray("commit");
         assertEquals(5, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
-        expectedCommits.append("{'id': '" + commit1.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit2.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit3.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit4.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit5.getId().toString() + "'}]");
+        expectedCommits.append("{\"id\": \"" + commit1.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit2.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit3.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit4.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit5.getId().toString() + "\"}]");
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
                 false));
     }
@@ -164,8 +164,8 @@ public class LogTest extends AbstractWebOpTest {
         JsonArray commits = response.getJsonArray("commit");
         assertEquals(2, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
-        expectedCommits.append("{'id': '" + commit2.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit4.getId().toString() + "'}]");
+        expectedCommits.append("{\"id\": \"" + commit2.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit4.getId().toString() + "\"}]");
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
                 false));
     }
@@ -197,8 +197,8 @@ public class LogTest extends AbstractWebOpTest {
         JsonArray commits = response.getJsonArray("commit");
         assertEquals(2, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
-        expectedCommits.append("{'id': '" + commit2.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit3.getId().toString() + "'}]");
+        expectedCommits.append("{\"id\": \"" + commit2.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit3.getId().toString() + "\"}]");
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
                 false));
     }
@@ -239,9 +239,9 @@ public class LogTest extends AbstractWebOpTest {
         JsonArray commits = response.getJsonArray("commit");
         assertEquals(3, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
-        expectedCommits.append("{'id': '" + commit1.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit3.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit5.getId().toString() + "'}]");
+        expectedCommits.append("{\"id\": \"" + commit1.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit3.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit5.getId().toString() + "\"}]");
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
                 false));
     }
@@ -285,16 +285,16 @@ public class LogTest extends AbstractWebOpTest {
         JsonArray commits = response.getJsonArray("commit");
         assertEquals(5, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
-        expectedCommits.append("{'id': '" + commit1.getId().toString()
-                + "', 'adds': 3, 'removes': 0, 'modifies': 0},");
-        expectedCommits.append("{'id': '" + commit2.getId().toString()
-                + "', 'adds': 2, 'removes': 0, 'modifies': 1},");
-        expectedCommits.append("{'id': '" + commit3.getId().toString()
-                + "', 'adds': 1, 'removes': 1, 'modifies': 0},");
-        expectedCommits.append("{'id': '" + commit4.getId().toString()
-                + "', 'adds': 2, 'removes': 0, 'modifies': 1},");
-        expectedCommits.append("{'id': '" + commit5.getId().toString()
-                + "', 'adds': 1, 'removes': 1, 'modifies': 0}]");
+        expectedCommits.append("{\"id\": \"" + commit1.getId().toString()
+                + "\", \"adds\": 3, \"removes\": 0, \"modifies\": 0},");
+        expectedCommits.append("{\"id\": \"" + commit2.getId().toString()
+                + "\", \"adds\": 2, \"removes\": 0, \"modifies\": 1},");
+        expectedCommits.append("{\"id\": \"" + commit3.getId().toString()
+                + "\", \"adds\": 1, \"removes\": 1, \"modifies\": 0},");
+        expectedCommits.append("{\"id\": \"" + commit4.getId().toString()
+                + "\", \"adds\": 2, \"removes\": 0, \"modifies\": 1},");
+        expectedCommits.append("{\"id\": \"" + commit5.getId().toString()
+                + "\", \"adds\": 1, \"removes\": 1, \"modifies\": 0}]");
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
                 false));
     }

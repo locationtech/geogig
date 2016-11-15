@@ -116,19 +116,22 @@ public class Main extends Application {
         router.attach("/tasks/{taskId}.{extension}", TaskStatusResource.class);
         router.attach("/tasks/{taskId}", TaskStatusResource.class);
         router.attach("/tasks/{taskId}/download", TaskResultDownloadResource.class);
-
+        router.attach("/" + RepositoryProvider.BASE_REPOSITORY_ROUTE + ".{extension}",
+                new RepositoryFinder(repoProvider));
         router.attach("/" + RepositoryProvider.BASE_REPOSITORY_ROUTE,
                 new RepositoryFinder(repoProvider));
 
         final Router singleRepoRouter = new Router();
+        router.attach("/" + RepositoryProvider.BASE_REPOSITORY_ROUTE + "/{repository}.{extension}",
+                singleRepoRouter);
         router.attach("/" + RepositoryProvider.BASE_REPOSITORY_ROUTE + "/{repository}",
                 singleRepoRouter);
-
         Router repo = new RepositoryRouter();
         Router postgis = new PGRouter();
         singleRepoRouter.attach("", DeleteRepository.class);
-
+        singleRepoRouter.attach("/postgis.{extension}", postgis);
         singleRepoRouter.attach("/postgis", postgis);
+        singleRepoRouter.attach("/repo.{extension}", repo);
         singleRepoRouter.attach("/repo", repo);
         singleRepoRouter.attach("/import.{extension}", UploadCommandResource.class);
         singleRepoRouter.attach("/import", UploadCommandResource.class);

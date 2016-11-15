@@ -17,6 +17,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -34,6 +35,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
@@ -645,4 +650,216 @@ public class WebAPICucumberHooks {
         context.postFile(targetURI, formFieldName, file);
     }
 
+    @Then("^the json object \"([^\"]*)\" equals \"([^\"]*)\"$")
+    public void checkJSONResponse(final String jsonPath, final String expected) {
+        String pathValue = getStringFromJSONResponse(jsonPath);
+        assertEquals("JSON Response doesn't match", expected, pathValue);
+    }
+
+    @Then("^the json object \"([^\"]*)\" ends with \"([^\"]*)\"$")
+    public void checkJSONResponseEndsWith(final String jsonPath, final String expected) {
+        String pathValue = getStringFromJSONResponse(jsonPath);
+        assertTrue("JSON Response doesn't end with '" + expected + "'",
+                pathValue.endsWith(expected));
+    }
+
+    @Then("^the json response \"([^\"]*)\" should contain \"([^\"]*)\"$")
+    public void checkJSONResponseContains(final String jsonPath, final String attribute) {
+        String response = getStringFromJSONResponse(jsonPath);
+        assertTrue("JSON Response missing \"" + attribute + "\"", response != null);
+    }
+
+    @Then("^the json response \"([^\"]*)\" contains an empty \"([^\"]*)\" array$")
+    public void checkJSONResponseContainsEmptyArray(final String jsonPath, final String attribute) {
+        JsonObject response = getObjectFromJSONResponse(jsonPath);
+        JsonArray array = response.getJsonArray(attribute);
+        assertTrue("JSON Response contains non-empty array \"" + attribute + "\"", array.isEmpty());
+    }
+
+    @Then("^the json response \"([^\"]*)\" should contain \"([^\"]*)\" (\\d+) times$")
+    public void checkJSONResponseContains(final String jsonArray, final String attribute, final int count) {
+        JsonArray response = getArrayFromJSONResponse(jsonArray);
+        assertEquals("JSON Response doesn't contain expected response correct number of times",
+                count, response.size());
+    }
+
+    @Then("^the JSON task (@[^\"]*) description contains \"([^\"]*)\"$")
+    public void theJsonTaskTaskIdDescriptionContains(final String taskIdVariable,
+            String descriptionSubstring) throws Throwable {
+
+        final Integer taskId = Integer.valueOf(context.getVariable(taskIdVariable));
+        checkAsyncTaskAsJson(taskId);
+        final String substring = context.replaceVariables(descriptionSubstring);
+        final String description = getStringFromJSONResponse("task.description");
+        assertEquals("Description did not match", substring, description);
+    }
+
+    /**
+     * Saves the value of an XPath expression over the last response's XML as a variable.
+     * <p>
+     * {@link #callURL(String)} will decode the variable and replace it by its value before issuing
+     * the request.
+     *
+     * @param jsonPath the expression to evalue from the last response
+     * @param variableName the name of the variable to save the xpath expression value as
+     */
+    @Then("^I save the json response \"([^\"]*)\" as \"([^\"]*)\"$")
+    public void saveResponseJSONValueAsVariable(final String jsonPath,
+            final String variableName) {
+
+        String jsonValue = getStringFromJSONResponse(jsonPath);
+        context.setVariable(variableName, jsonValue);
+    }
+
+    @Then("^the response is a JSON async task (@[^\"]*)$")
+    public void checkResponseIsAJsonAsyncTask(String taskIdVariable) {
+        checkNotNull(taskIdVariable);
+
+        assertEquals("application/json", context.getLastResponseContentType());
+        assertJsonIsAsyncTask();
+        final String taskId = getStringFromJSONResponse("task.id");
+
+        context.setVariable(taskIdVariable, taskId);
+    }
+
+    @Then("^when the JSON task (@[^\"]*) finishes$")
+    public void waitForAsyncJsonTaskToFinish(String taskIdVariable) throws Throwable {
+        checkNotNull(taskIdVariable);
+
+        final Integer taskId = Integer.valueOf(context.getVariable(taskIdVariable));
+
+        AsyncContext.Status status = AsyncContext.Status.WAITING;
+        do {
+            Thread.sleep(100);
+            checkAsyncTaskAsJson(taskId);
+            assertJsonIsAsyncTask();
+            status = AsyncContext.Status.valueOf(getStringFromJSONResponse("task.status"));
+        } while (!status.isTerminated());
+
+        Log.info("Task %s finished: %s", taskId, status);
+    }
+
+    @Then("^the JSON task (@[^\"]*) status is ([^\"]*)$")
+    public void checkAsyncJsonTaskStatus(String taskIdVariable, AsyncContext.Status status)
+            throws Throwable {
+        checkNotNull(taskIdVariable);
+        checkNotNull(status);
+
+        final Integer taskId = Integer.valueOf(context.getVariable(taskIdVariable));
+        checkAsyncTaskAsJson(taskId);
+        assertJsonIsAsyncTask();
+        final String jsonStatus = getStringFromJSONResponse("task.status");
+        assertEquals("Task Status unexpected", status.toString(), jsonStatus);
+    }
+
+    @Then("^the JSON task (@[^\"]*) result contains \"([^\"]*)\" with value \"([^\"]*)\"$")
+    public void theJsonTaskTaskIdResultContainsWithValue(final String taskIdVariable,
+            String jsonPath, String expectedValueSubString) throws Throwable {
+
+        final Integer taskId = Integer.valueOf(context.getVariable(taskIdVariable));
+        checkAsyncTaskAsJson(taskId);
+        final String substring = context.replaceVariables(expectedValueSubString);
+        final String taskResult = getStringFromJSONResponse(jsonPath);
+        assertTrue("Task result did not match", taskResult.contains(substring));
+    }
+
+    /**
+     * Extracts the String representation of a JSON object response. The supplied <b>jsonPath</b>
+     * should use a period(.) as the object delimeter. For example:<br>
+     *
+     * <pre>
+     * {@code
+     *     {
+     *         "response" : {
+     *             "success": "true",
+     *             "repo": {
+     *                 "name": "repo1",
+     *                 "href": "http://localhost:8080/geoserver/geogig/repos/repo1.json"
+     *             }
+     *         }
+     *     }
+     * }
+     * </pre>
+     *
+     * To access the <b>success</b> value, the String "response.success" should be passed in.
+     * <p>
+     * To access the <b>name</b> value, the String "response.repo.name" should be passed in.
+     *
+     * @param jsonPath A String representing the value desired.
+     *
+     * @return A String representation of the value of the object denoted by the jsonPath.
+     *
+     * @throws JSONException
+     */
+    private String getStringFromJSONResponse(String jsonPath) {
+        final String response = context.getLastResponseText();
+        final JsonObject jsonResponse = TestData.toJSON(response);
+        // find the JSON object
+        final String[] paths = jsonPath.split("\\.");
+        JsonObject path = jsonResponse;
+        for (int i = 0; i < paths.length - 1; ++i) {
+            // drill down
+            path = path.getJsonObject(paths[i]);
+        }
+        final String key = paths[paths.length - 1];
+        final JsonValue value = path.get(key);
+        return getString(value);
+    }
+
+    private JsonObject getObjectFromJSONResponse(String jsonPath) {
+        String response = context.getLastResponseText();
+        final JsonObject jsonResponse = TestData.toJSON(response);
+        // find the JSON object
+        final String[] paths = jsonPath.split("\\.");
+        JsonObject path = jsonResponse;
+        for (int i = 0; i < paths.length; ++i) {
+            // drill down
+            path = path.getJsonObject(paths[i]);
+        }
+        return path;
+    }
+
+    private JsonArray getArrayFromJSONResponse(String jsonPath) {
+        String response = context.getLastResponseText();
+        final JsonObject jsonResponse = TestData.toJSON(response);
+        // find the JSON object
+        final String[] paths = jsonPath.split("\\.");
+        JsonObject path = jsonResponse;
+        for (int i = 0; i < paths.length - 1; ++i) {
+            // drill down
+            path = path.getJsonObject(paths[i]);
+        }
+        final String key = paths[paths.length -1];
+        return path.getJsonArray(key);
+    }
+
+    private String getString(JsonValue value) {
+        switch (value.getValueType()) {
+            case NULL:
+                return "null";
+            case FALSE:
+                return "false";
+            case TRUE:
+                return "true";
+            case STRING:
+                JsonString val = JsonString.class.cast(value);
+                return val.getString();
+            default:
+                return value.toString();
+        }
+    }
+
+    private void checkAsyncTaskAsJson(final Integer taskId) throws IOException {
+        String url = String.format("/tasks/%d.json", taskId);
+        context.call(Method.GET, url);
+    }
+
+    private void assertJsonIsAsyncTask() {
+        final String taskId = getStringFromJSONResponse("task.id");
+        assertNotNull("Task id missing", taskId);
+        final String taskStatus = getStringFromJSONResponse("task.status");
+        assertNotNull("Task status missing", taskStatus);
+        final String taskDescription = getStringFromJSONResponse("task.description");
+        assertNotNull("Task Description missing", taskDescription);
+    }
 }

@@ -228,8 +228,8 @@ public class TagTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        String expectedTag = "{'name':'MasterTag', 'commitid':'" + master.getObjectId()
-                + "', 'message':'', 'tagger': {'name':'John Doe', 'email':'JohnDoe@example.com'}}";
+        String expectedTag = "{\"name\":\"MasterTag\", \"commitid\":\"" + master.getObjectId()
+                + "\", \"message\":\"\", \"tagger\": {\"name\":\"John Doe\", \"email\":\"JohnDoe@example.com\"}}";
         assertTrue(TestData.jsonEquals(TestData.toJSON(expectedTag), response.getJsonObject("Tag"),
                 false));
 
@@ -257,8 +257,8 @@ public class TagTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        String expectedTag = "{'name':'MasterTag', 'commitid':'" + master.getObjectId()
-                + "', 'message':'My tag message', 'tagger': {'name':'John Doe', 'email':'JohnDoe@example.com'}}";
+        String expectedTag = "{\"name\":\"MasterTag\", \"commitid\":\"" + master.getObjectId()
+                + "\", \"message\":\"My tag message\", \"tagger\": {\"name\":\"John Doe\", \"email\":\"JohnDoe@example.com\"}}";
         assertTrue(TestData.jsonEquals(TestData.toJSON(expectedTag), response.getJsonObject("Tag"),
                 false));
 
@@ -271,16 +271,16 @@ public class TagTest extends AbstractWebOpTest {
 
     private String expectedTagString(RevTag tag) {
         StringBuilder builder = new StringBuilder("{");
-        builder.append("'id':'").append(tag.getId().toString()).append("',");
-        builder.append("'name':'").append(tag.getName()).append("',");
-        builder.append("'commitid':'").append(tag.getCommitId().toString()).append("',");
-        builder.append("'message':'").append(tag.getMessage()).append("',");
-        builder.append("'tagger':{");
-        builder.append("'name':'").append(tag.getTagger().getName().get()).append("',");
-        builder.append("'email':'").append(tag.getTagger().getEmail().get()).append("',");
-        builder.append("'timestamp':").append(Long.toString(tag.getTagger().getTimestamp()))
+        builder.append("\"id\":\"").append(tag.getId().toString()).append("\",");
+        builder.append("\"name\":\"").append(tag.getName()).append("\",");
+        builder.append("\"commitid\":\"").append(tag.getCommitId().toString()).append("\",");
+        builder.append("\"message\":\"").append(tag.getMessage()).append("\",");
+        builder.append("\"tagger\":{");
+        builder.append("\"name\":\"").append(tag.getTagger().getName().get()).append("\",");
+        builder.append("\"email\":\"").append(tag.getTagger().getEmail().get()).append("\",");
+        builder.append("\"timestamp\":").append(Long.toString(tag.getTagger().getTimestamp()))
                 .append(",");
-        builder.append("'timeZoneOffset':")
+        builder.append("\"timeZoneOffset\":")
                 .append(Long.toString(tag.getTagger().getTimeZoneOffset()));
         builder.append("}}");
         return builder.toString();

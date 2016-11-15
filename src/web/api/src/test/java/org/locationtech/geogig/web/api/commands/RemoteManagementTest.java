@@ -116,7 +116,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        String expected = "[{'name':'remote1'},{'name':'remote2'}]";
+        String expected = "[{\"name\":\"remote1\"},{\"name\":\"remote2\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected),
                 response.getJsonArray("Remote"), true));
     }
@@ -130,8 +130,8 @@ public class RemoteManagementTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        String expected = "[{'name':'remote1', 'url':'" + remote1URI.toURL().toString()
-                + "'},{'name':'remote2','url':'" + remote2URI.toURL().toString() + "'}]";
+        String expected = "[{\"name\":\"remote1\", \"url\":\"" + remote1URI.toURL().toString()
+                + "\"},{\"name\":\"remote2\",\"url\":\"" + remote2URI.toURL().toString() + "\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected),
                 response.getJsonArray("Remote"), true));
     }

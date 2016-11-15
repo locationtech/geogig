@@ -221,8 +221,8 @@ public class ExportTest extends AbstractWebOpTest {
 
         op.run(context);
 
-        //final String expected = "{'task':{'id':1,'status':'RUNNING','description':'MemoryDataStore test output format','href':'/geogig/tasks/1.json'}}";
-        final String expected = "{'task':{'id':1,'description':'MemoryDataStore test output format','href':'/geogig/tasks/1.json'}}";
+        //final String expected = "{\"task\":{\"id\":1,\"status\":\"RUNNING\",\"description\":\"MemoryDataStore test output format\",\"href\":\"/geogig/tasks/1.json\"}}";
+        final String expected = "{\"task\":{\"id\":1,\"description\":\"MemoryDataStore test output format\",\"href\":\"/geogig/tasks/1.json\"}}";
         JsonObject response = getJSONResponse();
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected), response, false));
 

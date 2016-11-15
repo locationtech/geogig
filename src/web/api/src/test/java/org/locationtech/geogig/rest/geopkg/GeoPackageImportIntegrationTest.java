@@ -639,7 +639,7 @@ public class GeoPackageImportIntegrationTest extends AbstractWebOpTest {
         op.run(context);
         JsonObject response = getJSONResponse();
         JsonObject expected = TestData.toJSON(String.format(
-                "{'task':{'id':%s,'description':'Importing GeoPackage database file.','href':'/geogig/tasks/%s.json'}}",
+                "{\"task\":{\"id\":%s,\"description\":\"Importing GeoPackage database file.\",\"href\":\"/geogig/tasks/%s.json\"}}",
                 taskId, taskId));
         assertTrue(TestData.jsonEquals(expected, response, false));
         Optional<AsyncContext.AsyncCommand<?>> asyncCommand = Optional.absent();

@@ -70,14 +70,14 @@ public class ConfigTest extends AbstractWebOpTest {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         for (Entry<String, String> entry : currentConfig.entrySet()) {
-            sb.append("{'name':'");
+            sb.append("{\"name\":\"");
             sb.append(entry.getKey());
-            sb.append("', 'value':");
+            sb.append("\", \"value\":");
             try {
                 Double.parseDouble(entry.getValue());
                 sb.append(entry.getValue());
             } catch (NumberFormatException e) {
-                sb.append("'").append(entry.getValue()).append("'");
+                sb.append("\"").append(entry.getValue()).append("\"");
             }
             sb.append("},");
         }
@@ -105,7 +105,7 @@ public class ConfigTest extends AbstractWebOpTest {
         cmd.run(testContext.get());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
-        assertTrue(TestData.jsonEquals(TestData.toJSON("{'value':'value1'}"), response, false));
+        assertTrue(TestData.jsonEquals(TestData.toJSON("{\"value\":\"value1\"}"), response, false));
     }
 
     @Test
@@ -119,7 +119,7 @@ public class ConfigTest extends AbstractWebOpTest {
         cmd.run(testContext.get());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
-        assertTrue(TestData.jsonEquals(TestData.toJSON("{'success':true}"), response, true));
+        assertTrue(TestData.jsonEquals(TestData.toJSON("{\"success\":true}"), response, true));
     }
 
     @Test
@@ -139,7 +139,7 @@ public class ConfigTest extends AbstractWebOpTest {
         assertEquals("myTestValue", value.get());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
-        assertTrue(TestData.jsonEquals(TestData.toJSON("{'success':true}"), response, true));
+        assertTrue(TestData.jsonEquals(TestData.toJSON("{\"success\":true}"), response, true));
     }
 
     @Test

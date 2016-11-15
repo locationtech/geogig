@@ -84,7 +84,7 @@ public class EndTransactionTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertTrue(TestData.jsonEquals(
-                TestData.toJSON("{'ID':'" + transaction.getTransactionId().toString() + "'}"),
+                TestData.toJSON("{\"ID\":\"" + transaction.getTransactionId().toString() + "\"}"),
                 response.getJsonObject("Transaction"), false));
 
     }
@@ -120,7 +120,7 @@ public class EndTransactionTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertTrue(TestData.jsonEquals(
-                TestData.toJSON("{'ID':'" + transaction.getTransactionId().toString() + "'}"),
+                TestData.toJSON("{\"ID\":\"" + transaction.getTransactionId().toString() + "\"}"),
                 response.getJsonObject("Transaction"), false));
     }
 

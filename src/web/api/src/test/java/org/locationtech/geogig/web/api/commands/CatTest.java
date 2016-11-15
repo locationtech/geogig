@@ -97,8 +97,8 @@ public class CatTest extends AbstractWebOpTest {
         assertEquals(lastCommit.getTreeId().toString(), commit.getString("tree"));
         assertEquals(lastCommit.getMessage(), commit.getString("message"));
         JsonObject parents = commit.getJsonObject("parents");
-        String expectedParents = "['" + lastCommit.getParentIds().get(0) + "', '"
-                + lastCommit.getParentIds().get(1) + "']";
+        String expectedParents = "[\"" + lastCommit.getParentIds().get(0) + "\", \""
+                + lastCommit.getParentIds().get(1) + "\"]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedParents),
                 parents.getJsonArray("id"), false));
         RevPerson author = lastCommit.getAuthor();
@@ -151,9 +151,9 @@ public class CatTest extends AbstractWebOpTest {
         assertEquals(point.getId().toString(), feature.getString("id"));
         JsonArray attributes = feature.getJsonArray("attribute");
         assertEquals(3, attributes.getValuesAs(JsonValue.class).size());
-        String expectedAttributes = "[{'type': 'STRING', 'value': 'StringProp1_1'},"
-                + "{'type': 'INTEGER', 'value': 1000},"
-                + "{'type': 'POINT', 'value': 'POINT (0 0)'}]";
+        String expectedAttributes = "[{\"type\": \"STRING\", \"value\": \"StringProp1_1\"},"
+                + "{\"type\": \"INTEGER\", \"value\": 1000},"
+                + "{\"type\": \"POINT\", \"value\": \"POINT (0 0)\"}]";
         assertTrue(
                 TestData.jsonEquals(TestData.toJSONArray(expectedAttributes), attributes, false));
 
@@ -176,9 +176,9 @@ public class CatTest extends AbstractWebOpTest {
         assertEquals(pointType.getName().toString(), featureType.getString("name"));
         JsonArray attributes = featureType.getJsonArray("attribute");
         assertEquals(3, attributes.getValuesAs(JsonValue.class).size());
-        String expectedAttributes = "[{'name': 'sp', 'type': 'STRING'},"
-                + "{'name': 'ip', 'type': 'INTEGER'},"
-                + "{'name': 'geom', 'type': 'POINT', 'crs': 'urn:ogc:def:crs:EPSG::4326'}]";
+        String expectedAttributes = "[{\"name\": \"sp\", \"type\": \"STRING\"},"
+                + "{\"name\": \"ip\", \"type\": \"INTEGER\"},"
+                + "{\"name\": \"geom\", \"type\": \"POINT\", \"crs\": \"urn:ogc:def:crs:EPSG::4326\"}]";
         assertTrue(
                 TestData.jsonEquals(TestData.toJSONArray(expectedAttributes), attributes, false));
 

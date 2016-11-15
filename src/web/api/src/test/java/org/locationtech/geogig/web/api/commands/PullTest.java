@@ -119,12 +119,12 @@ public class PullTest extends AbstractWebOpTest {
         JsonObject remoteObject = pull.getJsonObject("Fetch").getJsonObject("Remote");
         assertEquals(remote.getFetchURL(), remoteObject.getString("remoteURL"));
         JsonArray branch = remoteObject.getJsonArray("Branch");
-        String expected = "[{'changeType':'ADDED_REF','name':'branch1','newValue':'"
-                + branch1.getObjectId().toString() + "'},"
-                + "{'changeType':'ADDED_REF','name':'branch2','newValue':'"
-                + branch2.getObjectId().toString() + "'},"
-                + "{'changeType':'ADDED_REF','name':'master','newValue':'"
-                + master.getObjectId().toString() + "'}]";
+        String expected = "[{\"changeType\":\"ADDED_REF\",\"name\":\"branch1\",\"newValue\":\""
+                + branch1.getObjectId().toString() + "\"},"
+                + "{\"changeType\":\"ADDED_REF\",\"name\":\"branch2\",\"newValue\":\""
+                + branch2.getObjectId().toString() + "\"},"
+                + "{\"changeType\":\"ADDED_REF\",\"name\":\"master\",\"newValue\":\""
+                + master.getObjectId().toString() + "\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
         assertEquals(remote.getFetchURL(), pull.getString("Remote"));
         assertEquals("master", pull.getString("Ref"));
@@ -180,12 +180,12 @@ public class PullTest extends AbstractWebOpTest {
         JsonObject remoteObject = pull.getJsonObject("Fetch").getJsonObject("Remote");
         assertEquals(remote.getFetchURL(), remoteObject.getString("remoteURL"));
         JsonArray branch = remoteObject.getJsonArray("Branch");
-        String expected = "[{'changeType':'ADDED_REF','name':'branch1','newValue':'"
-                + branch1.getObjectId().toString() + "'},"
-                + "{'changeType':'ADDED_REF','name':'branch2','newValue':'"
-                + branch2.getObjectId().toString() + "'},"
-                + "{'changeType':'ADDED_REF','name':'master','newValue':'"
-                + master.getObjectId().toString() + "'}]";
+        String expected = "[{\"changeType\":\"ADDED_REF\",\"name\":\"branch1\",\"newValue\":\""
+                + branch1.getObjectId().toString() + "\"},"
+                + "{\"changeType\":\"ADDED_REF\",\"name\":\"branch2\",\"newValue\":\""
+                + branch2.getObjectId().toString() + "\"},"
+                + "{\"changeType\":\"ADDED_REF\",\"name\":\"master\",\"newValue\":\""
+                + master.getObjectId().toString() + "\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), branch, false));
         assertEquals(remote.getFetchURL(), pull.getString("Remote"));
         assertEquals("newbranch", pull.getString("Ref"));

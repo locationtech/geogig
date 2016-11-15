@@ -104,7 +104,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         JsonArray diffArray = response.getJsonArray("diff");
         assertEquals(1, diffArray.getValuesAs(JsonValue.class).size());
         JsonObject diff = diffArray.getJsonObject(0);
-        String expected = "{'attributename':'ip', 'changetype':'MODIFIED', 'oldvalue':1000, 'newvalue':1500}";
+        String expected = "{\"attributename\":\"ip\", \"changetype\":\"MODIFIED\", \"oldvalue\":1000, \"newvalue\":1500}";
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected), diff, false));
     }
 
@@ -134,9 +134,9 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JsonArray diff = response.getJsonArray("diff");
         assertEquals(3, diff.getValuesAs(JsonValue.class).size());
-        String expected = "[{'attributename':'ip', 'changetype':'MODIFIED', 'oldvalue':1000, 'newvalue':1500},"
-                + "{'attributename':'sp', 'changetype':'NO_CHANGE', 'oldvalue':'StringProp1_1'},"
-                + "{'attributename':'geom', 'changetype':'NO_CHANGE', 'oldvalue':'POINT (0 0)', 'geometry':true, 'crs': 'EPSG:4326'}]";
+        String expected = "[{\"attributename\":\"ip\", \"changetype\":\"MODIFIED\", \"oldvalue\":1000, \"newvalue\":1500},"
+                + "{\"attributename\":\"sp\", \"changetype\":\"NO_CHANGE\", \"oldvalue\":\"StringProp1_1\"},"
+                + "{\"attributename\":\"geom\", \"changetype\":\"NO_CHANGE\", \"oldvalue\":\"POINT (0 0)\", \"geometry\":true, \"crs\": \"EPSG:4326\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), diff, false));
     }
 
@@ -166,9 +166,9 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JsonArray diff = response.getJsonArray("diff");
         assertEquals(3, diff.getValuesAs(JsonValue.class).size());
-        String expected = "[{'attributename':'ip', 'changetype':'ADDED', 'newvalue':1000},"
-                + "{'attributename':'sp', 'changetype':'ADDED', 'newvalue':'StringProp1_1'},"
-                + "{'attributename':'geom', 'changetype':'ADDED', 'newvalue':'POINT (0 0)', 'geometry':true, 'crs': 'EPSG:4326'}]";
+        String expected = "[{\"attributename\":\"ip\", \"changetype\":\"ADDED\", \"newvalue\":1000},"
+                + "{\"attributename\":\"sp\", \"changetype\":\"ADDED\", \"newvalue\":\"StringProp1_1\"},"
+                + "{\"attributename\":\"geom\", \"changetype\":\"ADDED\", \"newvalue\":\"POINT (0 0)\", \"geometry\":true, \"crs\": \"EPSG:4326\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), diff, false));
     }
 
@@ -198,9 +198,9 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JsonArray diff = response.getJsonArray("diff");
         assertEquals(3, diff.getValuesAs(JsonValue.class).size());
-        String expected = "[{'attributename':'ip', 'changetype':'REMOVED', 'oldvalue':1000},"
-                + "{'attributename':'sp', 'changetype':'REMOVED', 'oldvalue':'StringProp1_1'},"
-                + "{'attributename':'geom', 'changetype':'REMOVED', 'oldvalue':'POINT (0 0)', 'geometry':true, 'crs': 'EPSG:4326'}]";
+        String expected = "[{\"attributename\":\"ip\", \"changetype\":\"REMOVED\", \"oldvalue\":1000},"
+                + "{\"attributename\":\"sp\", \"changetype\":\"REMOVED\", \"oldvalue\":\"StringProp1_1\"},"
+                + "{\"attributename\":\"geom\", \"changetype\":\"REMOVED\", \"oldvalue\":\"POINT (0 0)\", \"geometry\":true, \"crs\": \"EPSG:4326\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), diff, false));
     }
 
@@ -226,9 +226,9 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         assertTrue(response.getBoolean("success"));
         JsonArray diff = response.getJsonArray("diff");
         assertEquals(3, diff.getValuesAs(JsonValue.class).size());
-        String expected = "[{'attributename':'ip', 'changetype':'ADDED', 'newvalue':1000},"
-                + "{'attributename':'sp', 'changetype':'ADDED', 'newvalue':'StringProp1_1'},"
-                + "{'attributename':'geom', 'changetype':'ADDED', 'newvalue':'POINT (0 0)', 'geometry':true, 'crs': 'EPSG:4326'}]";
+        String expected = "[{\"attributename\":\"ip\", \"changetype\":\"ADDED\", \"newvalue\":1000},"
+                + "{\"attributename\":\"sp\", \"changetype\":\"ADDED\", \"newvalue\":\"StringProp1_1\"},"
+                + "{\"attributename\":\"geom\", \"changetype\":\"ADDED\", \"newvalue\":\"POINT (0 0)\", \"geometry\":true, \"crs\": \"EPSG:4326\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), diff, false));
     }
 

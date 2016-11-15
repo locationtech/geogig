@@ -27,3 +27,26 @@ Feature: Create Repository
     And the xpath "/response/success/text()" equals "true"
     And the xpath "/response/repo/name/text()" equals "repo1"
     And the xpath "/response/repo/atom:link/@href" contains "/repos/repo1.xml"
+
+  Scenario: Verify wrong HTTP method issues 405 "Method not allowed", JSON requested response
+    Given There is an empty multirepo server
+    When I call "GET /repos/repo1/init.json"
+    Then the response status should be '405'
+    And the response allowed methods should be "PUT"
+
+  Scenario: Verify trying to create an existing repo issues 409 "Conflict", JSON requested response
+    Given There is a default multirepo server
+    When I call "PUT /repos/repo1/init.json"
+    Then the response status should be '409'
+    And the response ContentType should be "application/json"
+    And the json object "response.success" equals "false"
+    And the json object "response.error" equals "Cannot run init on an already initialized repository."
+
+  Scenario: Create repository on empty server, JSON requested response
+    Given There is an empty multirepo server
+    When I call "PUT /repos/repo1/init.json"
+    Then the response status should be '201'
+    And the response ContentType should be "application/json"
+    And the json object "response.success" equals "true"
+    And the json object "response.repo.name" equals "repo1"
+    And the json object "response.repo.href" ends with "/repos/repo1.json"

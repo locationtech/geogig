@@ -171,7 +171,7 @@ public class GeoPackageExportDiffIntegrationTest extends AbstractWebOpTest {
 
         op.run(context);
 
-        final String expected = "{'task':{'id':1,'description':'Export changes between two commits to Geopackage database','href':'/geogig/tasks/1.json'}}";
+        final String expected = "{\"task\":{\"id\":1,\"description\":\"Export changes between two commits to Geopackage database\",\"href\":\"/geogig/tasks/1.json\"}}";
 
         JsonObject response = getJSONResponse();
         assertTrue(TestData.jsonEquals(TestData.toJSON(expected),

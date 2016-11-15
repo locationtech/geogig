@@ -85,18 +85,18 @@ public class StatusTest extends AbstractWebOpTest {
         JsonArray stagedArray = response.getJsonArray("staged");
         assertEquals(1, stagedArray.getValuesAs(JsonValue.class).size());
         JsonObject staged = stagedArray.getJsonObject(0);
-        String expectedStaged = "{'changeType':'ADDED','newPath':'" + point3_path
-                + "','newObjectId':'" + point3.getId().toString() + "','path':'','oldObjectId':'"
-                + ObjectId.NULL.toString() + "'}";
+        String expectedStaged = "{\"changeType\":\"ADDED\",\"newPath\":\"" + point3_path
+                + "\",\"newObjectId\":\"" + point3.getId().toString() + "\",\"path\":\"\",\"oldObjectId\":\""
+                + ObjectId.NULL.toString() + "\"}";
         assertTrue(TestData.jsonEquals(TestData.toJSON(expectedStaged), staged, false));
 
         JsonArray unstaged = response.getJsonArray("unstaged");
-        String expectedUnstaged = "[{'changeType':'MODIFIED','newPath':'" + point1_path
-                + "','newObjectId':'" + point1_modified.getId().toString() + "','path':'"
-                + point1_path + "','oldObjectId':'" + point1.getId().toString()
-                + "'},{'changeType':'REMOVED','path':'" + point2_path + "','oldObjectId':'"
-                + point2.getId().toString() + "','newPath':'','newObjectId':'"
-                + ObjectId.NULL.toString() + "'}]";
+        String expectedUnstaged = "[{\"changeType\":\"MODIFIED\",\"newPath\":\"" + point1_path
+                + "\",\"newObjectId\":\"" + point1_modified.getId().toString() + "\",\"path\":\""
+                + point1_path + "\",\"oldObjectId\":\"" + point1.getId().toString()
+                + "\"},{\"changeType\":\"REMOVED\",\"path\":\"" + point2_path + "\",\"oldObjectId\":\""
+                + point2.getId().toString() + "\",\"newPath\":\"\",\"newObjectId\":\""
+                + ObjectId.NULL.toString() + "\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedUnstaged), unstaged, false));
     }
 

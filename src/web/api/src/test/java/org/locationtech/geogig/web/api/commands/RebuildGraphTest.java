@@ -98,10 +98,10 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         // The root commit will not get reported because it will be added to the graph when commit2
         // is processed because it is a parent of commit2. It wont be flagged as updated because
         // when it processes the root commit, it has no parents and thus nothing to update.
-        expectedCommits.append("{'ref': '" + commit2.getId().toString() + "'},");
-        expectedCommits.append("{'ref': '" + commit3.getId().toString() + "'},");
-        expectedCommits.append("{'ref': '" + commit4.getId().toString() + "'},");
-        expectedCommits.append("{'ref': '" + commit5.getId().toString() + "'}]");
+        expectedCommits.append("{\"ref\": \"" + commit2.getId().toString() + "\"},");
+        expectedCommits.append("{\"ref\": \"" + commit3.getId().toString() + "\"},");
+        expectedCommits.append("{\"ref\": \"" + commit4.getId().toString() + "\"},");
+        expectedCommits.append("{\"ref\": \"" + commit5.getId().toString() + "\"}]");
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()),
                 updatedObjects, false));
     }
@@ -142,7 +142,7 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         JsonObject rebuildGraph = response.getJsonObject("RebuildGraph");
-        String expectedResponse = "{'updatedGraphElements':4}";
+        String expectedResponse = "{\"updatedGraphElements\":4}";
         assertTrue(TestData.jsonEquals(TestData.toJSON(expectedResponse), rebuildGraph, false));
     }
 }

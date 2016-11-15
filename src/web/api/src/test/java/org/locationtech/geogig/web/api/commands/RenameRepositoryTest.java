@@ -75,7 +75,7 @@ public class RenameRepositoryTest extends AbstractWebOpTest {
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(TestData.jsonEquals(TestData.toJSON(
-                "{'success':true, 'repo': {'name': 'newRepoName', 'href': '" + expectedURL + "'}}"),
+                "{\"success\":true, \"repo\": {\"name\": \"newRepoName\", \"href\": \"" + expectedURL + "\"}}"),
                 response, true));
     }
 

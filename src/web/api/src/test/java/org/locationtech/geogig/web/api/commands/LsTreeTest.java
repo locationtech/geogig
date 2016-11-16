@@ -66,9 +66,9 @@ public class LsTreeTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         JsonArray nodes = response.getJsonArray("node");
-        String expected = "[{'path':'Points'},{'path':'Points/Point.1'},{'path':'Points/Point.2'},{'path':'Points/Point.3'},"
-                + "{'path':'Lines'},{'path':'Lines/Line.1'},{'path':'Lines/Line.2'},{'path':'Lines/Line.3'},"
-                + "{'path':'Polygons'},{'path':'Polygons/Polygon.1'},{'path':'Polygons/Polygon.2'},{'path':'Polygons/Polygon.3'}]";
+        String expected = "[{\"path\":\"Points\"},{\"path\":\"Points/Point.1\"},{\"path\":\"Points/Point.2\"},{\"path\":\"Points/Point.3\"},"
+                + "{\"path\":\"Lines\"},{\"path\":\"Lines/Line.1\"},{\"path\":\"Lines/Line.2\"},{\"path\":\"Lines/Line.3\"},"
+                + "{\"path\":\"Polygons\"},{\"path\":\"Polygons/Polygon.1\"},{\"path\":\"Polygons/Polygon.2\"},{\"path\":\"Polygons/Polygon.3\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
     }
 
@@ -85,7 +85,7 @@ public class LsTreeTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         JsonArray nodes = response.getJsonArray("node");
-        String expected = "[{'path':'Points'},{'path':'Lines'},{'path':'Polygons'}]";
+        String expected = "[{\"path\":\"Points\"},{\"path\":\"Lines\"},{\"path\":\"Polygons\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
     }
 
@@ -101,9 +101,9 @@ public class LsTreeTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         JsonArray nodes = response.getJsonArray("node");
-        String expected = "[{'path':'Points/Point.1'},{'path':'Points/Point.2'},{'path':'Points/Point.3'},"
-                + "{'path':'Lines/Line.1'},{'path':'Lines/Line.2'},{'path':'Lines/Line.3'},"
-                + "{'path':'Polygons/Polygon.1'},{'path':'Polygons/Polygon.2'},{'path':'Polygons/Polygon.3'}]";
+        String expected = "[{\"path\":\"Points/Point.1\"},{\"path\":\"Points/Point.2\"},{\"path\":\"Points/Point.3\"},"
+                + "{\"path\":\"Lines/Line.1\"},{\"path\":\"Lines/Line.2\"},{\"path\":\"Lines/Line.3\"},"
+                + "{\"path\":\"Polygons/Polygon.1\"},{\"path\":\"Polygons/Polygon.2\"},{\"path\":\"Polygons/Polygon.3\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
     }
 
@@ -120,7 +120,7 @@ public class LsTreeTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         JsonArray nodes = response.getJsonArray("node");
-        String expected = "[{'path':'Points'},{'path':'Lines'},{'path':'Polygons'}]";
+        String expected = "[{\"path\":\"Points\"},{\"path\":\"Lines\"},{\"path\":\"Polygons\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
     }
 
@@ -137,7 +137,7 @@ public class LsTreeTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         JsonArray nodes = response.getJsonArray("node");
-        String expected = "[{'path':'Points'},{'path':'Lines'},{'path':'Polygons'}]";
+        String expected = "[{\"path\":\"Points\"},{\"path\":\"Lines\"},{\"path\":\"Polygons\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
     }
 
@@ -155,7 +155,7 @@ public class LsTreeTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         JsonArray nodes = response.getJsonArray("node");
-        String expected = "[{'path':'Point.1'},{'path':'Point.2'},{'path':'Point.3'}]";
+        String expected = "[{\"path\":\"Point.1\"},{\"path\":\"Point.2\"},{\"path\":\"Point.3\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), nodes, false));
     }
 }

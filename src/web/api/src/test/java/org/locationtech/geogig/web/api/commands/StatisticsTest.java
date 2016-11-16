@@ -90,8 +90,8 @@ public class StatisticsTest extends AbstractWebOpTest {
         assertEquals(3, statistics.getInt("totalCommits"));
         JsonObject authors = statistics.getJsonObject("Authors");
         assertEquals(2, authors.getInt("totalAuthors"));
-        String expectedAuthors = "[{'name':'Author1','email':'author1@example.com'},"
-                + "{'name':'Author2','email':'author2@example.com'}]";
+        String expectedAuthors = "[{\"name\":\"Author1\",\"email\":\"author1@example.com\"},"
+                + "{\"name\":\"Author2\",\"email\":\"author2@example.com\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
                 authors.getJsonArray("Author"), false));
     }
@@ -134,8 +134,8 @@ public class StatisticsTest extends AbstractWebOpTest {
         assertEquals(2, statistics.getInt("totalCommits"));
         JsonObject authors = statistics.getJsonObject("Authors");
         assertEquals(2, authors.getInt("totalAuthors"));
-        String expectedAuthors = "[{'name':'Author2','email':'author2@example.com'},"
-                + "{'name':'Author2','email':'author2_alternate@example.com'}]";
+        String expectedAuthors = "[{\"name\":\"Author2\",\"email\":\"author2@example.com\"},"
+                + "{\"name\":\"Author2\",\"email\":\"author2_alternate@example.com\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
                 authors.getJsonArray("Author"), false));
     }
@@ -177,17 +177,17 @@ public class StatisticsTest extends AbstractWebOpTest {
         assertEquals(4, statistics.getInt("totalCommits"));
         JsonObject authors = statistics.getJsonObject("Authors");
         assertEquals(3, authors.getInt("totalAuthors"));
-        String expectedAuthors = "[{'name':'Author1','email':'author1@example.com'},"
-                + "{'name':'Author2','email':'author2@example.com'},"
-                + "{'name':'Author3','email':'author3@example.com'}]";
+        String expectedAuthors = "[{\"name\":\"Author1\",\"email\":\"author1@example.com\"},"
+                + "{\"name\":\"Author2\",\"email\":\"author2@example.com\"},"
+                + "{\"name\":\"Author3\",\"email\":\"author3@example.com\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
                 authors.getJsonArray("Author"), false));
         JsonObject featureTypes = statistics.getJsonObject("FeatureTypes");
         assertEquals(2, featureTypes.getInt("totalFeatureTypes"));
         assertEquals(4, featureTypes.getInt("totalFeatures"));
-        String expectedFeatureTypes = "[{'name':'" + TestData.pointsType.getTypeName()
-                + "','numFeatures':3}," + "{'name':'" + TestData.linesType.getTypeName()
-                + "','numFeatures':1}]";
+        String expectedFeatureTypes = "[{\"name\":\"" + TestData.pointsType.getTypeName()
+                + "\",\"numFeatures\":3}," + "{\"name\":\"" + TestData.linesType.getTypeName()
+                + "\",\"numFeatures\":1}]";
 
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedFeatureTypes),
                 featureTypes.getJsonArray("FeatureType"), false));

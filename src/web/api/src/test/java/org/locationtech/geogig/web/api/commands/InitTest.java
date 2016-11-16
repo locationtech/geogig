@@ -82,8 +82,8 @@ public class InitTest extends AbstractWebOpTest {
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(
                 TestData.jsonEquals(
-                        TestData.toJSON("{'success':true, 'repo': {'name': '"
-                                + TestRepository.REPO_NAME + "', 'href': '" + expectedURL + "'}}"),
+                        TestData.toJSON("{\"success\":true, \"repo\": {\"name\": \""
+                                + TestRepository.REPO_NAME + "\", \"href\": \"" + expectedURL + "\"}}"),
                 response, true));
 
     }

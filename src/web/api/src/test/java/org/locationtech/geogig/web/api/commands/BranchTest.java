@@ -130,7 +130,7 @@ public class BranchTest extends AbstractWebOpTest {
         JsonObject obj = getJSONResponse().getJsonObject("response");
         assertTrue(obj.getBoolean("success"));
         JsonArray localBranches = obj.getJsonObject("Local").getJsonArray("Branch");
-        String expected = "[{'name':'branch1'},{'name':'branch2'},{'name':'master'}]";
+        String expected = "[{\"name\":\"branch1\"},{\"name\":\"branch2\"},{\"name\":\"master\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), localBranches, true));
         JsonObject remote = obj.getJsonObject("Remote");
         JsonArray remoteBranches = remote.getJsonArray("Branch");
@@ -161,10 +161,10 @@ public class BranchTest extends AbstractWebOpTest {
         assertTrue(obj.getBoolean("success"));
         JsonArray localBranches = obj.getJsonObject("Local").getJsonArray("Branch");
         assertEquals(3, localBranches.getValuesAs(JsonValue.class).size());
-        String expected = "[{'name':'branch1'},{'name':'branch2'},{'name':'master'}]";
+        String expected = "[{\"name\":\"branch1\"},{\"name\":\"branch2\"},{\"name\":\"master\"}]";
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), localBranches, true));
 
-        expected = "[{'remoteName':'origin','name':'branch1'},{'remoteName':'origin','name':'branch2'},{'remoteName':'origin','name':'master'}]";
+        expected = "[{\"remoteName\":\"origin\",\"name\":\"branch1\"},{\"remoteName\":\"origin\",\"name\":\"branch2\"},{\"remoteName\":\"origin\",\"name\":\"master\"}]";
         JsonArray remoteBranches = obj.getJsonObject("Remote").getJsonArray("Branch");
         assertEquals(3, remoteBranches.getValuesAs(JsonValue.class).size());
         assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), remoteBranches, true));

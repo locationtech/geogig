@@ -223,7 +223,8 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
                         w.writeEndArrayElement();
                     }
                 }
-                w.writeEndElement();
+                w.writeEndArray();
+                w.writeEndArrayElement();
             }
             w.writeEndArray();
             w.writeEndElement();

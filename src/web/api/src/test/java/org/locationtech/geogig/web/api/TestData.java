@@ -362,12 +362,12 @@ public class TestData {
     }
 
     public static JsonObject toJSON(String jsonString) {
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonString.replace('\'', '"')));
+        JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
         return jsonReader.readObject();
     }
 
     public static JsonArray toJSONArray(String jsonString) {
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonString.replace('\'', '"')));
+        JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
         return jsonReader.readArray();
     }
 

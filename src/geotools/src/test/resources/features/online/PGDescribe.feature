@@ -6,7 +6,7 @@ Feature: "pg describe" command
   Scenario: Try describing a PostGIS table from an empty directory
     Given I am in an empty directory
      When I run the command "pg describe --table geogig_pg_test" on the PostGIS database
-     Then the response should start with "Not in a geogig repository"
+     Then the response should contain "Table : geogig_pg_test"
       
   Scenario: Try describing a PostGIS table
     Given I have a repository

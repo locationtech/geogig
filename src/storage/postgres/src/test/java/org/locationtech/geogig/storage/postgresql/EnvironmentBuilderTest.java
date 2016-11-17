@@ -1,6 +1,11 @@
-/* (c) 2016 Open Source Geospatial Foundation - all rights reserved
- * This code is licensed under the GPL 2.0 license, available at the root
- * application directory.
+/* Copyright (c) 2016 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Erik Merkle (Boundless) - initial implementation
  */
 package org.locationtech.geogig.storage.postgresql;
 

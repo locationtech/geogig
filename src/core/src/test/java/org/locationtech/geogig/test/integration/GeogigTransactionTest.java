@@ -29,6 +29,7 @@ import org.locationtech.geogig.plumbing.merge.ConflictsCountOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RemoteAddOp;
@@ -414,6 +415,76 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         assertEquals(logs.next(), transaction1Commit);
         assertEquals(logs.next(), mainCommit);
         assertFalse(logs.hasNext());
+
+    }
+
+    @Test
+    public void testEndTransactionConflict() throws Exception {
+
+        // make a commit
+        insertAndAdd(points1);
+        RevCommit mainCommit = geogig.command(CommitOp.class).setMessage("Commit1").call();
+
+        // start the transaction
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+
+        // perform a commit in the transaction
+        insertAndAdd(transaction, points1_modified);
+        RevCommit transactionCommit = transaction.command(CommitOp.class).setMessage("Commit2")
+                .call();
+
+        // Verify that the base repository is unchanged
+        Iterator<RevCommit> logs = geogig.command(LogOp.class).call();
+        assertEquals(logs.next(), mainCommit);
+        assertFalse(logs.hasNext());
+
+        // Verify that the transaction has the commit
+        logs = transaction.command(LogOp.class).call();
+        assertEquals(logs.next(), transactionCommit);
+        assertEquals(logs.next(), mainCommit);
+        assertFalse(logs.hasNext());
+
+        // remove the feature in the base repository
+        deleteAndAdd(points1);
+        RevCommit mainCommit2 = geogig.command(CommitOp.class).setMessage("Commit3").call();
+
+        // commit the transaction
+        try {
+            geogig.command(TransactionEnd.class).setTransaction(transaction).call();
+            fail("Expected a conflict!");
+        } catch (ConflictsException e) {
+            // expected
+        }
+
+        long txConflicts = transaction.command(ConflictsCountOp.class).call().longValue();
+        long baseConflicts = geogig.command(ConflictsCountOp.class).call().longValue();
+        assertTrue("There should be no conflicts outside the transaction", baseConflicts == 0);
+        assertTrue("There should be conflicts in the transaction", txConflicts == 1);
+
+        // make sure the transaction is still resolvable
+        Optional<GeogigTransaction> resolvedTransaction = geogig.command(TransactionResolve.class)
+                .setId(transaction.getTransactionId()).call();
+        assertTrue(resolvedTransaction.isPresent());
+
+        // resolve the conflict in the transaction
+        deleteAndAdd(transaction, points1);
+        RevCommit resolvedCommit = transaction.command(CommitOp.class)
+                .setMessage("Resolved Conflict").call();
+
+        geogig.command(TransactionEnd.class).setTransaction(transaction).call();
+
+        // Verify that the base repository has the changes from the transaction
+        logs = geogig.command(LogOp.class).call();
+        RevCommit lastCommit = logs.next();
+        assertTrue(lastCommit.equals(resolvedCommit));
+        assertEquals(lastCommit.getMessage(), resolvedCommit.getMessage());
+        assertEquals(lastCommit.getAuthor(), resolvedCommit.getAuthor());
+        assertEquals(lastCommit.getCommitter().getName(), resolvedCommit.getCommitter().getName());
+        assertTrue(lastCommit.getCommitter().getTimestamp() == resolvedCommit.getCommitter()
+                .getTimestamp());
+        assertEquals(mainCommit2, logs.next());
+        assertEquals(transactionCommit, logs.next());
+        assertEquals(mainCommit, logs.next());
 
     }
 

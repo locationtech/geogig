@@ -124,19 +124,14 @@ public class Pull extends AbstractWebAPICommand {
                 .setAll(fetchAll).addRefSpec(refSpec);
         try {
             final PullResult result = command.call();
-            final AutoCloseableIterator<DiffEntry> iter = resolveDiff(geogig, result);
             context.setResponseContent(new CommandResponse() {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
-                    out.start();
-                    out.writePullResponse(result, iter);
-                    out.finish();
-                }
-
-                @Override
-                public void close() {
-                    if (iter != null) {
-                        iter.close();
+                    try (final AutoCloseableIterator<DiffEntry> iter = resolveDiff(geogig,
+                            result)) {
+                        out.start();
+                        out.writePullResponse(result, iter);
+                        out.finish();
                     }
                 }
             });

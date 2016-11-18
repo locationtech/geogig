@@ -82,6 +82,12 @@ public class ResolveConflict extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
+        if (path == null) {
+            throw new CommandSpecException("No path was given.");
+        }
+        if (objectId == null) {
+            throw new CommandSpecException("No object ID was given.");
+        }
 
         RevTree revTree = geogig.workingTree().getTree();
 
@@ -93,8 +99,14 @@ public class ResolveConflict extends AbstractWebAPICommand {
         RevFeatureType revFeatureType = geogig.command(RevObjectParse.class)
                 .setObjectId(nodeRef.get().getMetadataId()).call(RevFeatureType.class).get();
 
-        RevFeature revFeature = geogig.command(RevObjectParse.class).setObjectId(objectId)
-                .call(RevFeature.class).get();
+        Optional<RevFeature> object = geogig.command(RevObjectParse.class).setObjectId(objectId)
+                .call(RevFeature.class);
+        
+        if (!object.isPresent()) {
+            throw new CommandSpecException("Object ID could not be resolved to a feature.");
+        }
+        
+        RevFeature revFeature = object.get();
 
         CoordinateReferenceSystem crs = revFeatureType.type().getCoordinateReferenceSystem();
         Envelope bounds = ReferencedEnvelope.create(crs);

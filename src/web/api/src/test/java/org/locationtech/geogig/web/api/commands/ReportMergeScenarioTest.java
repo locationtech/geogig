@@ -222,19 +222,9 @@ public class ReportMergeScenarioTest extends AbstractWebOpTest {
         assertEquals("POINT (10 10)", geometry);
         assertTrue(merge.getBoolean("additionalChanges"));
 
-        // The response doesn't write out trees, so the second page will have no features
-        options = TestParams.of("ourCommit", "master", "theirCommit", "branch1", "elementsPerPage",
-                "1", "page", "1");
-        buildCommand(options).run(testContext.get());
-
-        response = getJSONResponse().getJsonObject("response");
-        assertTrue(response.getBoolean("success"));
-        merge = response.getJsonObject("Merge");
-        assertTrue(merge.getBoolean("additionalChanges"));
-
         // Third page will have the added line feature
         options = TestParams.of("ourCommit", "master", "theirCommit", "branch1", "elementsPerPage",
-                "1", "page", "2");
+                "1", "page", "1");
         buildCommand(options).run(testContext.get());
 
         response = getJSONResponse().getJsonObject("response");

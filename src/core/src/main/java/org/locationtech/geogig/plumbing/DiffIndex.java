@@ -38,6 +38,8 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
 
     private Long limit;
 
+    private boolean preserveIterationOrder;
+
     /**
      * @param pathFilter the path filter to use during the diff operation
      * @return {@code this}
@@ -69,6 +71,15 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
     }
 
     /**
+     * @param preserveIterationOrder if {@code true} the diff order will be consistent
+     * @return {@code this}
+     */
+    public DiffIndex setPreserveIterationOrder(boolean preserveIterationOrder) {
+        this.preserveIterationOrder = preserveIterationOrder;
+        return this;
+    }
+
+    /**
      * Finds differences between the tree pointed to by the given ref and the index.
      * 
      * @return an iterator to a set of differences between the two trees
@@ -91,7 +102,8 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
 
         DiffTree diff = command(DiffTree.class).setPathFilter(this.pathFilters)
                 .setReportTrees(this.reportTrees).setOldTree(rootTree.getId())
-                .setNewTree(newTree.getId()).setMaxDiffs(limit);
+                .setNewTree(newTree.getId()).setPreserveIterationOrder(preserveIterationOrder)
+                .setMaxDiffs(limit);
 
         return diff.call();
     }

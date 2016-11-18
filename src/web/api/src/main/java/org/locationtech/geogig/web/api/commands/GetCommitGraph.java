@@ -121,15 +121,14 @@ public class GetCommitGraph extends AbstractWebAPICommand {
             }
         }
 
-        final Iterator<RevCommit> historyIterator = history.iterator();
-        Iterators.advance(historyIterator, page * elementsPerPage);
-
         context.setResponseContent(new CommandResponse() {
 
             @Override
             public void write(ResponseWriter out) throws Exception {
+                final Iterator<RevCommit> historyIterator = history.iterator();
+                Iterators.advance(historyIterator, page * elementsPerPage);
                 out.start();
-                out.writeCommits(history.iterator(), elementsPerPage, false);
+                out.writeCommits(historyIterator, elementsPerPage, false);
                 out.finish();
             }
         });

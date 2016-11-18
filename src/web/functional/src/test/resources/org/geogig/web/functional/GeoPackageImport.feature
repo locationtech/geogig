@@ -56,7 +56,7 @@ Feature: Import GeoPackage
       And the xml response should contain "/task/result/commit/id"
       And the xml response should contain "/task/result/commit/tree"
       And I end the transaction with id "@txId" on the "targetRepo" repo
-      And the targetRepo repository's HEAD should have the following features:
+      And the targetRepo repository's "HEAD" should have the following features:
           |    Points    |   Lines    |    Polygons     | 
           |    Point.1   |   Line.1   |    Polygon.1    | 
           |    Point.2   |   Line.2   |    Polygon.2    | 
@@ -81,7 +81,7 @@ Feature: Import GeoPackage
       And the xpath "/task/result/newCommit/message" equals "Imported Geopackage"
       And the xpath "/task/result/importCommit/message" equals "Imported Geopackage"
       And I end the transaction with id "@txId" on the "repo1" repo
-      And the repo1 repository's HEAD should have the following features:
+      And the repo1 repository's "HEAD" should have the following features:
           |    Points    |   Lines    |    Polygons     | 
           |    Point.1   |   Line.1   |    Polygon.1    | 
           |    Point.2   |   Line.2   |    Polygon.2    | 
@@ -93,7 +93,7 @@ Feature: Import GeoPackage
     Given There is a default multirepo server
       And I export Points from "repo1" to a geopackage file with audit logs as @gpkgFile
      When I add Points/4 to the geopackage file @gpkgFile
-      And I remove Points/1 from "repo1"
+      And I have removed "Point.1" on the "repo1" repo in the "" transaction
       And I have a transaction as "@txId" on the "repo1" repo
       And I post @gpkgFile as "fileUpload" to "/repos/repo1/import?format=gpkg&message=Imported%20Geopackage&interchange=true&transactionId={@txId}"
      Then the response status should be '200'
@@ -108,7 +108,7 @@ Feature: Import GeoPackage
       And the xpath "/task/result/newCommit/message" equals "Merge: Imported Geopackage"
       And the xpath "/task/result/importCommit/message" equals "Imported Geopackage"
       And I end the transaction with id "@txId" on the "repo1" repo
-      And the repo1 repository's HEAD should have the following features:
+      And the repo1 repository's "HEAD" should have the following features:
           |    Points    |   Lines    |    Polygons     | 
           |    Point.2   |   Line.1   |    Polygon.1    | 
           |    Point.3   |   Line.2   |    Polygon.2    | 
@@ -120,7 +120,7 @@ Feature: Import GeoPackage
       And I export Points from "repo1" to a geopackage file with audit logs as @gpkgFile
      When I modify the Point features in the geopackage file @gpkgFile
       And I add Points/4 to the geopackage file @gpkgFile
-      And I remove Points/1 from "repo1"
+      And I have removed "Point.1" on the "repo1" repo in the "" transaction
       And I have a transaction as "@txId" on the "repo1" repo
       And I post @gpkgFile as "fileUpload" to "/repos/repo1/import?format=gpkg&message=Imported%20Geopackage&interchange=true&transactionId={@txId}"
      Then the response status should be '200'
@@ -186,7 +186,7 @@ Feature: Import GeoPackage
       And the json response "task.result.commit" should contain "id"
       And the json response "task.result.commit" should contain "tree"
       And I end the transaction with id "@txId" on the "targetRepo" repo
-      And the targetRepo repository's HEAD should have the following features:
+      And the targetRepo repository's "HEAD" should have the following features:
           |    Points    |   Lines    |    Polygons     |
           |    Point.1   |   Line.1   |    Polygon.1    |
           |    Point.2   |   Line.2   |    Polygon.2    |
@@ -211,7 +211,7 @@ Feature: Import GeoPackage
       And the json object "task.result.newCommit.message" equals "Imported Geopackage"
       And the json object "task.result.importCommit.message" equals "Imported Geopackage"
       And I end the transaction with id "@txId" on the "repo1" repo
-      And the repo1 repository's HEAD should have the following features:
+      And the repo1 repository's "HEAD" should have the following features:
           |    Points    |   Lines    |    Polygons     |
           |    Point.1   |   Line.1   |    Polygon.1    |
           |    Point.2   |   Line.2   |    Polygon.2    |
@@ -223,7 +223,7 @@ Feature: Import GeoPackage
     Given There is a default multirepo server
       And I export Points from "repo1" to a geopackage file with audit logs as @gpkgFile
      When I add Points/4 to the geopackage file @gpkgFile
-      And I remove Points/1 from "repo1"
+      And I have removed "Point.1" on the "repo1" repo in the "" transaction
       And I have a transaction as "@txId" on the "repo1" repo
       And I post @gpkgFile as "fileUpload" to "/repos/repo1/import.json?format=gpkg&message=Imported%20Geopackage&interchange=true&transactionId={@txId}"
      Then the response status should be '200'
@@ -238,7 +238,7 @@ Feature: Import GeoPackage
       And the json object "task.result.newCommit.message" equals "Merge: Imported Geopackage"
       And the json object "task.result.importCommit.message" equals "Imported Geopackage"
       And I end the transaction with id "@txId" on the "repo1" repo
-      And the repo1 repository's HEAD should have the following features:
+      And the repo1 repository's "HEAD" should have the following features:
           |    Points    |   Lines    |    Polygons     |
           |    Point.2   |   Line.1   |    Polygon.1    |
           |    Point.3   |   Line.2   |    Polygon.2    |
@@ -250,7 +250,7 @@ Feature: Import GeoPackage
       And I export Points from "repo1" to a geopackage file with audit logs as @gpkgFile
      When I modify the Point features in the geopackage file @gpkgFile
       And I add Points/4 to the geopackage file @gpkgFile
-      And I remove Points/1 from "repo1"
+      And I have removed "Point.1" on the "repo1" repo in the "" transaction
       And I have a transaction as "@txId" on the "repo1" repo
       And I post @gpkgFile as "fileUpload" to "/repos/repo1/import.json?format=gpkg&message=Imported%20Geopackage&interchange=true&transactionId={@txId}"
      Then the response status should be '200'

@@ -148,6 +148,16 @@ public class RevertFeature extends AbstractWebAPICommand {
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
 
+        if (featurePath == null) {
+            throw new CommandSpecException("No path was given.");
+        }
+        if (newCommitId == null) {
+            throw new CommandSpecException("No 'new' commit ID was given.");
+        }
+        if (oldCommitId == null) {
+            throw new CommandSpecException("No 'old' commit ID was given.");
+        }
+
         Optional<RevTree> newTree;
         Optional<RevTree> oldTree;
 

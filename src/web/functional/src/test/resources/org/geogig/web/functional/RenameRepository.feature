@@ -17,7 +17,6 @@ Feature: Rename repository
      Then the response status should be '405'
       And the response allowed methods should be "POST"
       
-
   Scenario: Trying to assign a duplicated name to a repo issues 400 "Bad request"
     Given There is a default multirepo server
      When I call "POST /repos/repo1/rename?name=repo2"

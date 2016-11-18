@@ -60,7 +60,7 @@ public class CatTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("objectid", id.toString());
 
         Cat op = (Cat) buildCommand(options);
-        assertEquals(id, op.object);
+        assertEquals(id.toString(), op.object);
     }
 
     @Test
@@ -68,7 +68,7 @@ public class CatTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of();
 
         ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("You must specify a non-null ObjectId.");
+        ex.expectMessage("You must specify a valid non-null ObjectId.");
         buildCommand(options).run(testContext.get());
     }
 
@@ -77,7 +77,7 @@ public class CatTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("objectid", ObjectId.NULL.toString());
 
         ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("You must specify a non-null ObjectId.");
+        ex.expectMessage("You must specify a valid non-null ObjectId.");
         buildCommand(options).run(testContext.get());
     }
 

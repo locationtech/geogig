@@ -121,7 +121,7 @@ public class FeatureDiff extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         if (path == null || path.trim().isEmpty()) {
-            throw new CommandSpecException("No path for feature name specifed");
+            throw new CommandSpecException("No feature path was specified");
         }
 
         final Context geogig = this.getRepositoryContext(context);

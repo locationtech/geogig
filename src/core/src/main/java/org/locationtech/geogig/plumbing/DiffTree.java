@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -47,6 +50,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * Compares the content and metadata links of blobs found via two tree objects on the repository's
@@ -86,6 +90,14 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
     private ObjectId oldTreeId;
 
     private boolean preserveIterationOrder = false;
+
+    private static ExecutorService producerThreads;
+
+    static {
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
+                .setNameFormat("geogig-difftree-pool-%d").build();
+        producerThreads = Executors.newCachedThreadPool(threadFactory);
+    }
 
     /**
      * Constructs a new instance of the {@code DiffTree} operation with the given parameters.
@@ -220,7 +232,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
         final List<RuntimeException> producerErrors = new LinkedList<>();
 
-        Thread producerThread = new Thread("DiffTree producer thread") {
+        Runnable producer = new Runnable() {
             @Override
             public void run() {
                 Consumer consumer = diffProducer;
@@ -241,9 +253,9 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                     consumer = new PathFilteringDiffConsumer(pathFilters, consumer);
                 }
                 try {
-                    LOGGER.trace("waking diff {} / {}", oldRefSpec, newRefSpec);
+                    LOGGER.trace("walking diff {} / {}", oldRefSpec, newRefSpec);
                     visitor.walk(consumer);
-                    LOGGER.trace("finished waking diff {} / {}", oldRefSpec, newRefSpec);
+                    LOGGER.trace("finished walking diff {} / {}", oldRefSpec, newRefSpec);
                 } catch (RuntimeException e) {
                     LOGGER.error("Error traversing diffs", e);
                     producerErrors.add(e);
@@ -252,8 +264,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 }
             }
         };
-        producerThread.setDaemon(true);
-        producerThread.start();
+        producerThreads.submit(producer);
 
         AutoCloseableIterator<DiffEntry> consumerIterator = new AutoCloseableIterator<DiffEntry>() {
 

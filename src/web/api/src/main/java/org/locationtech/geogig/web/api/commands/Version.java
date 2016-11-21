@@ -15,8 +15,10 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
+import org.restlet.data.Status;
 
 /**
  * Interface for the Version operation in the GeoGig.
@@ -45,6 +47,11 @@ public class Version extends AbstractWebAPICommand {
         final Context geogig = this.getRepositoryContext(context);
 
         final VersionInfo info = geogig.command(VersionOp.class).call();
+
+        if (info == null) {
+            throw new CommandSpecException("No version information available.",
+                    Status.SERVER_ERROR_SERVICE_UNAVAILABLE);
+        }
 
         context.setResponseContent(new CommandResponse() {
             @Override

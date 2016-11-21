@@ -1,4 +1,4 @@
-@Commands
+@Version
 Feature: Version
   The Version command allows a user to see the geogig version and is supported through the "/repos/{repository}/version" endpoint
   The command must be executed using the HTTP GET method

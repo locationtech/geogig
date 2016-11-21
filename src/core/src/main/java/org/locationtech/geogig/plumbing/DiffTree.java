@@ -225,7 +225,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 rightSource, preserveIterationOrder);
         visitor.setDefaultMetadataId(this.metadataId);
 
-        final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(10_000);
+        final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(100_000);
         final DiffEntryProducer diffProducer = new DiffEntryProducer(queue);
         diffProducer.setReportTrees(this.reportTrees);
         diffProducer.setRecursive(this.recursive);

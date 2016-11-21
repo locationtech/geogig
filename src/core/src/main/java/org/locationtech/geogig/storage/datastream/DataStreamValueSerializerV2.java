@@ -36,6 +36,8 @@ import com.google.common.base.Splitter;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
@@ -370,10 +372,11 @@ public class DataStreamValueSerializerV2 {
             }
         });
         ValueSerializer geometry = new ValueSerializer() {
+            final GeometryFactory GEOM_FACT = new GeometryFactory(new PackedCoordinateSequenceFactory());
             @Override
             public Object read(DataInput in) throws IOException {
                 byte[] bytes = (byte[]) byteArray.read(in);
-                WKBReader wkbReader = new WKBReader();
+                WKBReader wkbReader = new WKBReader(GEOM_FACT);
                 try {
                     return wkbReader.read(bytes);
                 } catch (ParseException e) {

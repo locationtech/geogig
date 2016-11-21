@@ -53,6 +53,10 @@ public final class RevFeatureBuilder {
         return new RevFeatureImpl(id, new ArrayList<>(values));
     }
 
+    public RevFeature build(ObjectId id) {
+        return new RevFeatureImpl(id, new ArrayList<>(values));
+    }
+
     public RevFeatureBuilder reset() {
         this.values.clear();
         return this;
@@ -75,7 +79,14 @@ public final class RevFeatureBuilder {
      * @see FieldType#safeCopy(Object)
      */
     public RevFeatureBuilder addValue(@Nullable Object value) {
-        value = safeCopy(value);
+        return addValueNoCopy(safeCopy(value));
+    }
+
+    /**
+     * Use with caution, this object takes ownership of {@code value} without making a safe copy of
+     * it.
+     */
+    public RevFeatureBuilder addValueNoCopy(@Nullable Object value) {
         if (value instanceof Geometry) {
             value = normalizeIfNeeded((Geometry) value);
         }

@@ -319,10 +319,10 @@ public class FormatCommonV2 {
             final byte fieldTag = in.readByte();
             final FieldType fieldType = FieldType.valueOf(fieldTag);
             Object value = DataStreamValueSerializerV2.read(fieldType, in);
-            builder.addValue(value);
+            builder.addValueNoCopy(value);
         }
 
-        RevFeature built = builder.build();
+        RevFeature built = id == null ? builder.build() : builder.build(id);
         return built;
     }
 

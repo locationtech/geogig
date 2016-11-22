@@ -63,7 +63,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
                 "all", "true");
 
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No path for feature name specifed");
+        ex.expectMessage("No feature path was specified");
         buildCommand(options).run(testContext.get());
     }
 
@@ -73,7 +73,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
                 "master", "all", "true");
 
         ex.expect(CommandSpecException.class);
-        ex.expectMessage("No path for feature name specifed");
+        ex.expectMessage("No feature path was specified");
         buildCommand(options).run(testContext.get());
     }
 

@@ -16,6 +16,7 @@ import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.porcelain.RebaseConflictsException;
@@ -108,17 +109,22 @@ public class TransactionEnd extends AbstractGeoGigOp<Boolean> {
                 "Cannot end a transaction within a transaction!");
         Preconditions.checkArgument(transaction != null, "No transaction was specified!");
 
+        boolean success = true;
         try {
             if (!cancel) {
                 updateRefs();
             }
-        } finally {
-            // Erase old refs and remove transaction specific blobs
-            transaction.close();
+        } catch (ConflictsException e) {
+            throw e;
+        } catch (Exception e) {
+            success = false;
         }
 
+        // Erase old refs and remove transaction specific blobs
+        transaction.close();
+
         // Success
-        return true;
+        return success;
     }
 
     private void updateRefs() {

@@ -9,11 +9,16 @@
  */
 package org.geogig.web.functional;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.GeoGIG;
@@ -31,6 +36,7 @@ import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.resource.Representation;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -47,6 +53,10 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     private MultiRepositoryProvider repoProvider;
 
     private Response lastResponse;
+
+    private String lastResponseText = null;
+
+    private Document lastResponseDocument = null;
 
     /**
      * Set up the context for a scenario.
@@ -107,6 +117,11 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         return testData;
     }
 
+    private void setLastResponse(Response response) {
+        this.lastResponse = response;
+        this.lastResponseText = null;
+        this.lastResponseDocument = null;
+    }
     /**
      * Issue a POST request to the provided URL with the given file passed as form data.
      * 
@@ -121,7 +136,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             Request request = new Request(Method.POST, resourceUri, webForm);
             request.setRootRef(new Reference(""));
 
-            this.lastResponse = app.handle(request);
+            setLastResponse(app.handle(request));
         } catch (IOException e) {
             Throwables.propagate(e);
         }
@@ -142,7 +157,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             // CommandResource at all
             request.setEntity("empty payload", MediaType.TEXT_PLAIN);
         }
-        this.lastResponse = app.handle(request);
+
+        setLastResponse(app.handle(request));
     }
 
     /**
@@ -160,13 +176,15 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public String getLastResponseText() {
-        String xml;
+        if (lastResponseText != null) {
+            return lastResponseText;
+        }
         try {
-            xml = getLastResponse().getEntity().getText();
+            lastResponseText = getLastResponse().getEntity().getText();
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
-        return xml;
+        return lastResponseText;
     }
 
     /**
@@ -183,11 +201,20 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public Document getLastResponseAsDom() {
-        try {
-            return getLastResponse().getEntityAsDom().getDocument();
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
+        if (lastResponseDocument == null) {
+            try {
+                String text = getLastResponseText();
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+                factory.setNamespaceAware(true);
+                DocumentBuilder builder = factory.newDocumentBuilder();
+
+                lastResponseDocument = builder.parse(new ByteArrayInputStream(text.getBytes()));
+            } catch (IOException | SAXException | ParserConfigurationException e) {
+                throw Throwables.propagate(e);
+            }
         }
+        return lastResponseDocument;
     }
 
     /**

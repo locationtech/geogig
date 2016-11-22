@@ -82,6 +82,8 @@ public class Statistics extends AbstractWebAPICommand {
         final Context geogig = this.getRepositoryContext(context);
         final List<FeatureTypeStats> stats = Lists.newArrayList();
         LogOp logOp = geogig.command(LogOp.class).setFirstParentOnly(true);
+        LsTreeOp lsTreeOp = geogig.command(LsTreeOp.class)
+                .setStrategy(LsTreeOp.Strategy.TREES_ONLY);
         final Iterator<RevCommit> log;
         if (since != null && !since.trim().isEmpty()) {
             Date untilTime = new Date();
@@ -93,20 +95,20 @@ public class Statistics extends AbstractWebAPICommand {
             until = geogig.command(RevParse.class).setRefSpec(this.until).call();
             Preconditions.checkArgument(until.isPresent(), "Object not found '%s'", this.until);
             logOp.setUntil(until.get());
+            lsTreeOp.setReference(this.until);
         }
 
-        LsTreeOp lsTreeOp = geogig.command(LsTreeOp.class)
-                .setStrategy(LsTreeOp.Strategy.TREES_ONLY);
         if (path != null && !path.trim().isEmpty()) {
-            lsTreeOp.setReference(path);
             logOp.addPath(path);
         }
         final Iterator<NodeRef> treeIter = lsTreeOp.call();
 
         while (treeIter.hasNext()) {
             NodeRef node = treeIter.next();
-            stats.add(new FeatureTypeStats(node.path(),
-                    context.getRepository().getTree(node.getObjectId()).size()));
+            if (path == null || path.trim().isEmpty() || node.path().startsWith(path)) {
+                stats.add(new FeatureTypeStats(node.path(),
+                        context.getRepository().getTree(node.getObjectId()).size()));
+            }
         }
         log = logOp.call();
 

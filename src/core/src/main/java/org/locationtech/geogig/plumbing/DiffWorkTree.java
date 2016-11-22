@@ -39,6 +39,8 @@ public class DiffWorkTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEnt
 
     private Long limit;
 
+    private boolean preserveIterationOrder;
+
     /**
      * @param refSpec the name of the root tree object in the to compare the working tree against.
      *        If {@code null} or not specified, defaults to the current state of the index.
@@ -59,6 +61,15 @@ public class DiffWorkTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEnt
     }
 
     /**
+     * @param preserveIterationOrder if {@code true} the diff order will be consistent
+     * @return {@code this}
+     */
+    public DiffWorkTree setPreserveIterationOrder(boolean preserveIterationOrder) {
+        this.preserveIterationOrder = preserveIterationOrder;
+        return this;
+    }
+
+    /**
      * If no {@link #setOldVersion(String) old version} was set, returns the differences between the
      * working tree and the index, otherwise the differences between the working tree and the
      * specified revision.
@@ -75,7 +86,8 @@ public class DiffWorkTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEnt
         final RevTree newTree = workingTree().getTree();
 
         DiffTree diff = command(DiffTree.class).setReportTrees(this.reportTrees)
-                .setOldTree(oldTree.getId()).setNewTree(newTree.getId()).setMaxDiffs(limit);
+                .setOldTree(oldTree.getId()).setNewTree(newTree.getId()).setMaxDiffs(limit)
+                .setPreserveIterationOrder(preserveIterationOrder);
         if (this.pathFilter != null) {
             diff.setPathFilter(ImmutableList.of(pathFilter));
         }

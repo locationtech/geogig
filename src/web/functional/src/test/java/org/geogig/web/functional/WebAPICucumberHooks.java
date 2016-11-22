@@ -51,9 +51,16 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.plumbing.TransactionResolve;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.merge.ConflictsCountOp;
+import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.AsyncContext;
@@ -61,6 +68,7 @@ import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.geopkg.GeoPackageWebAPITestSupport;
 import org.locationtech.geogig.web.api.TestData;
 import org.mortbay.log.Log;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 import org.restlet.data.Method;
 import org.restlet.data.Response;
@@ -128,6 +136,12 @@ public class WebAPICucumberHooks {
         context.setUpDefaultMultiRepoServer();
     }
 
+    @Given("^There is a default multirepo server with remotes$")
+    public void setUpDefaultMultiRepoWithRemotes() throws Exception {
+        setUpEmptyMultiRepo();
+        context.setUpDefaultMultiRepoServerWithRemotes();
+    }
+
     @Given("^There is an empty repository named ([^\"]*)$")
     public void setUpEmptyRepo(String name) throws Throwable {
         String repoUri = "/repos/" + name;
@@ -137,6 +151,32 @@ public class WebAPICucumberHooks {
 
         context.call(Method.POST, repoUri + "/config?name=user.name&value=webuser");
         context.call(Method.POST, repoUri + "/config?name=user.email&value=webuser@test.com");
+    }
+
+    @Given("^There is a repository with multiple branches named ([^\"]*)$")
+    public void setUpMultipleBranches(String name) throws Throwable {
+        String repoUri = "/repos/" + name;
+        String urlSpec = repoUri + "/init";
+        context.call(Method.PUT, urlSpec);
+        assertStatusCode(Status.SUCCESS_CREATED.getCode());
+
+        context.call(Method.POST, repoUri + "/config?name=user.name&value=webuser");
+        context.call(Method.POST, repoUri + "/config?name=user.email&value=webuser@test.com");
+
+        Repository repo = context.getRepo(name);
+        TestData data = new TestData(repo);
+        data.addAndCommit("Added Point.1", TestData.point1);
+        data.branch("non_conflicting");
+        data.branch("conflicting");
+        data.addAndCommit("Modified Point.1", TestData.point1_modified);
+        data.branch("master_original");
+        data.checkout("conflicting");
+        data.remove(TestData.point1);
+        data.add();
+        data.commit("Removed Point.1");
+        data.checkout("non_conflicting");
+        data.addAndCommit("Added Point.2", TestData.point2);
+        data.checkout("master");
     }
 
     /**
@@ -164,8 +204,34 @@ public class WebAPICucumberHooks {
      * @param expectedFeatures
      * @throws Throwable
      */
-    @Then("^the ([^\"]*) repository's ([^\"]*) should have the following features:$")
-    public void verifyRepositoryContents(String repositoryName, String headRef,
+    
+    /**
+     * Checks that the repository named {@code repositoryName}, at it's commit {@code headRef}, has
+     * the expected features as given by the {@code expectedFeatures} {@link DataTable}.
+     * <p>
+     * The {@code DataTable} top cells represent feature tree paths, and their cells beneath each
+     * feature tree path, the feature ids expected for each layer.
+     * <p>
+     * A {@code question mark} indicates a wild card feature where the feature id may not be known.
+     * <p>
+     * Example:
+     * 
+     * <pre>
+     * <code>
+     *     |  Points   |  Lines   |  Polygons   | 
+     *     |  Points.1 |  Lines.1 |  Polygons.1 | 
+     *     |  Points.2 |  Lines.2 |  Polygons.2 | 
+     *     |  ?        |          |             |
+     *</code>
+     * </pre>
+     * 
+     * @param repositoryName
+     * @param headRef
+     * @param expectedFeatures
+     * @throws Throwable
+     */
+    @Then("^the ([^\"]*) repository's \"([^\"]*)\" in the (@[^\"]*) transaction should have the following features:$")
+    public void verifyRepositoryContentsTx(String repositoryName, String headRef, String txId,
             DataTable expectedFeatures) throws Throwable {
 
         SetMultimap<String, String> expected = HashMultimap.create();
@@ -180,7 +246,7 @@ public class WebAPICucumberHooks {
             }
         }
 
-        SetMultimap<String, String> actual = context.listRepo(repositoryName, headRef);
+        SetMultimap<String, String> actual = context.listRepo(repositoryName, headRef, txId);
 
         Map<String, Collection<String>> actualMap = actual.asMap();
         Map<String, Collection<String>> expectedMap = expected.asMap();
@@ -203,6 +269,170 @@ public class WebAPICucumberHooks {
         }
         assertEquals(0, expectedMap.size());
 
+    }
+    
+    @Then("^the ([^\"]*) repository's \"([^\"]*)\" should have the following features:$")
+    public void verifyRepositoryContents(String repositoryName, String headRef,
+            DataTable expectedFeatures) throws Throwable {
+        verifyRepositoryContentsTx(repositoryName, headRef, null, expectedFeatures);
+    }
+
+    @Given("^There are multiple branches on the \"([^\"]*)\" repo$")
+    public void There_are_multiple_branches(String repoName) throws Throwable {
+        Repository repo = context.getRepo(repoName);
+        TestData data = new TestData(repo);
+        data.addAndCommit("Added Point.1", TestData.point1);
+        ObjectId master = repo.command(RefParse.class).setName("master").call().get().getObjectId();
+        repo.command(UpdateRef.class).setName(Ref.REMOTES_PREFIX + "origin/master_remote")
+                .setNewValue(master).call();
+        data.branchAndCheckout("branch1");
+        data.addAndCommit("Added Point.2", TestData.point2);
+        ObjectId branch1 = repo.command(RefParse.class).setName("branch1").call().get()
+                .getObjectId();
+        repo.command(UpdateRef.class).setName(Ref.REMOTES_PREFIX + "origin/branch1_remote")
+                .setNewValue(branch1).call();
+        data.branchAndCheckout("branch2");
+        data.addAndCommit("Added Line.1", TestData.line1);
+        ObjectId branch2 = repo.command(RefParse.class).setName("branch2").call().get()
+                .getObjectId();
+        repo.command(UpdateRef.class).setName(Ref.REMOTES_PREFIX + "origin/branch2_remote")
+                .setNewValue(branch2).call();
+        data.checkout("master");
+    }
+
+    @Given("^There is a tag called \"([^\"]*)\" on the \"([^\"]*)\" repo pointing to \"([^\"]*)\" with the \"([^\"]*)\" message$")
+    public void There_is_a_tag(String tagName, String repoName, String target, String message) {
+        Repository repo = context.getRepo(repoName);
+        target = context.replaceVariables(target);
+        repo.command(TagCreateOp.class).setName(tagName).setCommitId(ObjectId.valueOf(target))
+                .setMessage(message).call();
+    }
+
+    @Given("^There are conflicts on the \"([^\"]*)\" repo in the (@[^\"]*) transaction$")
+    public void There_are_conflict(String repoName, String txId) throws Throwable {
+        Repository repo = context.getRepo(repoName);
+        TestData data = new TestData(repo);
+        GeogigTransaction transaction = repo.command(TransactionResolve.class)
+                .setId(UUID.fromString(context.getVariable(txId))).call().get();
+        data.setTransaction(transaction);
+        data.addAndCommit("Added Point.1", TestData.point1);
+        data.branch("branch1");
+        data.addAndCommit("Modified Point.1", TestData.point1_modified);
+        data.checkout("branch1");
+        data.remove(TestData.point1);
+        data.add();
+        data.commit("Removed Point.1");
+        data.checkout("master");
+        try {
+            data.mergeNoFF("branch1", "Merge branch1");
+        } catch (MergeConflictsException e) {
+            // Expected
+        }
+        assertEquals(1, transaction.command(ConflictsCountOp.class).call().longValue());
+    }
+
+    @Given("^There should be no conflicts on the \"([^\"]*)\" repo in the (@[^\"]*) transaction$")
+    public void There_should_be_no_conflicts(String repoName, String txId) throws Throwable {
+        Repository repo = context.getRepo(repoName);
+        GeogigTransaction transaction = repo.command(TransactionResolve.class)
+                .setId(UUID.fromString(context.getVariable(txId))).call().get();
+
+        assertEquals(0, transaction.command(ConflictsCountOp.class).call().longValue());
+    }
+
+    @Given("^There is a feature with multiple authors on the \"([^\"]*)\" repo$")
+    public void There_is_a_feature_with_multiple_authors(String repoName) throws Throwable {
+        Repository repo = context.getRepo(repoName);
+        TestData data = new TestData(repo);
+        data.config("user.name", "Author1");
+        data.config("user.email", "author1@test.com");
+        data.addAndCommit("Added Point.1", TestData.point1);
+        data.config("user.name", "Author2");
+        data.config("user.email", "author2@test.com");
+        data.addAndCommit("Modified Point.1", TestData.point1_modified);
+    }
+
+    @Given("^I have checked out \"([^\"]*)\" on the \"([^\"]*)\" repo$")
+    public void I_have_checked_out(String branch, String repoName) throws Throwable {
+        Repository repo = context.getRepo(repoName);
+        TestData data = new TestData(repo);
+        data.checkout(branch);
+    }
+
+    private SimpleFeature parseFeature(String featureName) throws Exception {
+        SimpleFeature feature;
+        if (featureName.equals("Point.1")) {
+            feature = TestData.point1;
+        } else if (featureName.equals("Point.2")) {
+            feature = TestData.point2;
+        } else if (featureName.equals("Point.3")) {
+            feature = TestData.point3;
+        } else if (featureName.equals("Point.1_modified")) {
+            feature = TestData.point1_modified;
+        } else if (featureName.equals("Point.2_modified")) {
+            feature = TestData.point2_modified;
+        } else if (featureName.equals("Line.1")) {
+            feature = TestData.line1;
+        } else if (featureName.equals("Line.2")) {
+            feature = TestData.line2;
+        } else if (featureName.equals("Line.3")) {
+            feature = TestData.line3;
+        } else if (featureName.equals("Polygon.1")) {
+            feature = TestData.poly1;
+        } else if (featureName.equals("Polygon.2")) {
+            feature = TestData.poly2;
+        } else if (featureName.equals("Polygon.3")) {
+            feature = TestData.poly3;
+        } else {
+            throw new Exception("Unknown Feature");
+        }
+        return feature;
+    }
+
+    @Given("^I have unstaged \"([^\"]*)\" on the \"([^\"]*)\" repo in the \"([^\"]*)\" transaction$")
+    public TestData I_have_unstaged(String feature, String repoName, String txId) throws Throwable {
+        Repository repo = context.getRepo(repoName);
+        TestData data = new TestData(repo);
+        if (!txId.isEmpty()) {
+            GeogigTransaction transaction = repo.command(TransactionResolve.class)
+                    .setId(UUID.fromString(context.getVariable(txId))).call().get();
+            data.setTransaction(transaction);
+        }
+        data.insert(parseFeature(feature));
+        return data;
+    }
+
+    @Given("^I have staged \"([^\"]*)\" on the \"([^\"]*)\" repo in the \"([^\"]*)\" transaction$")
+    public void I_have_staged(String feature, String repoName, String txId) throws Throwable {
+        TestData data = I_have_unstaged(feature, repoName, txId);
+        data.add();
+    }
+
+    @Given("^I have committed \"([^\"]*)\" on the \"([^\"]*)\" repo in the \"([^\"]*)\" transaction$")
+    public void I_have_committed(String feature, String repoName, String txId) throws Throwable {
+        TestData data = I_have_unstaged(feature, repoName, txId);
+        data.add();
+        data.commit("Added " + feature);
+    }
+
+    @Given("^I have removed \"([^\"]*)\" on the \"([^\"]*)\" repo in the \"([^\"]*)\" transaction$")
+    public void I_have_removed(String feature, String repoName, String txId) throws Exception {
+        Repository repo = context.getRepo(repoName);
+        TestData data = new TestData(repo);
+        if (!txId.isEmpty()) {
+            GeogigTransaction transaction = repo.command(TransactionResolve.class)
+                    .setId(UUID.fromString(context.getVariable(txId))).call().get();
+            data.setTransaction(transaction);
+        }
+        data.remove(parseFeature(feature));
+        data.add();
+        data.commit("Removed " + feature);
+    }
+
+    @Given("^The graph database on the \"([^\"]*)\" repo has been truncated$")
+    public void Truncate_graph_database(String repoName) throws Throwable {
+        Repository repo = context.getRepo(repoName);
+        repo.graphDatabase().truncate();
     }
 
     /**
@@ -254,20 +484,6 @@ public class WebAPICucumberHooks {
         GeogigTransaction transaction = repo.command(TransactionResolve.class)
                 .setId(UUID.fromString(context.getVariable(variableName))).call().get();
         repo.command(TransactionEnd.class).setTransaction(transaction).call();
-    }
-
-    /**
-     * Removes Points/1 from the repository.
-     * 
-     * @param repoName the repository to remove the feature from.
-     */
-    @When("^I remove Points/1 from \"([^\"]*)\"$")
-    public void removeFeature(final String repoName) throws Exception {
-        Repository repo = context.getRepo(repoName);
-        TestData data = new TestData(repo);
-        data.remove(TestData.point1);
-        data.add();
-        data.commit("Removed point1");
     }
 
     /**
@@ -362,21 +578,29 @@ public class WebAPICucumberHooks {
      */
     @Then("^the xml response should contain \"([^\"]*)\" (\\d+) times$")
     public void checkXPathCadinality(final String xpathExpression, final int times) {
-
-        Document dom = context.getLastResponseAsDom();
-        Source source = new DOMSource(dom);
-
-        JAXPXPathEngine xpathEngine = new JAXPXPathEngine();
-        xpathEngine.setNamespaceContext(NSCONTEXT);
-
-        List<Node> nodes = Lists.newArrayList(xpathEngine.selectNodes(xpathExpression, source));
+        List<Node> nodes = getDomNodes(xpathExpression);
         assertEquals(times, nodes.size());
     }
 
     @Then("^the response body should contain \"([^\"]*)\"$")
-    public void checkResponseTextContains(final String substring) {
+    public void checkResponseTextContains(String substring) {
+        substring = context.replaceVariables(substring);
         final String responseText = context.getLastResponseText();
         assertThat(responseText, containsString(substring));
+    }
+    
+    @Then("^the response body should not contain \"([^\"]*)\"$")
+    public void checkResponseTextNotContains(String substring) {
+        substring = context.replaceVariables(substring);
+        final String responseText = context.getLastResponseText();
+        assertThat(responseText, not(containsString(substring)));
+    }
+
+    @Then("^the variable \"([^\"]*)\" equals \"([^\"]*)\"$")
+    public void checkVariableEquals(String variable, String expectedValue) {
+        variable = context.replaceVariables(variable);
+        expectedValue = context.replaceVariables(expectedValue);
+        assertEquals(variable, expectedValue);
     }
 
     @Then("^the xml response should not contain \"([^\"]*)\"$")
@@ -389,7 +613,7 @@ public class WebAPICucumberHooks {
 
     @Then("^the xpath \"([^\"]*)\" equals \"([^\"]*)\"$")
     public void checkXPathEquals(String xpath, String expectedValue) {
-
+        expectedValue = context.replaceVariables(expectedValue);
         final String xml = context.getLastResponseText();
         assertXpathEquals(xpath, expectedValue, xml);
     }
@@ -399,9 +623,22 @@ public class WebAPICucumberHooks {
                 .withNamespaceContext(NSCONTEXT));
     }
 
+    @Then("^there is an xpath \"([^\"]*)\" that equals \"([^\"]*)\"$")
+    public void checkOneXPathEquals(String xpath, String expectedValue) {
+        expectedValue = context.replaceVariables(expectedValue);
+        List<Node> nodes = getDomNodes(xpath);
+        boolean match = false;
+        for (Node node : nodes) {
+            if (node.getTextContent().equals(expectedValue)) {
+                match = true;
+                break;
+            }
+        }
+        assertTrue(match);
+    }
+
     @Then("^the xpath \"([^\"]*)\" contains \"([^\"]*)\"$")
     public void checkXPathValueContains(final String xpath, final String substring) {
-
         final String xml = context.getLastResponseText();
         assertXpathContains(xpath, substring, xml);
     }
@@ -409,6 +646,29 @@ public class WebAPICucumberHooks {
     private void assertXpathContains(final String xpath, final String substring, final String xml) {
         assertThat(xml, xml, EvaluateXPathMatcher.hasXPath(xpath, containsString(substring))
                 .withNamespaceContext(NSCONTEXT));
+    }
+
+    @Then("^there is an xpath \"([^\"]*)\" that contains \"([^\"]*)\"$")
+    public void checkOneXPathValueContains(final String xpath, final String substring) {
+        List<Node> nodes = getDomNodes(xpath);
+        boolean match = false;
+        for (Node node : nodes) {
+            if (node.getTextContent().contains(substring)) {
+                match = true;
+                break;
+            }
+        }
+        assertTrue(match);
+    }
+
+    private List<Node> getDomNodes(final String xpath) {
+        Document dom = context.getLastResponseAsDom();
+        Source source = new DOMSource(dom);
+
+        JAXPXPathEngine xpathEngine = new JAXPXPathEngine();
+        xpathEngine.setNamespaceContext(NSCONTEXT);
+
+        return Lists.newArrayList(xpathEngine.selectNodes(xpath, source));
     }
 
     ////////////////////// async task step definitions //////////////////////////

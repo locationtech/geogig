@@ -219,7 +219,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                     }
                 }
                 for (Ref localRef : localRemoteRefs) {
-                    if (!locals.contains(localRef)) {
+                    if (!(localRef instanceof SymRef) && !locals.contains(localRef)) {
                         // Delete the ref
                         ChangedRef changedRef = new ChangedRef(localRef, null,
                                 ChangeTypes.REMOVED_REF);

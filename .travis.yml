@@ -24,7 +24,7 @@ before_script:
   - echo 'user = postgres' >> ~/.geogig-pg-tests.properties
   - echo 'password = ' >> ~/.geogig-pg-tests.properties
 script:
-  - mvn -B test -Ptravis,postgres,experimental,online
+  - mvn -B test -Ptravis,postgres,experimental,online -Dcucumber.options="--tags ~@Version"
 services: postgresql
 addons:
   postgresql: "9.4"

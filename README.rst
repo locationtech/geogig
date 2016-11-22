@@ -49,6 +49,8 @@ Developing
 
 If you want to get involved in the development of GeoGig, build GeoGig yourself or know more about the technical details behind GeoGig, check the `developers section <https://github.com/locationtech/geogig/blob/master/doc/technical/source/developers.rst>`_.
 
+See `CONTRIBUTING <CONTRIBUTING.md>`_ for details on making GitHub pull request.
+
 Participation
 =============
 

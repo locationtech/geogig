@@ -79,8 +79,13 @@ public class PreOrderDiffWalk {
     private static final ForkJoinPool FORK_JOIN_POOL;
 
     static {
-        int parallelism = Math.max(2, Runtime.getRuntime().availableProcessors() / 2);
-        FORK_JOIN_POOL = new ForkJoinPool(parallelism);
+        final int parallelism = Math.max(2, Runtime.getRuntime().availableProcessors());
+        // establishes local first-in-first-out scheduling mode for forked
+        // more appropriate than default locally stack-based mode when
+        // worker threads only process event-style asynchronous tasks
+        final boolean asyncMode = true;
+        FORK_JOIN_POOL = new ForkJoinPool(parallelism,
+                ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, asyncMode);
     }
 
     /**
@@ -199,7 +204,6 @@ public class PreOrderDiffWalk {
         if (preserveIterationOrder) {
             forkJoinPool = new ForkJoinPool(1);
         } else {
-            // TODO: I think for parallel forkjoinpools we could use asyncMode = true
             forkJoinPool = FORK_JOIN_POOL;
         }
     }

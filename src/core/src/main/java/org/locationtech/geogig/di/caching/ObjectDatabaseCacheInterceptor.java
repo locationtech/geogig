@@ -188,7 +188,7 @@ class ObjectDatabaseCacheInterceptor {
     private static class CacheHelper {
         private Provider<? extends CacheFactory> cacheProvider;
 
-        final boolean cacheFeatures = true;// TODO make configurable?
+        final boolean cacheFeatures = false;// TODO make configurable?
 
         public CacheHelper(final Provider<? extends CacheFactory> cacheProvider) {
             this.cacheProvider = cacheProvider;
@@ -304,10 +304,6 @@ class ObjectDatabaseCacheInterceptor {
 
         private final boolean isCacheable(Object object, boolean cacheFeatures) {
             if (!cacheFeatures && object instanceof RevFeature) {
-                return false;
-            }
-            // do not cache leaf trees. They tend to be quite large. TODO: make this configurable
-            if ((object instanceof RevTree) && !((RevTree) object).features().isEmpty()) {
                 return false;
             }
             return object != null;

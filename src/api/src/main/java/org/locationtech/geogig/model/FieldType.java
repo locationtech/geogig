@@ -197,6 +197,9 @@ public enum FieldType {
         return tagValue;
     }
 
+    // cached array to avoid a clone performed by Enum on each call to valueOf(int)
+    private static final FieldType[] VALUES_CACHE = FieldType.values();
+
     /**
      * Obtain a {@code FieldType} constant by it's {@link #getTag() tag}
      */
@@ -206,7 +209,7 @@ public enum FieldType {
         }
         // NOTE: we're using the tagValue as the ordinal index because they match, the moment they
         // don't we need to reimplement this method accordingly.
-        return values()[tagValue];
+        return VALUES_CACHE[tagValue];
     }
 
     /**

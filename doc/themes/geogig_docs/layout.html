@@ -87,8 +87,15 @@
         </div>
         <div class="section">
           <h3>License</h3>
-          <p>This project is licensed under the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse License</a>.</p>
+          <p>GeoGig is published using the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse Distribution License</a> (EDL). This is an open source initiative approved BSD-3 Clause license.</p>
+          
+          <p>This documentation is licensed under a <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>. Page template includes work by the JQuery Foundation (<a href="https://github.com/jquery/jquery/blob/master/LICENSE.txt">MIT License</a>).</p>
+
+          {%- if hasdoc('license') %}
+            <p>For more information see the &copy; <a href="{{ pathto('license') }}">license page</a> documentation.</p>
+          {%- endif %}
         </div>
+        
       {%- endif %}
       {%- if customsidebar %}
       {{ rendertemplate(customsidebar) }}
@@ -259,7 +266,7 @@
     <footer>
       <div class="container">
         <div class="row">
-          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="{{ pathto('_static/Boundless_Logo.png', 1) }}" alt="Boundless"></a></p></div>
+          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> available on LocationTech. Website maintained by <a href="https://github.com/boundlessgeo"><img src="{{ pathto('_static/Boundless_Logo.png', 1) }}" alt="Boundless"></a></p></div>
         </div>
       </div>
     </footer>

@@ -1,0 +1,61 @@
+Copyright 2010, JA-SIG, Inc.
+This project includes software developed by Jasig.
+http://www.jasig.org/
+
+Licensed under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied. See the License for the
+specific language governing permissions and limitations
+under the License.
+
+This project includes:
+  API interfaces under Lesser General Public License (LGPL)
+  Commons Pool under The Apache Software License, Version 2.0
+  Compress-LZF under Apache License 2.0
+  Cucumber-HTML under MIT License
+  Cucumber-JVM Repackaged Dependencies under BSD License or The Apache Software License, Version 2.0
+  Cucumber-JVM: Core under MIT License
+  Cucumber-JVM: Java under MIT License
+  Cucumber-JVM: JUnit under MIT License
+  DataStore Support under Lesser General Public License (LGPL)
+  EJML under The Apache Software License, Version 2.0
+  EPSG Authority Service using HSQL database under Lesser General Public License (LGPL) or EPSG database distribution license or BSD License for HSQL
+  GeoGig Command Line Interface under Eclipse Distribution License
+  GeoGig Core under Apache License, Version 2.0
+  GeoGig Core API under Eclipse Distribution License
+  Gherkin under MIT License
+  Google Guice - Core Library under The Apache Software License, Version 2.0
+  Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
+  Gson under The Apache Software License, Version 2.0
+  Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
+  Hamcrest Core under New BSD License
+  HyperSQL Database under HSQLDB License, a BSD open source license
+  jansi under The Apache Software License, Version 2.0
+  Java implementation of GeographicLib under The MIT License(MIT)
+  javax.inject under The Apache Software License, Version 2.0
+  JCommander under The Apache Software License, Version 2.0
+  JDT Annotations for Enhanced Null Analysis under Eclipse Public License - v 1.0
+  jsr-275 under BSD License
+  JTS Topology Suite under Lesser General Public License (LGPL)
+  JUnit under Eclipse Public License 1.0
+  Main module under Lesser General Public License (LGPL)
+  Metadata under Lesser General Public License (LGPL)
+  OGC CQL to Filter parser under Lesser General Public License (LGPL)
+  Open GIS Interfaces under OGC copyright or Lesser General Public License (LGPL)
+  Referencing services under Lesser General Public License (LGPL)
+  RocksDB JNI under Apache License 2.0
+  RocksDB storage backend under Eclipse Distribution License
+  Shapefile module under Lesser General Public License (LGPL)
+  SLF4J API Module under MIT License
+  SLF4J Simple Binding under MIT License
+
+
+This project also includes code under copywrite of the following entities:
+  http://code.google.com/p/maven-license-plugin/

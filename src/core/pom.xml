@@ -15,6 +15,23 @@
   <name>GeoGig Core</name>
   <!-- Build Instructions and Profiles Handled as a normal maven java project: mvn clean install Online tests available using:
     mvn -Ponline Corertura is configured for a test coverage report: mvn cobertura:cobertura open target/site/cobertura/index.html -->
+
+  <licenses>
+    <license>
+      <name>Eclipse Distribution License</name>
+      <url>https://www.eclipse.org/org/documents/edl-v10.html</url>
+      <distribution>repo</distribution>
+      <comments>The Eclipse Distribution License is a BSD-3 style license</comments>
+    </license>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>This license only applies to varint and Google diff merge patch</comments>
+    </license>
+  </licenses>
+
+
   <dependencies>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>

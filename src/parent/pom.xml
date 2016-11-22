@@ -54,6 +54,8 @@
     <license>
       <name>Eclipse Distribution License</name>
       <url>https://www.eclipse.org/org/documents/edl-v10.html</url>
+      <distribution>repo</distribution>
+      <comments>The Eclipse Distribution License is a BSD-3 style license</comments>
     </license>
   </licenses>
   <repositories>
@@ -398,6 +400,31 @@
 
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.jasig.maven</groupId>
+          <artifactId>maven-notice-plugin</artifactId>
+          <version>1.0.4</version>
+          <configuration>
+            <noticeTemplate>NOTICE.template</noticeTemplate>
+            <licenseMapping>
+              <param>licenseMapping.xml</param>
+            </licenseMapping>
+            <includeScope>compile</includeScope>
+          </configuration>
+        </plugin>
+        <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>1.10</version>
+        <executions>
+          <execution>
+            <id>download-licenses</id>
+            <goals>
+              <goal>download-licenses</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
         <plugin>
           <!--
             generates OS specific scripts for starting java applications

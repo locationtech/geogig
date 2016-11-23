@@ -47,6 +47,9 @@
         <file>
             <source>../../LICENSE.txt</source>
         </file>
+        <file>
+            <source>../../NOTICE.txt</source>
+        </file>
     </files>
     
     <fileSets>

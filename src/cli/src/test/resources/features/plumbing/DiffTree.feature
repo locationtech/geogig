@@ -49,7 +49,7 @@ Scenario: Show diff using a wrong  refspec
      When I run the command "diff-tree wrong:refspec"
 	 Then the response should contain "wrong:refspec did not resolve to a tree"
 	  And it should exit with non-zero exit code  	 
-         
+      
 Scenario: Show diff between working tree and index, describing the modified element
     Given I have a repository
       And I stage 6 features         
@@ -73,8 +73,17 @@ Scenario: Show diff between working tree and index, using a path filter
       And the response should not contain "Points/Points.1"   
       And the response should contain 1 lines 
      
-
-
-       
-                        
+Scenario: Try to show a diff with --describe and --tree-stats
+    Given I have a repository
+      And I stage 6 features
+      And I modify a feature
+     When I run the command "diff-tree WORK_HEAD STAGE_HEAD --describe --tree-stats"
+     Then the response should contain "Cannot use --describe and --tree-stats simultaneously"
      
+Scenario: Show diff between working tree and index, describing a removed element
+    Given I have a repository
+      And I stage 6 features         
+      And I remove a feature             
+     When I run the command "diff-tree WORK_HEAD STAGE_HEAD --describe"
+     Then the response should contain "Points/Points.1"
+      And the response should contain 7 lines

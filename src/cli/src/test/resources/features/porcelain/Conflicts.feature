@@ -38,4 +38,11 @@ Scenario: Try to list conflicts when no conflicts exist
       And I have staged "points1" 
      When I run the command "conflicts"
      Then the response should contain "No elements need merging"       
-      
+     
+Scenario: Try to list conflicts showing only refspec
+    Given I have a repository
+      And I have conflicting branches
+     When I run the command "merge branch1"
+      And I run the command "conflicts --refspecs-only"
+     Then the response should contain "Points/Points.1"
+     

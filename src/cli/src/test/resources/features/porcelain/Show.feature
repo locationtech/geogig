@@ -80,3 +80,10 @@ Scenario: Try to show the description of a 2 features with the --raw modifier
       And the response should contain "pp"
       And the response should contain "ip"             
       
+Scenario: Try to show the description of a featuretype
+    Given I have a repository
+      And I stage 6 features
+      And I run the command "commit -m TestCommit"
+     When I run the command "show Points"          
+     Then the response should contain "TREE ID"
+      

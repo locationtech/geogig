@@ -36,9 +36,8 @@ Feature: "init" command
      Then the response should start with "Reinitialized existing Geogig repository in"
       And the repository shall exist
     
-
   Scenario: Init specifying repo URI
     Given I am in an empty directory
      When I run the command "init ${repoURI}"
-      Then the repository at "${repoURI}" shall exist
-    
+     Then the repository at "${repoURI}" shall exist
+     

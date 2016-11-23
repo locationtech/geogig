@@ -179,3 +179,13 @@ Feature: "config" command
     Given I have a repository
      When I run the command "config --rootUri ${rootRepoURI} testing.local true"
      Then it should answer "The config location is invalid"
+     
+  Scenario: Try to use both global and local in the same config command
+    Given I have a repository
+     When I run the command "config --local --global"
+     Then the response should contain "Usage:"
+     
+  Scenario: Try to use the config command with no arguments
+    Given I have a repository
+     When I run the command "config"
+     Then the response should contain "Usage:"

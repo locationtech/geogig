@@ -67,26 +67,28 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
         }
 
         List<AutoCloseableIterator<DiffEntry>> commitDiffs = new ArrayList<AutoCloseableIterator<DiffEntry>>();
-
-        // we organize the changes made for each path
-        for (RevCommit commit : commits) {
-            AutoCloseableIterator<DiffEntry> toMergeDiffs = command(DiffTree.class)
-                    .setReportTrees(true).setOldTree(ancestor.get()).setNewTree(commit.getId())
-                    .setPreserveIterationOrder(true).call();
-            commitDiffs.add(toMergeDiffs);
-        }
-
-        PeekingIterator<DiffEntry> merged = Iterators
-                .peekingIterator(Iterators.mergeSorted(commitDiffs, DiffEntry.COMPARATOR));
-
-        while (merged.hasNext()) {
-            List<DiffEntry> nextPath = nextPath(merged);
-            if (hasConflicts(nextPath)) {
-                for (AutoCloseableIterator<DiffEntry> iter : commitDiffs) {
-                    iter.close();
-                }
-                return true;
+        try {
+            // we organize the changes made for each path
+            for (RevCommit commit : commits) {
+                AutoCloseableIterator<DiffEntry> toMergeDiffs = command(DiffTree.class)
+                        .setReportTrees(true).setOldTree(ancestor.get()).setNewTree(commit.getId())
+                        .setPreserveIterationOrder(true).call();
+                commitDiffs.add(toMergeDiffs);
             }
+
+            PeekingIterator<DiffEntry> merged = Iterators
+                    .peekingIterator(Iterators.mergeSorted(commitDiffs, DiffEntry.COMPARATOR));
+
+            long progress = 0;
+            while (merged.hasNext()) {
+                List<DiffEntry> nextPath = nextPath(merged);
+                getProgressListener().setProgress(++progress);
+                if (hasConflicts(nextPath)) {
+                    return true;
+                }
+            }
+        } finally {
+            commitDiffs.forEach((iter) -> iter.close());
         }
 
         return false;

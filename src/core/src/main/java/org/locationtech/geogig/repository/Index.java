@@ -146,7 +146,7 @@ public class Index implements StagingArea {
      * 
      * @param progress the progress listener for the process
      * @param unstaged an iterator for the unstaged changes
-     * @param numChanges number of unstaged changes
+     * @param numChanges number of unstaged changes, or negative if unknown
      */
     @Override
     public void stage(final ProgressListener progress, final Iterator<DiffEntry> unstaged,
@@ -211,8 +211,11 @@ public class Index implements StagingArea {
                 // featureTypeTrees, currentFeatureTypeRefs);
 
                 i++;
-                progress.setProgress((float) (i * 100) / numChanges);
-
+                if (numChanges > 0) {
+                    progress.setProgress((float) (i * 100) / numChanges);
+                } else {
+                    progress.setProgress(i);
+                }
                 final NodeRef oldObject = diff.getOldObject();
                 final NodeRef newObject = diff.getNewObject();
                 final ChangeType changeType = diff.changeType();

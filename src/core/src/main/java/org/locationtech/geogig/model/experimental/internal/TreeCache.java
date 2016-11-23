@@ -44,6 +44,7 @@ class TreeCache {
             @Override
             public RevTree load(Integer key) throws Exception {
                 ObjectId treeId = oidMapping.get(key);
+                Preconditions.checkState(treeId != null, "No tree id mapped to " + key);
                 RevTree tree = TreeCache.this.store.getTree(treeId);
                 return tree;
             }

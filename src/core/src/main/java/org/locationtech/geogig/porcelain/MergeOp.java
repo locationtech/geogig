@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.geotools.util.SubProgressListener;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -36,7 +37,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.locationtech.geogig.repository.SubProgressListener;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -224,7 +224,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         progress.setDescription("Checking for possible conflicts...");
         final boolean mightHaveConflicts;// either there are conflicts or two features modified by
                                          // different branches might cause conflicts
-        mightHaveConflicts = command(CheckMergeScenarioOp.class).setCommits(revCommits).call();
+        mightHaveConflicts = command(CheckMergeScenarioOp.class).setCommits(revCommits)
+                .setProgressListener(progress).call();
         checkState(!(mightHaveConflicts && fastForwardOnly),
                 "The flag --ff-only was specified but no fast forward merge could be executed");
 
@@ -280,26 +281,11 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                     "Conflicted merge.\nCannot merge more than two commits when conflicts exist"
                             + " or features have been modified in several histories");
             for (ObjectId commitId : commits) {
-                ProgressListener subProgress = subProgress(100.f / commits.size());
+                progress.setDescription("Merging commit " + commitId);
 
-                subProgress.started();
                 if (headRef.getObjectId().isNull()) {
                     // Fast-forward
-                    if (headRef instanceof SymRef) {
-                        final String currentBranch = ((SymRef) headRef).getTarget();
-                        command(UpdateRef.class).setName(currentBranch).setNewValue(commitId)
-                                .call();
-                        headRef = (SymRef) command(UpdateSymRef.class).setName(Ref.HEAD)
-                                .setNewValue(currentBranch).call().get();
-                    } else {
-                        headRef = command(UpdateRef.class).setName(headRef.getName())
-                                .setNewValue(commitId).call().get();
-                    }
-
-                    workingTree().updateWorkHead(commitId);
-                    index().updateStageHead(commitId);
-                    subProgress.complete();
-                    mergeStatusBuilder.setChanged(true);
+                    headRef = doFastForwardMerge(headRef, commitId, mergeStatusBuilder);
                     continue;
                 }
 
@@ -311,8 +297,6 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
                 pairs.add(new CommitAncestorPair(commitId, ancestorCommit.get()));
 
-                subProgress.setProgress(10.f);
-
                 checkState(ancestorCommit.isPresent(), "No ancestor commit could be found.");
 
                 if (commits.size() == 1) {
@@ -322,49 +306,36 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                         cancel();
                         return null;
                     }
-                    if (ancestorCommit.get().equals(headCommit.getId()) && !noFastForward) {
-                        // Fast-forward
-                        if (headRef instanceof SymRef) {
-                            final String currentBranch = ((SymRef) headRef).getTarget();
-                            command(UpdateRef.class).setName(currentBranch).setNewValue(commitId)
-                                    .call();
-                            headRef = (SymRef) command(UpdateSymRef.class).setName(Ref.HEAD)
-                                    .setNewValue(currentBranch).call().get();
-                        } else {
-                            headRef = command(UpdateRef.class).setName(headRef.getName())
-                                    .setNewValue(commitId).call().get();
-                        }
+                    progress.setDescription(mergeScenario.toString());
 
-                        workingTree().updateWorkHead(commitId);
-                        index().updateStageHead(commitId);
-                        subProgress.complete();
-                        mergeStatusBuilder.setChanged(true);
+                    if (ancestorCommit.get().equals(headCommit.getId()) && !noFastForward) {
+                        headRef = doFastForwardMerge(headRef, commitId, mergeStatusBuilder);
                         continue;
                     } else if (ancestorCommit.get().equals(commitId)) {
                         continue;
                     }
-                } else {
-                    if (progress.isCanceled()) {
-                        cancel();
-                        return null;
-                    }
+                }
+
+                if (progress.isCanceled()) {
+                    cancel();
+                    return null;
                 }
 
                 // get changes
+                progress.setDescription("Staging changes...");
                 try (AutoCloseableIterator<DiffEntry> diff = command(DiffTree.class)
                         .setOldTree(ancestorCommit.get()).setNewTree(targetCommit.getId())
                         .setReportTrees(true).call()) {
                     // stage changes
-                    index().stage(new SubProgressListener(subProgress, 100.f), diff, 0);
+                    progress.setProgress(0);
+                    index().stage(progress, diff, -1);
                     mergeStatusBuilder.setChanged(true);
                     mergeStatusBuilder.setFastFoward(false);
                     workingTree().updateWorkHead(index().getTree().getId());
-
-                    subProgress.complete();
                 }
-
             }
 
+            progress.complete();
         }
 
         if (!mergeStatusBuilder.isChanged()) {
@@ -380,6 +351,24 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
         return result;
 
+    }
+
+    private Ref doFastForwardMerge(Ref headRef, ObjectId commitId,
+            MergeStatusBuilder mergeStatusBuilder) {
+        if (headRef instanceof SymRef) {
+            final String currentBranch = ((SymRef) headRef).getTarget();
+            command(UpdateRef.class).setName(currentBranch).setNewValue(commitId).call();
+            headRef = (SymRef) command(UpdateSymRef.class).setName(Ref.HEAD)
+                    .setNewValue(currentBranch).call().get();
+        } else {
+            headRef = command(UpdateRef.class).setName(headRef.getName()).setNewValue(commitId)
+                    .call().get();
+        }
+
+        workingTree().updateWorkHead(commitId);
+        index().updateStageHead(commitId);
+        mergeStatusBuilder.setChanged(true);
+        return headRef;
     }
 
     private void cancel() {

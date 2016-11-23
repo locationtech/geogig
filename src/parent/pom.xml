@@ -54,6 +54,8 @@
     <license>
       <name>Eclipse Distribution License</name>
       <url>https://www.eclipse.org/org/documents/edl-v10.html</url>
+      <distribution>repo</distribution>
+      <comments>The Eclipse Distribution License (a BSD-3 style license)</comments>
     </license>
   </licenses>
   <repositories>

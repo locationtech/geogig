@@ -1,0 +1,4 @@
+The Content includes source code from the following projects:
+
+* Varint from the Apache Mahout under Apache License Version 2.0
+* DiffMatchPath from Neil Fraser under Apache License Version 2.0

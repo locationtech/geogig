@@ -23,12 +23,6 @@
       <distribution>repo</distribution>
       <comments>The Eclipse Distribution License (a BSD-3 style license)</comments>
     </license>
-    <license>
-      <name>Apache License, Version 2.0</name>
-      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-      <comments>This license only applies to varint and Google diff merge patch</comments>
-    </license>
   </licenses>
   <dependencies>
     <dependency>

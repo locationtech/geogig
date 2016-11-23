@@ -15,6 +15,14 @@ Third Party Content
 
 The Content includes items that have been sourced from third parties as set out below. If you did not receive this Content directly from the Eclipse Foundation, the following is provided for informational purposes only, and you should look to the Redistributor's license for terms and conditions of use.
 
+The Content includes source code from the following projects:
+
+* Varint from the Apache Mahout under Apache License Version 2.0
+* DiffMatchPath from Neil Fraser under Apache License Version 2.0
+* XMLReader from osmosis released into the public domain
+
+The following third-party content is included:
+
  AOP alliance under Public Domain
  Apache Commons Collections under Apache License, Version 2.0 
  Apache Commons DBCP under The Apache Software License, Version 2.0

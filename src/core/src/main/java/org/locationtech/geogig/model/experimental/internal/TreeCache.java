@@ -14,8 +14,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
@@ -31,7 +31,7 @@ class TreeCache {
 
     private final AtomicInteger idSequence = new AtomicInteger();
 
-    private final BiMap<Integer, ObjectId> oidMapping = HashBiMap.create(10_000);
+    private final BiMap<Integer, ObjectId> oidMapping = HashBiMap.create(100_000);
 
     private final LoadingCache<Integer, RevTree> cache;
 
@@ -50,7 +50,7 @@ class TreeCache {
             }
         };
         this.cache = CacheBuilder.newBuilder().concurrencyLevel(1).maximumSize(100_000)
-                .recordStats().build(loader);
+                .build(loader);
     }
 
     public RevTree getTree(final ObjectId treeId) {
@@ -83,19 +83,16 @@ class TreeCache {
         Integer cacheId = oidMapping.inverse().get(tree.getId());
         if (cacheId == null) {
             cacheId = Integer.valueOf(idSequence.incrementAndGet());
+            oidMapping.put(cacheId, tree.getId());
             cache.put(cacheId, tree);
         }
         return cacheId;
     }
 
     public void preload(Iterable<ObjectId> trees) {
-        // Stopwatch sw = Stopwatch.createStarted();
-        Iterator<RevObject> preloaded = store.getAll(trees);
-        // int c = 0;
+        Iterator<RevTree> preloaded = store.getAll(trees, BulkOpListener.NOOP_LISTENER, RevTree.class);
         while (preloaded.hasNext()) {
-            getTreeId((RevTree) preloaded.next());
-            // c++;
+            getTreeId(preloaded.next());
         }
-        // System.err.printf("preloaded %d trees in %s\n", c, sw.stop());
     }
 }

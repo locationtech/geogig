@@ -27,9 +27,10 @@ import org.locationtech.geogig.rest.TaskResultDownloadResource;
 import org.locationtech.geogig.rest.TaskStatusResource;
 import org.locationtech.geogig.rest.postgis.PGRouter;
 import org.locationtech.geogig.rest.repository.CommandResource;
-import org.locationtech.geogig.rest.repository.DeleteRepository;
 import org.locationtech.geogig.rest.repository.FixedEncoder;
+import org.locationtech.geogig.rest.repository.InitCommandResource;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
+import org.locationtech.geogig.rest.repository.RepositoryResource;
 import org.locationtech.geogig.rest.repository.RepositoryRouter;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
@@ -128,13 +129,15 @@ public class Main extends Application {
                 singleRepoRouter);
         Router repo = new RepositoryRouter();
         Router postgis = new PGRouter();
-        singleRepoRouter.attach("", DeleteRepository.class);
+        singleRepoRouter.attach("", RepositoryResource.class);
         singleRepoRouter.attach("/postgis.{extension}", postgis);
         singleRepoRouter.attach("/postgis", postgis);
         singleRepoRouter.attach("/repo.{extension}", repo);
         singleRepoRouter.attach("/repo", repo);
         singleRepoRouter.attach("/import.{extension}", UploadCommandResource.class);
         singleRepoRouter.attach("/import", UploadCommandResource.class);
+        singleRepoRouter.attach("/init.{extension}", InitCommandResource.class);
+        singleRepoRouter.attach("/init", InitCommandResource.class);
         singleRepoRouter.attach("/{command}.{extension}", CommandResource.class);
         singleRepoRouter.attach("/{command}", CommandResource.class);
 

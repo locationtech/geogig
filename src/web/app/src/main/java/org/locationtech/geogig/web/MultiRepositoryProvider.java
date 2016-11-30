@@ -10,11 +10,13 @@
 package org.locationtech.geogig.web;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.rest.repository.InitCommandResource.INIT_CMD;
 import static org.locationtech.geogig.web.api.RESTUtils.getStringAttribute;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -27,6 +29,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
+import org.restlet.data.Method;
 import org.restlet.data.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,13 +78,34 @@ public class MultiRepositoryProvider implements RepositoryProvider {
         return resolver.listRepoNamesUnderRootURI(rootRepoURI).iterator();
     }
 
+    private boolean isInitRequest(Request request) {
+        // if the request is a PUT, and the request path ends in "init", it's an INIT request.
+        if (Method.PUT.equals(request.getMethod())) {
+            Map<String, Object> attributes = request.getAttributes();
+            if (attributes != null && attributes.containsKey("command")) {
+                return INIT_CMD.equals(attributes.get("command"));
+            } else if (request.getResourceRef() != null) {
+                String path = request.getResourceRef().getPath();
+                return path != null && path.contains(INIT_CMD);
+            }
+        }
+        return false;
+    }
+
     @Override
     public Optional<Repository> getGeogig(Request request) {
         final String repositoryName = getStringAttribute(request, "repository");
         if (null == repositoryName) {
             return Optional.absent();
         }
-
+        if (isInitRequest(request)) {
+            // init request, get a GeoGig repo based on the request
+            Optional<Repository> initRepo = InitRequestHandler.createGeoGIG(request);
+            if (initRepo.isPresent()) {
+                // init request was sufficient
+                return initRepo;
+            }
+        }
         return Optional.of(getGeogig(repositoryName));
     }
 

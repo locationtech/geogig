@@ -151,7 +151,19 @@ public class WebAPICucumberHooks {
     @Given("^There is a default multirepo server with remotes$")
     public void setUpDefaultMultiRepoWithRemotes() throws Exception {
         setUpEmptyMultiRepo();
-        context.setUpDefaultMultiRepoServerWithRemotes();
+        context.setUpDefaultMultiRepoServerWithRemotes(false);
+    }
+
+    @Given("^There is a default multirepo server with http remotes$")
+    public void setUpDefaultMultiRepoWithHttpRemotes() throws Exception {
+        setUpEmptyMultiRepo();
+        context.setUpDefaultMultiRepoServerWithRemotes(true);
+    }
+
+    @Given("^There is a default multirepo server with a shallow clone$")
+    public void setUpDefaultMultiRepoWithShallowClone() throws Exception {
+        setUpEmptyMultiRepo();
+        context.setUpDefaultMultiRepoServerWithShallowClone();
     }
     
     @Given("^There are three repos with remotes$")
@@ -939,6 +951,24 @@ public class WebAPICucumberHooks {
         context.postFile(targetURI, formFieldName, file);
     }
 
+    @When("^I post to \"([^\"]*)\" with$")
+    public void post_text(String targetURI, String postText) {
+        context.postText(targetURI, postText);
+    }
+
+    /**
+     * Saves the response as a variable.
+     * <p>
+     * {@link #callURL(String)} will decode the variable and replace it by its value before issuing
+     * the request.
+     *
+     * @param variableName the name of the variable to save the response as
+     */
+    @Then("^I save the response as \"([^\"]*)\"$")
+    public void saveResponseAsVariable(final String variableName) {
+        context.setVariable(variableName, context.getLastResponseText());
+    }
+
     @Then("^the json object \"([^\"]*)\" equals \"([^\"]*)\"$")
     public void checkJSONResponse(final String jsonPath, final String expected) {
         String pathValue = getStringFromJSONResponse(jsonPath);
@@ -1235,7 +1265,6 @@ public class WebAPICucumberHooks {
      *
      * @return A String representation of the value of the object denoted by the jsonPath.
      *
-     * @throws JSONException
      */
     private String getStringFromJSONResponse(String jsonPath) {
         final String response = context.getLastResponseText();

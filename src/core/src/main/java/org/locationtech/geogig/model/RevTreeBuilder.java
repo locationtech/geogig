@@ -15,7 +15,6 @@ import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.experimental.CanonicalTreeBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.storage.ObjectStore;
 

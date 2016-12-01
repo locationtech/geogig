@@ -13,7 +13,7 @@ import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Rule;
-import org.locationtech.geogig.model.experimental.CanonicalTreeBuilderTest;
+import org.locationtech.geogig.model.CanonicalTreeBuilderTest;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.postgresql.Environment;

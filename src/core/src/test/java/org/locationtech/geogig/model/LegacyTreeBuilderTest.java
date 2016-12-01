@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.model;
 
-import org.locationtech.geogig.model.experimental.CanonicalTreeBuilderTest;
-
 public class LegacyTreeBuilderTest extends CanonicalTreeBuilderTest {
 
     @Override

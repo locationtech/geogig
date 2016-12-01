@@ -53,7 +53,7 @@ class RevFeatureTypeImpl extends AbstractRevObject implements RevFeatureType {
         super(id);
         checkNotNull(featureType);
         CoordinateReferenceSystem defaultCrs = featureType.getCoordinateReferenceSystem();
-        if (WGS84.equals( (org.geotools.referencing.AbstractIdentifiedObject) defaultCrs, false)) {
+        if (WGS84.equals((org.geotools.referencing.AbstractIdentifiedObject) defaultCrs, false)) {
             // GeoTools treats DefaultGeographic.WGS84 as a special case when calling the
             // CRS.toSRS() method, and that causes the parsed RevFeatureType to hash differently.
             // To compensate that, we replace any instance of it with a CRS built using the

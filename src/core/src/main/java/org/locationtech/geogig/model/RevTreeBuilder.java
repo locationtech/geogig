@@ -57,8 +57,9 @@ public interface RevTreeBuilder {
     }
 
     ////
-    // this is a temporary meassure to defaulting to use the legacy tree builder but allowing to
-    // specify using the new through a System property. Run CLI with -Dtreebuilder.new=true (e.g. in
+    // this is a temporary measure to defaulting to use the canonical tree builder but allowing to
+    // specify using the legacy one through a System property. Run CLI with
+    //// -Dtreebuilder.legacy=true (e.g. in
     // JAVA_OPTS).
     ////
     static final AtomicBoolean notified = new AtomicBoolean();
@@ -72,15 +73,15 @@ public interface RevTreeBuilder {
         checkNotNull(store);
         checkNotNull(original);
         RevTreeBuilder builder;
-        final boolean USE_NEW_BUILDER = Boolean.getBoolean("treebuilder.new");
-        if (USE_NEW_BUILDER) {
+        final boolean USE_LEGACY_BUILDER = Boolean.getBoolean("treebuilder.legacy");
+        if (USE_LEGACY_BUILDER) {
             if (!notified.getAndSet(true)) {
-                System.err.println(
-                        "Using experimental tree builder " + CanonicalTreeBuilder.class.getName());
+                System.err
+                        .println("Using legacy tree builder " + LegacyTreeBuilder.class.getName());
             }
-            builder = new CanonicalTreeBuilder(store, original);
-        } else {
             builder = new LegacyTreeBuilder(store, original);
+        } else {
+            builder = new CanonicalTreeBuilder(store, original);
         }
         return builder;
     }

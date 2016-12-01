@@ -109,7 +109,7 @@ public class CanonicalNodeOrderTest {
         
         for (int i = 0; i < 8; i++) {
             assertTrue(CanonicalNodeNameOrder.bucket(node1Name, i) == CanonicalNodeNameOrder
-                    .bucket(node1Hash, i));
+                    .bucket(node1Hash.longValue(), i));
         }
     }
 

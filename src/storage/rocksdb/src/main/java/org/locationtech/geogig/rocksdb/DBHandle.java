@@ -33,10 +33,15 @@ class DBHandle {
             return;
         }
         closed = true;
+        close(db);
+        close(options);
+    }
+
+    private void close(AutoCloseable nativeObject) {
         try {
-            db.close();
-        } finally {
-            options.close();
+            nativeObject.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

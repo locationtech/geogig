@@ -198,9 +198,8 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
      * @return and Integer between zero and {@link #maxBucketsForLevel
      *         maxBucketsForLevel(depthIndex)} minus one
      */
-    public static int bucket(final UnsignedLong hashCodeLong, final int depthIndex) {
-        final long longBits = hashCodeLong.longValue();
-        final int bucket = hashOrder.bucket(longBits, depthIndex);
+    public static int bucket(final long hashCodeLong, final int depthIndex) {
+        final int bucket = hashOrder.bucket(hashCodeLong, depthIndex);
         return bucket;
     }
 

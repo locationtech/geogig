@@ -15,7 +15,6 @@ import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.experimental.CanonicalTreeBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -23,8 +22,23 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 
 /**
- * 
+ * A builder for {@link RevTree} instances whose {@link Node nodes} are arranged following a
+ * specific "clustering strategy" (e.g. to create a tree with the {@link CanonicalNodeNameOrder
+ * canonical} structure, or some other node arrangement like an index on a specific attribute, etc).
  *
+ * <p>
+ * Since {@code RevTree} is an immutable data structure, a {@code RevTreeBuilder} must be used to
+ * {@link #put(Node) add} or {@link #remove(String) remove} nodes until the tree can be
+ * {@link #build() built}.
+ * 
+ * <p>
+ * A {@code RevTreeBuilder} operates against an {@link ObjectStore}, onto which it'll save both the
+ * resulting {@code RevTree} and any internal {@code RevTree} the built tree is to be split into. So
+ * when {@link #build()} returns, the resulting {@code RevTree} is guaranteed to be fully stored on
+ * the provided {@code ObjectStore}.
+ * 
+ * <p>
+ * When a
  */
 public interface RevTreeBuilder {
 
@@ -34,6 +48,10 @@ public interface RevTreeBuilder {
 
     public RevTree build();
 
+    /**
+     * Factory method to create a tree builder that clusters subtrees and nodes according to
+     * {@link CanonicalNodeNameOrder}
+     */
     static RevTreeBuilder canonical(final ObjectStore store) {
         return RevTreeBuilder.canonical(store, RevTree.EMPTY);
     }
@@ -45,7 +63,11 @@ public interface RevTreeBuilder {
     ////
     static final AtomicBoolean notified = new AtomicBoolean();
 
-    ////
+    /**
+     * Factory method to create a tree builder that clusters subtrees and nodes according to
+     * {@link CanonicalNodeNameOrder}, and whose internal structure starts by matching the provided
+     * {@code original} tree.
+     */
     static RevTreeBuilder canonical(final ObjectStore store, final RevTree original) {
         checkNotNull(store);
         checkNotNull(original);

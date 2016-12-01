@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.model;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -247,5 +250,15 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
         Preconditions.checkArgument(index >= 0 && index < NUM_BYTES);
         int b = this.hashCode[index] & 0xFF;
         return b;
+    }
+
+    public static ObjectId readFrom(DataInput in) throws IOException {
+        byte[] rawid = new byte[ObjectId.NUM_BYTES];
+        in.readFully(rawid);
+        return new ObjectId(rawid);
+    }
+
+    public void writeTo(DataOutput out) throws IOException {
+        out.write(this.hashCode);
     }
 }

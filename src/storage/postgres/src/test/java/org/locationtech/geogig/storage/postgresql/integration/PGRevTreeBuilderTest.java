@@ -13,9 +13,7 @@ import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Rule;
-import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
-import org.locationtech.geogig.model.experimental.CanonicalTreeBuilderTest;
+import org.locationtech.geogig.model.CanonicalTreeBuilderTest;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.postgresql.Environment;
@@ -52,15 +50,4 @@ public class PGRevTreeBuilderTest extends CanonicalTreeBuilderTest {
         pgObjectDatabase = new PGObjectDatabase(configDb, environment, false);
         return pgObjectDatabase;
     }
-
-    @Override
-    protected RevTreeBuilder createBuiler() {
-        return RevTreeBuilder.canonical(objectStore);
-    }
-
-    @Override
-    protected RevTreeBuilder createBuiler(RevTree original) {
-        return RevTreeBuilder.canonical(objectStore, original);
-    }
-
 }

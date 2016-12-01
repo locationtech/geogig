@@ -11,8 +11,7 @@ package org.locationtech.geogig.model.experimental.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.model.RevObjectTestSupport.featureNode;
 import static org.locationtech.geogig.model.RevObjectTestSupport.featureNodes;
 
@@ -92,11 +91,11 @@ public abstract class CanonicalClusteringStrategyTest {
             Node node = featureNode("f", i);
             strategy.put(node);
         }
-        DAG root = strategy.getRoot();
-        assertNull(root.unpromotable());
-        assertNull(root.buckets());
-        assertNotNull(root.children());
-        assertEquals(strategy.normalizedSizeLimit(0), root.children().size());
+        DAG root = strategy.buildRoot();
+        assertTrue(unpromotable(root).isEmpty());
+        assertTrue(buckets(root).isEmpty());
+        assertFalse(children(root).isEmpty());
+        assertEquals(strategy.normalizedSizeLimit(0), children(root).size());
         assertEquals(0, strategy.depth());
     }
 
@@ -110,10 +109,10 @@ public abstract class CanonicalClusteringStrategyTest {
             Node node = featureNode("f", i, true);
             strategy.put(node);
         }
-        DAG root = strategy.getRoot();
-        assertNull(root.unpromotable());
-        assertNull(root.children());
-        assertNotNull(root.buckets());
+        DAG root = strategy.buildRoot();
+        assertTrue(unpromotable(root).isEmpty());
+        assertTrue(children(root).isEmpty());
+        assertFalse(buckets(root).isEmpty());
         assertEquals(1, strategy.depth());
 
         List<NodeId> flattenedNodes = flatten(root);
@@ -138,10 +137,10 @@ public abstract class CanonicalClusteringStrategyTest {
         }
         System.err.printf("Added %,d nodes in %s\n", numNodes, sw.stop());
 
-        DAG root = strategy.getRoot();
-        assertNull(root.unpromotable());
-        assertNull(root.children());
-        assertNotNull(root.buckets());
+        DAG root = strategy.buildRoot();
+        assertTrue(unpromotable(root).isEmpty());
+        assertTrue(children(root).isEmpty());
+        assertFalse(buckets(root).isEmpty());
         assertEquals(1, strategy.depth());
 
         List<NodeId> flattenedNodes = flatten(root);
@@ -165,10 +164,10 @@ public abstract class CanonicalClusteringStrategyTest {
         }
         System.err.printf("Added %,d nodes in %s\n", numNodes, sw.stop());
 
-        DAG root = strategy.getRoot();
-        assertNull(root.unpromotable());
-        assertNull(root.children());
-        assertNotNull(root.buckets());
+        DAG root = strategy.buildRoot();
+        assertTrue(unpromotable(root).isEmpty());
+        assertTrue(children(root).isEmpty());
+        assertFalse(buckets(root).isEmpty());
         // assertEquals(1, strategy.depth());
 
         List<NodeId> flattenedNodes = flatten(root);
@@ -201,10 +200,10 @@ public abstract class CanonicalClusteringStrategyTest {
         }
         System.err.printf("Added %,d nodes in %s\n", addedNodes.size(), sw.stop());
 
-        DAG root = strategy.getRoot();
-        assertNull(root.unpromotable());
-        assertNull(root.children());
-        assertNotNull(root.buckets());
+        DAG root = strategy.buildRoot();
+        assertTrue(unpromotable(root).isEmpty());
+        assertTrue(children(root).isEmpty());
+        assertFalse(buckets(root).isEmpty());
         // assertEquals(1, strategy.depth());
 
         List<NodeId> flattenedNodes = flatten(root);
@@ -237,10 +236,10 @@ public abstract class CanonicalClusteringStrategyTest {
         }
         System.err.printf("Added %,d nodes in %s\n", addedNodes.size(), sw.stop());
 
-        DAG root = strategy.getRoot();
-        assertNull(root.unpromotable());
-        assertNull(root.children());
-        assertNotNull(root.buckets());
+        DAG root = strategy.buildRoot();
+        assertTrue(unpromotable(root).isEmpty());
+        assertTrue(children(root).isEmpty());
+        assertFalse(buckets(root).isEmpty());
         // assertEquals(1, strategy.depth());
 
         List<NodeId> flattenedNodes = flatten(root);
@@ -260,7 +259,7 @@ public abstract class CanonicalClusteringStrategyTest {
         }
 
         Set<Node> initial = Sets.newTreeSet(
-                Lists.transform(flatten(strategy.getRoot()), nid -> strategy.getNode(nid)));
+                Lists.transform(flatten(strategy.buildRoot()), nid -> strategy.getNode(nid)));
         assertEquals(nodes.size(), initial.size());
 
         final Map<Integer, Node> randomEdits = Maps.newHashMap();
@@ -285,7 +284,7 @@ public abstract class CanonicalClusteringStrategyTest {
         }
 
         Set<Node> result = Sets.newTreeSet(
-                Lists.transform(flatten(strategy.getRoot()), nid -> strategy.getNode(nid)));
+                Lists.transform(flatten(strategy.buildRoot()), nid -> strategy.getNode(nid)));
         assertEquals(nodes.size(), result.size());
 
         Set<Node> difference = Sets.difference(Sets.newHashSet(result), Sets.newHashSet(initial));
@@ -318,18 +317,18 @@ public abstract class CanonicalClusteringStrategyTest {
         }
         System.err.printf("Removed %,d nodes in %s\n", removeNodes.size(), sw.stop());
 
-        DAG root = strategy.getRoot();
-        assertNull(root.unpromotable());
-        assertNotNull(root.children());
-        assertNull(root.buckets());
+        DAG root = strategy.buildRoot();
+        assertTrue(unpromotable(root).isEmpty());
+        assertFalse(children(root).isEmpty());
+        assertTrue(buckets(root).isEmpty());
         // assertEquals(1, strategy.depth());
 
         List<NodeId> flattenedNodes = flatten(root);
         assertEquals(nodes.size() - removeNodes.size(), flattenedNodes.size());
 
-        assertNull(root.buckets());
-        assertNotNull(root.children());
-        assertEquals(nodes.size() - removeNodes.size(), root.children().size());
+        assertTrue(buckets(root).isEmpty());
+        assertFalse(children(root).isEmpty());
+        assertEquals(nodes.size() - removeNodes.size(), children(root).size());
     }
 
     @Test
@@ -356,19 +355,19 @@ public abstract class CanonicalClusteringStrategyTest {
         }
         System.err.printf("Removed %,d nodes in %s\n", removeNodes.size(), sw.stop());
 
-        DAG root = strategy.getRoot();
-        assertEquals(nodes.size() - removeNodes.size(), root.childCount);
-        assertNull(root.unpromotable());
-        assertNotNull(root.children());
-        assertNull(root.buckets());
+        DAG root = strategy.buildRoot();
+        assertEquals(nodes.size() - removeNodes.size(), root.getChildCount());
+        assertTrue(unpromotable(root).isEmpty());
+        assertFalse(children(root).isEmpty());
+        assertTrue(buckets(root).isEmpty());
         // assertEquals(1, strategy.depth());
 
         List<NodeId> flattenedNodes = flatten(root);
         assertEquals(nodes.size() - removeNodes.size(), flattenedNodes.size());
 
-        assertNull(root.buckets());
-        assertNotNull(root.children());
-        assertEquals(nodes.size() - removeNodes.size(), root.children().size());
+        assertTrue(buckets(root).isEmpty());
+        assertFalse(children(root).isEmpty());
+        assertEquals(nodes.size() - removeNodes.size(), children(root).size());
     }
 
     @Test
@@ -400,7 +399,7 @@ public abstract class CanonicalClusteringStrategyTest {
         Set<Node> originalResult = new HashSet<>();
         Set<Node> edittedResult = new HashSet<>();
 
-        DAG root = strategy.getRoot();
+        DAG root = strategy.buildRoot();
         originalResult.addAll(toNode(flatten(root)));
 
         assertEquals(original, originalResult);
@@ -409,7 +408,7 @@ public abstract class CanonicalClusteringStrategyTest {
             strategy.put(n);
         }
 
-        root = strategy.getRoot();
+        root = strategy.buildRoot();
         edittedResult.addAll(toNode(flatten(root)));
 
         assertEquals(edited, edittedResult);
@@ -446,10 +445,11 @@ public abstract class CanonicalClusteringStrategyTest {
 
         Set<Node> edittedResult = new HashSet<>();
 
-        DAG root = strategy.getRoot();
+        DAG root = strategy.buildRoot();
 
         edittedResult.addAll(toNode(flatten(root)));
 
+        assertEquals(edited.size(), edittedResult.size());
         assertEquals(edited, edittedResult);
     }
 
@@ -525,9 +525,9 @@ public abstract class CanonicalClusteringStrategyTest {
     private List<NodeId> flatten(DAG root) {
         List<NodeId> nodes = new ArrayList<NodeId>();
 
-        Set<NodeId> children = root.children();
-        Set<NodeId> unpromotable = root.unpromotable();
-        Set<TreeId> buckets = root.buckets();
+        Set<NodeId> children = children(root);
+        Set<NodeId> unpromotable = unpromotable(root);
+        Set<TreeId> buckets = buckets(root);
         if (children != null) {
             nodes.addAll(children);
         }
@@ -536,11 +536,29 @@ public abstract class CanonicalClusteringStrategyTest {
         }
         if (buckets != null) {
             for (TreeId bucketTreeId : buckets) {
-                DAG bucketDAG = strategy.getTree(bucketTreeId);
+                DAG bucketDAG = strategy.getOrCreateDAG(bucketTreeId);
                 nodes.addAll(flatten(bucketDAG));
             }
         }
         return nodes;
+    }
+
+    Set<NodeId> unpromotable(DAG root) {
+        Set<NodeId> ids = new HashSet<>();
+        root.forEachUnpromotableChild((id) -> ids.add(id));
+        return ids;
+    }
+
+    Set<NodeId> children(DAG root) {
+        Set<NodeId> ids = new HashSet<>();
+        root.forEachChild((id) -> ids.add(id));
+        return ids;
+    }
+
+    Set<TreeId> buckets(DAG root) {
+        Set<TreeId> ids = new HashSet<>();
+        root.forEachBucket((id) -> ids.add(id));
+        return ids;
     }
 
 }

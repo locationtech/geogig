@@ -94,7 +94,7 @@ abstract class ClusteringStrategyFactory {
             String name = node.getName();
             UnsignedLong hashCodeLong = CANONICAL_ORDER.hashCodeLong(name);
 
-            return new CanonicalNodeId(hashCodeLong, name);
+            return new CanonicalNodeId(hashCodeLong.longValue(), name);
         }
     }
 }

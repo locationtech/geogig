@@ -38,6 +38,11 @@
       <groupId>com.vividsolutions</groupId>
       <artifactId>jts</artifactId>
     </dependency>
+     <!-- https://mvnrepository.com/artifact/org.rocksdb/rocksdbjni -->
+     <dependency>
+         <groupId>org.rocksdb</groupId>
+         <artifactId>rocksdbjni</artifactId>
+     </dependency>
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-opengis</artifactId>

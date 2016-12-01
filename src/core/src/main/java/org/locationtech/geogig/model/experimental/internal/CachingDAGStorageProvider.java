@@ -10,114 +10,181 @@
 package org.locationtech.geogig.model.experimental.internal;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 final class CachingDAGStorageProvider implements DAGStorageProvider {
 
-    private static final int SWAP_THRESHOLD = 4096;
+    private static final Logger LOG = LoggerFactory.getLogger(CachingDAGStorageProvider.class);
+
+    /**
+     * How many {@link Node}s to hold in memory before switching to the {@link #disk() persistent
+     * store}
+     */
+    private static final int NODE_SWAP_THRESHOLD = 100_000;
+
+    /**
+     * DAGs up to this depth will be held in the heap store, past this depth in the temporary
+     * persistent store
+     */
+    private final int HEAP_DEPTH_THRESHOLD = 3;
 
     private ObjectStore source;
 
     private TreeCache treeCache;
 
-    private DAGStorageProvider delegate;
+    private HeapDAGStorageProvider heap;
 
-    private volatile boolean swapped = false;
+    private RocksdbDAGStorageProvider disk;
+
+    private DAGStorageProvider nodeStore;
+
+    private Lock swapLock = new ReentrantLock();
+
+    private final Predicate<TreeId> heapTrees, diskTrees;
 
     CachingDAGStorageProvider(ObjectStore source) {
         this.source = source;
         this.treeCache = new TreeCache(source);
-        delegate = new HeapDAGStorageProvider(this.source, this.treeCache);
+        heap = new HeapDAGStorageProvider(this.source, this.treeCache);
+        nodeStore = heap;
+
+        heapTrees = (id) -> id.depthLength() <= HEAP_DEPTH_THRESHOLD;
+        diskTrees = (id) -> id.depthLength() > HEAP_DEPTH_THRESHOLD;
+    }
+
+    private DAGStorageProvider disk() {
+        if (disk == null) {
+            disk = new RocksdbDAGStorageProvider(this.source, this.treeCache);
+        }
+        return disk;
+    }
+
+    private DAGStorageProvider store(TreeId key) {
+        if (heapTrees.apply(key)) {
+            return heap();
+        }
+        return disk();
+    }
+
+    private HeapDAGStorageProvider heap() {
+        return heap;
     }
 
     @Override
     public TreeCache getTreeCache() {
-        return delegate.getTreeCache();
-    }
-
-    @Override
-    public DAG getOrCreateTree(TreeId treeId) {
-        return delegate.getOrCreateTree(treeId);
+        return treeCache;
     }
 
     @Override
     public DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId) {
-        return delegate.getOrCreateTree(treeId, originalTreeId);
+        return store(treeId).getOrCreateTree(treeId, originalTreeId);
+    }
+
+    @Override
+    public Map<TreeId, DAG> getTrees(Set<TreeId> ids) {
+        Map<TreeId, DAG> cached = heap.getTrees(Sets.filter(ids, heapTrees));
+        Map<TreeId, DAG> res = cached;
+        if (disk != null && cached.size() < ids.size()) {
+            Map<TreeId, DAG> stored = disk.getTrees(Sets.filter(ids, diskTrees));
+            res.putAll(stored);
+        }
+        return res;
+    }
+
+    @Override
+    public void save(Map<TreeId, DAG> dags) {
+        Map<TreeId, DAG> cached = Maps.filterKeys(dags, heapTrees);
+        heap().save(cached);
+        if (cached.size() < dags.size()) {
+            disk().save(Maps.filterKeys(dags, diskTrees));
+        }
     }
 
     @Override
     public Node getNode(NodeId nodeId) {
-        return delegate.getNode(nodeId);
+        return nodeStore.getNode(nodeId);
+    }
+
+    @Override
+    public SortedMap<NodeId, Node> getNodes(Set<NodeId> nodeIds) {
+        return nodeStore.getNodes(nodeIds);
     }
 
     @Override
     public void saveNode(NodeId nodeId, Node node) {
-        delegate.saveNode(nodeId, node);
-        swap();
+        nodeStore.saveNode(nodeId, node);
+        swapNodeStore();
     }
 
     @Override
     public void saveNodes(Map<NodeId, DAGNode> nodeMappings) {
-        delegate.saveNodes(nodeMappings);
-        swap();
-    }
-
-    private void swap() {
-//        if (this.swapped) {
-//            return;
-//        }
-//        if (delegate.nodeCount() < SWAP_THRESHOLD) {
-//            return;
-//        }
-//        Preconditions.checkState(delegate instanceof HeapDAGStorageProvider);
-//
-//        Map<NodeId, DAGNode> nodes = new TreeMap<>(((HeapDAGStorageProvider) delegate).nodes);
-//        Map<TreeId, DAG> trees = new TreeMap<>(((HeapDAGStorageProvider) delegate).trees);
-//
-//        MappedFileDAGStorageProvider largeStore;
-//        try {
-//            largeStore = new MappedFileDAGStorageProvider(this.source, this.treeCache);
-//        } catch (IOException e) {
-//            throw Throwables.propagate(e);
-//        }
-//        try {
-//            largeStore.saveNodes(nodes);
-//
-//            for (Map.Entry<TreeId, DAG> e : trees.entrySet()) {
-//                largeStore.save(e.getKey(), e.getValue());
-//            }
-//        } catch (RuntimeException e) {
-//            largeStore.dispose();
-//            throw e;
-//        }
-//        this.delegate = largeStore;
-//        this.swapped = true;
+        nodeStore.saveNodes(nodeMappings);
+        swapNodeStore();
     }
 
     @Override
     public void dispose() {
-        delegate.dispose();
+        heap.dispose();
+        if (disk != null) {
+            disk.dispose();
+        }
+        heap = null;
+        nodeStore = null;
+        disk = null;
+        treeCache = null;
+        source = null;
     }
 
     @Override
-    @Nullable
-    public RevTree getTree(ObjectId originalId) {
-        return delegate.getTree(originalId);
+    public RevTree getTree(ObjectId treeId) {
+        return treeCache.getTree(treeId);
     }
 
-    @Override
-    public void save(TreeId bucketId, DAG bucketDAG) {
-        delegate.save(bucketId, bucketDAG);
-    }
+    private void swapNodeStore() {
+        if (nodeStore != heap) {
+            return;
+        }
+        if (heap.nodeCount() < NODE_SWAP_THRESHOLD) {
+            return;
+        }
+        swapLock.lock();
+        try {
+            if (nodeStore != heap) {
+                // already swapped
+                return;
+            }
+            LOG.debug("Switching to on disk mutable tree storage, reached threshold of {} nodes...",
+                    heap.nodeCount());
+            Preconditions.checkState(nodeStore == heap);
 
-    @Override
-    public long nodeCount() {
-        return delegate.nodeCount();
-    }
+            Map<NodeId, DAGNode> nodes = heap().nodes;
 
+            DAGStorageProvider largeStore = disk();
+            try {
+                largeStore.saveNodes(nodes);
+                nodes.clear();
+            } catch (RuntimeException e) {
+                largeStore.dispose();
+                throw e;
+            }
+            this.nodeStore = largeStore;
+        } finally {
+            swapLock.unlock();
+        }
+    }
 }

@@ -250,7 +250,7 @@ public abstract class RevTreeBuilderTest {
         return tree.getId();
     }
 
-    private RevTreeBuilder createTree(final int numEntries,
+    protected RevTreeBuilder createTree(final int numEntries,
             final boolean insertInAscendingKeyOrder) {
         RevTreeBuilder tree = createBuiler();
 

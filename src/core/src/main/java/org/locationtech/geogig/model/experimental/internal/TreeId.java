@@ -9,24 +9,57 @@
  */
 package org.locationtech.geogig.model.experimental.internal;
 
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.UnsignedBytes;
 
-final class TreeId implements Comparable<TreeId> {
+/**
+ * A tree identifier defined by the array of bucket indices it belongs to up to a given depth, as
+ * opposed to the final SHA-1 identifier of a built {@code RevTree}.
+ *
+ */
+final class TreeId implements Comparable<TreeId>, Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private static final Comparator<byte[]> COMPARATOR = UnsignedBytes.lexicographicalComparator();
 
     public final byte[] bucketIndicesByDepth;
 
+    /**
+     * @param bucketIndicesByDepth array of bucket indexes that define this tree id
+     * @implNote: this instance takes ownership of the argument array
+     */
     TreeId(byte[] bucketIndicesByDepth) {
         this.bucketIndicesByDepth = bucketIndicesByDepth;
+    }
+
+    /**
+     * @return the length of this tree id (i.e. how many levels of depth are represented)
+     */
+    public int depthLength() {
+        return bucketIndicesByDepth.length;
+    }
+
+    /**
+     * @param depthIndex zero based index of the depth at which to return the bucket index for
+     * @return the bucket index this tree id belongs to at the specified depth index
+     */
+    public Integer bucketIndex(final int depthIndex) {
+        Preconditions.checkArgument(depthIndex < bucketIndicesByDepth.length,
+                "depth (%s) is outside range [0 - %s]", depthIndex,
+                bucketIndicesByDepth.length - 1);
+        return Integer.valueOf(bucketIndicesByDepth[depthIndex] & 0xFF);
     }
 
     @Override
     public boolean equals(Object o) {
         // don't bother checking for instanceof TreeId, this is private and will never be
         // compared to something else
-        return compareTo((TreeId) o) == 0;
+        return Arrays.equals(bucketIndicesByDepth, ((TreeId) o).bucketIndicesByDepth);
     }
 
     @Override
@@ -36,18 +69,11 @@ final class TreeId implements Comparable<TreeId> {
 
     @Override
     public int compareTo(TreeId o) {
-        return UnsignedBytes.lexicographicalComparator().compare(bucketIndicesByDepth,
-                o.bucketIndicesByDepth);
+        return COMPARATOR.compare(bucketIndicesByDepth, o.bucketIndicesByDepth);
     }
 
     @Override
     public String toString() {
         return Arrays.toString(bucketIndicesByDepth);
-    }
-
-    public Integer bucketIndex(final int depth) {
-        Preconditions.checkArgument(depth < bucketIndicesByDepth.length,
-                "depth (%s) is outside range [0 - %s]", depth, bucketIndicesByDepth.length - 1);
-        return bucketIndicesByDepth[depth] & 0xFF;
     }
 }

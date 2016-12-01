@@ -9,23 +9,29 @@
  */
 package org.locationtech.geogig.model.experimental.internal;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 
-import com.google.common.primitives.UnsignedLong;
+class CanonicalNodeId extends NodeId implements Serializable {
 
-class CanonicalNodeId extends NodeId {
+    private transient long bucketsByDepthLongBits = 0L;
 
-    private final UnsignedLong bucketsByDepth;
-
-    protected CanonicalNodeId(final UnsignedLong nameHash, final String name) {
+    public CanonicalNodeId(String name) {
         super(name);
-        this.bucketsByDepth = nameHash;
     }
 
-    public UnsignedLong bucketsByDepth() {
-        return bucketsByDepth;
+    public CanonicalNodeId(final long nameHash, final String name) {
+        super(name);
+        this.bucketsByDepthLongBits = nameHash;
+    }
+
+    public long bucketsByDepth() {
+        if (bucketsByDepthLongBits == 0L) {
+            bucketsByDepthLongBits = CanonicalNodeNameOrder.INSTANCE.hashCodeLong(name).longValue();
+        }
+        return bucketsByDepthLongBits;
     }
 
     @Override
@@ -40,8 +46,8 @@ class CanonicalNodeId extends NodeId {
 
     @Override
     public int compareTo(NodeId o) {
-        return CanonicalNodeNameOrder.INSTANCE.compare(bucketsByDepth.longValue(), name,
-                ((CanonicalNodeId) o).bucketsByDepth().longValue(), o.name());
+        return CanonicalNodeNameOrder.INSTANCE.compare(bucketsByDepth(), name,
+                ((CanonicalNodeId) o).bucketsByDepth(), o.name());
     }
 
     @Override
@@ -58,7 +64,7 @@ class CanonicalNodeId extends NodeId {
 
     @Override
     public int bucket(int depth) {
-        int bucket = CanonicalNodeNameOrder.bucket(bucketsByDepth, depth);
+        int bucket = CanonicalNodeNameOrder.bucket(bucketsByDepth(), depth);
         return bucket;
     }
 }

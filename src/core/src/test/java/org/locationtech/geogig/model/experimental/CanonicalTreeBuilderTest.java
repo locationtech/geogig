@@ -36,7 +36,17 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 
-public abstract class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
+public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
+
+    @Override
+    protected RevTreeBuilder createBuiler() {
+        return RevTreeBuilder.canonical(objectStore);
+    }
+
+    @Override
+    protected RevTreeBuilder createBuiler(RevTree original) {
+        return RevTreeBuilder.canonical(objectStore, original);
+    }
 
     @Test
     public void testRemove() throws Exception {

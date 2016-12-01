@@ -9,23 +9,27 @@
  */
 package org.locationtech.geogig.model.experimental.internal;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
 
 class HeapDAGStorageProvider implements DAGStorageProvider {
 
-    ConcurrentMap<NodeId, DAGNode> nodes;
+    SortedMap<NodeId, DAGNode> nodes;
 
-    ConcurrentMap<TreeId, DAG> trees;
+    SortedMap<TreeId, DAG> trees;
 
     private ObjectStore source;
 
@@ -38,8 +42,8 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     HeapDAGStorageProvider(ObjectStore source, TreeCache treeCache) {
         this.source = source;
         this.treeCache = treeCache;
-        this.nodes = new ConcurrentHashMap<>();
-        this.trees = new ConcurrentHashMap<>();
+        this.nodes = new TreeMap<>();
+        this.trees = new TreeMap<>();
     }
 
     public synchronized void dispose() {
@@ -56,6 +60,17 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
         return source.getTree(treeId);
     }
 
+    @Override
+    public Map<TreeId, DAG> getTrees(Set<TreeId> ids) {
+        Map<TreeId, DAG> res = new HashMap<>();
+        ids.forEach((id) -> {
+            DAG dag = trees.get(id);
+            Preconditions.checkState(dag != null);
+            res.put(id, dag);
+        });
+        return res;
+    }
+
     private DAG createTree(TreeId treeId, ObjectId originalTreeId) {
         DAG dag = new DAG(originalTreeId);
         DAG existing = trees.putIfAbsent(treeId, dag);
@@ -65,17 +80,12 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public DAG getOrCreateTree(TreeId treeId) {
-        return getOrCreateTree(treeId, RevTree.EMPTY_TREE_ID);
-    }
-
-    @Override
     public DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId) {
         DAG dag = trees.get(treeId);
         if (dag == null) {
             dag = createTree(treeId, originalTreeId);
         }
-        return dag;
+        return dag;// .clone();
     }
 
     @Override
@@ -89,6 +99,19 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
+    public SortedMap<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
+
+        TreeMap<NodeId, Node> res = new TreeMap<>();
+        nodeIds.forEach((nid) -> {
+            DAGNode dagNode = nodes.get(nid);
+            Preconditions.checkState(dagNode != null);
+            Node node = dagNode.resolve(treeCache);
+            res.put(nid, node);
+        });
+        return res;
+    }
+
+    @Override
     public void saveNode(NodeId nodeId, Node node) {
         nodes.put(nodeId, DAGNode.of(node));
     }
@@ -99,17 +122,17 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public long nodeCount() {
-        return nodes.size();
-    }
-
-    @Override
-    public void save(TreeId bucketId, DAG bucketDAG) {
-        trees.put(bucketId, bucketDAG);
+    public void save(Map<TreeId, DAG> dags) {
+        // trees.putAll(Maps.transformValues(dags, (d) -> d.clone()));
+        trees.putAll(dags);
     }
 
     @Override
     public TreeCache getTreeCache() {
         return treeCache;
+    }
+
+    public long nodeCount() {
+        return nodes.size();
     }
 }

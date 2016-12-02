@@ -164,12 +164,11 @@ public class CommandResource extends Resource {
     protected Optional<Repository> geogig = null;
 
     protected Representation runCommand(Variant variant, Request request) {
-        geogig = getGeogig(request);
-        Preconditions.checkState(geogig.isPresent());
-
         Representation rep;
         MediaType format = resolveFormat(options, variant);
         try {
+            geogig = getGeogig(request);
+            Preconditions.checkState(geogig.isPresent());
             RestletContext ctx = new RestletContext(geogig.get(), request);
             command.run(ctx);
             rep = ctx.getRepresentation(format, getJSONPCallback());

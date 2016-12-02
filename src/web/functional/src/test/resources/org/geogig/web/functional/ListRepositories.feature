@@ -31,3 +31,25 @@ Feature: List repositories
      Then the response status should be '200'
       And the response ContentType should be "application/json"
       And the json response "repos.repo" should contain "name" 2 times
+      And the json response "repos.repo" should contain "href" 2 times
+      And the json response "repos.repo" attribute "href" should each contain "/repos/"
+
+  Scenario: Get Repository info in JSON format
+    Given There is a default multirepo server
+     When I call "GET /repos.json"
+     Then the response status should be '200'
+      And the response ContentType should be "application/json"
+      And the json response "repos.repo" should contain "href" 2 times
+     Then I save the first href link from "repos.repo" as "@href"
+     When I call "GET {@href}"
+     Then the response status should be '200'
+      And the response ContentType should be "application/json"
+      And the json response "repository" should contain "name"
+      And the json response "repository" should contain "location"
+
+  Scenario: Get Repository info in XML format
+    Given There is a default multirepo server
+     When I call "GET /repos.xml"
+     Then the response status should be '200'
+      And the response ContentType should be "application/xml"
+      And the xml response should contain "/repos/repo/atom:link" 2 times

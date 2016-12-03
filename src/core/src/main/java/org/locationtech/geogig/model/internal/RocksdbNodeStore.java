@@ -104,8 +104,10 @@ class RocksdbNodeStore {
     private int batchSize;
 
     public void put(NodeId nodeId, DAGNode node) {
-        batch.put(column, toKey(nodeId), encode(node));
-        batchSize++;
+        synchronized (batch) {
+            batch.put(column, toKey(nodeId), encode(node));
+            batchSize++;
+        }
 
         flush(1_000);
     }
@@ -118,8 +120,10 @@ class RocksdbNodeStore {
             encode(dagNode, out);
             byte[] value = out.toByteArray();
             byte[] key = toKey(nodeId);
-            batch.put(column, key, value);
-            batchSize++;
+            synchronized (batch) {
+                batch.put(column, key, value);
+                batchSize++;
+            }
             flush(1_000);
         });
     }
@@ -130,14 +134,15 @@ class RocksdbNodeStore {
 
     private void flush(int limit) {
         if (batchSize >= limit) {
-            try {
-                db.write(writeOptions, batch);
-            } catch (Exception ex) {
-                throw Throwables.propagate(ex);
+            synchronized (batch) {
+                try {
+                    db.write(writeOptions, batch);
+                } catch (Exception ex) {
+                    throw Throwables.propagate(ex);
+                }
+                batchSize = 0;
+                batch.clear();
             }
-            batchSize = 0;
-            batch.close();
-            batch = new WriteBatch();
         }
     }
 

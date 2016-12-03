@@ -17,10 +17,13 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.locationtech.geogig.porcelain.ConfigOp.ConfigAction.CONFIG_LIST;
+import static org.locationtech.geogig.porcelain.ConfigOp.ConfigScope.LOCAL;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +39,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
@@ -54,11 +60,13 @@ import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.merge.ConflictsCountOp;
+import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.repository.GeogigTransaction;
@@ -70,6 +78,8 @@ import org.locationtech.geogig.web.api.TestData;
 import org.mortbay.log.Log;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
+import org.restlet.data.Form;
+import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.restlet.data.Response;
 import org.restlet.data.Status;
@@ -80,6 +90,7 @@ import org.xmlunit.matchers.EvaluateXPathMatcher;
 import org.xmlunit.matchers.HasXPathMatcher;
 import org.xmlunit.xpath.JAXPXPathEngine;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
@@ -939,8 +950,15 @@ public class WebAPICucumberHooks {
     @Then("^the json response \"([^\"]*)\" should contain \"([^\"]*)\" (\\d+) times$")
     public void checkJSONResponseContains(final String jsonArray, final String attribute, final int count) {
         JsonArray response = getArrayFromJSONResponse(jsonArray);
+        int arrayCount = 0;
+        for (int i=0; i< response.size(); ++i) {
+            JsonObject arrayObj = response.getJsonObject(i);
+            if (arrayObj.getString(attribute, null) != null) {
+                ++arrayCount;
+            }
+        }
         assertEquals("JSON Response doesn't contain expected response correct number of times",
-                count, response.size());
+                count, arrayCount);
     }
 
     @Then("^the JSON task (@[^\"]*) description contains \"([^\"]*)\"$")
@@ -1021,6 +1039,156 @@ public class WebAPICucumberHooks {
         final String substring = context.replaceVariables(expectedValueSubString);
         final String taskResult = getStringFromJSONResponse(jsonPath);
         assertTrue("Task result did not match", taskResult.contains(substring));
+    }
+
+    @When("^I call \"([^\"]*)\" with the System Temp Directory as the parentDirectory$")
+    public void callURLWithJSONPaylod(final String methodAndURL) throws JsonException, IOException {
+        // build JSON payload
+        JsonObject payload = TestData.toJSON("{\"parentDirectory\":\"" + systemTempPath() + "\"}");
+        callURLWithJSONPayload(methodAndURL, payload);
+    }
+
+    @Then("^the parent directory of repository \"([^\"]*)\" equals System Temp directory$")
+    public void checkRepositoryParent(final String repo) throws Exception {
+        Repository geogig = context.getRepo(repo);
+        final Optional<URI> repoLocation = geogig.command(ResolveGeogigURI.class).call();
+        assertTrue("Expected Repository location to be present", repoLocation.isPresent());
+        URI repoURI = repoLocation.get();
+        assertEquals("Unexpected URI scheme", "file", repoURI.getScheme());
+        // parent of the repo is the directory that contains the ".geogig" directory.
+        // the parent of the parent of the repo is the directory that the user specifies in the Init
+        // request.
+        String parentDir = new File(repoURI).getParentFile().getParentFile().getCanonicalPath();
+        assertEquals("Unexpected parent directory", systemTempPath(), parentDir);
+    }
+
+    private void callURLWithJSONPayload(final String methodAndURL, JsonObject payload)
+            throws JsonException {
+        final int idx = methodAndURL.indexOf(' ');
+        checkArgument(idx > 0, "No METHOD given in URL definition: '%s'", methodAndURL);
+        final String httpMethod = methodAndURL.substring(0, idx);
+        String resourceUri = methodAndURL.substring(idx + 1).trim();
+        Method method = Method.valueOf(httpMethod);
+        context.call(method, resourceUri, payload.toString(), MediaType.APPLICATION_JSON.getName());
+    }
+
+    @Then("^the json response \"([^\"]*)\" attribute \"([^\"]*)\" should each contain \"([^\"]*)\"$")
+    public void checkJsonArrayContains(final String jsonArray, final String attribute,
+            final String expected) {
+        JsonArray array = getArrayFromJSONResponse(jsonArray);
+        for (JsonObject obj : array.getValuesAs(JsonObject.class)) {
+            String actual = obj.getString(attribute);
+            assertTrue("JSON response doesn't contain expected value, has: " + actual,
+                    actual.contains(expected));
+        }
+    }
+
+    @Then("^I save the first href link from \"([^\"]*)\" as \"([^\"]*)\"$")
+    public void saveHrefLinkFromJSONResponse(final String jsonArray, final String href)
+            throws JsonException {
+        // get the first href link from the response
+        JsonArray array = getArrayFromJSONResponse(jsonArray);
+        JsonObject obj = array.getJsonObject(0);
+        String link = obj.getString("href");
+        // strip everything up to "repos" off the front of the href link
+        String linkEnd = link.substring(link.indexOf("/repos"));
+        // store the linkEnd
+        context.setVariable(href, linkEnd);
+    }
+
+    @When("^I call \"([^\"]*)\" with a URL encoded Form containing a parentDirectory parameter$")
+    public void callURLWithFormPaylod(final String methodAndURL) throws JsonException, IOException {
+        final int idx = methodAndURL.indexOf(' ');
+        checkArgument(idx > 0, "No METHOD given in URL definition: '%s'", methodAndURL);
+        final String httpMethod = methodAndURL.substring(0, idx);
+        String resourceUri = methodAndURL.substring(idx + 1).trim();
+        Method method = Method.valueOf(httpMethod);
+        // build URL encoded Form
+        Form form = new Form();
+        form.add("parentDirectory", systemTempPath());
+        context.call(method, resourceUri, form.encode(), MediaType.APPLICATION_WWW_FORM.getName());
+    }
+
+    @Then("^the Author config of repository \"([^\"]*)\" is set$")
+    public void checkAuthorConfig(final String repo) throws Exception {
+        Repository geogig = context.getRepo(repo);
+        final Optional<URI> repoLocation = geogig.command(ResolveGeogigURI.class).call();
+        assertTrue("Expected Repository location to be present", repoLocation.isPresent());
+        // get the config
+        Optional<Map<String, String>> optConfig = geogig.command(ConfigOp.class)
+                .setAction(CONFIG_LIST).setScope(LOCAL).call();
+        // asseert the user.name and user.email config
+        assertTrue("GeoGig repo config missing", optConfig.isPresent());
+        Map<String, String> config = optConfig.get();
+        assertTrue("\"user.name\" missing in repository config", config.containsKey("user.name"));
+        assertEquals("GeoGig User", config.get("user.name"));
+
+        assertTrue("\"user.email\" missing in repository config", config.containsKey("user.email"));
+        assertEquals("geogig@geogig.org", config.get("user.email"));
+    }
+
+    @When("^I call \"([^\"]*)\" with Author and the System Temp Directory as the parentDirectory$")
+    public void callURLWithJSONPayloadAndAuthor(final String methodAndURL) throws JsonException, IOException {
+        // build the JSON payload
+        JsonObject payload = Json.createObjectBuilder().add("parentDirectory", systemTempPath())
+                .add("authorName", "GeoGig User")
+                .add("authorEmail", "geogig@geogig.org")
+                .build();
+        callURLWithJSONPayload(methodAndURL, payload);
+    }
+
+    @When("^I call \"([^\"]*)\" with a URL encoded Form containing a parentDirectory parameter and Author$")
+    public void callURLWithFormPaylodWithAuthor(final String methodAndURL) throws JsonException, IOException {
+        final int idx = methodAndURL.indexOf(' ');
+        checkArgument(idx > 0, "No METHOD given in URL definition: '%s'", methodAndURL);
+        final String httpMethod = methodAndURL.substring(0, idx);
+        String resourceUri = methodAndURL.substring(idx + 1).trim();
+        Method method = Method.valueOf(httpMethod);
+        // build URL encoded Form
+        Form form = new Form();
+        form.add("parentDirectory", systemTempPath());
+        form.add("authorName", "GeoGig User");
+        form.add("authorEmail", "geogig@geogig.org");
+        context.call(method, resourceUri, form.encode(), MediaType.APPLICATION_WWW_FORM.getName());
+    }
+
+    @Then("^the parent directory of repository \"([^\"]*)\" is NOT the System Temp directory$")
+    public void checkRepositoryParent2(final String repo) throws Exception {
+        Repository geogig = context.getRepo(repo);
+        final Optional<URI> repoLocation = geogig.command(ResolveGeogigURI.class).call();
+        assertTrue("Expected Repository location to be present", repoLocation.isPresent());
+        URI repoURI = repoLocation.get();
+        assertEquals("Unexpected URI scheme", "file", repoURI.getScheme());
+        // parent of the repo is the directory that contains the ".geogig" directory.
+        // the parent of the parent of the repo is the directory that the user specifies in the Init
+        // request.
+        String parentDir = new File(repoURI).getParentFile().getParentFile().getCanonicalPath();
+        assertNotEquals("Unexpected parent directory", systemTempPath(), parentDir);
+    }
+
+    @When("^I call \"([^\"]*)\" with an unsupported media type$")
+    public void callURLWithUnsupportedMediaType(final String methodAndURL) throws JsonException, IOException {
+        final int idx = methodAndURL.indexOf(' ');
+        checkArgument(idx > 0, "No METHOD given in URL definition: '%s'", methodAndURL);
+        final String httpMethod = methodAndURL.substring(0, idx);
+        String resourceUri = methodAndURL.substring(idx + 1).trim();
+        Method method = Method.valueOf(httpMethod);
+        // build the JSON payload
+        JsonObject payload = Json.createObjectBuilder().add("parentDirectory", systemTempPath())
+                .add("authorName", "GeoGig User")
+                .add("authorEmail", "geogig@geogig.org")
+                .build();
+        context.call(method, resourceUri, payload.toString(), "application/xml");
+    }
+
+    @Then("^there should be no \"([^\"]*)\" created$")
+    public void checkRepoNotInitialized(final String repo) throws Exception {
+        Repository geogig = context.getRepo(repo);
+        assertTrue("Expected repository to NOT EXIST", null == geogig);
+    }
+
+    String systemTempPath() throws IOException {
+        return context.tempFolder.getRoot().getCanonicalPath();
     }
 
     /**

@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -97,7 +98,14 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public Repository getRepo(String name) {
-        return repoProvider.getGeogig(name);
+        // don't call getGeogig(name) on a repo that doesn't exist or it will be created
+        final Iterator<String> repos = repoProvider.findRepositories();
+        while (repos.hasNext()) {
+            if (name.equals(repos.next())) {
+                return repoProvider.getGeogig(name);
+            }
+        }
+        return null;
     }
 
     /**
@@ -153,11 +161,23 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         Request request = new Request(method, resourceUri);
         request.setRootRef(new Reference(""));
         if (Method.PUT.equals(method) || Method.POST.equals(method)) {
-            // if the request entity is empty or null, Resouce.handlePut() doesn't get thru the last
-            // CommandResource at all
-            request.setEntity("empty payload", MediaType.TEXT_PLAIN);
+            // PUT and POST requests should have an entity.
+            // Since this method has no content argument, fill the entity with an empty JSON object.
+            // This method is hit for setting up repositories for many tests, making PUT calls to trigger the "init"
+            // command. The INIT Web API command only accepts JSON and Web Form entities, so we'll use JSON here.
+            request.setEntity("{}", MediaType.APPLICATION_JSON);
         }
 
+        setLastResponse(app.handle(request));
+    }
+
+    @Override
+    protected void callInternal(final Method method, String resourceUri, String content, String contentType) {
+        Request request = new Request(method, resourceUri);
+        request.setRootRef(new Reference(""));
+        if (content != null && !content.isEmpty() && contentType != null) {
+            request.setEntity(content, MediaType.valueOf(contentType));
+        }
         setLastResponse(app.handle(request));
     }
 

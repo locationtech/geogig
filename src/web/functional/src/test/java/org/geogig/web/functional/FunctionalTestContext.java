@@ -224,6 +224,28 @@ public abstract class FunctionalTestContext extends ExternalResource {
     }
 
     /**
+     * Issue a request with the given {@link Method} to the provided resource URI and payload.
+     *
+     * @param method the http method to use
+     * @param resourceUri the uri to issue the request to
+     * @param content the payload to encode into the request body
+     * @param contentType the MediaType of the payload
+     */
+    public void call(final Method method, String resourceUri, String content, String contentType) {
+        callInternal(method, replaceVariables(resourceUri), content, contentType);
+    }
+
+    /**
+     * Issue a request with the given {@link Method} to the provided resource URI and payload.
+     *
+     * @param method the http method to use
+     * @param resourceUri the uri to issue the request to
+     * @param content the payload to encode into the request body
+     * @param contentType the MediaType of the payload
+     */
+    protected abstract void callInternal(final Method method, String resourceUri, String content, String contentType);
+
+    /**
      * Issue a request with the given {@link Method} to the provided resource URI.
      * 
      * @param method the http method to use

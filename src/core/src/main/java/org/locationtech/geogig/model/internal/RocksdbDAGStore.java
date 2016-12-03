@@ -32,8 +32,6 @@ class RocksdbDAGStore {
 
     private ColumnFamilyHandle column;
 
-    private boolean closed;
-
     public RocksdbDAGStore(RocksDB db) {
         this.db = db;
         ColumnFamilyDescriptor columnDescriptor = new ColumnFamilyDescriptor(
@@ -52,8 +50,6 @@ class RocksdbDAGStore {
     }
 
     public void close() {
-        System.err.printf("Biggest tree: %,d bytes\n", biggest);
-        this.closed = true;
         readOptions.close();
         writeOptions.close();
         column.close();
@@ -98,8 +94,6 @@ class RocksdbDAGStore {
         }
     }
 
-    int biggest;
-
     private Map<TreeId, DAG> getInternal(final Set<TreeId> ids) {
         Map<TreeId, DAG> res = new HashMap<>();
         byte[] valueBuff = new byte[16 * 1024];
@@ -109,7 +103,6 @@ class RocksdbDAGStore {
             try {
                 int size = db.get(column, readOptions, key, val);
                 Preconditions.checkState(RocksDB.NOT_FOUND != size);
-                biggest = Math.max(biggest, size);
                 if (size > valueBuff.length) {
                     val = db.get(column, readOptions, key);
                 }
@@ -119,16 +112,6 @@ class RocksdbDAGStore {
                 throw Throwables.propagate(e);
             }
         });
-        // List<byte[]> keys = Lists.newArrayList(Iterables.transform(ids, (id) -> toKey(id)));
-        // List<ColumnFamilyHandle> cols = Collections.nCopies(keys.size(), column);
-        // Map<byte[], byte[]> raw;
-        // try {
-        // raw = db.multiGet(cols, keys);
-        // } catch (IllegalArgumentException | RocksDBException e) {
-        // throw Throwables.propagate(e);
-        // }
-        // raw.forEach((k, v) -> res.put(fromKey(k), decode(v)));
-
         Preconditions.checkState(res.size() == ids.size());
 
         return res;

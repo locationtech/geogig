@@ -636,6 +636,7 @@
      <id>experimental</id>
      <modules>
        <module>../ql</module>
+       <module>../gui</module>
      </modules>
     </profile>
     <profile>

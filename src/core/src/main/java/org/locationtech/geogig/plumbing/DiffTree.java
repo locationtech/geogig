@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -93,6 +94,10 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
     private static ExecutorService producerThreads;
 
+    private StatsConsumer statsConsumer;
+
+    private boolean recordStats;
+
     static {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
                 .setNameFormat("geogig-difftree-pool-%d").build();
@@ -104,6 +109,15 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
      */
     public DiffTree() {
         this.recursive = true;
+    }
+
+    public DiffTree recordStats() {
+        this.recordStats = true;
+        return this;
+    }
+
+    public Stats getStats() {
+        return statsConsumer == null ? null : statsConsumer.stats;
     }
 
     /**
@@ -251,6 +265,12 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 }
                 if (!pathFilters.isEmpty()) {// evaluated the former
                     consumer = new PathFilteringDiffConsumer(pathFilters, consumer);
+                }
+                if (recordStats) {
+                    statsConsumer = new StatsConsumer(consumer);
+                    consumer = statsConsumer;
+                } else {
+                    statsConsumer = null;
                 }
                 try {
                     LOGGER.trace("walking diff {} / {}", oldRefSpec, newRefSpec);
@@ -554,5 +574,51 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
     public DiffTree setRightSource(ObjectStore rightSource) {
         this.rightSource = rightSource;
         return this;
+    }
+
+    public static class Stats {
+        public final AtomicLong allTrees = new AtomicLong(), acceptedTrees = new AtomicLong(),
+                allBuckets = new AtomicLong(), acceptedBuckets = new AtomicLong(),
+                features = new AtomicLong();
+
+        @Override
+        public String toString() {
+            return String.format("Trees: %,d/%,d; buckets: %,d/%,d; features: %,d",
+                    acceptedTrees.get(), allTrees.get(), acceptedBuckets.get(), allBuckets.get(),
+                    features.get());
+        }
+    }
+
+    private static class StatsConsumer extends ForwardingConsumer {
+
+        private Stats stats = new Stats();
+
+        public StatsConsumer(Consumer delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            stats.features.incrementAndGet();
+            return super.feature(left, right);
+        }
+
+        @Override
+        public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+            stats.allTrees.incrementAndGet();
+            boolean ret = super.tree(left, right);
+            stats.acceptedTrees.addAndGet(ret ? 1 : 0);
+            return ret;
+        }
+
+        @Override
+        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                @Nullable Bucket left, @Nullable Bucket right) {
+            stats.allBuckets.incrementAndGet();
+            boolean ret = super.bucket(leftParent, rightParent, bucketIndex, left, right);
+            stats.acceptedBuckets.addAndGet(ret ? 1 : 0);
+            return ret;
+        }
+
     }
 }

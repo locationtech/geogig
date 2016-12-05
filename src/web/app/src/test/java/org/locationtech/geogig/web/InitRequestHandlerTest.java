@@ -96,10 +96,10 @@ public class InitRequestHandlerTest {
     public void testJSONMediaType() throws URISyntaxException, IOException, UnsupportedEncodingException,
             RepositoryConnectionException {
         // temp directory for the repo
-        File repoDir = repoFolder.getRoot().getAbsoluteFile();
+        File repoDir = repoFolder.getRoot().getAbsoluteFile().getCanonicalFile();
         // populate a JSON payload for a Directory repo
         JsonObject jsonObject = Json.createObjectBuilder()
-                .add(DIR_PARENT_DIR, repoDir.getAbsolutePath())
+                .add(DIR_PARENT_DIR, repoDir.getCanonicalPath())
                 .build();
         StringRepresentation entity = new StringRepresentation(jsonObject.toString(), APPLICATION_JSON);
         // ensure the Content-Type is JSON

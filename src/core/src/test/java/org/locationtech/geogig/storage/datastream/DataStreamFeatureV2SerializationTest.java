@@ -15,6 +15,6 @@ import org.locationtech.geogig.storage.RevFeatureSerializationTest;
 public class DataStreamFeatureV2SerializationTest extends RevFeatureSerializationTest {
     @Override
     protected ObjectSerializingFactory getObjectSerializingFactory() {
-        return new DataStreamSerializationFactoryV2();
+        return DataStreamSerializationFactoryV2.INSTANCE;
     }
 }

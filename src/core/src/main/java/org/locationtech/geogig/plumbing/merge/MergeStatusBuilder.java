@@ -315,11 +315,11 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         }
 
         private void writeNode(DataOutputStream out, Node node) throws IOException {
-            FormatCommonV2.writeNode(node, out);
+            FormatCommonV2.INSTANCE.writeNode(node, out);
         }
 
         private Node readNode(DataInputStream in) throws IOException {
-            return FormatCommonV2.readNode(in);
+            return FormatCommonV2.INSTANCE.readNode(in);
         }
 
     }

@@ -69,6 +69,7 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,7 +111,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
     private final ConfigDatabase configdb;
 
-    private static final PGRevObjectEncoder encoder = new PGRevObjectEncoder();
+    private static final SerializationFactoryProxy encoder = new SerializationFactoryProxy();
 
     private DataSource dataSource;
 

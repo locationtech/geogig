@@ -43,7 +43,7 @@ abstract class DAGNode {
 
         if (node instanceof DirectDAGNode) {
             output.writeByte(MAGIC_DIRECT);
-            FormatCommonV2.writeNode(((DirectDAGNode) node).node, output);
+            FormatCommonV2.INSTANCE.writeNode(((DirectDAGNode) node).node, output);
         } else {
             LazyDAGNode ln = (LazyDAGNode) node;
             if (ln instanceof TreeDAGNode) {
@@ -63,7 +63,7 @@ abstract class DAGNode {
         final byte magic = in.readByte();
         switch (magic) {
         case MAGIC_DIRECT: {
-            Node node = FormatCommonV2.readNode(in);
+            Node node = FormatCommonV2.INSTANCE.readNode(in);
             return DAGNode.of(node);
         }
         case MAGIC_LAZY_TREE: {

@@ -63,7 +63,7 @@ public abstract class RevFeatureSerializationTest extends Assert {
 
     protected SimpleFeatureType featureType1;
 
-    private Feature feature1_1;
+    protected Feature feature1_1;
 
     protected ObjectSerializingFactory serializer = getObjectSerializingFactory();
 

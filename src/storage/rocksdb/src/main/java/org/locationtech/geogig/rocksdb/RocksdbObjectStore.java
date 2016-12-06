@@ -30,8 +30,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.AbstractObjectStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
-import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
+import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -62,7 +61,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     @Inject
     public RocksdbObjectStore(Platform platform, @Nullable Hints hints) {
-        super(new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE));
+        super(new SerializationFactoryProxy());
 
         Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
         checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");

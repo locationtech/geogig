@@ -53,7 +53,7 @@ Feature: Import GeoPackage
       And the task @taskId description contains "Importing GeoPackage database file."
       And when the task @taskId finishes
      Then the task @taskId status is FINISHED
-      And the xml response should contain "/task/result/commit/id"
+      And the xpath "/task/result/commit/id/text()" equals "{@ObjectId|targetRepo|@txId|master}"
       And the xml response should contain "/task/result/commit/tree"
       And I end the transaction with id "@txId" on the "targetRepo" repo
       And the targetRepo repository's "HEAD" should have the following features:
@@ -74,19 +74,23 @@ Feature: Import GeoPackage
       And the task @taskId description contains "Importing GeoPackage database file."
       And when the task @taskId finishes
      Then the task @taskId status is FINISHED
-      And the xml response should contain "/task/result/newCommit/id"
+      And the xpath "/task/result/newCommit/id/text()" equals "{@ObjectId|repo1|@txId|master}"
       And the xml response should contain "/task/result/newCommit/tree"
-      And the xml response should contain "/task/result/importCommit/id"
-      And the xml response should contain "/task/result/importCommit/tree"
       And the xpath "/task/result/newCommit/message" equals "Imported Geopackage"
+      And the xpath "/task/result/importCommit/id/text()" equals "{@ObjectId|repo1|@txId|master}"
+      And the xml response should contain "/task/result/importCommit/tree"
       And the xpath "/task/result/importCommit/message" equals "Imported Geopackage"
+      And the xpath "/task/result/NewFeatures/type/@name" equals "Points"
+      And the xml response should contain "/task/result/NewFeatures/type/id/@provided" 1 times
+      And the xml response should contain "/task/result/NewFeatures/type/id/@assigned" 1 times
+      And I save the response "/task/result/NewFeatures/type/id/@assigned" as "@newFeatureId"
       And I end the transaction with id "@txId" on the "repo1" repo
       And the repo1 repository's "HEAD" should have the following features:
-          |    Points    |   Lines    |    Polygons     | 
-          |    Point.1   |   Line.1   |    Polygon.1    | 
-          |    Point.2   |   Line.2   |    Polygon.2    | 
-          |    Point.3   |   Line.3   |    Polygon.3    | 
-          |    ?         |            |                 |
+          |    Points     |   Lines    |    Polygons     | 
+          |    Point.1    |   Line.1   |    Polygon.1    | 
+          |    Point.2    |   Line.2   |    Polygon.2    | 
+          |    Point.3    |   Line.3   |    Polygon.3    | 
+          |{@newFeatureId}|            |                 |
       And I prune the task @taskId
       
   Scenario: Import an interchange geopackage with non-conflicting merge
@@ -101,18 +105,22 @@ Feature: Import GeoPackage
       And the task @taskId description contains "Importing GeoPackage database file."
       And when the task @taskId finishes
      Then the task @taskId status is FINISHED
-      And the xml response should contain "/task/result/newCommit/id"
+      And the xpath "/task/result/newCommit/id/text()" equals "{@ObjectId|repo1|@txId|master}"
       And the xml response should contain "/task/result/newCommit/tree"
-      And the xml response should contain "/task/result/importCommit/id"
-      And the xml response should contain "/task/result/importCommit/tree"
       And the xpath "/task/result/newCommit/message" equals "Merge: Imported Geopackage"
+      And the xpath "/task/result/importCommit/id/text()" equals "{@ObjectId|repo1|@txId|master^2}"
+      And the xml response should contain "/task/result/importCommit/tree"
       And the xpath "/task/result/importCommit/message" equals "Imported Geopackage"
+      And the xpath "/task/result/NewFeatures/type/@name" equals "Points"
+      And the xml response should contain "/task/result/NewFeatures/type/id/@provided" 1 times
+      And the xml response should contain "/task/result/NewFeatures/type/id/@assigned" 1 times
+      And I save the response "/task/result/NewFeatures/type/id/@assigned" as "@newFeatureId"
       And I end the transaction with id "@txId" on the "repo1" repo
       And the repo1 repository's "HEAD" should have the following features:
-          |    Points    |   Lines    |    Polygons     | 
-          |    Point.2   |   Line.1   |    Polygon.1    | 
-          |    Point.3   |   Line.2   |    Polygon.2    | 
-          |    ?         |   Line.3   |    Polygon.3    | 
+          |    Points     |   Lines    |    Polygons     | 
+          |    Point.2    |   Line.1   |    Polygon.1    | 
+          |    Point.3    |   Line.2   |    Polygon.2    | 
+          |{@newFeatureId}|   Line.3   |    Polygon.3    | 
       And I prune the task @taskId
       
   Scenario: Import an interchange geopackage with conflicting merge
@@ -128,13 +136,23 @@ Feature: Import GeoPackage
       And the task @taskId description contains "Importing GeoPackage database file."
       And when the task @taskId finishes
      Then the task @taskId status is FAILED
-      And the xml response should contain "/task/result/Merge/ours"
-      And the xml response should contain "/task/result/Merge/theirs"
-      And the xml response should contain "/task/result/Merge/ancestor"
       And the xml response should contain "/task/result/import/importCommit/id"
+      And I save the response "/task/result/import/importCommit/id/text()" as "@importCommit"
       And the xml response should contain "/task/result/import/importCommit/tree"
       And the xpath "/task/result/import/importCommit/message" equals "Imported Geopackage"
+      And the xpath "/task/result/Merge/ours/text()" equals "{@ObjectId|repo1|@txId|master}"
+      And the xpath "/task/result/Merge/theirs/text()" equals "{@importCommit}"
+      And the xpath "/task/result/Merge/ancestor/text()" equals "{@ObjectId|repo1|@txId|master~1}"
+      And the xpath "/task/result/import/NewFeatures/type/@name" equals "Points"
+      And the xml response should contain "/task/result/import/NewFeatures/type/id/@provided" 1 times
+      And the xml response should contain "/task/result/import/NewFeatures/type/id/@assigned" 1 times
+      And I save the response "/task/result/import/NewFeatures/type/id/@assigned" as "@newFeatureId"
       And the xpath "/task/result/Merge/conflicts" equals "1"
+      And the repo1 repository's "WORK_HEAD" in the @txId transaction should have the following features:
+          |    Points     |   Lines    |    Polygons     | 
+          |    Point.2    |   Line.1   |    Polygon.1    | 
+          |    Point.3    |   Line.2   |    Polygon.2    | 
+          |{@newFeatureId}|   Line.3   |    Polygon.3    | 
       And I prune the task @taskId
 
 
@@ -183,7 +201,7 @@ Feature: Import GeoPackage
       And the JSON task @taskId description contains "Importing GeoPackage database file."
       And when the JSON task @taskId finishes
      Then the JSON task @taskId status is FINISHED
-      And the json response "task.result.commit" should contain "id"
+      And the json object "task.result.commit.id" equals "{@ObjectId|targetRepo|@txId|master}"
       And the json response "task.result.commit" should contain "tree"
       And I end the transaction with id "@txId" on the "targetRepo" repo
       And the targetRepo repository's "HEAD" should have the following features:
@@ -204,19 +222,23 @@ Feature: Import GeoPackage
       And the JSON task @taskId description contains "Importing GeoPackage database file."
       And when the JSON task @taskId finishes
      Then the JSON task @taskId status is FINISHED
-      And the json response "task.result.newCommit" should contain "id"
+      And the json object "task.result.newCommit.id" equals "{@ObjectId|repo1|@txId|master}"
       And the json response "task.result.newCommit" should contain "tree"
-      And the json response "task.result.importCommit" should contain "id"
-      And the json response "task.result.importCommit" should contain "tree"
       And the json object "task.result.newCommit.message" equals "Imported Geopackage"
+      And the json object "task.result.importCommit.id" equals "{@ObjectId|repo1|@txId|master}"
+      And the json response "task.result.importCommit" should contain "tree"
       And the json object "task.result.importCommit.message" equals "Imported Geopackage"
+      And the json object "task.result.NewFeatures.type[0].name" equals "Points"
+      And the json response "task.result.NewFeatures.type[0].id[0].provided" should contain ""
+      And the json response "task.result.NewFeatures.type[0].id[0].assigned" should contain ""
+      And I save the json response "task.result.NewFeatures.type[0].id[0].assigned" as "@newFeatureId"
       And I end the transaction with id "@txId" on the "repo1" repo
       And the repo1 repository's "HEAD" should have the following features:
-          |    Points    |   Lines    |    Polygons     |
-          |    Point.1   |   Line.1   |    Polygon.1    |
-          |    Point.2   |   Line.2   |    Polygon.2    |
-          |    Point.3   |   Line.3   |    Polygon.3    |
-          |    ?         |            |                 |
+          |    Points     |   Lines    |    Polygons     |
+          |    Point.1    |   Line.1   |    Polygon.1    |
+          |    Point.2    |   Line.2   |    Polygon.2    |
+          |    Point.3    |   Line.3   |    Polygon.3    |
+          |{@newFeatureId}|            |                 |
       And I prune the task @taskId
 
   Scenario: Import an interchange geopackage with non-conflicting merge, JSON requested response
@@ -231,18 +253,22 @@ Feature: Import GeoPackage
       And the JSON task @taskId description contains "Importing GeoPackage database file."
       And when the JSON task @taskId finishes
      Then the JSON task @taskId status is FINISHED
-      And the json response "task.result.newCommit" should contain "id"
+      And the json object "task.result.newCommit.id" equals "{@ObjectId|repo1|@txId|master}"
       And the json response "task.result.newCommit" should contain "tree"
-      And the json response "task.result.importCommit" should contain "id"
-      And the json response "task.result.importCommit" should contain "tree"
       And the json object "task.result.newCommit.message" equals "Merge: Imported Geopackage"
+      And the json object "task.result.importCommit.id" equals "{@ObjectId|repo1|@txId|master^2}"
+      And the json response "task.result.importCommit" should contain "tree"
       And the json object "task.result.importCommit.message" equals "Imported Geopackage"
+      And the json object "task.result.NewFeatures.type[0].name" equals "Points"
+      And the json response "task.result.NewFeatures.type[0].id[0].provided" should contain ""
+      And the json response "task.result.NewFeatures.type[0].id[0].assigned" should contain ""
+      And I save the json response "task.result.NewFeatures.type[0].id[0].assigned" as "@newFeatureId"
       And I end the transaction with id "@txId" on the "repo1" repo
       And the repo1 repository's "HEAD" should have the following features:
-          |    Points    |   Lines    |    Polygons     |
-          |    Point.2   |   Line.1   |    Polygon.1    |
-          |    Point.3   |   Line.2   |    Polygon.2    |
-          |    ?         |   Line.3   |    Polygon.3    |
+          |    Points     |   Lines    |    Polygons     |
+          |    Point.2    |   Line.1   |    Polygon.1    |
+          |    Point.3    |   Line.2   |    Polygon.2    |
+          |{@newFeatureId}|   Line.3   |    Polygon.3    |
       And I prune the task @taskId
 
   Scenario: Import an interchange geopackage with conflicting merge, JSON requested response
@@ -262,7 +288,20 @@ Feature: Import GeoPackage
       And the json response "task.result.Merge" should contain "theirs"
       And the json response "task.result.Merge" should contain "ancestor"
       And the json response "task.result.import.importCommit" should contain "id"
+      And I save the json response "task.result.import.importCommit.id" as "@importCommit"
       And the json response "task.result.import.importCommit" should contain "tree"
       And the json object "task.result.import.importCommit.message" equals "Imported Geopackage"
+      And the json object "task.result.Merge.ours" equals "{@ObjectId|repo1|@txId|master}"
+      And the json object "task.result.Merge.theirs" equals "{@importCommit}"
+      And the json object "task.result.Merge.ancestor" equals "{@ObjectId|repo1|@txId|master~1}"
+      And the json object "task.result.import.NewFeatures.type[0].name" equals "Points"
+      And the json response "task.result.import.NewFeatures.type[0].id[0].provided" should contain ""
+      And the json response "task.result.import.NewFeatures.type[0].id[0].assigned" should contain ""
+      And I save the json response "task.result.import.NewFeatures.type[0].id[0].assigned" as "@newFeatureId"
       And the json object "task.result.Merge.conflicts" equals "1"
+      And the repo1 repository's "WORK_HEAD" in the @txId transaction should have the following features:
+          |    Points     |   Lines    |    Polygons     | 
+          |    Point.2    |   Line.1   |    Polygon.1    | 
+          |    Point.3    |   Line.2   |    Polygon.2    | 
+          |{@newFeatureId}|   Line.3   |    Polygon.3    | 
       And I prune the task @taskId

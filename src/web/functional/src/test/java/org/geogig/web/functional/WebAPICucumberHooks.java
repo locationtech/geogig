@@ -281,7 +281,7 @@ public class WebAPICucumberHooks {
             for (Map<String, String> featureMap : asMaps) {
                 for (Entry<String, String> entry : featureMap.entrySet()) {
                     if (entry.getValue().length() > 0) {
-                        expected.put(entry.getKey(), entry.getValue());
+                        expected.put(entry.getKey(), context.replaceVariables(entry.getValue()));
                     }
                 }
             }
@@ -970,7 +970,8 @@ public class WebAPICucumberHooks {
     }
 
     @Then("^the json object \"([^\"]*)\" equals \"([^\"]*)\"$")
-    public void checkJSONResponse(final String jsonPath, final String expected) {
+    public void checkJSONResponse(final String jsonPath, String expected) {
+        expected = context.replaceVariables(expected);
         String pathValue = getStringFromJSONResponse(jsonPath);
         assertEquals("JSON Response doesn't match", expected, pathValue);
     }
@@ -1271,10 +1272,19 @@ public class WebAPICucumberHooks {
         final JsonObject jsonResponse = TestData.toJSON(response);
         // find the JSON object
         final String[] paths = jsonPath.split("\\.");
+        String subPath;
         JsonObject path = jsonResponse;
         for (int i = 0; i < paths.length - 1; ++i) {
-            // drill down
-            path = path.getJsonObject(paths[i]);
+            subPath = paths[i];
+            if (subPath.contains("[")) {
+                int index = Integer.parseInt(
+                        subPath.substring(subPath.indexOf('[') + 1, subPath.indexOf(']')));
+                path = path.getJsonArray(subPath.substring(0, subPath.indexOf('[')))
+                        .getJsonObject(index);
+            } else {
+                // drill down
+                path = path.getJsonObject(paths[i]);
+            }
         }
         final String key = paths[paths.length - 1];
         final JsonValue value = path.get(key);

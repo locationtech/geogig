@@ -53,7 +53,7 @@ class RocksdbBlobStore implements TransactionBlobStore {
                 if (dbhandle == null) {
                     String dbpath = dbdir.getAbsolutePath();
                     boolean readOnly = this.readOnly;
-                    DBOptions address = new DBOptions(dbpath, readOnly);
+                    DBConfig address = new DBConfig(dbpath, readOnly);
                     this.dbhandle = RocksConnectionManager.INSTANCE.acquire(address);
                 }
             }

@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -29,7 +30,10 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.AbstractObjectStore;
 import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
+import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
 import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
@@ -42,6 +46,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.inject.Inject;
 
@@ -61,8 +66,6 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     @Inject
     public RocksdbObjectStore(Platform platform, @Nullable Hints hints) {
-        super(new SerializationFactoryProxy());
-
         Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
         checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
         URI uri = repoUriOpt.get();
@@ -77,12 +80,30 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         if (isOpen()) {
             return;
         }
-        DBOptions address = new DBOptions(path, readOnly);
+        Map<String, String> defaultMetadata = ImmutableMap.of("version",
+                RocksdbStorageProvider.VERSION, "serializer", "proxy");
+
+        DBConfig address = new DBConfig(path, readOnly, defaultMetadata);
         this.dbhandle = RocksConnectionManager.INSTANCE.acquire(address);
+
         this.db = dbhandle.db;
         this.bulkReadOptions = new ReadOptions();
         this.bulkReadOptions.setFillCache(false);
         this.bulkReadOptions.setVerifyChecksums(false);
+
+        ObjectSerializingFactory defaultSerializer = new SerializationFactoryProxy();
+        ObjectSerializingFactory serializer = defaultSerializer;
+        final Optional<String> serializerValue = dbhandle.getMetadata("serializer");
+        if (serializerValue.isPresent()) {
+            String sval = serializerValue.get();
+            Preconditions.checkState("proxy".equals(sval),
+                    "serialization factory metadata error: expected 'proxy', got '%s'", sval);
+        } else {
+            // pre 1.0 serializer, for backwards compatibility with repos created before initial
+            // release
+            serializer = new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE);
+        }
+        super.setSerializationFactory(serializer);
         open = true;
     }
 
@@ -230,7 +251,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                         if (size > valueBuff.length) {
                             valueBuff = db.get(readOps, keybuff);
                         }
-                        RevObject object = serializer.read(id, new ByteArrayInputStream(valueBuff));
+                        RevObject object = serializer().read(id,
+                                new ByteArrayInputStream(valueBuff));
                         if (type.isInstance(object)) {
                             listener.found(id, Integer.valueOf(size));
                             return type.cast(object);

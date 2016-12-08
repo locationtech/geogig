@@ -84,7 +84,7 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
         DBHandle dbHandle = dbsByTransaction.get(id);
         if (dbHandle == null) {
             String dbpath = dbPath(txId);
-            DBOptions address = new DBOptions(dbpath, false);
+            DBConfig address = new DBConfig(dbpath, false);
             dbHandle = RocksConnectionManager.INSTANCE.acquire(address);
             this.dbsByTransaction.put(id, dbHandle);
         }

@@ -10,9 +10,14 @@
 package org.locationtech.geogig.rocksdb;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.ConnectionManager;
-import org.rocksdb.CompactionStyle;
+import org.rocksdb.ColumnFamilyDescriptor;
+import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.CompressionType;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -20,14 +25,18 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
-class RocksConnectionManager extends ConnectionManager<DBOptions, DBHandle> {
+class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RocksConnectionManager.class);
 
     static final RocksConnectionManager INSTANCE = new RocksConnectionManager();
-    
+
     /**
      * Determine if a database exists at the given path.
      * 
@@ -39,36 +48,94 @@ class RocksConnectionManager extends ConnectionManager<DBOptions, DBHandle> {
     }
 
     @Override
-    protected DBHandle connect(DBOptions dbopts) {
+    protected DBHandle connect(DBConfig dbconfig) {
 
-        LOG.debug("opening {}", dbopts);
+        LOG.debug("opening {}", dbconfig);
 
         RocksDB.loadLibrary();
 
-        Options options = new Options();
-        options.setCreateIfMissing(true)//
+        org.rocksdb.DBOptions dbOptions = new org.rocksdb.DBOptions();
+        dbOptions.setCreateIfMissing(true)//
                 .setAdviseRandomOnOpen(true)//
                 .setAllowMmapReads(true)//
                 .setAllowMmapWrites(true)//
                 .setAllowOsBuffer(true)//
-                .setBytesPerSync(64 * 1024 * 1024)//
-                .setCompactionStyle(CompactionStyle.LEVEL)
-                .setCompressionType(CompressionType.NO_COMPRESSION);
+                .setBytesPerSync(64 * 1024 * 1024);
 
         RocksDB db;
-        final String path = dbopts.getDbPath();
-        final boolean readOnly = dbopts.isReadOnly();
+        final String path = dbconfig.getDbPath();
+        final List<String> colFamilyNames;
         try {
-            if (readOnly) {
-                db = RocksDB.openReadOnly(options, path);
-            } else {
-                db = RocksDB.open(options, path);
-            }
+            colFamilyNames = Lists.transform(RocksDB.listColumnFamilies(new Options(), path),
+                    (ba) -> new String(ba, Charsets.UTF_8));
         } catch (RocksDBException e) {
+            dbOptions.close();
             throw Throwables.propagate(e);
         }
 
-        return new DBHandle(dbopts, options, db);
+        // at least the "default" column family shall exists if the db was already created
+        final boolean dbExists = !colFamilyNames.isEmpty();
+        final boolean metadataExists = colFamilyNames.contains("metadata");
+        final boolean readOnly = dbconfig.isReadOnly();
+        @Nullable
+        ColumnFamilyHandle metadata = null;
+        try {
+            List<ColumnFamilyDescriptor> colDescriptors = new ArrayList<>();
+            for (String name : colFamilyNames) {
+                byte[] colFamilyName = name.getBytes(Charsets.UTF_8);
+                ColumnFamilyOptions colFamilyOptions = newColFamilyOptions();
+                colDescriptors.add(new ColumnFamilyDescriptor(colFamilyName, colFamilyOptions));
+            }
+            List<ColumnFamilyHandle> colFamiliesTarget = new ArrayList<>();
+
+            DBHandle dbHandle;
+            if (readOnly) {
+                Preconditions.checkState(dbExists, "database does not exist: %s", path);
+                db = RocksDB.openReadOnly(dbOptions, path, colDescriptors, colFamiliesTarget);
+                if (metadataExists) {
+                    metadata = colFamiliesTarget.get(colFamilyNames.indexOf("metadata"));
+                }
+                dbHandle = new DBHandle(dbconfig, dbOptions, db, metadata);
+            } else {
+                if (!dbExists) {
+                    colDescriptors.add(newColDescriptor("default"));
+                }
+
+                db = RocksDB.open(dbOptions, path, colDescriptors, colFamiliesTarget);
+                if (metadataExists) {
+                    metadata = colFamiliesTarget.get(colFamilyNames.indexOf("metadata"));
+                } else {
+                    ColumnFamilyDescriptor mdd = newColDescriptor("metadata");
+                    metadata = db.createColumnFamily(mdd);
+                }
+                dbHandle = new DBHandle(dbconfig, dbOptions, db, metadata);
+
+                // save default metadata
+                if (!dbExists) {
+                    ImmutableMap<String, String> defaultMetadata = dbconfig.getDefaultMetadata();
+                    defaultMetadata.forEach((k, v) -> dbHandle.setMetadata(k, v));
+                }
+            }
+            return dbHandle;
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+
+    }
+
+    private ColumnFamilyDescriptor newColDescriptor(String name) {
+        ColumnFamilyOptions options = newColFamilyOptions();
+        ColumnFamilyDescriptor descriptor = new ColumnFamilyDescriptor(
+                name.getBytes(Charsets.UTF_8), options);
+        return descriptor;
+    }
+
+    private ColumnFamilyOptions newColFamilyOptions() {
+        ColumnFamilyOptions colFamilyOptions = new ColumnFamilyOptions();
+        // cause the Windows jar doesn't come with
+        // snappy and hence fails
+        colFamilyOptions.setCompressionType(CompressionType.NO_COMPRESSION);
+        return colFamilyOptions;
     }
 
     @Override

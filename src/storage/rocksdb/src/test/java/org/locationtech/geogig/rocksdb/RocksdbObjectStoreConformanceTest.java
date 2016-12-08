@@ -22,6 +22,7 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectStoreConformanceTest;
 import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
 public class RocksdbObjectStoreConformanceTest extends ObjectStoreConformanceTest {
@@ -74,6 +75,14 @@ public class RocksdbObjectStoreConformanceTest extends ObjectStoreConformanceTes
 
         database.checkConfig();
 
+    }
+
+    @Test
+    public void testSerializer() {
+        assertTrue(database.serializer() instanceof SerializationFactoryProxy);
+        database.close();
+        database.open();
+        assertTrue(database.serializer() instanceof SerializationFactoryProxy);
     }
 
 }

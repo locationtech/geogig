@@ -13,16 +13,13 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Consumer;
 
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashCode;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -142,75 +139,13 @@ public class RevObjectTestSupport {
      */
     public static RevFeature featureForceId(ObjectId forceId, Object... rawValues) {
         RevFeatureBuilder builder = RevFeatureBuilder.builder().addAll(rawValues);
-        return new TestFeatureImpl(forceId, builder.build().getValues());
+        RevFeature revFeature = builder.build(forceId);
+        return revFeature;
     }
 
     public static RevFeature feature(Object... rawValues) {
         RevFeatureBuilder builder = RevFeatureBuilder.builder().addAll(rawValues);
         return builder.build();
-    }
-
-    private static class TestFeatureImpl extends AbstractRevObject implements RevFeature {
-
-        private final ImmutableList<Optional<Object>> values;
-
-        /**
-         * Constructs a new {@code RevFeature} with the provided {@link ObjectId} and set of values
-         * 
-         * @param id the {@link ObjectId} to use for this feature
-         * @param values a list of values, with {@link Optional#absent()} representing a null value
-         */
-        TestFeatureImpl(ObjectId id, ImmutableList<Optional<Object>> values) {
-            super(id);
-            this.values = values;
-        }
-
-        @Override
-        public ImmutableList<Optional<Object>> getValues() {
-            return values;
-        }
-
-        @Override
-        public TYPE getType() {
-            return TYPE.FEATURE;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Feature[");
-            builder.append(getId().toString());
-            builder.append("; ");
-            boolean first = true;
-            for (Optional<Object> value : getValues()) {
-                if (first) {
-                    first = false;
-                } else {
-                    builder.append(", ");
-                }
-
-                String valueString = String.valueOf(value.orNull());
-                builder.append(valueString.substring(0, Math.min(10, valueString.length())));
-            }
-            builder.append(']');
-            return builder.toString();
-        }
-
-        @Override
-        public int size() {
-            return values.size();
-        }
-
-        @Override
-        public Optional<Object> get(int index) {
-            // we're intentionally not enforcing a safe copy in this test-only code
-            return values.get(index);
-        }
-
-        @Override
-        public void forEach(final Consumer<Object> consumer) {
-            values.forEach((o) -> consumer.accept(o.orNull()));
-        }
     }
 
     /**

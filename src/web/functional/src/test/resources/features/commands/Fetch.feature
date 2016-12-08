@@ -32,6 +32,7 @@ Feature: Fetch
       And the response body should contain "branch1"
       And the response body should contain "master"
       
+  @HttpTest
   Scenario: Fetching with an http remote name specified should fetch from that remote
     Given There is a default multirepo server with http remotes
      When I call "GET /repos/repo3/fetch?remote=repo1"
@@ -56,6 +57,7 @@ Feature: Fetch
       And the response body should not contain "REMOVED_REF"
       And the response body should not contain "UPDATED_REF"
       
+  @HttpTest
   Scenario: Fetching with all should fetch from all http remotes
     Given There is a default multirepo server with http remotes
      When I call "GET /repos/repo3/fetch?all=true"
@@ -81,6 +83,7 @@ Feature: Fetch
       And the xpath "/response/Fetch/Remote/Branch/name/text()" equals "branch2"
       And the xpath "/response/Fetch/Remote/Branch/oldValue/text()" equals "{@ObjectId|repo2|branch2}"
       
+   @HttpTest
    Scenario: Fetching with prune should prune remote branches that were deleted from http remote
     Given There is a default multirepo server with http remotes
      When I call "GET /repos/repo2/fetch?all=true&prune=true"

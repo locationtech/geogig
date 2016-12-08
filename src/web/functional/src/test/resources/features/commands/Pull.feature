@@ -31,6 +31,7 @@ Feature: Pull
       And the xpath "/response/Pull/Removed/text()" equals "0"
       And the variable "{@ObjectId|repo4|master}" equals "{@ObjectId|repo1|master}"
       
+  @HttpTest
   Scenario: Pulling from an http remote with remote changes updates the local ref
     Given There is a default multirepo server with http remotes
       And the variable "{@ObjectId|repo4|master}" equals "{@ObjectId|repo1|master~2}"
@@ -66,6 +67,7 @@ Feature: Pull
       And the xpath "/response/commit/author/name/text()" equals "myAuthor"
       And the xpath "/response/commit/author/email/text()" equals "myAuthor@geogig.org"
       
+  @HttpTest
   Scenario: Pulling from an http remote with both local and remote changes creates a merge commit
     Given There is a default multirepo server with http remotes
       And I have a transaction as "@txId" on the "repo4" repo
@@ -102,6 +104,7 @@ Feature: Pull
       And the response body should contain "<theirvalue>{@ObjectId|repo1|master:Points/Point.2}</theirvalue>"
       And the response body should contain "<ourvalue>{@ObjectId|repo4|@txId|master:Points/Point.2}</ourvalue>"
       
+  @HttpTest
   Scenario: Pulling from an http remote with conflicting changes returns the details of the conflict
     Given There is a default multirepo server with http remotes
       And I have a transaction as "@txId" on the "repo4" repo

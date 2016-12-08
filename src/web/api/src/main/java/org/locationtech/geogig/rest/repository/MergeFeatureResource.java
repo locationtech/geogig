@@ -122,7 +122,7 @@ public class MergeFeatureResource extends Resource {
             final JsonElement conflictJson;
             try {
                 conflictJson = parser.parse(body);
-            } catch (JsonIOException | JsonSyntaxException e) {
+            } catch (Exception e) {
                 invalidPostData();
                 return;
             }

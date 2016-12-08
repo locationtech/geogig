@@ -33,6 +33,6 @@ Feature: "format-patch" command
     Given I have a repository
       And I stage 6 features   
       And I modify a feature         
-     When I run the command "format-patch --path Points -f some_file"
+     When I run the command "format-patch --path Points -f ${currentdir}/some_file"
      Then it should exit with zero exit code
      

@@ -54,6 +54,7 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
@@ -161,6 +162,12 @@ public class DefaultStepDefinitions {
             }
         }
         return repoUri;
+    }
+
+    @Given("^the repository has a truncated graph database$")
+    public void the_repository_has_a_truncated_graph_database() throws Throwable {
+        Repository repository = localRepo.geogigCLI.getGeogig().getRepository();
+        repository.graphDatabase().truncate();
     }
 
     @Given("^I am in an empty directory$")
@@ -650,4 +657,6 @@ public class DefaultStepDefinitions {
         String[] commitId = actual.split(" ");
         localRepo.runCommand(true, "checkout " + commitId[0]);
     }
+    
+
 }

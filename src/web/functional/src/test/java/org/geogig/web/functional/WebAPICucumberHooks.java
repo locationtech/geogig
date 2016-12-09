@@ -68,6 +68,7 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.merge.ConflictsCountOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
+import org.locationtech.geogig.porcelain.RemoteAddOp;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Repository;
@@ -151,6 +152,23 @@ public class WebAPICucumberHooks {
     public void setUpDefaultMultiRepoWithRemotes() throws Exception {
         setUpEmptyMultiRepo();
         context.setUpDefaultMultiRepoServerWithRemotes();
+    }
+    
+    @Given("^There are three repos with remotes$")
+    public void twoGoodRepos() throws Throwable {
+        Repository repo2 = context.createRepo("repo2")
+                .init("geogigUser", "repo_Owner@geogig.org").getRepo();
+                
+        Repository repo3 = context.createRepo("repo3")
+                .init("geogigUser", "repo_Owner@geogig.org").getRepo();
+        
+        String repo2Url = repo2.getLocation().toString();
+        repo3.command(RemoteAddOp.class).setName("repo2").setURL(repo2Url).call();
+        
+        Repository repo4 = context.createRepo("repo4")
+                .init("geogigUser", "repo_Owner@geogig.org").getRepo();
+        
+        repo4.command(RemoteAddOp.class).setName("repo2").setURL(repo2Url).call();
     }
 
     @Given("^There is an empty repository named ([^\"]*)$")

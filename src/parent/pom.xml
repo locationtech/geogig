@@ -639,7 +639,19 @@
      </modules>
     </profile>
     <profile>
-      <id>signing</id>
+      <id>locationtech</id>
+      <distributionManagement>
+        <repository>
+          <id>repo.locationtech.org</id>
+          <name>GeoGig Repository - Releases</name>
+          <url>https://repo.locationtech.org/content/repositories/geogig-releases/</url>
+        </repository>
+        <snapshotRepository>
+          <id>repo.locationtech.org</id>
+          <name>GeoGig Repository - Snapshots</name>
+          <url>https://repo.locationtech.org/content/repositories/geogig-snapshots/</url>
+        </snapshotRepository>
+      </distributionManagement>
       <pluginRepositories>
         <pluginRepository>
           <id>eclipse-cbi</id>

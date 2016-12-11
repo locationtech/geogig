@@ -29,6 +29,7 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.Closeables;
@@ -40,11 +41,24 @@ import com.google.common.io.Closeables;
  */
 public abstract class AbstractObjectStore implements ObjectStore {
 
-    protected final ObjectSerializingFactory serializer;
+    private ObjectSerializingFactory serializer;
+
+    public AbstractObjectStore() {
+        this(new SerializationFactoryProxy());
+    }
 
     public AbstractObjectStore(final ObjectSerializingFactory serializer) {
         checkNotNull(serializer);
         this.serializer = serializer;
+    }
+
+    protected void setSerializationFactory(ObjectSerializingFactory serializer) {
+        checkNotNull(serializer);
+        this.serializer = serializer;
+    }
+
+    public ObjectSerializingFactory serializer() {
+        return serializer;
     }
 
     /**
@@ -151,7 +165,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
         }
         RevObject object;
         try {
-            object = serializer.read(id, raw);
+            object = serializer().read(id, raw);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         } finally {
@@ -243,7 +257,7 @@ public abstract class AbstractObjectStore implements ObjectStore {
 
     protected void writeObject(RevObject object, OutputStream target) {
         try {
-            serializer.write(object, target);
+            serializer().write(object, target);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

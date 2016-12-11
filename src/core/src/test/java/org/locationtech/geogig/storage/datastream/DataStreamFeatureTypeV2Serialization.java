@@ -16,7 +16,7 @@ public class DataStreamFeatureTypeV2Serialization extends RevFeatureTypeSerializ
 
     @Override
     protected ObjectSerializingFactory getObjectSerializingFactory() {
-        return new DataStreamSerializationFactoryV2();
+        return DataStreamSerializationFactoryV2.INSTANCE;
     }
 
 }

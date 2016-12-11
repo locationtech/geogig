@@ -110,7 +110,7 @@ public class RocksdbGraphDatabase implements GraphDatabase {
             return;
         }
         String dbpath = dbdir.getAbsolutePath();
-        DBOptions opts = new DBOptions(dbpath, readOnly);
+        DBConfig opts = new DBConfig(dbpath, readOnly);
         this.dbhandle = RocksConnectionManager.INSTANCE.acquire(opts);
         this.db = dbhandle.db;
         this.open = true;

@@ -196,7 +196,7 @@ public class HeapObjectStore extends AbstractObjectStore {
                     raw = objects.get(id);
                     if (raw != null) {
                         try {
-                            RevObject obj = serializer.read(id, new ByteArrayInputStream(raw));
+                            RevObject obj = serializer().read(id, new ByteArrayInputStream(raw));
                             found = type.isAssignableFrom(obj.getClass()) ? type.cast(obj) : null;
                         } catch (IOException e) {
                             throw Throwables.propagate(e);

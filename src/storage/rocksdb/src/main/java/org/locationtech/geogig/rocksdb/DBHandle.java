@@ -9,23 +9,34 @@
  */
 package org.locationtech.geogig.rocksdb;
 
-import org.rocksdb.Options;
+import org.eclipse.jdt.annotation.Nullable;
+import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
+
+import com.google.common.base.Charsets;
+import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 
 class DBHandle {
 
-    final Options options;
+    final org.rocksdb.DBOptions options;
 
     final RocksDB db;
 
-    final DBOptions config;
+    final DBConfig config;
 
     private volatile boolean closed;
 
-    public DBHandle(final DBOptions config, final Options options, final RocksDB db) {
+    private @Nullable ColumnFamilyHandle metadata;
+
+    public DBHandle(final DBConfig config, final org.rocksdb.DBOptions options, final RocksDB db,
+            @Nullable ColumnFamilyHandle metadata) {
         this.config = config;
         this.options = options;
         this.db = db;
+        this.metadata = metadata;
     }
 
     public synchronized void close() {
@@ -33,15 +44,51 @@ class DBHandle {
             return;
         }
         closed = true;
-        close(db);
+        close(metadata);
         close(options);
+        close(db);
     }
 
-    private void close(AutoCloseable nativeObject) {
+    private void close(@Nullable AutoCloseable nativeObject) {
+        if (nativeObject == null) {
+            return;
+        }
         try {
             nativeObject.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void setMetadata(String key, String value) {
+        Preconditions.checkNotNull(key);
+        Preconditions.checkNotNull(value);
+        Preconditions.checkState(!closed, "db is closed");
+        Preconditions.checkState(!config.isReadOnly(), "db is read only");
+        Preconditions.checkNotNull(metadata);
+
+        byte[] k = key.getBytes(Charsets.UTF_8);
+        byte[] v = value.getBytes(Charsets.UTF_8);
+        try {
+            db.put(metadata, k, v);
+        } catch (RocksDBException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public Optional<String> getMetadata(final String key) {
+        Preconditions.checkNotNull(key);
+        String value = null;
+        if (metadata != null) {
+            try {
+                byte[] val = db.get(metadata, key.getBytes(Charsets.UTF_8));
+                if (val != null) {
+                    value = new String(val, Charsets.UTF_8);
+                }
+            } catch (RocksDBException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+        return Optional.fromNullable(value);
     }
 }

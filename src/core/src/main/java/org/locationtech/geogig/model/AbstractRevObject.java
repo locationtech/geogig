@@ -18,7 +18,7 @@ package org.locationtech.geogig.model;
  * @see RevFeatureType
  * @see RevTag
  */
-abstract class AbstractRevObject implements RevObject {
+public abstract class AbstractRevObject implements RevObject {
     private final ObjectId id;
 
     public AbstractRevObject(final ObjectId id) {

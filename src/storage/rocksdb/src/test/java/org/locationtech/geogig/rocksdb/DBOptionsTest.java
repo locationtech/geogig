@@ -10,22 +10,22 @@ public class DBOptionsTest {
 
     @Test
     public void testConstructor() {
-        DBOptions o1 = new DBOptions("path", true);
+        DBConfig o1 = new DBConfig("path", true);
         assertEquals("path", o1.getDbPath());
         assertTrue(o1.isReadOnly());
 
-        DBOptions o2 = new DBOptions("path2", false);
+        DBConfig o2 = new DBConfig("path2", false);
         assertEquals("path2", o2.getDbPath());
         assertFalse(o2.isReadOnly());
     }
 
     @Test
     public void testEquals() {
-        DBOptions o1 = new DBOptions("path1", true);
-        DBOptions o2 = new DBOptions("path1", false);
-        DBOptions o3 = new DBOptions("path2", true);
-        DBOptions o4 = new DBOptions("path2", false);
-        DBOptions o5 = new DBOptions("path2", false);
+        DBConfig o1 = new DBConfig("path1", true);
+        DBConfig o2 = new DBConfig("path1", false);
+        DBConfig o3 = new DBConfig("path2", true);
+        DBConfig o4 = new DBConfig("path2", false);
+        DBConfig o5 = new DBConfig("path2", false);
 
         assertTrue(o1.equals(o1));
         assertFalse(o1.equals(o2));
@@ -58,7 +58,7 @@ public class DBOptionsTest {
 
     @Test
     public void testToString() {
-        DBOptions o1 = new DBOptions("path", true);
+        DBConfig o1 = new DBConfig("path", true);
         assertEquals("rocksdb[path: path, readonly: true]", o1.toString());
     }
 

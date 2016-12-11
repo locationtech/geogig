@@ -9,23 +9,45 @@
  */
 package org.locationtech.geogig.rocksdb;
 
-class DBOptions {
+import java.util.Map;
+
+import org.rocksdb.ColumnFamilyHandle;
+
+import com.google.common.collect.ImmutableMap;
+
+class DBConfig {
 
     private final String dbpath;
 
     private final boolean readOnly;
 
-    public DBOptions(String dbpath, boolean readOnly) {
+    private ImmutableMap<String, String> defaultMetadata;
+
+    public DBConfig(String dbpath, boolean readOnly) {
+        this(dbpath, readOnly, ImmutableMap.of());
+    }
+
+    public DBConfig(String dbpath, boolean readOnly, Map<String, String> defaultMetadata) {
         this.dbpath = dbpath;
         this.readOnly = readOnly;
+        this.defaultMetadata = ImmutableMap.copyOf(defaultMetadata);
+    }
+
+    /**
+     * If not empty, a {@link ColumnFamilyHandle} named "metadata" will be created with the provided
+     * key/value pairs, as long as {@code readOnly == false} and the db is being created for the
+     * first time.
+     */
+    public ImmutableMap<String, String> getDefaultMetadata() {
+        return defaultMetadata;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof DBOptions)) {
+        if (!(o instanceof DBConfig)) {
             return false;
         }
-        DBOptions other = (DBOptions) o;
+        DBConfig other = (DBConfig) o;
         return dbpath.equals(other.dbpath) && readOnly == other.readOnly;
     }
 

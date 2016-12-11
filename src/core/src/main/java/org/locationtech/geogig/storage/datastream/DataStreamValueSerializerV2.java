@@ -146,7 +146,7 @@ public class DataStreamValueSerializerV2 {
                 data.writeDouble((Double) field);
             }
         });
-        serializers.put(FieldType.STRING, new ValueSerializer() {
+        final ValueSerializer stringSerializer = new ValueSerializer() {
             @Override
             public Object read(DataInput in) throws IOException {
                 final int multiStringMarkerOrsingleLength;
@@ -196,7 +196,8 @@ public class DataStreamValueSerializerV2 {
                     data.writeUTF(value);
                 }
             }
-        });
+        };
+        serializers.put(FieldType.STRING, stringSerializer);
         serializers.put(FieldType.BOOLEAN_ARRAY, new ValueSerializer() {
             @Override
             public Object read(DataInput in) throws IOException {
@@ -359,7 +360,7 @@ public class DataStreamValueSerializerV2 {
                 final int len = readUnsignedVarInt(in);
                 String[] strings = new String[len];
                 for (int i = 0; i < len; i++) {
-                    strings[i] = in.readUTF();
+                    strings[i] = (String) stringSerializer.read(in);
                 }
                 return strings;
             }
@@ -368,11 +369,13 @@ public class DataStreamValueSerializerV2 {
             public void write(Object field, DataOutput data) throws IOException {
                 writeUnsignedVarInt(((String[]) field).length, data);
                 for (String s : (String[]) field)
-                    data.writeUTF(s);
+                    stringSerializer.write(s, data);
             }
         });
         ValueSerializer geometry = new ValueSerializer() {
-            final GeometryFactory GEOM_FACT = new GeometryFactory(new PackedCoordinateSequenceFactory());
+            final GeometryFactory GEOM_FACT = new GeometryFactory(
+                    new PackedCoordinateSequenceFactory());
+
             @Override
             public Object read(DataInput in) throws IOException {
                 byte[] bytes = (byte[]) byteArray.read(in);

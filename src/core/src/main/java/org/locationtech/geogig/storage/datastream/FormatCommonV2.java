@@ -83,7 +83,9 @@ public class FormatCommonV2 {
 
     public final static byte NUL = 0x00;
 
-    public final static String readToMarker(DataInput in, byte marker) throws IOException {
+    public static final FormatCommonV2 INSTANCE = new FormatCommonV2();
+
+    public final String readToMarker(DataInput in, byte marker) throws IOException {
         StringBuilder buff = new StringBuilder();
         byte b = in.readByte();
         while (b != marker) {
@@ -93,7 +95,7 @@ public class FormatCommonV2 {
         return buff.toString();
     }
 
-    public final static ObjectId readObjectId(DataInput in) throws IOException {
+    public final ObjectId readObjectId(DataInput in) throws IOException {
         byte[] bytes = new byte[ObjectId.NUM_BYTES];
         in.readFully(bytes);
         return ObjectId.createNoClone(bytes);
@@ -122,7 +124,7 @@ public class FormatCommonV2 {
     private static final FeatureTypeFactory DEFAULT_FEATURETYPE_FACTORY = new SimpleFeatureTypeBuilder()
             .getFeatureTypeFactory();
 
-    public static RevTag readTag(@Nullable ObjectId id, DataInput in) throws IOException {
+    public RevTag readTag(@Nullable ObjectId id, DataInput in) throws IOException {
         final ObjectId commitId = readObjectId(in);
         final String name = in.readUTF();
         final String message = in.readUTF();
@@ -137,14 +139,14 @@ public class FormatCommonV2 {
         return tag;
     }
 
-    public static void writeTag(RevTag tag, DataOutput out) throws IOException {
+    public void writeTag(RevTag tag, DataOutput out) throws IOException {
         out.write(tag.getCommitId().getRawValue());
         out.writeUTF(tag.getName());
         out.writeUTF(tag.getMessage());
         writePerson(tag.getTagger(), out);
     }
 
-    public static void writeCommit(RevCommit commit, DataOutput data) throws IOException {
+    public void writeCommit(RevCommit commit, DataOutput data) throws IOException {
         data.write(commit.getTreeId().getRawValue());
         final int nParents = commit.getParentIds().size();
         writeUnsignedVarInt(nParents, data);
@@ -157,7 +159,7 @@ public class FormatCommonV2 {
         data.writeUTF(commit.getMessage());
     }
 
-    public static RevCommit readCommit(@Nullable ObjectId id, DataInput in) throws IOException {
+    public RevCommit readCommit(@Nullable ObjectId id, DataInput in) throws IOException {
         final ObjectId treeId = readObjectId(in);
         final int nParents = readUnsignedVarInt(in);
         final Builder<ObjectId> parentListBuilder = ImmutableList.builder();
@@ -184,7 +186,7 @@ public class FormatCommonV2 {
         return commit;
     }
 
-    public static final RevPerson readRevPerson(DataInput in) throws IOException {
+    public final RevPerson readRevPerson(DataInput in) throws IOException {
         final String name = in.readUTF();
         final String email = in.readUTF();
         final long timestamp = readUnsignedVarLong(in);
@@ -193,14 +195,14 @@ public class FormatCommonV2 {
                 email.length() == 0 ? null : email, timestamp, tzOffset);
     }
 
-    public static final void writePerson(RevPerson person, DataOutput data) throws IOException {
+    public final void writePerson(RevPerson person, DataOutput data) throws IOException {
         data.writeUTF(person.getName().or(""));
         data.writeUTF(person.getEmail().or(""));
         writeUnsignedVarLong(person.getTimestamp(), data);
         writeUnsignedVarInt(person.getTimeZoneOffset(), data);
     }
 
-    public static void writeTree(RevTree tree, DataOutput data) throws IOException {
+    public void writeTree(RevTree tree, DataOutput data) throws IOException {
 
         writeUnsignedVarLong(tree.size(), data);
         writeUnsignedVarInt(tree.numTrees(), data);
@@ -226,7 +228,7 @@ public class FormatCommonV2 {
         }
     }
 
-    public static RevTree readTree(@Nullable ObjectId id, DataInput in) throws IOException {
+    public RevTree readTree(@Nullable ObjectId id, DataInput in) throws IOException {
         final long size = readUnsignedVarLong(in);
         final int treeCount = readUnsignedVarInt(in);
 
@@ -275,7 +277,7 @@ public class FormatCommonV2 {
         return tree;
     }
 
-    public static DiffEntry readDiff(DataInput in) throws IOException {
+    public DiffEntry readDiff(DataInput in) throws IOException {
         boolean oldNode = in.readBoolean();
         NodeRef oldNodeRef = null;
         if (oldNode) {
@@ -290,14 +292,14 @@ public class FormatCommonV2 {
         return new DiffEntry(oldNodeRef, newNodeRef);
     }
 
-    public static NodeRef readNodeRef(DataInput in) throws IOException {
+    public NodeRef readNodeRef(DataInput in) throws IOException {
         Node node = readNode(in);
         final ObjectId metadataId = readObjectId(in);
         String parentPath = in.readUTF();
         return new NodeRef(node, parentPath, metadataId);
     }
 
-    public static void writeFeature(RevFeature feature, DataOutput data) throws IOException {
+    public void writeFeature(RevFeature feature, DataOutput data) throws IOException {
 
         writeUnsignedVarInt(feature.size(), data);
 
@@ -311,7 +313,7 @@ public class FormatCommonV2 {
         }
     }
 
-    public static RevFeature readFeature(@Nullable ObjectId id, DataInput in) throws IOException {
+    public RevFeature readFeature(@Nullable ObjectId id, DataInput in) throws IOException {
         final int count = readUnsignedVarInt(in);
         final RevFeatureBuilder builder = RevFeatureBuilder.builder();
 
@@ -326,11 +328,11 @@ public class FormatCommonV2 {
         return built;
     }
 
-    public static void writeHeader(DataOutput data, RevObject.TYPE header) throws IOException {
+    public void writeHeader(DataOutput data, RevObject.TYPE header) throws IOException {
         data.writeByte(header.value());
     }
 
-    public static TYPE readHeader(DataInput in) throws IOException {
+    public TYPE readHeader(DataInput in) throws IOException {
         final int header = in.readByte() & 0xFF;
         checkState(header > -1 && header < 6,
                 "Illegal RevObject type header: %s, must be between 0 and 4 inclusive",
@@ -339,7 +341,7 @@ public class FormatCommonV2 {
         return type;
     }
 
-    public final static void requireHeader(DataInput in, RevObject.TYPE header) throws IOException {
+    public final void requireHeader(DataInput in, RevObject.TYPE header) throws IOException {
         int s = in.readByte() & 0xFF;
         if (header.value() != s) {
             throw new IllegalArgumentException(String.format(
@@ -375,15 +377,14 @@ public class FormatCommonV2 {
         return new Envelope(minx, maxx, miny, maxy);
     }
 
-    public static void writePointBoundingBox(double x, double y, DataOutput data)
-            throws IOException {
+    public void writePointBoundingBox(double x, double y, DataOutput data) throws IOException {
         long x1 = toFixedPrecision(x);
         long y1 = toFixedPrecision(y);
         writeSignedVarLong(x1, data);
         writeSignedVarLong(y1, data);
     }
 
-    public static Envelope readPointBoundingBox(DataInput in) throws IOException {
+    public Envelope readPointBoundingBox(DataInput in) throws IOException {
         final long x1 = readSignedVarLong(in);
         final long y1 = readSignedVarLong(in);
 
@@ -416,8 +417,8 @@ public class FormatCommonV2 {
         return ordinate;
     }
 
-    public static void writeBucket(final int index, final Bucket bucket, DataOutput data,
-            Envelope envBuff) throws IOException {
+    public void writeBucket(final int index, final Bucket bucket, DataOutput data, Envelope envBuff)
+            throws IOException {
 
         writeUnsignedVarInt(index, data);
 
@@ -439,7 +440,7 @@ public class FormatCommonV2 {
     /**
      * Reads a bucket body (i.e assumes the head unsigned int "index" has been read already)
      */
-    private static final Bucket readBucketBody(DataInput in) throws IOException {
+    private final Bucket readBucketBody(DataInput in) throws IOException {
         ObjectId objectId = readObjectId(in);
         final int boundsMask = in.readByte() & 0xFF;
         @Nullable
@@ -454,7 +455,7 @@ public class FormatCommonV2 {
         return Bucket.create(objectId, bounds);
     }
 
-    public static void writeNode(Node node, DataOutput data) throws IOException {
+    public void writeNode(Node node, DataOutput data) throws IOException {
         writeNode(node, data, new Envelope());
     }
 
@@ -480,7 +481,7 @@ public class FormatCommonV2 {
 
     static final int TYPE_READ_MASK = 0b000111;
 
-    public static void writeNode(Node node, DataOutput data, Envelope env) throws IOException {
+    public void writeNode(Node node, DataOutput data, Envelope env) throws IOException {
         // Encode the node type and the bounds and metadata presence masks in one single byte:
         // - bits 1-3 for the object type (up to 8 types, there are only 5 and no plans to add more)
         // - bits 4-5 bits for the bounds mask
@@ -532,7 +533,7 @@ public class FormatCommonV2 {
     }
 
     @SuppressWarnings("unchecked")
-    public static Node readNode(DataInput in) throws IOException {
+    public Node readNode(DataInput in) throws IOException {
         final int typeAndMasks = in.readByte() & 0xFF;
         final int nodeType = typeAndMasks & TYPE_READ_MASK;
         final int boundsMask = typeAndMasks & BOUNDS_READ_MASK;
@@ -572,7 +573,7 @@ public class FormatCommonV2 {
         return node;
     }
 
-    public static void writeDiff(DiffEntry diff, DataOutput data) throws IOException {
+    public void writeDiff(DiffEntry diff, DataOutput data) throws IOException {
         if (diff.getOldObject() == null) {
             data.writeBoolean(false);
         } else {
@@ -587,13 +588,13 @@ public class FormatCommonV2 {
         }
     }
 
-    public static void writeNodeRef(NodeRef nodeRef, DataOutput data) throws IOException {
+    public void writeNodeRef(NodeRef nodeRef, DataOutput data) throws IOException {
         writeNode(nodeRef.getNode(), data);
         data.write(nodeRef.getMetadataId().getRawValue());
         data.writeUTF(nodeRef.getParentPath());
     }
 
-    public static void writeFeatureType(RevFeatureType object, DataOutput data) throws IOException {
+    public void writeFeatureType(RevFeatureType object, DataOutput data) throws IOException {
         writeName(object.getName(), data);
 
         ImmutableList<PropertyDescriptor> descriptors = object.descriptors();
@@ -604,12 +605,11 @@ public class FormatCommonV2 {
         }
     }
 
-    public static RevFeatureType readFeatureType(@Nullable ObjectId id, DataInput in)
-            throws IOException {
+    public RevFeatureType readFeatureType(@Nullable ObjectId id, DataInput in) throws IOException {
         return readFeatureType(id, in, DEFAULT_FEATURETYPE_FACTORY);
     }
 
-    public static RevFeatureType readFeatureType(@Nullable ObjectId id, DataInput in,
+    public RevFeatureType readFeatureType(@Nullable ObjectId id, DataInput in,
             FeatureTypeFactory typeFactory) throws IOException {
 
         Name name = readName(in);

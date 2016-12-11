@@ -9,20 +9,6 @@
  */
 package org.locationtech.geogig.storage.datastream;
 
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.readCommit;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.readFeature;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.readFeatureType;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.readHeader;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.readTag;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.readTree;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.requireHeader;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.writeCommit;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.writeFeature;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.writeFeatureType;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.writeHeader;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.writeTag;
-import static org.locationtech.geogig.storage.datastream.FormatCommonV2.writeTree;
-
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
@@ -56,14 +42,23 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
 
     public static final DataStreamSerializationFactoryV2 INSTANCE = new DataStreamSerializationFactoryV2();
 
-    private static final EnumMap<TYPE, Serializer<? extends RevObject>> serializers = Maps
+    private final FormatCommonV2 format;
+
+    private final EnumMap<TYPE, Serializer<? extends RevObject>> serializers = Maps
             .newEnumMap(TYPE.class);
-    static {
-        serializers.put(TYPE.COMMIT, new CommitSerializer());
-        serializers.put(TYPE.FEATURE, new FeatureSerializer());
-        serializers.put(TYPE.FEATURETYPE, new FeatureTypeSerializer());
-        serializers.put(TYPE.TAG, new TagSerializer());
-        serializers.put(TYPE.TREE, new TreeSerializer());
+
+    public DataStreamSerializationFactoryV2() {
+        this(FormatCommonV2.INSTANCE);
+    }
+
+    DataStreamSerializationFactoryV2(FormatCommonV2 format) {
+        Preconditions.checkNotNull(format);
+        this.format = format;
+        serializers.put(TYPE.COMMIT, new CommitSerializer(format));
+        serializers.put(TYPE.FEATURE, new FeatureSerializer(format));
+        serializers.put(TYPE.FEATURETYPE, new FeatureTypeSerializer(format));
+        serializers.put(TYPE.TAG, new TagSerializer(format));
+        serializers.put(TYPE.TREE, new TreeSerializer(format));
     }
 
     public RevObject read(InputStream rawData) throws IOException {
@@ -78,8 +73,8 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
 
     public RevObject readInternal(@Nullable ObjectId id, InputStream rawData) throws IOException {
         DataInput in = new DataInputStream(rawData);
-        final TYPE type = readHeader(in);
-        Serializer<RevObject> serializer = DataStreamSerializationFactoryV2.serializer(type);
+        final TYPE type = format.readHeader(in);
+        Serializer<RevObject> serializer = serializer(type);
         RevObject object = serializer.readBody(id, in);
         return object;
     }
@@ -90,7 +85,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends RevObject> Serializer<T> serializer(TYPE type) {
+    private <T extends RevObject> Serializer<T> serializer(TYPE type) {
         Serializer<? extends RevObject> serializer = serializers.get(type);
         if (serializer == null) {
             throw new UnsupportedOperationException("No serializer for " + type);
@@ -106,15 +101,18 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
 
         private final TYPE header;
 
-        Serializer(TYPE type) {
+        protected final FormatCommonV2 format;
+
+        Serializer(TYPE type, FormatCommonV2 format) {
             this.header = type;
+            this.format = format;
         }
 
         @Override
         public T read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
             DataInput in = new DataInputStream(rawData);
             try {
-                requireHeader(in, header);
+                format.requireHeader(in, header);
                 return readBody(id, in);
             } catch (IOException e) {
                 throw Throwables.propagate(e);
@@ -132,7 +130,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
         @Override
         public void write(T object, OutputStream out) throws IOException {
             DataOutput data = new DataOutputStream(out);
-            writeHeader(data, object.getType());
+            format.writeHeader(data, object.getType());
             writeBody(object, data);
         }
 
@@ -141,86 +139,86 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
 
     private static final class CommitSerializer extends Serializer<RevCommit> {
 
-        CommitSerializer() {
-            super(TYPE.COMMIT);
+        CommitSerializer(FormatCommonV2 format) {
+            super(TYPE.COMMIT, format);
         }
 
         @Override
         public RevCommit readBody(@Nullable ObjectId id, DataInput in) throws IOException {
-            return readCommit(id, in);
+            return format.readCommit(id, in);
         }
 
         @Override
         public void writeBody(RevCommit commit, DataOutput data) throws IOException {
-            writeCommit(commit, data);
+            format.writeCommit(commit, data);
         }
     }
 
     private static final class FeatureSerializer extends Serializer<RevFeature> {
 
-        FeatureSerializer() {
-            super(TYPE.FEATURE);
+        FeatureSerializer(FormatCommonV2 format) {
+            super(TYPE.FEATURE, format);
         }
 
         @Override
         public RevFeature readBody(@Nullable ObjectId id, DataInput in) throws IOException {
-            return readFeature(id, in);
+            return format.readFeature(id, in);
         }
 
         @Override
         public void writeBody(RevFeature feature, DataOutput data) throws IOException {
-            writeFeature(feature, data);
+            format.writeFeature(feature, data);
         }
     }
 
     private static final class FeatureTypeSerializer extends Serializer<RevFeatureType> {
 
-        FeatureTypeSerializer() {
-            super(TYPE.FEATURETYPE);
+        FeatureTypeSerializer(FormatCommonV2 format) {
+            super(TYPE.FEATURETYPE, format);
         }
 
         @Override
         public RevFeatureType readBody(@Nullable ObjectId id, DataInput in) throws IOException {
-            return readFeatureType(id, in);
+            return format.readFeatureType(id, in);
         }
 
         @Override
         public void writeBody(RevFeatureType object, DataOutput data) throws IOException {
-            writeFeatureType(object, data);
+            format.writeFeatureType(object, data);
         }
     }
 
     private static final class TagSerializer extends Serializer<RevTag> {
 
-        TagSerializer() {
-            super(TYPE.TAG);
+        TagSerializer(FormatCommonV2 format) {
+            super(TYPE.TAG, format);
         }
 
         @Override
         public RevTag readBody(@Nullable ObjectId id, DataInput in) throws IOException {
-            return readTag(id, in);
+            return format.readTag(id, in);
         }
 
         @Override
         public void writeBody(RevTag tag, DataOutput data) throws IOException {
-            writeTag(tag, data);
+            format.writeTag(tag, data);
         }
     }
 
     private static final class TreeSerializer extends Serializer<RevTree> {
 
-        TreeSerializer() {
-            super(TYPE.TREE);
+        TreeSerializer(FormatCommonV2 format) {
+            super(TYPE.TREE, format);
         }
 
         @Override
         public RevTree readBody(@Nullable ObjectId id, DataInput in) throws IOException {
-            return readTree(id, in);
+            return format.readTree(id, in);
         }
 
         @Override
         public void writeBody(RevTree tree, DataOutput data) throws IOException {
-            writeTree(tree, data);
+            format.writeTree(tree, data);
         }
     }
 

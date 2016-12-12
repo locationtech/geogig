@@ -12,6 +12,7 @@ package org.locationtech.geogig.geotools.plumbing;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -22,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DefaultTransaction;
+import org.geotools.data.FeatureReader;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.Hints;
@@ -33,6 +35,8 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
+import org.locationtech.geogig.data.retrieve.IteratorBackedFeatureReader;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.Bounded;
@@ -194,7 +198,12 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         try {
             targetStore.setTransaction(transaction);
             try {
-                targetStore.addFeatures(asFeatureCollection);
+                 targetStore.addFeatures(asFeatureCollection);
+//                ArrayList al = new ArrayList();
+//                while (filtered.hasNext())
+//                    al.add(filtered.next());
+             //   FeatureReader<SimpleFeatureType, SimpleFeature> reader = new IteratorBackedFeatureReader(null,filtered );
+             //   targetStore.setFeatures(reader);
                 transaction.commit();
             } catch (final Exception e) {
                 if (transactional) {
@@ -214,8 +223,41 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         return targetStore;
 
     }
-
+     
     private static Iterator<SimpleFeature> getFeatures(final RevTree typeTree,
+            final ObjectDatabase database, final ObjectId defaultMetadataId,
+            final @Nullable ReferencedEnvelope bboxFilter,
+            final ProgressListener progressListener) {
+
+        Iterator<NodeRef> nodes;
+        {
+            DepthTreeIterator iterator = new DepthTreeIterator("", defaultMetadataId, typeTree,
+                    database, Strategy.FEATURES_ONLY);
+
+            if (bboxFilter != null) {
+                Predicate<Bounded> bboxPredicate = new BBoxPredicate(database, bboxFilter,
+                        defaultMetadataId);
+                iterator.setBoundsFilter(bboxPredicate);
+            }
+            nodes = iterator;
+        }
+        BulkFeatureRetriever gf = new BulkFeatureRetriever(database);
+        Iterator<SimpleFeature> feats =  gf.getGeoToolsFeatures(nodes);
+        
+        Iterator<SimpleFeature> result=   Iterators.transform(feats, new Function<SimpleFeature, SimpleFeature>() {
+
+            private AtomicInteger count = new AtomicInteger();
+
+            @Override
+            public SimpleFeature apply(SimpleFeature input) {
+                progressListener.setProgress((count.incrementAndGet() * 100.f) / typeTree.size());
+                return input;
+            }
+        });
+        return result;
+ }
+
+    private static Iterator<SimpleFeature> getFeatures2(final RevTree typeTree,
             final ObjectDatabase database, final ObjectId defaultMetadataId,
             final @Nullable ReferencedEnvelope bboxFilter,
             final ProgressListener progressListener) {

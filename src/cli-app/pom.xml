@@ -143,6 +143,7 @@
         <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
             <configuration>
+                <finalName>geogig</finalName>
                 <archive>
                     <manifest>
                         <mainClass>org.locationtech.geogig.cli.CLI</mainClass>
@@ -174,6 +175,7 @@
                 </execution>
                 <execution>
                     <id>assemble-zip</id>
+                    <phase>package</phase>
                     <goals>
                         <goal>single</goal>
                     </goals>

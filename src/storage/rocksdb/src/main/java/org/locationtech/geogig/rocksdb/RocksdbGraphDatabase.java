@@ -32,6 +32,7 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.StorageType;
@@ -65,8 +66,6 @@ public class RocksdbGraphDatabase implements GraphDatabase {
     private final boolean readOnly;
 
     private boolean open;
-
-    private RocksDB db;
 
     private DBHandle dbhandle;
 
@@ -112,7 +111,6 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         String dbpath = dbdir.getAbsolutePath();
         DBConfig opts = new DBConfig(dbpath, readOnly);
         this.dbhandle = RocksConnectionManager.INSTANCE.acquire(opts);
-        this.db = dbhandle.db;
         this.open = true;
     }
 
@@ -123,7 +121,6 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         }
         this.open = false;
         RocksConnectionManager.INSTANCE.release(dbhandle);
-        this.db = null;
         this.dbhandle = null;
     }
 
@@ -132,8 +129,8 @@ public class RocksdbGraphDatabase implements GraphDatabase {
     @Override
     public boolean exists(ObjectId commitId) {
         byte[] key = commitId.getRawValue();
-        try {
-            int size = db.get(key, NODATA);
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            int size = dbRef.db().get(key, NODATA);
             return size != RocksDB.NOT_FOUND;
         } catch (RocksDBException e) {
             throw propagate(e);
@@ -186,8 +183,9 @@ public class RocksdbGraphDatabase implements GraphDatabase {
                 batch.put(parent.getRawValue(), BINDING.objectToEntry(parentNode));
             }
             batch.put(commitId.getRawValue(), BINDING.objectToEntry(node));
-            try (WriteOptions wo = new WriteOptions()) {
-                db.write(wo, batch);
+            try (RocksDBReference dbRef = dbhandle.getReference();
+                    WriteOptions wo = new WriteOptions()) {
+                dbRef.db().write(wo, batch);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -263,19 +261,21 @@ public class RocksdbGraphDatabase implements GraphDatabase {
 
     @Override
     public void truncate() {
-        try (RocksIterator it = db.newIterator()) {
-            it.seekToFirst();
-            try (WriteOptions wo = new WriteOptions()) {
-                wo.setDisableWAL(true);
-                wo.setSync(false);
-                while (it.isValid()) {
-                    db.remove(wo, it.key());
-                    it.next();
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            try (RocksIterator it = dbRef.db().newIterator()) {
+                it.seekToFirst();
+                try (WriteOptions wo = new WriteOptions()) {
+                    wo.setDisableWAL(true);
+                    wo.setSync(false);
+                    while (it.isValid()) {
+                        dbRef.db().remove(wo, it.key());
+                        it.next();
+                    }
+                    wo.sync();
                 }
-                wo.sync();
+            } catch (RocksDBException e) {
+                throw propagate(e);
             }
-        } catch (RocksDBException e) {
-            throw propagate(e);
         }
     }
 
@@ -284,8 +284,8 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         Preconditions.checkNotNull(id, "id");
         byte[] key = id.getRawValue();
         byte[] data;
-        try {
-            data = db.get(key);
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            data = dbRef.db().get(key);
         } catch (RocksDBException e) {
             throw propagate(e);
         }
@@ -304,8 +304,8 @@ public class RocksdbGraphDatabase implements GraphDatabase {
         byte[] key = id.getRawValue();
         byte[] data = BINDING.objectToEntry(node);
 
-        try {
-            db.put(key, data);
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            dbRef.db().put(key, data);
         } catch (RocksDBException e) {
             propagate(e);
         }

@@ -28,6 +28,7 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.AbstractObjectStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectSerializingFactory;
@@ -60,8 +61,6 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     private DBHandle dbhandle;
 
-    private RocksDB db;
-
     private ReadOptions bulkReadOptions;
 
     @Inject
@@ -86,7 +85,6 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         DBConfig address = new DBConfig(path, readOnly, defaultMetadata);
         this.dbhandle = RocksConnectionManager.INSTANCE.acquire(address);
 
-        this.db = dbhandle.db;
         this.bulkReadOptions = new ReadOptions();
         this.bulkReadOptions.setFillCache(false);
         this.bulkReadOptions.setVerifyChecksums(false);
@@ -115,7 +113,6 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         open = false;
 
         final DBHandle dbhandle = this.dbhandle;
-        this.db = null;
         this.dbhandle = null;
         this.bulkReadOptions.close();
         RocksConnectionManager.INSTANCE.release(dbhandle);
@@ -145,8 +142,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         exists = exists(bulkReadOptions, key);
 
         if (!exists) {
-            try {
-                db.put(key, rawData);
+            try (RocksDBReference dbRef = dbhandle.getReference()) {
+                dbRef.db().put(key, rawData);
             } catch (RocksDBException e) {
                 throw Throwables.propagate(e);
             }
@@ -171,8 +168,9 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     @Nullable
     private byte[] getRawInternal(byte[] key) throws IllegalArgumentException {
-        try {
-            return db.get(key);
+        checkOpen();
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            return dbRef.db().get(key);
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }
@@ -190,14 +188,15 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     private boolean exists(ReadOptions readOptions, byte[] key) {
         int size = RocksDB.NOT_FOUND;
-        if (db.keyMayExist(key, new StringBuffer())) {
-            try {
-                size = db.get(key, NO_DATA);
-            } catch (RocksDBException e) {
-                throw Throwables.propagate(e);
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            if (dbRef.db().keyMayExist(key, new StringBuffer())) {
+                try {
+                    size = dbRef.db().get(key, NO_DATA);
+                } catch (RocksDBException e) {
+                    throw Throwables.propagate(e);
+                }
             }
         }
-
         return size != RocksDB.NOT_FOUND;
     }
 
@@ -206,8 +205,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         checkNotNull(objectId, "argument objectId is null");
         checkWritable();
         byte[] key = objectId.getRawValue();
-        try {
-            db.remove(key);
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            dbRef.db().remove(key);
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }
@@ -239,17 +238,17 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
             @Override
             protected T computeNext() {
                 checkOpen();
-                try {
+                try (RocksDBReference dbRef = dbhandle.getReference()) {
                     while (oids.hasNext()) {
                         ObjectId id = oids.next();
                         id.getRawValue(keybuff);
-                        final int size = db.get(readOps, keybuff, valueBuff);
+                        final int size = dbRef.db().get(readOps, keybuff, valueBuff);
                         if (RocksDB.NOT_FOUND == size) {
                             listener.notFound(id);
                             continue;
                         }
                         if (size > valueBuff.length) {
-                            valueBuff = db.get(readOps, keybuff);
+                            valueBuff = dbRef.db().get(readOps, keybuff);
                         }
                         RevObject object = serializer().read(id,
                                 new ByteArrayInputStream(valueBuff));
@@ -278,7 +277,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
         byte[] keybuff = new byte[ObjectId.NUM_BYTES];
 
-        try (ReadOptions ro = new ReadOptions()) {
+        try (RocksDBReference dbRef = dbhandle.getReference();
+                ReadOptions ro = new ReadOptions()) {
             ro.setFillCache(false);
             ro.setVerifyChecksums(false);
             try (WriteOptions writeOps = new WriteOptions()) {
@@ -288,7 +288,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                     id.getRawValue(keybuff);
                     if (!checkExists || exists(ro, keybuff)) {
                         try {
-                            db.remove(writeOps, keybuff);
+                            dbRef.db().remove(writeOps, keybuff);
                         } catch (RocksDBException e) {
                             throw Throwables.propagate(e);
                         }
@@ -304,19 +304,22 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     @Override
     protected List<ObjectId> lookUpInternal(byte[] idprefix) {
+        checkOpen();
         List<ObjectId> matches = new ArrayList<>(2);
-        try (RocksIterator it = db.newIterator()) {
-            it.seek(idprefix);
-            while (it.isValid()) {
-                byte[] key = it.key();
-                for (int i = 0; i < idprefix.length; i++) {
-                    if (idprefix[i] != key[i]) {
-                        return matches;
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            try (RocksIterator it = dbRef.db().newIterator()) {
+                it.seek(idprefix);
+                while (it.isValid()) {
+                    byte[] key = it.key();
+                    for (int i = 0; i < idprefix.length; i++) {
+                        if (idprefix[i] != key[i]) {
+                            return matches;
+                        }
                     }
+                    ObjectId id = ObjectId.createNoClone(key);
+                    matches.add(id);
+                    it.next();
                 }
-                ObjectId id = ObjectId.createNoClone(key);
-                matches.add(id);
-                it.next();
             }
         }
         return matches;
@@ -333,7 +336,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream(4096);
         byte[] keybuff = new byte[ObjectId.NUM_BYTES];
 
-        try (WriteOptions wo = new WriteOptions()) {
+        try (RocksDBReference dbRef = dbhandle.getReference();
+                WriteOptions wo = new WriteOptions()) {
             wo.setDisableWAL(true);
             wo.setSync(false);
             try (ReadOptions ro = new ReadOptions()) {
@@ -360,7 +364,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
                         }
                         // Stopwatch sw = Stopwatch.createStarted();
-                        db.write(wo, batch);
+                        dbRef.db().write(wo, batch);
                         // System.err.printf("--- synced writes in %s\n", sw.stop());
                     }
                 }

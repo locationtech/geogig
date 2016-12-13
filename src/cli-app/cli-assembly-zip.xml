@@ -14,6 +14,7 @@
             <outputDirectory>geogig</outputDirectory>
             <includes>
                 <include>LICENSE.txt</include>
+                <include>NOTICE.txt</include>
                 <include>man/**</include>
                 <include>repo/**</include>
             </includes>
@@ -25,6 +26,7 @@
             <outputDirectory>geogig</outputDirectory>
             <includes>
                 <include>bin/**</include>
+                <include>lib/**</include>
             </includes>
             <fileMode>0755</fileMode>
             <directoryMode>0755</directoryMode>

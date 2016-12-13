@@ -52,6 +52,7 @@ class Logging {
     }
 
     static void tryConfigureLogging(Platform platform, @Nullable final String repoURI) {
+        System.setProperty("hsqldb.reconfig_logging", "false"); // stop hsql from reseting logging
         // instantiate and call ResolveGeogigDir directly to avoid calling getGeogig() and hence get
         // some logging events before having configured logging
         Hints hints = new Hints();

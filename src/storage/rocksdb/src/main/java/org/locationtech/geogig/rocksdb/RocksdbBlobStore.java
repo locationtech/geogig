@@ -14,13 +14,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.TransactionBlobStore;
-import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 
@@ -31,6 +32,8 @@ class RocksdbBlobStore implements TransactionBlobStore {
     private final boolean readOnly;
 
     private DBHandle dbhandle;
+
+    private boolean closed = false;
 
     private static final String NO_TRANSACTION = "DEFAULT";
 
@@ -43,11 +46,13 @@ class RocksdbBlobStore implements TransactionBlobStore {
         if (dbhandle == null) {
             return;
         }
+        closed = true;
         RocksConnectionManager.INSTANCE.release(dbhandle);
         this.dbhandle = null;
     }
 
-    private RocksDB db() {
+    private RocksDBReference db() {
+        Preconditions.checkState(!closed, "db was closed");
         if (dbhandle == null) {
             synchronized (RocksdbBlobStore.class) {
                 if (dbhandle == null) {
@@ -58,7 +63,7 @@ class RocksdbBlobStore implements TransactionBlobStore {
                 }
             }
         }
-        return dbhandle.db;
+        return dbhandle.getReference();
     }
 
     private byte[] key(String namespace, String path) {
@@ -94,8 +99,8 @@ class RocksdbBlobStore implements TransactionBlobStore {
     @Override
     public Optional<byte[]> getBlob(String namespace, String path) {
         byte[] bytes;
-        try {
-            bytes = db().get(key(namespace, path));
+        try (RocksDBReference dbRef = db()) {
+            bytes = dbRef.db().get(key(namespace, path));
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }
@@ -110,8 +115,8 @@ class RocksdbBlobStore implements TransactionBlobStore {
 
     @Override
     public void putBlob(String namespace, String path, byte[] blob) {
-        try {
-            db().put(key(namespace, path), blob);
+        try (RocksDBReference dbRef = db()) {
+            dbRef.db().put(key(namespace, path), blob);
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }
@@ -129,8 +134,8 @@ class RocksdbBlobStore implements TransactionBlobStore {
 
     @Override
     public void removeBlob(String namespace, String path) {
-        try {
-            db().remove(key(namespace, path));
+        try (RocksDBReference dbRef = db()) {
+            dbRef.db().remove(key(namespace, path));
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }
@@ -139,21 +144,23 @@ class RocksdbBlobStore implements TransactionBlobStore {
     @Override
     public void removeBlobs(String namespace) {
         byte[] namespacePrefix = (namespace + ".").getBytes();
-        try (RocksIterator it = db().newIterator()) {
-            it.seek(namespacePrefix);
-            while (it.isValid()) {
-                byte[] key = it.key();
-                for (int i = 0; i < namespacePrefix.length; i++) {
-                    if (namespacePrefix[i] != key[i]) {
-                        return;
+        try (RocksDBReference dbRef = db()) {
+            try (RocksIterator it = dbRef.db().newIterator()) {
+                it.seek(namespacePrefix);
+                while (it.isValid()) {
+                    byte[] key = it.key();
+                    for (int i = 0; i < namespacePrefix.length; i++) {
+                        if (namespacePrefix[i] != key[i]) {
+                            return;
+                        }
                     }
+                    try {
+                        dbRef.db().remove(key);
+                    } catch (RocksDBException e) {
+                        Throwables.propagate(e);
+                    }
+                    it.next();
                 }
-                try {
-                    db().remove(key);
-                } catch (RocksDBException e) {
-                    Throwables.propagate(e);
-                }
-                it.next();
             }
         }
     }

@@ -121,7 +121,8 @@ public class Commit extends AbstractCommand implements CLICommand {
                 commitOp.setCommit(geogig.getRepository().getCommit(commitId.get()));
             }
             commit = commitOp.setPathFilters(pathFilters).setProgressListener(progress).call();
-        } catch (NothingToCommitException | ConflictsException notificationError) {
+        } catch (NothingToCommitException | ConflictsException
+                | IllegalStateException notificationError) {
             throw new CommandFailedException(notificationError.getMessage(), true);
         }
         final ObjectId parentId = commit.parentN(0).or(ObjectId.NULL);

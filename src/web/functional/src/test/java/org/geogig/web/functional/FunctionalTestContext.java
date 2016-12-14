@@ -38,6 +38,7 @@ import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.TestData;
 import org.restlet.data.Method;
+import org.restlet.data.Status;
 import org.w3c.dom.Document;
 
 import com.google.common.base.Optional;
@@ -155,7 +156,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
                 .loadDefaultData()//
                 .getRepo().close();
     }
-
+    
     /**
      * Set up multiple repositories with remotes for testing.
      * 
@@ -203,7 +204,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
         repo3.close();
         repo4.close();
     }
-
+    
     /**
      * Create a repository with the given name for testing.
      * 

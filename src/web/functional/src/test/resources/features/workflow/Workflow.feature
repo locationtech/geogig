@@ -1,4 +1,4 @@
-@Commands
+@Workflow
 Feature: Verify workflow
 
     Scenario: Simulate a user's workflow

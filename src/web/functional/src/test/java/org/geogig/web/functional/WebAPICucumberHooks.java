@@ -1076,7 +1076,7 @@ public class WebAPICucumberHooks {
         // parent of the repo is the directory that contains the ".geogig" directory.
         // the parent of the parent of the repo is the directory that the user specifies in the Init
         // request.
-        String parentDir = new File(repoURI).getParentFile().getParentFile().getCanonicalPath();
+        String parentDir = new File(repoURI).getParentFile().getParentFile().getCanonicalPath().replace("\\", "/");
         assertEquals("Unexpected parent directory", systemTempPath(), parentDir);
     }
 
@@ -1206,7 +1206,7 @@ public class WebAPICucumberHooks {
     }
 
     String systemTempPath() throws IOException {
-        return context.tempFolder.getRoot().getCanonicalPath();
+        return context.tempFolder.getRoot().getCanonicalPath().replace("\\", "/");
     }
 
     /**

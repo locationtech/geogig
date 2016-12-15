@@ -156,34 +156,52 @@ public abstract class FunctionalTestContext extends ExternalResource {
                 .loadDefaultData()//
                 .getRepo().close();
     }
-    
+
+    protected abstract void serveHttpRepos() throws Exception;
+
+    public abstract String getHttpLocation(String repoName);
+
     /**
      * Set up multiple repositories with remotes for testing.
      * 
      * @throws Exception
      */
-    public void setUpDefaultMultiRepoServerWithRemotes() throws Exception {
+    public void setUpDefaultMultiRepoServerWithRemotes(boolean http) throws Exception {
+        if (http) {
+            serveHttpRepos();
+        }
         Repository repo1 = createRepo("repo1")//
                 .init("geogigUser", "repo1_Owner@geogig.org")//
                 .loadDefaultData()//
                 .getRepo();
 
-        String repo1Url = repo1.getLocation().toString();
+        String repo1Url = http ? getHttpLocation("repo1") : repo1.getLocation().toString();
 
         Repository repo2 = createRepo("repo2")//
                 .init("geogigUser", "repo2_Owner@geogig.org").getRepo();
 
         repo2.command(CloneOp.class).setRepositoryURL(repo1Url).call();
 
-        repo1.command(BranchDeleteOp.class).setName("branch2").call();
+        String repo2Url = http ? getHttpLocation("repo2") : repo2.getLocation().toString();
+        
+        repo2.close();
 
-        String repo2Url = repo2.getLocation().toString();
+        if (http) {
+            // The http clone triggers repo1 to be opened by the repository provider. We'll close
+            // ours and use that one instead.
+            repo1.close();
+            repo1 = getRepo("repo1");
+        }
+
+        repo1.command(BranchDeleteOp.class).setName("branch2").call();
 
         Repository repo3 = createRepo("repo3")
                 .init("geogigUser", "repoWithRemotes_Owner@geogig.org").getRepo();
 
         repo3.command(RemoteAddOp.class).setName("repo1").setURL(repo1Url).call();
         repo3.command(RemoteAddOp.class).setName("repo2").setURL(repo2Url).call();
+        
+        repo3.close();
 
         Repository repo4 = createRepo("repo4")//
                 .init("geogigUser", "repo4_Owner@geogig.org").getRepo();
@@ -195,14 +213,37 @@ public abstract class FunctionalTestContext extends ExternalResource {
         repo4.command(ResetOp.class).setCommit(Suppliers.ofInstance(masterOriginal.get().getId()))
                 .setMode(ResetMode.HARD).call();
 
-        String repo4Url = repo4.getLocation().toString();
+        String repo4Url = http ? getHttpLocation("repo4") : repo4.getLocation().toString();
+        
+        repo4.close();
 
         repo1.command(RemoteAddOp.class).setName("repo4").setURL(repo4Url).call();
 
+        if (!http) {
+            repo1.close();
+        }
+    }
+
+    /**
+     * Set up multiple repositories with a shallow clone for testing.
+     * 
+     * @throws Exception
+     */
+    public void setUpDefaultMultiRepoServerWithShallowClone() throws Exception {
+        Repository repo1 = createRepo("full")//
+                .init("geogigUser", "full_Owner@geogig.org")//
+                .loadDefaultData()//
+                .getRepo();
+
+        String repo1Url = repo1.getLocation().toString();
+
+        Repository repo2 = createRepo("shallow")//
+                .init("geogigUser", "shallow_Owner@geogig.org").getRepo();
+
+        repo2.command(CloneOp.class).setRepositoryURL(repo1Url).setDepth(1).call();
+
         repo1.close();
         repo2.close();
-        repo3.close();
-        repo4.close();
     }
     
     /**
@@ -266,6 +307,16 @@ public abstract class FunctionalTestContext extends ExternalResource {
     }
 
     /**
+     * Issue a POST request to the provided URL with the given text as post data.
+     * 
+     * @param url the url to issue the request to
+     * @param postText the text to post
+     */
+    public void postText(final String url, final String postText) {
+        postTextInternal(replaceVariables(url), replaceVariables(postText));
+    }
+
+    /**
      * Issue a POST request to the provided URL with the given file passed as form data.
      * 
      * @param resourceUri the url to issue the request to
@@ -274,6 +325,14 @@ public abstract class FunctionalTestContext extends ExternalResource {
      */
     protected abstract void postFileInternal(final String resourceUri,
             final String formFieldName, final File file);
+
+    /**
+     * Issue a POST request to the provided URL with the given text as post data.
+     * 
+     * @param url the url to issue the request to
+     * @param postText the text to post
+     */
+    protected abstract void postTextInternal(final String resourceUri, final String postText);
 
     /**
      * @return the content of the last response as text

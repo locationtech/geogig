@@ -18,9 +18,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -336,7 +338,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream(4096);
         byte[] keybuff = new byte[ObjectId.NUM_BYTES];
 
-        try (RocksDBReference dbRef = dbhandle.getReference();
+	Map<ObjectId, Integer> insertedIds = new HashMap<ObjectId, Integer>();        
+	try (RocksDBReference dbRef = dbhandle.getReference();
                 WriteOptions wo = new WriteOptions()) {
             wo.setDisableWAL(true);
             wo.setSync(false);
@@ -345,6 +348,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                 ro.setVerifyChecksums(false);
                 while (objects.hasNext()) {
                     Iterator<? extends RevObject> partition = Iterators.limit(objects, 10_000);
+
                     try (WriteBatch batch = new WriteBatch()) {
                         while (partition.hasNext()) {
                             RevObject object = partition.next();
@@ -359,12 +363,16 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                                 listener.found(object.getId(), null);
                             } else {
                                 batch.put(keybuff, value);
-                                listener.inserted(object.getId(), Integer.valueOf(value.length));
+                                insertedIds.put(object.getId(), Integer.valueOf(value.length));
                             }
 
                         }
                         // Stopwatch sw = Stopwatch.createStarted();
                         dbRef.db().write(wo, batch);
+                        for (Entry<ObjectId, Integer> entry : insertedIds.entrySet()) {
+                            listener.inserted(entry.getKey(), entry.getValue());
+                        }
+                        insertedIds.clear();
                         // System.err.printf("--- synced writes in %s\n", sw.stop());
                     }
                 }

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.rest.repository;
 
-import static org.locationtech.geogig.web.api.RESTUtils.getGeogig;
+import static org.locationtech.geogig.rest.Variants.TEXT_PLAIN;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,17 +22,20 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.web.api.RESTUtils;
+import org.locationtech.geogig.web.api.StreamResponse;
+import org.locationtech.geogig.web.api.StreamWriterRepresentation;
 import org.restlet.Context;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
+import org.restlet.data.Status;
 import org.restlet.resource.OutputRepresentation;
 import org.restlet.resource.Resource;
 import org.restlet.resource.Variant;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 
 /**
  * Returns a list of all feature ids affected by a specified commit.
@@ -43,31 +46,58 @@ public class AffectedFeaturesResource extends Resource {
     public void init(Context context, Request request, Response response) {
         super.init(context, request, response);
         List<Variant> variants = getVariants();
-        variants.add(new AffectedFeaturesRepresentation(request));
+        variants.add(TEXT_PLAIN);
+    }
+
+    @Override
+    public void handleGet() {
+        final Request request = getRequest();
+
+        Optional<Repository> geogig = RESTUtils.getGeogig(request);
+        if (!geogig.isPresent() || !geogig.get().isOpen()) {
+            getResponse().setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            getResponse().setEntity(new StreamWriterRepresentation(MediaType.TEXT_PLAIN,
+                    StreamResponse.error("Repository not found.")));
+            return;
+        }
+
+        Form options = request.getResourceRef().getQueryAsForm();
+        final String commitIdStr = options.getFirstValue("commitId");
+        if (commitIdStr == null) {
+            getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            getResponse().setEntity(new StreamWriterRepresentation(MediaType.TEXT_PLAIN,
+                    StreamResponse.error("You must specify a commit id.")));
+            return;
+        }
+
+        ObjectId commitId;
+        try {
+            commitId = ObjectId.valueOf(commitIdStr);
+        } catch (Exception e) {
+            getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            getResponse().setEntity(new StreamWriterRepresentation(MediaType.TEXT_PLAIN,
+                    StreamResponse.error("You must specify a valid commit id.")));
+            return;
+        }
+
+        getResponse().setEntity(new AffectedFeaturesRepresentation(commitId, geogig.get()));
     }
 
     private static class AffectedFeaturesRepresentation extends OutputRepresentation {
 
-        private Request request;
+        private final ObjectId commitId;
 
-        public AffectedFeaturesRepresentation(Request request) {
+        private final Repository repo;
+
+        public AffectedFeaturesRepresentation(ObjectId commitId, Repository repo) {
             super(MediaType.TEXT_PLAIN);
-            this.request = request;
+            this.commitId = commitId;
+            this.repo = repo;
         }
 
         @Override
         public void write(OutputStream out) throws IOException {
             PrintWriter w = new PrintWriter(out);
-            Form options = request.getResourceRef().getQueryAsForm();
-
-            Optional<String> commit = Optional
-                    .fromNullable(options.getFirstValue("commitId", null));
-
-            Preconditions.checkState(commit.isPresent(), "No commit specified.");
-
-            Repository repo = getGeogig(request).get();
-
-            ObjectId commitId = ObjectId.valueOf(commit.get());
 
             RevCommit revCommit = repo.getCommit(commitId);
 

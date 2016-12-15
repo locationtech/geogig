@@ -30,12 +30,16 @@ import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.web.Main;
 import org.locationtech.geogig.web.MultiRepositoryProvider;
 import org.locationtech.geogig.web.api.TestData;
+import org.restlet.Component;
+import org.restlet.Server;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
+import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.resource.Representation;
+import org.restlet.resource.StringRepresentation;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -49,6 +53,8 @@ import com.google.common.collect.Sets;
  */
 public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
+    private static int TEST_HTTP_PORT = 8182;
+
     private Main app;
 
     private MultiRepositoryProvider repoProvider;
@@ -58,6 +64,8 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     private String lastResponseText = null;
 
     private Document lastResponseDocument = null;
+
+    private Server server;
 
     /**
      * Set up the context for a scenario.
@@ -88,6 +96,26 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
                 this.app = null;
             }
         }
+        if (server != null) {
+            try {
+                this.server.stop();
+            } finally {
+                this.server = null;
+            }
+        }
+    }
+
+    @Override
+    protected void serveHttpRepos() throws Exception {
+        Component comp = new Component();
+        comp.getDefaultHost().attach(this.app);
+        this.server = comp.getServers().add(Protocol.HTTP, TEST_HTTP_PORT);
+        this.server.start();
+    }
+
+    @Override
+    public String getHttpLocation(String repoName) {
+        return String.format("http://localhost:%d/repos/%s", TEST_HTTP_PORT, repoName);
     }
 
     /**
@@ -148,6 +176,21 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         } catch (IOException e) {
             Throwables.propagate(e);
         }
+    }
+
+    /**
+     * Issue a POST request to the provided URL with the given text as post data.
+     * 
+     * @param url the url to issue the request to
+     * @param postText the text to post
+     */
+    @Override
+    protected void postTextInternal(final String resourceUri, final String postText) {
+        Representation text = new StringRepresentation(postText);
+        Request request = new Request(Method.POST, resourceUri, text);
+        request.setRootRef(new Reference(""));
+
+        setLastResponse(app.handle(request));
     }
 
     /**

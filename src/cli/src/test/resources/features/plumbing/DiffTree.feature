@@ -22,7 +22,7 @@ Scenario: Show diff between working tree and index, omitting index refspec
 Scenario: Show diff between working tree and index, omitting both refspecs
     Given I have a repository
       And I stage 6 features      
-      And I modify a feature
+      And I modify a featuregit 
      When I run the command "diff-tree"
      Then the response should contain "Points/Points.1"       
       And the response should contain 1 lines   
@@ -56,6 +56,7 @@ Scenario: Show diff between working tree and index, describing the modified elem
       And I modify a feature             
      When I run the command "diff-tree WORK_HEAD STAGE_HEAD --describe"
      Then the response should contain 10 lines 
+      And the response should contain "Points/Points.1"
      
 Scenario: Show diff between working tree and index, with a change in the feature type
     Given I have a repository
@@ -63,6 +64,9 @@ Scenario: Show diff between working tree and index, with a change in the feature
       And I a featuretype is modified
      When I run the command "diff-tree WORK_HEAD:Points STAGE_HEAD:Points"
      Then the response should contain 3 lines   
+      And the response should contain "Points.1"
+      And the response should contain "Points.2"
+      And the response should contain "Points.3"
           
 Scenario: Show diff between working tree and index, using a path filter
     Given I have a repository

@@ -30,6 +30,8 @@ Scenario: Show a list of features in the root tree non-recursively
      When I run the command "ls-tree"
      Then the response should not contain "tree"
      Then the response should not contain "Points/Points.1"          
+      And the response should contain "Points"
+      And the response should contain "Lines"
 
 Scenario: Show a verbose list of trees in the root tree non-recursively
     Given I have a repository
@@ -39,7 +41,9 @@ Scenario: Show a verbose list of trees in the root tree non-recursively
      When I run the command "ls-tree -t -v"
      Then the response should contain "tree"
       And the response should contain "Points 1.0;2.0;1.0;2.0 2"
+      And the response should contain "Lines 1.0;2.0;1.0;2.0 1 0"
       And the response should not contain "Points/Points.1"             
+      And the response should not contain "Lines/Lines.1"
 
 Scenario: Show a verbose list of features in the root tree recursively, not including children
     Given I have a repository
@@ -49,6 +53,8 @@ Scenario: Show a verbose list of features in the root tree recursively, not incl
      When I run the command "ls-tree -d -v"
      Then the response should contain "tree"
      Then the response should not contain "Points/Points.1"           
+      And the response should contain "Points 1.0"
+      And the response should contain "Lines 1.0"
 
 Scenario: Show a verbose list of features in a path
     Given I have a repository
@@ -67,7 +73,9 @@ Scenario: Show a list of features using STAGE_HEAD as non-recursively, including
       And I have staged "lines1"
      When I run the command "ls-tree STAGE_HEAD -t -v"
 	 Then the response should contain "tree"
-     Then the response should not contain "Points/Points.1" 
+      And the response should contain "Points 1.0;2.0;1.0;2.0 2"
+      And the response should contain "Lines 1.0;2.0;1.0;2.0 1 0"
+      And the response should not contain "Points/Points.1"
 
 Scenario: Show a list of trees using HEAD as origin, recursively
     Given I have a repository
@@ -90,6 +98,7 @@ Scenario: Show a verbose list of features using HEAD as origin, recursively
      Then the response should contain "Points/Points.1"
      Then the response should contain "Lines/Lines.1"  
      Then the response should not contain "tree"
+      And the response should contain 3 lines
      
 Scenario: Show a list of features in a path, using HEAD as origin
     Given I have a repository

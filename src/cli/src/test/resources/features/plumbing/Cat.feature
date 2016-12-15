@@ -24,7 +24,8 @@ Scenario: Try to show the content of a feature.
 Scenario: Try to show the content of a feature that does not exist
     Given I have a repository           
      When I run the command "cat WORK_HEAD:Points/Points.1"     
-     Then it should exit with non-zero exit code 
+     Then it should exit with non-zero exit code
+      And the response should contain "refspec did not resolve to any object"
 
 Scenario: Try to show the content of a feature in the working tree.
     Given I have a repository

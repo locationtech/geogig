@@ -249,6 +249,7 @@ public class RocksdbMap<K extends Serializable, V extends Serializable> implemen
         putAll();
 
         final RocksIterator it = db.newIterator();
+        it.seekToFirst();
         
         return new AutoCloseableIterator<Entry<K, V>>() {
 

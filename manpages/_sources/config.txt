@@ -8,11 +8,11 @@ geogig-config documentation
 
 SYNOPSIS
 ********
-geogig config [--global|--local] name [value]
-geogig config [--global|--local] --get name
-geogig config [--global|--local] --unset name
-geogig config [--global|--local] --remove-section name
-geogig config [--global|--local] -l
+* geogig config [--global|--local] name [value]
+* geogig config [--global|--local] --get name
+* geogig config [--global|--local] --unset name
+* geogig config [--global|--local] --remove-section name
+* geogig config [--global|--local] -l
  
 
 
@@ -26,13 +26,13 @@ By default, the config file of the current repository will be assumed.  If the -
 OPTIONS
 *******
 
---global            Tells the config command to use the global config file, rather than the repository config file.
+--global        Tells the config command to use the global config file, rather than the repository config file.
 
 --local				Tells the config command to use the repository config file, rather than the global config file.
 
---get               Query the config file for the given section.key name.
+--get         Query the config file for the given section.key name.
 
---unset             Remove the line matching the given section.key name.
+--unset       Remove the line matching the given section.key name.
 
 --remove-section    Remove the given section from the config file.
 
@@ -43,7 +43,13 @@ GEOGIG CONFIGURATION
 
 This list is not comprehensive; some configuration options are documented in relevant man pages.
 
-bdbje.object_durability     Determines how safe to be when persisting objects in the BDB object store.  Valid values include: safe (be as safe as possible) and fast (sacrifice some safety to improve performance.)
+**ansi.enabled**
+
+  Boolean value to toggle ANSI escape sequence support. Used mainly on versions of Windows where ANSI escape sequences are not supported by the console. See installation section for instructions to enable ANSI on Windows. Valid values are true or false.
+
+**bdbje.object_durability**
+
+  Determines how safe to be when persisting objects in the BDB object store.  Valid values include: safe (be as safe as possible) and fast (sacrifice some safety to improve performance.)
 
 SEE ALSO
 ********

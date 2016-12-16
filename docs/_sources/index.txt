@@ -8,3 +8,4 @@ GeoGig User Manual
    repo/index
    data/index
    interaction/index
+   license/index

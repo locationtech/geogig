@@ -119,26 +119,26 @@ CREATE TABLE geogig_object_feature_15 ( CHECK ( ((id).h1) >= 1879048192 ) ) INHE
 -- using postgres as a pure key value store to perform (starting with version 9.4, prior versions have a bug in hash
 -- indexing that has been fixed since). We don't need to do range look ups, our usage pattern is always to look up an
 -- object by it's SHA-1 identifier, which OBJECT id decomposes into one integer and two longs
-CREATE INDEX geogig_object_commit_objectid_h1_hash ON geogig_object_commit USING HASH(((id).h1));
-CREATE INDEX geogig_object_featuretype_objectid_h1_hash ON geogig_object_featuretype USING HASH(((id).h1));
-CREATE INDEX geogig_object_tag_objectid_h1_hash ON geogig_object_tag USING HASH(((id).h1));
-CREATE INDEX geogig_object_tree_objectid_h1_hash ON geogig_object_tree USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_0_objectid_h1_hash ON geogig_object_feature_0 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_1_objectid_h1_hash ON geogig_object_feature_1 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_2_objectid_h1_hash ON geogig_object_feature_2 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_3_objectid_h1_hash ON geogig_object_feature_3 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_4_objectid_h1_hash ON geogig_object_feature_4 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_5_objectid_h1_hash ON geogig_object_feature_5 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_6_objectid_h1_hash ON geogig_object_feature_6 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_7_objectid_h1_hash ON geogig_object_feature_7 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_8_objectid_h1_hash ON geogig_object_feature_8 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_9_objectid_h1_hash ON geogig_object_feature_9 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_10_objectid_h1_hash ON geogig_object_feature_10 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_11_objectid_h1_hash ON geogig_object_feature_11 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_12_objectid_h1_hash ON geogig_object_feature_12 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_13_objectid_h1_hash ON geogig_object_feature_13 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_14_objectid_h1_hash ON geogig_object_feature_14 USING HASH(((id).h1));
-CREATE INDEX geogig_object_feature_15_objectid_h1_hash ON geogig_object_feature_15 USING HASH(((id).h1));
+CREATE INDEX geogig_object_commit_objectid_h1_hash ON geogig_object_commit (((id).h1));
+CREATE INDEX geogig_object_featuretype_objectid_h1_hash ON geogig_object_featuretype (((id).h1));
+CREATE INDEX geogig_object_tag_objectid_h1_hash ON geogig_object_tag (((id).h1));
+CREATE INDEX geogig_object_tree_objectid_h1_hash ON geogig_object_tree (((id).h1));
+CREATE INDEX geogig_object_feature_0_objectid_h1_hash ON geogig_object_feature_0 (((id).h1));
+CREATE INDEX geogig_object_feature_1_objectid_h1_hash ON geogig_object_feature_1 (((id).h1));
+CREATE INDEX geogig_object_feature_2_objectid_h1_hash ON geogig_object_feature_2 (((id).h1));
+CREATE INDEX geogig_object_feature_3_objectid_h1_hash ON geogig_object_feature_3 (((id).h1));
+CREATE INDEX geogig_object_feature_4_objectid_h1_hash ON geogig_object_feature_4 (((id).h1));
+CREATE INDEX geogig_object_feature_5_objectid_h1_hash ON geogig_object_feature_5 (((id).h1));
+CREATE INDEX geogig_object_feature_6_objectid_h1_hash ON geogig_object_feature_6 (((id).h1));
+CREATE INDEX geogig_object_feature_7_objectid_h1_hash ON geogig_object_feature_7 (((id).h1));
+CREATE INDEX geogig_object_feature_8_objectid_h1_hash ON geogig_object_feature_8 (((id).h1));
+CREATE INDEX geogig_object_feature_9_objectid_h1_hash ON geogig_object_feature_9 (((id).h1));
+CREATE INDEX geogig_object_feature_10_objectid_h1_hash ON geogig_object_feature_10 (((id).h1));
+CREATE INDEX geogig_object_feature_11_objectid_h1_hash ON geogig_object_feature_11 (((id).h1));
+CREATE INDEX geogig_object_feature_12_objectid_h1_hash ON geogig_object_feature_12 (((id).h1));
+CREATE INDEX geogig_object_feature_13_objectid_h1_hash ON geogig_object_feature_13 (((id).h1));
+CREATE INDEX geogig_object_feature_14_objectid_h1_hash ON geogig_object_feature_14 (((id).h1));
+CREATE INDEX geogig_object_feature_15_objectid_h1_hash ON geogig_object_feature_15 (((id).h1));
 
 -- Given geogig_object and it's inherited tables don't have a primary key, these rules are used to avoid duplicates
 CREATE OR REPLACE RULE geogig_object_commit_ignore_duplicate_inserts AS ON INSERT TO geogig_object_commit WHERE (EXISTS ( SELECT 1 FROM geogig_object_commit WHERE ((id).h1) = (NEW.id).h1 AND id = NEW.id)) DO INSTEAD NOTHING;

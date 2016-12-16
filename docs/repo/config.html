@@ -5,14 +5,11 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>Configuring a GeoGig repository &mdash; GeoGig 1.0 User Manual</title>
+  <title>Configuring a GeoGig repository &mdash; GeoGig 1.0-RC4 User Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="../_static/screen.css" type="text/css" media="screen, projection" />
   <link rel="stylesheet" href="../_static/print.css" type="text/css" media="print" />
-  <!--[if IE]>
-  <link rel="stylesheet" href="../_static/blueprint/ie.css" type="text/css" media="screen, projection" />
-  <![endif]-->
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
    <link rel="stylesheet" href="../_static/bootstrap.min.css" type="text/css" />
   <link rel="stylesheet" href="../_static/offcanvas.css" type="text/css" />
@@ -20,12 +17,12 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0',
+        VERSION:     '1.0-RC4',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
-      <link rel="top" title="GeoGig 1.0 User Manual" href="../index.html" />
+      <link rel="top" title="GeoGig 1.0-RC4 User Manual" href="../index.html" />
       <link rel="up" title="Working with repositories" href="index.html" />
       <link rel="next" title="Exploring a repository" href="exploring.html" />
       <link rel="prev" title="Initializing a repository" href="init.html" />
@@ -81,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="../index.html">GeoGig 1.0 User Manual</a> &raquo;</li>
+  <li><a href="../index.html">GeoGig 1.0-RC4 User Manual</a> &raquo;</li>
   <li><a href="index.html" accesskey="U">Working with repositories</a> &raquo;</li>
   <li>Configuring a GeoGig repository</li>
 </ul>
@@ -133,6 +130,14 @@
 <span class="go">user.email=author@example.com</span>
 </pre></div>
 </div>
+<p>Console text colouring can be set using the <code class="docutils literal"><span class="pre">ansi.enabled</span></code> parameter. Set the value to <code class="docutils literal"><span class="pre">true</span></code> or <code class="docutils literal"><span class="pre">false</span></code> to manually enable or disable ANSI support. This will override the auto-detection of ANSI support and can be set at the global level using <code class="docutils literal"><span class="pre">--global</span></code> or set in a repository as shown below.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config ansi.enabled true</span>
+</pre></div>
+</div>
+<p>To use auto-detection of ANSI support use the <code class="docutils literal"><span class="pre">--unset</span></code> flag to remove the <code class="docutils literal"><span class="pre">ansi.enabled</span></code> parameter.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">geogig config --unset ansi.enabled</span>
+</pre></div>
+</div>
 </div>
 
 
@@ -175,7 +180,9 @@
         </div>
         <div class="section">
           <h3>License</h3>
-          <p>This project is licensed under the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse License</a>.</p>
+          <p>GeoGig is published using the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse Distribution License</a> (EDL). This is an open source initiative approved BSD-3 Clause license.</p>
+          
+          <p>This documentation is licensed under a <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>. Page template includes work by the JQuery Foundation (<a href="https://github.com/jquery/jquery/blob/master/LICENSE.txt">MIT License</a>).</p>
         </div>
 
   </div><!-- /#sidebar -->
@@ -187,7 +194,7 @@
     <footer>
       <div class="container">
         <div class="row">
-          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> available on LocationTech. Website maintained by <a href="https://github.com/boundlessgeo"><img src="../_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
         </div>
       </div>
     </footer>
@@ -195,7 +202,7 @@
 
   <script type="text/javascript" src="../_static/jquery.js"></script>
   <script type="text/javascript" src="../_static/jquery-migrate-min.js"></script>
-  <script type="text/javascript" src="../_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="../_static/bootstrap.min.js" ></script>
   <script type="text/javascript" src="../_static/underscore.js"></script>
   <script type="text/javascript" src="../_static/doctools.js"></script>
   <script type="text/javascript" src="../_static/searchtools.js"></script>

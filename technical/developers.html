@@ -5,14 +5,11 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, maximum-scale=1">
   
-  <title>GeoGig for developers &mdash; GeoGig 1.0 Technical Manual</title>
+  <title>GeoGig for developers &mdash; GeoGig 1.0-RC4 Technical Manual</title>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,800italic,300,700,600,800,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
   <link rel="stylesheet" href="_static/print.css" type="text/css" media="print" />
-  <!--[if IE]>
-  <link rel="stylesheet" href="_static/blueprint/ie.css" type="text/css" media="screen, projection" />
-  <![endif]-->
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
    <link rel="stylesheet" href="_static/bootstrap.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/offcanvas.css" type="text/css" />
@@ -20,13 +17,13 @@
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0',
+        VERSION:     '1.0-RC4',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html'
     };
   </script>
   <link rel="shortcut icon" href="_static/favicon.ico"/>
-      <link rel="top" title="GeoGig 1.0 Technical Manual" href="index.html" />
+      <link rel="top" title="GeoGig 1.0-RC4 Technical Manual" href="index.html" />
       <link rel="next" title="GeoGig merge conflicts strategy" href="geogig-merge-conflicts.html" />
       <link rel="prev" title="Plumbing commands" href="plumbing_commands.html" />
 </head>
@@ -81,7 +78,7 @@
             </div>
 <ul id="breadcrumbs">
   
-  <li><a href="index.html">GeoGig 1.0 Technical Manual</a> &raquo;</li>
+  <li><a href="index.html">GeoGig 1.0-RC4 Technical Manual</a> &raquo;</li>
   <li>GeoGig for developers</li>
 </ul>
 <ul id="relatedlinks" class="selfclear">
@@ -157,7 +154,7 @@ diff            Show changes between commits, commit and working tree, etc
 </pre></div>
 </div>
 <ul>
-<li><p class="first">Open Eclipse and create a new workspace</p>
+<li><p class="first">Open Eclipse and create a new workspace by selecting <em>File-&gt;Switch Workspace-&gt;Other...</em> menu and choosing an empty directory</p>
 </li>
 <li><p class="first">Select the <em>File-&gt;Import...</em> menu and then select &#8220;Existing projects from workspace&#8221;. You will see the dialog shown below</p>
 <blockquote>
@@ -165,6 +162,8 @@ diff            Show changes between commits, commit and working tree, etc
 <img alt="_images/import_eclipse.png" src="_images/import_eclipse.png" />
 </div>
 </div></blockquote>
+</li>
+<li><p class="first">Select <em>Maven-&gt;Existing Maven Projects</em> and click on <em>Next</em></p>
 </li>
 <li><p class="first">In the <em>Select root directory</em> field, select the <code class="docutils literal"><span class="pre">src</span></code> folder where the GeoGig source code can be found (which now will also contain the Eclipse projects). The list of projects in the <em>Projects</em> field will be populated.</p>
 </li>
@@ -174,7 +173,7 @@ diff            Show changes between commits, commit and working tree, etc
 <p>To handle maven projects directly from Eclipse, you can use the <a class="reference external" href="http://www.sonatype.org/m2eclipse">m2eclipse</a> plugin.</p>
 <p>Once your workspace contains the GeoGig source code, configure it following these steps.</p>
 <ul>
-<li><p class="first">Open the preferences dialog (<em>Window-&gt;Preferences</em>) and in the left part, select the <em>Java-&gt;Editor-&gt;Formatter</em> entry.</p>
+<li><p class="first">Open the preferences dialog (<em>Eclipse-&gt;Preferences</em>) and in the left part, select the <em>Java-&gt;Code Style-&gt;Formatter</em> entry.</p>
 <blockquote>
 <div><div class="figure">
 <img alt="_images/formatter.png" src="_images/formatter.png" />
@@ -271,7 +270,9 @@ open target/site/cobertura/index.html
         </div>
         <div class="section">
           <h3>License</h3>
-          <p>This project is licensed under the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse License</a>.</p>
+          <p>GeoGig is published using the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse Distribution License</a> (EDL). This is an open source initiative approved BSD-3 Clause license.</p>
+          
+          <p>This documentation is licensed under a <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>. Page template includes work by the JQuery Foundation (<a href="https://github.com/jquery/jquery/blob/master/LICENSE.txt">MIT License</a>).</p>
         </div>
 
   </div><!-- /#sidebar -->
@@ -283,7 +284,7 @@ open target/site/cobertura/index.html
     <footer>
       <div class="container">
         <div class="row">
-          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> available on LocationTech. Website maintained by <a href="https://github.com/boundlessgeo"><img src="_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
         </div>
       </div>
     </footer>
@@ -291,7 +292,7 @@ open target/site/cobertura/index.html
 
   <script type="text/javascript" src="_static/jquery.js"></script>
   <script type="text/javascript" src="_static/jquery-migrate-min.js"></script>
-  <script type="text/javascript" src="_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="_static/bootstrap.min.js" ></script>
   <script type="text/javascript" src="_static/underscore.js"></script>
   <script type="text/javascript" src="_static/doctools.js"></script>
   <script type="text/javascript" src="_static/searchtools.js"></script>

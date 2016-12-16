@@ -10,18 +10,18 @@ The first step to add data to a GeoGig repository, so it can be versioned, is to
 
 Importing data into the working tree of a GeoGig repository is done using GeoGig commands which read a given data source and add all or part of its content to the repository. Data can also be exported from the repository into common formats that can be then used in other applications such as a desktop GIS. That provides the necessary tools to work against a GeoGig repository and make it independent of the tools used to actually edit the data.
 
-Currently, data can be imported/exported from/to GeoJSON, shapefiles, and PostGIS, SQLServer, Oracle Spatial and Geopackage databases. Depending on the type of data source, a different command should be used. For these supported data sources, the general syntax is as follows:
+Currently, data can be imported/exported from/to GeoJSON, shapefiles, and PostGIS, Oracle Spatial and Geopackage databases. Depending on the type of data source, a different command should be used. For these supported data sources, the general syntax is as follows:
 
 ::
 
-	$ geogig <shp|geojson|geopkg|sl|sqlserver|oracle> <import|export> <specific_parameters>
+	$ geogig <shp|geojson|geopkg|sl|oracle> <import|export> <specific_parameters>
 
 
 In the case	of importing data, the following syntax is used
 
 ::
 
-	$ geogig <shp|geojson|pg|sl|sqlserver|oracle> import <source>[-d <destination_path>] [--no-overwrite] <specific_parameters>
+	$ geogig <shp|geojson|pg|sl|oracle> import <source>[-d <destination_path>] [--no-overwrite] <specific_parameters>
 
 Data can be imported in a given path defined using the ``-d`` option. If it is not used, the destination path will be defined automatically based on the data source. For instance, in the case of using a shapefile, the destination path is defined using the name of the shapefile.
 
@@ -57,22 +57,6 @@ If using a Geopackage database only the following parameters are used.
 * ``--database``: The database to connect to.  Default: database.sqlite
 * ``--user``: User name.  Default: user
 
-
-GeoGig also supports SQLServer data. In that case the following parameters have to be configured
-
-
-* ``--host``: Machine name or IP address to connect to. Default: localhost
-* ``--port``: Port number to connect to.  Default: 1433
-* ``--intsec``: Use integrated security. ignores user / password (Windows only)  Default: false
-* ``--native-paging``: Use native paging for queries. This improves performance for some types of queries. Default: true")
-* ``--geometry_metadata_table``: The optional table containing geometry metadata (geometry type and srid). Can be expressed as 'schema.name' or just 'name'
-* ``--native-serialization``: Use native SQL Server serialization (false), or WKB serialization (true).  Default: false
-* ``--database``: The database to connect to.  Default: database
-* ``--schema``: The database schema to access.  Default: public
-* ``--user``: User name.  Default: sqlserver
-* ``--password``: Password.  Default: <no password>
-
-This connection parameters are also used when exporting to a database. We will see the exporting functionality later in this same manual.
 
 When importing from a database, all tables can be imported with one single command. To do so, do not enter the name of a table as data source, but use the ``--all`` option instead, as in the following example:
 

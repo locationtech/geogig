@@ -10,9 +10,6 @@
   <link href='http://fonts.googleapis.com/css?family=Cantarell:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="_static/screen.css" type="text/css" media="screen, projection" />
   <link rel="stylesheet" href="_static/print.css" type="text/css" media="print" />
-  <!--[if IE]>
-  <link rel="stylesheet" href="_static/blueprint/ie.css" type="text/css" media="screen, projection" />
-  <![endif]-->
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
    <link rel="stylesheet" href="_static/bootstrap.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/offcanvas.css" type="text/css" />
@@ -171,18 +168,18 @@ nodes: 268092812;268091938;268091940;268091942;268091944;268091946;268091948;268
 way: LINESTRING (1.4914396 42.565715000000004, 1.4914782000000002 42.565614200000006, 1.4916327 42.5654625, 1.4919503 42.565228600000005, 1.4922250000000001 42.564982, 1.4924653 42.5647608, 1.4926455 42.5645838, 1.4929857000000002 42.5644574, 1.4931016000000001 42.564402400000006, 1.493273 42.564354900000005, 1.4936003 42.564430300000005, 1.493854 42.5643614, 1.4941412 42.5642499, 1.4942882000000002 42.5641138, 1.494936 42.563841700000005, 1.4951742000000001 42.5636925)
 </pre></div>
 </div>
-<p>As you can see, all tags are stored together under a single attribute named <tt class="docutils literal"><span class="pre">tags</span></tt>. The structure of the attributes associated to an OSM way is fixed and always the same. You can, however, map your OSM data, creating a new tree in the repository with a different set of attributes derived from the tags. Mapping can also be used to filter the data, so only certain ways or nodes are stored in the new tree.</p>
-<p>In the workshop dataset you will find a mapping file named <tt class="docutils literal"><span class="pre">mapping.json</span></tt>. Open it with a text editor. It should look like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&quot;rules&quot;</span><span class="p">:[</span>
+<p>As you can see, all tags are stored together under a single attribute named <code class="docutils literal"><span class="pre">tags</span></code>. The structure of the attributes associated to an OSM way is fixed and always the same. You can, however, map your OSM data, creating a new tree in the repository with a different set of attributes derived from the tags. Mapping can also be used to filter the data, so only certain ways or nodes are stored in the new tree.</p>
+<p>In the workshop dataset you will find a mapping file named <code class="docutils literal"><span class="pre">mapping.json</span></code>. Open it with a text editor. It should look like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s2">&quot;rules&quot;</span><span class="p">:[</span>
   <span class="p">{</span>
-    <span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;aerialways&quot;</span><span class="p">,</span>
-    <span class="s">&quot;filter&quot;</span><span class="p">:{</span>
-      <span class="s">&quot;aerialway&quot;</span><span class="p">:[]</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;aerialways&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;filter&quot;</span><span class="p">:{</span>
+      <span class="s2">&quot;aerialway&quot;</span><span class="p">:[]</span>
     <span class="p">},</span>
-    <span class="s">&quot;fields&quot;</span><span class="p">:{</span>
-      <span class="s">&quot;aerialway&quot;</span><span class="p">:{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;aerialway&quot;</span><span class="p">,</span> <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;STRING&quot;</span><span class="p">},</span>
-      <span class="s">&quot;name&quot;</span><span class="p">:{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;STRING&quot;</span><span class="p">},</span>
-      <span class="s">&quot;geom&quot;</span><span class="p">:{</span><span class="s">&quot;name&quot;</span><span class="p">:</span><span class="s">&quot;geom&quot;</span><span class="p">,</span> <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="s">&quot;LINESTRING&quot;</span><span class="p">}</span>
+    <span class="s2">&quot;fields&quot;</span><span class="p">:{</span>
+      <span class="s2">&quot;aerialway&quot;</span><span class="p">:{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;aerialway&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;STRING&quot;</span><span class="p">},</span>
+      <span class="s2">&quot;name&quot;</span><span class="p">:{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;STRING&quot;</span><span class="p">},</span>
+      <span class="s2">&quot;geom&quot;</span><span class="p">:{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;geom&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;LINESTRING&quot;</span><span class="p">}</span>
     <span class="p">}</span>
   <span class="p">}</span>
 <span class="p">]}</span>
@@ -200,7 +197,7 @@ Root tree/
     way/
 </pre></div>
 </div>
-<p>Describing a single feature in the <tt class="docutils literal"><span class="pre">aerialways</span></tt> tree will show you the structure of the associated attributes, as defined in the mapping file.</p>
+<p>Describing a single feature in the <code class="docutils literal"><span class="pre">aerialways</span></code> tree will show you the structure of the associated attributes, as defined in the mapping file.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig show aerialways/52163704
 
 ID:  4fe2996182dfcad8e440546f2a61d12291123e31
@@ -219,7 +216,7 @@ nodes: 664559723;664559794
 </div>
 <div class="section" id="editing-the-osm-data">
 <h2>Editing the OSM data<a class="headerlink" href="#editing-the-osm-data" title="Permalink to this headline">¶</a></h2>
-<p>Editing is done outside the repository, so layer have to exported to a suitale format. Run the following command to export the <tt class="docutils literal"><span class="pre">aerialways</span></tt> folder to a shapefile</p>
+<p>Editing is done outside the repository, so layer have to exported to a suitale format. Run the following command to export the <code class="docutils literal"><span class="pre">aerialways</span></code> folder to a shapefile</p>
 <div class="highlight-python"><div class="highlight"><pre>$ shp export aerialways aerialways.shp
 Exporting aerialways...
 100%
@@ -227,7 +224,7 @@ aerialways exported successfully to aerialways.shp
 </pre></div>
 </div>
 <p>You can now open the resulting shapefile in a software such as QGIS and edit it.</p>
-<p>In the attributes table you will see that some features do not have a value in the <tt class="docutils literal"><span class="pre">name</span></tt> field. This is because the name tag was not found when mapping them. Locate the feature with the id 143323580 and enter a name in the name field. Save the changes to the shapefile.</p>
+<p>In the attributes table you will see that some features do not have a value in the <code class="docutils literal"><span class="pre">name</span></code> field. This is because the name tag was not found when mapping them. Locate the feature with the id 143323580 and enter a name in the name field. Save the changes to the shapefile.</p>
 <p>Importing the shapefile back into the GeoGig repository will update it with the changes that you have done. To reimport it, use the following command:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig shp import aerialways.shp
 </pre></div>
@@ -240,11 +237,11 @@ aerialways exported successfully to aerialways.shp
 <div class="highlight-python"><div class="highlight"><pre>$ geogig diff HEAD WORK_HEAD --path aerialways/143323580
 </pre></div>
 </div>
-<p>OSM operations work on the canonical representations of OSM features in the repo, which are always stored in the <tt class="docutils literal"><span class="pre">ways</span></tt> and <tt class="docutils literal"><span class="pre">nodes</span></tt> trees. Our changes are only stored in the <tt class="docutils literal"><span class="pre">aerialways</span></tt> tree, so we have to bring them to the canonical trees. This is done by unmapping the <tt class="docutils literal"><span class="pre">aerialways</span></tt> tree. To unmap it, we can use the following command</p>
+<p>OSM operations work on the canonical representations of OSM features in the repo, which are always stored in the <code class="docutils literal"><span class="pre">ways</span></code> and <code class="docutils literal"><span class="pre">nodes</span></code> trees. Our changes are only stored in the <code class="docutils literal"><span class="pre">aerialways</span></code> tree, so we have to bring them to the canonical trees. This is done by unmapping the <code class="docutils literal"><span class="pre">aerialways</span></code> tree. To unmap it, we can use the following command</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig osm unmap
 </pre></div>
 </div>
-<p>Now changes have also been applied to the <tt class="docutils literal"><span class="pre">ways</span></tt> tree, as it can be seen by running the following command:</p>
+<p>Now changes have also been applied to the <code class="docutils literal"><span class="pre">ways</span></code> tree, as it can be seen by running the following command:</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig diff HEAD WORK_HEAD --path ways
 </pre></div>
 </div>
@@ -260,9 +257,9 @@ $ geogig commit -m &quot;Added missing airway name&quot;
 <div class="highlight-python"><div class="highlight"><pre>$ geogig osm create-changeset HEAD~1 HEAD
 </pre></div>
 </div>
-<p>However, the resulting changeset will not have valid changeset ID assigned, since those IDs are managed by the OSM API. As a result of that, you will not be able to apply that chageset on the OSM planet. Changesets generated by the <tt class="docutils literal"><span class="pre">create-changeset</span></tt> command will be valid IDs only if they represent a change that is already part of the OSM planet, but not a change that has been manually added in the GeoGig repository.</p>
-<p>To fix that, you first have to create an ID using the OSM API, sending a PUT request to <tt class="docutils literal"><span class="pre">http://api.openstreetmap.org/api/0.6/changeset/create</span></tt>. You can use curl on a terminal to do that. Check <a href="#id1"><span class="problematic" id="id2">``</span></a><a class="reference external" href="http://wiki.openstreetmap.org/wiki/API_v0">http://wiki.openstreetmap.org/wiki/API_v0</a>.6```for more information about this usage of the OSM API.</p>
-<p>The PUT request will return the ID of the changeset, and you can provided it to the <tt class="docutils literal"><span class="pre">create-changeset</span></tt> GeoGig command, as follows.</p>
+<p>However, the resulting changeset will not have valid changeset ID assigned, since those IDs are managed by the OSM API. As a result of that, you will not be able to apply that chageset on the OSM planet. Changesets generated by the <code class="docutils literal"><span class="pre">create-changeset</span></code> command will be valid IDs only if they represent a change that is already part of the OSM planet, but not a change that has been manually added in the GeoGig repository.</p>
+<p>To fix that, you first have to create an ID using the OSM API, sending a PUT request to <code class="docutils literal"><span class="pre">http://api.openstreetmap.org/api/0.6/changeset/create</span></code>. You can use curl on a terminal to do that. Check <a href="#id1"><span class="problematic" id="id2">``</span></a><a class="reference external" href="http://wiki.openstreetmap.org/wiki/API_v0">http://wiki.openstreetmap.org/wiki/API_v0</a>.6```for more information about this usage of the OSM API.</p>
+<p>The PUT request will return the ID of the changeset, and you can provided it to the <code class="docutils literal"><span class="pre">create-changeset</span></code> GeoGig command, as follows.</p>
 <div class="highlight-python"><div class="highlight"><pre>$ geogig geogig osm create-changeset HEAD~1 HEAD --id &lt;your_changeset_id&gt;
 </pre></div>
 </div>
@@ -312,7 +309,9 @@ $ geogig commit -m &quot;Added missing airway name&quot;
         </div>
         <div class="section">
           <h3>License</h3>
-          <p>This project is licensed under the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse License</a>.</p>
+          <p>GeoGig is published using the <a href="https://github.com/locationtech/geogig/blob/master/LICENSE.txt">Eclipse Distribution License</a> (EDL). This is an open source initiative approved BSD-3 Clause license.</p>
+          
+          <p>This documentation is licensed under a <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>. Page template includes work by the JQuery Foundation (<a href="https://github.com/jquery/jquery/blob/master/LICENSE.txt">MIT License</a>).</p>
         </div>
 
   </div><!-- /#sidebar -->
@@ -324,7 +323,7 @@ $ geogig commit -m &quot;Added missing airway name&quot;
     <footer>
       <div class="container">
         <div class="row">
-          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> is maintained by <a href="https://github.com/boundlessgeo"><img src="_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
+          <div class=""><p class="repo-owner"><a href="https://github.com/locationtech/geogig">GeoGig</a> available on LocationTech. Website maintained by <a href="https://github.com/boundlessgeo"><img src="_static/Boundless_Logo.png" alt="Boundless"></a></p></div>
         </div>
       </div>
     </footer>
@@ -332,7 +331,7 @@ $ geogig commit -m &quot;Added missing airway name&quot;
 
   <script type="text/javascript" src="_static/jquery.js"></script>
   <script type="text/javascript" src="_static/jquery-migrate-min.js"></script>
-  <script type="text/javascript" src="_static/bootstrap.js" ></script>
+  <script type="text/javascript" src="_static/bootstrap.min.js" ></script>
   <script type="text/javascript" src="_static/underscore.js"></script>
   <script type="text/javascript" src="_static/doctools.js"></script>
   <script type="text/javascript" src="_static/searchtools.js"></script>

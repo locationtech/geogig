@@ -18,9 +18,9 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.cli.test.functional.CLITestContextBuilder;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GeoGIG;
-import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Preconditions;

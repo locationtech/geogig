@@ -15,12 +15,12 @@ import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
-import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;

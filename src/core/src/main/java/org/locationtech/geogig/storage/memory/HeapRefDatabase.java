@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.storage.AbstractRefDatabase;
+import org.locationtech.geogig.storage.impl.AbstractRefDatabase;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;

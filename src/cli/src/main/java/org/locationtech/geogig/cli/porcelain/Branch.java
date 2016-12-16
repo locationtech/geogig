@@ -27,7 +27,7 @@ import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.BranchDeleteOp;
 import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.BranchRenameOp;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

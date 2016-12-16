@@ -19,7 +19,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.locationtech.geogig.storage.ConnectionManager;
+import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

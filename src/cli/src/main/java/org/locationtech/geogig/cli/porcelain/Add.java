@@ -21,8 +21,8 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.plumbing.merge.ConflictsCheckOp;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

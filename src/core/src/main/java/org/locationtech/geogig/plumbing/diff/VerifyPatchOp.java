@@ -22,10 +22,10 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.DepthSearch;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Objects;

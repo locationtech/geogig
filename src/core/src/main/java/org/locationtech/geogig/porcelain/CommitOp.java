@@ -19,13 +19,13 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.hooks.Hookable;
-import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.CleanRefsOp;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveTreeish;

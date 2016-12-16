@@ -23,7 +23,7 @@ import org.locationtech.geogig.porcelain.CleanOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 

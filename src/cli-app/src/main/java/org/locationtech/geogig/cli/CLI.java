@@ -12,9 +12,9 @@ package org.locationtech.geogig.cli;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
-import org.locationtech.geogig.repository.GeoGIG;
-import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 
 public class CLI {
     /**

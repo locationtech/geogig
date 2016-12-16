@@ -14,7 +14,7 @@ import java.net.MalformedURLException;
 
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.model.DefaultPlatform;
+import org.locationtech.geogig.model.impl.DefaultPlatform;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.RocksdbObjectStore;

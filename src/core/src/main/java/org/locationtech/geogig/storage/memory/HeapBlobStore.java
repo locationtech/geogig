@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.storage.TransactionBlobStore;
+import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;

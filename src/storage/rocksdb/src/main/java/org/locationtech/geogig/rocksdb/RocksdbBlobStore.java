@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
-import org.locationtech.geogig.storage.TransactionBlobStore;
+import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 

@@ -20,9 +20,9 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.CatObject;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.repository.GeoGIG;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

@@ -23,7 +23,7 @@ import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.porcelain.TagRemoveOp;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

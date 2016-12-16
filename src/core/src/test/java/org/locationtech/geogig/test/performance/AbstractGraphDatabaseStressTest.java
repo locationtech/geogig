@@ -27,7 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.test.TestPlatform;
 

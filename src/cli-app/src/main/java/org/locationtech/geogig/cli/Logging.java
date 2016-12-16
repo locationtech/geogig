@@ -16,7 +16,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.DefaultPlatform;
+import org.locationtech.geogig.model.impl.DefaultPlatform;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;

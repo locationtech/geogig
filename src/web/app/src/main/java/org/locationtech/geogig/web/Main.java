@@ -15,14 +15,14 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import org.locationtech.geogig.cli.CLIContextBuilder;
-import org.locationtech.geogig.model.DefaultPlatform;
+import org.locationtech.geogig.model.impl.DefaultPlatform;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.rest.TaskResultDownloadResource;
 import org.locationtech.geogig.rest.TaskStatusResource;
 import org.locationtech.geogig.rest.postgis.PGRouter;

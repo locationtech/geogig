@@ -12,8 +12,8 @@ package org.locationtech.geogig.plumbing;
 import java.util.UUID;
 
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.GeogigTransaction;
-import org.locationtech.geogig.storage.TransactionRefDatabase;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.storage.impl.TransactionRefDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

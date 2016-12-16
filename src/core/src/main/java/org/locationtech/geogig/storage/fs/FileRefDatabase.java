@@ -28,9 +28,9 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.storage.AbstractRefDatabase;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.impl.AbstractRefDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

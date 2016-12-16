@@ -28,7 +28,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.model.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.test.TestPlatform;

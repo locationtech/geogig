@@ -23,13 +23,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.ObjectStoreConformanceTest;
+import org.locationtech.geogig.storage.impl.ObjectStoreConformanceTest;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;

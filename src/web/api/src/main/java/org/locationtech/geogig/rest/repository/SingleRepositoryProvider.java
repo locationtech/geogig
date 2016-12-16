@@ -14,8 +14,8 @@ import java.util.Iterator;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.ResolveRepositoryName;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.restlet.data.Request;
 
 import com.google.common.base.Optional;

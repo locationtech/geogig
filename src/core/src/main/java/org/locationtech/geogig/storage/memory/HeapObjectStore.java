@@ -22,11 +22,11 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.AbstractObjectDatabase;
-import org.locationtech.geogig.storage.AbstractObjectStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
+import org.locationtech.geogig.storage.impl.AbstractObjectDatabase;
+import org.locationtech.geogig.storage.impl.AbstractObjectStore;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;

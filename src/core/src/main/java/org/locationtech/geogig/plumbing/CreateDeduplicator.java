@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.DeduplicationService;
+import org.locationtech.geogig.repository.impl.DeduplicationService;
 import org.locationtech.geogig.storage.memory.HeapDeduplicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

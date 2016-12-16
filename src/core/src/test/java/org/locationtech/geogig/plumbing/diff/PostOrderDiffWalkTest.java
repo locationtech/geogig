@@ -14,9 +14,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.model.RevObjectTestSupport.createFeaturesTree;
-import static org.locationtech.geogig.model.RevObjectTestSupport.createFeaturesTreeBuilder;
-import static org.locationtech.geogig.model.RevObjectTestSupport.createTreesTreeBuilder;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTree;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTreeBuilder;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createTreesTreeBuilder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -33,12 +33,12 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.PostOrderDiffWalk.Consumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.repository.NodeRef;
-import org.locationtech.geogig.repository.SpatialOps;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 

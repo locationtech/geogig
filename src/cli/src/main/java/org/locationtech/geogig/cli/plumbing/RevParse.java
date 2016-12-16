@@ -20,8 +20,8 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

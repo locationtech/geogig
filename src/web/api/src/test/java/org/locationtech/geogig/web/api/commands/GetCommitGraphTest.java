@@ -18,7 +18,7 @@ import javax.json.JsonValue;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;

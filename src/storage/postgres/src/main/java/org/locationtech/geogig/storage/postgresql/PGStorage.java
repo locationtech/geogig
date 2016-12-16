@@ -28,7 +28,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.locationtech.geogig.repository.RepositoryBusyException;
+import org.locationtech.geogig.repository.impl.RepositoryBusyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

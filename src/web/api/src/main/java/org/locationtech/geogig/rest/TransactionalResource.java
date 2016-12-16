@@ -17,8 +17,8 @@ import java.util.UUID;
 
 import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.restlet.data.Form;
 import org.restlet.data.Request;
 import org.restlet.resource.Resource;

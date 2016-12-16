@@ -22,7 +22,7 @@ import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.NodeRef;
-import org.locationtech.geogig.repository.SpatialOps;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

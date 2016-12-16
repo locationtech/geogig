@@ -30,10 +30,10 @@ import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.DepthSearch;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Optional;

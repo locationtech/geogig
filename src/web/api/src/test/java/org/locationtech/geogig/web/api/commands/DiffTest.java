@@ -19,7 +19,7 @@ import javax.json.JsonValue;
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;

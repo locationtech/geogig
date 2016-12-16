@@ -29,11 +29,11 @@ import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.rest.RestletException;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;

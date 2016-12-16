@@ -19,7 +19,7 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.porcelain.VersionInfo;
 import org.locationtech.geogig.porcelain.VersionOp;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameters;
 import com.google.common.base.Throwables;

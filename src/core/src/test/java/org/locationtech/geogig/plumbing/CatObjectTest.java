@@ -15,11 +15,11 @@ import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 

@@ -23,7 +23,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

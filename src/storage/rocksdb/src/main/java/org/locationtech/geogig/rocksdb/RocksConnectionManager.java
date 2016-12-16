@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.storage.ConnectionManager;
+import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;

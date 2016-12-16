@@ -16,9 +16,9 @@ import java.io.File;
 import org.junit.Test;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.GraphDatabaseTest;
 import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
+import org.locationtech.geogig.storage.impl.GraphDatabaseTest;
 
 public class RocksdbGraphDatabaseConformanceTest extends GraphDatabaseTest {
 

@@ -11,7 +11,7 @@ package org.locationtech.geogig.test.integration;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.diff.Patch;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CommitOp;

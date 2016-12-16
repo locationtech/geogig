@@ -31,10 +31,10 @@ import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.storage.PersistedIterable;
-import org.locationtech.geogig.storage.PersistedIterable.Serializer;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2;
+import org.locationtech.geogig.storage.impl.PersistedIterable;
+import org.locationtech.geogig.storage.impl.PersistedIterable.Serializer;
 
 import com.google.common.base.Optional;
 

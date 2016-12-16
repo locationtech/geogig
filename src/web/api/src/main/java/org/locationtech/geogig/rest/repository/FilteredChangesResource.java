@@ -27,7 +27,7 @@ import org.locationtech.geogig.remote.FilteredDiffIterator;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryFilter;
+import org.locationtech.geogig.repository.impl.RepositoryFilter;
 import org.restlet.Context;
 import org.restlet.Finder;
 import org.restlet.data.MediaType;

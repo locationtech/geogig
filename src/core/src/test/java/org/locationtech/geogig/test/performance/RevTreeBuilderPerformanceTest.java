@@ -25,9 +25,9 @@ import org.junit.runners.MethodSorters;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 

@@ -13,11 +13,11 @@ import java.nio.file.Path;
 
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.storage.AbstractObjectDatabase;
 import org.locationtech.geogig.storage.BlobStore;
-import org.locationtech.geogig.storage.ConnectionManager;
-import org.locationtech.geogig.storage.ForwardingObjectStore;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.impl.AbstractObjectDatabase;
+import org.locationtech.geogig.storage.impl.ConnectionManager;
+import org.locationtech.geogig.storage.impl.ForwardingObjectStore;
 
 /**
  * Provides an implementation of a GeoGig object database that utilizes the heap for the storage of

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import org.locationtech.geogig.storage.ConflictsDatabaseConformanceTest;
+import org.locationtech.geogig.storage.impl.ConflictsDatabaseConformanceTest;
 
 public class HeapConflictsDatabaseConformanceTest
         extends ConflictsDatabaseConformanceTest<HeapConflictsDatabase> {

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static org.locationtech.geogig.model.RevObjectTestSupport.hashString;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.hashString;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,11 +18,11 @@ import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.DepthSearch;
 import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.MemoryModule;

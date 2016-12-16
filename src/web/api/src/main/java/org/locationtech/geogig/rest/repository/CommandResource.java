@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryBusyException;
+import org.locationtech.geogig.repository.impl.RepositoryBusyException;
 import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.CommandBuilder;
 import org.locationtech.geogig.web.api.CommandContext;

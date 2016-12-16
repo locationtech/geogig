@@ -7,7 +7,7 @@
  * Contributors:
  * Victor Olaya (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli;
+package org.locationtech.geogig.cli.app;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -17,6 +17,8 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.locationtech.geogig.cli.Console;
+import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.model.impl.DefaultPlatform;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.ProgressListener;

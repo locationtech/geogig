@@ -1,10 +1,11 @@
-package org.locationtech.geogig.cli;
+package org.locationtech.geogig.cli.app;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.geogig.cli.Console;
 
 public class ConsoleTest {
 

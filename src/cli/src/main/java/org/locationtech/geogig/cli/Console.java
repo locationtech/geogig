@@ -92,7 +92,7 @@ public class Console {
         return forceAnsi || (ansiEnabled && ansiSupported);
     }
 
-    protected boolean checkAnsiSupported(OutputStream out, String osName) throws Throwable {
+    public boolean checkAnsiSupported(OutputStream out, String osName) throws Throwable {
         if (out != System.out) {
             return false;
         }

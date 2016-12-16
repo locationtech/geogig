@@ -7,7 +7,7 @@
  * Contributors:
  * Victor Olaya (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli;
+package org.locationtech.geogig.cli.app;
 
 /**
  * An interface for progress listener for the Py4j entry point.

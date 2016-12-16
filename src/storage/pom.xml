@@ -16,7 +16,6 @@
   <name>Storage backends</name>
 
   <modules>
-   <!--module>sqlite</module-->
    <module>postgres</module>
    <module>rocksdb</module>
   </modules>

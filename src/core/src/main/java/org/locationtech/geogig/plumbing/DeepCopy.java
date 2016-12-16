@@ -16,13 +16,13 @@ import java.util.Set;
 
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
@@ -200,14 +200,9 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
         public AllTrees(ObjectId id, ObjectStore from) {
             this.from = from;
             this.tree = from.getTree(id);
-            this.trees = Collections.emptyIterator();
-            if (tree.trees().isPresent()) {
-                trees = tree.trees().get().iterator();
-            }
-            buckets = Collections.emptyIterator();
-            if (tree.buckets().isPresent()) {
-                buckets = tree.buckets().get().values().iterator();
-            }
+            this.trees = tree.trees().iterator();
+            buckets = tree.buckets().values().iterator();
+            
             bucketTrees = Collections.emptyIterator();
         }
 

@@ -11,7 +11,7 @@ package org.locationtech.geogig.data;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;

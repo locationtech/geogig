@@ -523,7 +523,7 @@ class DataStreamValueSerializerV1 {
                 for (Entry<String, Object> e : map.entrySet()) {
                     String key = e.getKey();
                     DataStreamValueSerializerV1.write(key, data);
-                    
+
                     Object value = e.getValue();
                     FieldType fieldType = FieldType.forValue(value);
                     data.writeByte(fieldType.getTag());
@@ -544,7 +544,8 @@ class DataStreamValueSerializerV1 {
         if (serializers.containsKey(type)) {
             serializers.get(type).write(opt.orNull(), data);
         } else {
-            throw new IllegalArgumentException("The specified type (" + type + ") is not supported");
+            throw new IllegalArgumentException(
+                    "The specified type (" + type + ") is not supported");
         }
     }
 
@@ -552,7 +553,8 @@ class DataStreamValueSerializerV1 {
         FieldType type = FieldType.forValue(value);
         ValueSerializer serializer = serializers.get(type);
         if (serializer == null) {
-            throw new IllegalArgumentException("The specified type (" + type + ") is not supported");
+            throw new IllegalArgumentException(
+                    "The specified type (" + type + ") is not supported");
         }
         serializer.write(value, data);
     }

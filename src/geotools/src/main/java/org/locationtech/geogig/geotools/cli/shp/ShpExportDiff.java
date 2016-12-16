@@ -29,7 +29,6 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.geotools.plumbing.ExportDiffOp;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
@@ -37,7 +36,8 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.feature.Feature;
 import org.opengis.feature.GeometryAttribute;
 import org.opengis.feature.Property;
@@ -63,13 +63,15 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
     @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output files")
     public boolean overwrite;
 
-    @Parameter(names = { "--old" }, description = "Export features from the old version instead of the most recent one")
+    @Parameter(names = {
+            "--old" }, description = "Export features from the old version instead of the most recent one")
     public boolean old;
 
     /**
      * Charset to use for encoding attributes in DBF file
      */
-    @Parameter(names = { "--charset" }, description = "Use the specified charset to encode attributes. Default is ISO-8859-1.")
+    @Parameter(names = {
+            "--charset" }, description = "Use the specified charset to encode attributes. Default is ISO-8859-1.")
     public String charset = "ISO-8859-1";
 
     /**
@@ -131,8 +133,8 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
         }
         final SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
 
-        Function<Feature, Optional<Feature>> function = getTransformingFunction(dataStore
-                .getSchema());
+        Function<Feature, Optional<Feature>> function = getTransformingFunction(
+                dataStore.getSchema());
 
         ExportDiffOp op = cli.getGeogig().command(ExportDiffOp.class).setFeatureStore(featureStore)
                 .setPath(path).setOldRef(commitOld).setNewRef(commitNew).setUseOld(old)
@@ -184,14 +186,15 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
 
         Optional<ObjectId> rootTreeId = geogig.command(ResolveTreeish.class).setTreeish(ref).call();
 
-        checkParameter(rootTreeId.isPresent(), "Couldn't resolve '" + ref + "' to a treeish object");
+        checkParameter(rootTreeId.isPresent(),
+                "Couldn't resolve '" + ref + "' to a treeish object");
 
         RevTree rootTree = geogig.getRepository().getTree(rootTreeId.get());
         Optional<NodeRef> featureTypeTree = geogig.command(FindTreeChild.class).setChildPath(path)
                 .setParent(rootTree).call();
 
-        checkParameter(featureTypeTree.isPresent(), "pathspec '" + path
-                + "' did not match any valid path");
+        checkParameter(featureTypeTree.isPresent(),
+                "pathspec '" + path + "' did not match any valid path");
 
         Optional<RevObject> revObject = cli.getGeogig().command(RevObjectParse.class)
                 .setObjectId(featureTypeTree.get().getMetadataId()).call();

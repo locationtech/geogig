@@ -10,7 +10,7 @@ GeoGig supports the same formats for exporting that it does for importing. That 
 
 ::
 
-	$ geogig <shp|geojson|pg|sqlserver|oracle|sl> export <path_to_export> <destination> [-overwrite] [--defaulttype] [--featuretype]
+	$ geogig <shp|geojson|pg|oracle|sl> export <path_to_export> <destination> [-overwrite] [--defaulttype] [--featuretype]
 
 
 The ``destination`` option is the filepath in the case of exporting to a shapefile, or the table name in case of exporting to a database. In both cases, the element designated by the ``destination`` parameter should not exist. If it exists, GeoGig will not perform the export operation. If you want GeoGig to overwrite, you must explicitly tell it to do so, by using the ``--overwrite`` option.

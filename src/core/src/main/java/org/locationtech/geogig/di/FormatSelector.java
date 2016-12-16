@@ -35,8 +35,8 @@ public abstract class FormatSelector<T> implements Provider<T> {
             VersionedFormat configuredFormat = readConfig(config);
             Provider<T> formatProvider = plugins.get(configuredFormat);
             if (formatProvider == null) {
-                throw new RuntimeException("No such format: " + configuredFormat + "(from "
-                        + config.getAll() + ")");
+                throw new RuntimeException(
+                        "No such format: " + configuredFormat + "(from " + config.getAll() + ")");
             } else {
                 return formatProvider.get();
             }
@@ -45,12 +45,12 @@ public abstract class FormatSelector<T> implements Provider<T> {
             throw e;
         }
     }
-    
-    protected Optional<String> getConfig(String key, ConfigDatabase config){
-         Optional<String> val = config.get(key);
-         if(!val.isPresent()){
-             val = config.getGlobal(key);
-         }
-         return val;
+
+    protected Optional<String> getConfig(String key, ConfigDatabase config) {
+        Optional<String> val = config.get(key);
+        if (!val.isPresent()) {
+            val = config.getGlobal(key);
+        }
+        return val;
     }
 }

@@ -45,8 +45,7 @@ public class TagTest extends RepositoryTestCase {
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
-        geogig.command(TagCreateOp.class).setCommitId(commit.getId()).setName("Tag..1")
-                .call();
+        geogig.command(TagCreateOp.class).setCommitId(commit.getId()).setName("Tag..1").call();
     }
 
     @Test

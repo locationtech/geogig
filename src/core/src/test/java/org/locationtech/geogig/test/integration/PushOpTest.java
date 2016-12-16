@@ -106,7 +106,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
 
         // clone from the remote
         CloneOp clone = clone();
-        clone.setRepositoryURL(remoteGeogig.envHome.getCanonicalPath()).setBranch("Branch1").call();
+        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("Branch1").call();
 
         // Make sure the local repository got all of the commits
         logs = localGeogig.geogig.command(LogOp.class).call();
@@ -311,8 +311,8 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         push.addRefSpec(":Branch1");
         push.call();
 
-        assertFalse(remoteGeogig.geogig.command(RefParse.class).setName("Branch1").call()
-                .isPresent());
+        assertFalse(
+                remoteGeogig.geogig.command(RefParse.class).setName("Branch1").call().isPresent());
     }
 
     @Test

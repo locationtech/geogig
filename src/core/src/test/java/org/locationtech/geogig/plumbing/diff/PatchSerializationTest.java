@@ -18,10 +18,10 @@ import java.util.Map;
 
 import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
-import org.locationtech.geogig.model.NodeRef;
-import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.type.PropertyDescriptor;
 
@@ -44,7 +44,8 @@ public class PatchSerializationTest extends RepositoryTestCase {
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
-                RevFeatureTypeBuilder.build(modifiedPointsType), RevFeatureTypeBuilder.build(pointsType));
+                RevFeatureTypeBuilder.build(modifiedPointsType),
+                RevFeatureTypeBuilder.build(pointsType));
         patch.addModifiedFeature(featureDiff);
         patch.addFeatureType(RevFeatureTypeBuilder.build(pointsType));
         testPatch(patch);
@@ -58,7 +59,8 @@ public class PatchSerializationTest extends RepositoryTestCase {
         Object newValue = points1B.getProperty("extra").getValue();
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(null, newValue);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
-        FeatureDiff featureDiff = new FeatureDiff(path, map, RevFeatureTypeBuilder.build(pointsType),
+        FeatureDiff featureDiff = new FeatureDiff(path, map,
+                RevFeatureTypeBuilder.build(pointsType),
                 RevFeatureTypeBuilder.build(modifiedPointsType));
         patch.addModifiedFeature(featureDiff);
         patch.addFeatureType(RevFeatureTypeBuilder.build(modifiedPointsType));

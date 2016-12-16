@@ -34,14 +34,16 @@ import com.google.common.base.Preconditions;
 
 public class Cat extends AbstractWebAPICommand {
 
-    ObjectId object;
+    String object;
 
     public Cat(ParameterSet options) {
         super(options);
-        String objectId = options.getFirstValue("objectid", null);
-        if (objectId != null) {
-            setObjectId(ObjectId.valueOf(objectId));
-        }
+        setObjectId(options.getFirstValue("objectid", null));
+    }
+
+    @Override
+    public boolean requiresTransaction() {
+        return false;
     }
 
     /**
@@ -49,7 +51,7 @@ public class Cat extends AbstractWebAPICommand {
      * 
      * @param object - the object you want to view
      */
-    public void setObjectId(ObjectId object) {
+    public void setObjectId(String object) {
         this.object = object;
     }
 
@@ -62,12 +64,19 @@ public class Cat extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        Preconditions.checkArgument(object != null && !object.equals(ObjectId.NULL),
-                "You must specify a non-null ObjectId.");
-        final Context geogig = this.getCommandLocator(context);
+        ObjectId objectId = ObjectId.NULL;
+        try {
+            objectId = ObjectId.valueOf(object);
+        } catch (Exception e) {
+            // Do nothing, the argument will be checked.
+        }
+        Preconditions.checkArgument(!objectId.equals(ObjectId.NULL),
+                "You must specify a valid non-null ObjectId.");
+        final Context geogig = this.getRepositoryContext(context);
 
-        Preconditions.checkState(geogig.objectDatabase().exists(object));
-        final RevObject revObject = geogig.objectDatabase().get(object);
+        Preconditions.checkArgument(geogig.objectDatabase().exists(objectId),
+                "The specified ObjectId was not found in the respository.");
+        final RevObject revObject = geogig.objectDatabase().get(objectId);
         switch (revObject.getType()) {
         case COMMIT:
             context.setResponseContent(new CommandResponse() {

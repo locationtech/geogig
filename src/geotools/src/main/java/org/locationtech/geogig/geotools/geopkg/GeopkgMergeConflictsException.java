@@ -15,7 +15,8 @@ import org.locationtech.geogig.porcelain.MergeConflictsException;
  * During a geopackage import, a merge may happen after the import occurs. This exception provides
  * the import results in the case of a conflict during the merge.
  */
-public class GeopkgMergeConflictsException extends MergeConflictsException {
+public class GeopkgMergeConflictsException extends MergeConflictsException
+        implements AutoCloseable {
 
     private static final long serialVersionUID = 1L;
 
@@ -25,5 +26,10 @@ public class GeopkgMergeConflictsException extends MergeConflictsException {
             GeopkgImportResult importResult) {
         super(e.getMessage(), e.getOurs(), e.getTheirs());
         this.importResult = importResult;
+    }
+
+    @Override
+    public void close() throws Exception {
+        importResult.close();
     }
 }

@@ -50,6 +50,11 @@ public class Diff extends AbstractWebAPICommand {
         setElementsPerPage(parseInt(options, "show", 30));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the oldRefSpec variable
      * 
@@ -117,26 +122,22 @@ public class Diff extends AbstractWebAPICommand {
             throw new CommandSpecException("No old ref spec");
         }
 
-        final Context geogig = this.getCommandLocator(context);
-
-        final AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
-                .setOldVersion(oldRefSpec).setNewVersion(newRefSpec).setFilter(pathFilter).call();
+        final Context geogig = this.getRepositoryContext(context);
 
         context.setResponseContent(new CommandResponse() {
             @Override
             public void write(ResponseWriter out) throws Exception {
-                out.start();
-                if (showGeometryChanges) {
-                    out.writeGeometryChanges(geogig, diff, page, elementsPerPage);
-                } else {
-                    out.writeDiffEntries("diff", page * elementsPerPage, elementsPerPage, diff);
+                try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                        .setOldVersion(oldRefSpec).setNewVersion(newRefSpec).setFilter(pathFilter)
+                        .setPreserveIterationOrder(true).call()) {
+                    out.start();
+                    if (showGeometryChanges) {
+                        out.writeGeometryChanges(geogig, diff, page, elementsPerPage);
+                    } else {
+                        out.writeDiffEntries("diff", page * elementsPerPage, elementsPerPage, diff);
+                    }
+                    out.finish();
                 }
-                out.finish();
-            }
-
-            @Override
-            public void close() {
-                diff.close();
             }
         });
     }

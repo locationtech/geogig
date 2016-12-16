@@ -24,8 +24,8 @@ import com.google.common.base.Supplier;
  * 
  * @see Remote
  */
-public class RemoteResolve extends AbstractGeoGigOp<Optional<Remote>> implements
-        Supplier<Optional<Remote>> {
+public class RemoteResolve extends AbstractGeoGigOp<Optional<Remote>>
+        implements Supplier<Optional<Remote>> {
 
     private String name;
 
@@ -66,8 +66,8 @@ public class RemoteResolve extends AbstractGeoGigOp<Optional<Remote>> implements
                 Optional<String> remotePushURL = config.get(remoteSection + ".pushurl");
 
                 Remote remote = new Remote(name, remoteFetchURL.get(),
-                        remotePushURL.or(remoteFetchURL.get()), remoteFetch.get(), remoteMapped.or(
-                                "false").equals("true"), remoteMappedBranch.orNull(),
+                        remotePushURL.or(remoteFetchURL.get()), remoteFetch.get(),
+                        remoteMapped.or("false").equals("true"), remoteMappedBranch.orNull(),
                         remoteUserName.orNull(), remotePassword.orNull());
                 result = Optional.of(remote);
             }

@@ -20,12 +20,12 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStoreFactorySpi;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GeoGIG;
-import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,13 +94,28 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
     public Param[] getParametersInfo() {
         return new Param[] { REPOSITORY, BRANCH, HEAD, DEFAULT_NAMESPACE };
     }
+    
+    private URI resolveURI(String repoParam) {
+        URI repoUri = null;
+        try {
+            repoUri = new URI(repoParam);
+        } catch (URISyntaxException e) {
+            // See if it's a valid file URI
+            try {
+                repoUri = new URI("file:/" + repoParam.replace("\\", "/"));
+            } catch (URISyntaxException ex) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+        return repoUri;
+    }
 
     @Override
     public boolean canProcess(Map<String, Serializable> params) {
         try {
             final String repoParam = (String) REPOSITORY.lookUp(params);
 
-            final URI repository = URI.create(repoParam);
+            final URI repository = resolveURI(repoParam);
 
             try {
                 RepositoryResolver.lookup(repository);
@@ -148,7 +163,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         @Nullable
         final String effectiveHead = (head == null) ? branch : head;
 
-        final URI repositoryUri = URI.create(repositoryLocation);
+        final URI repositoryUri = resolveURI(repositoryLocation);
 
         final RepositoryResolver initializer;
         try {
@@ -181,7 +196,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
     public GeoGigDataStore createNewDataStore(Map<String, Serializable> params) throws IOException {
         String defaultNamespace = (String) DEFAULT_NAMESPACE.lookUp(params);
 
-        URI repositoryRoot = URI.create((String) REPOSITORY.lookUp(params));
+        URI repositoryRoot = resolveURI((String) REPOSITORY.lookUp(params));
         RepositoryResolver initializer = RepositoryResolver.lookup(repositoryRoot);
         if (initializer.repoExists(repositoryRoot)) {
             throw new IOException("Repository already exists " + repositoryRoot);

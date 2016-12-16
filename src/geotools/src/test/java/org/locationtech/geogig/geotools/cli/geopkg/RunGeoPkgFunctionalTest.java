@@ -21,10 +21,10 @@ import cucumber.api.junit.Cucumber;
  */
 @RunWith(Cucumber.class)
 @CucumberOptions(plugin = { "pretty", "html:target/cucumber-report" }//
-, strict = true //
-// the glue option tells cucumber where to look for step definitions
-, glue = { "org.locationtech.geogig.cli.test.functional",
-        "org.locationtech.geogig.geotools.cli.geopkg" }//
+        , strict = true //
+        // the glue option tells cucumber where to look for step definitions
+        , glue = { "org.locationtech.geogig.cli.test.functional",
+                "org.locationtech.geogig.geotools.cli.geopkg" }//
         , features = { "src/test/resources/features/geopkg" }//
 )
 public class RunGeoPkgFunctionalTest {

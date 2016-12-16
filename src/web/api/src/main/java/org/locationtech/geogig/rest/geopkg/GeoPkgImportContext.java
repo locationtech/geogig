@@ -13,11 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.geotools.data.DataStore;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
@@ -34,19 +30,24 @@ import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.geotools.DataStoreImportContextService;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
+import org.locationtech.geogig.rocksdb.RocksdbMap;
 import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.PagedMergeScenarioConsumer;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
+import org.locationtech.geogig.web.api.StreamWriterException;
 import org.restlet.data.MediaType;
 
 import com.google.common.base.Optional;
+
+import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
  * Geopackage specific implementation of {@link DataStoreImportContextService}.
@@ -133,6 +134,7 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
 
         @Override
         public void cleanupResources() {
+            dataStore = null;
             if (uploadedFile != null) {
                 uploadedFile.delete();
             }
@@ -149,10 +151,10 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
 
         @Override
         public AsyncCommandRepresentation<GeopkgImportResult> newRepresentation(
-                AsyncCommand<GeopkgImportResult> cmd,
-                MediaType mediaType, String baseURL) {
+                AsyncCommand<GeopkgImportResult> cmd, MediaType mediaType, String baseURL,
+                boolean cleanup) {
 
-            return new GeopkgAuditImportRepresentation(mediaType, cmd, baseURL);
+            return new GeopkgAuditImportRepresentation(mediaType, cmd, baseURL, cleanup);
         }
     }
 
@@ -160,20 +162,19 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             extends AsyncCommandRepresentation<GeopkgImportResult> {
 
         public GeopkgAuditImportRepresentation(MediaType mediaType,
-                AsyncCommand<GeopkgImportResult> cmd,
-                String baseURL) {
-            super(mediaType, cmd, baseURL);
+                AsyncCommand<GeopkgImportResult> cmd, String baseURL, boolean cleanup) {
+            super(mediaType, cmd, baseURL, cleanup);
         }
 
         @Override
-        protected void writeResultBody(XMLStreamWriter w, GeopkgImportResult result)
-                throws XMLStreamException {
-            ResponseWriter out = new ResponseWriter(w);
+        protected void writeResultBody(StreamingWriter w, GeopkgImportResult result)
+                throws StreamWriterException {
+            ResponseWriter out = new ResponseWriter(w, getMediaType());
             writeImportResult(result, w, out);
         }
 
         @Override
-        protected void writeError(XMLStreamWriter w, Throwable cause) throws XMLStreamException {
+        protected void writeError(StreamingWriter w, Throwable cause) throws StreamWriterException {
             if (cause instanceof GeopkgMergeConflictsException) {
                 Context context = cmd.getContext();
                 GeopkgMergeConflictsException m = (GeopkgMergeConflictsException) cause;
@@ -185,7 +186,7 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
                 final MergeScenarioReport report = context.command(ReportMergeScenarioOp.class)
                         .setMergeIntoCommit(ours).setToMergeCommit(theirs).setConsumer(consumer)
                         .call();
-                ResponseWriter out = new ResponseWriter(w);
+                ResponseWriter out = new ResponseWriter(w, getMediaType());
                 Optional<RevCommit> mergeCommit = Optional.absent();
                 w.writeStartElement("result");
                 out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
@@ -199,24 +200,33 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             }
         }
 
-        private void writeImportResult(GeopkgImportResult result, XMLStreamWriter w,
-                ResponseWriter out) throws XMLStreamException {
+        private void writeImportResult(GeopkgImportResult result, StreamingWriter w,
+                ResponseWriter out) throws StreamWriterException {
             if (result.newCommit != null) {
                 out.writeCommit(result.newCommit, "newCommit", null, null, null);
             }
             out.writeCommit(result.importCommit, "importCommit", null, null, null);
             w.writeStartElement("NewFeatures");
-            for (Entry<String, Map<String, String>> layerMappings : result.newMappings.entrySet()) {
-                w.writeStartElement("type");
+            w.writeStartArray("type");
+            for (Entry<String, RocksdbMap<String, String>> layerMappings : result.newMappings
+                    .entrySet()) {
+                w.writeStartArrayElement("type");
                 w.writeAttribute("name", layerMappings.getKey());
-                for (Entry<String, String> mapping : layerMappings.getValue().entrySet()) {
-                    w.writeStartElement("id");
-                    w.writeAttribute("provided", mapping.getKey());
-                    w.writeAttribute("assigned", mapping.getValue());
-                    w.writeEndElement();
+                w.writeStartArray("id");
+                try (AutoCloseableIterator<Entry<String, String>> mappingIterator = layerMappings
+                        .getValue().entryIterator()) {
+                    while (mappingIterator.hasNext()) {
+                        Entry<String, String> mapping = mappingIterator.next();
+                        w.writeStartArrayElement("id");
+                        w.writeAttribute("provided", mapping.getKey());
+                        w.writeAttribute("assigned", mapping.getValue());
+                        w.writeEndArrayElement();
+                    }
                 }
-                w.writeEndElement();
+                w.writeEndArray();
+                w.writeEndArrayElement();
             }
+            w.writeEndArray();
             w.writeEndElement();
         }
     }

@@ -69,6 +69,8 @@ public class GeopkgPull extends AbstractCommand {
             cli.getConsole().println("Import successful.");
             cli.getConsole().println("Changes committed and merge at " + result.newCommit.getId());
 
+            result.close();
+
         } catch (IllegalArgumentException | IllegalStateException | MergeConflictsException e) {
             throw new CommandFailedException(e.getMessage(), e);
         }

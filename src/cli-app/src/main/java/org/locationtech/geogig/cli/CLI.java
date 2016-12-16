@@ -9,7 +9,12 @@
  */
 package org.locationtech.geogig.cli;
 
-import org.locationtech.geogig.repository.GlobalContextBuilder;
+import org.locationtech.geogig.porcelain.ConfigOp;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
+import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
+import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 
 public class CLI {
     /**
@@ -34,6 +39,39 @@ public class CLI {
 
         final GeogigCLI cli = new GeogigCLI(consoleReader);
         cli.setRepositoryURI(repoURI);
+
+        GeoGIG geogig = cli.getGeogig();
+        boolean disableAnsi = false;
+        boolean closeIt = geogig == null;
+        if (closeIt) {
+            // we're not in a repository, need a geogig anyways to check the global config
+            geogig = cli.newGeoGIG(Hints.readOnly());
+            if (geogig.command(ConfigOp.class).setScope(ConfigScope.GLOBAL)
+                    .setAction(ConfigAction.CONFIG_GET).setName("ansi.enabled").toString()
+                    .equalsIgnoreCase("false")) {
+                disableAnsi = true;
+            } else if (geogig.command(ConfigOp.class).setScope(ConfigScope.GLOBAL)
+                    .setAction(ConfigAction.CONFIG_GET).setName("ansi.enabled").toString()
+                    .equalsIgnoreCase("true")) {
+                disableAnsi = false;
+            }
+            geogig.close();
+        } else {
+            if (geogig.getRepository().configDatabase().get("ansi.enabled").or("")
+                    .equalsIgnoreCase("false")) {
+                cli.getConsole().setForceAnsi(false);
+                disableAnsi = true;
+            } else if (geogig.getRepository().configDatabase().get("ansi.enabled").or("")
+                    .equalsIgnoreCase("true")) {
+                disableAnsi = false;
+                cli.getConsole().setForceAnsi(true);
+            }
+        }
+        if (disableAnsi) {
+            cli.getConsole().disableAnsi();
+        } else {
+            cli.getConsole().enableAnsi();
+        }
 
         addShutdownHook(cli);
         int exitCode = cli.execute(args);

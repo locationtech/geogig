@@ -44,7 +44,7 @@ public class ConfigGet extends AbstractGeoGigOp<Optional<String>> {
      *         the exception's statusCode.
      */
     @Override
-    protected  Optional<String> _call() {
+    protected Optional<String> _call() {
         ConfigScope scope = global ? ConfigScope.GLOBAL : ConfigScope.LOCAL;
         Optional<Map<String, String>> result = command(ConfigOp.class)
                 .setAction(ConfigAction.CONFIG_GET).setName(name).setScope(scope).call();

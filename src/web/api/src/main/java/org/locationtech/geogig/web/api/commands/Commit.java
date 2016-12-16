@@ -89,31 +89,43 @@ public class Commit extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (this.getTransactionId() == null) {
-            throw new CommandSpecException(
-                    "No transaction was specified, commit requires a transaction to preserve the stability of the repository.");
-        }
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
         RevCommit commit;
         commit = geogig.command(CommitOp.class).setAuthor(authorName.orNull(), authorEmail.orNull())
                 .setMessage(message).setAllowEmpty(true).setAll(all).call();
 
         final RevCommit commitToWrite = commit;
         final ObjectId parentId = commit.parentN(0).or(ObjectId.NULL);
-        final AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
-                .setOldVersion(parentId).setNewVersion(commit.getId()).call();
+        int adds = 0, deletes = 0, changes = 0;
+        try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                .setOldVersion(parentId).setNewVersion(commit.getId()).call()) {
+            DiffEntry diffEntry;
+            while (diff.hasNext()) {
+                diffEntry = diff.next();
+                switch (diffEntry.changeType()) {
+                case ADDED:
+                    ++adds;
+                    break;
+                case REMOVED:
+                    ++deletes;
+                    break;
+                case MODIFIED:
+                    ++changes;
+                    break;
+                }
+            }
+        }
+
+        final int totalAdds = adds;
+        final int totalDeletes = deletes;
+        final int totalChanges = changes;
 
         context.setResponseContent(new CommandResponse() {
             @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();
-                out.writeCommitResponse(commitToWrite, diff);
+                out.writeCommitResponse(commitToWrite, totalAdds, totalDeletes, totalChanges);
                 out.finish();
-            }
-
-            @Override
-            public void close() {
-                diff.close();
             }
         });
     }

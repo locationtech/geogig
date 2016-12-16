@@ -41,6 +41,12 @@ public class Status extends AbstractWebAPICommand {
         setLimit(parseInt(options, "limit", 50));
         setOffset(parseInt(options, "offset", 0));
     }
+
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the offset variable
      * 
@@ -66,7 +72,7 @@ public class Status extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         final String pathFilter = null;
         final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.HEAD).call();

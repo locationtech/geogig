@@ -13,7 +13,7 @@
   <artifactId>geogig-cli-app</artifactId>
   <packaging>jar</packaging>
   <name>GeoGig CLI App</name>
-    
+
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -54,7 +54,7 @@
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-osm</artifactId>
+      <artifactId>geogig-rocksdb</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -67,7 +67,7 @@
       <artifactId>geogig-web-app</artifactId>
       <version>${project.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>net.sf.py4j</groupId>
       <artifactId>py4j</artifactId>
@@ -76,6 +76,11 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
@@ -138,6 +143,7 @@
         <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
             <configuration>
+                <finalName>geogig</finalName>
                 <archive>
                     <manifest>
                         <mainClass>org.locationtech.geogig.cli.CLI</mainClass>
@@ -169,6 +175,7 @@
                 </execution>
                 <execution>
                     <id>assemble-zip</id>
+                    <phase>package</phase>
                     <goals>
                         <goal>single</goal>
                     </goals>
@@ -201,17 +208,8 @@
       <dependencies>
         <dependency>
           <groupId>com.oracle</groupId>
-          <artifactId>ojdbc14</artifactId> 
+          <artifactId>ojdbc14</artifactId>
           <version>10.2.0.3.0</version>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>sqlServer</id>
-      <dependencies>
-        <dependency>
-          <groupId>com.microsoft</groupId>
-          <artifactId>sqljdbc4</artifactId> 
         </dependency>
       </dependencies>
     </profile>
@@ -225,7 +223,7 @@
           </dependency>
           <dependency>
             <groupId>org.locationtech.geogig</groupId>
-            <artifactId>geogig-rocksdb</artifactId>
+            <artifactId>geogig-gui</artifactId>
             <version>${project.version}</version>
           </dependency>
       </dependencies>

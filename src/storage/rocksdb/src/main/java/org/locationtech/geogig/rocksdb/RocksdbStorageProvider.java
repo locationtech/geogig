@@ -28,7 +28,7 @@ public class RocksdbStorageProvider extends StorageProvider {
     static final VersionedFormat GRAPH = new VersionedFormat(FORMAT_NAME, VERSION,
             RocksdbGraphDatabase.class);
 
-    static final VersionedFormat REFS = new VersionedFormat(FORMAT_NAME, VERSION,
+    static final VersionedFormat REFS = new VersionedFormat("file", "1.0",
             FileRefDatabase.class);
 
     static final VersionedFormat OBJECTS = new VersionedFormat(FORMAT_NAME, VERSION,

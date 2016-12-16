@@ -28,9 +28,9 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.BulkOpListener;
-import org.locationtech.geogig.storage.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.impl.ForwardingObjectDatabase;
 
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
@@ -188,7 +188,7 @@ class ObjectDatabaseCacheInterceptor {
     private static class CacheHelper {
         private Provider<? extends CacheFactory> cacheProvider;
 
-        final boolean cacheFeatures = true;// TODO make configurable?
+        final boolean cacheFeatures = false;// TODO make configurable?
 
         public CacheHelper(final Provider<? extends CacheFactory> cacheProvider) {
             this.cacheProvider = cacheProvider;
@@ -304,10 +304,6 @@ class ObjectDatabaseCacheInterceptor {
 
         private final boolean isCacheable(Object object, boolean cacheFeatures) {
             if (!cacheFeatures && object instanceof RevFeature) {
-                return false;
-            }
-            // do not cache leaf trees. They tend to be quite large. TODO: make this configurable
-            if ((object instanceof RevTree) && ((RevTree) object).features().isPresent()) {
                 return false;
             }
             return object != null;

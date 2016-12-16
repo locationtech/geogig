@@ -12,12 +12,15 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Test;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
@@ -93,9 +96,11 @@ public class DiffTest extends AbstractWebOpTest {
 
         RevFeature point2 = RevFeatureBuilder.build(TestData.point2);
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject diff = response.getJSONObject("diff");
+        JsonArray diffArray = response.getJsonArray("diff");
+        assertEquals(1, diffArray.getValuesAs(JsonValue.class).size());
+        JsonObject diff = diffArray.getJsonObject(0);
         assertEquals("ADDED", diff.getString("changeType"));
         assertEquals(path, diff.getString("newPath"));
         assertEquals(point2.getId().toString(), diff.getString("newObjectId"));
@@ -118,12 +123,17 @@ public class DiffTest extends AbstractWebOpTest {
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
                 TestData.point2.getID());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject feature = response.getJSONObject("Feature");
+        JsonArray featureArray = response.getJsonArray("Feature");
+        assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
+        JsonObject feature = featureArray.getJsonObject(0);
         assertEquals("ADDED", feature.getString("change"));
         assertEquals(path, feature.getString("id"));
-        assertEquals("POINT (-10 -10)", feature.getString("geometry"));
+        JsonArray geometryArray = feature.getJsonArray("geometry");
+        assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
+        String geometry = geometryArray.getString(0);
+        assertEquals("POINT (-10 -10)", geometry);
         assertEquals("EPSG:4326", feature.getString("crs"));
     }
 

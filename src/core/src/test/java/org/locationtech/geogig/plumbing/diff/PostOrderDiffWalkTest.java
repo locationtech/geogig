@@ -14,9 +14,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.locationtech.geogig.model.RevObjectTestSupport.createFeaturesTree;
-import static org.locationtech.geogig.model.RevObjectTestSupport.createFeaturesTreeBuilder;
-import static org.locationtech.geogig.model.RevObjectTestSupport.createTreesTreeBuilder;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTree;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTreeBuilder;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createTreesTreeBuilder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -30,16 +30,15 @@ import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.PostOrderDiffWalk.Consumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
-import org.locationtech.geogig.repository.SpatialOps;
+import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 
@@ -95,8 +94,8 @@ public class PostOrderDiffWalkTest {
      */
     private static NodeRef nodeFor(RevTree root) {
         Envelope bounds = SpatialOps.boundsOf(root);
-        return NodeRef.createRoot(Node.create(NodeRef.ROOT, root.getId(), ObjectId.NULL, TYPE.TREE,
-                bounds));
+        return NodeRef.createRoot(
+                Node.create(NodeRef.ROOT, root.getId(), ObjectId.NULL, TYPE.TREE, bounds));
     }
 
     @Test
@@ -137,7 +136,8 @@ public class PostOrderDiffWalkTest {
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
         List<? extends Bounded> expectedLeft = newArrayList(null, nodeFor(left));
-        List<? extends Bounded> expectedRight = newArrayList(featureNodeRef("f", 1), nodeFor(right));
+        List<? extends Bounded> expectedRight = newArrayList(featureNodeRef("f", 1),
+                nodeFor(right));
 
         visitor.walk(testConsumer);
         assertEquals(expectedLeft, testConsumer.orderedLeft);
@@ -154,12 +154,12 @@ public class PostOrderDiffWalkTest {
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
         List<? extends Bounded> expectedLeft = newArrayList(//
-                null,//
-                null,//
+                null, //
+                null, //
                 nodeFor(left));
         List<? extends Bounded> expectedRight = newArrayList(//
-                featureNodeRef("f", 3),//
-                featureNodeRef("f", 4),//
+                featureNodeRef("f", 3), //
+                featureNodeRef("f", 4), //
                 nodeFor(right));
 
         visitor.walk(testConsumer);
@@ -176,7 +176,7 @@ public class PostOrderDiffWalkTest {
     @Test
     public void testLeafLeafWithSubStrees() {
         // two leaf trees
-        ObjectId metadataId = ObjectId.forString("fake");
+        ObjectId metadataId = RevObjectTestSupport.hashString("fake");
 
         RevTree left = createTreesTreeBuilder(leftSource, 2, 2, metadataId).build();
         RevTree right = createTreesTreeBuilder(rightSource, 3, 2, metadataId).build();
@@ -245,10 +245,8 @@ public class PostOrderDiffWalkTest {
      */
     @Test
     public void testBucketNested() {
-        final RevTree origLeft = RevTreeBuilder.EMPTY;
-        final RevTree origRight = createFeaturesTree(
-                leftSource,
-                "f",
+        final RevTree origLeft = RevTree.EMPTY;
+        final RevTree origRight = createFeaturesTree(leftSource, "f",
                 CanonicalNodeNameOrder.normalizedSizeLimit(0)
                         * CanonicalNodeNameOrder.maxBucketsForLevel(0));
 
@@ -260,7 +258,7 @@ public class PostOrderDiffWalkTest {
             private void copy(Bounded nodeOrBucket) {
                 if (nodeOrBucket != null) {
                     ObjectId objectId = nodeOrBucket.getObjectId();
-                    if (!RevTreeBuilder.EMPTY_TREE_ID.equals(objectId)) {
+                    if (!RevTree.EMPTY_TREE_ID.equals(objectId)) {
                         RevObject object = leftSource.get(objectId);
                         rightSource.put(object);
                     }
@@ -297,10 +295,8 @@ public class PostOrderDiffWalkTest {
     private void walkTree(ObjectId treeId, ObjectDatabase source) {
         assertTrue(source.exists(treeId));
         RevTree tree = source.getTree(treeId);
-        if (tree.buckets().isPresent()) {
-            for (Bucket b : tree.buckets().get().values()) {
-                walkTree(b.getObjectId(), source);
-            }
+        for (Bucket b : tree.buckets().values()) {
+            walkTree(b.getObjectId(), source);
         }
     }
 }

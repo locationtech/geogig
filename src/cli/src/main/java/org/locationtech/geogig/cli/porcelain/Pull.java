@@ -26,7 +26,7 @@ import org.locationtech.geogig.porcelain.PullResult;
 import org.locationtech.geogig.porcelain.SynchronizationException;
 import org.locationtech.geogig.porcelain.TransferSummary;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

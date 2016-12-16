@@ -28,7 +28,7 @@ import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -156,8 +156,8 @@ class GeogigTransactionState implements State {
 
         StringBuilder msg = new StringBuilder();
         if (count > 0) {
-            try (AutoCloseableIterator<DiffEntry> indexDiffs = this.geogigTx.command(DiffIndex.class)
-                    .setMaxDiffs(10L).call()) {
+            try (AutoCloseableIterator<DiffEntry> indexDiffs = this.geogigTx
+                    .command(DiffIndex.class).setMaxDiffs(10L).call()) {
                 while (indexDiffs.hasNext()) {
                     DiffEntry entry = indexDiffs.next();
                     msg.append("\n ").append(entry.changeType().toString().toLowerCase())

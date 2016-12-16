@@ -14,7 +14,7 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryFilter;
+import org.locationtech.geogig.repository.impl.RepositoryFilter;
 
 /**
  * Overrides the basic implementation of {@link FilteredDiffIterator} by providing hints as to which

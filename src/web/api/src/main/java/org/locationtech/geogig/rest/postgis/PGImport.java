@@ -73,7 +73,7 @@ public class PGImport extends TransactionalResource {
 
         final String rootPath = request.getRootRef().toString();
         MediaType mediaType = variant.getMediaType();
-        return new ImportRepresentation(mediaType, asyncCommand, rootPath);
+        return new ImportRepresentation(mediaType, asyncCommand, rootPath, false);
     }
 
     private DataStore getDataStore(Form options) {

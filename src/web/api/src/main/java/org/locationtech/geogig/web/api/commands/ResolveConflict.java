@@ -14,18 +14,18 @@ import static com.google.common.base.Preconditions.checkState;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.plumbing.WriteBack;
+import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -40,9 +40,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * The interface for the Add operation in GeoGig.
- * 
- * Web interface for {@link AddOp}
+ * Web interface to resolve a single feature conflict
  */
 
 public class ResolveConflict extends AbstractWebAPICommand {
@@ -83,11 +81,13 @@ public class ResolveConflict extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (this.getTransactionId() == null) {
-            throw new CommandSpecException(
-                    "No transaction was specified, resolve conflict requires a transaction to preserve the stability of the repository.");
+        final Context geogig = this.getRepositoryContext(context);
+        if (path == null) {
+            throw new CommandSpecException("No path was given.");
         }
-        final Context geogig = this.getCommandLocator(context);
+        if (objectId == null) {
+            throw new CommandSpecException("No object ID was given.");
+        }
 
         RevTree revTree = geogig.workingTree().getTree();
 
@@ -99,8 +99,14 @@ public class ResolveConflict extends AbstractWebAPICommand {
         RevFeatureType revFeatureType = geogig.command(RevObjectParse.class)
                 .setObjectId(nodeRef.get().getMetadataId()).call(RevFeatureType.class).get();
 
-        RevFeature revFeature = geogig.command(RevObjectParse.class).setObjectId(objectId)
-                .call(RevFeature.class).get();
+        Optional<RevFeature> object = geogig.command(RevObjectParse.class).setObjectId(objectId)
+                .call(RevFeature.class);
+        
+        if (!object.isPresent()) {
+            throw new CommandSpecException("Object ID could not be resolved to a feature.");
+        }
+        
+        RevFeature revFeature = object.get();
 
         CoordinateReferenceSystem crs = revFeatureType.type().getCoordinateReferenceSystem();
         Envelope bounds = ReferencedEnvelope.create(crs);
@@ -118,12 +124,12 @@ public class ResolveConflict extends AbstractWebAPICommand {
             }
         }
 
-        NodeRef node = new NodeRef(Node.create(NodeRef.nodeFromPath(path), objectId, ObjectId.NULL,
-                TYPE.FEATURE, bounds), NodeRef.parentPath(path), ObjectId.NULL);
+        NodeRef newFeatureNode = new NodeRef(Node.create(NodeRef.nodeFromPath(path), objectId,
+                ObjectId.NULL, TYPE.FEATURE, bounds), NodeRef.parentPath(path), ObjectId.NULL);
 
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class)
-                .setParent(geogig.workingTree().getTree()).setChildPath(node.getParentPath())
-                .call();
+                .setParent(geogig.workingTree().getTree())
+                .setChildPath(newFeatureNode.getParentPath()).call();
         RevTreeBuilder treeBuilder;
         ObjectId metadataId = ObjectId.NULL;
         if (parentNode.isPresent()) {
@@ -131,18 +137,20 @@ public class ResolveConflict extends AbstractWebAPICommand {
             Optional<RevTree> parsed = geogig.command(RevObjectParse.class)
                     .setObjectId(parentNode.get().getNode().getObjectId()).call(RevTree.class);
             checkState(parsed.isPresent(), "Parent tree couldn't be found in the repository.");
-            treeBuilder = new RevTreeBuilder(geogig.objectDatabase(), parsed.get());
-            treeBuilder.remove(node.getNode().getName());
+            treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase(), parsed.get());
+            treeBuilder.remove(newFeatureNode.getNode().getName());
         } else {
-            treeBuilder = new RevTreeBuilder(geogig.objectDatabase());
+            treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase());
         }
-        treeBuilder.put(node.getNode());
-        ObjectId newTreeId = geogig.command(WriteBack.class)
-                .setAncestor(
-                        new RevTreeBuilder(geogig.objectDatabase(), geogig.workingTree().getTree()))
-                .setChildPath(node.getParentPath()).setTree(treeBuilder.build())
-                .setMetadataId(metadataId).call();
-        geogig.workingTree().updateWorkHead(newTreeId);
+        treeBuilder.put(newFeatureNode.getNode());
+
+        RevTree newFeatureTree = treeBuilder.build();
+        NodeRef newTreeRef = NodeRef.tree(newFeatureNode.getParentPath(), newFeatureTree.getId(),
+                metadataId);
+
+        RevTree newRoot = geogig.command(UpdateTree.class).setRoot(geogig.workingTree().getTree())
+                .setChild(newTreeRef).call();
+        geogig.workingTree().updateWorkHead(newRoot.getId());
 
         AddOp command = geogig.command(AddOp.class);
 

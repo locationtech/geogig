@@ -16,6 +16,7 @@ import org.locationtech.geogig.model.RevTree;
 /**
  * Base interface for storage and retrieval of revision objects.
  *
+ * @since 1.0
  */
 public interface ObjectStore extends Closeable {
 
@@ -31,7 +32,7 @@ public interface ObjectStore extends Closeable {
     public void close();
 
     /**
-     * @return true if the database is open, false otherwise
+     * @return {@code true} if the database is open, false otherwise
      */
     public boolean isOpen();
 
@@ -54,6 +55,8 @@ public interface ObjectStore extends Closeable {
     /**
      * Reads an object with the given {@link ObjectId id} out of the database.
      * 
+     * @param id the id of the object to get
+     * @return the revision object
      * @throws IllegalArgumentException if no blob exists for the given {@code id}
      */
     public RevObject get(ObjectId id) throws IllegalArgumentException;
@@ -61,6 +64,9 @@ public interface ObjectStore extends Closeable {
     /**
      * Reads an object with the given {@link ObjectId id} out of the database.
      * 
+     * @param id the id of the object to get
+     * @param type the type of the object to get
+     * @return a revision object of the provided type
      * @throws IllegalArgumentException if no blob exists for the given {@code id}, or the object
      *         found is not of the required {@code type}
      */
@@ -69,6 +75,7 @@ public interface ObjectStore extends Closeable {
     /**
      * Reads an object with the given {@link ObjectId id} out of the database.
      * 
+     * @param id the id of the object to get
      * @return the object found, or {@code null} if no object is found
      */
     public @Nullable RevObject getIfPresent(ObjectId id);
@@ -76,6 +83,8 @@ public interface ObjectStore extends Closeable {
     /**
      * Reads an object with the given {@link ObjectId id} out of the database.
      * 
+     * @param id the id of the object to get
+     * @param type the type of the object to get
      * @return the object found, or {@code null} if no object is found for the given id and type
      *         (note the object may exist and be of another type)
      */

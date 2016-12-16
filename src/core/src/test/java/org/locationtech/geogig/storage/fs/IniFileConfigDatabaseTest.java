@@ -13,8 +13,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.ConfigDatabaseTest;
 import org.locationtech.geogig.storage.ConfigException;
+import org.locationtech.geogig.storage.impl.ConfigDatabaseTest;
 
 public class IniFileConfigDatabaseTest extends ConfigDatabaseTest<IniFileConfigDatabase> {
 

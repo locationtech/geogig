@@ -10,14 +10,16 @@
 package org.locationtech.geogig.storage.postgresql;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Properties;
 
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GeoGIG;
-import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.base.Optional;
@@ -40,14 +42,35 @@ public class PGRepositoryResolver extends RepositoryResolver {
     }
 
     @Override
+    public URI buildRepoURI(URI rootRepoURI, String repoName) {
+        Properties properties = EnvironmentBuilder.getRootURIProperties(rootRepoURI);
+
+        return EnvironmentBuilder.buildRepoURI(properties, repoName);
+    }
+
+    @Override
+    public List<String> listRepoNamesUnderRootURI(URI rootRepoURI) {
+        Properties properties = EnvironmentBuilder.getRootURIProperties(rootRepoURI);
+        EnvironmentBuilder builder = new EnvironmentBuilder(properties);
+        return PGStorage.listRepos(builder.build());
+    }
+
+    @Override
     public void initialize(URI repoURI, Context repoContext) throws IllegalArgumentException {
         Environment config = parseConfig(repoURI);
         PGStorage.createNewRepo(config);
     }
 
     @Override
-    public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext) {
-        Environment config = parseConfig(repoURI);
+    public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext, boolean rootUri) {
+        final Environment config;
+        if (rootUri) {
+            Properties properties = EnvironmentBuilder.getRootURIProperties(repoURI);
+            EnvironmentBuilder builder = new EnvironmentBuilder(properties);
+            config = builder.build();
+        } else {
+            config = parseConfig(repoURI);
+        }
         PGConfigDatabase configDb = new PGConfigDatabase(config);
         if (config.getRepositoryName() != null) {
             Optional<String> refsFormat = configDb.get("storage.refs");

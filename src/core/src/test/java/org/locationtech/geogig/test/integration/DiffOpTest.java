@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
-import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -28,6 +26,7 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -105,8 +104,8 @@ public class DiffOpTest extends RepositoryTestCase {
         final ObjectId newOid = insertAndAdd(points1);
         geogig.command(CommitOp.class).setAll(true).call();
 
-        List<DiffEntry> difflist = toList(diffOp.setOldVersion(ObjectId.NULL)
-                .setNewVersion(Ref.HEAD).call());
+        List<DiffEntry> difflist = toList(
+                diffOp.setOldVersion(ObjectId.NULL).setNewVersion(Ref.HEAD).call());
 
         assertNotNull(difflist);
         assertEquals(1, difflist.size());
@@ -131,8 +130,8 @@ public class DiffOpTest extends RepositoryTestCase {
         final ObjectId newOid = insertAndAdd(points1);
         final RevCommit commit = geogig.command(CommitOp.class).setAll(true).call();
 
-        List<DiffEntry> difflist = toList(diffOp.setOldVersion(commit.getId())
-                .setNewVersion(ObjectId.NULL).call());
+        List<DiffEntry> difflist = toList(
+                diffOp.setOldVersion(commit.getId()).setNewVersion(ObjectId.NULL).call());
 
         assertNotNull(difflist);
         assertEquals(1, difflist.size());
@@ -156,8 +155,8 @@ public class DiffOpTest extends RepositoryTestCase {
         assertTrue(deleteAndAdd(points1));
         final RevCommit deleteCommit = geogig.command(CommitOp.class).setAll(true).call();
 
-        List<DiffEntry> difflist = toList(diffOp.setOldVersion(addCommit.getId())
-                .setNewVersion(deleteCommit.getId()).call());
+        List<DiffEntry> difflist = toList(
+                diffOp.setOldVersion(addCommit.getId()).setNewVersion(deleteCommit.getId()).call());
 
         final String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
 
@@ -183,8 +182,8 @@ public class DiffOpTest extends RepositoryTestCase {
         final RevCommit deleteCommit = geogig.command(CommitOp.class).setAll(true).call();
 
         // set old/new version in reverse order
-        List<DiffEntry> difflist = toList(diffOp.setOldVersion(deleteCommit.getId())
-                .setNewVersion(addCommit.getId()).call());
+        List<DiffEntry> difflist = toList(
+                diffOp.setOldVersion(deleteCommit.getId()).setNewVersion(addCommit.getId()).call());
 
         final String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
 
@@ -508,8 +507,7 @@ public class DiffOpTest extends RepositoryTestCase {
         WorkingTree workTree = repo.workingTree();
         Name name = lines1.getType().getName();
         String parentPath = name.getLocalPart();
-        @SuppressWarnings("unused")
-        Node ref = workTree.insert(parentPath, lines1B);
+        workTree.insert(featureInfo(parentPath, lines1B));
         geogig.command(AddOp.class).call();
         RevCommit commit2 = geogig.command(CommitOp.class).setAll(true).call();
 

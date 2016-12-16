@@ -59,7 +59,7 @@ import com.google.common.primitives.UnsignedLong;
  * defined by this class, for the first eight levels of depth, after which {@code buckets per node}
  * is always {@code 2} and {@code #features per leaf tree} always {@code 256}.
  * <p>
- * This structure is fixes and intends to balance out the growth of the trees as feature nodes are
+ * This structure is fixed and intends to balance out the growth of the trees as feature nodes are
  * added to provide for a good maximum capacity without too many levels of nesting, nor too few at
  * the cost of an exponential growth on the number of internal tree nodes.
  * 
@@ -91,7 +91,7 @@ import com.google.common.primitives.UnsignedLong;
  * The {@code "Max #features"} column shows what's the maximum number of feature nodes a tree split
  * at that level of nesting can contain.
  * 
- * @since 0.6
+ * @since 1.0
  */
 public final class CanonicalNodeNameOrder extends Ordering<String> implements Serializable {
 
@@ -104,6 +104,10 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
     @Override
     public int compare(String p1, String p2) {
         return hashOrder.compare(p1, p2);
+    }
+
+    public int compare(final long longBits1, final String p1, final long longBits2, String p2) {
+        return hashOrder.compare(longBits1, p1, longBits2, p2);
     }
 
     /**
@@ -175,7 +179,8 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
     }
 
     /**
-     * Computes the bucket index that corresponds to the given node name at the given depth.
+     * Computes the bucket index (zero based) that corresponds to the given node name at the given
+     * (zero based) depth.
      * 
      * @return and Integer between zero and {@link #maxBucketsForLevel
      *         maxBucketsForLevel(depthIndex)} minus one
@@ -184,6 +189,18 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
         final long longBits = hashOrder.fnvBits(nodeName);
         final int bucket = hashOrder.bucket(longBits, depthIndex);
         return Integer.valueOf(bucket);
+    }
+
+    /**
+     * Given a feature name's {@link #hashCodeLong(String) long hashcode}, computes the bucket index
+     * that corresponds to the node name at the given depth.
+     * 
+     * @return and Integer between zero and {@link #maxBucketsForLevel
+     *         maxBucketsForLevel(depthIndex)} minus one
+     */
+    public static int bucket(final long hashCodeLong, final int depthIndex) {
+        final int bucket = hashOrder.bucket(hashCodeLong, depthIndex);
+        return bucket;
     }
 
     /**
@@ -227,6 +244,11 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
             final long longBits1 = fnvBits(p1);
             final long longBits2 = fnvBits(p2);
 
+            return compare(longBits1, p1, longBits2, p2);
+        }
+
+        private int compare(final long longBits1, final String p1, final long longBits2,
+                final String p2) {
             for (int i = 0; i < 8; i++) {
                 int bucket1 = bucket(longBits1, i);
                 int bucket2 = bucket(longBits2, i);
@@ -246,8 +268,6 @@ public final class CanonicalNodeNameOrder extends Ordering<String> implements Se
 
         private int bucket(long longBits, int depthIndex) {
             final int byteN = byteN(longBits, depthIndex);
-            Preconditions.checkState(byteN >= 0);
-            Preconditions.checkState(byteN < 256);
 
             final int maxBuckets = CanonicalNodeNameOrder.maxBucketsForLevel(depthIndex);
 

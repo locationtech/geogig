@@ -31,19 +31,19 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.di.Decorator;
 import org.locationtech.geogig.di.DecoratorProvider;
 import org.locationtech.geogig.di.GuiceInjector;
-import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.impl.CommitBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
@@ -112,7 +112,7 @@ public class CachingModuleTest {
         odb.put(o1);
         odb.put(o2);
         odb.put(o3);
-        
+
         odb.put(s1);
         odb.put(s2);
         odb.put(s3);

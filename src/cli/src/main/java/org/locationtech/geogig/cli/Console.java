@@ -39,6 +39,8 @@ public class Console {
 
     private boolean ansiSupported;
 
+    private boolean forceAnsi;
+
     /**
      * Creates a console reader that reads from {@code sdtin} and writes to {@code sdout}.
      */
@@ -56,7 +58,14 @@ public class Console {
         this.in = in;
         this.cursorBuffer = new StringBuffer();
         this.ansiEnabled = true;
-        this.ansiSupported = checkAnsiSupported(out);
+        this.forceAnsi = false;
+        try {
+            this.ansiSupported = checkAnsiSupported(out, checkOS());
+        } catch (UnsatisfiedLinkError e) {
+            this.ansiSupported = false;
+        } catch (Throwable e) {
+            this.ansiSupported = false;
+        }
         if (out instanceof PrintStream) {
             this.out = (PrintStream) out;
         } else {
@@ -70,36 +79,38 @@ public class Console {
      * <p>
      * {@code true} will only be returned if the console's output is not redirected to a file or
      * piped, this console's output stream is "stdout", and the JVM has been invoked from a terminal
-     * that supports ANSI codes.
+     * that supports ANSI codes. Setting ansi.enabled as a config option will cause this to return
+     * true.
      * <p>
-     * If {@link #disableAnsi()} has been called, returns {@code false} immediately.
+     * If {@link #forceAnsi} is true, this returns true immediately. Otherwise if
+     * {@link #disableAnsi()} has been called, returns {@code false} immediately.
      * 
      * @return {@code true} if ANSI terminal color codes are supported by the console, {@code false}
      *         otherwise.
      */
     public boolean isAnsiSupported() {
-        return ansiEnabled && ansiSupported;
+        return forceAnsi || (ansiEnabled && ansiSupported);
     }
 
-    private static boolean checkAnsiSupported(OutputStream out) {
+    protected boolean checkAnsiSupported(OutputStream out, String osName) throws Throwable {
         if (out != System.out) {
             return false;
         }
-        if (System.console() == null) {
+
+        if (osName.startsWith("windows") && osName.endsWith("10")) {
+            new WindowsAnsiOutputStream(out);
+        } else if (osName.startsWith("windows") && !osName.endsWith("10")) {
             return false;
         }
 
-        final String osname = System.getProperty("os.name");
-        if (osname.toLowerCase().startsWith("windows")) {
-            try {
-                new WindowsAnsiOutputStream(out);
-            } catch (Throwable e) {
-                // The required Windows native lib is not available
-                return false;
-            }
+        if (System.console() == null) {
+            return false;
         }
-
         return true;
+    }
+
+    public String checkOS() {
+        return System.getProperty("os.name").toLowerCase();
     }
 
     /**
@@ -110,6 +121,27 @@ public class Console {
      */
     public Console disableAnsi() {
         this.ansiEnabled = false;
+        return this;
+    }
+
+    /**
+     * Enables ANSI terminal color support, regardless of the auto-detection performed by
+     * {@link #isAnsiSupported()}.
+     *
+     * @return {@code this}
+     */
+    public Console enableAnsi() {
+        this.ansiEnabled = true;
+        return this;
+    }
+
+    /**
+     * Flag to force enable ANSI terminal color support, used for windows consoles
+     *
+     * @return {@code this}
+     */
+    public Console setForceAnsi(boolean force) {
+        this.forceAnsi = force;
         return this;
     }
 

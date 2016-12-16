@@ -17,7 +17,8 @@ public class SymRefTest {
 
     @Test
     public void testSymRef() {
-        Ref testRef = new Ref(Ref.REFS_PREFIX + "commit1", ObjectId.forString("Test Commit"));
+        Ref testRef = new Ref(Ref.REFS_PREFIX + "commit1",
+                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"));
 
         SymRef symRef = new SymRef("TestRef", testRef);
 

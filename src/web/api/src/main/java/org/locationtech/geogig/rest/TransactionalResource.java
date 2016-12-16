@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -11,13 +11,14 @@ package org.locationtech.geogig.rest;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
-import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
+import static org.locationtech.geogig.web.api.RESTUtils.getGeogig;
 
 import java.util.UUID;
 
+import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.restlet.data.Form;
 import org.restlet.data.Request;
 import org.restlet.resource.Resource;
@@ -48,9 +49,14 @@ public class TransactionalResource extends Resource {
         Form options = getRequest().getResourceRef().getQueryAsForm();
         String txId = options.getFirstValue("transactionId");
         if (txId != null) {
-            UUID transactionId = UUID.fromString(txId);
-            GeogigTransaction tx = new GeogigTransaction(geogigContext, transactionId);
-            geogigContext = tx;
+            Optional<GeogigTransaction> transaction = geogig.get().command(TransactionResolve.class)
+                    .setId(UUID.fromString(txId)).call();
+            if (transaction.isPresent()) {
+                geogigContext = transaction.get();
+            } else {
+                throw new RestletException("A transaction with the provided ID could not be found.",
+                        org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST);
+            }
         }
         return geogigContext;
     }

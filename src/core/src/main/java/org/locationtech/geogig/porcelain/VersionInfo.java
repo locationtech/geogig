@@ -46,7 +46,13 @@ public class VersionInfo {
      * @param properties the properties of the current build
      */
     public VersionInfo(Properties properties) {
-        this.projectVersion = getClass().getPackage().getImplementationVersion();
+        // try to get the implementation version from this class
+        this.projectVersion = VersionInfo.class.getPackage().getImplementationVersion();
+        if (this.projectVersion == null) {
+            // no Implementation Version available
+            // should only occur if running from class files and not a JAR
+            this.projectVersion = "UNDETERMINED";
+        }
         this.branch = properties.get("git.branch").toString();
         this.commitId = properties.get("git.commit.id").toString();
         this.commitIdAbbrev = properties.get("git.commit.id.abbrev").toString();

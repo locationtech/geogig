@@ -82,8 +82,8 @@ public class ConfigOpTest extends RepositoryTestCase {
         result = config.setAction(ConfigAction.CONFIG_GET).setName("section.string").setValue(null)
                 .call().or(new HashMap<String, String>());
         assertNull(result.get("section.string"));
-        result = config.setAction(ConfigAction.CONFIG_GET).setName("section.string2")
-                .setValue(null).call().or(new HashMap<String, String>());
+        result = config.setAction(ConfigAction.CONFIG_GET).setName("section.string2").setValue(null)
+                .call().or(new HashMap<String, String>());
         assertNull(result.get("section.string2"));
 
         // Try listing the config file
@@ -151,8 +151,8 @@ public class ConfigOpTest extends RepositoryTestCase {
         ConfigOp config = new ConfigOp(database);
 
         exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.LOCAL).setAction(ConfigAction.CONFIG_GET)
-                .setName("section.key").setValue(null).call();
+        config.setScope(ConfigScope.LOCAL).setAction(ConfigAction.CONFIG_GET).setName("section.key")
+                .setValue(null).call();
     }
 
     @Test

@@ -75,9 +75,9 @@ The following commands create two repositories, ``gold`` and ``QA`` in the same 
 
 .. code-block:: console
 
- user@localhost:/home/user$ geogig --repo "posgresql://dbserver/geogig/master/gold?user=peter&password=secret" init
+ user@localhost:/home/user$ geogig --repo "postgresql://dbserver/geogig/master/gold?user=peter&password=secret" init
 
- user@localhost:/home/user$ geogig --repo "posgresql://dbserver/geogig/master/QA?user=peter&password=secret" init
+ user@localhost:/home/user$ geogig --repo "postgresql://dbserver/geogig/master/QA?user=peter&password=secret" init
 
 
 Tired already of typing the repository URI?
@@ -85,8 +85,8 @@ A nice trick is to use environment variables instead:
 
 .. code-block:: console
 
- user@localhost:/home/user$ export gold="posgresql://dbserver/geogig/master/gold?user=peter&password=secret"
- user@localhost:/home/user$ export QA="posgresql://dbserver/geogig/master/QA?user=peter&password=secret"
+ user@localhost:/home/user$ export gold="postgresql://dbserver/geogig/master/gold?user=peter&password=secret"
+ user@localhost:/home/user$ export QA="postgresql://dbserver/geogig/master/QA?user=peter&password=secret"
 
  user@localhost:/home/user$ geogig --repo $gold init
  user@localhost:/home/user$ geogig --repo $QA init

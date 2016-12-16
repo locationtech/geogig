@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -12,14 +12,12 @@ package org.locationtech.geogig.rest;
 import static org.locationtech.geogig.rest.Variants.JSON;
 import static org.locationtech.geogig.rest.Variants.XML;
 import static org.locationtech.geogig.rest.Variants.getVariantByExtension;
-import static org.locationtech.geogig.rest.repository.RESTUtils.getStringAttribute;
+import static org.locationtech.geogig.web.api.RESTUtils.getStringAttribute;
 
 import java.util.List;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
+import org.locationtech.geogig.web.api.StreamWriterException;
 import org.restlet.Context;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
@@ -31,6 +29,8 @@ import org.restlet.resource.Variant;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
+
+import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
  * Resource for {@code /tasks/<tasksId>[?params]}
@@ -101,10 +101,10 @@ public class TaskStatusResource extends Resource {
                 asyncContext.getAndPruneIfFinished(taskId);
             }
         }
-        return Representations.newRepresentation(command, mediaType, rootPath);
+        return Representations.newRepresentation(command, mediaType, rootPath, prune);
     }
 
-    private static class TaskListResource extends JettisonRepresentation {
+    private static class TaskListResource extends StreamingWriterRepresentation {
 
         private Iterable<AsyncCommand<? extends Object>> all;
 
@@ -115,11 +115,11 @@ public class TaskStatusResource extends Resource {
         }
 
         @Override
-        protected void write(XMLStreamWriter w) throws XMLStreamException {
+        protected void write(StreamingWriter w) throws StreamWriterException {
             w.writeStartElement("tasks");
             for (AsyncCommand<? extends Object> c : all) {
                 AsyncCommandRepresentation<?> rep = Representations.newRepresentation(c,
-                        getMediaType(), baseURL);
+                        getMediaType(), baseURL, false);
                 rep.write(w);
             }
             w.writeEndElement();

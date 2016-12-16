@@ -53,6 +53,11 @@ public class Init extends AbstractWebAPICommand {
         return false;
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Runs the command and builds the appropriate response
      * 
@@ -68,7 +73,7 @@ public class Init extends AbstractWebAPICommand {
                     Status.CLIENT_ERROR_CONFLICT);
         }
 
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         InitOp command = geogig.command(InitOp.class);
 
@@ -86,11 +91,8 @@ public class Init extends AbstractWebAPICommand {
                 @Override
                 public void write(ResponseWriter out) throws Exception {
                     out.start();
-                    out.getWriter().writeStartElement("repo");
-                    out.writeElement("name", repositoryName);
-                    out.encodeAlternateAtomLink(out.getWriter(), context.getBaseURL(),
+                    out.writeRepoInitResponse(repositoryName, context.getBaseURL(),
                             RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + repositoryName);
-                    out.getWriter().writeEndElement();
                     out.finish();
                 }
             });

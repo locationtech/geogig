@@ -12,20 +12,23 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
@@ -44,13 +47,44 @@ public class ResolveConflictTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ObjectId someObjectId = ObjectId.forString("object");
+        ObjectId someObjectId = RevObjectTestSupport.hashString("object");
         ParameterSet options = TestParams.of("path", "some/path", "objectid",
                 someObjectId.toString());
 
         ResolveConflict op = (ResolveConflict) buildCommand(options);
         assertEquals("some/path", op.path);
         assertEquals(someObjectId, op.objectId);
+    }
+
+    @Test
+    public void testNoPath() throws Exception {
+        Repository geogig = testContext.get().getRepository();
+
+        ObjectId point1_id = RevFeatureBuilder.build(TestData.point1).getId();
+
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+
+        ParameterSet options = TestParams.of("objectid", point1_id.toString(), "transactionId",
+                transaction.getTransactionId().toString());
+        ex.expect(CommandSpecException.class);
+        ex.expectMessage("No path was given.");
+        buildCommand(options).run(testContext.get());
+    }
+
+    @Test
+    public void testNoObjectId() throws Exception {
+        Repository geogig = testContext.get().getRepository();
+
+        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
+                TestData.point1.getID());
+
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+
+        ParameterSet options = TestParams.of("path", path, "transactionId",
+                transaction.getTransactionId().toString());
+        ex.expect(CommandSpecException.class);
+        ex.expectMessage("No object ID was given.");
+        buildCommand(options).run(testContext.get());
     }
 
     @Test
@@ -89,7 +123,7 @@ public class ResolveConflictTest extends AbstractWebOpTest {
                 "transactionId", transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("Success", response.getString("Add"));
     }

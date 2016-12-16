@@ -20,6 +20,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLTransientConnectionException;
 import java.sql.Statement;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.locationtech.geogig.repository.impl.RepositoryBusyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
  * Utility class for PostgreSQL storage.
@@ -75,7 +78,7 @@ public class PGStorage {
     }
 
     synchronized static DataSource newDataSource(Environment config) {
-        DataSource dataSource = DATASOURCE_POOL.acquire(config.connectionConfig);
+        DataSource dataSource = DATASOURCE_POOL.acquire(config);
         return dataSource;
     }
 
@@ -87,6 +90,8 @@ public class PGStorage {
         try {
             Connection connection = ds.getConnection();
             return connection;
+        } catch (SQLTransientConnectionException e) {
+            throw new RepositoryBusyException("No available connections to the repository.", e);
         } catch (SQLException e) {
             throw new RuntimeException("Unable to obatain connection: " + e.getMessage(), e);
         }
@@ -132,6 +137,37 @@ public class PGStorage {
     }
 
     /**
+     * List the names of all repositories in the given {@link Environment}.
+     * 
+     * @param config the environment
+     * @return the list of repository names
+     */
+    public static List<String> listRepos(final Environment config) {
+        checkNotNull(config);
+
+        List<String> repoNames = Lists.newLinkedList();
+        final DataSource dataSource = PGStorage.newDataSource(config);
+
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
+            final String repoNamesView = config.getTables().repositoryNamesView();
+            String sql = format("SELECT name FROM %s", repoNamesView);
+            try (Statement st = cx.createStatement()) {
+                try (ResultSet repos = st.executeQuery(sql)) {
+                    while (repos.next()) {
+                        repoNames.add(repos.getString(1));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        } finally {
+            PGStorage.closeDataSource(dataSource);
+        }
+
+        return repoNames;
+    }
+
+    /**
      * Initializes all the tables as given by the names in {@link Environment#getTables()
      * config.getTables()} if need be, and creates an entry in the {@link TableNames#repositories()
      * repsitories} table with the repository id given by {@link Environment#repositoryId
@@ -157,7 +193,7 @@ public class PGStorage {
             if (repositoryPK.isPresent()) {
                 return false;
             }
-            try (Connection cx = dataSource.getConnection()) {
+            try (Connection cx = PGStorage.newConnection(dataSource)) {
                 final String reposTable = config.getTables().repositories();
                 cx.setAutoCommit(false);
                 final int pk;
@@ -201,7 +237,7 @@ public class PGStorage {
         final String table = PGStorage.stripSchema(reposTable);
 
         final DataSource dataSource = PGStorage.newDataSource(config);
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             DatabaseMetaData md = cx.getMetaData();
             try (ResultSet rs = md.getTables(null, schema, table, null)) {
                 if (rs.next()) {
@@ -314,6 +350,7 @@ public class PGStorage {
     }
 
     private static void createConfigTable(Connection cx, TableNames tables) throws SQLException {
+        final String viewName = tables.repositoryNamesView();
         final String repositories = tables.repositories();
         String configTable = tables.config();
         String sql = format(
@@ -327,9 +364,9 @@ public class PGStorage {
         run(cx, sql);
         try {
             sql = format(
-                    "CREATE VIEW %s_name " + "AS SELECT r.*, c.value AS name FROM "
+                    "CREATE VIEW %s " + "AS SELECT r.*, c.value AS name FROM "
                             + "%s r INNER JOIN %s c ON r.repository = c.repository WHERE c.section = 'repo' AND c.key = 'name'",
-                    repositories, repositories, configTable);
+                    viewName, repositories, configTable);
             run(cx, sql);
         } catch (SQLException alreadyExists) {
             // ignore
@@ -570,7 +607,7 @@ public class PGStorage {
         final String sql = String.format("DELETE FROM %s WHERE repository = ?", reposTable);
         final DataSource ds = PGStorage.newDataSource(env);
 
-        try (Connection cx = ds.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(ds)) {
             cx.setAutoCommit(false);
             try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repositoryName))) {
                 st.setInt(1, repositoryPK);

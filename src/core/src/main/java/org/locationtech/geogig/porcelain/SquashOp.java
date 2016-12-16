@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -147,16 +147,16 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         while (toSquash.hasNext()) {
             commitToSquash = toSquash.next();
             squashedIds.add(commitToSquash.getId());
-            Preconditions
-                    .checkArgument(
-                            graphDb.getChildren(commitToSquash.getId()).size() < 2,
-                            "The commits to squash include a branch starting point. Squashing that type of commit is not supported.");
+            Preconditions.checkArgument(graphDb.getChildren(commitToSquash.getId()).size() < 2,
+                    "The commits to squash include a branch starting point. Squashing that type of commit is not supported.");
             for (Ref ref : refs) {
                 // In case a branch has been created but no commit has been made on it and the
                 // starting commit has just one child
                 Preconditions
                         .checkArgument(
-                                !ref.getObjectId().equals(commitToSquash.getId())
+                                !ref.getObjectId()
+                                        .equals(commitToSquash
+                                                .getId())
                                         || ref.getObjectId().equals(currHead.get().getObjectId())
                                         || commitToSquash.getParentIds().size() > 1,
                                 "The commits to squash include a branch starting point. Squashing that type of commit is not supported.");
@@ -172,18 +172,15 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
 
         // We do the same check in the children commits
         for (RevCommit commit : commits) {
-            Preconditions
-                    .checkArgument(
-                            graphDb.getChildren(commit.getId()).size() < 2,
-                            "The commits after the ones to squash include a branch starting point. This scenario is not supported.");
+            Preconditions.checkArgument(graphDb.getChildren(commit.getId()).size() < 2,
+                    "The commits after the ones to squash include a branch starting point. This scenario is not supported.");
             for (Ref ref : refs) {
                 // In case a branch has been created but no commit has been made on it
-                Preconditions
-                        .checkArgument(
-                                !ref.getObjectId().equals(commit.getId())
-                                        || ref.getObjectId().equals(currHead.get().getObjectId())
-                                        || commit.getParentIds().size() > 1,
-                                "The commits after the ones to squash include a branch starting point. This scenario is not supported.");
+                Preconditions.checkArgument(
+                        !ref.getObjectId().equals(commit.getId())
+                                || ref.getObjectId().equals(currHead.get().getObjectId())
+                                || commit.getParentIds().size() > 1,
+                        "The commits after the ones to squash include a branch starting point. This scenario is not supported.");
             }
         }
 
@@ -292,8 +289,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         final String key = "user.name";
         Optional<String> name = command(ConfigGet.class).setName(key).call();
 
-        checkState(
-                name.isPresent(),
+        checkState(name.isPresent(),
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
                 key, key);
 
@@ -304,8 +300,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         final String key = "user.email";
         Optional<String> email = command(ConfigGet.class).setName(key).call();
 
-        checkState(
-                email.isPresent(),
+        checkState(email.isPresent(),
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",
                 key, key);
 

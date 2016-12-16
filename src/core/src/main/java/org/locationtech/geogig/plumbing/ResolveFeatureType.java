@@ -10,12 +10,12 @@
 package org.locationtech.geogig.plumbing;
 
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -58,8 +58,8 @@ public class ResolveFeatureType extends AbstractGeoGigOp<Optional<RevFeatureType
         final String path = fullRefspec.substring(fullRefspec.indexOf(':') + 1);
 
         ObjectId parentId = command(ResolveTreeish.class).setTreeish(ref).call().get();
-        Optional<RevTree> parent = command(RevObjectParse.class).setObjectId(parentId).call(
-                RevTree.class);
+        Optional<RevTree> parent = command(RevObjectParse.class).setObjectId(parentId)
+                .call(RevTree.class);
         if (!parent.isPresent()) {
             return Optional.absent();
         }
@@ -70,8 +70,8 @@ public class ResolveFeatureType extends AbstractGeoGigOp<Optional<RevFeatureType
         }
         NodeRef found = node.get();
         ObjectId metadataID = found.getMetadataId();
-        Optional<RevFeatureType> ft = command(RevObjectParse.class).setObjectId(metadataID).call(
-                RevFeatureType.class);
+        Optional<RevFeatureType> ft = command(RevObjectParse.class).setObjectId(metadataID)
+                .call(RevFeatureType.class);
         return ft;
     }
 }

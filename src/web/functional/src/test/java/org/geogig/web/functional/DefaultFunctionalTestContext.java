@@ -9,28 +9,39 @@
  */
 package org.geogig.web.functional;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.Set;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GeoGIG;
-import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.test.TestPlatform;
-import org.locationtech.geogig.web.DirectoryRepositoryProvider;
 import org.locationtech.geogig.web.Main;
+import org.locationtech.geogig.web.MultiRepositoryProvider;
 import org.locationtech.geogig.web.api.TestData;
+import org.restlet.Component;
+import org.restlet.Server;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
+import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.resource.Representation;
+import org.restlet.resource.StringRepresentation;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -42,11 +53,19 @@ import com.google.common.collect.Sets;
  */
 public class DefaultFunctionalTestContext extends FunctionalTestContext {
 
+    private static int TEST_HTTP_PORT = 8182;
+
     private Main app;
 
-    private DirectoryRepositoryProvider repoProvider;
+    private MultiRepositoryProvider repoProvider;
 
     private Response lastResponse;
+
+    private String lastResponseText = null;
+
+    private Document lastResponseDocument = null;
+
+    private Server server;
 
     /**
      * Set up the context for a scenario.
@@ -55,7 +74,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
     protected void setUp() throws Exception {
         if (app == null) {
             File rootFolder = tempFolder.getRoot();
-            repoProvider = new DirectoryRepositoryProvider(rootFolder);
+            repoProvider = new MultiRepositoryProvider(rootFolder.toURI());
 
             TestPlatform platform = new TestPlatform(rootFolder);
             GlobalContextBuilder.builder(new FunctionalRepoContextBuilder(platform));
@@ -77,6 +96,26 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
                 this.app = null;
             }
         }
+        if (server != null) {
+            try {
+                this.server.stop();
+            } finally {
+                this.server = null;
+            }
+        }
+    }
+
+    @Override
+    protected void serveHttpRepos() throws Exception {
+        Component comp = new Component();
+        comp.getDefaultHost().attach(this.app);
+        this.server = comp.getServers().add(Protocol.HTTP, TEST_HTTP_PORT);
+        this.server.start();
+    }
+
+    @Override
+    public String getHttpLocation(String repoName) {
+        return String.format("http://localhost:%d/repos/%s", TEST_HTTP_PORT, repoName);
     }
 
     /**
@@ -87,7 +126,14 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public Repository getRepo(String name) {
-        return repoProvider.getGeogig(name);
+        // don't call getGeogig(name) on a repo that doesn't exist or it will be created
+        final Iterator<String> repos = repoProvider.findRepositories();
+        while (repos.hasNext()) {
+            if (name.equals(repos.next())) {
+                return repoProvider.getGeogig(name);
+            }
+        }
+        return null;
     }
 
     /**
@@ -107,6 +153,11 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         return testData;
     }
 
+    private void setLastResponse(Response response) {
+        this.lastResponse = response;
+        this.lastResponseText = null;
+        this.lastResponseDocument = null;
+    }
     /**
      * Issue a POST request to the provided URL with the given file passed as form data.
      * 
@@ -121,10 +172,25 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
             Request request = new Request(Method.POST, resourceUri, webForm);
             request.setRootRef(new Reference(""));
 
-            this.lastResponse = app.handle(request);
+            setLastResponse(app.handle(request));
         } catch (IOException e) {
             Throwables.propagate(e);
         }
+    }
+
+    /**
+     * Issue a POST request to the provided URL with the given text as post data.
+     * 
+     * @param url the url to issue the request to
+     * @param postText the text to post
+     */
+    @Override
+    protected void postTextInternal(final String resourceUri, final String postText) {
+        Representation text = new StringRepresentation(postText);
+        Request request = new Request(Method.POST, resourceUri, text);
+        request.setRootRef(new Reference(""));
+
+        setLastResponse(app.handle(request));
     }
 
     /**
@@ -138,11 +204,24 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         Request request = new Request(method, resourceUri);
         request.setRootRef(new Reference(""));
         if (Method.PUT.equals(method) || Method.POST.equals(method)) {
-            // if the request entity is empty or null, Resouce.handlePut() doesn't get thru the last
-            // CommandResource at all
-            request.setEntity("empty payload", MediaType.TEXT_PLAIN);
+            // PUT and POST requests should have an entity.
+            // Since this method has no content argument, fill the entity with an empty JSON object.
+            // This method is hit for setting up repositories for many tests, making PUT calls to trigger the "init"
+            // command. The INIT Web API command only accepts JSON and Web Form entities, so we'll use JSON here.
+            request.setEntity("{}", MediaType.APPLICATION_JSON);
         }
-        this.lastResponse = app.handle(request);
+
+        setLastResponse(app.handle(request));
+    }
+
+    @Override
+    protected void callInternal(final Method method, String resourceUri, String content, String contentType) {
+        Request request = new Request(method, resourceUri);
+        request.setRootRef(new Reference(""));
+        if (content != null && !content.isEmpty() && contentType != null) {
+            request.setEntity(content, MediaType.valueOf(contentType));
+        }
+        setLastResponse(app.handle(request));
     }
 
     /**
@@ -160,13 +239,15 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public String getLastResponseText() {
-        String xml;
+        if (lastResponseText != null) {
+            return lastResponseText;
+        }
         try {
-            xml = getLastResponse().getEntity().getText();
+            lastResponseText = getLastResponse().getEntity().getText();
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
-        return xml;
+        return lastResponseText;
     }
 
     /**
@@ -183,11 +264,20 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
      */
     @Override
     public Document getLastResponseAsDom() {
-        try {
-            return getLastResponse().getEntityAsDom().getDocument();
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
+        if (lastResponseDocument == null) {
+            try {
+                String text = getLastResponseText();
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+                factory.setNamespaceAware(true);
+                DocumentBuilder builder = factory.newDocumentBuilder();
+
+                lastResponseDocument = builder.parse(new ByteArrayInputStream(text.getBytes()));
+            } catch (IOException | SAXException | ParserConfigurationException e) {
+                throw Throwables.propagate(e);
+            }
         }
+        return lastResponseDocument;
     }
 
     /**

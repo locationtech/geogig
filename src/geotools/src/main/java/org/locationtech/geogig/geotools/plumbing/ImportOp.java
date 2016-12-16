@@ -20,6 +20,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
+import org.geotools.data.store.FeatureIteratorIterator;
 import org.geotools.factory.Hints;
 import org.geotools.feature.DecoratingFeature;
 import org.geotools.feature.FeatureCollection;
@@ -35,18 +36,20 @@ import org.locationtech.geogig.data.ForwardingFeatureIterator;
 import org.locationtech.geogig.data.ForwardingFeatureSource;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.hooks.Hookable;
-import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.Feature;
@@ -56,6 +59,8 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.identity.FeatureId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
@@ -73,6 +78,8 @@ import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
  */
 @Hookable(name = "import")
 public class ImportOp extends AbstractGeoGigOp<RevTree> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ImportOp.class);
 
     private boolean all = false;
 
@@ -229,21 +236,12 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
                 // first we modify the feature type and the existing features, if needed
                 workTree.updateTypeTree(path, featureType);
                 Iterator<Feature> transformedIterator = transformFeatures(featureType, path);
-                try {
-                    final Integer collectionSize = collectionSize(featureSource);
-                    workTree.insert(path, transformedIterator, taskProgress, null, collectionSize);
-                } catch (Exception e) {
-                    throw new GeoToolsOpException(StatusCode.UNABLE_TO_INSERT);
-                }
+                RevFeatureType type = RevFeatureTypeBuilder.build(featureType);
+                objectDatabase().put(type);
+                insert(workTree, path, transformedIterator, taskProgress, type.getId());
             }
             if (!createSchemaOnly) {
-                try {
-                    insert(workTree, path, featureSource, taskProgress);
-                } catch (GeoToolsOpException e) {
-                    throw e;
-                } catch (Exception e) {
-                    throw new GeoToolsOpException(e, StatusCode.UNABLE_TO_INSERT);
-                }
+                insert(workTree, path, featureSource, taskProgress);
             }
         }
 
@@ -470,15 +468,44 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         }
     }
 
-    private void insert(final WorkingTree workTree, final String path,
+    private void insert(final WorkingTree workTree, final String treePath,
             @SuppressWarnings("rawtypes") final FeatureSource featureSource,
             final ProgressListener taskProgress) {
 
         final Query query = new Query();
         CoordinateSequenceFactory coordSeq = new PackedCoordinateSequenceFactory();
         query.getHints().add(new Hints(Hints.JTS_COORDINATE_SEQUENCE_FACTORY, coordSeq));
-        workTree.insert(path, featureSource, query, taskProgress);
 
+        try (FeatureIterator fit = featureSource.getFeatures(query).features()) {
+            FeatureType schema = featureSource.getSchema();
+            RevFeatureType featureType = RevFeatureTypeBuilder.build(schema);
+            objectDatabase().put(featureType);
+            ObjectId featureTypeId = featureType.getId();
+
+            if (fit.hasNext()) {
+                Iterator<Feature> features = new FeatureIteratorIterator<>(fit);
+                insert(workTree, treePath, features, taskProgress, featureTypeId);
+            }
+        } catch (IOException e) {
+            LOG.warn("Unable to insert into " + treePath, e);
+            throw new GeoToolsOpException(e, StatusCode.UNABLE_TO_INSERT);
+        }
+    }
+
+    private void insert(final WorkingTree workTree, final String treePath,
+            Iterator<Feature> features, final ProgressListener taskProgress,
+            ObjectId featureTypeId) {
+        try {
+            Iterator<FeatureInfo> infos = Iterators.transform(features, (f) -> {
+                RevFeature rf = RevFeatureBuilder.build(f);
+                String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
+                return FeatureInfo.insert(rf, featureTypeId, path);
+            });
+            workTree.insert(infos, taskProgress);
+        } catch (Exception e) {
+            LOG.warn("Unable to insert into " + treePath, e);
+            throw new GeoToolsOpException(e, StatusCode.UNABLE_TO_INSERT);
+        }
     }
 
     private Iterator<Feature> transformIterator(Iterator<NodeRef> nodeIterator,

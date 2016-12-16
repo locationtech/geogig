@@ -28,6 +28,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.test.TestPlatform;
@@ -45,7 +46,7 @@ public abstract class RefDatabaseTest {
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    private static final ObjectId sampleId = ObjectId.forString("some random string");
+    private static final ObjectId sampleId = RevObjectTestSupport.hashString("some random string");
 
     @Before
     public void setUp() throws Exception {
@@ -135,8 +136,10 @@ public abstract class RefDatabaseTest {
             String value = e.getValue();
             if (key.startsWith(Ref.append(Ref.TRANSACTIONS_PREFIX, "txnamespace"))) {
                 // createRefs added txnamespace1 and txnamespace2
-                assertFalse(key + " is in a transaction namespace, "
-                        + "shall not be returned by getAll()", allOnNullNamespace.containsKey(key));
+                assertFalse(
+                        key + " is in a transaction namespace, "
+                                + "shall not be returned by getAll()",
+                        allOnNullNamespace.containsKey(key));
             } else {
                 assertTrue(key + " not found", allOnNullNamespace.containsKey(key));
                 assertEquals(value, allOnNullNamespace.get(key));
@@ -184,8 +187,9 @@ public abstract class RefDatabaseTest {
                 assertTrue(allOnNamespace.containsKey(key));
                 assertEquals(value, allOnNamespace.get(key));
             } else {
-                assertFalse(key + " is NOT in a transaction namespace " + namespace
-                        + ", shall not be returned by getAll(String namespace)",
+                assertFalse(
+                        key + " is NOT in a transaction namespace " + namespace
+                                + ", shall not be returned by getAll(String namespace)",
                         allOnNamespace.containsKey(key));
             }
         }
@@ -260,7 +264,7 @@ public abstract class RefDatabaseTest {
     }
 
     private String id(String string) {
-        return ObjectId.forString(string).toString();
+        return RevObjectTestSupport.hashString(string).toString();
     }
 
     private void putRef(String name, String value, Map<String, String> holder) {

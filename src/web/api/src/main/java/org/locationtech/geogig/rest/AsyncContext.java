@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
@@ -198,6 +198,29 @@ public class AsyncContext {
 
         public String getDescription() {
             return description;
+        }
+
+        /**
+         * Clean up any resources used by the command results, if applicable.
+         */
+        public void close() {
+            if (future.isDone()) {
+                try {
+                    T result = future.get();
+                    if (result instanceof AutoCloseable) {
+                        ((AutoCloseable) result).close();
+                    }
+                } catch (Exception e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof AutoCloseable) {
+                        try {
+                            ((AutoCloseable) cause).close();
+                        } catch (Exception ex) {
+                            // Do nothing
+                        }
+                    }
+                }
+            }
         }
 
         @SuppressWarnings("unchecked")

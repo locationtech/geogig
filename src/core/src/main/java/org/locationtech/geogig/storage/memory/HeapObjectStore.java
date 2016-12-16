@@ -18,14 +18,15 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.AbstractObjectDatabase;
-import org.locationtech.geogig.storage.AbstractObjectStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
+import org.locationtech.geogig.storage.impl.AbstractObjectDatabase;
+import org.locationtech.geogig.storage.impl.AbstractObjectStore;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -195,7 +196,7 @@ public class HeapObjectStore extends AbstractObjectStore {
                     raw = objects.get(id);
                     if (raw != null) {
                         try {
-                            RevObject obj = serializer.read(id, new ByteArrayInputStream(raw));
+                            RevObject obj = serializer().read(id, new ByteArrayInputStream(raw));
                             found = type.isAssignableFrom(obj.getClass()) ? type.cast(obj) : null;
                         } catch (IOException e) {
                             throw Throwables.propagate(e);
@@ -218,6 +219,16 @@ public class HeapObjectStore extends AbstractObjectStore {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    public int size() {
+        return this.objects.size();
+    }
+
+    public long storageSize() {
+        final AtomicLong size = new AtomicLong();
+        this.objects.values().forEach((ba) -> size.addAndGet(ba.length));
+        return size.get();
     }
 
 }

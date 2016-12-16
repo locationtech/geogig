@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.rest.repository;
 
-import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
+import static org.locationtech.geogig.web.api.RESTUtils.getGeogig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +27,7 @@ import org.locationtech.geogig.remote.FilteredDiffIterator;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryFilter;
+import org.locationtech.geogig.repository.impl.RepositoryFilter;
 import org.restlet.Context;
 import org.restlet.Finder;
 import org.restlet.data.MediaType;
@@ -153,28 +153,24 @@ public class FilteredChangesResource extends Finder {
                     parent = commit.getParentIds().get(0);
                 }
 
-                try (AutoCloseableIterator<DiffEntry> changes = repository.command(DiffOp.class)
+                AutoCloseableIterator<DiffEntry> changes = repository.command(DiffOp.class)
                         .setNewVersion(commit.getId()).setOldVersion(parent).setReportTrees(true)
-                        .call()) {
-                    FilteredDiffIterator filteredChanges = new FilteredDiffIterator(changes,
-                            repository, filter) {
-                        @Override
-                        protected boolean trackingObject(ObjectId objectId) {
-                            return tracked.contains(objectId);
-                        }
-                    };
+                        .call();
+                FilteredDiffIterator filteredChanges = new FilteredDiffIterator(changes, repository,
+                        filter) {
+                    @Override
+                    protected boolean trackingObject(ObjectId objectId) {
+                        return tracked.contains(objectId);
+                    }
+                };
 
-                    getResponse().setEntity(new FilteredDiffIteratorRepresentation(
-                            new BinaryPackedChanges(repository), filteredChanges));
-                }
+                getResponse().setEntity(new FilteredDiffIteratorRepresentation(
+                        new BinaryPackedChanges(repository), filteredChanges));
 
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
-
-        private static final MediaType PACKED_OBJECTS = new MediaType(
-                "application/x-geogig-packed");
 
         private class FilteredDiffIteratorRepresentation extends OutputRepresentation {
 
@@ -184,7 +180,7 @@ public class FilteredChangesResource extends Finder {
 
             public FilteredDiffIteratorRepresentation(BinaryPackedChanges packer,
                     FilteredDiffIterator changes) {
-                super(PACKED_OBJECTS);
+                super(MediaType.APPLICATION_OCTET_STREAM);
                 this.changes = changes;
                 this.packer = packer;
             }
@@ -200,6 +196,7 @@ public class FilteredChangesResource extends Finder {
                 } else {
                     out.write(0);
                 }
+                changes.close();
             }
         }
     }

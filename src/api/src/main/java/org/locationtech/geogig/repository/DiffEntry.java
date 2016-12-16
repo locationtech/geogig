@@ -14,8 +14,8 @@ import java.util.Comparator;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.base.Objects;
@@ -25,6 +25,8 @@ import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * Provides a way of describing the between two different {@link Node}s.
+ * 
+ * @since 1.0
  */
 public class DiffEntry {
 
@@ -117,6 +119,10 @@ public class DiffEntry {
         return oldObject;
     }
 
+    /**
+     * @return an {@link Optional} with the old object, or {@link Optional#absent()} if there was no
+     *         old object
+     */
     public Optional<NodeRef> oldObject() {
         return Optional.fromNullable(oldObject);
     }
@@ -137,6 +143,10 @@ public class DiffEntry {
         return newObject;
     }
 
+    /**
+     * @return an {@link Optional} with the new object, or {@link Optional#absent()} if there was no
+     *         new object
+     */
     public Optional<NodeRef> newObject() {
         return Optional.fromNullable(newObject);
     }
@@ -146,9 +156,9 @@ public class DiffEntry {
      */
     public ChangeType changeType() {
         ChangeType type;
-        if (oldObject == null || oldObject.getObjectId().isNull()) {
+        if (oldObject == null) {
             type = ChangeType.ADDED;
-        } else if (newObject == null || newObject.getObjectId().isNull()) {
+        } else if (newObject == null) {
             type = ChangeType.REMOVED;
         } else {
             type = ChangeType.MODIFIED;
@@ -164,13 +174,13 @@ public class DiffEntry {
     public String toString() {
         StringBuilder sb = new StringBuilder(changeType().toString());
         if (!isAdd()) {
-            sb.append(" [").append(oldObject).append("]");
+            sb.append(" [").append(oldObject).append("] ");
         }
         if (isChange()) {
-            sb.append(" -> ");
+            sb.append("->");
         }
         if (!isDelete()) {
-            sb.append(" [").append(newObject).append(']');
+            sb.append(" [").append(newObject).append("]");
         }
         return sb.toString();
     }
@@ -182,15 +192,19 @@ public class DiffEntry {
         return oldObject == null ? null : oldObject.path();
     }
 
-    public String path() {
-        return newObject == null ? oldObject.path() : newObject.path();
-    }
-
     /**
      * @return the path of the new object
      */
     public @Nullable String newPath() {
         return newObject == null ? null : newObject.path();
+    }
+
+    /**
+     * @return the path represented by this entry; if there is no new object, the path will be that
+     *         of the old object
+     */
+    public String path() {
+        return newObject == null ? oldObject.path() : newObject.path();
     }
 
     /**
@@ -207,6 +221,11 @@ public class DiffEntry {
         return oldObject == null ? null : oldObject.getNode().getName();
     }
 
+    /**
+     * Determines if this {@code DiffEntry} is the same as another.
+     * 
+     * @param o the other object
+     */
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof DiffEntry)) {
@@ -217,8 +236,9 @@ public class DiffEntry {
     }
 
     /**
+     * Expands an {@link Envelope} to include both the old object and the new object if they exist.
      * 
-     * @param target
+     * @param target the {@link Envelope} to expand
      */
     public void expand(Envelope target) {
         if (oldObject != null) {
@@ -229,23 +249,49 @@ public class DiffEntry {
         }
     }
 
+    /**
+     * Generates a hash code for this entry.
+     */
     @Override
     public int hashCode() {
         return Objects.hashCode(oldObject, newObject);
     }
 
+    /**
+     * @return {@code true} if the objects in this entry represent a deleted feature
+     */
     public boolean isDelete() {
         return ChangeType.REMOVED.equals(changeType());
     }
 
+    /**
+     * @return {@code true} if the objects in this entry represent an added feature
+     */
     public boolean isAdd() {
         return ChangeType.ADDED.equals(changeType());
     }
 
+    /**
+     * @return {@code true} if the objects in this entry represent a changed feature
+     */
     public boolean isChange() {
         return ChangeType.MODIFIED.equals(changeType());
     }
 
+    /**
+     * {@link Comparator} for comparing the two {@code DiffEntries}. Primarily used to determine
+     * which of the {@code DiffEntries} would come first in a diff traversal. The comparator follows
+     * a set of rules to determine the order:
+     * <p>
+     * - If both {@code DiffEntries} represent changed features, the order is determined by the
+     * comparison of their nodes.
+     * <p>
+     * - A {@code DiffEntry} that represents a changed tree will come before a {@code DiffEntry}
+     * that represents a changed feature of that same tree.
+     * <p>
+     * - A {@code DiffEntry} that represents a changed tree will come after a {@code DiffEntry} that
+     * represents a changed feature in a different tree.
+     */
     public static Comparator<DiffEntry> COMPARATOR = new Comparator<DiffEntry>() {
 
         @Override
@@ -274,19 +320,37 @@ public class DiffEntry {
         }
     };
 
+    /**
+     * @return the {@link RevObject.TYPE} of the new object, or {@code null} if there isn't one
+     */
     public TYPE newObjectType() {
-        return getNewObject().getType();
+        NodeRef newObject = getNewObject();
+        return newObject != null ? newObject.getType() : null;
     }
 
+    /**
+     * @return the {@link RevObject.TYPE} of the old object, or {@code null} if there isn't one
+     */
     public TYPE oldObjectType() {
-        return getOldObject().getType();
+        NodeRef oldObject = getOldObject();
+        return oldObject != null ? oldObject.getType() : null;
     }
 
+    /**
+     * @return the metadata {@link ObjectId} of the new object, or {@link ObjectId#NULL} if there
+     *         isn't one
+     */
     public ObjectId newMetadataId() {
-        return getNewObject().getMetadataId();
+        NodeRef newObject = getNewObject();
+        return newObject != null ? newObject.getMetadataId() : ObjectId.NULL;
     }
 
+    /**
+     * @return the metadata {@link ObjectId} of the old object, or {@link ObjectId#NULL} if there
+     *         isn't one
+     */
     public ObjectId oldMetadataId() {
-        return getOldObject().getMetadataId();
+        NodeRef oldObject = getOldObject();
+        return oldObject != null ? oldObject.getMetadataId() : ObjectId.NULL;
     }
 }

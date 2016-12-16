@@ -134,7 +134,7 @@ public class TestContext extends ExternalResource {
                 throw new CommandSpecException(
                         "Unsupported Media Type: This response is only compatible with application/json and application/xml.");
             }
-            return new CommandResponseJettisonRepresentation(format, commandResponse, callback);
+            return new CommandResponseStreamingWriterRepresentation(format, commandResponse, callback);
         }
 
         @Override

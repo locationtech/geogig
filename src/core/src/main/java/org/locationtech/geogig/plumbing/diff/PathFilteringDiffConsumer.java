@@ -12,9 +12,9 @@ package org.locationtech.geogig.plumbing.diff;
 import java.util.List;
 
 import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
+import org.locationtech.geogig.repository.NodeRef;
 
 /**
  * A {@link Consumer} decorator that checks for whether each tree/bucket/feature event applies to

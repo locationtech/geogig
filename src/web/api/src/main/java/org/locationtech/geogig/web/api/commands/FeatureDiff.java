@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -18,6 +17,7 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -51,6 +51,11 @@ public class FeatureDiff extends AbstractWebAPICommand {
         setOldTreeish(options.getFirstValue("oldTreeish", ObjectId.NULL.toString()));
         setNewTreeish(options.getFirstValue("newTreeish", ObjectId.NULL.toString()));
         setAll(Boolean.valueOf(options.getFirstValue("all", "false")));
+    }
+
+    @Override
+    public boolean requiresTransaction() {
+        return false;
     }
 
     /**
@@ -116,10 +121,10 @@ public class FeatureDiff extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         if (path == null || path.trim().isEmpty()) {
-            throw new CommandSpecException("No path for feature name specifed");
+            throw new CommandSpecException("No feature path was specified");
         }
 
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
         ObjectId newId = geogig.command(ResolveTreeish.class).setTreeish(newTreeish).call().get();
 
         ObjectId oldId = geogig.command(ResolveTreeish.class).setTreeish(oldTreeish).call().get();

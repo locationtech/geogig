@@ -16,16 +16,18 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.BoundsFilteringDiffConsumer;
 import org.locationtech.geogig.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
@@ -36,6 +38,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.slf4j.Logger;
@@ -48,6 +51,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * Compares the content and metadata links of blobs found via two tree objects on the repository's
@@ -88,11 +92,32 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
     private boolean preserveIterationOrder = false;
 
+    private static ExecutorService producerThreads;
+
+    private StatsConsumer statsConsumer;
+
+    private boolean recordStats;
+
+    static {
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
+                .setNameFormat("geogig-difftree-pool-%d").build();
+        producerThreads = Executors.newCachedThreadPool(threadFactory);
+    }
+
     /**
      * Constructs a new instance of the {@code DiffTree} operation with the given parameters.
      */
     public DiffTree() {
         this.recursive = true;
+    }
+
+    public DiffTree recordStats() {
+        this.recordStats = true;
+        return this;
+    }
+
+    public Stats getStats() {
+        return statsConsumer == null ? null : statsConsumer.stats;
     }
 
     /**
@@ -214,14 +239,14 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 rightSource, preserveIterationOrder);
         visitor.setDefaultMetadataId(this.metadataId);
 
-        final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(10_000);
+        final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(100_000);
         final DiffEntryProducer diffProducer = new DiffEntryProducer(queue);
         diffProducer.setReportTrees(this.reportTrees);
         diffProducer.setRecursive(this.recursive);
 
         final List<RuntimeException> producerErrors = new LinkedList<>();
 
-        Thread producerThread = new Thread("DiffTree producer thread") {
+        Runnable producer = new Runnable() {
             @Override
             public void run() {
                 Consumer consumer = diffProducer;
@@ -241,10 +266,16 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 if (!pathFilters.isEmpty()) {// evaluated the former
                     consumer = new PathFilteringDiffConsumer(pathFilters, consumer);
                 }
+                if (recordStats) {
+                    statsConsumer = new StatsConsumer(consumer);
+                    consumer = statsConsumer;
+                } else {
+                    statsConsumer = null;
+                }
                 try {
-                    LOGGER.trace("waking diff {} / {}", oldRefSpec, newRefSpec);
+                    LOGGER.trace("walking diff {} / {}", oldRefSpec, newRefSpec);
                     visitor.walk(consumer);
-                    LOGGER.trace("finished waking diff {} / {}", oldRefSpec, newRefSpec);
+                    LOGGER.trace("finished walking diff {} / {}", oldRefSpec, newRefSpec);
                 } catch (RuntimeException e) {
                     LOGGER.error("Error traversing diffs", e);
                     producerErrors.add(e);
@@ -253,8 +284,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 }
             }
         };
-        producerThread.setDaemon(true);
-        producerThread.start();
+        producerThreads.submit(producer);
 
         AutoCloseableIterator<DiffEntry> consumerIterator = new AutoCloseableIterator<DiffEntry>() {
 
@@ -324,14 +354,14 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         ResolveTreeish command = null;
 
         if (treeOid != null) {
-            if (ObjectId.NULL.equals(treeOid) || RevTreeBuilder.EMPTY_TREE_ID.equals(treeOid)) {
-                tree = RevTreeBuilder.EMPTY;
+            if (ObjectId.NULL.equals(treeOid) || RevTree.EMPTY_TREE_ID.equals(treeOid)) {
+                tree = RevTree.EMPTY;
             } else {
                 command = command(ResolveTreeish.class).setTreeish(treeOid);
             }
         } else if (treeIsh.equals(ObjectId.NULL.toString())
-                || RevTreeBuilder.EMPTY_TREE_ID.toString().equals(treeIsh)) {
-            tree = RevTreeBuilder.EMPTY;
+                || RevTree.EMPTY_TREE_ID.toString().equals(treeIsh)) {
+            tree = RevTree.EMPTY;
         } else {
             command = command(ResolveTreeish.class).setTreeish(treeIsh);
         }
@@ -429,7 +459,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         }
     }
 
-    private static class DiffEntryProducer implements Consumer {
+    private static class DiffEntryProducer extends PreOrderDiffWalk.AbstractConsumer {
 
         private boolean reportFeatures = true, reportTrees = false;
 
@@ -504,14 +534,6 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
             return !finished;
         }
-
-        @Override
-        public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                @Nullable Bucket left, @Nullable Bucket right) {
-
-            // do nothing
-
-        }
     }
 
     /**
@@ -552,5 +574,51 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
     public DiffTree setRightSource(ObjectStore rightSource) {
         this.rightSource = rightSource;
         return this;
+    }
+
+    public static class Stats {
+        public final AtomicLong allTrees = new AtomicLong(), acceptedTrees = new AtomicLong(),
+                allBuckets = new AtomicLong(), acceptedBuckets = new AtomicLong(),
+                features = new AtomicLong();
+
+        @Override
+        public String toString() {
+            return String.format("Trees: %,d/%,d; buckets: %,d/%,d; features: %,d",
+                    acceptedTrees.get(), allTrees.get(), acceptedBuckets.get(), allBuckets.get(),
+                    features.get());
+        }
+    }
+
+    private static class StatsConsumer extends ForwardingConsumer {
+
+        private Stats stats = new Stats();
+
+        public StatsConsumer(Consumer delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            stats.features.incrementAndGet();
+            return super.feature(left, right);
+        }
+
+        @Override
+        public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+            stats.allTrees.incrementAndGet();
+            boolean ret = super.tree(left, right);
+            stats.acceptedTrees.addAndGet(ret ? 1 : 0);
+            return ret;
+        }
+
+        @Override
+        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                @Nullable Bucket left, @Nullable Bucket right) {
+            stats.allBuckets.incrementAndGet();
+            boolean ret = super.bucket(leftParent, rightParent, bucketIndex, left, right);
+            stats.acceptedBuckets.addAndGet(ret ? 1 : 0);
+            return ret;
+        }
+
     }
 }

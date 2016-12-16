@@ -11,7 +11,7 @@ package org.locationtech.geogig.test;
 
 import java.io.File;
 
-import org.locationtech.geogig.model.DefaultPlatform;
+import org.locationtech.geogig.model.impl.DefaultPlatform;
 import org.locationtech.geogig.repository.Platform;
 
 public class TestPlatform extends DefaultPlatform implements Platform, Cloneable {

@@ -29,6 +29,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +37,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -45,6 +47,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -59,13 +62,14 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,14 +78,19 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.Weigher;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 
@@ -96,13 +105,13 @@ public class PGObjectDatabase implements ObjectDatabase {
 
     private static final int DEFAULT_PUT_ALL_PARTITION_SIZE = 10_000;
 
-    private static final int DEFAULT_GET_ALL_PARTITION_SIZE = 50;
+    private static final int DEFAULT_GET_ALL_PARTITION_SIZE = 100;
 
     private final Environment config;
 
     private final ConfigDatabase configdb;
 
-    private static final PGRevObjectEncoder encoder = new PGRevObjectEncoder();
+    private static final SerializationFactoryProxy encoder = new SerializationFactoryProxy();
 
     private DataSource dataSource;
 
@@ -115,6 +124,8 @@ public class PGObjectDatabase implements ObjectDatabase {
     private Cache<ObjectId, byte[]> byteCache = null;
 
     private int threadPoolSize = 2;
+
+    private ThreadGroup threadGroup = null;
 
     private int getAllBatchSize = DEFAULT_GET_ALL_PARTITION_SIZE;
 
@@ -146,12 +157,12 @@ public class PGObjectDatabase implements ObjectDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.configure(configdb, FORMAT_NAME, VERSION);
+        StorageType.OBJECT.configure(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
+        StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override
@@ -188,6 +199,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         executor = ObjectDatabaseSharedResources.getExecutor(connectionConfig, prefix);
         byteCache = ObjectDatabaseSharedResources.getByteCache(connectionConfig, prefix);
         threadPoolSize = ObjectDatabaseSharedResources.getThreadPoolSize(connectionConfig, prefix);
+        threadGroup = ObjectDatabaseSharedResources.getThreadGroup(connectionConfig, prefix);
 
         conflicts = new PGConflictsDatabase(dataSource, conflictsTable, repositoryId);
         blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
@@ -251,7 +263,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                 "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE ((id).h1) = ? AND id = CAST(ROW(?,?,?) AS OBJECTID) )",
                 config.getTables().objects());
         final PGId pgid = PGId.valueOf(id);
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
                 ps.setInt(1, pgid.hash1());
                 pgid.setArgs(ps, 2);
@@ -278,7 +290,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         final String sql = format(
                 "SELECT ((id).h2), ((id).h3) FROM %s WHERE ((id).h1) = ? LIMIT 1000", objects);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 ps.setInt(1, hash1);
 
@@ -346,8 +358,8 @@ public class PGObjectDatabase implements ObjectDatabase {
         config.checkRepositoryExists();
 
         final RevObject obj;
-        if (RevTreeBuilder.EMPTY_TREE_ID.equals(id)) {
-            return type.isAssignableFrom(RevTree.class) ? type.cast(RevTreeBuilder.EMPTY) : null;
+        if (RevTree.EMPTY_TREE_ID.equals(id)) {
+            return type.isAssignableFrom(RevTree.class) ? type.cast(RevTree.EMPTY) : null;
         }
 
         @Nullable
@@ -415,9 +427,34 @@ public class PGObjectDatabase implements ObjectDatabase {
         checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
 
-        Iterator<ObjectId> iterator = ids.iterator();
+        final Set<ObjectId> queryIds = ids instanceof Set ? (Set<ObjectId>) ids
+                : Sets.newHashSet(ids);
 
-        return new GetAllIterator(dataSource, iterator, type, listener, this);
+        ImmutableMap<ObjectId, byte[]> cached = byteCache.getAllPresent(queryIds);
+
+        Iterator<T> hits = Collections.emptyIterator();
+        Iterator<T> stream = Collections.emptyIterator();
+
+        if (!cached.isEmpty()) {
+
+            Map<ObjectId, T> cachedObjects = Maps.transformEntries(cached, (id, bytes) -> {
+                RevObject o = encoder.decode(id, bytes);
+                if (type.isAssignableFrom(o.getClass())) {
+                    listener.found(id, Integer.valueOf(bytes.length));
+                    return type.cast(o);
+                }
+                listener.notFound(id);
+                return null;
+            });
+
+            hits = Iterators.filter(cachedObjects.values().iterator(), Predicates.notNull());
+        }
+        if (queryIds.size() > cached.size()) {
+            Set<ObjectId> misses = Sets.difference(queryIds, cached.keySet());
+            stream = new GetAllIterator(dataSource, misses.iterator(), type, listener, this);
+        }
+
+        return Iterators.concat(hits, stream);
     }
 
     private static class GetAllIterator<T extends RevObject> extends AbstractIterator<T> {
@@ -472,8 +509,9 @@ public class PGObjectDatabase implements ObjectDatabase {
             Iterator<ObjectId> ids = this.ids;
             final int getAllPartitionSize = db.getAllBatchSize;
 
-            for (int j = 0; j < db.threadPoolSize && ids.hasNext(); j++) {
-                List<ObjectId> idList = new ArrayList<>(getAllPartitionSize);
+            int concurrency = db.threadPoolSize;
+            for (int j = 0; j < concurrency && ids.hasNext(); j++) {
+                Set<ObjectId> idList = new HashSet<>();
                 for (int i = 0; i < getAllPartitionSize && ids.hasNext(); i++) {
                     idList.add(ids.next());
                 }
@@ -508,7 +546,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         final String tableName = tableName(config.getTables(), object.getType(), pgid.hash1());
         final String sql = format("INSERT INTO %s (id, object) VALUES (ROW(?,?,?),?)", tableName);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(true);
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id, object))) {
                 pgid.setArgs(ps, 1);
@@ -608,7 +646,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
         byte[] bytes = null;
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
                 ps.setInt(1, pgid.hash1());
                 pgid.setArgs(ps, 2);
@@ -634,18 +672,28 @@ public class PGObjectDatabase implements ObjectDatabase {
         return obj;
     }
 
-    private Future<List<RevObject>> getAll(final List<ObjectId> ids, final DataSource ds,
+    private Future<List<RevObject>> getAll(final Set<ObjectId> ids, final DataSource ds,
             final BulkOpListener listener, final @Nullable TYPE type) {
         checkState(isOpen(), "Database is closed");
 
         GetAllOp getAllOp = new GetAllOp(ids, listener, this, type);
+        // Avoid deadlocking by running the task synchronously if we are already in one of the
+        // threads on the executor.
+        if (Thread.currentThread().getThreadGroup().equals(threadGroup)) {
+            try {
+                List<RevObject> objects = getAllOp.call();
+                return Futures.immediateFuture(objects);
+            } catch (Exception e) {
+                propagate(e);
+            }
+        }
         Future<List<RevObject>> future = executor.submit(getAllOp);
         return future;
     }
 
     private static class GetAllOp implements Callable<List<RevObject>> {
 
-        private final List<ObjectId> queryIds;
+        private final Set<ObjectId> queryIds;
 
         private final BulkOpListener callback;
 
@@ -656,7 +704,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         @Nullable
         private final TYPE type;
 
-        public GetAllOp(List<ObjectId> ids, BulkOpListener listener, PGObjectDatabase db,
+        public GetAllOp(Set<ObjectId> ids, BulkOpListener listener, PGObjectDatabase db,
                 @Nullable TYPE type) {
             this.queryIds = ids;
             this.callback = listener;
@@ -698,21 +746,11 @@ public class PGObjectDatabase implements ObjectDatabase {
             byte[] bytes;
             ObjectId id;
 
-            Iterator<ObjectId> iter = queryIds.iterator();
-            while (iter.hasNext()) {
-                id = iter.next();
-                bytes = byteCache.getIfPresent(id);
-                if (bytes != null) {
-                    foundBytes(id, bytes, found, false);
-                    iter.remove();
-                }
-            }
-
             final String sql = format(
                     "SELECT ((id).h1), ((id).h2),((id).h3), object FROM %s WHERE ((id).h1) = ANY(?)",
                     tableName);
 
-            try (Connection cx = db.dataSource.getConnection()) {
+            try (Connection cx = PGStorage.newConnection(db.dataSource)) {
                 try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, queryIds))) {
 
                     final Array array = toJDBCArray(cx, queryIds);
@@ -723,7 +761,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
                     try (ResultSet rs = ps.executeQuery()) {
                         if (LOG.isTraceEnabled()) {
-                            LOG.trace(String.format("Executed getAll for %,d ids in %,dms\n",
+                            LOG.trace(String.format("Executed getAll for %,d ids in %,dms",
                                     queryCount, sw.elapsed(TimeUnit.MILLISECONDS)));
                         }
                         while (rs.next()) {
@@ -732,13 +770,14 @@ public class PGObjectDatabase implements ObjectDatabase {
                             // more due to hash1 clashes
                             if (queryIds.remove(id)) {
                                 bytes = rs.getBytes(4);
-                                foundBytes(id, bytes, found, true);
+                                found.add(foundBytes(id, bytes));
+                                byteCache.put(id, bytes);
                             }
                         }
                     }
                     if (LOG.isTraceEnabled()) {
                         sw.stop();
-                        LOG.trace(String.format("Finished getAll for %,d out of %,d ids in %,dms\n",
+                        LOG.trace(String.format("Finished getAll for %,d out of %,d ids in %,dms",
                                 found.size(), queryCount, sw.elapsed(TimeUnit.MILLISECONDS)));
                     }
                 }
@@ -749,17 +788,13 @@ public class PGObjectDatabase implements ObjectDatabase {
             return found;
         }
 
-        private void foundBytes(ObjectId oid, byte[] bytes, List<RevObject> found, boolean cache) {
+        private RevObject foundBytes(ObjectId oid, byte[] bytes) {
             RevObject obj = encoder.decode(oid, bytes);
-            found.add(obj);
             callback.found(oid, Integer.valueOf(bytes.length));
-            // Only cache tree objects.
-            if (cache && obj.getType().equals(TYPE.TREE)) {
-                byteCache.put(oid, bytes);
-            }
+            return obj;
         }
 
-        private Array toJDBCArray(Connection cx, final List<ObjectId> queryIds)
+        private Array toJDBCArray(Connection cx, final Collection<ObjectId> queryIds)
                 throws SQLException {
             Array array;
             Object[] arr = new Object[queryIds.size()];
@@ -783,7 +818,7 @@ public class PGObjectDatabase implements ObjectDatabase {
         String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
                 config.getTables().objects());
 
-        try (Connection cx = ds.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(ds)) {
             cx.setAutoCommit(true);
             try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG, id))) {
                 PGId.valueOf(id).setArgs(stmt, 1);
@@ -836,7 +871,7 @@ public class PGObjectDatabase implements ObjectDatabase {
 
         @Override
         public Void call() {
-            try (Connection cx = ds.getConnection()) {
+            try (Connection cx = PGStorage.newConnection(ds)) {
                 cx.setAutoCommit(false);
                 try {
                     doInsert(cx);
@@ -1042,7 +1077,7 @@ public class PGObjectDatabase implements ObjectDatabase {
                 config.getTables().objects());
 
         long count = 0;
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG))) {
                 // partition the objects into chunks for batch processing
@@ -1145,13 +1180,16 @@ public class PGObjectDatabase implements ObjectDatabase {
 
             final int threadPoolSize;
 
+            final ThreadGroup threadGroup;
+
             int refCount = 1;
 
             SharedResourceReference(Cache<ObjectId, byte[]> byteCache, ExecutorService executor,
-                    int threadPoolSize) {
+                    int threadPoolSize, ThreadGroup threadGroup) {
                 this.executor = executor;
                 this.byteCache = byteCache;
                 this.threadPoolSize = threadPoolSize;
+                this.threadGroup = threadGroup;
             }
         }
 
@@ -1172,10 +1210,19 @@ public class PGObjectDatabase implements ObjectDatabase {
                 } else {
                     threadPoolSize = Math.max(Runtime.getRuntime().availableProcessors(), 2);
                 }
-
-                ExecutorService databaseExecutor = createExecutorService(config, threadPoolSize);
+                final String threadGroupName = String.format("PG ODB threads for %s:%d/%s",
+                        config.getServer(), config.getPortNumber(), config.getDatabaseName());
+                final ThreadGroup threadGroup = new ThreadGroup(threadGroupName);
+                final ThreadFactory threadFactory = new ThreadFactory() {
+                    public Thread newThread(Runnable r) {
+                        return new Thread(threadGroup, r);
+                    }
+                };
+                ExecutorService databaseExecutor = createExecutorService(threadFactory, config,
+                        threadPoolSize);
                 Cache<ObjectId, byte[]> byteCache = createCache(configdb);
-                ref = new SharedResourceReference(byteCache, databaseExecutor, threadPoolSize);
+                ref = new SharedResourceReference(byteCache, databaseExecutor, threadPoolSize,
+                        threadGroup);
                 sharedResources.put(key, ref);
             } else {
                 ref.refCount++;
@@ -1202,6 +1249,12 @@ public class PGObjectDatabase implements ObjectDatabase {
             return sharedResources.get(key).executor;
         }
 
+        public static ThreadGroup getThreadGroup(Environment.ConnectionConfig config,
+                String tableNamesPrefix) {
+            final Key key = new Key(config, tableNamesPrefix);
+            return sharedResources.get(key).threadGroup;
+        }
+
         public static Cache<ObjectId, byte[]> getByteCache(
                 final Environment.ConnectionConfig config, final String tableNamesPrefix) {
             final Key key = new Key(config, tableNamesPrefix);
@@ -1225,7 +1278,8 @@ public class PGObjectDatabase implements ObjectDatabase {
                     .get(Environment.KEY_ODB_BYTE_CACHE_INITIAL_CAPACITY, Integer.class);
 
             CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-            cacheBuilder = cacheBuilder.maximumWeight(maxSize.or(defaultCacheSize()));
+            Long maxWeightBytes = maxSize.or(defaultCacheSize());
+            cacheBuilder = cacheBuilder.maximumWeight(maxWeightBytes);
             cacheBuilder.weigher(new Weigher<ObjectId, byte[]>() {
 
                 private final int ESTIMATED_OBJECTID_SIZE = 8 + ObjectId.NUM_BYTES;
@@ -1237,19 +1291,20 @@ public class PGObjectDatabase implements ObjectDatabase {
 
             });
             cacheBuilder.expireAfterAccess(expireSeconds.or(300), TimeUnit.SECONDS);
-            cacheBuilder.initialCapacity(initialCapacity.or(10_000));
+            cacheBuilder.initialCapacity(initialCapacity.or(100_000));
             cacheBuilder.concurrencyLevel(concurrencyLevel.or(4));
             cacheBuilder.softValues();
             return cacheBuilder.build();
 
         }
 
-        private static ExecutorService createExecutorService(Environment.ConnectionConfig config,
-                int threadPoolSize) {
+        private static ExecutorService createExecutorService(ThreadFactory threadFactory,
+                Environment.ConnectionConfig config, int threadPoolSize) {
             String poolName = String.format("GeoGig PG ODB pool for %s:%d/%s", config.getServer(),
                     config.getPortNumber(), config.getDatabaseName()) + "-%d";
             return Executors.newFixedThreadPool(threadPoolSize,
-                    new ThreadFactoryBuilder().setNameFormat(poolName).setDaemon(true).build());
+                    new ThreadFactoryBuilder().setThreadFactory(threadFactory)
+                            .setNameFormat(poolName).setDaemon(true).build());
         }
 
         private static long defaultCacheSize() {

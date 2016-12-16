@@ -28,7 +28,6 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
@@ -39,6 +38,7 @@ import org.locationtech.geogig.plumbing.ResolveObjectType;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -83,7 +83,7 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
      */
     @Override
     protected void runInternal(GeogigCLI cli) throws IOException {
-        if (args.isEmpty()) {
+        if (args.size() != 2) {
             printUsage(cli);
             throw new CommandFailedException();
         }

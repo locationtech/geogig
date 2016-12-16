@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.rest.repository;
 
-import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
+import static org.locationtech.geogig.web.api.RESTUtils.getGeogig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,19 +25,21 @@ import java.util.UUID;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
 import org.locationtech.geogig.model.FieldType;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.RestletException;
 import org.locationtech.geogig.web.api.CommandSpecException;
+import org.locationtech.geogig.web.api.StreamResponse;
+import org.locationtech.geogig.web.api.StreamWriterRepresentation;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -52,9 +54,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closeables;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
@@ -72,6 +76,11 @@ public class MergeFeatureResource extends Resource {
     @Override
     public boolean allowPost() {
         return true;
+    }
+
+    @Override
+    public boolean allowGet() {
+        return false;
     }
 
     private Optional<NodeRef> parseID(ObjectId commitId, String path, Repository geogig) {
@@ -100,10 +109,23 @@ public class MergeFeatureResource extends Resource {
 
         try {
             input = getRequest().getEntity().getStream();
-            final Repository ggig = getGeogig(getRequest()).get();
+            Optional<Repository> geogig = getGeogig(getRequest());
+            if (!geogig.isPresent() || !geogig.get().isOpen()) {
+                getResponse().setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                getResponse().setEntity(new StreamWriterRepresentation(MediaType.TEXT_PLAIN,
+                        StreamResponse.error("Repository not found.")));
+                return;
+            }
+            final Repository ggig = geogig.get();
             final Reader body = new InputStreamReader(input);
             final JsonParser parser = new JsonParser();
-            final JsonElement conflictJson = parser.parse(body);
+            final JsonElement conflictJson;
+            try {
+                conflictJson = parser.parse(body);
+            } catch (Exception e) {
+                invalidPostData();
+                return;
+            }
 
             if (conflictJson.isJsonObject()) {
                 final JsonObject conflict = conflictJson.getAsJsonObject();
@@ -116,7 +138,10 @@ public class MergeFeatureResource extends Resource {
                 if (conflict.has("path") && conflict.get("path").isJsonPrimitive()) {
                     featureId = conflict.get("path").getAsJsonPrimitive().getAsString();
                 }
-                Preconditions.checkState(featureId != null);
+                if (featureId == null) {
+                    invalidPostData();
+                    return;
+                }
 
                 if (conflict.has("ours") && conflict.get("ours").isJsonPrimitive()) {
                     String ourCommit = conflict.get("ours").getAsJsonPrimitive().getAsString();
@@ -137,6 +162,9 @@ public class MergeFeatureResource extends Resource {
 
                         ourFeatureType = (RevFeatureType) object.get();
                     }
+                } else {
+                    invalidPostData();
+                    return;
                 }
 
                 if (conflict.has("theirs") && conflict.get("theirs").isJsonPrimitive()) {
@@ -158,12 +186,18 @@ public class MergeFeatureResource extends Resource {
 
                         theirFeatureType = (RevFeatureType) object.get();
                     }
+                } else {
+                    invalidPostData();
+                    return;
                 }
 
                 if (conflict.has("merges") && conflict.get("merges").isJsonObject()) {
                     merges = conflict.get("merges").getAsJsonObject();
                 }
-                Preconditions.checkState(merges != null);
+                if (merges == null) {
+                    invalidPostData();
+                    return;
+                }
 
                 Preconditions.checkState(ourFeatureType != null || theirFeatureType != null);
 
@@ -242,6 +276,9 @@ public class MergeFeatureResource extends Resource {
 
                 getResponse().setEntity(new StringRepresentation(revFeature.getId().toString(),
                         MediaType.TEXT_PLAIN));
+            } else {
+                invalidPostData();
+                return;
             }
 
         } catch (Exception e) {
@@ -250,6 +287,12 @@ public class MergeFeatureResource extends Resource {
             if (input != null)
                 Closeables.closeQuietly(input);
         }
+    }
+
+    private void invalidPostData() {
+        getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        getResponse().setEntity(new StreamWriterRepresentation(MediaType.TEXT_PLAIN,
+                StreamResponse.error("Invalid POST data.")));
     }
 
     private Object valueFromNumber(FieldType type, Number value) throws Exception {

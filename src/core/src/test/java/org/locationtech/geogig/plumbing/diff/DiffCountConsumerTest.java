@@ -9,18 +9,21 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
+import static org.locationtech.geogig.model.impl.RevTreeBuilder.canonical;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 
@@ -32,14 +35,14 @@ public class DiffCountConsumerTest extends Assert {
     /**
      * All original feature noderefs have this objectid
      */
-    private static final ObjectId FAKE_FEATURE_ID = ObjectId
-            .forString("1100000000000000000000000000000000000000");
+    private static final ObjectId FAKE_FEATURE_ID = RevObjectTestSupport
+            .hashString("1100000000000000000000000000000000000000");
 
     /**
      * All changed feature noderefs have this objectid
      */
-    private static final ObjectId FAKE_FEATURE_ID_CHANGED = ObjectId
-            .forString("2200000000000000000000000000000000000000");
+    private static final ObjectId FAKE_FEATURE_ID_CHANGED = RevObjectTestSupport
+            .hashString("2200000000000000000000000000000000000000");
 
     private ObjectDatabase odb;
 
@@ -53,10 +56,6 @@ public class DiffCountConsumerTest extends Assert {
 
     private RevTree childrenFeatureTypesTree;
 
-    RevTreeBuilder childTree1;
-
-    RevTreeBuilder childTree2;
-
     @Before
     public void setUp() {
         odb = new HeapObjectDatabase();
@@ -66,28 +65,18 @@ public class DiffCountConsumerTest extends Assert {
             this.childrenFeatureTree = builder.build();
             odb.put(childrenFeatureTree);
         }
-        {
-            RevTreeBuilder rootBuilder = new RevTreeBuilder(odb);
-            childTree1 = createFeaturesTree("tree1", 10);
-            createFeatureTypesTree(rootBuilder, "tree1", childTree1);
-            childTree2 = createFeaturesTree("tree2", 5);
-            createFeatureTypesTree(rootBuilder, "tree2", childTree2);
-            childrenFeatureTypesTree = rootBuilder.build();
-            odb.put(childrenFeatureTypesTree);
-        }
 
         {
             RevTreeBuilder builder = createFeaturesTree("",
                     2 * CanonicalNodeNameOrder.normalizedSizeLimit(0));
             this.bucketsFeatureTree = builder.build();
-            assertTrue(bucketsFeatureTree.buckets().isPresent());
+            assertFalse(bucketsFeatureTree.buckets().isEmpty());
             odb.put(bucketsFeatureTree);
         }
     }
 
     private void createFeatureTypesTree(RevTreeBuilder rootBuilder, String treePath,
-            RevTreeBuilder childBuilder) {
-        RevTree childTree = childBuilder.build();
+            RevTree childTree) {
         odb.put(childTree);
         Node childRef = Node.create(treePath, childTree.getId(), ObjectId.NULL, TYPE.TREE, null);
         rootBuilder.put(childRef);
@@ -110,54 +99,77 @@ public class DiffCountConsumerTest extends Assert {
 
     @Test
     public void testChildrenEmpty() {
-        assertEquals(childrenFeatureTree.size(), count(childrenFeatureTree, RevTreeBuilder.EMPTY)
-                .featureCount());
-        assertEquals(childrenFeatureTree.size(), count(RevTreeBuilder.EMPTY, childrenFeatureTree)
-                .featureCount());
+        assertEquals(childrenFeatureTree.size(),
+                count(childrenFeatureTree, RevTree.EMPTY).featureCount());
+        assertEquals(childrenFeatureTree.size(),
+                count(RevTree.EMPTY, childrenFeatureTree).featureCount());
     }
 
     @Test
     public void testChildrenChildren() {
-        RevTreeBuilder builder = new RevTreeBuilder(odb, childrenFeatureTree);
+        RevTreeBuilder builder = canonical(odb, childrenFeatureTree);
         RevTree changed = builder.remove("3").build();
-        odb.put(changed);
+
         assertEquals(1, count(childrenFeatureTree, changed).featureCount());
         assertEquals(1, count(changed, childrenFeatureTree).featureCount());
 
-        changed = builder.put(
-                Node.create("new", FAKE_FEATURE_ID, ObjectId.NULL, TYPE.FEATURE, null)).build();
-        odb.put(changed);
+        builder = canonical(odb, changed);
+        changed = builder
+                .put(Node.create("new", FAKE_FEATURE_ID, ObjectId.NULL, TYPE.FEATURE, null))
+                .build();
 
         assertEquals(2, count(childrenFeatureTree, changed).featureCount());
         assertEquals(2, count(changed, childrenFeatureTree).featureCount());
 
-        changed = builder.put(
-                Node.create("1", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null))
+        builder = canonical(odb, changed);
+        changed = builder
+                .put(Node.create("1", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null))
                 .build();
-        odb.put(changed);
+
         assertEquals(3, count(childrenFeatureTree, changed).featureCount());
         assertEquals(3, count(changed, childrenFeatureTree).featureCount());
     }
 
     @Test
     public void testChildrenChildrenNestedTrees() {
-        RevTreeBuilder rootBuilder = new RevTreeBuilder(odb, childrenFeatureTypesTree);
+        RevTreeBuilder childTree1;
+        RevTreeBuilder childTree2;
+
+        {
+            RevTreeBuilder rootBuilder = canonical(odb);
+            childTree1 = createFeaturesTree("tree1", 10);
+            RevTree child = childTree1.build();
+            childTree1 = canonical(odb, child);
+            createFeatureTypesTree(rootBuilder, "tree1", child);
+            childTree2 = createFeaturesTree("tree2", 5);
+            child = childTree2.build();
+            childTree2 = canonical(odb, child);
+            createFeatureTypesTree(rootBuilder, "tree2", child);
+            childrenFeatureTypesTree = rootBuilder.build();
+            odb.put(childrenFeatureTypesTree);
+        }
+
+        RevTreeBuilder rootBuilder = canonical(odb, childrenFeatureTypesTree);
         childTree1.put(featureRef("tree1", 1000));
-        createFeatureTypesTree(rootBuilder, "tree1", childTree1);
+        createFeatureTypesTree(rootBuilder, "tree1", childTree1.build());
         RevTree newRoot = rootBuilder.build();
         odb.put(newRoot);
 
         assertEquals(1, count(childrenFeatureTypesTree, newRoot).featureCount());
 
         childTree2.remove("tree2/2");
-        createFeatureTypesTree(rootBuilder, "tree2", childTree2);
+        rootBuilder = canonical(odb, newRoot);
+        RevTree child2 = childTree2.build();
+        childTree2 = canonical(odb, child2);
+        createFeatureTypesTree(rootBuilder, "tree2", child2);
         newRoot = rootBuilder.build();
+        rootBuilder = canonical(odb, newRoot);
         odb.put(newRoot);
         assertEquals(2, count(childrenFeatureTypesTree, newRoot).featureCount());
 
-        childTree2.put(Node.create("tree2/1", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE,
-                null));
-        createFeatureTypesTree(rootBuilder, "tree2", childTree2);
+        childTree2.put(
+                Node.create("tree2/1", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null));
+        createFeatureTypesTree(rootBuilder, "tree2", childTree2.build());
         newRoot = rootBuilder.build();
         odb.put(newRoot);
         assertEquals(3, count(childrenFeatureTypesTree, newRoot).featureCount());
@@ -165,7 +177,7 @@ public class DiffCountConsumerTest extends Assert {
 
     @Test
     public void testBucketBucketAdd() {
-        RevTreeBuilder builder = new RevTreeBuilder(odb, bucketsFeatureTree);
+        RevTreeBuilder builder = canonical(odb, bucketsFeatureTree);
 
         final int initialSize = (int) bucketsFeatureTree.size();
         final int added = 1 + 2 * CanonicalNodeNameOrder.normalizedSizeLimit(0);
@@ -192,7 +204,7 @@ public class DiffCountConsumerTest extends Assert {
 
     @Test
     public void testBucketBucketRemove() {
-        RevTreeBuilder builder = new RevTreeBuilder(odb, bucketsFeatureTree);
+        RevTreeBuilder builder = canonical(odb, bucketsFeatureTree);
 
         RevTree changed;
         changed = builder.remove("3").build();
@@ -200,25 +212,27 @@ public class DiffCountConsumerTest extends Assert {
         assertEquals(1, count(bucketsFeatureTree, changed).featureCount());
         assertEquals(1, count(changed, bucketsFeatureTree).featureCount());
 
+        builder = canonical(odb, changed);
         for (int i = 0; i < CanonicalNodeNameOrder.normalizedSizeLimit(0) - 1; i++) {
             builder.remove(String.valueOf(i));
         }
         changed = builder.build();
         odb.put(changed);
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1, changed.size());
-        assertTrue(changed.buckets().isPresent());
+        assertFalse(changed.buckets().isEmpty());
 
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0) - 1,
                 count(bucketsFeatureTree, changed).featureCount());
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0) - 1,
                 count(changed, bucketsFeatureTree).featureCount());
 
+        builder = canonical(odb, changed);
         builder.remove(String.valueOf(CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1));
 
         changed = builder.build();
         odb.put(changed);
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0), changed.size());
-        assertFalse(changed.buckets().isPresent());
+        assertTrue(changed.buckets().isEmpty());
     }
 
     @Test
@@ -226,7 +240,7 @@ public class DiffCountConsumerTest extends Assert {
         RevTreeBuilder builder;
         RevTree changed;
 
-        builder = new RevTreeBuilder(odb, bucketsFeatureTree);
+        builder = canonical(odb, bucketsFeatureTree);
 
         changed = builder.put(
                 Node.create("1023", FAKE_FEATURE_ID_CHANGED, ObjectId.NULL, TYPE.FEATURE, null))
@@ -240,12 +254,11 @@ public class DiffCountConsumerTest extends Assert {
         assertEquals(1, count.featureCount());
         assertEquals(0, count.treeCount());
 
-        builder = new RevTreeBuilder(odb, bucketsFeatureTree);
+        builder = canonical(odb, bucketsFeatureTree);
         int expected = 0;
         for (int i = 0; i < bucketsFeatureTree.size(); i += 2) {
-            changed = builder.put(
-                    Node.create(String.valueOf(i), FAKE_FEATURE_ID_CHANGED, ObjectId.NULL,
-                            TYPE.FEATURE, null)).build();
+            builder.put(Node.create(String.valueOf(i), FAKE_FEATURE_ID_CHANGED, ObjectId.NULL,
+                    TYPE.FEATURE, null));
             expected++;
         }
         changed = builder.build();
@@ -261,7 +274,7 @@ public class DiffCountConsumerTest extends Assert {
 
     @Test
     public void testBucketChildren() {
-        RevTreeBuilder builder = new RevTreeBuilder(odb, bucketsFeatureTree);
+        RevTreeBuilder builder = canonical(odb, bucketsFeatureTree);
         RevTree changed;
         for (int i = 0; i < CanonicalNodeNameOrder.normalizedSizeLimit(0); i++) {
             builder.remove(String.valueOf(i));
@@ -269,7 +282,7 @@ public class DiffCountConsumerTest extends Assert {
         changed = builder.build();
         odb.put(changed);
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0), changed.size());
-        assertFalse(changed.buckets().isPresent());
+        assertTrue(changed.buckets().isEmpty());
 
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0),
                 count(bucketsFeatureTree, changed).featureCount());
@@ -284,7 +297,7 @@ public class DiffCountConsumerTest extends Assert {
                 20000 + CanonicalNodeNameOrder.normalizedSizeLimit(0)).build();
         odb.put(deepTree);
         // sanity check
-        assertTrue(deepTree.buckets().isPresent());
+        assertFalse(deepTree.buckets().isEmpty());
 
         {// sanity check to ensure we're testing with a tree with depth > 1 (i.e. at least two
          // levels of buckets)
@@ -292,9 +305,10 @@ public class DiffCountConsumerTest extends Assert {
             assertTrue(maxDepth > 1);
         }
 
-        RevTreeBuilder builder = new RevTreeBuilder(odb, deepTree);
+        RevTreeBuilder builder = canonical(odb, deepTree);
         {
-            final int count = (int) (deepTree.size() - CanonicalNodeNameOrder.normalizedSizeLimit(0));
+            final int count = (int) (deepTree.size()
+                    - CanonicalNodeNameOrder.normalizedSizeLimit(0));
             for (int i = 0; i < count; i++) {
                 String path = String.valueOf(i);
                 builder.remove(path);
@@ -305,8 +319,8 @@ public class DiffCountConsumerTest extends Assert {
 
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0), changed.size());
         // sanity check
-        assertTrue(changed.features().isPresent());
-        assertFalse(changed.buckets().isPresent());
+        assertFalse(changed.features().isEmpty());
+        assertTrue(changed.buckets().isEmpty());
 
         final long expected = deepTree.size() - changed.size();
 
@@ -315,11 +329,11 @@ public class DiffCountConsumerTest extends Assert {
     }
 
     private int depth(RevTree deepTree, int currDepth) {
-        if (!deepTree.buckets().isPresent()) {
+        if (deepTree.buckets().isEmpty()) {
             return currDepth;
         }
         int depth = currDepth;
-        for (Bucket bucket : deepTree.buckets().get().values()) {
+        for (Bucket bucket : deepTree.buckets().values()) {
             RevTree bucketTree = odb.get(bucket.getObjectId(), RevTree.class);
             int d = depth(bucketTree, currDepth + 1);
             depth = Math.max(depth, d);
@@ -329,7 +343,7 @@ public class DiffCountConsumerTest extends Assert {
 
     private RevTreeBuilder createFeaturesTree(final String parentPath, final int numEntries) {
 
-        RevTreeBuilder tree = new RevTreeBuilder(odb);
+        RevTreeBuilder tree = canonical(odb);
         for (int i = 0; i < numEntries; i++) {
             tree.put(featureRef(parentPath, i));
         }

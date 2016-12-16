@@ -33,25 +33,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EnumMap;
-import java.util.Map;
 
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.CRS.AxisOrder;
 import org.geotools.referencing.wkt.Formattable;
-import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.FieldType;
-import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.storage.impl.ObjectReader;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.impl.ObjectWriter;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.storage.ObjectReader;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.ObjectWriter;
 import org.opengis.feature.type.GeometryType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -62,8 +59,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -318,33 +313,14 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
 
             Envelope envBuff = new Envelope();
 
-            if (tree.features().isPresent()) {
-                data.writeInt(tree.features().get().size());
-                ImmutableList<Node> features = tree.features().get();
-                for (Node feature : features) {
-                    writeNode(feature, data, envBuff);
-                }
-            } else {
-                data.writeInt(0);
-            }
-            if (tree.trees().isPresent()) {
-                data.writeInt(tree.trees().get().size());
-                ImmutableList<Node> subTrees = tree.trees().get();
-                for (Node subTree : subTrees) {
-                    writeNode(subTree, data, envBuff);
-                }
-            } else {
-                data.writeInt(0);
-            }
-            if (tree.buckets().isPresent()) {
-                data.writeInt(tree.buckets().get().size());
-                ImmutableSortedMap<Integer, Bucket> buckets = tree.buckets().get();
-                for (Map.Entry<Integer, Bucket> bucket : buckets.entrySet()) {
-                    writeBucket(bucket.getKey(), bucket.getValue(), data, envBuff);
-                }
-            } else {
-                data.writeInt(0);
-            }
+            data.writeInt(tree.features().size());
+            tree.features().forEach((feature) -> writeNode(feature, data, envBuff));
+
+            data.writeInt(tree.trees().size());
+            tree.trees().forEach((subTree) -> writeNode(subTree, data, envBuff));
+
+            data.writeInt(tree.buckets().size());
+            tree.buckets().forEach((index, bucket) -> writeBucket(index, bucket, data, envBuff));
         }
     }
 

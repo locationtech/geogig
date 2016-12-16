@@ -36,6 +36,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.storage.StorageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,12 +77,12 @@ public class PGRefDatabase implements RefDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.configure(configDB, FORMAT_NAME, VERSION);
+        StorageType.OBJECT.configure(configDB, FORMAT_NAME, VERSION);
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.OBJECT.verify(configDB, FORMAT_NAME, VERSION);
+        StorageType.OBJECT.verify(configDB, FORMAT_NAME, VERSION);
     }
 
     @Override
@@ -196,7 +197,7 @@ public class PGRefDatabase implements RefDatabase {
     }
 
     private String getInternal(final String refPath) {
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             return doGet(refPath, cx);
         } catch (SQLException e) {
             throw propagate(e);
@@ -251,7 +252,7 @@ public class PGRefDatabase implements RefDatabase {
         final String insert = format(
                 "INSERT INTO %s (repository, path, name, value) VALUES (?, ?, ?, ?)", refsTable);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement ds = cx
@@ -287,7 +288,7 @@ public class PGRefDatabase implements RefDatabase {
         final String path = Ref.parentPath(refName) + "/";
         final String localName = Ref.simpleName(refName);
         final String refsTable = refsTableName;
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             String oldval;
             int updateCount = 0;
@@ -334,7 +335,7 @@ public class PGRefDatabase implements RefDatabase {
     }
 
     private Map<String, String> getAll(final String... prefixes) {
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             return doGetall(cx, prefixes);
         } catch (SQLException e) {
             throw propagate(e);
@@ -376,7 +377,7 @@ public class PGRefDatabase implements RefDatabase {
     @Override
     public Map<String, String> removeAll(final String namespace) {
         Preconditions.checkNotNull(namespace, "provided namespace is null");
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             Map<String, String> oldvalues;
             try {

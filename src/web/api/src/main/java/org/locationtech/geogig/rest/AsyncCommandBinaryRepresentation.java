@@ -25,7 +25,7 @@ public abstract class AsyncCommandBinaryRepresentation<T> extends FileRepresenta
     protected final AsyncContext.AsyncCommand<T> command;
 
     public AsyncCommandBinaryRepresentation(File file, MediaType mediaType,
-        AsyncContext.AsyncCommand<T> command) {
+            AsyncContext.AsyncCommand<T> command) {
         super(file, mediaType, 0);
         Preconditions.checkNotNull(mediaType);
         this.command = command;

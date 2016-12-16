@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.DiffEntry;
@@ -86,7 +87,7 @@ public class PagedMergeScenarioConsumer extends MergeScenarioConsumer {
      */
     @Override
     public void unconflicted(DiffEntry diff) {
-        if (shouldKeep()) {
+        if (diff.newObjectType().equals(RevObject.TYPE.FEATURE) && shouldKeep()) {
             unconflicted.add(diff);
         }
     }

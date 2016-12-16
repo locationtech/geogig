@@ -12,6 +12,7 @@ package org.locationtech.geogig.cli.plumbing;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +23,21 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.model.FieldType;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.FeatureType;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -38,6 +46,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
@@ -70,13 +79,27 @@ public class Insert extends AbstractCommand implements CLICommand {
         }
         Map<String, List<Feature>> features = readFeatures(lines);
 
+        Repository repository = geogig.getRepository();
+        WorkingTree workingTree = repository.workingTree();
+
         long count = 0;
-        for (String key : features.keySet()) {
-            List<Feature> treeFeatures = features.get(key);
-            geogig.getRepository()
-                    .workingTree()
-                    .insert(key, treeFeatures.iterator(), cli.getProgressListener(), null,
-                            treeFeatures.size());
+        for (String parentPath : features.keySet()) {
+            List<Feature> treeFeatures = features.get(parentPath);
+            Map<FeatureType, RevFeatureType> types = new HashMap<>();
+            Iterator<FeatureInfo> finfos = Iterators.transform(treeFeatures.iterator(), (f) -> {
+                FeatureType ft = f.getType();
+                RevFeatureType rft = types.get(ft);
+                if (rft == null) {
+                    rft = RevFeatureTypeBuilder.build(ft);
+                    types.put(ft, rft);
+                    repository.objectDatabase().put(rft);
+                }
+                String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
+                FeatureInfo fi = FeatureInfo.insert(RevFeatureBuilder.build(f), rft.getId(), path);
+                return fi;
+            });
+
+            workingTree.insert(finfos, DefaultProgressListener.NULL);
             count += treeFeatures.size();
         }
 
@@ -127,16 +150,16 @@ public class Insert extends AbstractCommand implements CLICommand {
             Optional<RevFeatureType> opt = geogig.command(ResolveFeatureType.class)
                     .setRefSpec("WORK_HEAD:" + tree).call();
             checkParameter(opt.isPresent(), "The parent tree does not exist: " + tree);
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder((SimpleFeatureType) opt.get()
-                    .type());
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(
+                    (SimpleFeatureType) opt.get().type());
             featureTypes.put(tree, builder);
         }
         SimpleFeatureBuilder ftb = featureTypes.get(tree);
         SimpleFeatureType ft = ftb.getFeatureType();
         for (int i = 1; i < featureChanges.size(); i++) {
             String[] tokens = featureChanges.get(i).split("\t");
-            Preconditions.checkArgument(tokens.length == 2, "Wrong attribute definition: "
-                    + featureChanges.get(i));
+            Preconditions.checkArgument(tokens.length == 2,
+                    "Wrong attribute definition: " + featureChanges.get(i));
             String fieldName = tokens[0];
             AttributeDescriptor desc = ft.getDescriptor(fieldName);
             Preconditions.checkNotNull(desc, "Wrong attribute in feature description");

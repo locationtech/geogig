@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,15 +23,19 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.TransactionEnd;
+import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.merge.ConflictsCountOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RemoteAddOp;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
+
+import com.google.common.base.Optional;
 
 public class GeogigTransactionTest extends RepositoryTestCase {
     @Rule
@@ -91,6 +96,24 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         assertEquals(expectedTransaction, logged);
 
+    }
+
+    @Test
+    public void testResolveTransaction() throws Exception {
+        GeogigTransaction tx = geogig.command(TransactionBegin.class).call();
+
+        Optional<GeogigTransaction> txNew = geogig.command(TransactionResolve.class)
+                .setId(tx.getTransactionId()).call();
+
+        assertTrue(txNew.isPresent());
+    }
+
+    @Test
+    public void testResolveNonexistentTransaction() throws Exception {
+        Optional<GeogigTransaction> txNew = geogig.command(TransactionResolve.class)
+                .setId(UUID.randomUUID()).call();
+
+        assertFalse(txNew.isPresent());
     }
 
     @Test
@@ -396,6 +419,76 @@ public class GeogigTransactionTest extends RepositoryTestCase {
     }
 
     @Test
+    public void testEndTransactionConflict() throws Exception {
+
+        // make a commit
+        insertAndAdd(points1);
+        RevCommit mainCommit = geogig.command(CommitOp.class).setMessage("Commit1").call();
+
+        // start the transaction
+        GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
+
+        // perform a commit in the transaction
+        insertAndAdd(transaction, points1_modified);
+        RevCommit transactionCommit = transaction.command(CommitOp.class).setMessage("Commit2")
+                .call();
+
+        // Verify that the base repository is unchanged
+        Iterator<RevCommit> logs = geogig.command(LogOp.class).call();
+        assertEquals(logs.next(), mainCommit);
+        assertFalse(logs.hasNext());
+
+        // Verify that the transaction has the commit
+        logs = transaction.command(LogOp.class).call();
+        assertEquals(logs.next(), transactionCommit);
+        assertEquals(logs.next(), mainCommit);
+        assertFalse(logs.hasNext());
+
+        // remove the feature in the base repository
+        deleteAndAdd(points1);
+        RevCommit mainCommit2 = geogig.command(CommitOp.class).setMessage("Commit3").call();
+
+        // commit the transaction
+        try {
+            geogig.command(TransactionEnd.class).setTransaction(transaction).call();
+            fail("Expected a conflict!");
+        } catch (ConflictsException e) {
+            // expected
+        }
+
+        long txConflicts = transaction.command(ConflictsCountOp.class).call().longValue();
+        long baseConflicts = geogig.command(ConflictsCountOp.class).call().longValue();
+        assertTrue("There should be no conflicts outside the transaction", baseConflicts == 0);
+        assertTrue("There should be conflicts in the transaction", txConflicts == 1);
+
+        // make sure the transaction is still resolvable
+        Optional<GeogigTransaction> resolvedTransaction = geogig.command(TransactionResolve.class)
+                .setId(transaction.getTransactionId()).call();
+        assertTrue(resolvedTransaction.isPresent());
+
+        // resolve the conflict in the transaction
+        deleteAndAdd(transaction, points1);
+        RevCommit resolvedCommit = transaction.command(CommitOp.class)
+                .setMessage("Resolved Conflict").call();
+
+        geogig.command(TransactionEnd.class).setTransaction(transaction).call();
+
+        // Verify that the base repository has the changes from the transaction
+        logs = geogig.command(LogOp.class).call();
+        RevCommit lastCommit = logs.next();
+        assertTrue(lastCommit.equals(resolvedCommit));
+        assertEquals(lastCommit.getMessage(), resolvedCommit.getMessage());
+        assertEquals(lastCommit.getAuthor(), resolvedCommit.getAuthor());
+        assertEquals(lastCommit.getCommitter().getName(), resolvedCommit.getCommitter().getName());
+        assertTrue(lastCommit.getCommitter().getTimestamp() == resolvedCommit.getCommitter()
+                .getTimestamp());
+        assertEquals(mainCommit2, logs.next());
+        assertEquals(transactionCommit, logs.next());
+        assertEquals(mainCommit, logs.next());
+
+    }
+
+    @Test
     public void testCancelTransaction() throws Exception {
         LinkedList<RevCommit> expectedMain = new LinkedList<RevCommit>();
 
@@ -521,11 +614,13 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         // can be used to perform other actions such as pull, push, and end. The web api
         // for example needs a way to retrieve/recreate a transaction object using a transactionId
         // without calling GeogigTransaction.create() since the transaction was previously created.
-        GeogigTransaction txNew = new GeogigTransaction(geogig.getContext(), tx.getTransactionId());
+        Optional<GeogigTransaction> txNew = geogig.command(TransactionResolve.class)
+                .setId(tx.getTransactionId()).call();
+
+        assertTrue(txNew.isPresent());
 
         TransactionEnd endTransaction = geogig.command(TransactionEnd.class);
-        boolean closed = endTransaction.setCancel(false).setTransaction((GeogigTransaction) txNew)
-                .call();
+        boolean closed = endTransaction.setCancel(false).setTransaction(txNew.get()).call();
         assertTrue(closed);
     }
 }

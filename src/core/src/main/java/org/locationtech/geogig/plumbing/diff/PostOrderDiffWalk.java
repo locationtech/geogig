@@ -10,9 +10,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Predicate;
@@ -44,8 +44,8 @@ public class PostOrderDiffWalk {
         inOrder.walk(depthFirstConsumer);
     }
 
-    private static class DepthFirstConsumer implements
-            org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer {
+    private static class DepthFirstConsumer
+            implements org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer {
 
         private static final class Entry {
             private Bounded left;
@@ -118,7 +118,8 @@ public class PostOrderDiffWalk {
             return left == null ? right.path() : left.path();
         }
 
-        private String bucketPath(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex) {
+        private String bucketPath(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex) {
             String path = treePath(leftParent, rightParent) + "/" + bucketIndex;
             return path;
         }

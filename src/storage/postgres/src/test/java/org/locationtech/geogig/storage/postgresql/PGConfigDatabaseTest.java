@@ -18,8 +18,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.storage.ConfigDatabaseTest;
 import org.locationtech.geogig.storage.ConfigException;
+import org.locationtech.geogig.storage.impl.ConfigDatabaseTest;
 
 public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
 

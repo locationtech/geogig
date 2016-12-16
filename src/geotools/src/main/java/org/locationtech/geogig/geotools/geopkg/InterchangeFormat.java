@@ -39,17 +39,16 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.geom.GeoPkgGeomReader;
-import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.CommitBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.porcelain.ConfigGet;
@@ -59,8 +58,9 @@ import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.impl.SpatialOps;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.locationtech.geogig.repository.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -116,8 +116,9 @@ public class InterchangeFormat {
             final DataSource dataSource = geopackage.getDataSource();
 
             try (Connection connection = dataSource.getConnection()) {
-                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
-                metadata.createFidMappingTable(targetTableName, fidMappings);
+                try (GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
+                    metadata.createFidMappingTable(targetTableName, fidMappings);
+                }
             } catch (SQLException e) {
                 throw Throwables.propagate(e);
             }
@@ -200,8 +201,8 @@ public class InterchangeFormat {
 
         final DataSource dataSource = geopackage.getDataSource();
 
-        try (Connection connection = dataSource.getConnection()) {
-            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+        try (Connection connection = dataSource.getConnection();
+                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
             URI repoURI = context.repository().getLocation();
             metadata.init(repoURI);
 
@@ -215,10 +216,12 @@ public class InterchangeFormat {
             throws IOException, SQLException {
         final GeoPackage geopackage = new GeoPackage(geopackageDbFile);
         final DataSource dataSource = geopackage.getDataSource();
-        try (Connection connection = dataSource.getConnection()) {
-            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+        try (Connection connection = dataSource.getConnection();
+                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
             metadata.createChangeLog(targetTableName);
             metadata.populateChangeLog(targetTableName, changedNodes);
+        } finally {
+        	geopackage.close();
         }
 
     }
@@ -256,8 +259,8 @@ public class InterchangeFormat {
         RevCommit importCommit = null;
         GeopkgImportResult importResult = null;
 
-        try (Connection connection = dataSource.getConnection()) {
-            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
+        try (Connection connection = dataSource.getConnection();
+                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
 
             final Map<String, AuditTable> tables = Maps.filterKeys(
                     Maps.uniqueIndex(metadata.getAuditTables(), t -> t.getTableName()),
@@ -273,7 +276,8 @@ public class InterchangeFormat {
 
             RevCommit commit = context.objectDatabase().getCommit(commitId);
             RevTree baseTree = context.objectDatabase().getTree(commit.getTreeId());
-            RevTreeBuilder newTreeBuilder = new RevTreeBuilder(context.objectDatabase(), baseTree);
+            RevTreeBuilder newTreeBuilder = RevTreeBuilder.canonical(context.objectDatabase(),
+                    baseTree);
 
             Map<String, String> fidMappings = null;
             for (AuditTable t : tables.values()) {
@@ -314,8 +318,10 @@ public class InterchangeFormat {
             importCommit = builder.build();
             importResult = new GeopkgImportResult(importCommit);
             for (AuditReport auditReport : reports) {
-                importResult.newMappings.put(auditReport.table.getFeatureTreePath(),
-                        auditReport.newMappings);
+                if (auditReport.newMappings != null) {
+                    importResult.newMappings.put(auditReport.table.getFeatureTreePath(),
+                            auditReport.newMappings);
+                }
             }
 
             context.objectDatabase().put(importCommit);
@@ -406,7 +412,7 @@ public class InterchangeFormat {
             Iterator<Change> changes, Map<String, String> fidMappings, AuditReport report)
             throws SQLException {
 
-        RevTreeBuilder builder = new RevTreeBuilder(store, currentFeatureTree);
+        RevTreeBuilder builder = RevTreeBuilder.canonical(store, currentFeatureTree);
 
         progressListener.setProgress(0);
 
@@ -426,7 +432,7 @@ public class InterchangeFormat {
                     featureId = fidMappings.get(change.getFeautreId());
                 } else {
                     featureId = newFeatureId();
-                    report.newMappings.put(change.getFeautreId(), featureId);
+                    report.addMapping(change.getFeautreId(), featureId);
                 }
 
                 ChangeType type = change.getType();

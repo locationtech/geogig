@@ -181,7 +181,7 @@ public class Import extends AbstractWebAPICommand {
         final String requestFormat = options.getFirstValue(FORMAT_KEY);
         Preconditions.checkArgument(requestFormat != null, "missing required 'format' parameter");
 
-        final Context transaction = this.getCommandLocator(context);
+        final Context transaction = this.getRepositoryContext(context);
 
         // get the import context from the requested parameters
         DataStoreImportContextService ctxService = DataStoreImportContextServiceFactory
@@ -202,7 +202,7 @@ public class Import extends AbstractWebAPICommand {
             @Override
             public Representation apply(MediaType mediaType) {
                 AsyncCommandRepresentation<?> repr;
-                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl);
+                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl, true);
                 return repr;
 
             }

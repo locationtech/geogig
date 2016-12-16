@@ -12,6 +12,7 @@ package org.locationtech.geogig.rest.geopkg;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.web.api.TestData.line1;
 import static org.locationtech.geogig.web.api.TestData.line2;
 import static org.locationtech.geogig.web.api.TestData.line3;
@@ -38,7 +39,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.Transaction;
@@ -48,7 +50,6 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
-import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,7 +64,6 @@ import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.TestData;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.geometry.BoundingBox;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -277,19 +277,19 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         assertEquals(Sets.newHashSet("Lines_audit", "Polygons_audit"), getAuditTableNames(result));
     }
 
-    private File run(Export op) throws JSONException, InterruptedException, ExecutionException {
+    private File run(Export op) throws InterruptedException, ExecutionException {
 
         op.run(context);
 
         final String expected;
         if (Boolean.parseBoolean(op.options.getFirstValue("interchange"))) {
-            expected = "{'task':{'id':1,'description':'Export to Geopackage database with geogig interchange format extension','href':'/geogig/tasks/1.json'}}";
+            expected = "{\"task\":{\"id\":1,\"description\":\"Export to Geopackage database with geogig interchange format extension\",\"href\":\"/geogig/tasks/1.json\"}}";
         } else {
-            expected = "{'task':{'id':1,'description':'Export to Geopackage database','href':'/geogig/tasks/1.json'}}";
+            expected = "{\"task\":{\"id\":1,\"description\":\"Export to Geopackage database\",\"href\":\"/geogig/tasks/1.json\"}}";
         }
 
-        JSONObject response = getJSONResponse();
-        JSONAssert.assertEquals(expected, response.toString(), false);
+        JsonObject response = getJSONResponse();
+        assertTrue(TestData.jsonEquals(TestData.toJSON(expected), response, false));
 
         Optional<AsyncCommand<?>> asyncCommand = Optional.absent();
         while (!asyncCommand.isPresent()) {
@@ -302,9 +302,7 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
         return result;
     }
 
-    private DataStore store(File result)
-            throws JSONException, InterruptedException,
-            ExecutionException {
+    private DataStore store(File result) throws InterruptedException, ExecutionException {
 
         assertNotNull(result);
 
@@ -329,31 +327,32 @@ public class GeoPackageExportIntegrationTest extends AbstractWebOpTest {
     private void assertFeatures(DataStore store, String typeName,
             SimpleFeature... expected)
             throws Exception {
-        Connection connection = ((JDBCDataStore) store).getConnection(Transaction.AUTO_COMMIT);
-        GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
-        Map<String, String> mappings = metadata.getFidMappings(typeName);
-
-        SimpleFeatureSource source = store.getFeatureSource(typeName);
-        SimpleFeatureCollection features = source.getFeatures();
-
-        Map<String, SimpleFeature> expectedFeatures;
-        {
-            List<SimpleFeature> list = Lists.newArrayList(expected);
-            expectedFeatures = Maps.uniqueIndex(list, (f) -> f.getID());
+        try (Connection connection = ((JDBCDataStore) store).getConnection(Transaction.AUTO_COMMIT);
+                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
+            Map<String, String> mappings = metadata.getFidMappings(typeName);
+	
+	    SimpleFeatureSource source = store.getFeatureSource(typeName);
+	    SimpleFeatureCollection features = source.getFeatures();
+	
+	    Map<String, SimpleFeature> expectedFeatures;
+	    {
+	        List<SimpleFeature> list = Lists.newArrayList(expected);
+	        expectedFeatures = Maps.uniqueIndex(list, (f) -> f.getID());
+	    }
+	    Set<String> actualFeatureIDs = new HashSet<String>();
+	    {
+	        try (SimpleFeatureIterator fiter = features.features()) {
+	            while (fiter.hasNext()) {
+	                SimpleFeature feature = fiter.next();
+	                actualFeatureIDs.add(mappings.get(feature.getID().split("\\.")[1]));
+	            }
+	        }
+	    }
+	
+	    Set<String> expectedFeatureIDs = expectedFeatures.keySet();
+	
+	    assertEquals(expectedFeatureIDs, actualFeatureIDs);
         }
-        Set<String> actualFeatureIDs = new HashSet<String>();
-        {
-            try (SimpleFeatureIterator fiter = features.features()) {
-                while (fiter.hasNext()) {
-                    SimpleFeature feature = fiter.next();
-                    actualFeatureIDs.add(mappings.get(feature.getID().split("\\.")[1]));
-                }
-            }
-        }
-
-        Set<String> expectedFeatureIDs = expectedFeatures.keySet();
-
-        assertEquals(expectedFeatureIDs, actualFeatureIDs);
     }
 
     private Set<String> getAuditTableNames(File gpkg) throws IOException, SQLException {

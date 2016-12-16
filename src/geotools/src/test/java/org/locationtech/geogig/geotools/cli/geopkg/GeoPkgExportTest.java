@@ -195,18 +195,15 @@ public class GeoPkgExportTest extends RepositoryTestCase {
         exportCommand.interchangeFormat = true;
         exportCommand.run(cli);
 
-
-
         // Verify GeoPackage
         JDBCDataStore store = (JDBCDataStore) store(geoPkgFile);
         try {
             assertFeatures(store, pointsType.getTypeName(), points1, points2, points3);
 
             Transaction gttx = new DefaultTransaction();
-            try {
+            try (Connection connection = store.getConnection(gttx);
+                    GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
                 // Verify audit table
-                Connection connection = store.getConnection(gttx);
-                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
                 List<AuditTable> auditTables = metadata.getAuditTables();
                 assertEquals(1, auditTables.size());
                 AuditTable table = auditTables.get(0);
@@ -230,31 +227,32 @@ public class GeoPkgExportTest extends RepositoryTestCase {
 
     private void assertFeatures(DataStore store, String typeName, Feature... expected)
             throws Exception {
-        Connection connection = ((JDBCDataStore) store).getConnection(Transaction.AUTO_COMMIT);
-        GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
-        Map<String, String> mappings = metadata.getFidMappings(typeName);
+        try (Connection connection = ((JDBCDataStore) store).getConnection(Transaction.AUTO_COMMIT);
+                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
+            Map<String, String> mappings = metadata.getFidMappings(typeName);
 
-        SimpleFeatureSource source = store.getFeatureSource(typeName);
-        SimpleFeatureCollection features = source.getFeatures();
+            SimpleFeatureSource source = store.getFeatureSource(typeName);
+            SimpleFeatureCollection features = source.getFeatures();
 
-        Map<String, Feature> expectedFeatures;
-        {
-            List<Feature> list = Lists.newArrayList(expected);
-            expectedFeatures = Maps.uniqueIndex(list, (f) -> ((SimpleFeature) f).getID());
-        }
-        Set<String> actualFeatureIDs = new HashSet<String>();
-        {
-            try (SimpleFeatureIterator fiter = features.features()) {
-                while (fiter.hasNext()) {
-                    SimpleFeature feature = fiter.next();
-                    actualFeatureIDs.add(mappings.get(feature.getID().split("\\.")[1]));
+            Map<String, Feature> expectedFeatures;
+            {
+                List<Feature> list = Lists.newArrayList(expected);
+                expectedFeatures = Maps.uniqueIndex(list, (f) -> ((SimpleFeature) f).getID());
+            }
+            Set<String> actualFeatureIDs = new HashSet<String>();
+            {
+                try (SimpleFeatureIterator fiter = features.features()) {
+                    while (fiter.hasNext()) {
+                        SimpleFeature feature = fiter.next();
+                        actualFeatureIDs.add(mappings.get(feature.getID().split("\\.")[1]));
+                    }
                 }
             }
+
+            Set<String> expectedFeatureIDs = expectedFeatures.keySet();
+
+            assertEquals(expectedFeatureIDs, actualFeatureIDs);
         }
-
-        Set<String> expectedFeatureIDs = expectedFeatures.keySet();
-
-        assertEquals(expectedFeatureIDs, actualFeatureIDs);
     }
 
     private void deleteGeoPkg(String geoPkg) {

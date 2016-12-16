@@ -53,14 +53,14 @@ public class BranchListOpTest extends RemoteRepositoryTestCase {
 
         // clone from the remote
         CloneOp clone = clone();
-        clone.setRepositoryURL(remoteGeogig.envHome.getCanonicalPath()).setBranch("Branch1").call();
+        clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).setBranch("Branch1").call();
     }
 
     @Test
     public void testBranchListOp() throws Exception {
 
-        ImmutableList<Ref> branches = remoteGeogig.geogig.command(BranchListOp.class)
-                .setLocal(true).setRemotes(false).call();
+        ImmutableList<Ref> branches = remoteGeogig.geogig.command(BranchListOp.class).setLocal(true)
+                .setRemotes(false).call();
 
         assertEquals(Ref.HEADS_PREFIX + "Branch1", branches.get(0).getName());
         assertEquals(Ref.HEADS_PREFIX + "master", branches.get(1).getName());

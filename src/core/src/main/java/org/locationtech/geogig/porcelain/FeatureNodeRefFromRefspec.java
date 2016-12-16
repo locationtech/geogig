@@ -11,7 +11,6 @@ package org.locationtech.geogig.porcelain;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -22,7 +21,8 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.SpatialOps;
+import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -71,8 +71,8 @@ public class FeatureNodeRefFromRefspec extends AbstractGeoGigOp<Optional<NodeRef
 
     private Optional<RevFeature> getFeatureFromRefSpec() {
 
-        Optional<RevObject> revObject = command(RevObjectParse.class).setRefSpec(ref).call(
-                RevObject.class);
+        Optional<RevObject> revObject = command(RevObjectParse.class).setRefSpec(ref)
+                .call(RevObject.class);
 
         if (!revObject.isPresent()) { // let's try to see if it is a feature in the working tree
             NodeRef.checkValidPath(ref);

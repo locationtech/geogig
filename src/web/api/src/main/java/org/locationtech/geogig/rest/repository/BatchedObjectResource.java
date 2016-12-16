@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.rest.repository;
 
-import static org.locationtech.geogig.rest.repository.RESTUtils.getGeogig;
+import static org.locationtech.geogig.web.api.RESTUtils.getGeogig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,9 +24,9 @@ import org.locationtech.geogig.plumbing.CreateDeduplicator;
 import org.locationtech.geogig.remote.BinaryPackedObjects;
 import org.locationtech.geogig.remote.ObjectFunnel;
 import org.locationtech.geogig.remote.ObjectFunnels;
-import org.locationtech.geogig.repository.DeduplicationService;
-import org.locationtech.geogig.repository.Deduplicator;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.DeduplicationService;
+import org.locationtech.geogig.repository.impl.Deduplicator;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.restlet.Context;
 import org.restlet.Finder;

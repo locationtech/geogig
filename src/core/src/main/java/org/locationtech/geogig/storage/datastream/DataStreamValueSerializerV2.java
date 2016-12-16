@@ -36,6 +36,8 @@ import com.google.common.base.Splitter;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
@@ -44,7 +46,7 @@ import com.vividsolutions.jts.io.WKBWriter;
  * A class to serializer/deserialize attribute values to/from a data stream
  * 
  */
-class DataStreamValueSerializerV2 {
+public class DataStreamValueSerializerV2 {
 
     public static interface ValueSerializer {
 
@@ -144,7 +146,7 @@ class DataStreamValueSerializerV2 {
                 data.writeDouble((Double) field);
             }
         });
-        serializers.put(FieldType.STRING, new ValueSerializer() {
+        final ValueSerializer stringSerializer = new ValueSerializer() {
             @Override
             public Object read(DataInput in) throws IOException {
                 final int multiStringMarkerOrsingleLength;
@@ -194,7 +196,8 @@ class DataStreamValueSerializerV2 {
                     data.writeUTF(value);
                 }
             }
-        });
+        };
+        serializers.put(FieldType.STRING, stringSerializer);
         serializers.put(FieldType.BOOLEAN_ARRAY, new ValueSerializer() {
             @Override
             public Object read(DataInput in) throws IOException {
@@ -357,7 +360,7 @@ class DataStreamValueSerializerV2 {
                 final int len = readUnsignedVarInt(in);
                 String[] strings = new String[len];
                 for (int i = 0; i < len; i++) {
-                    strings[i] = in.readUTF();
+                    strings[i] = (String) stringSerializer.read(in);
                 }
                 return strings;
             }
@@ -366,14 +369,17 @@ class DataStreamValueSerializerV2 {
             public void write(Object field, DataOutput data) throws IOException {
                 writeUnsignedVarInt(((String[]) field).length, data);
                 for (String s : (String[]) field)
-                    data.writeUTF(s);
+                    stringSerializer.write(s, data);
             }
         });
         ValueSerializer geometry = new ValueSerializer() {
+            final GeometryFactory GEOM_FACT = new GeometryFactory(
+                    new PackedCoordinateSequenceFactory());
+
             @Override
             public Object read(DataInput in) throws IOException {
                 byte[] bytes = (byte[]) byteArray.read(in);
-                WKBReader wkbReader = new WKBReader();
+                WKBReader wkbReader = new WKBReader(GEOM_FACT);
                 try {
                     return wkbReader.read(bytes);
                 } catch (ParseException e) {
@@ -557,7 +563,8 @@ class DataStreamValueSerializerV2 {
         if (serializers.containsKey(type)) {
             serializers.get(type).write(opt.orNull(), data);
         } else {
-            throw new IllegalArgumentException("The specified type (" + type + ") is not supported");
+            throw new IllegalArgumentException(
+                    "The specified type (" + type + ") is not supported");
         }
     }
 
@@ -565,7 +572,8 @@ class DataStreamValueSerializerV2 {
         FieldType type = FieldType.forValue(value);
         ValueSerializer valueSerializer = serializers.get(type);
         if (null == valueSerializer) {
-            throw new IllegalArgumentException("The specified type (" + type + ") is not supported");
+            throw new IllegalArgumentException(
+                    "The specified type (" + type + ") is not supported");
         }
         valueSerializer.write(value, data);
     }

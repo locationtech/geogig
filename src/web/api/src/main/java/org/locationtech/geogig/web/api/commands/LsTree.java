@@ -11,9 +11,9 @@ package org.locationtech.geogig.web.api.commands;
 
 import java.util.Iterator;
 
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -44,6 +44,11 @@ public class LsTree extends AbstractWebAPICommand {
         setRecursive(Boolean.valueOf(options.getFirstValue("recursive", "false")));
         setVerbose(Boolean.valueOf(options.getFirstValue("verbose", "false")));
         setRef(options.getFirstValue("path", null));
+    }
+
+    @Override
+    public boolean requiresTransaction() {
+        return false;
     }
 
     /**
@@ -98,7 +103,7 @@ public class LsTree extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        LsTreeOp.Strategy lsStrategy = LsTreeOp.Strategy.CHILDREN;
+        final LsTreeOp.Strategy lsStrategy;
         if (recursive) {
             if (includeTrees) {
                 lsStrategy = LsTreeOp.Strategy.DEPTHFIRST;
@@ -110,18 +115,19 @@ public class LsTree extends AbstractWebAPICommand {
         } else {
             if (onlyTrees) {
                 lsStrategy = LsTreeOp.Strategy.TREES_ONLY;
+            } else {
+                lsStrategy = LsTreeOp.Strategy.CHILDREN;
             }
         }
 
-        final Context geogig = this.getCommandLocator(context);
-
-        final Iterator<NodeRef> iter = geogig.command(LsTreeOp.class).setReference(ref)
-                .setStrategy(lsStrategy).call();
+        final Context geogig = this.getRepositoryContext(context);
 
         context.setResponseContent(new CommandResponse() {
 
             @Override
             public void write(ResponseWriter out) throws Exception {
+                final Iterator<NodeRef> iter = geogig.command(LsTreeOp.class).setReference(ref)
+                        .setStrategy(lsStrategy).call();
                 out.start(true);
                 out.writeLsTreeResponse(iter, verbose);
                 out.finish();

@@ -19,7 +19,7 @@ import com.beust.jcommander.Parameters;
  * <p>
  * Usage:
  * <ul>
- * <li> {@code geogig oracle <command> <args>...}
+ * <li>{@code geogig oracle <command> <args>...}
  * </ul>
  * 
  * @see OracleImport

@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -28,6 +29,9 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 
 public class LogOpPerformanceTest extends RepositoryTestCase {
+
+    @ClassRule
+    public static EnablePerformanceTestRule enabler = new EnablePerformanceTestRule();
 
     @Override
     protected void setUpInternal() throws Exception {
@@ -92,8 +96,8 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
         super.doSetUp();
 
         NumberFormat numberFormat = NumberFormat.getInstance(Locale.ENGLISH);
-        System.err.println("***********\nCreating " + numberFormat.format(numCommits)
-                + " commits...");
+        System.err.println(
+                "***********\nCreating " + numberFormat.format(numCommits) + " commits...");
 
         Stopwatch sw = Stopwatch.createStarted();
         createCommits(numCommits, "");

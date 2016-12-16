@@ -28,8 +28,7 @@ import com.google.common.collect.Lists;
  * Compares content and metadata links of blobs between the index and repository
  */
 public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
-        implements
- Supplier<AutoCloseableIterator<DiffEntry>> {
+        implements Supplier<AutoCloseableIterator<DiffEntry>> {
 
     private String refSpec;
 
@@ -38,6 +37,8 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
     private boolean reportTrees;
 
     private Long limit;
+
+    private boolean preserveIterationOrder;
 
     /**
      * @param pathFilter the path filter to use during the diff operation
@@ -70,6 +71,15 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
     }
 
     /**
+     * @param preserveIterationOrder if {@code true} the diff order will be consistent
+     * @return {@code this}
+     */
+    public DiffIndex setPreserveIterationOrder(boolean preserveIterationOrder) {
+        this.preserveIterationOrder = preserveIterationOrder;
+        return this;
+    }
+
+    /**
      * Finds differences between the tree pointed to by the given ref and the index.
      * 
      * @return an iterator to a set of differences between the two trees
@@ -92,7 +102,8 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
 
         DiffTree diff = command(DiffTree.class).setPathFilter(this.pathFilters)
                 .setReportTrees(this.reportTrees).setOldTree(rootTree.getId())
-                .setNewTree(newTree.getId()).setMaxDiffs(limit);
+                .setNewTree(newTree.getId()).setPreserveIterationOrder(preserveIterationOrder)
+                .setMaxDiffs(limit);
 
         return diff.call();
     }
@@ -117,8 +128,8 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
     }
 
     public DiffIndex setMaxDiffs(@Nullable Long limit) {
-        Preconditions.checkArgument(limit == null || limit.longValue() >= 0,
-                "limit must be >= 0: ", limit);
+        Preconditions.checkArgument(limit == null || limit.longValue() >= 0, "limit must be >= 0: ",
+                limit);
         this.limit = limit;
         return this;
     }

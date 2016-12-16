@@ -12,17 +12,21 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Test;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -44,8 +48,8 @@ public class RevertFeatureTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ObjectId oldCommitId = ObjectId.forString("old");
-        ObjectId newCommitId = ObjectId.forString("new");
+        ObjectId oldCommitId = RevObjectTestSupport.hashString("old");
+        ObjectId newCommitId = RevObjectTestSupport.hashString("new");
         ParameterSet options = TestParams.of("authorName", "Tester", "authorEmail",
                 "tester@example.com", "commitMessage", "someCommitMessage", "mergeMessage",
                 "someMergeMessage", "oldCommitId", oldCommitId.toString(), "newCommitId",
@@ -90,7 +94,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
         assertEquals("Reverted changes made to " + path + " at " + commit2.getId().toString(),
                 lastCommit.getMessage());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
     }
 
@@ -125,7 +129,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
         assertEquals("Reverted changes made to " + path + " at " + commit2.getId().toString(),
                 lastCommit.getMessage());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
     }
 
@@ -158,7 +162,7 @@ public class RevertFeatureTest extends AbstractWebOpTest {
         assertEquals("Reverted changes made to " + path + " at " + commit2.getId().toString(),
                 lastCommit.getMessage());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
     }
 
@@ -217,18 +221,23 @@ public class RevertFeatureTest extends AbstractWebOpTest {
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject merge = response.getJSONObject("Merge");
+        JsonObject merge = response.getJsonObject("Merge");
         assertEquals(commit3.getId().toString(), merge.getString("ours"));
         assertEquals(commit2.getId().toString(), merge.getString("ancestor"));
         assertEquals(1, merge.getInt("conflicts"));
-        JSONObject feature = merge.getJSONObject("Feature");
-        assertEquals("CONFLICT", feature.get("change"));
-        assertEquals(path, feature.get("id"));
-        assertEquals("POINT (0 0)", feature.get("geometry"));
-        assertEquals(ObjectId.NULL.toString(), feature.get("ourvalue"));
-        assertEquals(point1_id.toString(), feature.get("theirvalue"));
+        JsonArray featureArray = merge.getJsonArray("Feature");
+        assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
+        JsonObject feature = featureArray.getJsonObject(0);
+        assertEquals("CONFLICT", feature.getString("change"));
+        assertEquals(path, feature.getString("id"));
+        JsonArray geometryArray = feature.getJsonArray("geometry");
+        assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
+        String geometry = geometryArray.getString(0);
+        assertEquals("POINT (0 0)", geometry);
+        assertEquals(ObjectId.NULL.toString(), feature.getString("ourvalue"));
+        assertEquals(point1_id.toString(), feature.getString("theirvalue"));
     }
 
 }

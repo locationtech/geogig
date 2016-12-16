@@ -9,16 +9,15 @@
  */
 package org.locationtech.geogig.rest.geotools;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
+import org.locationtech.geogig.web.api.StreamWriterException;
 import org.restlet.data.MediaType;
+import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
  * Representation for commands that return {@link RevTree} (i.e. {@link ImportOp}
@@ -30,17 +29,17 @@ import org.restlet.data.MediaType;
  */
 public class ImportRepresentation extends AsyncCommandRepresentation<RevTree> {
 
-    public ImportRepresentation(MediaType mediaType, AsyncCommand<RevTree> cmd,
-            String baseURL) {
-        super(mediaType, cmd, baseURL);
+    public ImportRepresentation(MediaType mediaType, AsyncCommand<RevTree> cmd, String baseURL,
+            boolean cleanup) {
+        super(mediaType, cmd, baseURL, cleanup);
     }
 
     @Override
-    protected void writeResultBody(XMLStreamWriter w, RevTree result)
-            throws XMLStreamException {
+    protected void writeResultBody(StreamingWriter w, RevTree result)
+            throws StreamWriterException {
         if (result != null) {
             w.writeStartElement("RevTree");
-            element(w, "treeId", result.getId().toString());
+            w.writeElement("treeId", result.getId().toString());
             w.writeEndElement();
         }
     }
@@ -54,9 +53,9 @@ public class ImportRepresentation extends AsyncCommandRepresentation<RevTree> {
 
         @Override
         public AsyncCommandRepresentation<RevTree> newRepresentation(AsyncCommand<RevTree> cmd,
-                MediaType mediaType, String baseURL) {
+                MediaType mediaType, String baseURL, boolean cleanup) {
 
-            return new ImportRepresentation(mediaType, cmd, baseURL);
+            return new ImportRepresentation(mediaType, cmd, baseURL, cleanup);
         }
 
     }

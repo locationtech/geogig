@@ -22,25 +22,24 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import org.geotools.data.DataUtilities;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
-import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevPerson;
-import org.locationtech.geogig.model.RevPersonBuilder;
 import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.RevTagBuilder;
+import org.locationtech.geogig.model.impl.CommitBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevPersonBuilder;
+import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -92,12 +91,12 @@ public class HashObjectTest extends RepositoryTestCase {
         b.setCommitterTimestamp(1000);
         b.setCommitterTimeZoneOffset(5);
 
-        ObjectId treeId = ObjectId.forString("fake tree content");
+        ObjectId treeId = RevObjectTestSupport.hashString("fake tree content");
 
         b.setTreeId(treeId);
 
-        ObjectId parentId1 = ObjectId.forString("fake parent content 1");
-        ObjectId parentId2 = ObjectId.forString("fake parent content 2");
+        ObjectId parentId1 = RevObjectTestSupport.hashString("fake parent content 1");
+        ObjectId parentId2 = RevObjectTestSupport.hashString("fake parent content 2");
         List<ObjectId> parentIds = ImmutableList.of(parentId1, parentId2);
         b.setParentIds(parentIds);
 
@@ -284,29 +283,16 @@ public class HashObjectTest extends RepositoryTestCase {
 
         RevPerson tagger = RevPersonBuilder.build("volaya", "volaya@boundlessgeo.com", -1000, -1);
         RevPerson tagger2 = RevPersonBuilder.build("groldan", "groldan@boundlessgeo.com", 10000, 0);
-        RevTag tag = RevTagBuilder.build(null, "tag1", ObjectId.forString("fake commit id"), "message", tagger);
-        RevTag tag2 = RevTagBuilder.build(null, "tag2", ObjectId.forString("another fake commit id"), "another message", tagger2);
+        RevTag tag = RevTagBuilder.build(null, "tag1", RevObjectTestSupport.hashString("fake commit id"),
+                "message", tagger);
+        RevTag tag2 = RevTagBuilder.build(null, "tag2",
+                RevObjectTestSupport.hashString("another fake commit id"), "another message", tagger2);
         ObjectId tagId = hashCommand.setObject(tag).call();
         ObjectId tagId2 = hashCommand.setObject(tag2).call();
         assertNotNull(tagId);
         assertNotNull(tagId2);
         assertNotSame(tagId, tagId2);
 
-    }
-
-    protected Feature feature(SimpleFeatureType type, String id, Object... values)
-            throws ParseException {
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-        for (int i = 0; i < values.length; i++) {
-            Object value = values[i];
-            if (type.getDescriptor(i) instanceof GeometryDescriptor) {
-                if (value instanceof String) {
-                    value = geom((String) value);
-                }
-            }
-            builder.set(i, value);
-        }
-        return builder.buildFeature(id);
     }
 
     private Geometry geom(String wkt) throws ParseException {

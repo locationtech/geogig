@@ -10,7 +10,7 @@
  */
 package org.locationtech.geogig.rest.geotools;
 
-import static org.locationtech.geogig.repository.SpatialOps.parseBBOX;
+import static org.locationtech.geogig.repository.impl.SpatialOps.parseBBOX;
 
 import java.io.File;
 import java.io.IOException;
@@ -186,7 +186,7 @@ public class Export extends AbstractWebAPICommand {
             @Override
             public Representation apply(MediaType mediaType) {
                 AsyncCommandRepresentation<?> repr;
-                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl);
+                repr = Representations.newRepresentation(asyncCommand, mediaType, baseUrl, false);
                 return repr;
             }
         };

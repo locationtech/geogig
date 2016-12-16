@@ -12,25 +12,24 @@ package org.locationtech.geogig.web.api.commands;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.CommitBuilder;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.impl.CommitBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.plumbing.WriteBack;
+import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportMergeScenarioOp;
-import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -45,9 +44,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 /**
- * The interface for the Add operation in GeoGig.
- * 
- * Web interface for {@link AddOp}
+ * Web interface to revert a single feature to a preview state and create a commit
  */
 
 public class RevertFeature extends AbstractWebAPICommand {
@@ -149,11 +146,17 @@ public class RevertFeature extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (this.getTransactionId() == null) {
-            throw new CommandSpecException(
-                    "No transaction was specified, revert feature requires a transaction to preserve the stability of the repository.");
+        final Context geogig = this.getRepositoryContext(context);
+
+        if (featurePath == null) {
+            throw new CommandSpecException("No path was given.");
         }
-        final Context geogig = this.getCommandLocator(context);
+        if (newCommitId == null) {
+            throw new CommandSpecException("No 'new' commit ID was given.");
+        }
+        if (oldCommitId == null) {
+            throw new CommandSpecException("No 'old' commit ID was given.");
+        }
 
         Optional<RevTree> newTree;
         Optional<RevTree> oldTree;
@@ -178,14 +181,14 @@ public class RevertFeature extends AbstractWebAPICommand {
         Preconditions.checkState(newTree.isPresent(), "Unable to read the old commit tree.");
 
         // get feature from old tree
-        Optional<NodeRef> node = geogig.command(FindTreeChild.class).setParent(oldTree.get())
-                .setChildPath(featurePath).call();
+        NodeRef node = geogig.command(FindTreeChild.class).setParent(oldTree.get())
+                .setChildPath(featurePath).call().orNull();
         boolean delete = false;
-        if (!node.isPresent()) {
+        if (node == null) {
             delete = true;
             node = geogig.command(FindTreeChild.class).setParent(newTree.get())
-                    .setChildPath(featurePath).call();
-            if (!node.isPresent()) {
+                    .setChildPath(featurePath).call().orNull();
+            if (node == null) {
                 throw new CommandSpecException("The feature was not found in either commit tree.");
             }
         }
@@ -193,7 +196,7 @@ public class RevertFeature extends AbstractWebAPICommand {
         // get the new parent tree
         ObjectId metadataId = ObjectId.NULL;
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class).setParent(newTree.get())
-                .setChildPath(node.get().getParentPath()).call();
+                .setChildPath(node.getParentPath()).call();
 
         RevTreeBuilder treeBuilder;
         if (parentNode.isPresent()) {
@@ -201,26 +204,28 @@ public class RevertFeature extends AbstractWebAPICommand {
             Optional<RevTree> parsed = geogig.command(RevObjectParse.class)
                     .setObjectId(parentNode.get().getNode().getObjectId()).call(RevTree.class);
             checkState(parsed.isPresent(), "Parent tree couldn't be found in the repository.");
-            treeBuilder = new RevTreeBuilder(geogig.objectDatabase(), parsed.get());
-            treeBuilder.remove(node.get().getNode().getName());
+            treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase(), parsed.get());
+            treeBuilder.remove(node.getNode().getName());
         } else {
-            treeBuilder = new RevTreeBuilder(geogig.objectDatabase());
+            treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase());
         }
 
         // put the old feature into the new tree
         if (!delete) {
-            treeBuilder.put(node.get().getNode());
+            treeBuilder.put(node.getNode());
         }
-        ObjectId newTreeId = geogig.command(WriteBack.class)
-                .setAncestor(new RevTreeBuilder(geogig.objectDatabase(), newTree.get()))
-                .setChildPath(node.get().getParentPath()).setTree(treeBuilder.build())
-                .setMetadataId(metadataId).call();
+        RevTree newFeatureTree = treeBuilder.build();
+
+        NodeRef newTreeNode = NodeRef.tree(node.getParentPath(), newFeatureTree.getId(),
+                metadataId);
+        RevTree newRoot = geogig.command(UpdateTree.class).setRoot(newTree.get())
+                .setChild(newTreeNode).call();
 
         // build new commit with parent of new commit and the newly built tree
         CommitBuilder builder = new CommitBuilder();
 
         builder.setParentIds(Lists.newArrayList(newCommitId));
-        builder.setTreeId(newTreeId);
+        builder.setTreeId(newRoot.getId());
         builder.setAuthor(authorName.orNull());
         builder.setAuthorEmail(authorEmail.orNull());
         builder.setMessage(commitMessage

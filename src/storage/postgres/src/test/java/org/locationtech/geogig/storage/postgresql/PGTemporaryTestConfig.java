@@ -77,7 +77,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
         try {
             TableNames tables = environment.getTables();
             Connection cx = dataSource.getConnection();
-            execute(cx, String.format("DROP VIEW IF EXISTS %s_name", tables.repositories()));
+            execute(cx, String.format("DROP VIEW IF EXISTS %s", tables.repositoryNamesView()));
             delete(cx, tables.objects(), true);
             delete(cx, tables.conflicts());
             delete(cx, tables.blobs());

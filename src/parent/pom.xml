@@ -29,29 +29,6 @@
 
   To build additional support for commercial databases:
 
-  * For SQL Server:
-
-    mvn clean install -PsqlServer
-
-    Note: the jdbc driver for SQL Server must be in your
-    local Maven repository, you can install it by issuing:
-
-    mvn install:install-file  -Dfile=<path to sqljdbc4.jar>
-         -DartifactId=sqljdbc4 \
-         -DgroupId=com.microsoft \
-         -Dversion=3.0 \
-         -Dpackaging=jar \
-         -DgeneratePom=true
-
-    Online tests can be performed by issuing the following:
-
-    mvn clean install -PsqlServer,sqlServerOnline
-
-  Corertura is configufred for a test coverage report:
-
-    mvn cobertura:cobertura
-    open target/site/cobertura/index.html
-
   * For Oracle:
 
     mvn clean install -Poracle
@@ -77,6 +54,8 @@
     <license>
       <name>Eclipse Distribution License</name>
       <url>https://www.eclipse.org/org/documents/edl-v10.html</url>
+      <distribution>repo</distribution>
+      <comments>The Eclipse Distribution License (a BSD-3 style license)</comments>
     </license>
   </licenses>
   <repositories>
@@ -107,32 +86,31 @@
   </repositories>
 
   <properties>
-    <bdbje.version>5.0.84</bdbje.version>
     <compress-lzf.version>1.0.3</compress-lzf.version>
     <cucumber-java.version>1.2.4</cucumber-java.version>
     <gson.version>2.4</gson.version>
-    <gt.version>14.1</gt.version>
+    <gt.version>15.1</gt.version>
     <guava.version>18.0</guava.version>
     <guice.version>4.0</guice.version>
     <jcommander.version>1.48</jcommander.version>
-    <jettison.version>1.0.1</jettison.version> <!-- matches version used in geoserver -->
+    <jsonp.version>1.0.4</jsonp.version>
     <jdt-annotation.version>1.1.0</jdt-annotation.version>
     <jts.version>1.13</jts.version>
     <junit.version>4.12</junit.version>
+    <xmlunit.version>2.1.0</xmlunit.version>
     <logback.version>1.1.2</logback.version>
     <mockito.version>2.0.2-beta</mockito.version>
     <restlet.version>1.0.8</restlet.version> <!-- matches version used in geoserver -->
     <slf4j.version>1.7.5</slf4j.version>
     <sqljdbc4.version>3.0</sqljdbc4.version>
-    <osmosis.version>0.43.1</osmosis.version>
-    <hikaricp.version>2.4.2</hikaricp.version>    
+    <hikaricp.version>2.4.2</hikaricp.version>
+    <rocksdb.version>4.13.4</rocksdb.version>
+    <springweb.version>4.2.5.RELEASE</springweb.version>
 
     <test.maxHeapSize>512M</test.maxHeapSize>
-    <test.tmpDir>${project.build.directory}</test.tmpDir> <!-- use the provided tmp dir for tests, defaults to project's target/ directory -->
     <maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
     <build.timestamp>${maven.build.timestamp}</build.timestamp>
     <online.skip.pattern>**/*OnlineTest.java</online.skip.pattern>
-    <sqlServerOnline.skip.pattern>**/*SQLServerFunctionalTest.java</sqlServerOnline.skip.pattern>
     <postgresOnline.skip.pattern>org/locationtech/geogig/storage/postgresql/**</postgresOnline.skip.pattern>
     <allow.test.skip>true</allow.test.skip>
     <argLine>-Xms256m -Xmx512m</argLine>
@@ -144,7 +122,7 @@
       <dependency>
         <groupId>org.rocksdb</groupId>
         <artifactId>rocksdbjni</artifactId>
-        <version>4.8.0</version>
+        <version>${rocksdb.version}</version>
       </dependency>
 
       <dependency>
@@ -254,13 +232,6 @@
         <version>${compress-lzf.version}</version>
       </dependency>
 
-      <!-- Berkeley DB JE -->
-      <dependency>
-        <groupId>com.sleepycat</groupId>
-        <artifactId>je</artifactId>
-        <version>${bdbje.version}</version>
-      </dependency>
-
       <dependency>
         <!-- http://jcommander.org/ -->
         <groupId>com.beust</groupId>
@@ -304,20 +275,14 @@
       </dependency>
 
       <dependency>
-        <groupId>org.mapdb</groupId>
-        <artifactId>mapdb</artifactId>
-        <version>2.0-beta8</version>
-      </dependency>
-
-      <dependency>
         <groupId>com.microsoft</groupId>
         <artifactId>sqljdbc4</artifactId>
         <version>${sqljdbc4.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.codehaus.jettison</groupId>
-        <artifactId>jettison</artifactId>
-        <version>${jettison.version}</version>
+        <groupId>org.glassfish</groupId>
+        <artifactId>javax.json</artifactId>
+        <version>${jsonp.version}</version>
       </dependency>
       <dependency>
         <groupId>org.restlet</groupId>
@@ -352,6 +317,18 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.xmlunit</groupId>
+        <artifactId>xmlunit-core</artifactId>
+        <version>${xmlunit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.xmlunit</groupId>
+        <artifactId>xmlunit-matchers</artifactId>
+        <version>${xmlunit.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -391,7 +368,11 @@
         <artifactId>py4j</artifactId>
         <version>0.8.1</version>
       </dependency>
-
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>${springweb.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -443,6 +424,11 @@
           <artifactId>maven-dependency-plugin</artifactId>
           <version>2.2</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.17</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -450,21 +436,16 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.17</version>
         <configuration>
           <includes>
             <include>**/*Test.java</include>
           </includes>
           <excludes>
             <exclude>${online.skip.pattern}</exclude>
-	    <exclude>${sqlServerOnline.skip.pattern}</exclude>
 	    <exclude>${postgresOnline.skip.pattern}</exclude>
           </excludes>
           <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
           <reuseForks>true</reuseForks>
-          <systemPropertyVariables>
-            <java.io.tmpdir>${test.tmpDir}</java.io.tmpdir>
-          </systemPropertyVariables>
         </configuration>
       </plugin>
       <plugin>
@@ -577,21 +558,43 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.17</version>
             <configuration>
               <includes>
                 <include>**/*Test.java</include>
               </includes>
               <excludes>
                 <exclude>${online.skip.pattern}</exclude>
-                <exclude>${sqlServerOnline.skip.pattern}</exclude>
                 <!--exclude>${postgresOnline.skip.pattern}</exclude-->
               </excludes>
               <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
               <reuseForks>true</reuseForks>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>performance</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
               <systemPropertyVariables>
-                <java.io.tmpdir>${test.tmpDir}</java.io.tmpdir>
+                <geogig.runPerformanceTests>true</geogig.runPerformanceTests>
               </systemPropertyVariables>
+              <!--excludes>
+                <exclude>${online.skip.pattern}</exclude>
+                <exclude>${postgresOnline.skip.pattern}</exclude>
+              </excludes-->
+              <includes>
+                <include>**/*StressTest.java</include>
+                <include>**/*PerformanceTest.java</include>
+              </includes>
+              <forkCount>1</forkCount>
+              <reuseForks>false</reuseForks>
+              <argLine>-Xms2G -Xmx2G</argLine>
             </configuration>
           </plugin>
         </plugins>
@@ -633,8 +636,60 @@
      <id>experimental</id>
      <modules>
        <module>../ql</module>
-       <module>../storage/rocksdb</module>
+       <module>../gui</module>
      </modules>
+    </profile>
+    <profile>
+      <id>locationtech</id>
+      <distributionManagement>
+        <repository>
+          <id>repo.locationtech.org</id>
+          <name>GeoGig Repository - Releases</name>
+          <url>https://repo.locationtech.org/content/repositories/geogig-releases/</url>
+        </repository>
+        <snapshotRepository>
+          <id>repo.locationtech.org</id>
+          <name>GeoGig Repository - Snapshots</name>
+          <url>https://repo.locationtech.org/content/repositories/geogig-snapshots/</url>
+        </snapshotRepository>
+      </distributionManagement>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>eclipse-cbi</id>
+          <name>Eclipse CBI</name>
+          <url>https://repo.eclipse.org/content/repositories/cbi-releases/</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.eclipse.cbi.maven.plugins</groupId>
+              <artifactId>eclipse-jarsigner-plugin</artifactId>
+              <version>1.1.3</version>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.cbi.maven.plugins</groupId>
+            <artifactId>eclipse-jarsigner-plugin</artifactId>
+            <version>1.1.3</version>
+            <executions>
+              <execution>
+                <id>sign</id>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 
@@ -643,9 +698,48 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.17</version>
         <configuration>
           <aggregate>true</aggregate>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.4</version>
+        <configuration>
+          <show>public</show>
+          <tags>
+            <tag>
+              <name>apiNote</name>
+              <placement>a</placement>
+              <head>API Note:</head>
+            </tag>
+            <tag>
+              <name>implSpec</name>
+              <placement>a</placement>
+              <head>Implementation Requirements:</head>
+            </tag>
+            <tag>
+              <name>implNote</name>
+              <placement>a</placement>
+              <head>Implementation Note:</head>
+            </tag>
+            <tag>
+              <name>pre</name>
+              <placement>a</placement>
+              <head>Precondition:</head>
+            </tag>
+            <tag>
+              <name>post</name>
+              <placement>a</placement>
+              <head>Postcontidion:</head>
+            </tag>
+            <tag>
+              <name>invariant</name>
+              <placement>a</placement>
+              <head>Invariant:</head>
+            </tag>
+          </tags>
         </configuration>
       </plugin>
     </plugins>
@@ -657,7 +751,6 @@
    <module>../datastore</module>
    <module>../storage</module>
    <module>../cli</module>
-   <module>../osm</module>
    <module>../geotools</module>
    <module>../web</module>
    <module>../cli-app</module>

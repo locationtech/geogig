@@ -51,6 +51,11 @@ public class Tag extends AbstractWebAPICommand {
     }
 
     @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
+    @Override
     public boolean supports(final Method method) {
         return Method.POST.equals(method) || Method.GET.equals(method)
                 || Method.DELETE.equals(method) || super.supports(method);
@@ -90,7 +95,7 @@ public class Tag extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         if (context.getMethod() == Method.GET) {
             final List<RevTag> tags = geogig.command(TagListOp.class).call();

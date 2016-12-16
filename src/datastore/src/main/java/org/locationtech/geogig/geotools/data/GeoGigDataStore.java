@@ -24,11 +24,10 @@ import org.geotools.data.store.ContentEntry;
 import org.geotools.data.store.ContentState;
 import org.geotools.feature.NameImpl;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -38,9 +37,10 @@ import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
@@ -396,7 +396,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         featureSource.setTransaction(Transaction.AUTO_COMMIT);
         featureSource.setChangeType(changeType);
         if (ObjectId.NULL.toString().equals(oldRoot)
-                || RevTreeBuilder.EMPTY_TREE_ID.toString().equals(oldRoot)) {
+                || RevTree.EMPTY_TREE_ID.toString().equals(oldRoot)) {
             featureSource.setOldRoot(null);
         } else {
             featureSource.setOldRoot(oldRoot);

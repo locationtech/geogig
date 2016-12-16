@@ -15,9 +15,9 @@ import static com.google.common.base.Preconditions.checkState;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevPerson;
-import org.locationtech.geogig.model.RevPersonBuilder;
 import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.RevTagBuilder;
+import org.locationtech.geogig.model.impl.RevPersonBuilder;
+import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.plumbing.CheckRefFormat;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -95,13 +95,11 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
         Optional<String> name = command(ConfigGet.class).setName(nameKey).call();
         Optional<String> email = command(ConfigGet.class).setName(emailKey).call();
 
-        checkState(
-                name.isPresent(),
+        checkState(name.isPresent(),
                 "%s not found in config. Use geogig config [--global] %s <your name> to configure it.",
                 nameKey, nameKey);
 
-        checkState(
-                email.isPresent(),
+        checkState(email.isPresent(),
                 "%s not found in config. Use geogig config [--global] %s <your email> to configure it.",
                 emailKey, emailKey);
 
@@ -111,7 +109,8 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
         Platform platform = platform();
         long taggerTimeStamp = platform.currentTimeMillis();
         int taggerTimeZoneOffset = platform.timeZoneOffset(taggerTimeStamp);
-        return RevPersonBuilder.build(taggerName, taggerEmail, taggerTimeStamp, taggerTimeZoneOffset);
+        return RevPersonBuilder.build(taggerName, taggerEmail, taggerTimeStamp,
+                taggerTimeZoneOffset);
     }
 
 }

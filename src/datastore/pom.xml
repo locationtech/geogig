@@ -12,7 +12,7 @@
 
   <artifactId>geogig-datastore</artifactId>
   <packaging>jar</packaging>
-  <name>GeoTools DataStore Implementation</name>
+  <name>GeoGig DataStore Implementation</name>
 
   <dependencies>
     <dependency>

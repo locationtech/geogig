@@ -25,12 +25,11 @@ import org.geotools.feature.collection.DelegateFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
@@ -38,6 +37,7 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.Feature;
@@ -154,9 +154,8 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
     }
 
     private static AutoCloseableIterator<SimpleFeature> getFeatures(
-            AutoCloseableIterator<DiffEntry> diffs, final boolean old,
-            final ObjectStore database, final ObjectId metadataId,
-            final ProgressListener progressListener) {
+            AutoCloseableIterator<DiffEntry> diffs, final boolean old, final ObjectStore database,
+            final ObjectId metadataId, final ProgressListener progressListener) {
 
         final SimpleFeatureType featureType = addChangeTypeAttribute(
                 database.getFeatureType(metadataId));

@@ -23,6 +23,7 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.pointsTyp
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -147,36 +148,38 @@ public class GeoPackageTestSupport {
             throws IOException, SQLException {
 
         JDBCDataStore gpkgStore = (JDBCDataStore) gpkg;
-        GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(gpkgStore.getConnection(Transaction.AUTO_COMMIT));
-        Transaction gttx = new DefaultTransaction();
-        try {
-            gpkg.createSchema(source.getSchema());
-            SimpleFeatureStore store;
-            store = (SimpleFeatureStore) gpkg.getFeatureSource(source.getName().getLocalPart());
-            Preconditions.checkState(store.getQueryCapabilities().isUseProvidedFIDSupported());
-            store.setTransaction(gttx);
-            SimpleFeatureCollection features = source.getFeatures();
-            
-            SimpleFeatureIterator iter = features.features();
-            SimpleFeature original, updated;
-            SimpleFeatureType featureType = null;
-            List<SimpleFeature> updatedFeatures = new LinkedList<SimpleFeature>();
-            ConcurrentMap<String, String> mappings = new ConcurrentHashMap<String, String>();
-            while (iter.hasNext()) {
-                original = iter.next();
-                featureType = original.getFeatureType();
-                updated = transformFeatureId(original);
-                updatedFeatures.add(updated);
-                mappings.put(updated.getID(), original.getID());
+        try (Connection cx = gpkgStore.getConnection(Transaction.AUTO_COMMIT);
+                GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(cx)) {
+            Transaction gttx = new DefaultTransaction();
+            try {
+                gpkg.createSchema(source.getSchema());
+                SimpleFeatureStore store;
+                store = (SimpleFeatureStore) gpkg.getFeatureSource(source.getName().getLocalPart());
+                Preconditions.checkState(store.getQueryCapabilities().isUseProvidedFIDSupported());
+                store.setTransaction(gttx);
+                SimpleFeatureCollection features = source.getFeatures();
+
+                SimpleFeatureIterator iter = features.features();
+                SimpleFeature original, updated;
+                SimpleFeatureType featureType = null;
+                List<SimpleFeature> updatedFeatures = new LinkedList<SimpleFeature>();
+                ConcurrentMap<String, String> mappings = new ConcurrentHashMap<String, String>();
+                while (iter.hasNext()) {
+                    original = iter.next();
+                    featureType = original.getFeatureType();
+                    updated = transformFeatureId(original);
+                    updatedFeatures.add(updated);
+                    mappings.put(updated.getID(), original.getID());
+                }
+                ListFeatureCollection transformedFeatures = new ListFeatureCollection(featureType,
+                        updatedFeatures);
+                metadata.createFidMappingTable(source.getName().getLocalPart(), mappings);
+
+                store.addFeatures(transformedFeatures);
+                gttx.commit();
+            } finally {
+                gttx.close();
             }
-            ListFeatureCollection transformedFeatures = new ListFeatureCollection(featureType,
-                    updatedFeatures);
-            metadata.createFidMappingTable(source.getName().getLocalPart(), mappings);
-            
-            store.addFeatures(transformedFeatures);
-            gttx.commit();
-        } finally {
-            gttx.close();
         }
     }
 

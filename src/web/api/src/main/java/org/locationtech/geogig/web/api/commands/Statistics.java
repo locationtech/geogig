@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.geotools.util.Range;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevPerson;
@@ -26,6 +25,7 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -55,6 +55,11 @@ public class Statistics extends AbstractWebAPICommand {
         setUntil(options.getFirstValue("branch", null));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     public void setPath(String path) {
         this.path = path;
     }
@@ -74,9 +79,11 @@ public class Statistics extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
         final List<FeatureTypeStats> stats = Lists.newArrayList();
         LogOp logOp = geogig.command(LogOp.class).setFirstParentOnly(true);
+        LsTreeOp lsTreeOp = geogig.command(LsTreeOp.class)
+                .setStrategy(LsTreeOp.Strategy.TREES_ONLY);
         final Iterator<RevCommit> log;
         if (since != null && !since.trim().isEmpty()) {
             Date untilTime = new Date();
@@ -88,20 +95,20 @@ public class Statistics extends AbstractWebAPICommand {
             until = geogig.command(RevParse.class).setRefSpec(this.until).call();
             Preconditions.checkArgument(until.isPresent(), "Object not found '%s'", this.until);
             logOp.setUntil(until.get());
+            lsTreeOp.setReference(this.until);
         }
 
-        LsTreeOp lsTreeOp = geogig.command(LsTreeOp.class)
-                .setStrategy(LsTreeOp.Strategy.TREES_ONLY);
         if (path != null && !path.trim().isEmpty()) {
-            lsTreeOp.setReference(path);
             logOp.addPath(path);
         }
         final Iterator<NodeRef> treeIter = lsTreeOp.call();
 
         while (treeIter.hasNext()) {
             NodeRef node = treeIter.next();
-            stats.add(new FeatureTypeStats(node.path(),
-                    context.getRepository().getTree(node.getObjectId()).size()));
+            if (path == null || path.trim().isEmpty() || node.path().startsWith(path)) {
+                stats.add(new FeatureTypeStats(node.path(),
+                        context.getRepository().getTree(node.getObjectId()).size()));
+            }
         }
         log = logOp.call();
 

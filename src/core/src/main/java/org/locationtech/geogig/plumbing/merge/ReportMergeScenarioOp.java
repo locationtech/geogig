@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
@@ -28,6 +27,7 @@ import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -268,7 +268,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                     report.addUnconflicted();
                 } else {
                     ObjectId featureTypeId = oursDiff.getNewObject().getMetadataId();
-                    FeatureInfo merged = new FeatureInfo(mergedFeature, featureTypeId, path);
+                    FeatureInfo merged = FeatureInfo.insert(mergedFeature, featureTypeId, path);
                     consumer.merged(merged);
                     report.addMerged();
                 }

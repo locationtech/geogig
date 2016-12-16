@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.porcelain.RemoveOp;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -64,17 +64,14 @@ public class Remove extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (this.getTransactionId() == null) {
-            throw new CommandSpecException(
-                    "No transaction was specified, remove requires a transaction to preserve the stability of the repository.");
-        }
+        final Context geogig = this.getRepositoryContext(context);
+
         if (this.path == null) {
             throw new CommandSpecException("No path was specified for removal.");
         }
 
         NodeRef.checkValidPath(path);
 
-        final Context geogig = this.getCommandLocator(context);
         RemoveOp command = geogig.command(RemoveOp.class).setRecursive(recursive);
 
         command.addPathToRemove(path).call();

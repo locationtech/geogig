@@ -18,9 +18,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.collect.Lists;
@@ -58,11 +58,10 @@ public class GeoPkgImportTest extends RepositoryTestCase {
         importCommand.commonArgs.database = support.createDefaultTestData().getAbsolutePath();
         importCommand.table = "Points";
         importCommand.run(cli);
-        
+
         Iterator<NodeRef> nodeIterator = cli.getGeogig().command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST).call();
-        assertTrue("Expected repo to have some nodes, but was empty",
-                nodeIterator.hasNext());
+        assertTrue("Expected repo to have some nodes, but was empty", nodeIterator.hasNext());
         List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
                 (nr) -> nr.name());
         assertTrue(nodeList.contains("Points"));

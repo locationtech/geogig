@@ -28,8 +28,9 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.storage.AbstractRefDatabase;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.impl.AbstractRefDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -148,7 +149,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     /**
      * @param refName the name of the ref
-     * @param refValue the value of the ref
+     * @param refValue the value of the ref, must be the hex encoding of an {@link ObjectId}
      * @return {@code null} if the ref didn't exist already, its old value otherwise
      */
     @Override
@@ -156,7 +157,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
         checkNotNull(refName);
         checkNotNull(refValue);
         try {
-            ObjectId.forString(refValue);
+            ObjectId.valueOf(refValue);
         } catch (IllegalArgumentException e) {
             throw e;
         }
@@ -376,12 +377,12 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     @Override
     public void configure() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.REF.configure(configDB, "file", "1.0");
+        StorageType.REF.configure(configDB, "file", "1.0");
     }
 
     @Override
     public void checkConfig() throws RepositoryConnectionException {
-        RepositoryConnectionException.StorageType.REF.verify(configDB, "file", "1.0");
+        StorageType.REF.verify(configDB, "file", "1.0");
     }
 
     @Override

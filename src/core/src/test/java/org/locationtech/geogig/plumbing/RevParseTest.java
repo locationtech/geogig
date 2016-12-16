@@ -24,6 +24,7 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
@@ -140,11 +141,9 @@ public class RevParseTest extends RepositoryTestCase {
 
         objectId = geogig.command(RevParse.class).setRefSpec(ObjectId.NULL.toString()).call();
         assertEquals(ObjectId.NULL, objectId.get());
-        objectId = geogig
-                .command(RevParse.class)
-                .setRefSpec(
-                        ObjectId.NULL.toString().substring(0,
-                                ObjectId.NULL.toString().length() - 10)).call();
+        objectId = geogig.command(RevParse.class).setRefSpec(
+                ObjectId.NULL.toString().substring(0, ObjectId.NULL.toString().length() - 10))
+                .call();
         assertEquals(ObjectId.NULL, objectId.get());
 
         objectId = geogig.command(RevParse.class).setRefSpec(commitId1.toString() + "~1").call();
@@ -175,7 +174,7 @@ public class RevParseTest extends RepositoryTestCase {
         // TODO: Make a case for Tags when they actually do something
 
         objectId = geogig.command(RevParse.class)
-                .setRefSpec(ObjectId.forString("NotAFeature").toString()).call();
+                .setRefSpec(RevObjectTestSupport.hashString("NotAFeature").toString()).call();
         assertEquals(Optional.absent(), objectId);
     }
 
@@ -222,8 +221,8 @@ public class RevParseTest extends RepositoryTestCase {
         Optional<Ref> ref = Optional.absent();
         when(mockRefParse.call()).thenReturn(ref);
 
-        List<ObjectId> oIds = Arrays.asList(ObjectId.forString("Object 1"),
-                ObjectId.forString("Object 2"));
+        List<ObjectId> oIds = Arrays.asList(RevObjectTestSupport.hashString("Object 1"),
+                RevObjectTestSupport.hashString("Object 2"));
         when(mockCommands.objectDatabase()).thenReturn(mockdb);
         when(mockdb.lookUp(anyString())).thenReturn(oIds);
         when(mockCommands.conflictsDatabase()).thenReturn(mockConflictsDb);

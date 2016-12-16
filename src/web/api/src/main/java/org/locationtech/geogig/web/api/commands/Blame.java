@@ -42,6 +42,11 @@ public class Blame extends AbstractWebAPICommand {
         setPath(options.getFirstValue("path", null));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the branchOrCommit variable
      * 
@@ -67,7 +72,7 @@ public class Blame extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         Optional<ObjectId> commit = Optional.absent();
         if (branchOrCommit != null) {

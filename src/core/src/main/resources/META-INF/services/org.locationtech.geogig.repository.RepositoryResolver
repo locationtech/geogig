@@ -1,1 +1,1 @@
-org.locationtech.geogig.repository.DefaultRepositoryResolver
+org.locationtech.geogig.repository.impl.DefaultRepositoryResolver

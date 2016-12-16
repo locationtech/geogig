@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static org.locationtech.geogig.model.RevObjectTestSupport.createFeaturesTree;
-import static org.locationtech.geogig.model.RevObjectTestSupport.createTreesTree;
-import static org.locationtech.geogig.model.RevObjectTestSupport.createTreesTreeBuilder;
-import static org.locationtech.geogig.model.RevObjectTestSupport.featureNode;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTree;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createTreesTree;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createTreesTreeBuilder;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.featureNode;
 
 import java.util.List;
 
@@ -20,11 +20,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 
@@ -50,14 +51,14 @@ public class DepthTreeIteratorTest extends Assert {
         source = new HeapObjectDatabase();
         source.open();
 
-        metadataId = ObjectId.forString("fake id");
+        metadataId = RevObjectTestSupport.hashString("fake id");
         treePath = "";
-        emptyTree = RevTreeBuilder.EMPTY;
+        emptyTree = RevTree.EMPTY;
         featuresLeafTree = createFeaturesTree(source, "featuresLeafTree", 100);
-        assertTrue(featuresLeafTree.features().isPresent());
+        assertFalse(featuresLeafTree.features().isEmpty());
 
         treesLeafTree = createTreesTree(source, 100, 10, metadataId);
-        assertTrue(treesLeafTree.trees().isPresent());
+        assertFalse(treesLeafTree.trees().isEmpty());
 
         RevTreeBuilder builder = createTreesTreeBuilder(source, 10, 10, metadataId);
         for (int i = 0; i < 100; i++) {
@@ -83,8 +84,8 @@ public class DepthTreeIteratorTest extends Assert {
         RevTree tree = createFeaturesTree(source, "feature.", numEntries);
         assertEquals(numEntries, list(tree, Strategy.FEATURES_ONLY).size());
 
-        assertEquals(featuresBucketsTree.size(), list(featuresBucketsTree, Strategy.FEATURES_ONLY)
-                .size());
+        assertEquals(featuresBucketsTree.size(),
+                list(featuresBucketsTree, Strategy.FEATURES_ONLY).size());
     }
 
     @Test
@@ -123,8 +124,8 @@ public class DepthTreeIteratorTest extends Assert {
                 list(treesLeafTree, Strategy.RECURSIVE).size());
         assertEquals(mixedLeafTree.size() + mixedLeafTree.numTrees(),
                 list(mixedLeafTree, Strategy.RECURSIVE).size());
-        assertEquals(featuresBucketsTree.size(), list(featuresBucketsTree, Strategy.RECURSIVE)
-                .size());
+        assertEquals(featuresBucketsTree.size(),
+                list(featuresBucketsTree, Strategy.RECURSIVE).size());
 
         int numSubTrees = CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1;
         int featuresPerTree = CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1;
@@ -142,10 +143,10 @@ public class DepthTreeIteratorTest extends Assert {
     public void testRecursiveFeaturesOnly() {
         assertEquals(0, list(emptyTree, Strategy.RECURSIVE_FEATURES_ONLY).size());
         assertEquals(100, list(featuresLeafTree, Strategy.RECURSIVE_FEATURES_ONLY).size());
-        assertEquals(treesLeafTree.size(), list(treesLeafTree, Strategy.RECURSIVE_FEATURES_ONLY)
-                .size());
-        assertEquals(mixedLeafTree.size(), list(mixedLeafTree, Strategy.RECURSIVE_FEATURES_ONLY)
-                .size());
+        assertEquals(treesLeafTree.size(),
+                list(treesLeafTree, Strategy.RECURSIVE_FEATURES_ONLY).size());
+        assertEquals(mixedLeafTree.size(),
+                list(mixedLeafTree, Strategy.RECURSIVE_FEATURES_ONLY).size());
         assertEquals(featuresBucketsTree.size(),
                 list(featuresBucketsTree, Strategy.RECURSIVE_FEATURES_ONLY).size());
 
@@ -165,10 +166,10 @@ public class DepthTreeIteratorTest extends Assert {
     public void testRecursiveTreesOnly() {
         assertEquals(0, list(emptyTree, Strategy.RECURSIVE_TREES_ONLY).size());
         assertEquals(0, list(featuresLeafTree, Strategy.RECURSIVE_TREES_ONLY).size());
-        assertEquals(treesLeafTree.numTrees(), list(treesLeafTree, Strategy.RECURSIVE_TREES_ONLY)
-                .size());
-        assertEquals(mixedLeafTree.numTrees(), list(mixedLeafTree, Strategy.RECURSIVE_TREES_ONLY)
-                .size());
+        assertEquals(treesLeafTree.numTrees(),
+                list(treesLeafTree, Strategy.RECURSIVE_TREES_ONLY).size());
+        assertEquals(mixedLeafTree.numTrees(),
+                list(mixedLeafTree, Strategy.RECURSIVE_TREES_ONLY).size());
         assertEquals(0, list(featuresBucketsTree, Strategy.RECURSIVE_TREES_ONLY).size());
 
         int numSubTrees = CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1;

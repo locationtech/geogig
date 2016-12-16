@@ -83,7 +83,7 @@ public class ConfigOp extends AbstractGeoGigOp<Optional<Map<String, String>>> {
      *         the exception's statusCode.
      */
     @Override
-    protected  Optional<Map<String, String>> _call() {
+    protected Optional<Map<String, String>> _call() {
         final ConfigDatabase config = configDatabase();
         switch (action) {
         case CONFIG_GET: {
@@ -214,6 +214,15 @@ public class ConfigOp extends AbstractGeoGigOp<Optional<Map<String, String>>> {
      */
     public ConfigOp setValue(String value) {
         this.value = value;
+        return this;
+    }
+
+    /**
+     * @param configDb the config database to use for the operation
+     * @return {@code this}
+     */
+    public ConfigOp setConfigDatabase(ConfigDatabase configDb) {
+        this.configDbOverride = configDb;
         return this;
     }
 

@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
@@ -28,13 +27,14 @@ import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.storage.PersistedIterable;
-import org.locationtech.geogig.storage.PersistedIterable.Serializer;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.datastream.FormatCommonV2;
+import org.locationtech.geogig.storage.impl.PersistedIterable;
+import org.locationtech.geogig.storage.impl.PersistedIterable.Serializer;
 
 import com.google.common.base.Optional;
 
@@ -315,11 +315,11 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
         }
 
         private void writeNode(DataOutputStream out, Node node) throws IOException {
-            FormatCommonV2.writeNode(node, out);
+            FormatCommonV2.INSTANCE.writeNode(node, out);
         }
 
         private Node readNode(DataInputStream in) throws IOException {
-            return FormatCommonV2.readNode(in);
+            return FormatCommonV2.INSTANCE.readNode(in);
         }
 
     }
@@ -388,7 +388,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
             String path = in.readUTF();
             ObjectId featureTypeId = OID.read(in);
             RevFeature feature = (RevFeature) DataStreamSerializationFactoryV2.INSTANCE.read(in);
-            return new FeatureInfo(feature, featureTypeId, path);
+            return FeatureInfo.insert(feature, featureTypeId, path);
         }
 
     }

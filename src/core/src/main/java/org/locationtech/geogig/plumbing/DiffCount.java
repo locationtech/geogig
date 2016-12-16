@@ -16,7 +16,6 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.DiffCountConsumer;
 import org.locationtech.geogig.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
@@ -139,7 +138,7 @@ public class DiffCount extends AbstractGeoGigOp<DiffObjectCount> {
             ObjectId headTreeId = resolved.get();
             headTree = objectDatabase().getTree(headTreeId);
         } else {
-            headTree = RevTreeBuilder.EMPTY;
+            headTree = RevTree.EMPTY;
         }
         return headTree;
     }

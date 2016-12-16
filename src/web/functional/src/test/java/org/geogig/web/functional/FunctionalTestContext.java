@@ -15,19 +15,35 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.plumbing.TransactionResolve;
+import org.locationtech.geogig.porcelain.BranchDeleteOp;
+import org.locationtech.geogig.porcelain.CloneOp;
+import org.locationtech.geogig.porcelain.RemoteAddOp;
+import org.locationtech.geogig.porcelain.ResetOp;
+import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.web.api.TestData;
 import org.restlet.data.Method;
+import org.restlet.data.Status;
 import org.w3c.dom.Document;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
@@ -51,6 +67,15 @@ public abstract class FunctionalTestContext extends ExternalResource {
             this.tempFolder.create();
         }
         setUp();
+
+        RevFeatureType rft = RevFeatureTypeBuilder.build(TestData.pointsType);
+        setVariable("@PointsTypeID", rft.getId().toString());
+
+        rft = RevFeatureTypeBuilder.build(TestData.linesType);
+        setVariable("@LinesTypeID", rft.getId().toString());
+
+        rft = RevFeatureTypeBuilder.build(TestData.polysType);
+        setVariable("@PolysTypeID", rft.getId().toString());
     }
 
     /**
@@ -96,9 +121,15 @@ public abstract class FunctionalTestContext extends ExternalResource {
      * @param headRef the ref from which to list the features
      * @return a multimap that contains all of the feature types and their features
      */
-    public SetMultimap<String, String> listRepo(final String repoName, final String headRef) {
-        Repository repo = getRepo(repoName);
-        Iterator<NodeRef> featureRefs = repo.command(LsTreeOp.class).setReference(headRef)
+    public SetMultimap<String, String> listRepo(final String repoName, final String headRef,
+            final String txId) {
+        Context context = getRepo(repoName).context();
+        if (txId != null) {
+            context = context.command(TransactionResolve.class)
+                    .setId(UUID.fromString(getVariable(txId))).call().get();
+        }
+
+        Iterator<NodeRef> featureRefs = context.command(LsTreeOp.class).setReference(headRef)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
 
         SetMultimap<String, String> features = HashMultimap.create();
@@ -126,6 +157,95 @@ public abstract class FunctionalTestContext extends ExternalResource {
                 .getRepo().close();
     }
 
+    protected abstract void serveHttpRepos() throws Exception;
+
+    public abstract String getHttpLocation(String repoName);
+
+    /**
+     * Set up multiple repositories with remotes for testing.
+     * 
+     * @throws Exception
+     */
+    public void setUpDefaultMultiRepoServerWithRemotes(boolean http) throws Exception {
+        if (http) {
+            serveHttpRepos();
+        }
+        Repository repo1 = createRepo("repo1")//
+                .init("geogigUser", "repo1_Owner@geogig.org")//
+                .loadDefaultData()//
+                .getRepo();
+
+        String repo1Url = http ? getHttpLocation("repo1") : repo1.getLocation().toString();
+
+        Repository repo2 = createRepo("repo2")//
+                .init("geogigUser", "repo2_Owner@geogig.org").getRepo();
+
+        repo2.command(CloneOp.class).setRepositoryURL(repo1Url).call();
+
+        String repo2Url = http ? getHttpLocation("repo2") : repo2.getLocation().toString();
+        
+        repo2.close();
+
+        if (http) {
+            // The http clone triggers repo1 to be opened by the repository provider. We'll close
+            // ours and use that one instead.
+            repo1.close();
+            repo1 = getRepo("repo1");
+        }
+
+        repo1.command(BranchDeleteOp.class).setName("branch2").call();
+
+        Repository repo3 = createRepo("repo3")
+                .init("geogigUser", "repoWithRemotes_Owner@geogig.org").getRepo();
+
+        repo3.command(RemoteAddOp.class).setName("repo1").setURL(repo1Url).call();
+        repo3.command(RemoteAddOp.class).setName("repo2").setURL(repo2Url).call();
+        
+        repo3.close();
+
+        Repository repo4 = createRepo("repo4")//
+                .init("geogigUser", "repo4_Owner@geogig.org").getRepo();
+
+        repo4.command(CloneOp.class).setRepositoryURL(repo1Url).call();
+
+        Optional<RevObject> masterOriginal = repo4.command(RevObjectParse.class)
+                .setRefSpec("master~2").call();
+        repo4.command(ResetOp.class).setCommit(Suppliers.ofInstance(masterOriginal.get().getId()))
+                .setMode(ResetMode.HARD).call();
+
+        String repo4Url = http ? getHttpLocation("repo4") : repo4.getLocation().toString();
+        
+        repo4.close();
+
+        repo1.command(RemoteAddOp.class).setName("repo4").setURL(repo4Url).call();
+
+        if (!http) {
+            repo1.close();
+        }
+    }
+
+    /**
+     * Set up multiple repositories with a shallow clone for testing.
+     * 
+     * @throws Exception
+     */
+    public void setUpDefaultMultiRepoServerWithShallowClone() throws Exception {
+        Repository repo1 = createRepo("full")//
+                .init("geogigUser", "full_Owner@geogig.org")//
+                .loadDefaultData()//
+                .getRepo();
+
+        String repo1Url = repo1.getLocation().toString();
+
+        Repository repo2 = createRepo("shallow")//
+                .init("geogigUser", "shallow_Owner@geogig.org").getRepo();
+
+        repo2.command(CloneOp.class).setRepositoryURL(repo1Url).setDepth(1).call();
+
+        repo1.close();
+        repo2.close();
+    }
+    
     /**
      * Create a repository with the given name for testing.
      * 
@@ -144,6 +264,28 @@ public abstract class FunctionalTestContext extends ExternalResource {
     public void call(final Method method, String resourceUri) {
         callInternal(method, replaceVariables(resourceUri));
     }
+
+    /**
+     * Issue a request with the given {@link Method} to the provided resource URI and payload.
+     *
+     * @param method the http method to use
+     * @param resourceUri the uri to issue the request to
+     * @param content the payload to encode into the request body
+     * @param contentType the MediaType of the payload
+     */
+    public void call(final Method method, String resourceUri, String content, String contentType) {
+        callInternal(method, replaceVariables(resourceUri), content, contentType);
+    }
+
+    /**
+     * Issue a request with the given {@link Method} to the provided resource URI and payload.
+     *
+     * @param method the http method to use
+     * @param resourceUri the uri to issue the request to
+     * @param content the payload to encode into the request body
+     * @param contentType the MediaType of the payload
+     */
+    protected abstract void callInternal(final Method method, String resourceUri, String content, String contentType);
 
     /**
      * Issue a request with the given {@link Method} to the provided resource URI.
@@ -165,6 +307,16 @@ public abstract class FunctionalTestContext extends ExternalResource {
     }
 
     /**
+     * Issue a POST request to the provided URL with the given text as post data.
+     * 
+     * @param url the url to issue the request to
+     * @param postText the text to post
+     */
+    public void postText(final String url, final String postText) {
+        postTextInternal(replaceVariables(url), replaceVariables(postText));
+    }
+
+    /**
      * Issue a POST request to the provided URL with the given file passed as form data.
      * 
      * @param resourceUri the url to issue the request to
@@ -173,6 +325,14 @@ public abstract class FunctionalTestContext extends ExternalResource {
      */
     protected abstract void postFileInternal(final String resourceUri,
             final String formFieldName, final File file);
+
+    /**
+     * Issue a POST request to the provided URL with the given text as post data.
+     * 
+     * @param url the url to issue the request to
+     * @param postText the text to post
+     */
+    protected abstract void postTextInternal(final String resourceUri, final String postText);
 
     /**
      * @return the content of the last response as text
@@ -220,10 +380,11 @@ public abstract class FunctionalTestContext extends ExternalResource {
     }
 
     public String replaceVariables(final String text) {
-        return replaceVariables(text, this.variables);
+        return replaceVariables(text, this.variables, this);
     }
 
-    static String replaceVariables(final String text, Map<String, String> variables) {
+    static String replaceVariables(final String text, Map<String, String> variables,
+            FunctionalTestContext context) {
         String resource = text;
         int varIndex = -1;
         while ((varIndex = resource.indexOf("{@")) > -1) {
@@ -231,7 +392,34 @@ public abstract class FunctionalTestContext extends ExternalResource {
                 char c = resource.charAt(i);
                 if (c == '}') {
                     String varName = resource.substring(varIndex + 1, i);
-                    String varValue = getVariable(varName, variables);
+                    String varValue;
+                    if (context != null && varName.startsWith("@ObjectId|")) {
+                        String[] parts = varName.split("\\|");
+                        String repoName = parts[1];
+                        Repository repo = context.getRepo(repoName);
+                        String ref;
+                        Optional<RevObject> object;
+                        if (parts.length == 3) {
+                            ref = parts[2];
+                            object = repo.command(RevObjectParse.class)
+                                    .setRefSpec(ref).call();
+
+                        } else {
+                            ref = parts[3];
+                            String txVar = getVariable(parts[2], variables);
+                            GeogigTransaction transaction = repo.command(TransactionResolve.class)
+                                    .setId(UUID.fromString(txVar)).call().get();
+                            object = transaction.command(RevObjectParse.class)
+                                    .setRefSpec(ref).call();
+                        }
+                        if (object.isPresent()) {
+                            varValue = object.get().getId().toString();
+                        } else {
+                            varValue = "";
+                        }
+                    } else {
+                        varValue = getVariable(varName, variables);
+                    }
                     String tmp = resource.replace("{" + varName + "}", varValue);
                     resource = tmp;
                     break;
@@ -239,6 +427,10 @@ public abstract class FunctionalTestContext extends ExternalResource {
             }
         }
         return resource;
+    }
+
+    static String replaceVariables(final String text, Map<String, String> variables) {
+        return replaceVariables(text, variables, null);
     }
 
 }

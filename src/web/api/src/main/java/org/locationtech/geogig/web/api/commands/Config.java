@@ -47,6 +47,11 @@ public class Config extends AbstractWebAPICommand {
     }
 
     @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
+    @Override
     public boolean supports(final Method method) {
         return Method.POST.equals(method) || Method.GET.equals(method) || super.supports(method);
     }
@@ -79,7 +84,7 @@ public class Config extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
 
         ConfigOp command = geogig.command(ConfigOp.class).setScope(ConfigScope.LOCAL);
 
@@ -108,15 +113,7 @@ public class Config extends AbstractWebAPICommand {
                 out.start();
                 if (results.isPresent()) {
                     if (action == ConfigAction.CONFIG_LIST) {
-                        Iterator<Map.Entry<String, String>> it = results.get().entrySet()
-                                .iterator();
-                        while (it.hasNext()) {
-                            Map.Entry<String, String> pairs = (Map.Entry<String, String>) it.next();
-                            out.getWriter().writeStartElement("config");
-                            out.writeElement("name", pairs.getKey());
-                            out.writeElement("value", pairs.getValue());
-                            out.getWriter().writeEndElement();
-                        }
+                        out.writeConfigList(results.get().entrySet().iterator());
                     } else if (action == ConfigAction.CONFIG_GET) {
                         out.writeElement("value", results.get().get(name));
                     }

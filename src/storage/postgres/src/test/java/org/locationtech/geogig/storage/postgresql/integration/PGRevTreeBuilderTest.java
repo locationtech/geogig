@@ -9,32 +9,45 @@
  */
 package org.locationtech.geogig.storage.postgresql.integration;
 
+import java.io.IOException;
+
+import org.junit.After;
 import org.junit.Rule;
-import org.locationtech.geogig.di.GeogigModule;
-import org.locationtech.geogig.di.HintsModule;
-import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.storage.postgresql.PGStorageModule;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilderTest;
+import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.postgresql.Environment;
+import org.locationtech.geogig.storage.postgresql.PGConfigDatabase;
+import org.locationtech.geogig.storage.postgresql.PGObjectDatabase;
+import org.locationtech.geogig.storage.postgresql.PGStorage;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.test.integration.RevTreeBuilderIntegrationTest;
 
-import com.google.inject.Guice;
-import com.google.inject.util.Modules;
-
-public class PGRevTreeBuilderTest extends RevTreeBuilderIntegrationTest {
+public class PGRevTreeBuilderTest extends CanonicalTreeBuilderTest {
 
     @Rule
     public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());
 
+    ConfigDatabase configDb;
+
+    PGObjectDatabase pgObjectDatabase;
+
+    @After
+    public void dispose() throws IOException {
+        if (configDb != null) {
+            configDb.close();
+        }
+        if (pgObjectDatabase != null) {
+            pgObjectDatabase.close();
+        }
+    }
+
     @Override
-    protected Context createInjector() {
+    protected ObjectStore createObjectStore() {
+        Environment environment = testConfig.getEnvironment();
+        PGStorage.createNewRepo(environment);
 
-        String repoUrl = testConfig.getRepoURL();
-
-        Hints hints = new Hints();
-        hints.set(Hints.REPOSITORY_URL, repoUrl);
-        return Guice.createInjector(
-                Modules.override(new GeogigModule()).with(new HintsModule(hints),
-                        new PGStorageModule())).getInstance(Context.class);
+        configDb = new PGConfigDatabase(environment);
+        pgObjectDatabase = new PGObjectDatabase(configDb, environment, false);
+        return pgObjectDatabase;
     }
 }

@@ -16,9 +16,7 @@
   <name>Storage backends</name>
 
   <modules>
-   <module>bdbje</module>
-   <!--module>sqlite</module-->
    <module>postgres</module>
-   <!--module>rocksdb</module-->
+   <module>rocksdb</module>
   </modules>
 </project>

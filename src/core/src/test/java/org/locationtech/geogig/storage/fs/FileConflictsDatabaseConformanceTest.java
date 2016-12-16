@@ -13,7 +13,7 @@ import java.io.File;
 
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.storage.ConflictsDatabaseConformanceTest;
+import org.locationtech.geogig.storage.impl.ConflictsDatabaseConformanceTest;
 
 public class FileConflictsDatabaseConformanceTest
         extends ConflictsDatabaseConformanceTest<FileConflictsDatabase> {

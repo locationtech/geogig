@@ -62,6 +62,8 @@ public class DiffOp extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
     private boolean reportTrees;
 
+    private boolean preserveIterationOrder;
+
     /**
      * @param compareIndex if true, the index will be used in the comparison
      */
@@ -114,6 +116,15 @@ public class DiffOp extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
     }
 
     /**
+     * @param preserveIterationOrder if {@code true} the diff order will be consistent
+     * @return {@code this}
+     */
+    public DiffOp setPreserveIterationOrder(boolean preserveIterationOrder) {
+        this.preserveIterationOrder = preserveIterationOrder;
+        return this;
+    }
+
+    /**
      * Executes the diff operation.
      * 
      * @return an iterator to a set of differences between the two trees
@@ -121,9 +132,10 @@ public class DiffOp extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
      */
     @Override
     protected AutoCloseableIterator<DiffEntry> _call() {
-        checkArgument(cached && oldRefSpec == null || !cached, String.format(
-                "compare index allows only one revision to check against, got %s / %s", oldRefSpec,
-                newRefSpec));
+        checkArgument(cached && oldRefSpec == null || !cached,
+                String.format(
+                        "compare index allows only one revision to check against, got %s / %s",
+                        oldRefSpec, newRefSpec));
         checkArgument(newRefSpec == null || oldRefSpec != null,
                 "If new rev spec is specified then old rev spec is mandatory");
 
@@ -131,7 +143,7 @@ public class DiffOp extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         if (cached) {
             // compare the tree-ish (default to HEAD) and the index
             DiffIndex diffIndex = command(DiffIndex.class).addFilter(this.pathFilter)
-                    .setReportTrees(reportTrees);
+                    .setReportTrees(reportTrees).setPreserveIterationOrder(preserveIterationOrder);
             if (oldRefSpec != null) {
                 diffIndex.setOldVersion(oldRefSpec);
             }
@@ -139,7 +151,7 @@ public class DiffOp extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         } else if (newRefSpec == null) {
 
             DiffWorkTree workTreeIndexDiff = command(DiffWorkTree.class).setFilter(pathFilter)
-                    .setReportTrees(reportTrees);
+                    .setReportTrees(reportTrees).setPreserveIterationOrder(preserveIterationOrder);
             if (oldRefSpec != null) {
                 workTreeIndexDiff.setOldVersion(oldRefSpec);
             }
@@ -147,7 +159,8 @@ public class DiffOp extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         } else {
 
             iterator = command(DiffTree.class).setOldVersion(oldRefSpec).setNewVersion(newRefSpec)
-                    .setPathFilter(pathFilter).setReportTrees(reportTrees).call();
+                    .setPathFilter(pathFilter).setReportTrees(reportTrees)
+                    .setPreserveIterationOrder(preserveIterationOrder).call();
         }
 
         return iterator;

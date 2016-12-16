@@ -13,12 +13,12 @@ import org.locationtech.geogig.test.integration.OnlineTestProperties;
 
 public class IniPGProperties extends OnlineTestProperties {
 
-    private static final String[] DEFAULTS = {//
-    "database.host", "localhost",//
-            "database.port", "5432",//
-            "database.schema", "public",//
-            "database.database", "database",//
-            "database.user", "postgres",//
+    private static final String[] DEFAULTS = { //
+            "database.host", "localhost", //
+            "database.port", "5432", //
+            "database.schema", "public", //
+            "database.database", "database", //
+            "database.user", "postgres", //
             "database.password", "postgres"//
     };
 

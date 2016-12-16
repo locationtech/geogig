@@ -3,11 +3,10 @@
 Starting out with GeoGig
 ========================
 
-This section will introduce you to GeoGig, including installation and a tutorial.
+This section will introduce you to GeoGig and explain the installation process.
 
 .. toctree::
    :maxdepth: 2
 
    intro
    installation
-   tutorial

@@ -15,7 +15,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestContext;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.base.Optional;
 
@@ -114,10 +114,11 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("list", "true");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        String expected = "[{'name':'remote1'},{'name':'remote2'}]";
-        JSONAssert.assertEquals(expected, response.getJSONArray("Remote").toString(), true);
+        String expected = "[{\"name\":\"remote1\"},{\"name\":\"remote2\"}]";
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected),
+                response.getJsonArray("Remote"), true));
     }
 
     @Test
@@ -127,11 +128,12 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("list", "true", "verbose", "true");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        String expected = "[{'name':'remote1', 'url':'" + remote1URI.toURL().toString()
-                + "'},{'name':'remote2','url':'" + remote2URI.toURL().toString() + "'}]";
-        JSONAssert.assertEquals(expected, response.getJSONArray("Remote").toString(), true);
+        String expected = "[{\"name\":\"remote1\", \"url\":\"" + remote1URI.toURL().toString()
+                + "\"},{\"name\":\"remote2\",\"url\":\"" + remote2URI.toURL().toString() + "\"}]";
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected),
+                response.getJsonArray("Remote"), true));
     }
 
     @Test
@@ -141,9 +143,9 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("ping", "true", "remoteName", "remote1");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        assertTrue(response.getJSONObject("ping").getBoolean("success"));
+        assertTrue(response.getJsonObject("ping").getBoolean("success"));
     }
 
     @Test
@@ -153,9 +155,9 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("ping", "true", "remoteName", "nonexistent");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        assertFalse(response.getJSONObject("ping").getBoolean("success"));
+        assertFalse(response.getJsonObject("ping").getBoolean("success"));
     }
 
     @Test
@@ -170,7 +172,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
 
         assertFalse(remote.isPresent());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("remote1", response.getString("name"));
     }
@@ -221,7 +223,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         assertEquals("Tester", remote.getUserName());
         assertEquals(Remote.encryptPassword("pass"), remote.getPassword());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("remote1_new", response.getString("name"));
     }
@@ -242,7 +244,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         assertEquals("Tester", remote.getUserName());
         assertEquals(Remote.encryptPassword("pass"), remote.getPassword());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("remote1", response.getString("name"));
     }
@@ -263,7 +265,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         assertEquals("Tester", remote.getUserName());
         assertEquals(Remote.encryptPassword("pass"), remote.getPassword());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("remote1", response.getString("name"));
     }
@@ -284,7 +286,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         assertEquals("Tester", remote.getUserName());
         assertEquals(Remote.encryptPassword("pass"), remote.getPassword());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("remote1", response.getString("name"));
     }
@@ -347,7 +349,7 @@ public class RemoteManagementTest extends AbstractWebOpTest {
         assertEquals("remote2", remote.getName());
         assertEquals(remote2URI.toURL().toString(), remote.getFetchURL());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals("remote2", response.getString("name"));
     }

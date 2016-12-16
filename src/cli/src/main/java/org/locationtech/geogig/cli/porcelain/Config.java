@@ -10,6 +10,8 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,8 +27,10 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
@@ -79,6 +83,10 @@ public class Config extends AbstractCommand implements CLICommand {
     @Parameter(names = { "--list", "-l" }, description = "List all variables.")
     private boolean list = false;
 
+    @Parameter(names = {
+            "--rootUri" }, description = "Specify a root URI for a collection of repositories.  Only global access will be available.")
+    private String rootUri = null;
+
     @Parameter(description = "name value (name is section.key format, value is only required when setting)")
     private List<String> nameValuePair;
 
@@ -120,9 +128,22 @@ public class Config extends AbstractCommand implements CLICommand {
             } else if (local) {
                 scope = ConfigScope.LOCAL;
             }
+            
+            ConfigOp configOp = geogig.command(ConfigOp.class).setScope(scope).setAction(action).setName(name).setValue(value);
 
-            final Optional<Map<String, String>> commandResult = geogig.command(ConfigOp.class)
-                    .setScope(scope).setAction(action).setName(name).setValue(value).call();
+            if (rootUri != null) {
+                try {
+                    URI repoURI = RepositoryResolver.resolveRepoUriFromString(geogig.getPlatform(),
+                            rootUri);
+                    ConfigDatabase configDb = RepositoryResolver.resolveConfigDatabase(repoURI,
+                            geogig.getContext(), true);
+                    configOp.setConfigDatabase(configDb);
+                } catch (URISyntaxException e) {
+                    throw new IllegalArgumentException("Unable to parse global config URI.", e);
+                }
+            }
+
+            final Optional<Map<String, String>> commandResult = configOp.call();
 
             if (commandResult.isPresent()) {
                 switch (action) {

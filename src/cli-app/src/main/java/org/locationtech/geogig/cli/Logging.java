@@ -16,7 +16,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.DefaultPlatform;
+import org.locationtech.geogig.model.impl.DefaultPlatform;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
@@ -52,6 +52,7 @@ class Logging {
     }
 
     static void tryConfigureLogging(Platform platform, @Nullable final String repoURI) {
+        System.setProperty("hsqldb.reconfig_logging", "false"); // stop hsql from reseting logging
         // instantiate and call ResolveGeogigDir directly to avoid calling getGeogig() and hence get
         // some logging events before having configured logging
         Hints hints = new Hints();

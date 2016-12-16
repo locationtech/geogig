@@ -23,7 +23,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.locationtech.geogig.storage.TransactionBlobStore;
+import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +84,7 @@ class PGBlobStore implements TransactionBlobStore {
                 blobsTable);
 
         byte[] bytes = null;
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx
                     .prepareStatement(log(sql, LOG, repositoryId, namespace, path))) {
                 ps.setInt(1, repositoryId);
@@ -124,7 +124,7 @@ class PGBlobStore implements TransactionBlobStore {
         String insert = format(
                 "INSERT INTO %s (repository, namespace, path, blob) VALUES (?, ?, ?, ?)",
                 blobsTable);
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement d = cx.prepareStatement(delete)) {
@@ -172,7 +172,7 @@ class PGBlobStore implements TransactionBlobStore {
                         + "DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
                 blobsTable, blobsTable);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement d = cx.prepareStatement(delete)) {
@@ -199,7 +199,7 @@ class PGBlobStore implements TransactionBlobStore {
         final String delete = format("DELETE FROM %s WHERE repository = ? AND namespace = ?",
                 blobsTable);
 
-        try (Connection cx = dataSource.getConnection()) {
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement d = cx.prepareStatement(delete)) {

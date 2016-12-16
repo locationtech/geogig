@@ -26,9 +26,9 @@ public class MapToStringConverterFactoryTest {
     public void roundtripTest() {
 
         Map<String, ? extends Object> map = ImmutableMap.of(//
-                "key1", "value1",//
-                "key:2", "value|2",//
-                "key3", Integer.valueOf(12345),//
+                "key1", "value1", //
+                "key:2", "value|2", //
+                "key3", Integer.valueOf(12345), //
                 "submap", ImmutableMap.of("submap1", "subvalue1", "submap2", new Long(789)));
 
         assertNull(Converters.convert(map, Integer.class));

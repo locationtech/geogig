@@ -14,15 +14,17 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Test;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
@@ -32,7 +34,6 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.restlet.resource.Representation;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class LogTest extends AbstractWebOpTest {
 
@@ -111,17 +112,18 @@ public class LogTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of();
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONArray commits = response.getJSONArray("commit");
-        assertEquals(5, commits.length());
+        JsonArray commits = response.getJsonArray("commit");
+        assertEquals(5, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
-        expectedCommits.append("{'id': '" + commit1.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit2.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit3.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit4.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit5.getId().toString() + "'}]");
-        JSONAssert.assertEquals(expectedCommits.toString(), commits.toString(), false);
+        expectedCommits.append("{\"id\": \"" + commit1.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit2.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit3.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit4.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit5.getId().toString() + "\"}]");
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
+                false));
     }
 
     @Test
@@ -157,14 +159,15 @@ public class LogTest extends AbstractWebOpTest {
                 commit4.getId().toString(), "firstParentOnly", "false");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONArray commits = response.getJSONArray("commit");
-        assertEquals(2, commits.length());
+        JsonArray commits = response.getJsonArray("commit");
+        assertEquals(2, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
-        expectedCommits.append("{'id': '" + commit2.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit4.getId().toString() + "'}]");
-        JSONAssert.assertEquals(expectedCommits.toString(), commits.toString(), false);
+        expectedCommits.append("{\"id\": \"" + commit2.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit4.getId().toString() + "\"}]");
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
+                false));
     }
 
     @Test
@@ -189,14 +192,15 @@ public class LogTest extends AbstractWebOpTest {
                 Long.toString(3000), "firstParentOnly", "false");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONArray commits = response.getJSONArray("commit");
-        assertEquals(2, commits.length());
+        JsonArray commits = response.getJsonArray("commit");
+        assertEquals(2, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
-        expectedCommits.append("{'id': '" + commit2.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit3.getId().toString() + "'}]");
-        JSONAssert.assertEquals(expectedCommits.toString(), commits.toString(), false);
+        expectedCommits.append("{\"id\": \"" + commit2.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit3.getId().toString() + "\"}]");
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
+                false));
     }
 
     @Test
@@ -230,15 +234,16 @@ public class LogTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("path", "Points");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONArray commits = response.getJSONArray("commit");
-        assertEquals(3, commits.length());
+        JsonArray commits = response.getJsonArray("commit");
+        assertEquals(3, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
-        expectedCommits.append("{'id': '" + commit1.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit3.getId().toString() + "'},");
-        expectedCommits.append("{'id': '" + commit5.getId().toString() + "'}]");
-        JSONAssert.assertEquals(expectedCommits.toString(), commits.toString(), false);
+        expectedCommits.append("{\"id\": \"" + commit1.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit3.getId().toString() + "\"},");
+        expectedCommits.append("{\"id\": \"" + commit5.getId().toString() + "\"}]");
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
+                false));
     }
 
     @Test
@@ -275,22 +280,23 @@ public class LogTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("countChanges", "true");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONArray commits = response.getJSONArray("commit");
-        assertEquals(5, commits.length());
+        JsonArray commits = response.getJsonArray("commit");
+        assertEquals(5, commits.getValuesAs(JsonValue.class).size());
         StringBuilder expectedCommits = new StringBuilder("[");
-        expectedCommits.append("{'id': '" + commit1.getId().toString()
-                + "', 'adds': 3, 'removes': 0, 'modifies': 0},");
-        expectedCommits.append("{'id': '" + commit2.getId().toString()
-                + "', 'adds': 2, 'removes': 0, 'modifies': 1},");
-        expectedCommits.append("{'id': '" + commit3.getId().toString()
-                + "', 'adds': 1, 'removes': 1, 'modifies': 0},");
-        expectedCommits.append("{'id': '" + commit4.getId().toString()
-                + "', 'adds': 2, 'removes': 0, 'modifies': 1},");
-        expectedCommits.append("{'id': '" + commit5.getId().toString()
-                + "', 'adds': 1, 'removes': 1, 'modifies': 0}]");
-        JSONAssert.assertEquals(expectedCommits.toString(), commits.toString(), false);
+        expectedCommits.append("{\"id\": \"" + commit1.getId().toString()
+                + "\", \"adds\": 3, \"removes\": 0, \"modifies\": 0},");
+        expectedCommits.append("{\"id\": \"" + commit2.getId().toString()
+                + "\", \"adds\": 2, \"removes\": 0, \"modifies\": 1},");
+        expectedCommits.append("{\"id\": \"" + commit3.getId().toString()
+                + "\", \"adds\": 1, \"removes\": 1, \"modifies\": 0},");
+        expectedCommits.append("{\"id\": \"" + commit4.getId().toString()
+                + "\", \"adds\": 2, \"removes\": 0, \"modifies\": 1},");
+        expectedCommits.append("{\"id\": \"" + commit5.getId().toString()
+                + "\", \"adds\": 1, \"removes\": 1, \"modifies\": 0}]");
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedCommits.toString()), commits,
+                false));
     }
 
     @Test

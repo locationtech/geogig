@@ -13,11 +13,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.rocksdb.RocksdbMap;
 
 /**
  * Contains the results of a geopackage import.
  */
-public class GeopkgImportResult {
+public class GeopkgImportResult implements AutoCloseable {
     /**
      * The final commit of the import. If the features were imported on top of an old commit, this
      * would be a merge commit.
@@ -33,10 +34,18 @@ public class GeopkgImportResult {
      * Mappings of geopackage feature id to geogig feature id for new features that were added to
      * the repository.
      */
-    public final Map<String, Map<String, String>> newMappings;
+    public final Map<String, RocksdbMap<String, String>> newMappings;
 
     public GeopkgImportResult(RevCommit importCommit) {
         this.importCommit = importCommit;
-        this.newMappings = new HashMap<String, Map<String, String>>();
+        this.newMappings = new HashMap<String, RocksdbMap<String, String>>();
+    }
+
+    @Override
+    public void close() {
+        for (RocksdbMap<String, String> map : newMappings.values()) {
+            map.close();
+        }
+        newMappings.clear();
     }
 }

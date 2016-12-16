@@ -10,7 +10,7 @@
 package org.locationtech.geogig.storage.memory;
 
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.storage.GraphDatabaseTest;
+import org.locationtech.geogig.storage.impl.GraphDatabaseTest;
 
 public class HeapGraphDatabaseTest extends GraphDatabaseTest {
 

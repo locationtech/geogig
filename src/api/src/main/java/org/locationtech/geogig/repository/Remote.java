@@ -22,12 +22,12 @@ import javax.crypto.spec.PBEParameterSpec;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
+import com.google.common.base.Preconditions;
 
 /**
  * Internal representation of a GeoGig remote repository.
  * 
+ * @since 1.0
  */
 public class Remote {
     private String name;
@@ -70,15 +70,25 @@ public class Remote {
         this.password = password;
     }
 
+    /**
+     * Ensure that the provided url is valid and not {@code null}.
+     * 
+     * @param url the url to check
+     * @return the url, if it passed validation
+     * @throws IllegalArgumentException
+     */
     private String checkURL(String url) {
-        if (Strings.isNullOrEmpty(url)) {
-            return url;
-        }
+        Preconditions.checkArgument(url != null, "Invalid remote URL.");
 
         try {
             new URI(url);
         } catch (URISyntaxException e) {
-            throw Throwables.propagate(e);
+            // See if it's a valid file URI
+            try {
+                new URI("file:/" + url);
+            } catch (URISyntaxException ex) {
+                throw new IllegalArgumentException("Invalid remote URL.");
+            }
         }
         //
         // // we were just checking to see whether the url was already valid. if not, we'll try to
@@ -179,6 +189,12 @@ public class Remote {
     private static final byte[] SALT = { (byte) 0xa2, (byte) 0x18, (byte) 0xd6, (byte) 0xd6,
             (byte) 0xf1, (byte) 0x2e, (byte) 0x0a, (byte) 0x7b, };
 
+    /**
+     * Encrypts a text password so that it can be safely written to a database.
+     * 
+     * @param password the password to encrypt
+     * @return the encrypted password
+     */
     public static String encryptPassword(String password) {
         try {
             SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
@@ -192,6 +208,12 @@ public class Remote {
         }
     }
 
+    /**
+     * Decrypts an encrypted password.
+     * 
+     * @param password the encrypted password
+     * @return the decrypted password
+     */
     public static String decryptPassword(String password) {
         try {
             SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWithMD5AndDES");

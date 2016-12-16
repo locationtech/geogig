@@ -22,7 +22,6 @@ import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -31,6 +30,7 @@ import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -155,11 +155,11 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
         try {
             featureSource = targetStore.getFeatureSource(featureType.getName().getLocalPart());
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to obtain feature type once created: "
-                    + treeSpec);
+            throw new IllegalStateException(
+                    "Unable to obtain feature type once created: " + treeSpec);
         }
-        checkState(featureSource instanceof SimpleFeatureStore, "FeatureSource is not writable: "
-                + featureType.getName().getLocalPart());
+        checkState(featureSource instanceof SimpleFeatureStore,
+                "FeatureSource is not writable: " + featureType.getName().getLocalPart());
 
         SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
 
@@ -193,8 +193,8 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
 
         final Set<String> exportLayers;
 
-        final Set<String> repoLayers = Sets.newHashSet(Iterables.transform(featureTreeRefs,
-                (n) -> n.name()));
+        final Set<String> repoLayers = Sets
+                .newHashSet(Iterables.transform(featureTreeRefs, (n) -> n.name()));
 
         if (treePaths == null || treePaths.isEmpty()) {
             exportLayers = repoLayers;

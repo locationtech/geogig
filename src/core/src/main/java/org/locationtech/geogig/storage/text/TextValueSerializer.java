@@ -51,7 +51,7 @@ public class TextValueSerializer {
     static abstract class ArraySerializer implements ValueSerializer {
         @Override
         public String toString(Object value) {
-            if(value.getClass().getComponentType().isPrimitive()){
+            if (value.getClass().getComponentType().isPrimitive()) {
                 return Converters.convert(value, String.class);
             }
             return "[" + Joiner.on(" ").join((Object[]) value) + "]";
@@ -289,12 +289,12 @@ public class TextValueSerializer {
             }
         });
         serializers.put(FieldType.MAP, new ValueSerializer() {
-            
+
             @Override
             public String toString(Object value) {
                 return Converters.convert(value, String.class);
             }
-            
+
             @Override
             public Object fromString(String in) throws ParseException {
                 return Converters.convert(in, Map.class);

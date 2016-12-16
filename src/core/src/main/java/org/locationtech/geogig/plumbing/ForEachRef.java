@@ -45,11 +45,11 @@ public class ForEachRef extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      * @return the new value of the ref
      */
     @Override
-    protected  ImmutableSet<Ref> _call() {
+    protected ImmutableSet<Ref> _call() {
 
         @SuppressWarnings("unchecked")
-        final Predicate<Ref> filter = (Predicate<Ref>) (this.filter == null ? Predicates
-                .alwaysTrue() : this.filter);
+        final Predicate<Ref> filter = (Predicate<Ref>) (this.filter == null
+                ? Predicates.alwaysTrue() : this.filter);
 
         ImmutableSet.Builder<Ref> refs = new ImmutableSet.Builder<Ref>();
         for (String refName : refDatabase().getAll().keySet()) {

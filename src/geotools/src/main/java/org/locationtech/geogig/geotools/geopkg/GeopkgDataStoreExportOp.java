@@ -70,7 +70,7 @@ public class GeopkgDataStoreExportOp extends DataStoreExportOp<File> {
             final String targetTableName, final ProgressListener progress) {
 
         super.export(refSpec, targetStore, targetTableName, progress);
-        
+
         InterchangeFormat format = new InterchangeFormat(geopackage, context());
 
         try {

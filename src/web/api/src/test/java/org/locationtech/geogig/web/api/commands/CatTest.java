@@ -12,18 +12,21 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.TagCreateOp;
@@ -33,7 +36,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CatTest extends AbstractWebOpTest {
 
@@ -54,11 +56,11 @@ public class CatTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        ObjectId id = ObjectId.forString("objectId");
+        ObjectId id = RevObjectTestSupport.hashString("objectId");
         ParameterSet options = TestParams.of("objectid", id.toString());
 
         Cat op = (Cat) buildCommand(options);
-        assertEquals(id, op.object);
+        assertEquals(id.toString(), op.object);
     }
 
     @Test
@@ -66,7 +68,7 @@ public class CatTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of();
 
         ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("You must specify a non-null ObjectId.");
+        ex.expectMessage("You must specify a valid non-null ObjectId.");
         buildCommand(options).run(testContext.get());
     }
 
@@ -75,7 +77,7 @@ public class CatTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("objectid", ObjectId.NULL.toString());
 
         ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("You must specify a non-null ObjectId.");
+        ex.expectMessage("You must specify a valid non-null ObjectId.");
         buildCommand(options).run(testContext.get());
     }
 
@@ -88,27 +90,28 @@ public class CatTest extends AbstractWebOpTest {
         RevCommit lastCommit = testContext.get().getRepository().command(LogOp.class).call().next();
         ParameterSet options = TestParams.of("objectid", lastCommit.getId().toString());
         buildCommand(options).run(testContext.get());
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject commit = response.getJSONObject("commit");
+        JsonObject commit = response.getJsonObject("commit");
         assertEquals(lastCommit.getId().toString(), commit.getString("id"));
         assertEquals(lastCommit.getTreeId().toString(), commit.getString("tree"));
         assertEquals(lastCommit.getMessage(), commit.getString("message"));
-        JSONObject parents = commit.getJSONObject("parents");
-        String expectedParents = "['" + lastCommit.getParentIds().get(0) + "', '"
-                + lastCommit.getParentIds().get(1) + "']";
-        JSONAssert.assertEquals(expectedParents, parents.getJSONArray("id").toString(), false);
+        JsonObject parents = commit.getJsonObject("parents");
+        String expectedParents = "[\"" + lastCommit.getParentIds().get(0) + "\", \""
+                + lastCommit.getParentIds().get(1) + "\"]";
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedParents),
+                parents.getJsonArray("id"), false));
         RevPerson author = lastCommit.getAuthor();
         RevPerson committer = lastCommit.getCommitter();
-        JSONObject authorObject = commit.getJSONObject("author");
+        JsonObject authorObject = commit.getJsonObject("author");
         assertEquals(author.getName().or(""), authorObject.getString("name"));
         assertEquals(author.getEmail().or(""), authorObject.getString("email"));
-        assertEquals(author.getTimestamp(), authorObject.getLong("timestamp"));
+        assertEquals(author.getTimestamp(), authorObject.getJsonNumber("timestamp").longValueExact());
         assertEquals(author.getTimeZoneOffset(), authorObject.getInt("timeZoneOffset"));
-        JSONObject committerObject = commit.getJSONObject("committer");
+        JsonObject committerObject = commit.getJsonObject("committer");
         assertEquals(committer.getName().or(""), committerObject.getString("name"));
         assertEquals(committer.getEmail().or(""), committerObject.getString("email"));
-        assertEquals(committer.getTimestamp(), committerObject.getLong("timestamp"));
+        assertEquals(committer.getTimestamp(), committerObject.getJsonNumber("timestamp").longValueExact());
         assertEquals(committer.getTimeZoneOffset(), committerObject.getInt("timeZoneOffset"));
 
     }
@@ -123,14 +126,14 @@ public class CatTest extends AbstractWebOpTest {
         RevTree tree = geogig.index().getTree();
         ParameterSet options = TestParams.of("objectid", tree.getId().toString());
         buildCommand(options).run(testContext.get());
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject treeObject = response.getJSONObject("tree");
+        JsonObject treeObject = response.getJsonObject("tree");
         assertEquals(tree.getId().toString(), treeObject.getString("id"));
-        assertEquals(tree.size(), treeObject.getLong("size"));
+        assertEquals(tree.size(), treeObject.getJsonNumber("size").longValueExact());
         assertEquals(tree.numTrees(), treeObject.getInt("numtrees"));
-        JSONArray subtrees = treeObject.getJSONArray("subtree");
-        assertEquals(3, subtrees.length());
+        JsonArray subtrees = treeObject.getJsonArray("subtree");
+        assertEquals(3, subtrees.getValuesAs(JsonValue.class).size());
     }
 
     @Test
@@ -142,16 +145,17 @@ public class CatTest extends AbstractWebOpTest {
         RevFeature point = RevFeatureBuilder.build(TestData.point1);
         ParameterSet options = TestParams.of("objectid", point.getId().toString());
         buildCommand(options).run(testContext.get());
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject feature = response.getJSONObject("feature");
+        JsonObject feature = response.getJsonObject("feature");
         assertEquals(point.getId().toString(), feature.getString("id"));
-        JSONArray attributes = feature.getJSONArray("attribute");
-        assertEquals(3, attributes.length());
-        String expectedAttributes = "[{'type': 'STRING', 'value': 'StringProp1_1'},"
-                + "{'type': 'INTEGER', 'value': 1000},"
-                + "{'type': 'POINT', 'value': 'POINT (0 0)'}]";
-        JSONAssert.assertEquals(expectedAttributes, attributes.toString(), false);
+        JsonArray attributes = feature.getJsonArray("attribute");
+        assertEquals(3, attributes.getValuesAs(JsonValue.class).size());
+        String expectedAttributes = "[{\"type\": \"STRING\", \"value\": \"StringProp1_1\"},"
+                + "{\"type\": \"INTEGER\", \"value\": 1000},"
+                + "{\"type\": \"POINT\", \"value\": \"POINT (0 0)\"}]";
+        assertTrue(
+                TestData.jsonEquals(TestData.toJSONArray(expectedAttributes), attributes, false));
 
     }
 
@@ -165,17 +169,18 @@ public class CatTest extends AbstractWebOpTest {
                 .setRefSpec("Points").call().get();
         ParameterSet options = TestParams.of("objectid", pointType.getId().toString());
         buildCommand(options).run(testContext.get());
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject featureType = response.getJSONObject("featuretype");
+        JsonObject featureType = response.getJsonObject("featuretype");
         assertEquals(pointType.getId().toString(), featureType.getString("id"));
         assertEquals(pointType.getName().toString(), featureType.getString("name"));
-        JSONArray attributes = featureType.getJSONArray("attribute");
-        assertEquals(3, attributes.length());
-        String expectedAttributes = "[{'name': 'sp', 'type': 'STRING'},"
-                + "{'name': 'ip', 'type': INTEGER},"
-                + "{'name': 'geom', 'type': 'POINT', 'crs': 'urn:ogc:def:crs:EPSG::4326'}]";
-        JSONAssert.assertEquals(expectedAttributes, attributes.toString(), false);
+        JsonArray attributes = featureType.getJsonArray("attribute");
+        assertEquals(3, attributes.getValuesAs(JsonValue.class).size());
+        String expectedAttributes = "[{\"name\": \"sp\", \"type\": \"STRING\"},"
+                + "{\"name\": \"ip\", \"type\": \"INTEGER\"},"
+                + "{\"name\": \"geom\", \"type\": \"POINT\", \"crs\": \"urn:ogc:def:crs:EPSG::4326\"}]";
+        assertTrue(
+                TestData.jsonEquals(TestData.toJSONArray(expectedAttributes), attributes, false));
 
     }
 
@@ -192,18 +197,18 @@ public class CatTest extends AbstractWebOpTest {
                 .setMessage("new tag at branch1").setName("testTag").call();
         ParameterSet options = TestParams.of("objectid", tag.getId().toString());
         buildCommand(options).run(testContext.get());
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject tagObject = response.getJSONObject("tag");
+        JsonObject tagObject = response.getJsonObject("tag");
         assertEquals(tag.getId().toString(), tagObject.getString("id"));
         assertEquals(tag.getName(), tagObject.getString("name"));
         assertEquals(tag.getMessage(), tagObject.getString("message"));
         assertEquals(tag.getCommitId().toString(), tagObject.getString("commitid"));
         RevPerson tagger = tag.getTagger();
-        JSONObject taggerObject = tagObject.getJSONObject("tagger");
+        JsonObject taggerObject = tagObject.getJsonObject("tagger");
         assertEquals(tagger.getName().or(""), taggerObject.getString("name"));
         assertEquals(tagger.getEmail().or(""), taggerObject.getString("email"));
-        assertEquals(tagger.getTimestamp(), taggerObject.getLong("timestamp"));
+        assertEquals(tagger.getTimestamp(), taggerObject.getJsonNumber("timestamp").longValueExact());
         assertEquals(tagger.getTimeZoneOffset(), taggerObject.getInt("timeZoneOffset"));
     }
 }

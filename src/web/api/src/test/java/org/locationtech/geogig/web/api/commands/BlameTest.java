@@ -12,10 +12,12 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Test;
-import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -110,18 +112,18 @@ public class BlameTest extends AbstractWebOpTest {
                 TestData.point2.getID());
         ParameterSet options = TestParams.of("commit", "branch1", "path", path);
         buildCommand(options).run(testContext.get());
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONArray attributes = response.getJSONObject("Blame").getJSONArray("Attribute");
+        JsonArray attributes = response.getJsonObject("Blame").getJsonArray("Attribute");
         // One entry for each attribute
-        assertEquals(3, attributes.length());
+        assertEquals(3, attributes.getValuesAs(JsonValue.class).size());
         for (int i = 0; i < 3; i++) {
-            JSONObject attribute = attributes.getJSONObject(i);
-            JSONObject commit = attribute.getJSONObject("commit");
-            assertEquals("point2, line2, poly2", commit.get("message"));
-            JSONObject author = commit.getJSONObject("author");
-            assertEquals("User", author.get("name"));
-            assertEquals("user@example.com", author.get("email"));
+            JsonObject attribute = attributes.getJsonObject(i);
+            JsonObject commit = attribute.getJsonObject("commit");
+            assertEquals("point2, line2, poly2", commit.getString("message"));
+            JsonObject author = commit.getJsonObject("author");
+            assertEquals("User", author.getString("name"));
+            assertEquals("user@example.com", author.getString("email"));
         }
 
     }

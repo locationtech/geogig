@@ -23,10 +23,10 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.porcelain.InitOp;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -56,7 +56,7 @@ public class Init extends AbstractCommand implements CLICommand {
     private List<String> location = new ArrayList<>(1);
 
     @Parameter(names = {
-            "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=bdbje,storage.graph=bdbje,bdbje.version=0.1")
+            "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=rocksdb,storage.graph=rocksdb,rocksdb.version=1")
     private String config;
 
     /**
@@ -73,7 +73,7 @@ public class Init extends AbstractCommand implements CLICommand {
             if (cli.getRepositoryURI() == null) {
                 // current dir
                 File currDir = cli.getPlatform().pwd();
-                targetURI = currDir.getAbsoluteFile().toURI();
+                targetURI = currDir.getAbsoluteFile().getCanonicalFile().toURI();
             } else {
                 targetURI = URI.create(cli.getRepositoryURI());
             }

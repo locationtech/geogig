@@ -33,8 +33,8 @@ import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.porcelain.ResetOp;
 import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -123,10 +123,10 @@ public class Merge extends AbstractCommand implements CLICommand {
                 checkParameter(commitId.isPresent(), "Commit not found '%s'", commitish);
                 merge.addCommit(commitId.get());
             }
+            MergeReport report = merge.call();
             if (progress.isCanceled()) {
                 return;
             }
-            MergeReport report = merge.call();
             commit = report.getMergeCommit();
         } catch (RuntimeException e) {
             if (e instanceof NothingToCommitException || e instanceof IllegalArgumentException

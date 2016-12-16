@@ -25,7 +25,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.geotools.cli.TestHelper;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -38,6 +37,8 @@ import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;
@@ -237,7 +238,10 @@ public class ImportOpTest extends RepositoryTestCase {
         GeometryFactory gf = new GeometryFactory();
         SimpleFeature feature = SimpleFeatureBuilder.build(type,
                 new Object[] { gf.createPoint(new Coordinate(0, 0)), "feature0" }, "feature");
-        geogig.getRepository().workingTree().insert("dest", feature);
+        
+        FeatureInfo fi = featureInfo("dest", feature);
+        WorkingTree workingTree = geogig.getRepository().workingTree();
+        workingTree.insert(fi);
         ImportOp importOp = geogig.command(ImportOp.class);
         importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setAll(true);
@@ -267,6 +271,9 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setTable("table1");
         importOp.call();
+
+        importOp = geogig.command(ImportOp.class);
+        importOp.setDataStore(TestHelper.createTestFactory().createDataStore(ImmutableMap.of()));
         importOp.setTable("table2");
         importOp.setAdaptToDefaultFeatureType(false);
         importOp.setDestinationPath("table1");

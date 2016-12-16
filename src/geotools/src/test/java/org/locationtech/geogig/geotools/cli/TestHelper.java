@@ -138,8 +138,8 @@ public class TestHelper {
         testDataStore.createSchema(builder4.buildFeatureType());
 
         final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
-        when(factory.createDataStore(anyMapOf(String.class, Serializable.class))).thenReturn(
-                testDataStore);
+        when(factory.createDataStore(anyMapOf(String.class, Serializable.class)))
+                .thenReturn(testDataStore);
         when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
 
         return factory;
@@ -150,8 +150,8 @@ public class TestHelper {
         MemoryDataStore testDataStore = new MemoryDataStore();
 
         final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
-        when(factory.createDataStore(anyMapOf(String.class, Serializable.class))).thenReturn(
-                testDataStore);
+        when(factory.createDataStore(anyMapOf(String.class, Serializable.class)))
+                .thenReturn(testDataStore);
         when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
 
         return factory;
@@ -174,14 +174,15 @@ public class TestHelper {
         when(testDataStore.getSchema(anyString())).thenThrow(new IOException());
 
         final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
-        when(factory.createDataStore(anyMapOf(String.class, Serializable.class))).thenReturn(
-                testDataStore);
+        when(factory.createDataStore(anyMapOf(String.class, Serializable.class)))
+                .thenReturn(testDataStore);
         when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
 
         return factory;
     }
 
-    public static DataStoreFactorySpi createFactoryWithGetFeatureSourceException() throws Exception {
+    public static DataStoreFactorySpi createFactoryWithGetFeatureSourceException()
+            throws Exception {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setCRS(CRS.decode("EPSG:4326"));
         builder.add("geom", Point.class);
@@ -217,8 +218,8 @@ public class TestHelper {
                 .getFeatureSource(eq(new NameImpl("table1")));
 
         final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
-        when(factory.createDataStore(anyMapOf(String.class, Serializable.class))).thenReturn(
-                spyDataStore);
+        when(factory.createDataStore(anyMapOf(String.class, Serializable.class)))
+                .thenReturn(spyDataStore);
         when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
 
         return factory;

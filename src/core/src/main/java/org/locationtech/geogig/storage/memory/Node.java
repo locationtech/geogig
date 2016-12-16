@@ -20,7 +20,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
- * Node class used by {@link Graph}. 
+ * Node class used by {@link Graph}.
  * <p>
  * Every node contains an {@link ObjectId} representing the node in addition to a map of key/value
  * properties representing "extended" attributes.
@@ -33,10 +33,12 @@ class Node {
     final ObjectId id;
 
     final List<Edge> in = Lists.newArrayList();
+
     final List<Edge> out = Lists.newArrayList();
 
     boolean root = false;
-    Map<String,String> props;
+
+    Map<String, String> props;
 
     /**
      * Creates a new node with the specified id.
@@ -60,7 +62,7 @@ class Node {
     }
 
     /**
-     * Returns all nodes reachable from this node through an outgoing relationship. 
+     * Returns all nodes reachable from this node through an outgoing relationship.
      */
     public Iterable<Node> to() {
         return Iterables.transform(out, (e) -> e.dst);

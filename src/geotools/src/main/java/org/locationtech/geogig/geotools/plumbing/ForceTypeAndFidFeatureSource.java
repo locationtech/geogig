@@ -30,8 +30,8 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.sort.SortBy;
 
-class ForceTypeAndFidFeatureSource<T extends FeatureType, F extends Feature> extends
-        ForwardingFeatureSource<T, F> {
+class ForceTypeAndFidFeatureSource<T extends FeatureType, F extends Feature>
+        extends ForwardingFeatureSource<T, F> {
 
     private T forceType;
 
@@ -111,8 +111,8 @@ class ForceTypeAndFidFeatureSource<T extends FeatureType, F extends Feature> ext
         };
     }
 
-    private static class FidPrefixRemovingIterator<F extends Feature> extends
-            ForwardingFeatureIterator<F> {
+    private static class FidPrefixRemovingIterator<F extends Feature>
+            extends ForwardingFeatureIterator<F> {
 
         private final String fidPrefix;
 

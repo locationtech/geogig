@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -66,25 +67,40 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
         this.baseDirectory = baseDirectory;
     }
 
-    private Optional<RocksDB> getDb(@Nullable String txId) {
-        String id = txId == null ? NULL_TX_ID : txId;
+    private boolean dbExists(@Nullable String txId) {
+        final String id = txId == null ? NULL_TX_ID : txId;
         DBHandle dbHandle = dbsByTransaction.get(id);
         if (dbHandle == null) {
-            return Optional.absent();
+            if (!RocksConnectionManager.INSTANCE.exists(dbPath(txId))) {
+                return false;
+            }
         }
-        return Optional.of(dbHandle.db);
+        return true;
     }
 
-    private RocksDB getOrCreateDb(@Nullable String txId) {
+    private Optional<RocksDBReference> getDb(@Nullable String txId) {
+        final String id = txId == null ? NULL_TX_ID : txId;
+        DBHandle dbHandle = dbsByTransaction.get(id);
+        if (dbHandle == null) {
+            if (RocksConnectionManager.INSTANCE.exists(dbPath(txId))) {
+                return Optional.of(getOrCreateDb(txId));
+            } else {
+                return Optional.absent();
+            }
+        }
+        return Optional.of(dbHandle.getReference());
+    }
+
+    private RocksDBReference getOrCreateDb(@Nullable String txId) {
         final String id = txId == null ? NULL_TX_ID : txId;
         DBHandle dbHandle = dbsByTransaction.get(id);
         if (dbHandle == null) {
             String dbpath = dbPath(txId);
-            DBOptions address = new DBOptions(dbpath, false);
+            DBConfig address = new DBConfig(dbpath, false);
             dbHandle = RocksConnectionManager.INSTANCE.acquire(address);
             this.dbsByTransaction.put(id, dbHandle);
         }
-        return dbHandle.db;
+        return dbHandle.getReference();
     }
 
     private String dbPath(@Nullable String txId) {
@@ -94,8 +110,7 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
 
     @Override
     public void removeConflicts(@Nullable String txId) {
-        RocksDB db = getDb(txId).orNull();
-        if (db != null) {
+        if (dbExists(txId)) {
             String hanldeId = txId == null ? NULL_TX_ID : txId;
             DBHandle dbHandle = this.dbsByTransaction.remove(hanldeId);
             Preconditions.checkNotNull(dbHandle);
@@ -159,12 +174,14 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
 
     @Override
     public boolean hasConflicts(@Nullable String txId) {
-        Optional<RocksDB> db = getDb(txId);
+        Optional<RocksDBReference> dbRefOpt = getDb(txId);
         boolean hasConflicts = false;
-        if (db.isPresent()) {
-            try (RocksIterator it = db.get().newIterator()) {
-                it.seekToFirst();
-                hasConflicts = it.isValid();
+        if (dbRefOpt.isPresent()) {
+            try (RocksDBReference dbRef = dbRefOpt.get()) {
+                try (RocksIterator it = dbRef.db().newIterator()) {
+                    it.seekToFirst();
+                    hasConflicts = it.isValid();
+                }
             }
         }
         return hasConflicts;
@@ -172,10 +189,12 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
 
     @Override
     public Optional<Conflict> getConflict(@Nullable String txId, String path) {
-        Optional<RocksDB> db = getDb(txId);
+        Optional<RocksDBReference> dbRefOpt = getDb(txId);
         Conflict c = null;
-        if (db.isPresent()) {
-            c = getInternal(db.get(), path);
+        if (dbRefOpt.isPresent()) {
+            try (RocksDBReference dbRef = dbRefOpt.get()) {
+                c = getInternal(dbRef.db(), path);
+            }
         }
         return Optional.fromNullable(c);
     }
@@ -193,27 +212,29 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
 
     @Override
     public long getCountByPrefix(@Nullable String txId, @Nullable String treePath) {
-        RocksDB db = getDb(txId).orNull();
-        if (db == null) {
+        Optional<RocksDBReference> dbRefOpt = getDb(txId);
+        if (!dbRefOpt.isPresent()) {
             return 0L;
         }
         long count = 0;
-        try (RocksIterator it = db.newIterator()) {
-            byte[] prefixKey = null;
-            if (treePath == null) {
-                it.seekToFirst();
-            } else {
-                byte[] treeKey = key(treePath);
-                prefixKey = key(treePath + "/");
-                it.seek(treeKey);
-                if (it.isValid() && Arrays.equals(treeKey, it.key())) {
-                    count++;
+        try (RocksDBReference dbRef = dbRefOpt.get()) {
+            try (RocksIterator it = dbRef.db().newIterator()) {
+                byte[] prefixKey = null;
+                if (treePath == null) {
+                    it.seekToFirst();
+                } else {
+                    byte[] treeKey = key(treePath);
+                    prefixKey = key(treePath + "/");
+                    it.seek(treeKey);
+                    if (it.isValid() && Arrays.equals(treeKey, it.key())) {
+                        count++;
+                    }
+                    it.seek(prefixKey);
                 }
-                it.seek(prefixKey);
-            }
-            while (it.isValid() && isPrefix(prefixKey, it.key())) {
-                count++;
-                it.next();
+                while (it.isValid() && isPrefix(prefixKey, it.key())) {
+                    count++;
+                    it.next();
+                }
             }
         }
         return count;
@@ -241,30 +262,31 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
 
     @Override
     public void addConflicts(@Nullable String txId, Iterable<Conflict> conflicts) {
-        RocksDB db = getOrCreateDb(txId);
-        ConflictSerializer serializer = new ConflictSerializer();
-        try (WriteBatch batch = new WriteBatch()) {
-            for (Conflict c : conflicts) {
-                byte[] key = key(c.getPath());
-                byte[] value = serializer.write(c);
-                batch.put(key, value);
+        try (RocksDBReference dbRef = getOrCreateDb(txId)) {
+            ConflictSerializer serializer = new ConflictSerializer();
+            try (WriteBatch batch = new WriteBatch()) {
+                for (Conflict c : conflicts) {
+                    byte[] key = key(c.getPath());
+                    byte[] value = serializer.write(c);
+                    batch.put(key, value);
+                }
+                try (WriteOptions writeOptions = new WriteOptions()) {
+                    dbRef.db().write(writeOptions, batch);
+                }
+            } catch (Exception e) {
+                propagate(e);
             }
-            try (WriteOptions writeOptions = new WriteOptions()) {
-                db.write(writeOptions, batch);
-            }
-        } catch (Exception e) {
-            propagate(e);
         }
     }
 
     @Override
     public void removeConflict(@Nullable String txId, String path) {
-        RocksDB db = getDb(txId).orNull();
-        if (db == null) {
+        Optional<RocksDBReference> dbRefOpt = getDb(txId);
+        if (!dbRefOpt.isPresent()) {
             return;
         }
-        try {
-            db.remove(key(path));
+        try (RocksDBReference dbRef = dbRefOpt.get()) {
+            dbRef.db().remove(key(path));
         } catch (RocksDBException e) {
             propagate(e);
         }
@@ -272,14 +294,15 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
 
     @Override
     public void removeConflicts(@Nullable String txId, Iterable<String> paths) {
-        RocksDB db = getDb(txId).orNull();
-        if (db == null) {
+        Optional<RocksDBReference> dbRefOpt = getDb(txId);
+        if (!dbRefOpt.isPresent()) {
             return;
         }
-        try (WriteOptions writeOptions = new WriteOptions()) {
+        try (RocksDBReference dbRef = dbRefOpt.get();
+                WriteOptions writeOptions = new WriteOptions()) {
             writeOptions.setSync(false);
             for (String path : paths) {
-                db.remove(writeOptions, key(path));
+                dbRef.db().remove(writeOptions, key(path));
             }
             writeOptions.sync();
         } catch (RocksDBException e) {
@@ -289,15 +312,15 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
 
     @Override
     public Set<String> findConflicts(@Nullable String txId, Set<String> paths) {
-        RocksDB db = getDb(txId).orNull();
-        if (db == null) {
+        Optional<RocksDBReference> dbRefOpt = getDb(txId);
+        if (!dbRefOpt.isPresent()) {
             return ImmutableSet.of();
         }
         Set<String> found = new HashSet<>();
         byte[] noData = new byte[0];
-        try {
+        try (RocksDBReference dbRef = dbRefOpt.get()) {
             for (String path : paths) {
-                int size = db.get(key(path), noData);
+                int size = dbRef.db().get(key(path), noData);
                 if (size > 0) {
                     found.add(path);
                 }
@@ -310,17 +333,17 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
 
     @Override
     public void removeByPrefix(@Nullable String txId, @Nullable String pathPrefix) {
-        RocksDB db = getDb(txId).orNull();
-        if (db == null) {
+        Optional<RocksDBReference> dbRefOpt = getDb(txId);
+        if (!dbRefOpt.isPresent()) {
             return;
         }
 
         final @Nullable byte[] prefix = pathPrefix == null ? null : key(pathPrefix + "/");
-        try (WriteBatch batch = new WriteBatch()) {
+        try (RocksDBReference dbRef = dbRefOpt.get(); WriteBatch batch = new WriteBatch()) {
             if (pathPrefix != null) {
                 batch.remove(key(pathPrefix));
             }
-            try (RocksIterator it = db.newIterator()) {
+            try (RocksIterator it = dbRef.db().newIterator()) {
                 if (prefix == null) {
                     it.seekToFirst();
                 } else {
@@ -337,7 +360,7 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
                 }
             }
             try (WriteOptions opts = new WriteOptions()) {
-                db.write(opts, batch);
+                dbRef.db().write(opts, batch);
             }
         } catch (RocksDBException e) {
             propagate(e);
@@ -371,14 +394,14 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
             this.currentBatch = Collections.emptyIterator();
 
             if (prefixFilter != null) {
-                Optional<RocksDB> txdb = rocksConflicts.getDb(txId);
+                Optional<RocksDBReference> txdb = rocksConflicts.getDb(txId);
                 if (txdb.isPresent()) {
                     // get an exact prefix match to account for a conflict on the
                     // tree itself rather than its children
                     byte[] key = rocksConflicts.key(prefixFilter);
                     byte[] treeConflict;
-                    try {
-                        treeConflict = txdb.get().get(key);
+                    try (RocksDBReference dbRef = txdb.get()) {
+                        treeConflict = dbRef.db().get(key);
                         if (treeConflict != null) {
                             this.currentBatch = Iterators
                                     .singletonIterator(serializer.read(treeConflict));
@@ -408,18 +431,17 @@ class RocksdbConflictsDatabase implements ConflictsDatabase {
             if (reachedEnd) {
                 return null;
             }
-            Optional<RocksDB> txdb = rocksConflicts.getDb(txId);
+            Optional<RocksDBReference> txdb = rocksConflicts.getDb(txId);
             if (!txdb.isPresent()) {
                 return null;
             }
-            final RocksDB db = txdb.get();
 
             List<Conflict> conflicts = new ArrayList<>(BATCH_SIZE);
 
-            try {
+            try (RocksDBReference dbRef = txdb.get()) {
                 byte[] keyPrefix = keyPrefix(this.prefixFilter);
 
-                try (RocksIterator rocksit = db.newIterator()) {
+                try (RocksIterator rocksit = dbRef.db().newIterator()) {
                     if (lastMatchKey == null) {
                         rocksit.seek(keyPrefix);
                     } else {

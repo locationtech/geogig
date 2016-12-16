@@ -11,8 +11,8 @@ package org.locationtech.geogig.storage.fs;
 
 import java.io.File;
 
-import org.locationtech.geogig.storage.TransactionBlobStore;
-import org.locationtech.geogig.storage.TransactionBlobStoreTest;
+import org.locationtech.geogig.storage.impl.TransactionBlobStore;
+import org.locationtech.geogig.storage.impl.TransactionBlobStoreTest;
 import org.locationtech.geogig.test.TestPlatform;
 
 public class FileBlobStoreTest extends TransactionBlobStoreTest {

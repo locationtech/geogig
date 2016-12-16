@@ -9,12 +9,11 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import static org.locationtech.geogig.model.ObjectId.forString;
-
 import java.util.ArrayList;
 import java.util.Set;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.merge.ConflictsQueryOp;
 import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
 import org.locationtech.geogig.repository.Conflict;
@@ -30,10 +29,10 @@ public class ConflictsReadWriteOpTest extends RepositoryTestCase {
 
     @Test
     public void testReadWriteConflicts() throws Exception {
-        Conflict conflict = new Conflict(idP1, forString("ancestor"), forString("ours"),
-                forString("theirs"));
-        Conflict conflict2 = new Conflict(idP2, forString("ancestor2"), forString("ours2"),
-                forString("theirs2"));
+        Conflict conflict = new Conflict(idP1, RevObjectTestSupport.hashString("ancestor"), RevObjectTestSupport.hashString("ours"),
+                RevObjectTestSupport.hashString("theirs"));
+        Conflict conflict2 = new Conflict(idP2, RevObjectTestSupport.hashString("ancestor2"), RevObjectTestSupport.hashString("ours2"),
+                RevObjectTestSupport.hashString("theirs2"));
         ArrayList<Conflict> conflicts = Lists.newArrayList(conflict, conflict2);
         geogig.command(ConflictsWriteOp.class).setConflicts(conflicts).call();
 

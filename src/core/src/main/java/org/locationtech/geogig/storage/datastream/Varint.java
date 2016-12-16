@@ -23,6 +23,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import com.google.common.base.Preconditions;
+
 /**
  * <p>
  * Encodes signed and unsigned values using a common variable-length scheme, found for example in
@@ -107,6 +109,19 @@ public final class Varint {
         return cnt;
     }
 
+    public static int writeUnsignedVarInt(int value, byte[] buff) {
+        Preconditions.checkState(buff.length > 4);
+        int cnt = 0;
+        while ((value & 0xFFFFFF80) != 0L) {
+            // out.writeByte((value & 0x7F) | 0x80);
+            buff[cnt++] = (byte) ((value & 0x7F) | 0x80);
+            value >>>= 7;
+        }
+        // out.writeByte(value & 0x7F);
+        buff[cnt++] = (byte) (value & 0x7F);
+        return cnt;
+    }
+
     /**
      * @param in to read bytes from
      * @return decode value
@@ -185,4 +200,21 @@ public final class Varint {
         return value | (b << i);
     }
 
+    public static int readUnsignedVarInt(byte[] from) throws IOException {
+        Preconditions.checkState(from.length > 4);
+        int value = 0;
+        int i = 0;
+        int b;
+        int cnt = 0;
+        while (((b = from[cnt]) & 0x80) != 0) {
+            value |= (b & 0x7F) << i;
+            i += 7;
+            if (i > 35) {
+                throw new IllegalArgumentException(
+                        "Variable length quantity is too long (must be <= 35)");
+            }
+            cnt++;
+        }
+        return value | (b << i);
+    }
 }

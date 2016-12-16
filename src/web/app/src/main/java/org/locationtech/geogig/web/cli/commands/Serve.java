@@ -9,9 +9,10 @@
  */
 package org.locationtech.geogig.web.cli.commands;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.BindException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -19,16 +20,15 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
-import org.locationtech.geogig.model.DefaultPlatform;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
-import org.locationtech.geogig.web.DirectoryRepositoryProvider;
 import org.locationtech.geogig.web.Main;
+import org.locationtech.geogig.web.MultiRepositoryProvider;
 import org.restlet.Application;
 import org.restlet.Component;
 import org.restlet.data.Protocol;
@@ -67,11 +67,18 @@ public class Serve extends AbstractCommand {
 
         String loc = repo != null && repo.size() > 0 ? repo.get(0) : ".";
 
-        final RepositoryProvider provider;
+        URI repoURI = null;
+        try {
+            repoURI = RepositoryResolver.resolveRepoUriFromString(cli.getPlatform(), loc);
+        } catch (URISyntaxException e) {
+            throw new CommandFailedException("Unable to parse the root repository URI.", e);
+        }
+
+        RepositoryProvider provider = null;
         if (multiRepo) {
-            provider = new DirectoryRepositoryProvider(new File(loc).getCanonicalFile());
+            provider = new MultiRepositoryProvider(repoURI);
         } else {
-            provider = new SingleRepositoryProvider(loadGeoGIG(loc, cli));
+            provider = new SingleRepositoryProvider(loadGeoGIG(repoURI, cli));
         }
         Application application = new Main(provider, multiRepo);
 
@@ -96,11 +103,8 @@ public class Serve extends AbstractCommand {
         }
     }
 
-    Repository loadGeoGIG(String repo, GeogigCLI cli) {
-        Platform platform = new DefaultPlatform();
-        platform.setWorkingDir(new File(repo));
-
-        GeoGIG geogig = cli.newGeoGIG(new Hints().platform(platform));
+    Repository loadGeoGIG(URI repo, GeogigCLI cli) {
+        GeoGIG geogig = cli.newGeoGIG(new Hints().uri(repo));
         if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
             geogig.getRepository();
         }

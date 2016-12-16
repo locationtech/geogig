@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2014 Boundless and others.
+/* Copyright (c) 2012-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -11,18 +11,20 @@ package org.locationtech.geogig.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * An identifier->object id mapping for an object
  * 
+ * 
+ * @since 1.0
  */
 public abstract class Node implements Bounded, Comparable<Node> {
 
@@ -52,7 +54,16 @@ public abstract class Node implements Bounded, Comparable<Node> {
         this.name = name;
         this.objectId = oid;
         this.metadataId = metadataId.isNull() ? null : metadataId;
-        this.extraData = extraData;
+        this.extraData = extraData == null ? null : new HashMap<>(extraData);
+    }
+
+    public Node update(final ObjectId newId) {
+        return update(newId, bounds().orNull());
+    }
+
+    public Node update(final ObjectId newId, final @Nullable Envelope newBounds) {
+        ObjectId mdId = metadataId == null ? ObjectId.NULL : metadataId;
+        return Node.create(name, newId, mdId, getType(), newBounds, extraData);
     }
 
     public Optional<ObjectId> getMetadataId() {
@@ -146,6 +157,10 @@ public abstract class Node implements Bounded, Comparable<Node> {
     public static Node create(final String name, final ObjectId oid, final ObjectId metadataId,
             final TYPE type, @Nullable final Envelope bounds,
             @Nullable Map<String, Object> extraData) {
+        checkNotNull(name, "name");
+        checkNotNull(oid, "oid");
+        checkNotNull(metadataId, "metadataId");
+        checkNotNull(type, "type");
 
         switch (type) {
         case FEATURE:
@@ -191,7 +206,6 @@ public abstract class Node implements Bounded, Comparable<Node> {
         public BoundedTreeNode(String name, ObjectId oid, ObjectId mdid, Envelope env,
                 Map<String, Object> extraData) {
             super(name, oid, mdid, extraData);
-            Preconditions.checkArgument(!env.isNull());
 
             if (env.getWidth() == 0 && env.getHeight() == 0) {
                 bounds = new float[2];
@@ -230,7 +244,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
             if (bounds.length == 2) {
                 b = new Envelope(bounds[0], bounds[0], bounds[1], bounds[1]);
             } else {
-                b = new Envelope(bounds[0], bounds[1], bounds[2], bounds[3]);
+                b = new Envelope(bounds[0], bounds[2], bounds[1], bounds[3]);
             }
             return Optional.of(b);
         }
@@ -238,7 +252,8 @@ public abstract class Node implements Bounded, Comparable<Node> {
 
     private static class FeatureNode extends Node {
 
-        public FeatureNode(String name, ObjectId oid, ObjectId mdid, Map<String, Object> extraData) {
+        public FeatureNode(String name, ObjectId oid, ObjectId mdid,
+                Map<String, Object> extraData) {
             super(name, oid, mdid, extraData);
         }
 
@@ -262,7 +277,6 @@ public abstract class Node implements Bounded, Comparable<Node> {
         public BoundedFeatureNode(String name, ObjectId oid, ObjectId mdid, Envelope env,
                 Map<String, Object> extraData) {
             super(name, oid, mdid, extraData);
-            Preconditions.checkArgument(!env.isNull());
 
             if (env.getWidth() == 0 && env.getHeight() == 0) {
                 bounds = new float[2];
@@ -301,7 +315,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
             if (bounds.length == 2) {
                 b = new Envelope(bounds[0], bounds[0], bounds[1], bounds[1]);
             } else {
-                b = new Envelope(bounds[0], bounds[1], bounds[2], bounds[3]);
+                b = new Envelope(bounds[0], bounds[2], bounds[1], bounds[3]);
             }
             return Optional.of(b);
         }

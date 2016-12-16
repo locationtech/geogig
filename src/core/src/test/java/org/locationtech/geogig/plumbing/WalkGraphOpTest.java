@@ -19,11 +19,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Optional;
@@ -144,16 +144,16 @@ public class WalkGraphOpTest extends RepositoryTestCase {
         List<String> sevents = listener.sevents;
 
         Set<String> expected = ImmutableSet.of(//
-                "COMMIT Lines.1",//
-                "TREE ",//
-                "FEATURETYPE Points",//
-                "TREE Points",//
-                "FEATURETYPE Lines",//
-                "TREE Lines",//
-                "FEATURE Points.1",//
-                "END TREE Points",//
-                "FEATURE Lines.1",//
-                "END TREE Lines",//
+                "COMMIT Lines.1", //
+                "TREE ", //
+                "FEATURETYPE Points", //
+                "TREE Points", //
+                "FEATURETYPE Lines", //
+                "TREE Lines", //
+                "FEATURE Points.1", //
+                "END TREE Points", //
+                "FEATURE Lines.1", //
+                "END TREE Lines", //
                 "END TREE ");
 
         assertEquals(expected, new HashSet<>(sevents));

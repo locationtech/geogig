@@ -19,6 +19,7 @@ import org.geotools.data.QueryCapabilities;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.referencing.AbstractReferenceSystem;
 import org.locationtech.geogig.data.ForwardingFeatureCollection;
 import org.locationtech.geogig.data.ForwardingFeatureIterator;
 import org.locationtech.geogig.data.ForwardingFeatureSource;
@@ -31,9 +32,10 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.sort.SortBy;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature> extends
-        ForwardingFeatureSource<T, F> {
+class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature>
+        extends ForwardingFeatureSource<T, F> {
 
     private T featureType;
 
@@ -99,22 +101,30 @@ class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature> 
                     throw new GeoToolsOpException(
                             GeoToolsOpException.StatusCode.INCOMPATIBLE_FEATURE_TYPE);
                 }
+
                 GeometryDescriptor geomDescriptorOrg = delegate.getSchema().getGeometryDescriptor();
                 GeometryDescriptor geomDescriptorDest = featureType.getGeometryDescriptor();
                 if (!geomDescriptorOrg.getType().getBinding()
-                        .equals(geomDescriptorDest.getType().getBinding())
-                        || !geomDescriptorOrg
-                                .getType()
-                                .getCoordinateReferenceSystem()
-                                .equals(geomDescriptorDest.getType().getCoordinateReferenceSystem())) {
+                        .equals(geomDescriptorDest.getType().getBinding())) {
                     throw new GeoToolsOpException(
                             GeoToolsOpException.StatusCode.INCOMPATIBLE_FEATURE_TYPE);
                 }
+
+                AbstractReferenceSystem crsOrg = (AbstractReferenceSystem) delegate.getSchema()
+                        .getCoordinateReferenceSystem();
+                AbstractReferenceSystem crsDest = (AbstractReferenceSystem) featureType
+                        .getCoordinateReferenceSystem();
+                if (!crsOrg.equals(crsDest, false)) {
+                    throw new GeoToolsOpException(
+                            GeoToolsOpException.StatusCode.INCOMPATIBLE_FEATURE_TYPE);
+                }
+
                 FeatureIterator<F> iterator = delegate.features();
                 SimpleFeatureBuilder builder = new SimpleFeatureBuilder(
                         (SimpleFeatureType) featureType);
 
-                return new FeatureTypeConverterIterator<F>(iterator, (SimpleFeatureBuilder) builder);
+                return new FeatureTypeConverterIterator<F>(iterator,
+                        (SimpleFeatureBuilder) builder);
             }
 
             @Override
@@ -124,8 +134,8 @@ class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature> 
         };
     }
 
-    private static class FeatureTypeConverterIterator<F extends Feature> extends
-            ForwardingFeatureIterator<F> {
+    private static class FeatureTypeConverterIterator<F extends Feature>
+            extends ForwardingFeatureIterator<F> {
 
         private SimpleFeatureBuilder builder;
 
@@ -143,7 +153,8 @@ class FeatureTypeAdapterFeatureSource<T extends FeatureType, F extends Feature> 
             String fid = ((SimpleFeature) next).getID();
             Name geometryAttributeName = builder.getFeatureType().getGeometryDescriptor().getName();
             builder.set(geometryAttributeName, next.getDefaultGeometryProperty().getValue());
-            for (AttributeDescriptor attribute : builder.getFeatureType().getAttributeDescriptors()) {
+            for (AttributeDescriptor attribute : builder.getFeatureType()
+                    .getAttributeDescriptors()) {
                 Name name = attribute.getName();
                 if (!name.equals(geometryAttributeName)) {
                     Property property = next.getProperty(name);

@@ -54,16 +54,23 @@ public class GeopkgDataStoreImportOp extends DataStoreImportOp<RevCommit> {
             // import data into the repository
             final ImportOp importOp = getImportOp(dataStore);
             final GeoPackage geopkg = new GeoPackage(geopackage);
-            final DataSource dataSource = geopkg.getDataSource();
-            Connection connection = dataSource.getConnection();
-            GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection);
-            importOp.setForwardingFeatureIteratorProvider(getFeatureIteratorTransformer(metadata));
-            importOp.setProgressListener(getProgressListener());
-            importOp.call();
-            // add the imported data to the staging area
-            callAdd();
-            // commit the staged changes
-            revCommit = callCommit();
+            try {
+                final DataSource dataSource = geopkg.getDataSource();
+                try (Connection connection = dataSource.getConnection()) {
+                    try (GeopkgGeogigMetadata metadata = new GeopkgGeogigMetadata(connection)) {
+                        importOp.setForwardingFeatureIteratorProvider(
+                                getFeatureIteratorTransformer(metadata));
+                        importOp.setProgressListener(getProgressListener());
+                        importOp.call();
+                        // add the imported data to the staging area
+                        callAdd();
+                        // commit the staged changes
+                        revCommit = callCommit();
+                    }
+                }
+            } finally {
+                geopkg.close();
+            }
         } catch (Exception e) {
             Throwables.propagate(e);
         } finally {
@@ -94,7 +101,8 @@ public class GeopkgDataStoreImportOp extends DataStoreImportOp<RevCommit> {
                 .setDestinationPath(dest).setFidAttribute(fidAttribute);
     }
 
-    private ForwardingFeatureIteratorProvider getFeatureIteratorTransformer(GeopkgGeogigMetadata metadata) {
+    private ForwardingFeatureIteratorProvider getFeatureIteratorTransformer(
+            GeopkgGeogigMetadata metadata) {
         return new GeoPkgForwardingFeatureIteratorProvider(metadata);
     }
 }

@@ -89,16 +89,20 @@ public class AddOp extends AbstractGeoGigOp<WorkingTree> {
         // short cut for the case where the index is empty and we're staging all changes in the
         // working tree, so it's just a matter of updating the index ref to working tree RevTree id
         final StagingArea index = index();
-        if (null == pathFilter && !index.getStaged(null).hasNext() && !updateOnly
-                && index.countConflicted(null) == 0) {
-            progress.started();
-            Optional<ObjectId> workHead = command(RevParse.class).setRefSpec(Ref.WORK_HEAD).call();
-            if (workHead.isPresent()) {
-                command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(workHead.get()).call();
+        try (AutoCloseableIterator<DiffEntry> staged = index.getStaged(null)) {
+            if (null == pathFilter && !staged.hasNext() && !updateOnly
+                    && index.countConflicted(null) == 0) {
+                progress.started();
+                Optional<ObjectId> workHead = command(RevParse.class).setRefSpec(Ref.WORK_HEAD)
+                        .call();
+                if (workHead.isPresent()) {
+                    command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(workHead.get())
+                            .call();
+                }
+                progress.setProgress(100f);
+                progress.complete();
+                return;
             }
-            progress.setProgress(100f);
-            progress.complete();
-            return;
         }
 
         final long numChanges = workingTree().countUnstaged(pathFilter).count();

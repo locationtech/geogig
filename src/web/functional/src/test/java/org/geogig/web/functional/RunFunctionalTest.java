@@ -19,13 +19,10 @@ import cucumber.api.junit.Cucumber;
  * definitions and hooks are defined in their own classes so they can be reused across features.
  * 
  */
-// use features=... to specify one or more specific features to execute
-// @Cucumber.Options(features = {
-// "src/test/resources/org/locationtech/geogig/cli/test/functional/Branch.feature"
-// }, format = {
-// "pretty", "html:target/cucumber-report" }, strict = true)
+
 @RunWith(Cucumber.class)
 @CucumberOptions(strict = true, plugin = { "pretty", "html:cucumber-report",
-        "json:cucumber-report/cucumber.json" })
+        "json:cucumber-report/cucumber.json" }, glue = { "org.geogig.web.functional" }, features = {
+                "src/test/resources/features/commands", "src/test/resources/features/repo" })
 public class RunFunctionalTest {
 }

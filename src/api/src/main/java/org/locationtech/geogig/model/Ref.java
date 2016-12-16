@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2014 Boundless and others.
+/* Copyright (c) 2012-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -12,14 +12,36 @@ package org.locationtech.geogig.model;
 import com.google.common.base.Preconditions;
 
 /**
- * Pairing of a name and the {@link ObjectId} it currently has.
+ * A named pointer to a {@link RevObject} that represents an entry point in a repository's revision
+ * graph.
  * <p>
- * A ref in Git is (more or less) a variable that holds a single object identifier. The object
- * identifier can be any valid Git object (blob, tree, commit, annotated tag, ...).
+ * The commit history consists of a DAG of commits, each one pointing to it's parent(s) commit(s).
+ * {@code Ref}s are essentially named pointers to commits, where the ref name is usually the name of
+ * a branch (when the ref is in the {@code refs/heads/<refName>} namespace), or the name of a branch
+ * in a remote repository (when the ref is in the {@code refs/remotes/<remoteName>/<refName>}
+ * namespace).
  * <p>
- * The ref name has the attributes of the ref that was asked for as well as the ref it was resolved
- * to for symbolic refs plus the object id it points to and (for tags) the peeled target object id,
- * i.e. the tag resolved recursively until a non-tag object is referenced.
+ * Types of {@link Ref}s
+ * <ul>
+ * <li>Branches: Refs under the {@code refs/heads} namespace, point to {@link RevCommit commits}
+ * <li>Remote Branches: Refs under the {@code refs/remotes/<remoteName>} namespace, point to
+ * {@link RevCommit commits}
+ * <li>Tags: Refs under the {@code refs/tags} namespace, point to {@link RevTag tags}
+ * <li>Transaction refs: refs under the {@code transactions/<transaction id>} namespace form a whole
+ * lot of refs like the ones in the root repository (e.g. {@code transactions/<txId>/HEAD},
+ * {@code transactions/<txId>/refs/heads/master}, etc. They are created when the transaction
+ * namespace is created as a copy of the current state of all the refs in the repository, and when
+ * the transaction is committed, the refs that have changed in the transaction namespace override
+ * the ones in the main repository ref set.
+ * <li>{@link #WORK_HEAD} is a ref that points to the root {@link RevTree} that represents the
+ * current working tree
+ * <li>{@link #STAGE_HEAD} is a ref that points to the root {@link RevTree} that represents the
+ * current staging area
+ * </ul>
+ * 
+ * @see SymRef
+ * 
+ * @since 1.0
  */
 public class Ref implements Comparable<Ref> {
 

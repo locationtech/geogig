@@ -17,12 +17,13 @@ import java.util.Iterator;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Function;
@@ -101,7 +102,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
     };
 
     public DepthTreeIterator(final String treePath, final ObjectId metadataId, RevTree tree,
-            ObjectDatabase source, Strategy strategy) {
+            ObjectStore source, Strategy strategy) {
         checkNotNull(treePath);
         checkNotNull(metadataId);
         checkNotNull(tree);
@@ -221,10 +222,11 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         private Iterator<Node> children;
 
         public Children(RevTree tree) {
-            if (tree.buckets().isPresent()) {
+            if (!tree.buckets().isEmpty()) {
                 this.children = new Buckets(tree);
             } else {
-                this.children = Iterators.filter(tree.children(), boundsFilter);
+                this.children = Iterators.filter(
+                        RevObjects.children(tree, CanonicalNodeOrder.INSTANCE), boundsFilter);
             }
         }
 
@@ -242,9 +244,9 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         private Iterator<Node> features;
 
         public Features(RevTree tree) {
-            if (tree.features().isPresent()) {
-                this.features = Iterators.filter(tree.features().get().iterator(), boundsFilter);
-            } else if (tree.buckets().isPresent()) {
+            if (!tree.features().isEmpty()) {
+                this.features = Iterators.filter(tree.features().iterator(), boundsFilter);
+            } else if (!tree.buckets().isEmpty()) {
                 this.features = new FeatureBuckets(tree);
             } else {
                 this.features = Collections.emptyIterator();
@@ -267,9 +269,9 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         public Trees(RevTree tree) {
             if (tree.numTrees() == 0) {
                 this.trees = Collections.emptyIterator();
-            } else if (tree.trees().isPresent()) {
-                this.trees = Iterators.filter(tree.trees().get().iterator(), boundsFilter);
-            } else if (tree.buckets().isPresent()) {
+            } else if (!tree.trees().isEmpty()) {
+                this.trees = Iterators.filter(tree.trees().iterator(), boundsFilter);
+            } else if (!tree.buckets().isEmpty()) {
                 this.trees = new TreeBuckets(tree);
             } else {
                 this.trees = Collections.emptyIterator();
@@ -295,9 +297,11 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         private Iterator<Node> bucketEntries;
 
         public Buckets(RevTree tree) {
-            Preconditions.checkArgument(tree.buckets().isPresent());
-            buckets = Iterators.filter(tree.buckets().get().values().iterator(), boundsFilter);
+            Preconditions.checkArgument(!tree.buckets().isEmpty());
+            buckets = Iterators.filter(tree.buckets().values().iterator(), boundsFilter);
             bucketEntries = Collections.emptyIterator();
+            // may it be a mixed tree (having both direct children and buckets)
+            bucketEntries = RevObjects.children(tree, CanonicalNodeOrder.INSTANCE);
         }
 
         @Override
@@ -319,7 +323,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
          */
         protected Iterator<Node> resolveBucketEntries(ObjectId bucketId) {
             RevTree bucketTree = source.getTree(bucketId);
-            if (bucketTree.buckets().isPresent()) {
+            if (!bucketTree.buckets().isEmpty()) {
                 return new Buckets(bucketTree);
             }
             return new Children(bucketTree);
@@ -341,10 +345,10 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             if (bucketTree.numTrees() == 0) {
                 return Collections.emptyIterator();
             }
-            if (bucketTree.trees().isPresent()) {
+            if (!bucketTree.trees().isEmpty()) {
                 return new Trees(bucketTree);
             }
-            if (bucketTree.buckets().isPresent()) {
+            if (!bucketTree.buckets().isEmpty()) {
                 return new TreeBuckets(bucketTree);
             }
             return Collections.emptyIterator();
@@ -363,10 +367,10 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
         @Override
         protected Iterator<Node> resolveBucketEntries(ObjectId bucketId) {
             RevTree bucketTree = source.getTree(bucketId);
-            if (bucketTree.buckets().isPresent()) {
+            if (!bucketTree.buckets().isEmpty()) {
                 return new FeatureBuckets(bucketTree);
             }
-            if (bucketTree.features().isPresent()) {
+            if (!bucketTree.features().isEmpty()) {
                 return new Features(bucketTree);
             }
             return Collections.emptyIterator();

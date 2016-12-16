@@ -147,7 +147,8 @@ public final class Varints {
         }
     }
 
-    public static void writeLongArrayDeltaEncoded(long[] values, DataOutput out) throws IOException {
+    public static void writeLongArrayDeltaEncoded(long[] values, DataOutput out)
+            throws IOException {
 
         final int length = writeLength(values, out);
 
@@ -189,8 +190,8 @@ public final class Varints {
         return values;
     }
 
-    public static void readLongArrayDeltaEncoded(DataInput in, long[] values, int offset, int length)
-            throws IOException {
+    public static void readLongArrayDeltaEncoded(DataInput in, long[] values, int offset,
+            int length) throws IOException {
 
         long prev = 0;
 

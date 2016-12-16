@@ -49,7 +49,8 @@ public class RefParse extends AbstractGeoGigOp<Optional<Ref>> {
      * 
      * Combinations of these operators are supported:
      * <ul>
-     * <li><b>HEAD</b>, <b>MERGE_HEAD</b>, <b>FETCH_HEAD</b>, <b>STAGE_HEAD</b>, <b>WORK_HEAD</b></li>
+     * <li><b>HEAD</b>, <b>MERGE_HEAD</b>, <b>FETCH_HEAD</b>, <b>STAGE_HEAD</b>, <b>WORK_HEAD</b>
+     * </li>
      * <li><b>refs/...</b>: a complete reference name</li>
      * <li><b>short-name</b>: a short reference name under {@code refs/heads}, {@code refs/tags}, or
      * {@code refs/remotes} namespace, in that order of precedence</li>
@@ -96,12 +97,12 @@ public class RefParse extends AbstractGeoGigOp<Optional<Ref>> {
             }
 
         }
-        Collection<String> heads = Collections2.filter(allRefs.keySet(), new PrePostfixPredicate(
-                "refs/heads", "/" + refSpec));
-        Collection<String> tags = Collections2.filter(allRefs.keySet(), new PrePostfixPredicate(
-                "refs/tags", "/" + refSpec));
-        Collection<String> remotes = Collections2.filter(allRefs.keySet(), new PrePostfixPredicate(
-                "refs/remotes", "/" + refSpec));
+        Collection<String> heads = Collections2.filter(allRefs.keySet(),
+                new PrePostfixPredicate("refs/heads", "/" + refSpec));
+        Collection<String> tags = Collections2.filter(allRefs.keySet(),
+                new PrePostfixPredicate("refs/tags", "/" + refSpec));
+        Collection<String> remotes = Collections2.filter(allRefs.keySet(),
+                new PrePostfixPredicate("refs/remotes", "/" + refSpec));
 
         String refName;
         refName = resolveSingle(heads);

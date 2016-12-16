@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
@@ -41,7 +41,8 @@ import org.locationtech.geogig.plumbing.ResolveObjectType;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.RevParse;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.feature.Feature;
 import org.opengis.feature.GeometryAttribute;
 import org.opengis.feature.Property;
@@ -62,7 +63,7 @@ import com.google.common.base.Optional;
 public class ShpExport extends AbstractShpCommand implements CLICommand {
 
     @Parameter(description = "<path> <shapefile>", arity = 2)
-    public List<String> args;
+    public List<String> args = new ArrayList<>();
 
     @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output file")
     public boolean overwrite;
@@ -83,7 +84,8 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
     /**
      * Charset to use for encoding attributes in DBF file
      */
-    @Parameter(names = { "--charset" }, description = "Use the specified charset to encode attributes. Default is ISO-8859-1.")
+    @Parameter(names = {
+            "--charset" }, description = "Use the specified charset to encode attributes. Default is ISO-8859-1.")
     public String charset = "ISO-8859-1";
 
     /**
@@ -91,7 +93,7 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
      */
     @Override
     protected void runInternal(GeogigCLI cli) throws IOException {
-        if (args.isEmpty()) {
+        if (args.size() != 2) {
             printUsage(cli);
             throw new CommandFailedException();
         }

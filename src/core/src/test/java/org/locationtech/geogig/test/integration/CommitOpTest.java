@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import static org.locationtech.geogig.model.NodeRef.appendChild;
+import static org.locationtech.geogig.repository.NodeRef.appendChild;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,14 +24,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.RevParse;
@@ -40,6 +39,7 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -517,8 +517,7 @@ public class CommitOpTest extends RepositoryTestCase {
 
         final RevTree tree1 = geogig.command(RevObjectParse.class).setObjectId(commit1.getTreeId())
                 .call(RevTree.class).get();
-        assertTrue(tree1.trees().isPresent());
-        assertEquals(2, tree1.trees().get().size());
+        assertEquals(2, tree1.trees().size());
 
         WorkingTree workingTree = geogig.getRepository().workingTree();
         workingTree.delete(pointsName);
@@ -529,8 +528,7 @@ public class CommitOpTest extends RepositoryTestCase {
         RevTree tree2 = geogig.command(RevObjectParse.class).setObjectId(commit2.getTreeId())
                 .call(RevTree.class).get();
 
-        assertTrue(tree2.trees().isPresent());
-        assertEquals(1, tree2.trees().get().size());
+        assertEquals(1, tree2.trees().size());
     }
 
     @Test

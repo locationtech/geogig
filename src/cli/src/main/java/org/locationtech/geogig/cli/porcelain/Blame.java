@@ -31,7 +31,7 @@ import org.locationtech.geogig.porcelain.BlameException;
 import org.locationtech.geogig.porcelain.BlameOp;
 import org.locationtech.geogig.porcelain.BlameReport;
 import org.locationtech.geogig.porcelain.ValueAndCommit;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.beust.jcommander.Parameter;

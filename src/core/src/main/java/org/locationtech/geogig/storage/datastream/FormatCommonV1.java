@@ -25,24 +25,24 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.type.BasicFeatureTypes;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevPerson;
-import org.locationtech.geogig.model.RevPersonBuilder;
 import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.RevTagBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.impl.CommitBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.impl.RevPersonBuilder;
+import org.locationtech.geogig.model.impl.RevTagBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
@@ -53,6 +53,7 @@ import org.opengis.filter.Filter;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.vividsolutions.jts.geom.Envelope;
@@ -225,16 +226,9 @@ public class FormatCommonV1 {
 
         ImmutableList<Node> trees = treesBuilder.build();
         ImmutableList<Node> features = featuresBuilder.build();
-        if (nTrees == 0 && nFeatures == 0 && nBuckets == 0) {
-            return RevTreeBuilder.EMPTY;
-        } else if (trees.isEmpty() && features.isEmpty()) {
-            return RevTreeBuilder.createNodeTree(id, size, treeCount, buckets);
-        } else if (buckets.isEmpty()) {
-            return RevTreeBuilder.createLeafTree(id, size, features, trees);
-        } else {
-            throw new IllegalArgumentException(
-                    "Tree has mixed buckets and nodes; this is not supported.");
-        }
+
+        RevTree tree = RevTreeBuilder.create(id, size, treeCount, trees, features, buckets);
+        return tree;
     }
 
     public static Node readNode(DataInput in) throws IOException {
@@ -401,28 +395,35 @@ public class FormatCommonV1 {
         writeBucket(index, bucket, data, new Envelope());
     }
 
-    public static void writeBucket(int index, Bucket bucket, DataOutput data, Envelope envBuff)
-            throws IOException {
-        data.writeInt(index);
-        data.write(bucket.getObjectId().getRawValue());
-        envBuff.setToNull();
-        bucket.expand(envBuff);
-        writeBoundingBox(envBuff, data);
+    public static void writeBucket(int index, Bucket bucket, DataOutput data, Envelope envBuff) {
+        try {
+            data.writeInt(index);
+            data.write(bucket.getObjectId().getRawValue());
+            envBuff.setToNull();
+            bucket.expand(envBuff);
+            writeBoundingBox(envBuff, data);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public static void writeNode(Node node, DataOutput data) throws IOException {
         writeNode(node, data, new Envelope());
     }
 
-    public static void writeNode(Node node, DataOutput data, Envelope envBuff) throws IOException {
-        data.writeUTF(node.getName());
-        data.write(node.getObjectId().getRawValue());
-        data.write(node.getMetadataId().or(ObjectId.NULL).getRawValue());
-        int typeN = node.getType().value();
-        data.writeByte(typeN);
-        envBuff.setToNull();
-        node.expand(envBuff);
-        writeBoundingBox(envBuff, data);
+    public static void writeNode(Node node, DataOutput data, Envelope envBuff) {
+        try {
+            data.writeUTF(node.getName());
+            data.write(node.getObjectId().getRawValue());
+            data.write(node.getMetadataId().or(ObjectId.NULL).getRawValue());
+            int typeN = node.getType().value();
+            data.writeByte(typeN);
+            envBuff.setToNull();
+            node.expand(envBuff);
+            writeBoundingBox(envBuff, data);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public static void writeDiff(DiffEntry diff, DataOutput data) throws IOException {

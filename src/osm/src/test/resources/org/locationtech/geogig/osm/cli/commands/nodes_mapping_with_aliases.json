@@ -1,1 +1,0 @@
-{"rules":[{"name":"busstops","filter":{"highway":["bus_stop"]},"fields":{"name":{"name":"name_alias","type":"STRING"},"geom":{"name":"geom","type":"POINT"}}}]}

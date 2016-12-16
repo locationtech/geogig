@@ -249,7 +249,7 @@ public class PGConfigDatabase implements ConfigDatabase {
         final String s = entry.section;
         final String k = entry.key;
 
-        try (Connection cx = connect(config).getConnection()) {
+        try (Connection cx = PGStorage.newConnection(connect(config))) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK, s, k))) {
                 ps.setInt(1, repositoryPK);
                 ps.setString(2, s);
@@ -269,7 +269,7 @@ public class PGConfigDatabase implements ConfigDatabase {
         final String sql = format("SELECT section,key,value FROM %s WHERE repository = ?",
                 config.getTables().config());
 
-        try (Connection cx = connect(config).getConnection()) {
+        try (Connection cx = PGStorage.newConnection(connect(config))) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK))) {
                 ps.setInt(1, repositoryPK);
                 Map<String, String> all = new LinkedHashMap<>();
@@ -290,7 +290,7 @@ public class PGConfigDatabase implements ConfigDatabase {
         final String sql = format("SELECT key,value FROM %s WHERE repository = ? AND section = ?",
                 config.getTables().config());
 
-        try (Connection cx = connect(config).getConnection()) {
+        try (Connection cx = PGStorage.newConnection(connect(config))) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK, section))) {
                 ps.setInt(1, repositoryPK);
                 ps.setString(2, section);
@@ -315,7 +315,7 @@ public class PGConfigDatabase implements ConfigDatabase {
                 "SELECT DISTINCT section FROM %s WHERE repository = ? AND section LIKE ?",
                 config.getTables().config());
 
-        try (Connection cx = connect(config).getConnection()) {
+        try (Connection cx = PGStorage.newConnection(connect(config))) {
             List<String> all = new ArrayList<>(1);
 
             final String sectionPrefix = section + (section.endsWith(".") ? "" : ".");
@@ -356,7 +356,7 @@ public class PGConfigDatabase implements ConfigDatabase {
                 "insert into %s (repository, section, key, value) values(?, ?, ?, ?)",
                 config.getTables().config());
 
-        try (Connection cx = connect(config).getConnection()) {
+        try (Connection cx = PGStorage.newConnection(connect(config))) {
             cx.setAutoCommit(false);
             doRemove(entry, cx, repositoryPK);
             String s = entry.section;
@@ -382,7 +382,7 @@ public class PGConfigDatabase implements ConfigDatabase {
     }
 
     private void remove(final Entry entry, final int repositoryPK) {
-        try (Connection cx = connect(config).getConnection()) {
+        try (Connection cx = PGStorage.newConnection(connect(config))) {
             doRemove(entry, cx, repositoryPK);
         } catch (SQLException e) {
             throw propagate(e);
@@ -412,7 +412,7 @@ public class PGConfigDatabase implements ConfigDatabase {
         final String sql = format("DELETE FROM %s WHERE repository = ? AND section = ?",
                 config.getTables().config());
 
-        try (Connection cx = connect(config).getConnection()) {
+        try (Connection cx = PGStorage.newConnection(connect(config))) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, section))) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, section);
@@ -430,7 +430,7 @@ public class PGConfigDatabase implements ConfigDatabase {
         if (this.dataSource == null) {
             this.dataSource = PGStorage.newDataSource(config);
             boolean tablesExist;
-            try (Connection cx = dataSource.getConnection()) {
+            try (Connection cx = PGStorage.newConnection(dataSource)) {
                 DatabaseMetaData md = cx.getMetaData();
                 final String configTable = config.getTables().config();
                 final String schema = PGStorage.schema(configTable);
@@ -477,7 +477,7 @@ public class PGConfigDatabase implements ConfigDatabase {
                 configTable);
 
         Integer repoPK = null;
-        try (Connection cx = connect(config).getConnection()) {
+        try (Connection cx = PGStorage.newConnection(connect(config))) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 ps.setString(1, "repo");
                 ps.setString(2, "name");

@@ -16,7 +16,7 @@ import org.junit.Rule;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
-import org.locationtech.geogig.storage.GraphDatabaseTest;
+import org.locationtech.geogig.storage.impl.GraphDatabaseTest;
 import org.locationtech.geogig.storage.postgresql.Environment;
 import org.locationtech.geogig.storage.postgresql.PGConfigDatabase;
 import org.locationtech.geogig.storage.postgresql.PGGraphDatabase;

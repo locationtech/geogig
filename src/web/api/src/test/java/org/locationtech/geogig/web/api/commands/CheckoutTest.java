@@ -12,13 +12,14 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -91,7 +92,7 @@ public class CheckoutTest extends AbstractWebOpTest {
 
         assertEquals(head.getObjectId(), branch1.getObjectId());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals(master.getName(), response.getString("OldTarget"));
         assertEquals(branch1.getName(), response.getString("NewTarget"));
@@ -149,7 +150,7 @@ public class CheckoutTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("path", path, "ours", "true", "transactionId",
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals(path, response.getString("Path"));
         assertEquals("ours", response.getString("Strategy"));
@@ -169,7 +170,7 @@ public class CheckoutTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("path", path, "theirs", "true", "transactionId",
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         assertEquals(path, response.getString("Path"));
         assertEquals("theirs", response.getString("Strategy"));

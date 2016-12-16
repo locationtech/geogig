@@ -13,14 +13,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -83,9 +84,9 @@ public class RemoveTest extends AbstractWebOpTest {
                 .setChildPath(path).call();
         assertFalse(node.isPresent());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        assertEquals(path, response.get("Deleted"));
+        assertEquals(path, response.getString("Deleted"));
     }
 
     @Test
@@ -106,9 +107,9 @@ public class RemoveTest extends AbstractWebOpTest {
                 .setChildPath(TestData.pointsType.getTypeName()).call();
         assertFalse(node.isPresent());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        assertEquals(TestData.pointsType.getTypeName(), response.get("Deleted"));
+        assertEquals(TestData.pointsType.getTypeName(), response.getString("Deleted"));
     }
 
 }

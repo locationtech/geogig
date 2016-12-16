@@ -9,49 +9,36 @@
  */
 package org.locationtech.geogig.test.integration.repository;
 
-import static org.locationtech.geogig.model.NodeRef.appendChild;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.locationtech.geogig.repository.NodeRef.appendChild;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.data.FeatureSource;
-import org.geotools.data.Query;
-import org.geotools.data.QueryCapabilities;
-import org.geotools.data.memory.MemoryDataStore;
-import org.geotools.feature.FeatureCollection;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.data.ForwardingFeatureSource;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.FeatureToDelete;
+import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.repository.impl.FeatureToDelete;
 import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.mockito.Mockito;
 import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.Name;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 /**
@@ -84,12 +71,10 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
     @Test
     public void testInsertSingle() throws Exception {
-        Name name = points1.getType().getName();
-        String parentPath = name.getLocalPart();
-        Node ref = workTree.insert(parentPath, points1);
-        ObjectId objectId = ref.getObjectId();
+        FeatureInfo fi = featureInfo(points1);
+        workTree.insert(fi);
 
-        assertEquals(objectId,
+        assertEquals(fi.getFeature().getId(),
                 workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
     }
 
@@ -100,20 +85,19 @@ public class WorkingTreeTest extends RepositoryTestCase {
         featureList.add(points2);
         featureList.add(points3);
 
-        List<Node> targetList = new LinkedList<Node>();
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, targetList, 3);
+        List<FeatureInfo> targetList = insert(featureList);
 
         assertEquals(3, targetList.size());
 
-        Node ref1 = targetList.get(0);
-        Node ref2 = targetList.get(1);
-        Node ref3 = targetList.get(2);
+        FeatureInfo ref1 = targetList.get(0);
+        FeatureInfo ref2 = targetList.get(1);
+        FeatureInfo ref3 = targetList.get(2);
 
-        assertEquals(ref1.getObjectId(),
+        assertEquals(ref1.getFeature().getId(),
                 workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(ref2.getObjectId(),
+        assertEquals(ref2.getFeature().getId(),
                 workTree.findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(ref3.getObjectId(),
+        assertEquals(ref3.getFeature().getId(),
                 workTree.findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
     }
 
@@ -122,13 +106,12 @@ public class WorkingTreeTest extends RepositoryTestCase {
         List<Feature> featureList = new LinkedList<Feature>();
         featureList.add(points1);
 
-        List<Node> targetList = new LinkedList<Node>();
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, targetList, 1);
+        List<FeatureInfo> targetList = insert(featureList);
 
         assertEquals(1, targetList.size());
 
-        Node ref1 = targetList.get(0);
-        assertEquals(ref1.getObjectId(),
+        FeatureInfo ref1 = targetList.get(0);
+        assertEquals(ref1.getFeature().getId(),
                 workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
 
         featureList.clear();
@@ -136,19 +119,17 @@ public class WorkingTreeTest extends RepositoryTestCase {
         featureList.add(points2);
         featureList.add(points3);
 
-        targetList.clear();
-
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, targetList, 3);
+        targetList = insert(featureList);
 
         assertEquals(2, targetList.size());
 
-        Node ref2 = targetList.get(0);
-        Node ref3 = targetList.get(1);
+        FeatureInfo ref2 = targetList.get(0);
+        FeatureInfo ref3 = targetList.get(1);
 
         assertFalse(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
-        assertEquals(ref2.getObjectId(),
+        assertEquals(ref2.getFeature().getId(),
                 workTree.findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(ref3.getObjectId(),
+        assertEquals(ref3.getFeature().getId(),
                 workTree.findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
     }
 
@@ -159,135 +140,20 @@ public class WorkingTreeTest extends RepositoryTestCase {
         featureList.add(points2);
         featureList.add(points3);
 
-        List<Node> targetList = new LinkedList<Node>();
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, targetList, null);
+        List<FeatureInfo> targetList = insert(featureList);
 
         assertEquals(3, targetList.size());
 
-        Node ref1 = targetList.get(0);
-        Node ref2 = targetList.get(1);
-        Node ref3 = targetList.get(2);
+        FeatureInfo ref1 = targetList.get(0);
+        FeatureInfo ref2 = targetList.get(1);
+        FeatureInfo ref3 = targetList.get(2);
 
-        assertEquals(ref1.getObjectId(),
+        assertEquals(ref1.getFeature().getId(),
                 workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(ref2.getObjectId(),
+        assertEquals(ref2.getFeature().getId(),
                 workTree.findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(ref3.getObjectId(),
+        assertEquals(ref3.getFeature().getId(),
                 workTree.findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
-    }
-
-    @Test
-    public void testInsertCollectionZeroCollectionSize() throws Exception {
-        List<Feature> featureList = new LinkedList<Feature>();
-        featureList.add(points1);
-        featureList.add(points2);
-        featureList.add(points3);
-
-        List<Node> targetList = new LinkedList<Node>();
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, targetList, 0);
-
-        assertEquals(3, targetList.size());
-
-        Node ref1 = targetList.get(0);
-        Node ref2 = targetList.get(1);
-        Node ref3 = targetList.get(2);
-
-        assertEquals(ref1.getObjectId(),
-                workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(ref2.getObjectId(),
-                workTree.findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(ref3.getObjectId(),
-                workTree.findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
-    }
-
-    @Test
-    public void testInsertCollectionNegativeCollectionSize() throws Exception {
-        List<Feature> featureList = new LinkedList<Feature>();
-        featureList.add(points1);
-        featureList.add(points2);
-        featureList.add(points3);
-
-        List<Node> targetList = new LinkedList<Node>();
-
-        exception.expect(IllegalArgumentException.class);
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, targetList, -5);
-    }
-
-    @Test
-    public void testInsertNonPagingFeatureSource() throws Exception {
-        assertEquals(2, super.getGeogig().getPlatform().availableProcessors());
-
-        final List<SimpleFeature> features = ImmutableList.of((SimpleFeature) points1,
-                (SimpleFeature) points2, (SimpleFeature) points3);
-        MemoryDataStore store = new MemoryDataStore();
-        store.addFeatures(features);
-
-        final QueryCapabilities caps = Mockito.spy(new QueryCapabilities());
-        Mockito.doReturn(false).when(caps).isOffsetSupported();
-
-        @SuppressWarnings("rawtypes")
-        FeatureSource source = Mockito.spy(store.getFeatureSource(pointsName));
-        Mockito.doReturn(caps).when(source).getQueryCapabilities();
-
-        String treePath = "target_typename";
-        workTree.insert(treePath, source, Query.ALL, LISTENER);
-
-        assertEquals(3, workTree.countUnstaged(treePath).featureCount());
-
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Test
-    public void testInsertPagingFeatureSource() throws Exception {
-        assertEquals(2, super.getGeogig().getPlatform().availableProcessors());
-
-        final List<SimpleFeature> features = ImmutableList.of((SimpleFeature) points1,
-                (SimpleFeature) points2, (SimpleFeature) points3);
-        MemoryDataStore store = new MemoryDataStore();
-        store.addFeatures(features);
-
-        final QueryCapabilities caps = mock(QueryCapabilities.class);
-        when(caps.isOffsetSupported()).thenReturn(true);
-
-        FeatureSource source = new ForwardingFeatureSource(store.getFeatureSource(pointsName)) {
-            @Override
-            public QueryCapabilities getQueryCapabilities() {
-                return caps;
-            }
-
-            @Override
-            public FeatureCollection getFeatures(Query query) throws IOException {
-                Integer startIndex = query.getStartIndex();
-                if (startIndex == null) {
-                    return super.getFeatures();
-                }
-                int toIndex = (int) Math.min((long) startIndex + query.getMaxFeatures(),
-                        features.size());
-                List<SimpleFeature> result = features.subList(startIndex, toIndex);
-                return DataUtilities.collection(result);
-            }
-        };
-
-        assertTrue(source.getQueryCapabilities().isOffsetSupported());
-
-        String treePath = "target_typename";
-        workTree.insert(treePath, source, Query.ALL, LISTENER);
-
-        assertEquals(3, workTree.countUnstaged(treePath).featureCount());
-    }
-
-    @Test
-    public void testInsertCollectionNoTarget() throws Exception {
-        List<Feature> featureList = new LinkedList<Feature>();
-        featureList.add(points1);
-        featureList.add(points2);
-        featureList.add(points3);
-
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, null);
-
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP3)).isPresent());
     }
 
     @Test
@@ -297,90 +163,17 @@ public class WorkingTreeTest extends RepositoryTestCase {
         featureList.add(points2);
         featureList.add(points3);
 
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
+        insert(featureList);
 
         ObjectId oID1 = workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId();
 
         List<Feature> modifiedFeatures = new LinkedList<Feature>();
         modifiedFeatures.add(points1_modified);
 
-        workTree.insert(pointsName, modifiedFeatures.iterator(), LISTENER, null, 1);
+        insert(modifiedFeatures);
         assertFalse(workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId()
                 .equals(oID1));
 
-    }
-
-    @Test
-    public void testUpdateFeatures() throws Exception {
-        List<Feature> featureList = new LinkedList<Feature>();
-        featureList.add(points1);
-        featureList.add(points2);
-        featureList.add(points3);
-
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
-
-        ObjectId oID1 = workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId();
-
-        List<Feature> modifiedFeatures = new LinkedList<Feature>();
-        modifiedFeatures.add(points1_modified);
-
-        workTree.update(pointsName, modifiedFeatures.iterator(), LISTENER, 1);
-        assertFalse(workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId()
-                .equals(oID1));
-    }
-
-    @Test
-    public void testUpdateFeaturesNullCollectionSize() throws Exception {
-        List<Feature> featureList = new LinkedList<Feature>();
-        featureList.add(points1);
-        featureList.add(points2);
-        featureList.add(points3);
-
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
-
-        ObjectId oID1 = workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId();
-
-        List<Feature> modifiedFeatures = new LinkedList<Feature>();
-        modifiedFeatures.add(points1_modified);
-
-        workTree.update(pointsName, modifiedFeatures.iterator(), LISTENER, null);
-        assertFalse(workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId()
-                .equals(oID1));
-    }
-
-    @Test
-    public void testUpdateFeaturesZeroCollectionSize() throws Exception {
-        List<Feature> featureList = new LinkedList<Feature>();
-        featureList.add(points1);
-        featureList.add(points2);
-        featureList.add(points3);
-
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
-
-        ObjectId oID1 = workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId();
-
-        List<Feature> modifiedFeatures = new LinkedList<Feature>();
-        modifiedFeatures.add(points1_modified);
-
-        workTree.update(pointsName, modifiedFeatures.iterator(), LISTENER, 0);
-        assertFalse(workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId()
-                .equals(oID1));
-    }
-
-    @Test
-    public void testUpdateFeaturesNegativeCollectionSize() throws Exception {
-        List<Feature> featureList = new LinkedList<Feature>();
-        featureList.add(points1);
-        featureList.add(points2);
-        featureList.add(points3);
-
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
-
-        List<Feature> modifiedFeatures = new LinkedList<Feature>();
-        modifiedFeatures.add(points1_modified);
-
-        exception.expect(IllegalArgumentException.class);
-        workTree.update(pointsName, modifiedFeatures.iterator(), LISTENER, -5);
     }
 
     @Test
@@ -390,7 +183,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
         featureList.add(points2);
         featureList.add(points3);
 
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
+        insert(featureList);
 
         assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
         assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
@@ -415,7 +208,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
         featureList.add(points1);
         featureList.add(points2);
 
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 2);
+        insert(featureList);
 
         assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
         assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
@@ -433,32 +226,6 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
         assertTrue(oldTreeId.equals(newTreeId));
 
-    }
-
-    @Test
-    public void testDeleteCollection() throws Exception {
-        List<Feature> featureList = new LinkedList<Feature>();
-        featureList.add(points1);
-        featureList.add(points2);
-        featureList.add(points3);
-
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
-
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP3)).isPresent());
-
-        List<Feature> deleteFeatures = new LinkedList<Feature>();
-        deleteFeatures.add(points1);
-        deleteFeatures.add(points3);
-
-        Name typeName = points1.getName();
-
-        workTree.delete(typeName, null, deleteFeatures.iterator());
-
-        assertFalse(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
-        assertFalse(workTree.findUnstaged(appendChild(pointsName, idP3)).isPresent());
     }
 
     @Test
@@ -481,7 +248,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
         Iterator<String> featurePaths = Iterators.forArray(path1, path3, path4, path6);
 
-        workTree.delete(featurePaths);
+        workTree.delete(featurePaths, DefaultProgressListener.NULL);
 
         assertFalse(workTree.findUnstaged(path1).isPresent());
         assertTrue(workTree.findUnstaged(path2).isPresent());
@@ -492,44 +259,20 @@ public class WorkingTreeTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testDeleteCollectionOfFeaturesNotPresent() throws Exception {
-        List<Feature> featureList = new LinkedList<Feature>();
-        featureList.add(points1);
-        featureList.add(points2);
-
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
-
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
-        assertFalse(workTree.findUnstaged(appendChild(pointsName, idP3)).isPresent());
-
-        List<Feature> deleteFeatures = new LinkedList<Feature>();
-        deleteFeatures.add(points3);
-
-        Name typeName = points1.getName();
-
-        workTree.delete(typeName, null, deleteFeatures.iterator());
-
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
-        assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
-        assertFalse(workTree.findUnstaged(appendChild(pointsName, idP3)).isPresent());
-    }
-
-    @Test
     public void testDeleteFeatureType() throws Exception {
         List<Feature> featureList = new LinkedList<Feature>();
         featureList.add(points1);
         featureList.add(points2);
         featureList.add(points3);
 
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
+        insert(featureList);
 
         featureList = new LinkedList<Feature>();
         featureList.add(lines1);
         featureList.add(lines2);
         featureList.add(lines3);
 
-        workTree.insert(linesName, featureList.iterator(), LISTENER, null, 3);
+        insert(featureList);
 
         assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
         assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
@@ -552,7 +295,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
     public void testHasRoot() throws Exception {
         insert(points1);
         Name typeName = points1.getName();
-        assertFalse(workTree.hasRoot(typeName));
+        assertFalse(workTree.hasRoot(typeName.getLocalPart()));
     }
 
     @Test
@@ -562,7 +305,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
         featureList.add(points2);
         featureList.add(points3);
 
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
+        insert(featureList);
 
         assertEquals(3, workTree.countUnstaged(null).featureCount());
         assertEquals(1, workTree.countUnstaged(null).treeCount());
@@ -580,14 +323,14 @@ public class WorkingTreeTest extends RepositoryTestCase {
         featureList.add(points2);
         featureList.add(points3);
 
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
+        insert(featureList);
 
         featureList = new LinkedList<Feature>();
         featureList.add(lines1);
         featureList.add(lines2);
         featureList.add(lines3);
 
-        workTree.insert(linesName, featureList.iterator(), LISTENER, null, 3);
+        insert(featureList);
 
         assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
         assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
@@ -605,14 +348,14 @@ public class WorkingTreeTest extends RepositoryTestCase {
         featureList.add(points2);
         featureList.add(points3);
 
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
+        insert(featureList);
 
         featureList = new LinkedList<Feature>();
         featureList.add(lines1);
         featureList.add(lines2);
         featureList.add(lines3);
 
-        workTree.insert(linesName, featureList.iterator(), LISTENER, null, 3);
+        insert(featureList);
 
         List<NodeRef> featureTypes = workTree.getFeatureTypeTrees();
 
@@ -746,7 +489,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
         featureList.add(points2);
         featureList.add(points3);
 
-        workTree.insert(pointsName, featureList.iterator(), LISTENER, null, 3);
+        insert(featureList);
 
         assertTrue(workTree.findUnstaged(appendChild(pointsName, idP1)).isPresent());
         assertTrue(workTree.findUnstaged(appendChild(pointsName, idP2)).isPresent());
@@ -760,7 +503,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
 
         Optional<Node> newTypeTree = findTreeChild(workTree.getTree(), pointsName);
         assertTrue(newTypeTree.isPresent());
-        assertEquals(RevTreeBuilder.EMPTY_TREE_ID, newTypeTree.get().getObjectId());
+        assertEquals(RevTree.EMPTY_TREE_ID, newTypeTree.get().getObjectId());
         assertEquals(oldTypeTree.getMetadataId(), newTypeTree.get().getMetadataId());
     }
 

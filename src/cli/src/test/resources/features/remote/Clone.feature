@@ -8,6 +8,13 @@ Feature: "clone" command
      When I run the command "clone"
      Then it should answer "You must specify a repository to clone."
       And it should exit with non-zero exit code
+      
+  Scenario: Try to clone into the current directory
+    Given I am in an empty directory
+      And there is a remote repository
+     When I run the command "clone ${remoterepo} ."
+     Then it should answer "Cannot clone into your current working directory."
+      And it should exit with non-zero exit code
      
   Scenario: Try to clone with too many parameters
     Given I am in an empty directory
@@ -41,7 +48,13 @@ Feature: "clone" command
       And the response should contain "Commit4"
       And the response should not contain "Commit3"
       And the response should not contain "Commit2"
-      And the response should contain "Commit1"      
+      And the response should contain "Commit1"  
+      
+  Scenario: Try to clone a remote repository that does not exist
+    Given I am in an empty directory
+     When I run the command "clone nonexistentrepo ${localrepo}"
+     Then the response should contain "nonexistentrepo is not a geogig repository"
+      And the repository at "${localrepo}" shall not exist 
       
   Scenario: Try to make a shallow clone of a remote repository
     Given I am in an empty directory

@@ -66,4 +66,10 @@ public class MergeScenarioReport {
         return merged.get();
     }
 
+    @Override
+    public String toString() {
+        return String.format("Conflicts: %,d, merged: %,d, unconflicted: %,d", getConflicts(),
+                getMerged(), getUnconflicted());
+    }
+
 }

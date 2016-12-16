@@ -12,7 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.repository.Repository;
@@ -79,9 +80,9 @@ public class RefParseTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("name", "branch1");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject ref = response.getJSONObject("Ref");
+        JsonObject ref = response.getJsonObject("Ref");
         assertEquals(branch1.getName(), ref.getString("name"));
         assertEquals(branch1.getObjectId().toString(), ref.getString("objectId"));
     }

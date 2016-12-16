@@ -18,9 +18,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.base.Strings;
 
@@ -66,26 +66,26 @@ public class TreeDifferenceTest extends Assert {
 
     @Before
     public void setUp() {
-        leftTree = MutableTree.createFromRefs(id("abc"),//
+        leftTree = MutableTree.createFromRefs(id("abc"), //
                 tree("roads", "a1", null), //
-                tree("roads/highways", "a2", "d1"),//
+                tree("roads/highways", "a2", "d1"), //
                 tree("roads/streets", "a3", "d2"), //
-                tree("buildings", "a4", null),//
-                tree("buildings/stores", "a5", "d3"),//
-                tree("buildings/unknown", "a6", "d4"),//
+                tree("buildings", "a4", null), //
+                tree("buildings/stores", "a5", "d3"), //
+                tree("buildings/unknown", "a6", "d4"), //
                 tree("buildings/towers", "a7", "d5")//
-                );
-        rightTree = MutableTree.createFromRefs(id("abc2"),//
+        );
+        rightTree = MutableTree.createFromRefs(id("abc2"), //
                 tree("roads", "a11", null), //
-                tree("roads/highways", "a2", "d1"),//
+                tree("roads/highways", "a2", "d1"), //
                 tree("roads/streetsRenamed", "a3", "d2"), //
-                tree("buildings", "a41", null),//
-                tree("buildings/stores", "a5", "d31"),//
-                tree("buildings/knownUnknown", "a61", "d41"),//
-                tree("admin", "c1", "d5"),//
-                tree("admin/area", "c2", "d6"),//
+                tree("buildings", "a41", null), //
+                tree("buildings/stores", "a5", "d31"), //
+                tree("buildings/knownUnknown", "a61", "d41"), //
+                tree("admin", "c1", "d5"), //
+                tree("admin/area", "c2", "d6"), //
                 tree("admin/line", "c3", "d7")//
-                );
+        );
         treeDifference = TreeDifference.create(leftTree, rightTree);
     }
 

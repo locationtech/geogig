@@ -15,7 +15,6 @@ import java.io.FileOutputStream;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -56,8 +55,6 @@ public class UploadCommandResource extends CommandResource {
      */
     private static final int UPLOAD_THRESHOLD = 0x1000 * 1000;
 
-    private static final MediaType DEFAULT_OUTPUT_MEDIA_TYPE = Variants.XML.getMediaType();
-
     private static final String FILE_UPLOAD_ERROR_TMPL = "There must be one and only one <%s> specified in the request";
 
     @Override
@@ -78,9 +75,8 @@ public class UploadCommandResource extends CommandResource {
             // requested output format exists, use that
             return super.resolveFormat(options, variant);
         }
-        // if not requested, the Variant MediaType for uploads is multipart. The response needs to
-        // be XML or JSON, so let's override it
-        return DEFAULT_OUTPUT_MEDIA_TYPE;
+        // output format not present, just return the preferred format
+        return getPreferredVariant().getMediaType();
     }
 
     @Override

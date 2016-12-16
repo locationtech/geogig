@@ -15,10 +15,10 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.BulkOpListener;
-import org.locationtech.geogig.storage.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.impl.ForwardingObjectDatabase;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -53,7 +53,8 @@ class ObjectDatabasePutInterceptor implements Decorator {
 
         private Provider<GraphDatabase> graphDb;
 
-        public GraphUpdatingObjectDatabase(Provider<GraphDatabase> graphDb, ObjectDatabase subject) {
+        public GraphUpdatingObjectDatabase(Provider<GraphDatabase> graphDb,
+                ObjectDatabase subject) {
             super(Providers.of(subject));
             this.graphDb = graphDb;
         }

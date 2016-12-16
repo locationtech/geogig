@@ -9,34 +9,38 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static org.locationtech.geogig.model.NodeRef.ROOT;
 import static org.locationtech.geogig.model.ObjectId.NULL;
-
-import java.util.Iterator;
+import static org.locationtech.geogig.repository.NodeRef.ROOT;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
-import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
+import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.memory.HeapObjectStore;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 public class MutableTreeTest extends Assert {
 
+    ObjectStore store;
+
     MutableTree root;
+
+    @Rule
+    public ExpectedException ex = ExpectedException.none();
 
     @Before
     public void setUp() {
+        store = new HeapObjectStore();
+        store.open();
         ObjectId md1 = id("d1");
         ObjectId md2 = id("d2");
         ObjectId md3 = id("d3");
@@ -63,24 +67,14 @@ public class MutableTreeTest extends Assert {
     }
 
     @Test
-    public void testRoot() {
-        assertNode(root, id("abc"), null, ROOT);
+    public void nullNameArg() {
+        // ex.expect(NullPointerException.class);
+        // MutableTree.createFromPaths(rootId, entries)
     }
 
     @Test
-    @Ignore
-    public void testBuild() {
-        ObjectDatabase origin = new HeapObjectDatabase();
-        origin.open();
-        ObjectDatabase target = new HeapObjectDatabase();
-        target.open();
-        RevTree tree = root.build(origin, target);
-
-        Iterator<NodeRef> treeRefs = new DepthTreeIterator("", ObjectId.NULL, tree, target,
-                Strategy.RECURSIVE_TREES_ONLY);
-        MutableTree createFromRefs = MutableTree.createFromRefs(root.getNode().getObjectId(),
-                treeRefs);
-        // TODO finish
+    public void testRoot() {
+        assertNode(root, id("abc"), null, ROOT);
     }
 
     @Test
@@ -96,6 +90,33 @@ public class MutableTreeTest extends Assert {
         assertNode(root.getChild("buildings/unknown"), id("a6"), id("d4"), "unknown");
 
         assertNode(root.getChild("buildings").getChild("unknown"), id("a6"), id("d4"), "unknown");
+    }
+
+    @Test
+    public void testRemoveLeafRoot() {
+        assertNotNull(root.getChild("roads"));
+        assertNull(root.removeChild("nonExistent"));
+        assertNotNull(root.removeChild("roads"));
+        ex.expect(IllegalArgumentException.class);
+        ex.expectMessage("No child named roads exists");
+        root.getChild("roads");
+    }
+
+    @Test
+    public void testRemoveNested() {
+        assertNotNull(root.getChild("roads/highways"));
+        assertNotNull(root.getChild("roads/streets"));
+
+        assertNull(root.removeChild("nonExistent"));
+        assertNotNull(root.removeChild("roads/streets"));
+
+        assertNotNull(root.getChild("roads"));
+        assertNotNull(root.getChild("roads/highways"));
+
+        ex.expect(IllegalArgumentException.class);
+        ex.expectMessage("No child named streets exists");
+        root.getChild("roads/streets");
+
     }
 
     @Test

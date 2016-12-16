@@ -14,6 +14,8 @@ import java.io.Serializable;
 
 /**
  * Interface for a GeoGig platform.
+ * 
+ * @since 1.0
  */
 public interface Platform extends Serializable{
 
@@ -66,4 +68,5 @@ public interface Platform extends Serializable{
      *         repository's directory structure or the one provided by the system.
      */
     public File getTempDir();
+
 }

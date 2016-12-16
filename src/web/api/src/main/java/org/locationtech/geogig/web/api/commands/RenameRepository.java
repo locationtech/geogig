@@ -41,6 +41,11 @@ public class RenameRepository extends AbstractWebAPICommand {
     }
 
     @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
+    @Override
     public boolean supports(final Method method) {
         return Method.POST.equals(method);
     }
@@ -48,7 +53,7 @@ public class RenameRepository extends AbstractWebAPICommand {
     /**
      * Mutator for the name variable
      * 
-     * @param path - the new name of the repo
+     * @param name - the new name of the repo
      */
     public void setName(String name) {
         this.name = name;
@@ -63,7 +68,7 @@ public class RenameRepository extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
         checkArgument(name != null, "You must specify a new name for the repository.");
 
         String oldRepoName = geogig.command(ResolveRepositoryName.class).call();
@@ -89,11 +94,8 @@ public class RenameRepository extends AbstractWebAPICommand {
             @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();
-                out.getWriter().writeStartElement("repo");
-                out.writeElement("name", repositoryName);
-                out.encodeAlternateAtomLink(out.getWriter(), context.getBaseURL(),
+                out.writeRepoInitResponse(repositoryName, context.getBaseURL(),
                         RepositoryProvider.BASE_REPOSITORY_ROUTE + "/" + repositoryName);
-                out.getWriter().writeEndElement();
                 out.finish();
             }
         });

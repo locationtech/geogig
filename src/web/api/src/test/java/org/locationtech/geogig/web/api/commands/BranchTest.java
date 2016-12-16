@@ -11,13 +11,16 @@ package org.locationtech.geogig.web.api.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.util.List;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
@@ -35,7 +38,6 @@ import org.locationtech.geogig.web.api.TestContext;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -101,12 +103,12 @@ public class BranchTest extends AbstractWebOpTest {
         WebAPICommand cmd = buildCommand(options);
         cmd.run(testContext.get());
 
-        JSONObject obj = getJSONResponse().getJSONObject("response");
+        JsonObject obj = getJSONResponse().getJsonObject("response");
         assertTrue(obj.getBoolean("success"));
-        assertTrue(obj.has("BranchCreated"));
-        JSONObject branchResponse = obj.getJSONObject("BranchCreated");
-        assertEquals("newBranch", branchResponse.get("name"));
-        assertEquals(commit.getId().toString(), branchResponse.get("source"));
+        JsonObject branchResponse = obj.getJsonObject("BranchCreated");
+        assertNotNull(branchResponse);
+        assertEquals("newBranch", branchResponse.getString("name"));
+        assertEquals(commit.getId().toString(), branchResponse.getString("source"));
 
         ImmutableList<Ref> branchRefs = geogig.command(BranchListOp.class).call();
         assertEquals(2, branchRefs.size());
@@ -125,13 +127,14 @@ public class BranchTest extends AbstractWebOpTest {
         WebAPICommand cmd = buildCommand(options);
         cmd.run(testContext.get());
 
-        JSONObject obj = getJSONResponse().getJSONObject("response");
+        JsonObject obj = getJSONResponse().getJsonObject("response");
         assertTrue(obj.getBoolean("success"));
-        JSONArray localBranches = obj.getJSONObject("Local").getJSONArray("Branch");
-        assertEquals(3, localBranches.length());
-        String expected = "[{'name':'branch1'},{'name':'branch2'},{'name':'master'}]";
-        JSONAssert.assertEquals(expected, localBranches.toString(), true);
-        assertEquals("", obj.getString("Remote"));
+        JsonArray localBranches = obj.getJsonObject("Local").getJsonArray("Branch");
+        String expected = "[{\"name\":\"branch1\"},{\"name\":\"branch2\"},{\"name\":\"master\"}]";
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), localBranches, true));
+        JsonObject remote = obj.getJsonObject("Remote");
+        JsonArray remoteBranches = remote.getJsonArray("Branch");
+        assertTrue(remoteBranches.getValuesAs(JsonValue.class).isEmpty());
     }
 
     @Test
@@ -154,17 +157,17 @@ public class BranchTest extends AbstractWebOpTest {
         WebAPICommand cmd = buildCommand(options);
         cmd.run(testContext.get());
 
-        JSONObject obj = getJSONResponse().getJSONObject("response");
+        JsonObject obj = getJSONResponse().getJsonObject("response");
         assertTrue(obj.getBoolean("success"));
-        JSONArray localBranches = obj.getJSONObject("Local").getJSONArray("Branch");
-        assertEquals(3, localBranches.length());
-        String expected = "[{'name':'branch1'},{'name':'branch2'},{'name':'master'}]";
-        JSONAssert.assertEquals(expected, localBranches.toString(), true);
+        JsonArray localBranches = obj.getJsonObject("Local").getJsonArray("Branch");
+        assertEquals(3, localBranches.getValuesAs(JsonValue.class).size());
+        String expected = "[{\"name\":\"branch1\"},{\"name\":\"branch2\"},{\"name\":\"master\"}]";
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), localBranches, true));
 
-        expected = "[{'remoteName':'origin','name':'branch1'},{'remoteName':'origin','name':'branch2'},{'remoteName':'origin','name':'master'}]";
-        JSONArray remoteBranches = obj.getJSONObject("Remote").getJSONArray("Branch");
-        assertEquals(3, remoteBranches.length());
-        JSONAssert.assertEquals(expected, remoteBranches.toString(), true);
+        expected = "[{\"remoteName\":\"origin\",\"name\":\"branch1\"},{\"remoteName\":\"origin\",\"name\":\"branch2\"},{\"remoteName\":\"origin\",\"name\":\"master\"}]";
+        JsonArray remoteBranches = obj.getJsonObject("Remote").getJsonArray("Branch");
+        assertEquals(3, remoteBranches.getValuesAs(JsonValue.class).size());
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expected), remoteBranches, true));
     }
 
     @Test

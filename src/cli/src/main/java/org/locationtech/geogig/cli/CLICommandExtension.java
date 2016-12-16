@@ -14,7 +14,7 @@ import com.beust.jcommander.JCommander;
 /**
  * Interface for cli command extensions, allowing to provide their own configured {@link JCommander}
  * , and hence support command line extensions (a'la git-svn, for example
- * {@code geogig osm <command> <args>...}, {@code geogig pg <command> <args>...}).
+ * {@code geogig pg <command> <args>...}).
  */
 public interface CLICommandExtension {
 

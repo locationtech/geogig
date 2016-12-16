@@ -105,7 +105,7 @@ public class Patch {
      * @param featureType the feature type of the added feature
      */
     public void addAddedFeature(String path, RevFeature feature, RevFeatureType featureType) {
-        addedFeatures.add(new FeatureInfo(feature, featureType.getId(), path));
+        addedFeatures.add(FeatureInfo.insert(feature, featureType.getId(), path));
         addFeatureType(featureType);
     }
 
@@ -117,7 +117,7 @@ public class Patch {
      * @param featureType the feature type of the removed feature
      */
     public void addRemovedFeature(String path, RevFeature feature, RevFeatureType featureType) {
-        removedFeatures.add(new FeatureInfo(feature, featureType.getId(), path));
+        removedFeatures.add(FeatureInfo.insert(feature, featureType.getId(), path));
         addFeatureType(featureType);
     }
 

@@ -12,11 +12,12 @@ package org.locationtech.geogig.data;
 import java.util.Iterator;
 import java.util.List;
 
-import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -26,6 +27,7 @@ import com.google.common.collect.Iterators;
 /**
  * 
  */
+@CanRunDuringConflict
 public class FindFeatureTypeTrees extends AbstractGeoGigOp<List<NodeRef>> {
 
     private String refSpec;
@@ -41,7 +43,7 @@ public class FindFeatureTypeTrees extends AbstractGeoGigOp<List<NodeRef>> {
     }
 
     @Override
-    protected  List<NodeRef> _call() {
+    protected List<NodeRef> _call() {
         Preconditions.checkNotNull(refSpec, "refSpec was not provided");
         Iterator<NodeRef> allTrees;
         try {

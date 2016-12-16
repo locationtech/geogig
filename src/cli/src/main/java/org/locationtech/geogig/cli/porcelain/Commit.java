@@ -31,8 +31,8 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -121,7 +121,8 @@ public class Commit extends AbstractCommand implements CLICommand {
                 commitOp.setCommit(geogig.getRepository().getCommit(commitId.get()));
             }
             commit = commitOp.setPathFilters(pathFilters).setProgressListener(progress).call();
-        } catch (NothingToCommitException | ConflictsException notificationError) {
+        } catch (NothingToCommitException | ConflictsException
+                | IllegalStateException notificationError) {
             throw new CommandFailedException(notificationError.getMessage(), true);
         }
         final ObjectId parentId = commit.parentN(0).or(ObjectId.NULL);

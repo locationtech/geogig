@@ -46,8 +46,8 @@ public class BranchDeleteOpTest extends RepositoryTestCase {
 
     @Test
     public void BranchNotPresentTest() {
-        Optional<? extends Ref> branchref = geogig.command(BranchDeleteOp.class)
-                .setName("noBranch").call();
+        Optional<? extends Ref> branchref = geogig.command(BranchDeleteOp.class).setName("noBranch")
+                .call();
         assertEquals(Optional.absent(), branchref);
     }
 

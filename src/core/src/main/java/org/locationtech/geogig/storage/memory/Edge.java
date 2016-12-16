@@ -17,6 +17,7 @@ package org.locationtech.geogig.storage.memory;
 class Edge {
 
     final Node src;
+
     final Node dst;
 
     /**

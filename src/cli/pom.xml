@@ -23,7 +23,7 @@
     <dependency>
       <!-- As the default storage provider (see CLIContextBuilder.defaults) -->
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-bdbje</artifactId>
+      <artifactId>geogig-rocksdb</artifactId>
       <version>${project.version}</version>
     </dependency>
 

@@ -14,9 +14,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.geotools.data.DataStore;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
@@ -29,14 +26,17 @@ import org.locationtech.geogig.rest.CommandRepresentationFactory;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.geotools.Export;
 import org.locationtech.geogig.rest.geotools.Export.OutputFormat;
-import org.locationtech.geogig.rest.repository.RESTUtils;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.ParameterSet;
+import org.locationtech.geogig.web.api.StreamWriterException;
 import org.restlet.data.MediaType;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
+
+import org.locationtech.geogig.web.api.StreamingWriter;
 
 /**
  * {@link OutputFormat} implementation for exporting from a repository snapshot to a geopackage
@@ -165,42 +165,38 @@ public class GeoPkgExportOutputFormat extends Export.OutputFormat {
 
         @Override
         public AsyncCommandRepresentation<File> newRepresentation(AsyncCommand<File> cmd,
-                MediaType mediaType, String baseURL) {
+                MediaType mediaType, String baseURL, boolean cleanup) {
 
-            return new GeopgkExportRepresentation(mediaType, cmd, baseURL);
+            return new GeopgkExportRepresentation(mediaType, cmd, baseURL, cleanup);
         }
     }
 
     public static class GeopgkExportRepresentation extends AsyncCommandRepresentation<File> {
 
         public GeopgkExportRepresentation(MediaType mediaType, AsyncCommand<File> cmd,
-                String baseURL) {
-            super(mediaType, cmd, baseURL);
+                String baseURL, boolean cleanup) {
+            super(mediaType, cmd, baseURL, cleanup);
         }
 
         @Override
-        protected void writeResultBody(XMLStreamWriter w, File result) throws XMLStreamException {
+        protected void writeResultBody(StreamingWriter w, File result) throws StreamWriterException {
 
             final String link = "tasks/" + super.cmd.getTaskId() + "/download";
             encodeDownloadURL(w, link);
 
         }
 
-        private void encodeDownloadURL(XMLStreamWriter w, String link) throws XMLStreamException {
+        private void encodeDownloadURL(StreamingWriter w, String link) throws StreamWriterException {
 
             final MediaType format = getMediaType();
             final MediaType outputFormat = Variants.GEOPKG_MEDIA_TYPE;
 
-            if (MediaType.TEXT_XML.equals(format) || MediaType.APPLICATION_XML.equals(format)) {
-                w.writeStartElement("atom:link");
-                w.writeAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
-                w.writeAttribute("rel", "alternate");
-                w.writeAttribute("href", RESTUtils.buildHref(baseURL, link, null));
-                w.writeAttribute("type", outputFormat.toString());
-                w.writeEndElement();
-            } else if (MediaType.APPLICATION_JSON.equals(format)) {
-                element(w, "href", RESTUtils.buildHref(baseURL, link, null));
-            }
+            w.writeStartElement("atom:link");
+            w.writeAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
+            w.writeAttribute("rel", "alternate");
+            w.writeAttribute("href", RESTUtils.buildHref(baseURL, link, null));
+            w.writeAttribute("type", outputFormat.toString());
+            w.writeEndElement();
         }
     }
 }

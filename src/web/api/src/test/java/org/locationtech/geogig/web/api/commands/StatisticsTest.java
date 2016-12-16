@@ -12,7 +12,8 @@ package org.locationtech.geogig.web.api.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.CommitOp;
@@ -22,7 +23,6 @@ import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class StatisticsTest extends AbstractWebOpTest {
 
@@ -80,20 +80,20 @@ public class StatisticsTest extends AbstractWebOpTest {
                 TestData.pointsType.getTypeName());
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject statistics = response.getJSONObject("Statistics");
+        JsonObject statistics = response.getJsonObject("Statistics");
         assertEquals(firstCommit.getId().toString(),
-                statistics.getJSONObject("firstCommit").getString("id"));
+                statistics.getJsonObject("firstCommit").getString("id"));
         assertEquals(lastCommit.getId().toString(),
-                statistics.getJSONObject("latestCommit").getString("id"));
+                statistics.getJsonObject("latestCommit").getString("id"));
         assertEquals(3, statistics.getInt("totalCommits"));
-        JSONObject authors = statistics.getJSONObject("Authors");
+        JsonObject authors = statistics.getJsonObject("Authors");
         assertEquals(2, authors.getInt("totalAuthors"));
-        String expectedAuthors = "[{'name':'Author1','email':'author1@example.com'},"
-                + "{'name':'Author2','email':'author2@example.com'}]";
-        JSONAssert.assertEquals(expectedAuthors, authors.getJSONArray("Author").toString(),
-                false);
+        String expectedAuthors = "[{\"name\":\"Author1\",\"email\":\"author1@example.com\"},"
+                + "{\"name\":\"Author2\",\"email\":\"author2@example.com\"}]";
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
+                authors.getJsonArray("Author"), false));
     }
 
     @Test
@@ -124,19 +124,20 @@ public class StatisticsTest extends AbstractWebOpTest {
                 TestData.pointsType.getTypeName());
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject statistics = response.getJSONObject("Statistics");
+        JsonObject statistics = response.getJsonObject("Statistics");
         assertEquals(firstCommit.getId().toString(),
-                statistics.getJSONObject("firstCommit").getString("id"));
+                statistics.getJsonObject("firstCommit").getString("id"));
         assertEquals(lastCommit.getId().toString(),
-                statistics.getJSONObject("latestCommit").getString("id"));
+                statistics.getJsonObject("latestCommit").getString("id"));
         assertEquals(2, statistics.getInt("totalCommits"));
-        JSONObject authors = statistics.getJSONObject("Authors");
+        JsonObject authors = statistics.getJsonObject("Authors");
         assertEquals(2, authors.getInt("totalAuthors"));
-        String expectedAuthors = "[{'name':'Author2','email':'author2@example.com'},"
-                + "{'name':'Author2','email':'author2_alternate@example.com'}]";
-        JSONAssert.assertEquals(expectedAuthors, authors.getJSONArray("Author").toString(), false);
+        String expectedAuthors = "[{\"name\":\"Author2\",\"email\":\"author2@example.com\"},"
+                + "{\"name\":\"Author2\",\"email\":\"author2_alternate@example.com\"}]";
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
+                authors.getJsonArray("Author"), false));
     }
 
     @Test
@@ -166,28 +167,29 @@ public class StatisticsTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("since", "");
         buildCommand(options).run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
+        JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
-        JSONObject statistics = response.getJSONObject("Statistics");
+        JsonObject statistics = response.getJsonObject("Statistics");
         assertEquals(firstCommit.getId().toString(),
-                statistics.getJSONObject("firstCommit").getString("id"));
+                statistics.getJsonObject("firstCommit").getString("id"));
         assertEquals(lastCommit.getId().toString(),
-                statistics.getJSONObject("latestCommit").getString("id"));
+                statistics.getJsonObject("latestCommit").getString("id"));
         assertEquals(4, statistics.getInt("totalCommits"));
-        JSONObject authors = statistics.getJSONObject("Authors");
+        JsonObject authors = statistics.getJsonObject("Authors");
         assertEquals(3, authors.getInt("totalAuthors"));
-        String expectedAuthors = "[{'name':'Author1','email':'author1@example.com'},"
-                + "{'name':'Author2','email':'author2@example.com'},"
-                + "{'name':'Author3','email':'author3@example.com'}]";
-        JSONAssert.assertEquals(expectedAuthors, authors.getJSONArray("Author").toString(), false);
-        JSONObject featureTypes = statistics.getJSONObject("FeatureTypes");
+        String expectedAuthors = "[{\"name\":\"Author1\",\"email\":\"author1@example.com\"},"
+                + "{\"name\":\"Author2\",\"email\":\"author2@example.com\"},"
+                + "{\"name\":\"Author3\",\"email\":\"author3@example.com\"}]";
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedAuthors),
+                authors.getJsonArray("Author"), false));
+        JsonObject featureTypes = statistics.getJsonObject("FeatureTypes");
         assertEquals(2, featureTypes.getInt("totalFeatureTypes"));
         assertEquals(4, featureTypes.getInt("totalFeatures"));
-        String expectedFeatureTypes = "[{'name':'" + TestData.pointsType.getTypeName()
-                + "','numFeatures':3}," + "{'name':'" + TestData.linesType.getTypeName()
-                + "','numFeatures':1}]";
+        String expectedFeatureTypes = "[{\"name\":\"" + TestData.pointsType.getTypeName()
+                + "\",\"numFeatures\":3}," + "{\"name\":\"" + TestData.linesType.getTypeName()
+                + "\",\"numFeatures\":1}]";
 
-        JSONAssert.assertEquals(expectedFeatureTypes,
-                featureTypes.getJSONArray("FeatureType").toString(), false);
+        assertTrue(TestData.jsonEquals(TestData.toJSONArray(expectedFeatureTypes),
+                featureTypes.getJsonArray("FeatureType"), false));
     }
 }

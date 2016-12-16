@@ -12,28 +12,31 @@ package org.locationtech.geogig.plumbing;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.SortedMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.CommitBuilder;
+import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.CommitBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.diff.MutableTree;
-import org.locationtech.geogig.repository.GeoGIG;
-import org.locationtech.geogig.repository.SpatialOps;
+import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
@@ -41,8 +44,8 @@ import org.opengis.feature.Feature;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -50,11 +53,10 @@ import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.io.ParseException;
 
 public class WriteTree2Test extends RepositoryTestCase {
 
-    private static final String EMPTY_ID = RevTreeBuilder.EMPTY_TREE_ID.toString();
+    private static final String EMPTY_ID = RevTree.EMPTY_TREE_ID.toString();
 
     private WriteTree2 command;
 
@@ -84,7 +86,7 @@ public class WriteTree2Test extends RepositoryTestCase {
     public void testEmptyRepo() {
         ObjectId root = command.call();
         assertNotNull(root);
-        assertEquals(RevTreeBuilder.EMPTY_TREE_ID, root);
+        assertEquals(RevTree.EMPTY_TREE_ID, root);
     }
 
     @Test
@@ -377,6 +379,11 @@ public class WriteTree2Test extends RepositoryTestCase {
                 repoTree("roads/streets", "a31", "d2", 1) // removed 1 feature
         );
 
+        System.err.printf("left : %s\n\t%s\n\t%s\n", leftTree, leftTree.trees(),
+                leftTree.features());
+        System.err.printf("right: %s\n\t%s\n\t%s\n", rightTree, rightTree.trees(),
+                rightTree.features());
+
         MapDifference<String, NodeRef> difference;
         Set<String> onlyOnLeft;
         Set<String> onlyOnRight;
@@ -391,12 +398,9 @@ public class WriteTree2Test extends RepositoryTestCase {
         assertEquals(set("buildings", "buildings/buildings.0", "buildings/buildings.1"),
                 onlyOnLeft);
         assertEquals(set(), onlyOnRight);
-        assertEquals(
-                set("roads", "roads/roads.0", "roads/streets/streets.0",
-                        "roads/highways/highways.0", "roads/highways/highways.2",
-                        "roads/highways/highways.1", "roads/highways", "roads/streets"),
-                entriesInCommon);
-        assertEquals(set(), entriesDiffering);
+        assertEquals(set("roads/roads.0", "roads/streets/streets.0", "roads/highways/highways.0",
+                "roads/highways/highways.2", "roads/highways/highways.1"), entriesInCommon);
+        assertEquals(set("roads", "roads/streets", "roads/highways"), entriesDiffering);
 
     }
 
@@ -551,7 +555,7 @@ public class WriteTree2Test extends RepositoryTestCase {
 
         RevTree tree = objectDb.getTree(repoTreeId);
 
-        Iterator<Node> children = tree.children();
+        Iterator<Node> children = RevObjects.children(tree, CanonicalNodeOrder.INSTANCE);
         while (children.hasNext()) {
             final Node node = children.next();
             if (TYPE.TREE.equals(node.getType())) {
@@ -565,8 +569,8 @@ public class WriteTree2Test extends RepositoryTestCase {
             }
             verifyMetadata(node);
         }
-        if (tree.buckets().isPresent()) {
-            ImmutableCollection<Bucket> buckets = tree.buckets().get().values();
+        if (!tree.buckets().isEmpty()) {
+            ImmutableCollection<Bucket> buckets = tree.buckets().values();
             for (Bucket b : buckets) {
                 ObjectId bucketTreeId = b.getObjectId();
                 verifyRepositoryTree(path + "/" + bucketTreeId.toString().substring(0, 8),
@@ -627,9 +631,8 @@ public class WriteTree2Test extends RepositoryTestCase {
     }
 
     private RevTree createFromRefs(ObjectDatabase targetDb, NodeRef... treeRefs) {
-        MutableTree mutableTree = MutableTree.createFromRefs(RevTreeBuilder.EMPTY_TREE_ID,
-                treeRefs);
-        RevTree tree = mutableTree.build(objectDb, targetDb);
+        MutableTree mutableTree = MutableTree.createFromRefs(RevTree.EMPTY_TREE_ID, treeRefs);
+        RevTree tree = mutableTree.build(targetDb);
         return tree;
     }
 
@@ -654,7 +657,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         final ObjectId treeId = id(id);
         final ObjectId metadataId = id(mdId);
         final String feturePrefix = NodeRef.nodeFromPath(path);
-        RevTreeBuilder b = new RevTreeBuilder(db);
+        RevTreeBuilder b = RevTreeBuilder.canonical(db);
         if (numFeatures > 0) {
             for (int i = 0; i < numFeatures; i++) {
                 Node fn = feature(db, feturePrefix, i);
@@ -682,7 +685,13 @@ public class WriteTree2Test extends RepositoryTestCase {
 
     private RevTree forceTreeId(RevTreeBuilder b, ObjectId treeId) {
         RevTree tree = b.build();
-        RevTree fakenId = RevTreeBuilder.create(treeId, tree.size(), tree);
+        long size = tree.size();
+        int childTreeCount = tree.numTrees();
+        ImmutableList<Node> trees = tree.trees();
+        ImmutableList<Node> features = tree.features();
+        SortedMap<Integer, Bucket> buckets = tree.buckets();
+        RevTree fakenId = RevTreeBuilder.create(treeId, size, childTreeCount, trees, features,
+                buckets);
         return fakenId;
     }
 
@@ -693,11 +702,8 @@ public class WriteTree2Test extends RepositoryTestCase {
     private Node feature(ObjectStore db, String idPrefix, int index) {
         final String id = idPrefix + "." + index;
         final Feature feature;
-        try {
-            feature = super.feature(pointsType, id, id, index, point(index));
-        } catch (ParseException e) {
-            throw Throwables.propagate(e);
-        }
+        feature = super.feature(pointsType, id, id, index, point(index));
+
         RevFeature revFeature = RevFeatureBuilder.build(feature);
         db.put(revFeature);
         Envelope bounds = (Envelope) feature.getBounds();
@@ -716,6 +722,6 @@ public class WriteTree2Test extends RepositoryTestCase {
         if (contents == null) {
             return ImmutableSet.of();
         }
-        return ImmutableSet.copyOf(contents);
+        return ImmutableSet.copyOf(Sets.newTreeSet(ImmutableList.copyOf(contents)));
     }
 }

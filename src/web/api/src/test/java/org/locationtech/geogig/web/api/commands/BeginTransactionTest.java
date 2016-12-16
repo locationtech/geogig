@@ -11,11 +11,12 @@ package org.locationtech.geogig.web.api.commands;
 
 import java.util.UUID;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
 import org.locationtech.geogig.web.api.CommandSpecException;
@@ -47,8 +48,8 @@ public class BeginTransactionTest extends AbstractWebOpTest {
 
         cmd.run(testContext.get());
 
-        JSONObject response = getJSONResponse().getJSONObject("response");
-        JSONObject transaction = response.getJSONObject("Transaction");
+        JsonObject response = getJSONResponse().getJsonObject("response");
+        JsonObject transaction = response.getJsonObject("Transaction");
         UUID.fromString(transaction.getString("ID"));
     }
 

@@ -11,7 +11,7 @@ package org.locationtech.geogig.rest;
 
 import java.util.List;
 
-import org.locationtech.geogig.rest.repository.RESTUtils;
+import org.locationtech.geogig.web.api.RESTUtils;
 import org.restlet.data.MediaType;
 import org.restlet.data.Request;
 import org.restlet.resource.Variant;
@@ -31,6 +31,8 @@ public class Variants {
 
     public static final Variant TEXT_XML = new Variant(MediaType.TEXT_XML);
 
+    public static final Variant TEXT_PLAIN = new Variant(MediaType.TEXT_PLAIN);
+
     public static final Variant CSV = new Variant(CSV_MEDIA_TYPE);
 
     public static final Variant GEOPKG = new Variant(GEOPKG_MEDIA_TYPE);
@@ -46,6 +48,8 @@ public class Variants {
             v = CSV;
         } else if ("geopkg".equals(extension) && supported.contains(GEOPKG)) {
             v = GEOPKG;
+        } else if ("txt".equals(extension) && supported.contains(TEXT_PLAIN)) {
+            v = TEXT_PLAIN;
         }
         return Optional.fromNullable(v);
     }

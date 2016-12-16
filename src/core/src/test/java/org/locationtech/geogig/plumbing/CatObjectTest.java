@@ -15,10 +15,11 @@ import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
@@ -28,7 +29,7 @@ public class CatObjectTest extends RepositoryTestCase {
 
     private ObjectDatabase odb;
 
-    private static final ObjectId FAKE_ID = ObjectId.forString("fake");
+    private static final ObjectId FAKE_ID = RevObjectTestSupport.hashString("fake");
 
     private static final String FEATURE_PREFIX = "Feature.";
 
@@ -59,7 +60,7 @@ public class CatObjectTest extends RepositoryTestCase {
         CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
                 .call();
         String[] lines = desc.toString().split("\n");
-        assertEquals(tree.buckets().get().size() + 4, lines.length);
+        assertEquals(tree.buckets().size() + 4, lines.length);
         for (int i = 4; i < lines.length; i++) {
             String[] tokens = lines[i].split("\t");
             assertEquals(tokens[0].trim(), "BUCKET");
@@ -67,7 +68,7 @@ public class CatObjectTest extends RepositoryTestCase {
     }
 
     private RevTree createTree(int numChildren) {
-        RevTreeBuilder rtb = new RevTreeBuilder(odb);
+        RevTreeBuilder rtb = RevTreeBuilder.canonical(odb);
         for (int i = 0; i < numChildren; i++) {
             String key = FEATURE_PREFIX + i;
             Node ref = Node.create(key, FAKE_ID, FAKE_ID, TYPE.FEATURE, null);
@@ -79,8 +80,8 @@ public class CatObjectTest extends RepositoryTestCase {
     @Test
     public void TestCatFeatureObject() {
         RevFeature feature = RevFeatureBuilder.build(points1);
-        CharSequence desc = geogig.command(CatObject.class)
-                .setObject(Suppliers.ofInstance(feature)).call();
+        CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(feature))
+                .call();
         String[] lines = desc.toString().split("\n");
 
         assertEquals(points1.getProperties().size() + 2, lines.length);

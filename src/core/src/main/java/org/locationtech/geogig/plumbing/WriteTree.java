@@ -14,16 +14,16 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -198,19 +198,22 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
             repositoryDatabase.put(newRoot);
             newTargetRootId = newRoot.getId();
         }
+
+        UpdateTree updateTree = command(UpdateTree.class).setRoot(newTargetRootId);
         for (Map.Entry<String, RevTreeBuilder> e : repositoryChangedTrees.entrySet()) {
             String treePath = e.getKey();
             ObjectId metadataId = changedTreesMetadataId.get(treePath);
             RevTreeBuilder treeBuilder = e.getValue();
-            RevTree newRoot = getTree(newTargetRootId);
             RevTree tree = treeBuilder.build();
-            newTargetRootId = writeBack(new RevTreeBuilder(repositoryDatabase, newRoot), tree,
-                    treePath, metadataId);
+
+            NodeRef newTreeRef = NodeRef.tree(treePath, tree.getId(), metadataId);
+            updateTree.setChild(newTreeRef);
         }
+        final RevTree newRoot = updateTree.call();
 
         progress.complete();
 
-        return newTargetRootId;
+        return newRoot.getId();
     }
 
     private void resolveSourceTreeRef(String parentPath, Map<String, NodeRef> indexChangedTrees,
@@ -225,8 +228,8 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
             Optional<NodeRef> treeRef = Optional.absent();
             if (!stageHead.isEmpty()) {// slight optimization, may save a lot of processing on
                                        // large first commits
-                treeRef = command(FindTreeChild.class).setParent(stageHead)
-                        .setChildPath(parentPath).call();
+                treeRef = command(FindTreeChild.class).setParent(stageHead).setChildPath(parentPath)
+                        .call();
             }
             if (treeRef.isPresent()) {// may not be in case of a delete
                 indexTreeRef = treeRef.get();
@@ -245,18 +248,18 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         RevTreeBuilder treeBuilder = treeCache.get(treePath);
         if (treeBuilder == null) {
             if (NodeRef.ROOT.equals(treePath)) {
-                treeBuilder = new RevTreeBuilder(repositoryDatabase, root);
+                treeBuilder = RevTreeBuilder.canonical(repositoryDatabase, root);
             } else {
                 Optional<NodeRef> treeRef = command(FindTreeChild.class).setParent(root)
                         .setChildPath(treePath).call();
                 if (treeRef.isPresent()) {
                     metadataCache.put(treePath, treeRef.get().getMetadataId());
-                    treeBuilder = new RevTreeBuilder(repositoryDatabase,
-                            command(RevObjectParse.class)
-                            .setObjectId(treeRef.get().getObjectId()).call(RevTree.class).get());
+                    treeBuilder = RevTreeBuilder.canonical(repositoryDatabase,
+                            command(RevObjectParse.class).setObjectId(treeRef.get().getObjectId())
+                                    .call(RevTree.class).get());
                 } else {
                     metadataCache.put(treePath, fallbackMetadataId);
-                    treeBuilder = new RevTreeBuilder(repositoryDatabase);
+                    treeBuilder = RevTreeBuilder.canonical(repositoryDatabase);
                 }
             }
             treeCache.put(treePath, treeBuilder);
@@ -296,10 +299,4 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         return objectDatabase().getTree(targetTreeId);
     }
 
-    private ObjectId writeBack(RevTreeBuilder root, final RevTree tree, final String pathToTree,
-            final ObjectId metadataId) {
-
-        return command(WriteBack.class).setAncestor(root).setAncestorPath("").setTree(tree)
-                .setChildPath(pathToTree).setMetadataId(metadataId).call();
-    }
 }

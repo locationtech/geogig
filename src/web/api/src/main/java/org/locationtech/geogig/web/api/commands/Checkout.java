@@ -90,12 +90,7 @@ public class Checkout extends AbstractWebAPICommand {
      */
     @Override
     protected void runInternal(CommandContext context) {
-        if (this.getTransactionId() == null) {
-            throw new CommandSpecException(
-                    "No transaction was specified, checkout requires a transaction to preserve the stability of the repository.");
-        }
-
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
         CheckoutOp command = geogig.command(CheckoutOp.class);
         if (branchOrCommit != null) {
             Optional<Ref> head = geogig.command(RefParse.class).setName(Ref.HEAD).call();

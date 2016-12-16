@@ -47,6 +47,11 @@ public class ReportMergeScenario extends AbstractWebAPICommand {
                 Integer.toString(DEFAULT_MERGE_SCENARIO_PAGE_SIZE))));
     }
 
+    @Override
+    public boolean requiresTransaction() {
+        return false;
+    }
+
     /**
      * Mutator for the theirCommit variable
      * 
@@ -99,7 +104,7 @@ public class ReportMergeScenario extends AbstractWebAPICommand {
             throw new CommandSpecException("No 'their' commit was specified.");
         }
 
-        final Context geogig = this.getCommandLocator(context);
+        final Context geogig = this.getRepositoryContext(context);
         final Optional<RevCommit> ours = geogig.command(RevObjectParse.class).setRefSpec(ourCommit)
                 .call(RevCommit.class);
         if (!ours.isPresent()) {

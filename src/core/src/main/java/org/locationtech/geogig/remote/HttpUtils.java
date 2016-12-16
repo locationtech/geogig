@@ -32,8 +32,8 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -400,8 +400,8 @@ class HttpUtils {
                     reader.close();
 
                     if (target != null) {
-                        remoteRef = Optional.of((Ref) new SymRef(refName, new Ref(target, ObjectId
-                                .valueOf(objectId))));
+                        remoteRef = Optional.of((Ref) new SymRef(refName,
+                                new Ref(target, ObjectId.valueOf(objectId))));
                     } else {
                         remoteRef = Optional.of(new Ref(refName, ObjectId.valueOf(objectId)));
                     }

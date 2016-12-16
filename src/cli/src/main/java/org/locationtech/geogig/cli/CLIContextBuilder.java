@@ -16,15 +16,15 @@ import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.di.PluginsModule;
 import org.locationtech.geogig.di.caching.CachingModule;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.ContextBuilder;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.impl.ContextBuilder;
+import org.locationtech.geogig.rocksdb.RocksdbStorageProvider;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.StorageProvider;
 import org.locationtech.geogig.storage.VersionedFormat;
-import org.locationtech.geogig.storage.bdbje.JEStorageProviderV02;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -48,7 +48,7 @@ public class CLIContextBuilder extends ContextBuilder {
         @Override
         protected void configure() {
 
-            final PluginDefaults defaults = new PluginDefaults(new JEStorageProviderV02());
+            final PluginDefaults defaults = new PluginDefaults(new RocksdbStorageProvider());
             bind(PluginDefaults.class).toInstance(defaults);
 
             MapBinder<VersionedFormat, RefDatabase> refPlugins = MapBinder

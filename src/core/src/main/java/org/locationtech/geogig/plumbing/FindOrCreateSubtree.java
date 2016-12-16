@@ -11,12 +11,11 @@ package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
@@ -100,13 +99,13 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
                 }
                 subtreeId = treeRef.getObjectId();
             } else {
-                subtreeId = RevTreeBuilder.EMPTY_TREE_ID;
+                subtreeId = RevTree.EMPTY_TREE_ID;
             }
         } else {
-            subtreeId = RevTreeBuilder.EMPTY_TREE_ID;
+            subtreeId = RevTree.EMPTY_TREE_ID;
         }
-        if (RevTreeBuilder.EMPTY_TREE_ID.equals(subtreeId)) {
-            return RevTreeBuilder.EMPTY;
+        if (RevTree.EMPTY_TREE_ID.equals(subtreeId)) {
+            return RevTree.EMPTY;
         }
         ObjectStore target = objectDatabase();
         RevTree tree = target.getTree(subtreeId);

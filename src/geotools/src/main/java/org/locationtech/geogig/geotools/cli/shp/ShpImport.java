@@ -44,26 +44,30 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
     /**
      * do not replace or delete features
      */
-    @Parameter(names = { "--create", "-c" }, description = "Only create the schema, do not actually import its features")
+    @Parameter(names = { "--create",
+            "-c" }, description = "Only create the schema, do not actually import its features")
     boolean onlyCreate;
 
     /**
      * do not replace or delete features
      */
-    @Parameter(names = { "--add" }, description = "Do not replace or delete features on the destination path, but just add new ones")
+    @Parameter(names = {
+            "--add" }, description = "Do not replace or delete features on the destination path, but just add new ones")
     boolean add;
 
     /**
      * Use origin feature type
      */
-    @Parameter(names = { "--force-featuretype" }, description = "Use origin feature type even if it does not match the default destination featuretype")
+    @Parameter(names = {
+            "--force-featuretype" }, description = "Use origin feature type even if it does not match the default destination featuretype")
     boolean forceFeatureType;
 
     /**
      * Set the path default feature type to the the feature type of imported features, and modify
      * existing features to match it
      */
-    @Parameter(names = { "--alter" }, description = "Set the path default feature type to the the feature type of imported features, and modify existing features to match it")
+    @Parameter(names = {
+            "--alter" }, description = "Set the path default feature type to the the feature type of imported features, and modify existing features to match it")
     boolean alter;
 
     /**
@@ -75,13 +79,15 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
     /**
      * The attribute to use to create the feature Id
      */
-    @Parameter(names = { "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
+    @Parameter(names = {
+            "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
     String fidAttribute;
 
     /**
      * Charset to use for decoding attributes in DBF file
      */
-    @Parameter(names = { "--charset" }, description = "Use the specified charset to decode attributes. Default is ISO-8859-1.")
+    @Parameter(names = {
+            "--charset" }, description = "Use the specified charset to decode attributes. Default is ISO-8859-1.")
     String charset = "ISO-8859-1";
 
     /**
@@ -98,8 +104,8 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
             try {
                 dataStore = getDataStore(shp, charset);
             } catch (InvalidParameterException e) {
-                cli.getConsole().println(
-                        "The shapefile '" + shp + "' could not be found, skipping...");
+                cli.getConsole()
+                        .println("The shapefile '" + shp + "' could not be found, skipping...");
                 continue;
             }
             if (fidAttribute != null) {
@@ -131,7 +137,8 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
             } catch (GeoToolsOpException e) {
                 switch (e.statusCode) {
                 case NO_FEATURES_FOUND:
-                    throw new CommandFailedException("No features were found in the shapefile.", true);
+                    throw new CommandFailedException("No features were found in the shapefile.",
+                            true);
                 case UNABLE_TO_GET_NAMES:
                     throw new CommandFailedException(
                             "Unable to get feature types from the shapefile.", e);
@@ -145,10 +152,10 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
                     throw new CommandFailedException(
                             "The feature type of the data to import does not match the feature type of the destination tree and cannot be imported\n"
                                     + "USe the --force-featuretype switch to import using the original featuretype and crete a mixed type tree",
-                                    true);
+                            true);
                 default:
-                    throw new CommandFailedException("Import failed with exception: "
-                            + e.statusCode.name(), e);
+                    throw new CommandFailedException(
+                            "Import failed with exception: " + e.statusCode.name(), e);
                 }
             } finally {
                 dataStore.dispose();

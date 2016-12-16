@@ -24,14 +24,14 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjectTestSupport;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.merge.MergeStatusBuilder.DiffEntrySerializer;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.storage.PersistedIterable;
+import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.storage.impl.PersistedIterable;
 
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
@@ -60,7 +60,7 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
         Node ln = RevObjectTestSupport.featureNode("testNode", 1);
         Node rn = RevObjectTestSupport.featureNode("testNode", 2);
 
-        ObjectId metadataId = ObjectId.forString("test");
+        ObjectId metadataId = RevObjectTestSupport.hashString("test");
 
         NodeRef left = new NodeRef(ln, "parent/path", metadataId);
         NodeRef right = new NodeRef(rn, "parent/path", metadataId);
@@ -70,7 +70,7 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
         serializer.write(out, entry);
 
         byte[] array = stream.toByteArray();
-        
+
         DiffEntry read = serializer.read(new DataInputStream(new ByteArrayInputStream(array)));
         assertEquals(entry, read);
     }
@@ -78,22 +78,22 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
     @Test
     public void testFullEntryNullParentPath() throws IOException {
         // null parent path is only allowed for NodeRef.ROOT named nodes
-        Node ln = Node.create(NodeRef.ROOT, RevTreeBuilder.EMPTY_TREE_ID, ObjectId.NULL, TYPE.TREE,
+        Node ln = Node.create(NodeRef.ROOT, RevTree.EMPTY_TREE_ID, ObjectId.NULL, TYPE.TREE,
                 new Envelope(0, 0, 0, 0));
-        Node rn = Node.create(NodeRef.ROOT, ObjectId.forString("rnd"), ObjectId.NULL, TYPE.TREE,
+        Node rn = Node.create(NodeRef.ROOT, RevObjectTestSupport.hashString("rnd"), ObjectId.NULL, TYPE.TREE,
                 new Envelope(0, 1, 0, 1));
 
-        ObjectId metadataId = ObjectId.forString("test");
+        ObjectId metadataId = RevObjectTestSupport.hashString("test");
 
         NodeRef left = new NodeRef(ln, null, metadataId);
         NodeRef right = new NodeRef(rn, null, metadataId);
 
         DiffEntry entry = new DiffEntry(left, right);
 
-       serializer.write(out, entry);
+        serializer.write(out, entry);
 
         byte[] array = stream.toByteArray();
-      
+
         DiffEntry read = serializer.read(new DataInputStream(new ByteArrayInputStream(array)));
         assertEquals(entry, read);
     }
@@ -101,9 +101,9 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
     @Test
     public void testNoDefaultMetadataId() throws IOException {
         // null parent path is only allowed for NodeRef.ROOT named nodes
-        Node ln = Node.create(NodeRef.ROOT, RevTreeBuilder.EMPTY_TREE_ID, ObjectId.NULL, TYPE.TREE,
+        Node ln = Node.create(NodeRef.ROOT, RevTree.EMPTY_TREE_ID, ObjectId.NULL, TYPE.TREE,
                 new Envelope(0, 0, 0, 0));
-        Node rn = Node.create(NodeRef.ROOT, ObjectId.forString("rnd"), ObjectId.NULL, TYPE.TREE,
+        Node rn = Node.create(NodeRef.ROOT, RevObjectTestSupport.hashString("rnd"), ObjectId.NULL, TYPE.TREE,
                 new Envelope(0, 1, 0, 1));
 
         ObjectId metadataId = ObjectId.NULL;
@@ -116,7 +116,7 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
         serializer.write(out, entry);
 
         byte[] array = stream.toByteArray();
-        
+
         DiffEntry read = serializer.read(new DataInputStream(new ByteArrayInputStream(array)));
         assertEquals(entry, read);
     }
@@ -126,7 +126,7 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
         // null parent path is only allowed for NodeRef.ROOT named nodes
         Node rn = RevObjectTestSupport.featureNode("testNode", 2);
 
-        ObjectId metadataId = ObjectId.forString("test");
+        ObjectId metadataId = RevObjectTestSupport.hashString("test");
 
         NodeRef left = null;
         NodeRef right = new NodeRef(rn, "parent/path", metadataId);
@@ -136,7 +136,7 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
         serializer.write(out, entry);
 
         byte[] array = stream.toByteArray();
-        
+
         DiffEntry read = serializer.read(new DataInputStream(new ByteArrayInputStream(array)));
         assertEquals(entry, read);
     }
@@ -152,7 +152,7 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
         try (PersistedIterable<DiffEntry> iterable = new PersistedIterable<>(tmpDir, serializer,
                 buffSize, compress)) {
 
-            ObjectId defaultMetadataId = ObjectId.forString("test");
+            ObjectId defaultMetadataId = RevObjectTestSupport.hashString("test");
 
             for (int i = 0; i < 1000; i++) {
                 Node ln = RevObjectTestSupport.featureNode("testNode", i);

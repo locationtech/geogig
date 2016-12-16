@@ -11,7 +11,6 @@ package org.locationtech.geogig.remote;
 
 import java.util.NoSuchElementException;
 
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
@@ -19,8 +18,9 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryFilter;
+import org.locationtech.geogig.repository.impl.RepositoryFilter;
 
 /**
  * An implementation of a {@link DiffEntry} iterator that filters entries based on a provided
@@ -30,7 +30,7 @@ public abstract class FilteredDiffIterator implements AutoCloseableIterator<Diff
 
     protected boolean filtered = false;
 
-    private AutoCloseableIterator<DiffEntry> source;
+    private AutoCloseableIterator<DiffEntry> source = null;
 
     private Repository sourceRepo;
 
@@ -77,13 +77,15 @@ public abstract class FilteredDiffIterator implements AutoCloseableIterator<Diff
 
     @Override
     public void close() {
-        source.close();
+        if (source != null) {
+            source.close();
+        }
     }
 
     /**
      * Compute the next {@link DiffEntry} that matches our {@link RepositoryFilter}.
      */
-    private DiffEntry computeNext() {
+    protected DiffEntry computeNext() {
         while (source.hasNext()) {
             DiffEntry input = source.next();
 

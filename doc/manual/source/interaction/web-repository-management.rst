@@ -35,6 +35,18 @@ This will enable all three repositories to be accessed through the ``http://loca
 
 The rest of this document will use this repository configuration for demonstration purposes.
 
+You can also serve Postgres repositories by providing the repository URI to the command:
+
+::
+
+    $ geogig serve "postgresql://localhost/<database>/<repoName>?user=<postgres_username>&password=<postgres_password>"
+    
+Or multiple by specifying the root URI:
+
+::
+
+    $ geogig serve --multirepo "postgresql://localhost/<database>?user=<postgres_username>&password=<postgres_password>"
+
 
 Repository Management
 ---------------------
@@ -68,12 +80,15 @@ In order to see which repositories are currently being served, you can issue a `
 Creating New Repositories
 *************************
 
+Basic Init Request
+++++++++++++++++++
+
 You can create a new repository by issuing a ``PUT`` request to the ``init`` endpoint of the desired repository.  The name preceding ``init`` will be used as the repository name.
 
 ::
 
 	$ curl -X PUT -v "http://localhost:8182/repos/repo4/init" | xmllint --format -
-	< HTTP/1.1 200 OK
+	< HTTP/1.1 201 Created
 	< Content-Type: application/xml
 	<?xml version="1.0" encoding="UTF-8"?>
 	<response>
@@ -83,8 +98,130 @@ You can create a new repository by issuing a ``PUT`` request to the ``init`` end
 	    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8182/repos/repo4.xml" type="application/xml"/>
 	  </repo>
 	</response>
-	
+
 Behind the scenes, a new repository will be created and configured with ``repo4`` as the name.  The actual directory that is created for the repository will be randomized to avoid naming conflicts with other repositories.  This is important because repository management allows you to rename repositories.
+
+*Notice that the HTTP response code is* ``201 Created`` *for a success. If the repository that you are trying to create already exists, the response code will be a* ``409 Conflict`` *.*
+
+Init Request With Optional Author Config
+++++++++++++++++++++++++++++++++++++++++
+
+You can also create a new repository and initialize the ``user.name`` and ``user.email`` config values in a single request. This allows you to initialize a repository that can be committed to without having to make 2 separate ``config`` requests to set these required config values. To do so, you can provide either a JSON object or a URL encoded form in the request body with ``authorName`` and ``authorEmail`` fields set to the desired values. An example JSON request body might look like this:
+
+::
+
+    {
+        "authorName":"GeoGig User",
+        "authorEmail":"geogig@geogig.org"
+    }
+
+Sending the request:
+
+::
+
+    $ curl -X PUT -H "Content-Type: application/json" -d '{"authorName":"GeoGig User","authorEmail":"geogig@geogig.org"}' -v "http://localhost:8182/repos/repo5/init" | xmllint --format -
+    < HTTP/1.1 201 Created
+    < Content-Type: application/xml
+    <?xml version="1.0"?>
+    <response>
+      <success>true</success>
+      <repo>
+        <name>repo5</name>
+        <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8182/repos/repo5.xml" type="application/xml"/>
+      </repo>
+    </response>
+
+Init Request With Optional Location Config
+++++++++++++++++++++++++++++++++++++++++++
+
+You can also create a new repository and specify options that can dictate the repository's location. This allows you to initialize a repository, for example, that is stored in a PostgreSQL database, or a different directory location than the working directory of the GeoGig multirepo server. To specify a different parent directory location, set the ``parentDirectory`` value in the JSON request body:
+
+::
+
+    {
+        "parentDirectory":"/data/geogig/repos",
+        "authorName":"GeoGig User",
+        "authorEmail":"geogig@geogig.org"
+    }
+
+Send the request:
+
+::
+
+    $ curl -X PUT -H "Content-Type: application/json" -d '{"parentDirectory":"/data/geogig/repos","authorName":"GeoGig User","authorEmail":"geogig@geogig.org"}' -v "http://localhost:8182/repos/repo6/init" | xmllint --format -
+    < HTTP/1.1 201 Created
+    < Content-Type: application/xml
+    <?xml version="1.0"?>
+    <response>
+      <success>true</success>
+      <repo>
+        <name>repo6</name>
+        <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8182/repos/repo6.xml" type="application/xml"/>
+      </repo>
+    </response>
+
+If you want to specify PostgreSQL database config options, you must specify **dbName** and **dbPassword** at a minimum. You may also specify the dbHost, dbPort, dbSchema and dbUser (though these have defaults).
+
+**PostgreSQL connection parameters (\* indicates a required field)**
+
++-----------------+---------------+----------------------------+
+| Parameter       | Default       | Description                |
++=================+===============+============================+
+| ``dbName``      |               | Name of the PostgreSQL     |
+| (\*)            |               | database to connect to     |
++-----------------+---------------+----------------------------+
+| ``dbPassword``  |               | Password of the database   |
+| (\*)            |               | user with which to connect |
++-----------------+---------------+----------------------------+
+| ``dbHost``      | "localhost"   | Hostname of the PostgreSQL |
+|                 |               | database server to connect |
+|                 |               | to                         |
++-----------------+---------------+----------------------------+
+| ``dbPort``      | "5432"        | Port the database is       |
+|                 |               | listening on               |
++-----------------+---------------+----------------------------+
+| ``dbSchema``    | "public"      | Database schema to connect |
+|                 |               | to                         |
++-----------------+---------------+----------------------------+
+| ``dbUser``      | "postgres"    | Username to connect with   |
++-----------------+---------------+----------------------------+
+| ``authorName``  |               | Committer name for the     |
+|                 |               | repository                 |
++-----------------+---------------+----------------------------+
+| ``authorEmail`` |               | Committer email for the    |
+|                 |               | repository                 |
++-----------------+---------------+----------------------------+
+
+Example JSON request body:
+
+::
+
+    {
+        "dbName":"repos",
+        "dbPassword":"geogig",
+        "dbHost":"database.example.com",
+        "dbPort":"5432",
+        "dbSchema":"public",
+        "dbUser":"geogig",
+        "authorName":"GeoGig User",
+        "authorEmail":"geogig@geogig.org"
+    }
+
+Example request:
+
+::
+
+    $ curl -X PUT -H "Content-Type: application/json" -d '{"dbName":"repos","dbPassword":"geogig","dbHost":"database.example.com","dbPort":"5432","dbSchema":"public","dbUser":"geogig","authorName":"GeoGig User","authorEmail":"geogig@geogig.org"}' -v "http://localhost:8182/repos/repo7/init" | xmllint --format -
+    < HTTP/1.1 201 Created
+    < Content-Type: application/xml
+    <?xml version="1.0"?>
+    <response>
+      <success>true</success>
+      <repo>
+        <name>repo7</name>
+        <atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="http://localhost:8182/repos/repo7.xml" type="application/xml"/>
+      </repo>
+    </response>
 
 Renaming Repositories
 *********************
@@ -127,7 +264,7 @@ Now that we have the delete token, we can issue a ``DELETE`` request to the repo
 
 ::
 
-	$ curl -X DELTE -v "http://localhost:8182/repos/betterName?token=db431217519a4c72" | xmllint --format -
+	$ curl -X DELETE -v "http://localhost:8182/repos/betterName?token=db431217519a4c72" | xmllint --format -
 	< HTTP/1.1 200 OK
 	< Content-Type: application/xml
 	<?xml version="1.0" encoding="UTF-8"?>

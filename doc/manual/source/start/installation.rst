@@ -48,3 +48,49 @@ To build GeoGig and have an executable binary that you can run:
 #. GeoGig will now build. Scripts ready to be run should be available in the :file:`src/cli-app/target/geogig/bin` directory. Add that directory to your ``PATH`` environment variable.
 
 When finished, you should be able to run the ``geogig --help`` from a terminal and see the command usage.
+
+Running on Windows
+------------------
+
+GeoGig uses `RocksDB <http://rocksdb.org/>`_ as the default storage backend.  On Windows machines, the libraries for RocksDB require the `Visual C++ Redistributable for Visual Studio 2015 <https://www.microsoft.com/en-us/download/details.aspx?id=48145>`_.  If you experience an ``UnsatisfiedLinkError`` exception when running GeoGig, make sure you have the above dependency installed on your system.
+
+Only Windows 10 supports colored text using ANSI escape sequences. On previous versions of windows, ANSI support can be enabled by installing `ANSICON <http://adoxa.altervista.org/ansicon/>`_ and setting the ``ansi.enabled`` config parameter to ``true``. See the config section :ref:`repo.config`. 
+
+Installing ANSICON
+==================
+
+#. Download the `ANSICON <http://adoxa.altervista.org/ansicon/>`_  zip. 
+
+#. Unzip the file to it's own location, such as ``C:\Program Files\Ansicon\``
+
+#. Add the ANSICON location to the Windows PATH, found under ``System -> Advanced System Properties -> Environment Variables``
+
+#. Open a ``cmd`` or ``powershell`` terminal and type ``ansicon`` to confirm the PATH variable is set correctly. If the PATH is correct  information about the Windows version will be printed in the console. This command will enable ANSICON for this terminal session only.
+
+.. code-block:: console
+
+   ansicon
+   Microsoft Windows [Version 6.3.9600]
+   (c) 2013 Microsoft Corporation. All rights reserved.
+   
+#. To make ANSICON load automatically with new terminals type:
+
+.. code-block:: console
+
+   ansicon -i 
+   
+#. ANSICON is now enabled by default in all terminals.
+
+Uninstalling ANSICON
+====================
+
+#. To remove ANSICON from the terminal defaults type:
+
+.. code-block:: console
+
+   ansicon -u
+   
+#. Remove ANSICON from the windows ``PATH``
+
+#. Delete the ANSICON folder from the location it was installed.
+

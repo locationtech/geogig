@@ -15,6 +15,15 @@
   <name>GeoGig Core</name>
   <!-- Build Instructions and Profiles Handled as a normal maven java project: mvn clean install Online tests available using:
     mvn -Ponline Corertura is configured for a test coverage report: mvn cobertura:cobertura open target/site/cobertura/index.html -->
+
+  <licenses>
+    <license>
+      <name>Eclipse Distribution License</name>
+      <url>https://www.eclipse.org/org/documents/edl-v10.html</url>
+      <distribution>repo</distribution>
+      <comments>The Eclipse Distribution License (a BSD-3 style license)</comments>
+    </license>
+  </licenses>
   <dependencies>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
@@ -29,6 +38,11 @@
       <groupId>com.vividsolutions</groupId>
       <artifactId>jts</artifactId>
     </dependency>
+     <!-- https://mvnrepository.com/artifact/org.rocksdb/rocksdbjni -->
+     <dependency>
+         <groupId>org.rocksdb</groupId>
+         <artifactId>rocksdbjni</artifactId>
+     </dependency>
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-opengis</artifactId>

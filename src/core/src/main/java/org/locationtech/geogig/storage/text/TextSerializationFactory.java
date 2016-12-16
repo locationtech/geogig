@@ -31,26 +31,26 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevFeatureBuilder;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.model.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.CommitBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.model.impl.RevPersonBuilder;
+import org.locationtech.geogig.model.impl.RevTagBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.storage.impl.ObjectReader;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.impl.ObjectWriter;
 import org.locationtech.geogig.model.RevPerson;
-import org.locationtech.geogig.model.RevPersonBuilder;
 import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.RevTagBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
-import org.locationtech.geogig.storage.ObjectReader;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.ObjectWriter;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
@@ -384,15 +384,11 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         protected void print(RevTree revTree, Writer w) throws IOException {
             println(w, "size\t", Long.toString(revTree.size()));
             println(w, "numtrees\t", Integer.toString(revTree.numTrees()));
-            if (revTree.trees().isPresent()) {
-                writeChildren(w, revTree.trees().get());
-            }
-            if (revTree.features().isPresent()) {
-                writeChildren(w, revTree.features().get());
-            } else if (revTree.buckets().isPresent()) {
-                writeBuckets(w, revTree.buckets().get());
-            }
 
+            writeChildren(w, revTree.trees());
+            writeChildren(w, revTree.features());
+
+            writeBuckets(w, revTree.buckets());
         }
 
         private void writeChildren(Writer w, ImmutableCollection<Node> children)
@@ -812,12 +808,8 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
 
             }
 
-            RevTree tree;
-            if (subtrees.isEmpty()) {
-                tree = RevTreeBuilder.createLeafTree(id, size, features.build(), trees.build());
-            } else {
-                tree = RevTreeBuilder.createNodeTree(id, size, numTrees, subtrees);
-            }
+            RevTree tree = RevTreeBuilder.create(id, size, numTrees, trees.build(),
+                    features.build(), subtrees);
             return tree;
         }
     };

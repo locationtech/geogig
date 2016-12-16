@@ -13,11 +13,14 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 
+import com.google.common.base.Preconditions;
+
 /**
  * A class to compactly store information about a feature, including its path and feature type. This
  * is to be used in the context of applying patches or performing a merge operation, where this type
  * of information is needed.
  * 
+ * @since 1.0
  */
 public class FeatureInfo {
 
@@ -27,10 +30,36 @@ public class FeatureInfo {
 
     private String path;
 
-    public FeatureInfo(RevFeature feature, ObjectId featureTypeId, String path) {
+    private boolean isDelete;
+
+    /**
+     * Constructs a new {@code FeatureInfo} with the provided parameters.
+     * 
+     * @param feature the feature object
+     * @param featureTypeId the {@link ObjectId} of the feature's type
+     * @param path the path of the feature
+     */
+    private FeatureInfo(RevFeature feature, ObjectId featureTypeId, String path, boolean isDelete) {
         this.path = path;
         this.feature = feature;
         this.featureTypeId = featureTypeId;
+        this.isDelete = isDelete;
+    }
+
+    public boolean isDelete() {
+        return isDelete;
+    }
+
+    public static FeatureInfo insert(RevFeature feature, ObjectId featureTypeId, String path) {
+        Preconditions.checkNotNull(feature);
+        Preconditions.checkNotNull(featureTypeId);
+        Preconditions.checkNotNull(path);
+        return new FeatureInfo(feature, featureTypeId, path, false);
+    }
+
+    public static FeatureInfo delete(final String path) {
+        Preconditions.checkNotNull(path);
+        return new FeatureInfo(null, null, path, true);
     }
 
     /**

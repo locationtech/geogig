@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli;
+package org.locationtech.geogig.cli.app;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -125,7 +125,7 @@ class Logging {
             }
         }
         ByteSource from;
-        final URL resource = GeogigCLI.class.getResource("logback_default.xml");
+        final URL resource = CLI.class.getResource("logback_default.xml");
         try {
             from = Resources.asByteSource(resource);
         } catch (NullPointerException npe) {

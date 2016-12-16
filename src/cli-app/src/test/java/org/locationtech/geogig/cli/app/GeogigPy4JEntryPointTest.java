@@ -7,7 +7,7 @@
  * Contributors:
  * Victor Olaya (Boundless) - initial implementation
  */
-package org.locationtech.geogig.cli;
+package org.locationtech.geogig.cli.app;
 
 import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.points1;

@@ -7,8 +7,11 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - extract main() method from GeoGigCLI
  */
-package org.locationtech.geogig.cli;
+package org.locationtech.geogig.cli.app;
 
+import org.locationtech.geogig.cli.CLIContextBuilder;
+import org.locationtech.geogig.cli.Console;
+import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;

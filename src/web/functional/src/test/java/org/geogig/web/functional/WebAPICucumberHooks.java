@@ -181,30 +181,20 @@ public class WebAPICucumberHooks {
                 .init("geogigUser", "repo_Owner@geogig.org").getRepo();
         
         repo4.command(RemoteAddOp.class).setName("repo2").setURL(repo2Url).call();
+
+        repo2.close();
+        repo3.close();
+        repo4.close();
     }
 
     @Given("^There is an empty repository named ([^\"]*)$")
     public void setUpEmptyRepo(String name) throws Throwable {
-        String repoUri = "/repos/" + name;
-        String urlSpec = repoUri + "/init";
-        context.call(Method.PUT, urlSpec);
-        assertStatusCode(Status.SUCCESS_CREATED.getCode());
-
-        context.call(Method.POST, repoUri + "/config?name=user.name&value=webuser");
-        context.call(Method.POST, repoUri + "/config?name=user.email&value=webuser@test.com");
+        context.createRepo(name).init("webuser", "webuser@test.com").getRepo().close();
     }
 
     @Given("^There is a repository with multiple branches named ([^\"]*)$")
     public void setUpMultipleBranches(String name) throws Throwable {
-        String repoUri = "/repos/" + name;
-        String urlSpec = repoUri + "/init";
-        context.call(Method.PUT, urlSpec);
-        assertStatusCode(Status.SUCCESS_CREATED.getCode());
-
-        context.call(Method.POST, repoUri + "/config?name=user.name&value=webuser");
-        context.call(Method.POST, repoUri + "/config?name=user.email&value=webuser@test.com");
-
-        Repository repo = context.getRepo(name);
+        Repository repo = context.createRepo(name).init("webuser", "webuser@test.com").getRepo();
         TestData data = new TestData(repo);
         data.addAndCommit("Added Point.1", TestData.point1);
         data.branch("non_conflicting");
@@ -218,6 +208,7 @@ public class WebAPICucumberHooks {
         data.checkout("non_conflicting");
         data.addAndCommit("Added Point.2", TestData.point2);
         data.checkout("master");
+        repo.close();
     }
 
     /**

@@ -12,8 +12,8 @@ package org.locationtech.geogig.gui.internal;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.locationtech.geogig.gui.internal.MapPane;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class MapPaneTest extends RepositoryTestCase {

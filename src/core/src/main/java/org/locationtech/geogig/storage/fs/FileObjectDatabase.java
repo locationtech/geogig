@@ -29,7 +29,6 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.storage.AbstractObjectDatabase;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -38,6 +37,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
+import org.locationtech.geogig.storage.impl.AbstractObjectDatabase;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -197,7 +197,7 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
     }
 
     /**
-     * @see org.locationtech.geogig.storage.AbstractObjectDatabase#putInternal(org.locationtech.geogig.model.ObjectId,
+     * @see org.locationtech.geogig.storage.impl.AbstractObjectDatabase#putInternal(org.locationtech.geogig.model.ObjectId,
      *      byte[])
      */
     @Override

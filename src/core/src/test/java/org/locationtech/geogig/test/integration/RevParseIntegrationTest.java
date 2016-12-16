@@ -10,10 +10,10 @@
 package org.locationtech.geogig.test.integration;
 
 import org.junit.Test;
-import org.locationtech.geogig.model.CommitBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.porcelain.BranchCreateOp;

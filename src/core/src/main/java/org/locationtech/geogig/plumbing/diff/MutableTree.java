@@ -27,10 +27,10 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.repository.NodeRef;
-import org.locationtech.geogig.repository.SpatialOps;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;

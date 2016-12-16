@@ -35,9 +35,9 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryFilter.FilterDescription;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
+import org.locationtech.geogig.repository.impl.RepositoryFilter.FilterDescription;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;

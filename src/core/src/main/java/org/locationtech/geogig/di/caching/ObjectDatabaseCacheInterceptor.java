@@ -28,9 +28,9 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.BulkOpListener;
-import org.locationtech.geogig.storage.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.impl.ForwardingObjectDatabase;
 
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;

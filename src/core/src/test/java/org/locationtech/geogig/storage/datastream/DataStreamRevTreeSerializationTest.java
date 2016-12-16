@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.datastream;
 
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.RevTreeSerializationTest;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.impl.RevTreeSerializationTest;
 
 public class DataStreamRevTreeSerializationTest extends RevTreeSerializationTest {
     @Override

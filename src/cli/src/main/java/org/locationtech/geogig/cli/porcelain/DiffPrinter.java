@@ -38,7 +38,7 @@ import org.locationtech.geogig.plumbing.diff.GeometryAttributeDiff;
 import org.locationtech.geogig.plumbing.diff.LCSGeometryDiffImpl;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.type.PropertyDescriptor;

@@ -10,7 +10,7 @@
  */
 package org.locationtech.geogig.rest.geotools;
 
-import static org.locationtech.geogig.repository.SpatialOps.parseBBOX;
+import static org.locationtech.geogig.repository.impl.SpatialOps.parseBBOX;
 
 import java.io.File;
 import java.io.IOException;

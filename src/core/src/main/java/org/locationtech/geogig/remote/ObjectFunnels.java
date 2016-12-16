@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

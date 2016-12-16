@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Set;
 
 import org.junit.Test;
-import org.locationtech.geogig.model.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.merge.ConflictsQueryOp;
 import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
 import org.locationtech.geogig.repository.Conflict;

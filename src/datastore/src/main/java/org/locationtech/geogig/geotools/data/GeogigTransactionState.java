@@ -28,7 +28,7 @@ import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.text;
 
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.RevTreeSerializationTest;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.impl.RevTreeSerializationTest;
 
 public class RevTreeTextSerialiationTest extends RevTreeSerializationTest {
 

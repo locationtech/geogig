@@ -31,7 +31,7 @@ import javax.sql.DataSource;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

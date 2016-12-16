@@ -29,7 +29,7 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;

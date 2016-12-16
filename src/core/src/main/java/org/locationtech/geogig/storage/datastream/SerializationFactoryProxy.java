@@ -17,7 +17,7 @@ import java.io.OutputStream;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 /**
  * An encoder for {@link RevObject} instances that delegates the the best available

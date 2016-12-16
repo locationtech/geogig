@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GeoGIG;
-import org.locationtech.geogig.repository.GlobalContextBuilder;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.base.Optional;

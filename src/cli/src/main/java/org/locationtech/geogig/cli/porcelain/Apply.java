@@ -30,7 +30,7 @@ import org.locationtech.geogig.plumbing.diff.VerifyPatchOp;
 import org.locationtech.geogig.plumbing.diff.VerifyPatchResults;
 import org.locationtech.geogig.porcelain.ApplyPatchOp;
 import org.locationtech.geogig.porcelain.CannotApplyPatchException;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

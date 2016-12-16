@@ -23,7 +23,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.locationtech.geogig.storage.TransactionBlobStore;
+import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

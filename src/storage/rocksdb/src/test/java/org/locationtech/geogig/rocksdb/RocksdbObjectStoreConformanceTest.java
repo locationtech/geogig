@@ -20,10 +20,10 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
-import org.locationtech.geogig.storage.ObjectStoreConformanceTest;
 import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
+import org.locationtech.geogig.storage.impl.ObjectStoreConformanceTest;
 
 public class RocksdbObjectStoreConformanceTest extends ObjectStoreConformanceTest {
 

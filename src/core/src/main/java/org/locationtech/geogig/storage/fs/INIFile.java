@@ -12,7 +12,7 @@ package org.locationtech.geogig.storage.fs;
 import java.io.File;
 import java.io.IOException;
 
-import org.locationtech.geogig.storage.INIBlob;
+import org.locationtech.geogig.storage.impl.INIBlob;
 
 import com.google.common.io.Files;
 

@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static org.locationtech.geogig.model.RevObjectTestSupport.createFeaturesTree;
-import static org.locationtech.geogig.model.RevObjectTestSupport.createTreesTree;
-import static org.locationtech.geogig.model.RevObjectTestSupport.createTreesTreeBuilder;
-import static org.locationtech.geogig.model.RevObjectTestSupport.featureNode;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTree;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createTreesTree;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createTreesTreeBuilder;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.featureNode;
 
 import java.util.List;
 
@@ -21,9 +21,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevObjectTestSupport;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;

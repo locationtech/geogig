@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.repository.Deduplicator;
+import org.locationtech.geogig.repository.impl.Deduplicator;
 
 import com.google.common.collect.Sets;
 

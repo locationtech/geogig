@@ -20,7 +20,7 @@ import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryFilter;
+import org.locationtech.geogig.repository.impl.RepositoryFilter;
 
 /**
  * An implementation of a {@link DiffEntry} iterator that filters entries based on a provided

@@ -15,7 +15,7 @@ import java.io.OutputStream;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.base.Preconditions;
 import com.ning.compress.lzf.LZFInputStream;

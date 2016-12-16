@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Rule;
-import org.locationtech.geogig.storage.ConflictsDatabaseConformanceTest;
+import org.locationtech.geogig.storage.impl.ConflictsDatabaseConformanceTest;
 import org.mockito.Answers;
 import org.mockito.Mock;
 

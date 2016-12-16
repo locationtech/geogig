@@ -19,7 +19,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.CherryPickOp;
 import org.locationtech.geogig.porcelain.ConflictsException;
-import org.locationtech.geogig.repository.GeoGIG;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

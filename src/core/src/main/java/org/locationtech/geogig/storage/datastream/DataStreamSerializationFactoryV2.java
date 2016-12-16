@@ -25,11 +25,11 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.storage.impl.ObjectReader;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.impl.ObjectWriter;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.storage.ObjectReader;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.ObjectWriter;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;

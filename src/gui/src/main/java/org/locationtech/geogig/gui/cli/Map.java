@@ -17,9 +17,9 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.gui.internal.MapPane;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

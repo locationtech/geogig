@@ -17,7 +17,7 @@ import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;

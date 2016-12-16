@@ -14,7 +14,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.GeogigTransaction;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;

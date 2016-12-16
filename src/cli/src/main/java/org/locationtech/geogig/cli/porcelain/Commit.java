@@ -31,8 +31,8 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

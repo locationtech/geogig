@@ -22,8 +22,8 @@ import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.repository.GeogigTransaction;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

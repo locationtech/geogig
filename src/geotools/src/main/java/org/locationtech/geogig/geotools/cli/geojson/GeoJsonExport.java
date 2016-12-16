@@ -37,8 +37,8 @@ import org.locationtech.geogig.plumbing.ResolveObjectType;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.RevParse;
-import org.locationtech.geogig.repository.GeoGIG;
 import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.beust.jcommander.Parameter;

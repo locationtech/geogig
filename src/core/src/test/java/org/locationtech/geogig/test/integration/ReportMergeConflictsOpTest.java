@@ -15,7 +15,7 @@ import java.util.List;
 import org.geotools.data.DataUtilities;
 import org.junit.Test;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.merge.CheckMergeScenarioOp;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;

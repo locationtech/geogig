@@ -15,8 +15,8 @@ import javax.sql.DataSource;
 
 import org.junit.After;
 import org.junit.Rule;
-import org.locationtech.geogig.storage.TransactionBlobStore;
-import org.locationtech.geogig.storage.TransactionBlobStoreTest;
+import org.locationtech.geogig.storage.impl.TransactionBlobStore;
+import org.locationtech.geogig.storage.impl.TransactionBlobStoreTest;
 
 public class PGBlobStoreTest extends TransactionBlobStoreTest {
 

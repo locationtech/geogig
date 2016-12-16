@@ -15,9 +15,9 @@ import java.io.OutputStreamWriter;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjectTestSupport;
-import org.locationtech.geogig.storage.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.RevCommitSerializationTest;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
+import org.locationtech.geogig.storage.impl.RevCommitSerializationTest;
 
 /**
  *

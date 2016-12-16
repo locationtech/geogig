@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevFeatureBuilder;
+import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.CloneOp;
 import org.locationtech.geogig.porcelain.CommitOp;

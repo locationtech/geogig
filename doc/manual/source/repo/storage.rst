@@ -16,9 +16,9 @@ A common scenario is to have a remote GeoServer with several repositories that u
 Default storage backend
 =======================
 
-As of 1.0-RC3, the default storage backend uses a BerkeleyDB Java Edition key/value database for the main repository elements such as the revision and graph objects, and simple text files for configuration settings, refs, and merge conflicts.
+Up to 1.0-RC3, the default storage backend was a BerkeleyDB Java Edition key/value database for the main repository elements such as the revision and graph objects, and simple text files for configuration settings, refs, and merge conflicts.
 
-.. note:: However, the BerkeleyDB database will be replaced by the GeoGig 1.0 final release, by a better performing database. Nonetheless, repositories created with the BerkeleyDB storage backend will still be supported through GeoGig's plug-in mechanism.
+As of 1.0-RC4, the BerkeleyDB database was replaced by a better performing database, Rocksdb. Nonetheless, repositories created with the BerkeleyDB storage backend will still be supported through GeoGig's plug-in mechanism.
 
 When a repository is created in the local filesystem, it uses a directory structure like the following:
 

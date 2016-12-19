@@ -99,7 +99,7 @@ copyright = u'OpenGeo <http://opengeo.org>'
 # The short X.Y version.
 version = '1.0'
 # The full version, including alpha/beta/rc tags.
-release = '1.0-RC4'
+release = '1.0-SNAPSHOT'
 # Users don't need to see the "SNAPSHOT" notation when it's there
 if release.find('SNAPSHOT') != -1:
    release = '1.0'

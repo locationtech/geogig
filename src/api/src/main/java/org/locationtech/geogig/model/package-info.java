@@ -1,4 +1,12 @@
-/**
+/* Copyright (c) 2016 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Gabriel Roldan - initial implementation
+ *
  * This package encloses the GeoGig revision graph object model, comprised of a set of abstractions
  * that denote everything that's stored in a GeoGig repository in order to implement a
  * <a href="https://en.wikipedia.org/wiki/Distributed_version_control"> distributed revision control

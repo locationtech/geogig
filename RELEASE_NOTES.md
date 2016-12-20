@@ -1,3 +1,70 @@
+GeoGig 1.0-RC4 Release Notes
+============================
+
+December 19, 2016.
+
+These are the release notes for the fourth GeoGig release candidate.
+
+Five important things happended since 1.0-RC3 besides several bug fixes:
+
+* First and foremost, the developer's team got three new memebers. Join us
+to congratulate (and thank!) David Blasby, Morgan Thompson, and Alex Goudine
+for becoming geogig committers and help us drive this project further and farther.
+
+* We have cleared out all of our Intellectual Property checks on all our
+dependencies and have now [LocationTech](https://locationtech.org/) blessing to perform
+a sponsored release!
+Thanks to LocationTech, Eclipse Foundation's geospatial branch, for their
+continued support and commitment to the success of this and the other projects
+under it's umbrella.
+
+* The new RevTreeBuilder infrastructure became mainstream. It replaces the
+legacy tree builder in order to generate revision trees faster, create no
+garbage in the objects database (the old one left dangling tree objects
+increasing the database size unnecessarily), and perhaps more importantly,
+enables the use of the same infrastructure to build spatial and attribute
+indexes on revision graphs (yes, you'll be able to index all your data 
+history, stay tunned).
+
+* The PosgreSQL storage backend is now WAL and replication safe, by moving
+to use B-Tree indexes instead of Hash indexes. Thanks David Blasby for the
+thorough performance testing. 
+
+* The default storage backend for local repositories now uses [Rocksdb](http://rocksdb.org/).
+It's faster than the old BerkeleyDB Java Edition database, and produces
+smaller databases on disk.
+The BerkeleyDB storage backend was taken off the official build, but Boundless
+still provides a separate plugin download, so if you have existing repositories
+just download [the bdbje plugin](https://github.com/locationtech/geogig/releases/download/v1.0-RC4/geogig-plugins-bdbje-1.0-RC4.zip) and unzip it
+under your `<geogig installation directory>/lib/` folder.
+
+We are really really close to a first 1.0 official release now! Maybe even for Christmas!
+
+Other important bug fixes and improvements:
+-------------------------------------------
+
+- Fix deadlock due to diff traversal not being closed
+- Make sure merge aborts cleanly
+- Replace WriteBack by the more efficient UpdateTree
+- Add license information to documentation
+- Add functional tests for web api commands.
+- Fix windows handling of ANSI escapes 
+- Fix Incompatible Feature Type error for equivalent CRSs
+- Make geopackage fid mappings memory safe by using a rocksdb-backed map
+- Fix parsing of PostgreSQL URIs 
+- Update documentation for api module
+- Increase unit test coverage of API Module
+- Improve handling of incorrect parameters in geotools export commands
+- Fix cloning from absolute paths
+- Add NOTICE file with dependencies 
+- Make the new RevTreeBuilder the default
+- Add functional tests for http synchronization endpoints
+- Serialization version 2.1 
+- Add Eclipse CBI signing support to main pom.xml
+- move to using BTREE instead of HASH index for postgresql backend 
+- Fix missing feature mappings from GeoPackage import response
+
+
 GeoGig 1.0-RC3 Release Notes
 ============================
 

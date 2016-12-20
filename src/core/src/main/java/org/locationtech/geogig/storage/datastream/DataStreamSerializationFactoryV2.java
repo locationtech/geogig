@@ -25,11 +25,11 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
-import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -129,9 +129,13 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
          */
         @Override
         public void write(T object, OutputStream out) throws IOException {
-            DataOutput data = new DataOutputStream(out);
-            format.writeHeader(data, object.getType());
-            writeBody(object, data);
+            DataOutputStream data = new DataOutputStream(out);
+            try {
+                format.writeHeader(data, object.getType());
+                writeBody(object, data);
+            } finally {
+                data.flush();
+            }
         }
 
         public abstract void writeBody(T object, DataOutput data) throws IOException;

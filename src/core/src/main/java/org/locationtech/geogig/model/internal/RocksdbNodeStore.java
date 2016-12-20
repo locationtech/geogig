@@ -173,6 +173,7 @@ class RocksdbNodeStore {
         DataOutputStream out = new DataOutputStream(outstream);
         try {
             DAGNode.encode(node, out);
+            out.flush();
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

@@ -44,11 +44,11 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
-import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.RevTree;
 import org.opengis.feature.type.GeometryType;
 import org.opengis.feature.type.Name;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -133,19 +133,23 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
 
         @Override
         public void write(RevCommit commit, OutputStream out) throws IOException {
-            DataOutput data = new DataOutputStream(out);
-            FormatCommonV1.writeHeader(data, "commit");
-            data.writeByte(COMMIT_TREE_REF);
-            data.write(commit.getTreeId().getRawValue());
-            for (ObjectId pId : commit.getParentIds()) {
-                data.writeByte(COMMIT_PARENT_REF);
-                data.write(pId.getRawValue());
+            DataOutputStream data = new DataOutputStream(out);
+            try {
+                FormatCommonV1.writeHeader(data, "commit");
+                data.writeByte(COMMIT_TREE_REF);
+                data.write(commit.getTreeId().getRawValue());
+                for (ObjectId pId : commit.getParentIds()) {
+                    data.writeByte(COMMIT_PARENT_REF);
+                    data.write(pId.getRawValue());
+                }
+                data.writeByte(COMMIT_AUTHOR_PREFIX);
+                FormatCommonV1.writePerson(commit.getAuthor(), data);
+                data.writeByte(COMMIT_COMMITTER_PREFIX);
+                FormatCommonV1.writePerson(commit.getCommitter(), data);
+                data.writeUTF(commit.getMessage());
+            } finally {
+                data.flush();
             }
-            data.writeByte(COMMIT_AUTHOR_PREFIX);
-            FormatCommonV1.writePerson(commit.getAuthor(), data);
-            data.writeByte(COMMIT_COMMITTER_PREFIX);
-            FormatCommonV1.writePerson(commit.getCommitter(), data);
-            data.writeUTF(commit.getMessage());
         }
     }
 
@@ -166,15 +170,19 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
 
         @Override
         public void write(RevFeature feature, OutputStream out) throws IOException {
-            DataOutput data = new DataOutputStream(out);
-            writeHeader(data, "feature");
-            data.writeInt(feature.size());
-            for (Optional<Object> field : feature.getValues()) {
-                FieldType type = FieldType.forValue(field);
-                data.writeByte(type.getTag());
-                if (type != FieldType.NULL) {
-                    DataStreamValueSerializerV1.write(field, data);
+            DataOutputStream data = new DataOutputStream(out);
+            try {
+                writeHeader(data, "feature");
+                data.writeInt(feature.size());
+                for (Optional<Object> field : feature.getValues()) {
+                    FieldType type = FieldType.forValue(field);
+                    data.writeByte(type.getTag());
+                    if (type != FieldType.NULL) {
+                        DataStreamValueSerializerV1.write(field, data);
+                    }
                 }
+            } finally {
+                data.flush();
             }
         }
     }
@@ -195,12 +203,16 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
 
         @Override
         public void write(RevFeatureType object, OutputStream out) throws IOException {
-            DataOutput data = new DataOutputStream(out);
-            writeHeader(data, "featuretype");
-            writeName(object.getName(), data);
-            data.writeInt(object.descriptors().size());
-            for (PropertyDescriptor desc : object.type().getDescriptors()) {
-                writeProperty(desc, data);
+            DataOutputStream data = new DataOutputStream(out);
+            try {
+                writeHeader(data, "featuretype");
+                writeName(object.getName(), data);
+                data.writeInt(object.descriptors().size());
+                for (PropertyDescriptor desc : object.type().getDescriptors()) {
+                    writeProperty(desc, data);
+                }
+            } finally {
+                data.flush();
             }
         }
 
@@ -277,13 +289,13 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
             }
         }
 
-        public void write(RevTag tag, OutputStream out) {
-            final DataOutput data = new DataOutputStream(out);
+        public void write(RevTag tag, OutputStream out) throws IOException {
+            final DataOutputStream data = new DataOutputStream(out);
             try {
                 FormatCommonV1.writeHeader(data, "tag");
                 FormatCommonV1.writeTag(tag, data);
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
+            } finally {
+                data.flush();
             }
         }
     }
@@ -306,21 +318,26 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
 
         @Override
         public void write(RevTree tree, OutputStream out) throws IOException {
-            DataOutput data = new DataOutputStream(out);
-            writeHeader(data, "tree");
-            data.writeLong(tree.size());
-            data.writeInt(tree.numTrees());
+            DataOutputStream data = new DataOutputStream(out);
+            try {
+                writeHeader(data, "tree");
+                data.writeLong(tree.size());
+                data.writeInt(tree.numTrees());
 
-            Envelope envBuff = new Envelope();
+                Envelope envBuff = new Envelope();
 
-            data.writeInt(tree.features().size());
-            tree.features().forEach((feature) -> writeNode(feature, data, envBuff));
+                data.writeInt(tree.features().size());
+                tree.features().forEach((feature) -> writeNode(feature, data, envBuff));
 
-            data.writeInt(tree.trees().size());
-            tree.trees().forEach((subTree) -> writeNode(subTree, data, envBuff));
+                data.writeInt(tree.trees().size());
+                tree.trees().forEach((subTree) -> writeNode(subTree, data, envBuff));
 
-            data.writeInt(tree.buckets().size());
-            tree.buckets().forEach((index, bucket) -> writeBucket(index, bucket, data, envBuff));
+                data.writeInt(tree.buckets().size());
+                tree.buckets()
+                        .forEach((index, bucket) -> writeBucket(index, bucket, data, envBuff));
+            } finally {
+                data.flush();
+            }
         }
     }
 

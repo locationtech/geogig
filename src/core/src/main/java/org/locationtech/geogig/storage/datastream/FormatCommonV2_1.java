@@ -72,7 +72,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
     public void writeFeature(RevFeature feature, DataOutput target) throws IOException {
 
         try (InternalByteArrayOutputStream out = new InternalByteArrayOutputStream()) {
-            final DataOutput data = new DataOutputStream(out);
+            final DataOutput data = ByteStreams.newDataOutput(out);
             final int attrCount = feature.size();
             final int[] dataOffsets = new int[attrCount];
 

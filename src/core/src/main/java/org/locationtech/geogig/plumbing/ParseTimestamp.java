@@ -100,7 +100,7 @@ public class ParseTimestamp extends AbstractGeoGigOp<Long> {
         }
 
         // parse it as a git-like time reference
-        String[] tokens = string.split("\\.");
+        String[] tokens = string.split(" ");
         if (tokens.length % 2 != 0) {
             if (tokens[tokens.length - 1].toLowerCase().equals("ago")) {
                 long currentTime = platform.currentTimeMillis();

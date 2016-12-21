@@ -29,6 +29,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.util.Assert;
 
 import static org.mockito.Mockito.*;
+import org.locationtech.geogig.repository.FeatureInfo;
 
 public class BulkGeoGigFeatureRetrieverTest {
 
@@ -61,12 +62,12 @@ public class BulkGeoGigFeatureRetrieverTest {
         Iterator<FeatureInfo> it = bulk.apply(Arrays.asList(nr1, nr2));
         List<FeatureInfo> feats = Arrays.asList(it.next(), it.next());
 
-        Assert.isTrue(feats.get(0).getMetaDataID() == metadataid);
-        Assert.isTrue(feats.get(0).getName() == "name1");
+        Assert.isTrue(feats.get(0).getFeatureTypeId() == metadataid);
+        Assert.isTrue(feats.get(0).getName() .equals("name1"));
         Assert.equals(feats.get(0).getFeature().getId(), getOID(1));
 
-        Assert.isTrue(feats.get(1).getMetaDataID() == metadataid);
-        Assert.isTrue(feats.get(1).getName() == "name2");
+        Assert.isTrue(feats.get(1).getFeatureTypeId() == metadataid);
+        Assert.isTrue(feats.get(1).getName() .equals( "name2"));
         Assert.equals(feats.get(1).getFeature().getId(), getOID(2));
 
         int ttt = 00;

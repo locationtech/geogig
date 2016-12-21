@@ -121,13 +121,14 @@ public class BackgroundingIteratorTest {
     }
 
     @Test
-    public void testIteratorHasError2ndElement_next() {
-        Exception except = new RuntimeException();
+    public void testIteratorHasError2ndElement_next() throws InterruptedException {
+        Exception except = new RuntimeException("test case error: 2nd element gets error");
         Iterator it = mock(Iterator.class);
         when(it.hasNext()).thenReturn(Boolean.TRUE);
         when(it.next()).thenReturn(1).thenThrow(except);
 
         BackgroundingIterator<Integer> bit = new BackgroundingIterator<Integer>(it, 100);
+        Thread.sleep(500); // background thread will have processed the "bad element" here
 
         Integer i = bit.next();
         Assert.isTrue(i.intValue() == 1);
@@ -141,13 +142,14 @@ public class BackgroundingIteratorTest {
     }
 
     @Test
-    public void testIteratorHasError2ndElement_hasNext() {
-        Exception except = new RuntimeException();
+    public void testIteratorHasError2ndElement_hasNext() throws InterruptedException{
+        Exception except = new RuntimeException("test case error: 2nd element gets error");
         Iterator it = mock(Iterator.class);
         when(it.hasNext()).thenReturn(Boolean.TRUE);
         when(it.next()).thenReturn(1).thenThrow(except);
 
         BackgroundingIterator<Integer> bit = new BackgroundingIterator<Integer>(it, 100);
+        Thread.sleep(500); // background thread will have processed the "bad element" here
 
         Integer i = bit.next();
         Assert.isTrue(i.intValue() == 1);

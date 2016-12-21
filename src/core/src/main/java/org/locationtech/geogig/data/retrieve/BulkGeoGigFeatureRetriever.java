@@ -12,18 +12,15 @@ package org.locationtech.geogig.data.retrieve;
 
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import com.google.common.base.Function;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
-import com.google.common.base.Function;
-import org.locationtech.geogig.repository.FeatureInfo;
 
 /**
  * This class takes a list of NodeRef (i.e. from the leaf nodes of ObjectIDs that point to features)
@@ -43,22 +40,20 @@ public class BulkGeoGigFeatureRetriever implements Function<List<NodeRef>, Itera
     }
 
     public Iterator<FeatureInfo> apply(List<NodeRef> refs) {
-        Map<ObjectId, FeatureInfo> correlationIndex = new HashMap<ObjectId, FeatureInfo>(
-                refs.size());
+        Map<ObjectId, RevFeature> correlationIndex =
+                new HashMap<>(refs.size());
 
-        Map<ObjectId, NodeRef> indexRefs = new HashMap<ObjectId, NodeRef>(refs.size());
+        ArrayList<ObjectId> ids = new ArrayList<>(refs.size());
+        refs.forEach(ref->ids.add(ref.getObjectId()));
 
-        for (NodeRef ref : refs) {
-            indexRefs.put(ref.getObjectId(), ref);
-        }
-        Iterable<ObjectId> ids = correlationIndex.keySet();
+
         Iterator<RevFeature> all = odb.getAll(ids, NOOP_LISTENER, RevFeature.class);
-        while (all.hasNext()) {
-            RevFeature f = all.next();
-            NodeRef ref = indexRefs.get(f.getId());
-            correlationIndex.put(f.getId(), FeatureInfo.insert(f, ref.getMetadataId(), ref.path()));
-        }
+        all.forEachRemaining(revFeature -> correlationIndex.put(revFeature.getId(),revFeature));
 
-        return correlationIndex.values().iterator();
+
+        ArrayList<FeatureInfo> result = new ArrayList<>(refs.size());
+        refs.forEach( ref-> result.add(FeatureInfo.insert(correlationIndex.get(ref.getObjectId()), ref.getMetadataId(), ref.path()    )));
+
+        return result.iterator();
     }
 }

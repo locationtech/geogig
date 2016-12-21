@@ -34,6 +34,11 @@ import java.util.concurrent.Future;
  * 
  * A PoisonPill is put onto the queue to signify that there are no more items.
  *
+ * If the underlyingIterator throws an exception, then;
+ *    + if the queue has space, the PoisonPill (with error) is set.
+ *    + If the queue is full, then it will BE EMPTIED to ensure the PoisonPill is immediately put
+ *       on the queue so the producer can terminate.
+ *
  * @param <T>
  */
 public class BackgroundingIterator<T> implements Iterator<T>, Closeable {
@@ -56,6 +61,9 @@ public class BackgroundingIterator<T> implements Iterator<T>, Closeable {
     Future future;
 
     public BackgroundingIterator(Iterator<T> underlyingIterator, int queueSize) {
+        if (underlyingIterator == null) {
+            throw new IllegalArgumentException("underlyingIterator is null");
+        }
         queue = new ArrayBlockingQueue<Object>(queueSize);
         producer = new Producer(underlyingIterator, queue);
         executorService = Executors.newSingleThreadExecutor();
@@ -147,8 +155,21 @@ public class BackgroundingIterator<T> implements Iterator<T>, Closeable {
                 }
             } catch (Throwable th) {
                 try {
-                    queue.clear();// this needs to go on the queue - make room
+                    if (queue.remainingCapacity() < 1) {
+                        // this needs to go on the queue - make room.
+                        // We are the only thread putting elements on the queue
+                        queue.clear();
+                    }
+
                     queue.put(new PoisonPill(th)); // signify end of elements
+                    if (underlyingIterator instanceof Closeable) {
+                        try {
+                            ((Closeable) underlyingIterator).close();
+                        } catch (IOException e) {
+                          //do nothing - we tried our best
+                        }
+                    }
+                    return;
                 } catch (InterruptedException e) {
 
                 }
@@ -158,7 +179,13 @@ public class BackgroundingIterator<T> implements Iterator<T>, Closeable {
             } catch (InterruptedException e) {
 
             }
-            int t = 0;
+            if (underlyingIterator instanceof Closeable) {
+                try {
+                    ((Closeable) underlyingIterator).close();
+                } catch (IOException e) {
+                    //do nothing - we tried our best
+                }
+            }
         }
 
     }

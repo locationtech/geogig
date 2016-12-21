@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -69,8 +70,41 @@ public class BulkGeoGigFeatureRetrieverTest {
         Assert.isTrue(feats.get(1).getFeatureTypeId() == metadataid);
         Assert.isTrue(feats.get(1).getName() .equals( "name2"));
         Assert.equals(feats.get(1).getFeature().getId(), getOID(2));
+    }
 
-        int ttt = 00;
+    //This tests the situation where there are two Features with the same content
+    // (same FeatureID), but different FIDs.
+    @Test
+    public void testIdenticalFeatureData() {
+        ObjectDatabase odb = mock(ObjectDatabase.class);
+
+        RevFeature f1 = mock(RevFeature.class);
+        when(f1.getId()).thenReturn(getOID(1));
+
+        when(odb.getAll(anyObject(), anyObject(), anyObject()))
+                .thenReturn((Arrays.asList((RevObject) f1 )).iterator());
+
+        BulkGeoGigFeatureRetriever bulk = new BulkGeoGigFeatureRetriever(odb);
+
+        ObjectId metadataid = getOID(4);
+
+        Node n1 = Node.create("name1", getOID(1), metadataid, TYPE.FEATURE, new Envelope());
+        NodeRef nr1 = new NodeRef(n1, "testcase", metadataid);
+        Node n2 = Node.create("name2", getOID(1), metadataid, TYPE.FEATURE, new Envelope());
+        NodeRef nr2 = new NodeRef(n2, "testcase", metadataid);
+
+        Iterator<FeatureInfo> it = bulk.apply(Arrays.asList(nr1, nr2));
+        List<FeatureInfo> feats = Lists.newArrayList(it);
+
+        Assert.isTrue(feats.size() == 2);
+
+        Assert.isTrue(feats.get(0).getFeatureTypeId() == metadataid);
+        Assert.isTrue(feats.get(0).getName() .equals("name1"));
+        Assert.equals(feats.get(0).getFeature().getId(), getOID(1));
+
+        Assert.isTrue(feats.get(1).getFeatureTypeId() == metadataid);
+        Assert.isTrue(feats.get(1).getName() .equals( "name2"));
+        Assert.equals(feats.get(1).getFeature().getId(), getOID(1));
     }
 
     public ObjectId getOID(int b) {

@@ -97,12 +97,12 @@ copyright = u'OpenGeo <http://opengeo.org>'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '1.0'
+version = '1.1'
 # The full version, including alpha/beta/rc tags.
-release = '1.0-SNAPSHOT'
+release = '1.1-SNAPSHOT'
 # Users don't need to see the "SNAPSHOT" notation when it's there
 if release.find('SNAPSHOT') != -1:
-   release = '1.0'
+   release = '1.1'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

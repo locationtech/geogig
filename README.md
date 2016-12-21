@@ -10,7 +10,7 @@ Details
 
 Project Lead: [Gabriel Roldan](https://github.com/groldan)
 
-Status: A 1.0-RC4 version has been released and it is available for download, with a full commandline interface to import data and work with repositories.
+Status: A 1.0 version has been released and it is available for download, with a full commandline interface to import data and work with repositories.
 
 The build is actively monitored at [LocationTech Build Server](https://hudson.locationtech.org/geogig/).
 
@@ -26,12 +26,12 @@ GeoGig is proudly open source:
 Download
 --------
 
-No release downloads available yet. The latest release candidate [Version 1.0-RC4](https://github.com/locationtech/geogig/releases/) is available on GitHub.
+No release downloads available yet. The latest release candidate [Version 1.0](https://github.com/locationtech/geogig/releases/) is available on GitHub.
 
 Installation
 ------------
 
-Unzip geogig-1.0-RC4.zip to an applications directory, and then add the unzipped geogig/bin/ folder to your PATH.
+Unzip geogig-1.0.zip to an applications directory, and then add the unzipped geogig/bin/ folder to your PATH.
 
 Running
 -------

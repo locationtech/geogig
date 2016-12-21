@@ -19,6 +19,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.collect.Iterators;
+import org.locationtech.geogig.repository.FeatureInfo;
 
 public class BulkFeatureRetriever {
     ObjectDatabase odb;

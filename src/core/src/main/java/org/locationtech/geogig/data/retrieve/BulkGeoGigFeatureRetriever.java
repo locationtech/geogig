@@ -23,6 +23,7 @@ import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Function;
+import org.locationtech.geogig.repository.FeatureInfo;
 
 /**
  * This class takes a list of NodeRef (i.e. from the leaf nodes of ObjectIDs that point to features)
@@ -44,14 +45,18 @@ public class BulkGeoGigFeatureRetriever implements Function<List<NodeRef>, Itera
     public Iterator<FeatureInfo> apply(List<NodeRef> refs) {
         Map<ObjectId, FeatureInfo> correlationIndex = new HashMap<ObjectId, FeatureInfo>(
                 refs.size());
+
+        Map<ObjectId, NodeRef> indexRefs = new HashMap<ObjectId, NodeRef>(refs.size());
+
         for (NodeRef ref : refs) {
-            correlationIndex.put(ref.getObjectId(), new FeatureInfo(ref));
+            indexRefs.put(ref.getObjectId(), ref);
         }
         Iterable<ObjectId> ids = correlationIndex.keySet();
         Iterator<RevFeature> all = odb.getAll(ids, NOOP_LISTENER, RevFeature.class);
         while (all.hasNext()) {
             RevFeature f = all.next();
-            correlationIndex.get(f.getId()).setFeature(f);
+            NodeRef ref = indexRefs.get(f.getId());
+            correlationIndex.put(f.getId(), FeatureInfo.insert(f, ref.getMetadataId(), ref.path()));
         }
 
         return correlationIndex.values().iterator();

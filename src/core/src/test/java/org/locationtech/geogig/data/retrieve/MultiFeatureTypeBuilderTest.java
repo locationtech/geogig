@@ -36,6 +36,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.util.Assert;
+import org.locationtech.geogig.repository.FeatureInfo;
 
 public class MultiFeatureTypeBuilderTest {
 
@@ -87,8 +88,8 @@ public class MultiFeatureTypeBuilderTest {
         Node n1 = Node.create("name1", getOID(2), meta1, TYPE.FEATURE, new Envelope());
         NodeRef nr1 = new NodeRef(n1, "testcase", meta1);
 
-        FeatureInfo fi = new FeatureInfo(nr1);
-        fi.setFeature(feat);
+        FeatureInfo fi =  FeatureInfo.insert(feat,nr1.getMetadataId(), nr1.path());
+      
 
         MultiFeatureTypeBuilder builder = new MultiFeatureTypeBuilder(odb);
         SimpleFeature sf = builder.apply(fi);

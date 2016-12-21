@@ -22,6 +22,8 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Function;
+import org.locationtech.geogig.repository.FeatureInfo;
+
 
 public class MultiFeatureTypeBuilder implements Function<FeatureInfo, SimpleFeature> {
 
@@ -45,7 +47,7 @@ public class MultiFeatureTypeBuilder implements Function<FeatureInfo, SimpleFeat
 
     @Override
     public SimpleFeature apply(FeatureInfo info) {
-        FeatureBuilder featureBuilder = get(info.getMetaDataID());
+        FeatureBuilder featureBuilder = get(info.getFeatureTypeId());
         String fid = info.getName();
         RevFeature revFeature = info.getFeature();
         Feature feature = featureBuilder.build(fid, revFeature);

@@ -57,7 +57,7 @@ public class Version extends AbstractWebAPICommand {
             @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();
-                out.writeElement("ProjectVersion", info.getProjectVersion());
+                out.writeStringElement("ProjectVersion", info.getProjectVersion());
                 out.writeElement("BuildTime", info.getBuildTime());
                 out.writeElement("BuildUserName", info.getBuildUserName());
                 out.writeElement("BuildUserEmail", info.getBuildUserEmail());

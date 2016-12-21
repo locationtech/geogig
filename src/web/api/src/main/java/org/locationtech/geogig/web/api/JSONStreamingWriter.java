@@ -108,6 +108,19 @@ class JSONStreamingWriter implements StreamingWriter {
         json.flush();
     }
 
+    @Override
+    public void writeStringElement(String name, Object value) throws StreamWriterException {
+        // check for NULL values first
+        if (value == null || value.toString() == null) {
+            // non-JsonArray context, write the name and value
+            json.write(name, JsonValue.NULL);
+        } else {
+            final String valStr = value.toString();
+            // just write it as a String, no smart parsing
+            json.write(name, valStr);
+        }
+    }
+
     /**
      * Writes the supplied content to the stream. Since the JSON stream writing has separate methods for writing data
      * inside JSON objects as compared to JSON Arrays, we need to branch for each type of write to call the correct

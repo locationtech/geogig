@@ -182,6 +182,20 @@ public class ResponseWriter {
     }
 
     /**
+     * Writes the given element to the stream as a String. This method is deprecated and should be removed when all
+     * calls to {@link ResponseWriter#writeElement(java.lang.String, java.lang.String) } are fixed so that Numeric
+     * values are written correctly and String values are not interpreted as Numeric, even if they can be parsed as
+     * numeric.
+     *
+     * @param element the element name
+     * @param content the element content
+     * @throws StreamWriterException
+     */
+    @Deprecated
+    public void writeStringElement(String element, @Nullable String content) throws StreamWriterException {
+        out.writeStringElement(element, out);
+    }
+    /**
      * Writes staged changes to the stream.
      * 
      * @param setFilter the configured {@link DiffIndex} command

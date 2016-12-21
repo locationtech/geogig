@@ -43,6 +43,9 @@ public interface StreamingWriter extends AutoCloseable, Flushable {
 
     public void writeElement(String name, @Nullable Object value) throws StreamWriterException;
 
+    @Deprecated
+    public void writeStringElement(String name, @Nullable Object value) throws StreamWriterException;
+
     public void writeCDataElement(String name, @Nullable Object value) throws StreamWriterException;
 
     /**

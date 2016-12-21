@@ -166,4 +166,10 @@ class XMLStreamingWriter implements StreamingWriter {
         }
     }
 
+    @Override
+    public void writeStringElement(String name, Object value) throws StreamWriterException {
+        // for XML, just call the writeElement method
+        writeElement(name, value);
+    }
+
 }

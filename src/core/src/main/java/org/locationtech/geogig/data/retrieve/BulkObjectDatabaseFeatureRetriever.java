@@ -32,10 +32,10 @@ import org.locationtech.geogig.storage.ObjectDatabase;
  * 
  * This provides non-geotools access to the feature data.
  */
-public class BulkGeoGigFeatureRetriever implements Function<List<NodeRef>, Iterator<FeatureInfo>> {
+public class BulkObjectDatabaseFeatureRetriever implements Function<List<NodeRef>, Iterator<FeatureInfo>> {
     ObjectDatabase odb;
 
-    public BulkGeoGigFeatureRetriever(ObjectDatabase odb) {
+    public BulkObjectDatabaseFeatureRetriever(ObjectDatabase odb) {
         this.odb = odb;
     }
 

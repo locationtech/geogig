@@ -22,6 +22,22 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.google.common.collect.Iterators;
 import org.locationtech.geogig.repository.FeatureInfo;
 
+
+/**
+ * This is the main entry class for retrieving features from GeoGIG.
+ *
+ * It comes in 3 flavors;
+ *   a) getGeoGIGFeatures - (low level) this returns FeatureInfos
+ *                           for the requested NodeRefs
+ *   b) getGeoToolsFeatures - (high level) this returns SimpleFeatures
+ *          for the requested NodeRefs.  The FeatureType Metadata
+ *          is retrieved from the ObjectDB to construct the Features.
+ *
+ *   c) getGeoToolsFeatures w/Schema - (high level) this returns
+ *         SimpleFeatures for the requested NodeRefs.  It ignores the
+ *         FeatureType Metadata and uses the supplied schema to
+ *         construct features.
+ */
 public class BulkFeatureRetriever {
     ObjectDatabase odb;
 
@@ -50,7 +66,7 @@ public class BulkFeatureRetriever {
         Iterator<List<NodeRef>> partition = Iterators.partition(featureRefs, featureFetchSize);
 
         // used to get a group of features from the DB
-        BulkGeoGigFeatureRetriever bulkFeatureRetriever = new BulkGeoGigFeatureRetriever(odb);
+        BulkObjectDatabaseFeatureRetriever bulkFeatureRetriever = new BulkObjectDatabaseFeatureRetriever(odb);
 
         Iterator<Iterator<FeatureInfo>> transformed = Iterators.transform(partition,
                 bulkFeatureRetriever);

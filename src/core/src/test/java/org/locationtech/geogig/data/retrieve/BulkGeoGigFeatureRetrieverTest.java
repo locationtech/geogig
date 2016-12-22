@@ -11,7 +11,6 @@ package org.locationtech.geogig.data.retrieve;
 
 import static org.mockito.Mockito.mock;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -51,7 +50,7 @@ public class BulkGeoGigFeatureRetrieverTest {
         when(odb.getAll(anyObject(), anyObject(), anyObject()))
                 .thenReturn((Arrays.asList((RevObject) f1, (RevObject) f2)).iterator());
 
-        BulkGeoGigFeatureRetriever bulk = new BulkGeoGigFeatureRetriever(odb);
+        BulkObjectDatabaseFeatureRetriever bulk = new BulkObjectDatabaseFeatureRetriever(odb);
 
         ObjectId metadataid = getOID(4);
 
@@ -84,7 +83,7 @@ public class BulkGeoGigFeatureRetrieverTest {
         when(odb.getAll(anyObject(), anyObject(), anyObject()))
                 .thenReturn((Arrays.asList((RevObject) f1 )).iterator());
 
-        BulkGeoGigFeatureRetriever bulk = new BulkGeoGigFeatureRetriever(odb);
+        BulkObjectDatabaseFeatureRetriever bulk = new BulkObjectDatabaseFeatureRetriever(odb);
 
         ObjectId metadataid = getOID(4);
 

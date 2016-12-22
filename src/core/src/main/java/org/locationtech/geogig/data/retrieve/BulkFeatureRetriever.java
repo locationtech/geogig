@@ -12,6 +12,7 @@ package org.locationtech.geogig.data.retrieve;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.base.Function;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -26,7 +27,7 @@ public class BulkFeatureRetriever {
 
     int nodeFetchSize = 10_000;
 
-    int featureFetchSize = nodeFetchSize / 10;
+    int featureFetchSize = 201;
 
     int featureSize = featureFetchSize / 5;
 
@@ -34,6 +35,13 @@ public class BulkFeatureRetriever {
         this.odb = odb;
     }
 
+    /**
+     * Given a bunch of NodeRefs, create FeatureInfos for them.
+     * FeatureInfo contains the actual GIG feature, and its metadata
+     * (i.e. FeatureTypeId + path (including name))
+     * @param refs
+     * @return
+     */
     public Iterator<FeatureInfo> getGeoGIGFeatures(Iterator<NodeRef> refs) {
         // this will get the refs (from the tree) in the background
         BackgroundingIterator<NodeRef> featureRefs = new BackgroundingIterator<NodeRef>(refs,
@@ -46,17 +54,49 @@ public class BulkFeatureRetriever {
 
         Iterator<Iterator<FeatureInfo>> transformed = Iterators.transform(partition,
                 bulkFeatureRetriever);
-        Iterator<FeatureInfo> allFeatures = Iterators.concat(transformed); // simplify from
-                                                                           // Iterator<Iterator<SF>>
-                                                                           // to Iterator<SF>
+        // simplify from Iterator<Iterator<SF>> to Iterator<SF>
+        Iterator<FeatureInfo> allFeatures = Iterators.concat(transformed);
 
-        return new BackgroundingIterator<FeatureInfo>(allFeatures, featureSize);
+        return new BackgroundingIterator<>(allFeatures, featureSize);
     }
 
+    /**
+     * Given a bunch of NodeRefs, create SimpleFeatures from the results.
+     * The result might be mixed FeatureTypes
+     *
+     * This retrieves FeatureType info from the ObjectDatabase as needed.
+     *
+     *  @see BulkFeatureRetriever#getGeoGIGFeatures
+     *
+     * @param refs
+     * @return
+     */
     public Iterator<SimpleFeature> getGeoToolsFeatures(Iterator<NodeRef> refs) {
         Iterator<FeatureInfo> fis = getGeoGIGFeatures(refs);
         MultiFeatureTypeBuilder builder = new MultiFeatureTypeBuilder(odb);
         Iterator<SimpleFeature> result = Iterators.transform(fis, builder);
-        return new BackgroundingIterator<SimpleFeature>(result, featureSize);
+        return new BackgroundingIterator<>(result, featureSize);
+    }
+
+    /**
+     * Given a bunch of NodeRefs, create SimpleFeatures from the results.
+     * This builds a particular FeatureType from the ObjectDatabase.
+     *
+     * This DOES NOT retrieves FeatureType info from the ObjectDatabase.
+     *
+     * @param refs
+     * @param schema
+     * @return
+     */
+    public Iterator<SimpleFeature> getGeoToolsFeatures(Iterator<NodeRef> refs, SimpleFeatureType schema) {
+        //builder for this particular schema
+        FeatureBuilder featureBuilder = new FeatureBuilder(schema);
+
+        //function that converts the FeatureInfo a feature of the given schema
+        Function<FeatureInfo, SimpleFeature> funcBuildFeature = (input -> MultiFeatureTypeBuilder.build(featureBuilder, input));
+
+        Iterator<FeatureInfo> fis = getGeoGIGFeatures(refs);
+        Iterator<SimpleFeature> result = Iterators.transform(fis, funcBuildFeature);
+        return new BackgroundingIterator<>(result, featureSize);
     }
 }

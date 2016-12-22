@@ -162,10 +162,10 @@ public class BackgroundingIterator<T> implements Iterator<T>, Closeable {
                     }
 
                     queue.put(new PoisonPill(th)); // signify end of elements
-                    if (underlyingIterator instanceof Closeable) {
+                    if (underlyingIterator instanceof AutoCloseable) {
                         try {
-                            ((Closeable) underlyingIterator).close();
-                        } catch (IOException e) {
+                            ((AutoCloseable) underlyingIterator).close();
+                        } catch (Exception e) {
                           //do nothing - we tried our best
                         }
                     }
@@ -179,10 +179,10 @@ public class BackgroundingIterator<T> implements Iterator<T>, Closeable {
             } catch (InterruptedException e) {
 
             }
-            if (underlyingIterator instanceof Closeable) {
+            if (underlyingIterator instanceof AutoCloseable) {
                 try {
-                    ((Closeable) underlyingIterator).close();
-                } catch (IOException e) {
+                    ((AutoCloseable) underlyingIterator).close();
+                } catch (Exception e) {
                     //do nothing - we tried our best
                 }
             }

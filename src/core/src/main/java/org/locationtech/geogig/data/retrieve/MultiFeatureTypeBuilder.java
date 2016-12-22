@@ -48,6 +48,10 @@ public class MultiFeatureTypeBuilder implements Function<FeatureInfo, SimpleFeat
     @Override
     public SimpleFeature apply(FeatureInfo info) {
         FeatureBuilder featureBuilder = get(info.getFeatureTypeId());
+        return build(featureBuilder,info);
+    }
+
+    public static SimpleFeature build( FeatureBuilder featureBuilder, FeatureInfo info) {
         String fid = info.getName();
         RevFeature revFeature = info.getFeature();
         Feature feature = featureBuilder.build(fid, revFeature);

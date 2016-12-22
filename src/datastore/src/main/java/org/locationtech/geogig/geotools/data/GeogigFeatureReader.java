@@ -9,34 +9,33 @@
  */
 package org.locationtech.geogig.geotools.data;
 
-import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.notNull;
 import static com.google.common.collect.Iterators.filter;
-import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
+import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.FeatureReader;
 import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.filter.spatial.ReprojectingFilterVisitor;
 import org.geotools.filter.visitor.SpatialFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
 import org.geotools.renderer.ScreenMap;
 import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -47,9 +46,7 @@ import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.NodeRef;
-import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -74,11 +71,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
 
 /**
  *
@@ -105,11 +98,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
     @Nullable
     private final ScreenMapFilter screenMapFilter;
 
-    private final Context context;
-
-    private final DiffTree diffOp;
-
-    private Stopwatch timer;
+    private Context context;
 
     /**
      * @param context
@@ -117,73 +106,56 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
      * @param origFilter
      * @param typeTreePath
      * @param headRef
-     * @param oldHead
+     * @param oldHeadRef
      * @param offset
      * @param maxFeatures
      * @param changeType
      * @param ignoreAttributes
-     * @param geomFac
      */
     public GeogigFeatureReader(final Context context, final SimpleFeatureType schema,
             final Filter origFilter, final String typeTreePath, final String headRef,
-            String oldHead, ChangeType changeType, @Nullable Integer offset,
+            String oldHeadRef, ChangeType changeType, @Nullable Integer offset,
             @Nullable Integer maxFeatures, @Nullable final ScreenMap screenMap,
-            final boolean ignoreAttributes, @Nullable GeometryFactory geomFac) {
+            final boolean ignoreAttributes) {
         this.context = context;
         checkNotNull(context);
         checkNotNull(schema);
         checkNotNull(origFilter);
         checkNotNull(typeTreePath);
         checkNotNull(headRef);
-        checkNotNull(oldHead);
+        checkNotNull(oldHeadRef);
         checkNotNull(changeType);
         this.schema = schema;
         this.offset = offset;
         this.maxFeatures = maxFeatures;
 
-        final ObjectDatabase objectStore = context.objectDatabase();
-        final NodeRef typeTreeRef;
-        {
-            final Optional<NodeRef> oldTreeRef;
-            final Optional<NodeRef> newTreeRef;
-            oldTreeRef = oldHead == null ? absent() : resolveFeatureTree(oldHead, typeTreePath);
-            newTreeRef = headRef == null ? absent() : resolveFeatureTree(headRef, typeTreePath);
+        final String effectiveHead = headRef == null ? Ref.WORK_HEAD : headRef;
+        final String effectiveOldHead = oldHeadRef == null ? RevTree.EMPTY_TREE_ID.toString()
+                : oldHeadRef;
+        final String typeTreeRefSpec = effectiveHead + ":" + typeTreePath;
 
-            Preconditions.checkArgument(oldTreeRef.isPresent() || newTreeRef.isPresent());
-            typeTreeRef = newTreeRef.isPresent() ? newTreeRef.get() : oldTreeRef.get();
+        final Optional<ObjectId> rootTreeId = context.command(ResolveTreeish.class)
+                .setTreeish(effectiveHead).call();
 
-            Optional<IndexInfo> index = context.indexDatabase().getIndexInfo(typeTreePath,
-                    schema.getGeometryDescriptor().getName().toString());
+        checkArgument(rootTreeId.isPresent(), "HEAD ref does not resolve to a tree: %s",
+                effectiveHead);
 
-            final Optional<ObjectId> oldQuadTree = resolveQuadTree(oldTreeRef, index);
-            final Optional<ObjectId> newQuadTree = resolveQuadTree(newTreeRef, index);
+        final RevTree rootTree = context.objectDatabase().getTree(rootTreeId.get());
 
-            diffOp = context.command(DiffTree.class);
-            diffOp.setDefaultMetadataId(typeTreeRef.getMetadataId());
-            diffOp.recordStats();
-            diffOp.setPreserveIterationOrder(true);
-            if (oldQuadTree.isPresent() && newQuadTree.isPresent()) {
-                diffOp.setOldTree(oldQuadTree.get());
-                diffOp.setNewTree(newQuadTree.get());
-                diffOp.setLeftSource(context.indexDatabase());
-                diffOp.setRightSource(context.indexDatabase());
-                // System.err.printf("Using Quad-Tree %s for %s\n",
-                // newQuadTree.get().toString().substring(0, 8),
-                // newTreeRef.get().getNode().getName());
-            } else {
-                ObjectId oldTreeId = resolveTreeId(oldTreeRef);
-                ObjectId newTreeId = resolveTreeId(newTreeRef);
-
-                diffOp.setOldTree(oldTreeId);
-                diffOp.setNewTree(newTreeId);
-            }
-        }
+        final Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class)
+                .setParent(rootTree).setChildPath(typeTreePath).call();
+        checkArgument(typeTreeRef.isPresent(), "Feature type tree not found: %s", typeTreeRefSpec);
 
         final Filter filter = reprojectFilter(origFilter);
-        final List<String> fidFilters = resolveFeatureIdFilters(filter);
-        diffOp.setPathFilter(fidFilters);
 
-        if (screenMap != null && !Boolean.getBoolean("geogig.ignorescreenmap")) {
+        DiffTree diffOp = context.command(DiffTree.class);
+        diffOp.setOldVersion(effectiveOldHead);
+        diffOp.setNewVersion(effectiveHead);
+
+        final List<String> pathFilters = resolvePathFilters(typeTreePath, filter);
+        diffOp.setPathFilter(pathFilters);
+
+        if (screenMap != null) {
             LOGGER.trace(
                     "Created GeogigFeatureReader with screenMap, assuming it's renderer query");
             this.screenMapFilter = new ScreenMapFilter(screenMap);
@@ -193,36 +165,13 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             LOGGER.trace("Created GeogigFeatureReader without screenMapFilter");
         }
 
-        ReferencedEnvelope queryBounds = getQueryBounds(filter, typeTreeRef);
+        ReferencedEnvelope queryBounds = getQueryBounds(filter, typeTreeRef.get());
         if (!queryBounds.isEmpty()) {
             diffOp.setBoundsFilter(queryBounds);
         }
         diffOp.setChangeTypeFilter(changeType(changeType));
 
         sourceIterator = diffOp.call();
-        /////
-        {
-            // System.err.printf("checking raw iterator time...\n");
-            // Stopwatch s = Stopwatch.createStarted();
-            // final int size = Iterators.size(sourceIterator);
-            // s.stop();
-            // System.err.printf("Traversed %,d diff entries in %s\n", size, s);
-            // sourceIterator = diffOp.call();
-            //
-            // Iterator<NodeRef> featureRefs = toFeatureRefs(sourceIterator, changeType);
-            //
-            // System.err.printf("Traversing all features...\n");
-            // s.reset().start();
-            // Iterator<SimpleFeature> fit = Iterators.transform(featureRefs,
-            // new CachedNodeToFeature(schema));
-            //
-            // int fcount = Iterators.size(fit);
-            // s.stop();
-            // System.err.printf("Traversed %,d features in %s\n", fcount, s);
-            // sourceIterator = diffOp.call();
-        }
-
-        /////
         Iterator<NodeRef> featureRefs = toFeatureRefs(sourceIterator, changeType);
 
         final boolean filterSupportedByRefs = Filter.INCLUDE.equals(filter)
@@ -232,16 +181,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             featureRefs = applyRefsOffsetLimit(featureRefs);
         }
 
-        final Function<List<NodeRef>, Iterator<SimpleFeature>> function;
-        function = new FetchFunction(objectStore, schema, geomFac);
-        final int fetchSize = 1000;
-        Iterator<List<NodeRef>> partition = Iterators.partition(featureRefs, fetchSize);
-        Iterator<Iterator<SimpleFeature>> transformed = Iterators.transform(partition, function);
-
-        final Iterator<SimpleFeature> featuresUnfiltered = Iterators.concat(transformed);
-
-        // Iterator<SimpleFeature> featuresUnfiltered = Iterators.transform(featureRefs,
-        // new CachedNodeToFeature(schema));
+        BulkFeatureRetriever retriever = new BulkFeatureRetriever(context.objectDatabase());
+        final Iterator<SimpleFeature> featuresUnfiltered = retriever.getGeoToolsFeatures(featureRefs, schema);
 
         FilterPredicate filterPredicate = new FilterPredicate(filter);
         Iterator<SimpleFeature> featuresFiltered = filter(featuresUnfiltered, filterPredicate);
@@ -249,46 +190,6 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             featuresFiltered = applyFeaturesOffsetLimit(featuresFiltered);
         }
         this.features = featuresFiltered;
-        this.timer = Stopwatch.createStarted();
-    }
-
-    private ObjectId resolveTreeId(final Optional<NodeRef> treeRef) {
-        return treeRef.isPresent() ? treeRef.get().getObjectId() : EMPTY_TREE_ID;
-    }
-
-    private Optional<ObjectId> resolveQuadTree(Optional<NodeRef> treeRef,
-            Optional<IndexInfo> index) {
-        Optional<ObjectId> quadTreeId = Optional.of(EMPTY_TREE_ID);
-        if (treeRef.isPresent()) {
-            if (index.isPresent()) {
-                quadTreeId = context.indexDatabase().resolveIndexedTree(index.get(),
-                        treeRef.get().getObjectId());
-            } else {
-                quadTreeId = Optional.absent();
-            }
-            if (quadTreeId.isPresent() && Boolean.getBoolean("geogig.ignoreindex")) {
-                System.err.printf(
-                        "Ignoring index for %s as indicated by -Dgeogig.ignoreindex=true\n",
-                        treeRef.get().name());
-                return absent();
-            }
-        }
-        return quadTreeId;
-    }
-
-    private Optional<NodeRef> resolveFeatureTree(final String head, final String typeTreePath) {
-
-        final Optional<ObjectId> rootTreeId = context.command(ResolveTreeish.class).setTreeish(head)
-                .call();
-
-        checkArgument(rootTreeId.isPresent(), "HEAD ref does not resolve to a tree: %s", head);
-
-        final RevTree rootTree = context.objectDatabase().getTree(rootTreeId.get());
-
-        final Optional<NodeRef> typeTreeRef = context.command(FindTreeChild.class)
-                .setParent(rootTree).setChildPath(typeTreePath).call();
-
-        return typeTreeRef;
     }
 
     private DiffEntry.ChangeType changeType(ChangeType changeType) {
@@ -319,20 +220,21 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         });
     }
 
-    private List<String> resolveFeatureIdFilters(Filter filter) {
-        List<String> pathFilters = ImmutableList.of();
+    private List<String> resolvePathFilters(String typeTreePath, Filter filter) {
+        List<String> pathFilters;
         if (filter instanceof Id) {
             final Set<Identifier> identifiers = ((Id) filter).getIdentifiers();
             Iterator<FeatureId> featureIds = filter(filter(identifiers.iterator(), FeatureId.class),
                     notNull());
             Preconditions.checkArgument(featureIds.hasNext(), "Empty Id filter");
-            pathFilters = new ArrayList<>(identifiers.size());
+            pathFilters = new ArrayList<>();
             while (featureIds.hasNext()) {
                 String fid = featureIds.next().getID();
-                pathFilters.add(fid);
+                pathFilters.add(NodeRef.appendChild(typeTreePath, fid));
             }
+        } else {
+            pathFilters = ImmutableList.of(typeTreePath);
         }
-
         return pathFilters;
     }
 
@@ -345,22 +247,22 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
     @Override
     public void close() throws IOException {
         if (sourceIterator != null) {
-            timer.stop();
             sourceIterator.close();
-            sourceIterator = null;
-            // System.err.printf("######## Stats: %s, Time: %s ########\n\n",
-            // diffOp.getStats().orNull(), timer);
-            LOGGER.debug(String.format("######## Stats: %s, Time: %s ########\n\n",
-                    diffOp.getStats().orNull(), timer));
-
-            if (screenMapFilter != null) {
-                ScreenMapFilter.Stats stats = screenMapFilter.stats();
-                Stopwatch stopwatch = stats.sw.stop();
-                // System.err.printf(
-                // "GeoGigFeatureReader.close(): ScreenMap filtering: %s, time: %s\n",
-                // screenMapFilter.stats(), stopwatch);
-                LOGGER.debug("GeoGigFeatureReader.close(): ScreenMap filtering: {}, time: {}",
-                        screenMapFilter.stats(), stopwatch);
+        }
+        if (screenMapFilter != null) {
+            ScreenMapFilter.Stats stats = screenMapFilter.stats();
+            Stopwatch stopwatch = stats.sw.stop();
+            // System.err.printf("GeoGigFeatureReader.close(): ScreenMap filtering: %s, time: %s\n",
+            // screenMapFilter.stats(), stopwatch);
+            LOGGER.debug("GeoGigFeatureReader.close(): ScreenMap filtering: {}, time: {}",
+                    screenMapFilter.stats(), stopwatch);
+        }
+        if ( (this.features != null) && (this.features instanceof AutoCloseable)) {
+            try {
+                ((AutoCloseable)this.features ).close();
+            } catch (Exception e) {
+                //do nothing - not much we can do if the iterator cannot close...
+                e.printStackTrace();
             }
         }
     }
@@ -401,210 +303,6 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         }
         return featureRefs;
     }
-
-    private class CachedNodeToFeature implements Function<NodeRef, SimpleFeature> {
-
-        private final FeatureBuilder featureBuilder;
-
-        private SimpleFeatureType schema;
-
-        private SimpleFeatureBuilder simpleFeatureBuilder;
-
-        private String geomName;
-
-        private GeometryFactory gf = new GeometryFactory(new PackedCoordinateSequenceFactory());
-
-        public CachedNodeToFeature(SimpleFeatureType schema) {
-            this.schema = schema;
-            this.simpleFeatureBuilder = new SimpleFeatureBuilder(schema);
-            this.geomName = schema.getGeometryDescriptor().getLocalName();
-
-            this.featureBuilder = new FeatureBuilder(schema);
-        }
-
-        @Override
-        public SimpleFeature apply(NodeRef r) {
-            Envelope bounds = r.getNode().bounds().orNull();
-            final boolean isPoint = bounds != null && bounds.getWidth() == 0
-                    && bounds.getHeight() == 0;
-            Geometry geom = null;
-            if (isPoint) {
-                geom = gf.createPoint(new Coordinate(bounds.getMinX(), bounds.getMinY()));
-            } else {
-                Map<String, Object> extraData = r.getNode().getExtraData();
-                if (extraData != null && extraData.containsKey("geometry")) {
-                    geom = (Geometry) extraData.get("geometry");
-                    // if (geom != null) {
-                    // geom = (Geometry) geom.clone();
-                    // }
-                }
-            }
-            SimpleFeature feature;
-            if (geom == null) {
-                throw new IllegalStateException();
-            } else {
-                simpleFeatureBuilder.reset();
-                simpleFeatureBuilder.set(geomName, geom);
-                String fid = r.getNode().getName();
-                feature = simpleFeatureBuilder.buildFeature(fid);
-            }
-            return feature;
-        }
-
-    }
-
-    private static class FetchFunction implements Function<List<NodeRef>, Iterator<SimpleFeature>> {
-
-        private class AsFeature implements Function<RevObject, SimpleFeature> {
-
-            private final FeatureBuilder featureBuilder;
-
-            private final ArrayListMultimap<ObjectId, String> fidIndex;
-
-            private GeometryFactory gf;
-
-            public AsFeature(FeatureBuilder featureBuilder,
-                    ArrayListMultimap<ObjectId, String> fidIndex, GeometryFactory gf) {
-                this.featureBuilder = featureBuilder;
-                this.fidIndex = fidIndex;
-                this.gf = gf;
-            }
-
-            @Override
-            public SimpleFeature apply(RevObject obj) {
-                final RevFeature revFeature = (RevFeature) obj;
-                final ObjectId id = obj.getId();
-                List<String> list = fidIndex.get(id);
-                final String fid = list.remove(0);
-
-                Feature feature = featureBuilder.build(fid, revFeature, gf);
-                return (SimpleFeature) feature;
-            }
-        }
-
-        private final ObjectDatabase source;
-
-        private final FeatureBuilder featureBuilder;
-
-        private SimpleFeatureType schema;
-
-        private SimpleFeatureBuilder simpleFeatureBuilder;
-
-        private String geomName;
-
-        private static GeometryFactory DEFAULT_GEOMFAC = new GeometryFactory(
-                new PackedCoordinateSequenceFactory());
-
-        private final GeometryFactory gf;
-
-        // RevObjectParse parser = context.command(RevObjectParse.class);
-        public FetchFunction(ObjectDatabase source, SimpleFeatureType schema,
-                GeometryFactory geomFac) {
-            this.schema = schema;
-            this.simpleFeatureBuilder = new SimpleFeatureBuilder(schema);
-            this.geomName = schema.getGeometryDescriptor().getLocalName();
-
-            this.featureBuilder = new FeatureBuilder(schema);
-            this.source = source;
-            this.gf = geomFac == null ? DEFAULT_GEOMFAC : geomFac;
-        }
-
-        @Override
-        public Iterator<SimpleFeature> apply(List<NodeRef> refs) {
-            // List<SimpleFeature> res = new ArrayList<>(refs.size());
-            // List<NodeRef> missing = new ArrayList<>(refs.size());
-            //
-            // refs.forEach((r) -> {
-            // Envelope bounds = r.getNode().bounds().orNull();
-            // final boolean isPoint = bounds != null && bounds.getWidth() == 0
-            // && bounds.getHeight() == 0;
-            // Geometry geom = null;
-            // if (isPoint) {
-            // geom = gf.createPoint(new Coordinate(bounds.getMinX(), bounds.getMinY()));
-            // } else {
-            // Map<String, Object> extraData = r.getNode().getExtraData();
-            // if (extraData != null && extraData.containsKey("geometry")) {
-            // geom = (Geometry) extraData.get("geometry");
-            // // if (geom != null) {
-            // // geom = (Geometry) geom.clone();
-            // // }
-            // }
-            // }
-            // if (geom == null) {
-            // missing.add(r);
-            // } else {
-            // simpleFeatureBuilder.reset();
-            // simpleFeatureBuilder.set(geomName, geom);
-            // String fid = r.getNode().getName();
-            // SimpleFeature feature = simpleFeatureBuilder.buildFeature(fid);
-            // res.add(feature);
-            // }
-            // });
-            //
-            // Iterator<SimpleFeature> result = res.iterator();
-            // if (!missing.isEmpty()) {
-            // // handle the case where more than one feature has the same hash
-            // ArrayListMultimap<ObjectId, String> fidIndex = ArrayListMultimap.create();
-            // for (NodeRef ref : missing) {
-            // fidIndex.put(ref.getObjectId(), ref.name());
-            // }
-            // Iterable<ObjectId> ids = fidIndex.keySet();
-            // Iterator<RevFeature> all = source.getAll(ids, BulkOpListener.NOOP_LISTENER,
-            // RevFeature.class);
-            //
-            // AsFeature asFeature = new AsFeature(featureBuilder, fidIndex);
-            // Iterator<SimpleFeature> features = Iterators.transform(all, asFeature);
-            // result = Iterators.concat(result, features);
-            // }
-            // return result;
-
-            // Envelope env = new Envelope();
-            // List<SimpleFeature> features = new ArrayList<>(refs.size());
-            // for(NodeRef ref : refs){
-            // env.setToNull();
-            // String id = ref.name();
-            // Node node = ref.getNode();
-            // SimpleFeature feature = (SimpleFeature) featureBuilder.buildLazy(id, node, parser);
-            // features.add(feature);
-            // }
-            // return features.iterator();
-
-            // handle the case where more than one feature has the same hash
-            ArrayListMultimap<ObjectId, String> fidIndex = ArrayListMultimap.create();
-            for (NodeRef ref : refs) {
-                fidIndex.put(ref.getObjectId(), ref.name());
-            }
-            Iterable<ObjectId> ids = fidIndex.keySet();
-            Iterator<RevFeature> all = source.getAll(ids, BulkOpListener.NOOP_LISTENER,
-                    RevFeature.class);
-
-            AsFeature asFeature = new AsFeature(featureBuilder, fidIndex, this.gf);
-            Iterator<SimpleFeature> features = Iterators.transform(all, asFeature);
-            return features;
-        }
-
-    }
-
-    // private static class NodeRefToFeature implements Function<NodeRef, SimpleFeature> {
-    //
-    // private RevObjectParse parseRevFeatureCommand;
-    //
-    // private FeatureBuilder featureBuilder;
-    //
-    // public NodeRefToFeature(Context commandLocator, SimpleFeatureType schema) {
-    // this.featureBuilder = new FeatureBuilder(schema);
-    // this.parseRevFeatureCommand = commandLocator.command(RevObjectParse.class);
-    // }
-    //
-    // @Override
-    // public SimpleFeature apply(final NodeRef featureRef) {
-    // final Node node = featureRef.getNode();
-    // final String id = featureRef.name();
-    //
-    // Feature feature = featureBuilder.buildLazy(id, node, parseRevFeatureCommand);
-    // return (SimpleFeature) feature;
-    // }
-    // };
 
     private static final class FilterPredicate implements Predicate<SimpleFeature> {
         private Filter filter;
@@ -765,5 +463,6 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             stats.add(b, skip);
             return !skip;
         }
+
     }
 }

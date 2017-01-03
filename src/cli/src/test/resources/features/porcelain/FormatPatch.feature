@@ -7,7 +7,7 @@ Feature: "format-patch" command
     Given I have a repository
       And I stage 6 features
       And I modify a feature
-     When I run the command "format-patch -f some_file"
+     When I run the command "format-patch -f ${currentdir}/some_file"
      Then it should exit with zero exit code
   
   Scenario: I try to create a patch without specifying the file
@@ -20,7 +20,7 @@ Feature: "format-patch" command
   Scenario: I try to create a patch when there are no changes
     Given I have a repository
       And I have several commits
-     When I run the command "format-patch -f some_file"
+     When I run the command "format-patch -f ${currentdir}/some_file"
      Then the response should contain "No differences found"
      
   Scenario: I try to create a patch with too many commit arguments

@@ -9,6 +9,7 @@ Scenario: I try to rebuild the graph
       And the repository has a truncated graph database
      When I run the command "rebuild-graph"
      Then the response should contain "The following graph elements (commits) were incomplete or missing and have been fixed:"
+      And the response should contain 4 lines
 
 Scenario: I try to rebuild the graph with quiet argument
     Given I have a repository

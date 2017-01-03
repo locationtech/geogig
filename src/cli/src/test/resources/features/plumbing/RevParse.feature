@@ -5,7 +5,7 @@ Feature: "rev-parse" command
 Scenario: I try to print out the repository location"
     Given I have a repository
      When I run the command "rev-parse --resolve-geogig-uri"
-     Then the response should contain "data/localrepo/"
+     Then the response should contain "localrepo"
 
 Scenario: I check if I am in a repository
     Given I have a repository

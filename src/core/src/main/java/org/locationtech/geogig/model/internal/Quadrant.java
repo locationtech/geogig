@@ -11,6 +11,8 @@ package org.locationtech.geogig.model.internal;
 
 import com.vividsolutions.jts.geom.Envelope;
 
+import java.awt.geom.QuadCurve2D;
+
 public enum Quadrant {
     SW(0, 0), NW(0, 1), NE(1, 1), SE(1, 0);
 
@@ -21,7 +23,16 @@ public enum Quadrant {
     Quadrant(int offsetX, int offsetY) {
         this.offsetX = offsetX;
         this.offsetY = offsetY;
+    }
 
+    public int getBucketNumber() {
+        int i=0;
+        for (Quadrant q : Quadrant.values()) {
+            if (q.equals(this))
+                return i;
+            i++;
+        }
+        return -1;
     }
 
     public Envelope slice(Envelope parent) {

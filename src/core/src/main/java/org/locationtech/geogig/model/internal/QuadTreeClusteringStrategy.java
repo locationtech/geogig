@@ -47,14 +47,21 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
         return 128;
     }
 
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+
+    public Envelope getMaxBound() {
+        return maxBounds;
+    }
+
     @Override
     public @Nullable QuadTreeNodeId computeId(final Node node) {
-        QuadTreeNodeId nodeId = null;
         Optional<Envelope> bounds = node.bounds();
-        if (bounds.isPresent()) {
-            nodeId = computeIdInternal(node, bounds.get());
+        if (!bounds.isPresent() || bounds.get().isNull()) {
+            return null; //no bounds -> not in tree
         }
-        return nodeId;
+        return computeIdInternal(node, bounds.get());
     }
 
     private QuadTreeNodeId computeIdInternal(Node node, Envelope nodeBounds) {

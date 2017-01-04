@@ -75,3 +75,10 @@ Feature: "fetch" command
      When I run the command "clone ${remoterepo} ${localrepo}"
       And I run the command "tag"
      Then the response should contain "example"
+    
+  Scenario: Try to fetch from unchanged remote
+    Given I am in an empty directory
+      And there is a remote repository
+      And I run the command "clone ${remoterepo} ${localrepo}"
+     When I run the command "fetch origin"
+     Then the response should contain "Already up to date"

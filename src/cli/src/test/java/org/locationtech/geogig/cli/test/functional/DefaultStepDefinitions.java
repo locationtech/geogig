@@ -54,6 +54,7 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
@@ -161,6 +162,12 @@ public class DefaultStepDefinitions {
             }
         }
         return repoUri;
+    }
+
+    @Given("^the repository has a truncated graph database$")
+    public void the_repository_has_a_truncated_graph_database() throws Throwable {
+        Repository repository = localRepo.geogigCLI.getGeogig().getRepository();
+        repository.graphDatabase().truncate();
     }
 
     @Given("^I am in an empty directory$")
@@ -440,6 +447,13 @@ public class DefaultStepDefinitions {
 
     }
 
+    @Given("^the remote repository has changes")
+    public void the_remote_repository_has_changes() throws Throwable {
+        CLIContext remoteRepo = contextProvider.getOrCreateRepositoryContext("remoterepo");
+        remoteRepo.insertAndAdd(lines3);
+        remoteRepo.runCommand(true, "commit -m Commit10");
+    }
+
     @Given("^I have a repository$")
     public void I_have_a_repository() throws Throwable {
         I_have_an_unconfigured_repository();
@@ -479,6 +493,12 @@ public class DefaultStepDefinitions {
         } else {
             throw new Exception("Unknown Feature");
         }
+    }
+
+    @Given("^I have a local committer")
+    public void I_have_a_local_committer() throws Throwable {
+        localRepo.runCommand(true, "config", "--local", "user.name", "Jane Doe");
+        localRepo.runCommand(true, "config", "--local", "user.email", "JaneDoe@example.com");
     }
 
     @Given("^I have 6 unstaged features$")
@@ -560,6 +580,16 @@ public class DefaultStepDefinitions {
         localRepo.insert(points1_modified);
     }
 
+    @Given("I remove and add a feature")
+    public void I_remove_and_add_a_feature() throws Throwable {
+        localRepo.deleteAndAdd(points1);
+    }
+
+    @Given("I remove a feature")
+    public void I_remove_a_feature() throws Throwable {
+        localRepo.delete(points1);
+    }
+
     @Given("^I a featuretype is modified$")
     public void I_modify_a_feature_type() throws Throwable {
         localRepo.deleteAndReplaceFeatureType();
@@ -618,4 +648,15 @@ public class DefaultStepDefinitions {
         assertTrue(dir.mkdirs());
         localRepo.platform.setWorkingDir(dir);
     }
+
+    @Given("^I create a detached branch")
+    public void I_create_a_detached_branch() throws Throwable {
+        localRepo.runCommand(true, "log --oneline");
+        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
+                .replaceAll("\\\\", "/");
+        String[] commitId = actual.split(" ");
+        localRepo.runCommand(true, "checkout " + commitId[0]);
+    }
+    
+
 }

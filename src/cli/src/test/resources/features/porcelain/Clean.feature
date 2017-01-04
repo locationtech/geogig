@@ -27,8 +27,8 @@ Feature: "clean" command
       And I have unstaged "points1"
       And I have unstaged "points2"
       And I have unstaged "lines1"
-     When I run the command "clean Wrong"      
-     Then the response should contain "did not match any tree"    
+     When I run the command "clean fakeTree"
+     Then the response should contain "did not match any tree"
       And it should exit with non-zero exit code  
        
   Scenario: Try to remove all the untracked features in a path that is not a tree
@@ -39,6 +39,14 @@ Feature: "clean" command
      When I run the command "clean Points/Points.1"
      Then the response should contain "did not resolve to a tree"
       And it should exit with non-zero exit code         
+      
+  Scenario: Try to know which untracked features would be removed in a non-existent tree
+    Given I have a repository
+      And I have unstaged "points1"
+      And I have unstaged "points2"
+      And I have unstaged "lines1"
+     When I run the command "clean -n fake/tree"
+     Then the response should contain "pathspec 'fake/tree' did not match any tree"
      
   Scenario: Try to know which untracked features would be removed
     Given I have a repository
@@ -46,4 +54,5 @@ Feature: "clean" command
       And I have unstaged "points2"
       And I have unstaged "lines1"
      When I run the command "clean -n"
-     Then the response should contain "Would remove Points/Points.1"          
+     Then the response should contain "Would remove Points/Points.1"
+     

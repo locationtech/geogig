@@ -8,6 +8,11 @@ Feature: "push" command
      When I run the command "push origin"
      Then the response should start with "Not in a geogig repository"
      
+  Scenario: Try to push with no changes
+    Given I clone a remote repository
+     When I run the command "push"
+     Then the response should contain "Nothing to push."
+  
   Scenario: Try to push to origin
     Given I clone a remote repository
      When I modify and add a feature
@@ -23,3 +28,13 @@ Feature: "push" command
      Then the response should contain "Committed, counting objects"
       And I run the command "push origin HEAD"
      Then it should answer "Push failed: Cannot push to a symbolic reference"     
+     
+  Scenario: Try to push when the remote has changes
+    Given I clone a remote repository
+      And the remote repository has changes
+      And I modify and add a feature
+     When I run the command "commit -m modified"
+     Then the response should contain "1 changed"
+     When I run the command "push"
+     Then the response should contain "Push failed: The remote repository has changes"
+  

@@ -81,3 +81,22 @@ Feature: "clone" command
       And the response should contain "Commit3"
       And the response should contain "Commit2"
       And the response should contain "Commit1"
+      
+  Scenario: Try to do a sparse clone of a remote repository with no branch specified
+    Given I am in an empty directory
+      And there is a remote repository
+     When I run the command "clone --filter someFilter ${remoterepo} ${repoURI}"
+     Then the response should contain "Sparse Clone: You must explicitly specify a remote branch"
+  
+  Scenario: Try to clone a remote repository that has already been cloned
+    Given I am in an empty directory
+      And there is a remote repository
+     When I run the command "clone ${remoterepo} ${repoURI}"
+      And I run the command "clone ${remoterepo} ${repoURI}"
+     Then the response should contain "Destination repository already exists"
+     
+  Scenario: Try to clone a remote repository with a single argument
+    Given I am in an empty directory
+      And there is a remote repository
+     When I run the command "clone fakeRepo"
+     Then the response should contain "Remote repository has no HEAD"

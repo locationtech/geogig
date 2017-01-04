@@ -104,7 +104,6 @@ Feature: "commit" command
      Then the response should contain "Merge branch refs/heads/branch1"
       And the response should contain "Conflicts:"
       And the response should contain "Points/Points.1"             
-
      
   Scenario: Try to commit only points
     Given I have a repository

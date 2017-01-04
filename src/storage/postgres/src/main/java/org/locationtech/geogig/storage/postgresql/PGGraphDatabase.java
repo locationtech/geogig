@@ -162,19 +162,20 @@ public class PGGraphDatabase implements GraphDatabase {
     @Override
     public boolean put(ObjectId commitId, ImmutableList<ObjectId> parentIds) {
         final PGId node = PGId.valueOf(commitId);
-        final boolean exists;
+        boolean updated;
         try (Connection cx = PGStorage.newConnection(dataSource)) {
-            exists = exists(node, cx);
+            updated = !exists(node, cx);
             // NOTE: runs in autoCommit mode to ignore statement failures due to duplicates (?)
             // TODO: if node was node added should we severe existing parent relationships?
             for (ObjectId p : parentIds) {
-                relate(node, PGId.valueOf(p), cx);
+                boolean isDuplicate = relate(node, PGId.valueOf(p), cx);
+                updated = updated || !isDuplicate;
             }
         } catch (SQLException e) {
             throw propagate(e);
         }
 
-        return !exists;
+        return updated;
     }
 
     /**
@@ -182,20 +183,23 @@ public class PGGraphDatabase implements GraphDatabase {
      * 
      * @param src The source (origin) node of the relationship.
      * @param dst The destination (origin) node of the relationship.
+     * @return {@code true} if the relationship already existed in the database
      */
-    void relate(final PGId src, final PGId dst, final Connection cx) throws SQLException {
+    boolean relate(final PGId src, final PGId dst, final Connection cx) throws SQLException {
         final String insert = format("INSERT INTO %s (src, dst) VALUES (ROW(?,?,?), ROW(?,?,?))",
                 EDGES);
 
+        boolean isDuplicate = false;
         try (PreparedStatement ps = cx.prepareStatement(log(insert, LOG, src, dst))) {
             src.setArgs(ps, 1);
             dst.setArgs(ps, 4);
             try {
                 ps.executeUpdate();
             } catch (SQLException duplicateTuple) {
-                // ignore
+                isDuplicate = true;
             }
         }
+        return isDuplicate;
     }
 
     /**

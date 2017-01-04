@@ -11,7 +11,7 @@ Feature: "reset" command
      When I run the command "commit -m Test"
      Then the response should contain "3 features added"
      When I modify and add a feature
-      And I run the command "reset"
+      And I run the command "reset --mixed"
      Then the response should contain "Unstaged changes after reset:"
       And the response should contain 2 lines
      When I run the command "status"
@@ -44,6 +44,28 @@ Feature: "reset" command
      When I run the command "status"
      Then the response should not contain "Changes not staged for commit"
       And the response should contain "Changes to be committed"
+  
+  Scenario: Try to do a mixed and hard reset of all local changes
+    Given I have a repository
+      And I have staged "points1"
+      And I have staged "points2"
+      And I have staged "lines1"
+     When I run the command "commit -m Test"
+     Then the response should contain "3 features added"
+     When I modify and add a feature
+      And I run the command "reset --hard --mixed"
+     Then it should answer "you may only specify one mode."
+     
+  Scenario: Try to do a mixed and soft reset of all local changes
+    Given I have a repository
+      And I have staged "points1"
+      And I have staged "points2"
+      And I have staged "lines1"
+     When I run the command "commit -m Test"
+     Then the response should contain "3 features added"
+     When I modify and add a feature
+      And I run the command "reset --soft --mixed"
+     Then it should answer "you may only specify one mode."
      
   Scenario: Try to reset from an empty directory
     Given I am in an empty directory
@@ -139,3 +161,9 @@ Feature: "reset" command
      Then it should answer "Ambiguous call, cannot specify paths and reset mode."
       And it should exit with non-zero exit code
      
+  Scenario: Try to do a reset with removed feature
+    Given I have a repository
+      And I have several commits
+      And I remove and add a feature
+     When I run the command "reset"
+     Then the response should contain "Unstaged changes after reset"

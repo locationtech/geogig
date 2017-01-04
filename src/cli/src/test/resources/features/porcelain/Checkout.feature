@@ -134,4 +134,16 @@ Feature: "checkout" command
       And I run the command "add"
       And I run the command "commit -m Commit"
      Then the response should contain "Committed"
-             
+    
+  Scenario: Try to checkout a remote branch
+    Given I have a repository with a remote
+     When I run the command "pull origin"
+      And I run the command "checkout branch1"
+     Then the response should contain "Branch 'branch1' was set up to track remote branch 'branch1' from origin"
+      And the response should contain "Switched to a new branch 'branch1'"
+     
+  Scenario: Try to checkout a specific commit
+    Given I have a repository
+      And I have several commits
+     When I create a detached branch
+     Then the response should contain "You are in 'detached HEAD' state"

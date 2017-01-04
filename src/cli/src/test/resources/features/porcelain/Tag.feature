@@ -9,25 +9,27 @@ Feature: "tag" command
   	  And I run the command "tag mytag -m msg"
 	 When I run the command "tag"  	  
   	 Then the response should contain "mytag"
-  	 	
+
   Scenario: Create a new tag
   	Given I have a repository
   	  And I have several commits
   	 When I run the command "tag mytag -m msg"
   	 Then the response should contain "Created tag mytag ->"
-  	 
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
   Scenario: Create a new tag for a given commit
   	Given I have a repository
   	  And I have several commits
   	 When I run the command "tag mytag HEAD^ -m msg"
   	 Then the response should contain "Created tag mytag ->"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD^}"
   	   	 
  Scenario: Delete a tag
   	Given I have a repository
   	  And I have several commits
   	  And I run the command "tag mytag -m msg"
   	 When I run the command "tag -d mytag"
-  	 Then the response should contain "Deleted tag mytag"  	 
+  	 Then the response should contain "Deleted tag mytag"
   	 
  Scenario: Delete an inexistent tag
   	Given I have a repository

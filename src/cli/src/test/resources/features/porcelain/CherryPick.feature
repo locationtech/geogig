@@ -16,11 +16,14 @@ Feature: "cherry-pick" command
      When I run the command "cherry-pick branch1"
       And I run the command "log"
      Then the response should contain "Commit3"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
       And the response should not contain "Commit2"
       And the response should not contain "Commit4"
       And the response should contain "Commit5"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~1}"
       And the response should contain "Commit1"
-      
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~2}"
+
   Scenario: Try to cherry pick a nonexistent branch
     Given I have a repository
       And I have several branches

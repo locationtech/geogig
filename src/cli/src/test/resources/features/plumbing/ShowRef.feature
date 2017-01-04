@@ -11,4 +11,7 @@ Feature: "show-ref" command
       And the response should contain "master"
       And the response should contain "branch1"
       And the response should contain "branch2"
+      And the response should contain variable "{@ObjectId|localrepo|master}"
+      And the response should contain variable "{@ObjectId|localrepo|branch1}"
+      And the response should contain variable "{@ObjectId|localrepo|branch2}"
       

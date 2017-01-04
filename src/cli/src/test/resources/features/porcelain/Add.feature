@@ -11,7 +11,7 @@ Feature: "add" command
      Then the response should contain "1 features and 1 trees staged for commit"
       And it should exit with zero exit code
      When I run the command "conflicts"
-     Then the response should contain "No elements need merging"  
+     Then the response should contain "No elements need merging"
      
   Scenario: Try to add features to the index
     Given I have a repository
@@ -81,4 +81,4 @@ Feature: "add" command
      Then the response should contain "Changes to be committed"
       And the response should contain "3 total"
       And the response should contain "Changes not staged for commit"
-      And the response should contain "2 total"   
+      And the response should contain "2 total"

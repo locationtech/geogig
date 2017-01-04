@@ -17,7 +17,7 @@ Scenario: Try to list conflicts showing diffs
       And I have conflicting branches
      When I run the command "merge branch1"
      And I run the command "conflicts --diff"
-     Then the response should contain "StringProp1_1 -> StringProp1_2"   
+     Then the response should contain "StringProp1_1 -> StringProp1_2"
      
 Scenario: Try to list conflicts showing only ids
     Given I have a repository

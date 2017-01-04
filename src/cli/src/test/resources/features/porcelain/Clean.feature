@@ -11,7 +11,7 @@ Feature: "clean" command
      When I run the command "clean"
      And  I run the command "status"
      Then the response should not contain "Points/Points.1"
-     
+
   Scenario: Try to remove all the untracked features in a tree
     Given I have a repository
       And I have unstaged "points1"
@@ -20,7 +20,7 @@ Feature: "clean" command
      When I run the command "clean Points"
      And I run the command "status"
      Then the response should not contain "Removing Points/Points.1"
-     Then the response should contain "Lines/Lines.1"    
+     Then the response should contain "Lines/Lines.1"
      
   Scenario: Try to remove all the untracked features in a tree that does not exist
     Given I have a repository

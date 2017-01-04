@@ -39,8 +39,6 @@ import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilderTest;
-import org.locationtech.geogig.model.internal.DAGStorageProvider;
-import org.locationtech.geogig.model.internal.HeapDAGStorageProvider;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.repository.Context;
@@ -54,6 +52,7 @@ import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.integration.TestContextBuilder;
 import org.opengis.referencing.operation.TransformException;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
@@ -65,18 +64,12 @@ import com.google.common.collect.Range;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
-
 @Ignore
 public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
     @Override
     protected ObjectStore createObjectStore() {
         return super.createObjectStore();
-    }
-
-    private DAGStorageProvider storageProvider() {
-        return new HeapDAGStorageProvider(objectStore);
-        // return MapdbDAGStorageProvider.quadTree(objectStore);
     }
 
     @Override
@@ -93,7 +86,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
     public void testSmallRects() throws IOException {
         Envelope maxBounds = new Envelope(-180, 180, -90, 90);
         int maxDepth = 8;
-        final int ncount = 100_000;
+        final int ncount = 129;
 
         List<Node> nodes = createSmallRectNodes(nodeRange(ncount), maxBounds);
 
@@ -317,8 +310,8 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         Envelope bounds = new Envelope();
         orig.expand(bounds);
         bounds.expandBy(0.0001);
-        Node change = Node.create(orig.getName(), RevObjectTestSupport.hashString("changes"), ObjectId.NULL,
-                TYPE.FEATURE, bounds);
+        Node change = Node.create(orig.getName(), RevObjectTestSupport.hashString("changes"),
+                ObjectId.NULL, TYPE.FEATURE, bounds);
         nodes.set(1, change);
         // nodes.remove(2000);
         // nodes.remove(200);
@@ -464,14 +457,11 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         final double minX = maxBounds.getMinX();
         final double minY = maxBounds.getMinY();
 
-        Stopwatch nodeTime = Stopwatch.createUnstarted();
-
         List<Node> nodes = new ArrayList<Node>(nodeIds.size());
         // List<Geometry> geoms = new ArrayList<Geometry>(nodeIds.size());
         GeometryFactory gf = new GeometryFactory();
         Random random = new Random();
         for (Integer intId : nodeIds) {
-            nodeTime.start();
             String nodeName = String.valueOf(intId);
             String sid = "a" + Strings.padStart(nodeName, 39, '0');// avoid creating ObjectId.NULL
             ObjectId oid = ObjectId.valueOf(sid);
@@ -482,11 +472,9 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
             Envelope bounds = new Envelope(x, x, y, y);
 
             Node node = Node.create(nodeName, oid, ObjectId.NULL, TYPE.FEATURE, bounds);
-            nodeTime.stop();
             nodes.add(node);
         }
         // System.err.println(gf.buildGeometry(geoms));
-        System.err.printf("%,d unique nodes created in %s.\n", nodeIds.size(), nodeTime);
         return nodes;
     }
 
@@ -511,11 +499,14 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
             String sid = Strings.padStart(nodeName, 40, '0');
             ObjectId oid = RevObjectTestSupport.hashString(sid);
 
-            double x1 = minX + (intId * stepx);
-            double x2 = minX + (intId * stepx) + stepx;
-            double y1 = minY + maxBounds.getHeight() * random.nextDouble();
-            double y2 = y1 + stepy;
+            double x1 = Math.min(maxBounds.getMaxX(), minX + (intId * stepx));
+            double x2 = Math.min(maxBounds.getMaxX(), minX + (intId * stepx) + stepx);
+            double y1 = Math.min(maxBounds.getMaxY(),
+                    minY + maxBounds.getHeight() * random.nextDouble());
+            double y2 = Math.min(maxBounds.getMaxY(), y1 + stepy);
             Envelope bounds = new Envelope(x1, x2, y1, y2);
+
+            Preconditions.checkState(!bounds.isNull() && maxBounds.contains(bounds));
 
             Polygon geometry = JTS.toGeometry(bounds, gf);
             Map<String, Object> extraData = ImmutableMap.<String, Object> of("geometry", geometry);
@@ -605,7 +596,8 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
             final ObjectStore objectStore) {
         System.err.printf("Creating QuadTree with %,d nodes...", nodes.size());
 
-        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(objectStore, RevTree.EMPTY, maxBounds, maxDepth);
+        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(objectStore, RevTree.EMPTY, maxBounds,
+                maxDepth);
 
         Stopwatch sw = Stopwatch.createUnstarted();
 

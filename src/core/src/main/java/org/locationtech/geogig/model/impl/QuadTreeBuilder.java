@@ -34,7 +34,7 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         return clusteringStrategy;
     }
 
-    public static RevTreeBuilder quadTree(final ObjectStore store, final RevTree original) {
+    public static QuadTreeBuilder quadTree(final ObjectStore store, final RevTree original) {
         Preconditions.checkNotNull(store);
         Preconditions.checkNotNull(original);
         final Envelope MAX_BOUNDS_WGS84 = new Envelope(-180, 180, -90, 90);
@@ -42,7 +42,7 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         return QuadTreeBuilder.quadTree(store, original, MAX_BOUNDS_WGS84, DEFAULT_MAX_DEPTH);
     }
 
-    public static RevTreeBuilder quadTree(final ObjectStore store, final RevTree original,
+    public static QuadTreeBuilder quadTree(final ObjectStore store, final RevTree original,
             final Envelope maxBounds, final int maxDepth) {
         Preconditions.checkNotNull(store);
         Preconditions.checkNotNull(maxBounds);
@@ -54,4 +54,7 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         return builder;
     }
 
+    public int getDepth() {
+        return clusteringStrategy.depth();
+    }
 }

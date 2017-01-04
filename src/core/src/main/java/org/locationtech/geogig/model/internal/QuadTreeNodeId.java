@@ -18,7 +18,7 @@ import com.google.common.collect.Ordering;
 class QuadTreeNodeId extends NodeId {
 
     // there's some overhead in calling Quadrant.values() repeatedly so cache it
-    private static final Quadrant[] QUADRANTS = Quadrant.values();
+    static final Quadrant[] QUADRANTS = Quadrant.values();
 
     private static final Ordering<Quadrant[]> COMPARATOR = new Ordering<Quadrant[]>() {
         @Override

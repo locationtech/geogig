@@ -206,8 +206,8 @@ final class DAG implements Cloneable, Serializable {
         return changed;
     }
 
-    public synchronized void addNonPromotable(NodeId id) {
-        if (nonPromotable == null) {
+    public void addNonPromotable(NodeId id) {
+        if (nonPromotable.isEmpty()) {
             nonPromotable = new HashSet<>();
         }
         if (!nonPromotable.add(id)) {

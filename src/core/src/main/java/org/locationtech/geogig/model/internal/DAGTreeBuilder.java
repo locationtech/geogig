@@ -137,7 +137,9 @@ public class DAGTreeBuilder {
         SharedState state = new SharedState(targetStore, clusteringStrategy, listener);
 
         DAG root = clusteringStrategy.buildRoot();
-        TreeBuildTask task = new TreeBuildTask(state, root, 0);
+        TreeId rootId = clusteringStrategy.getRootId();
+        final int baseDepth = rootId.depthLength();
+        TreeBuildTask task = new TreeBuildTask(state, root, baseDepth);
 
         RevTree tree;
         try {
@@ -254,12 +256,13 @@ public class DAGTreeBuilder {
         }
 
         private RevTree buildLeafTree(DAG root) {
-            Preconditions.checkState(root.numUnpromotable() == 0);
+            Preconditions.checkState(root.numBuckets() == 0);
 
             final ImmutableList<Node> children;
             {
                 Set<NodeId> childrenIds = new HashSet<>();
                 root.forEachChild((id) -> childrenIds.add(id));
+                root.forEachUnpromotableChild((id) -> childrenIds.add(id));
                 children = toNodes(childrenIds);
             }
 

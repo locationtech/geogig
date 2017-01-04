@@ -120,23 +120,17 @@ public abstract class RevTreeBuilderTest {
 
     @Test
     public void testPutIterate() throws Exception {
-        final int numEntries = 100 * 1000;
+        final int numEntries = 513;//100 * 1000;
         ObjectId treeId;
 
         treeId = createAndSaveTree(numEntries, true);
 
         final RevTree tree = objectStore.getTree(treeId);
 
-        int counted = 0;
-        for (DepthTreeIterator it = new DepthTreeIterator("", ObjectId.NULL, tree, objectStore,
-                Strategy.CHILDREN); it.hasNext(); counted++) {
-            NodeRef ref = it.next();
-        }
-        counted = 0;
-        for (DepthTreeIterator it = new DepthTreeIterator("", ObjectId.NULL, tree, objectStore,
-                Strategy.CHILDREN); it.hasNext(); counted++) {
-            NodeRef ref = it.next();
-        }
+        DepthTreeIterator it = new DepthTreeIterator("", ObjectId.NULL, tree, objectStore,
+                Strategy.CHILDREN);
+
+        int counted = Iterators.size(it);
         assertEquals(numEntries, counted);
     }
 
@@ -415,8 +409,7 @@ public abstract class RevTreeBuilderTest {
 
         geoms.add(JTS.toGeometry(SpatialOps.boundsOf(root), gf));
 
-        PreOrderDiffWalk walk = new PreOrderDiffWalk(RevTree.EMPTY, root, objectStore,
-                objectStore);
+        PreOrderDiffWalk walk = new PreOrderDiffWalk(RevTree.EMPTY, root, objectStore, objectStore);
         walk.walk(new PreOrderDiffWalk.AbstractConsumer() {
             @Override
             public synchronized boolean bucket(NodeRef leftParent, NodeRef rightParent,

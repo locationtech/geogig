@@ -16,6 +16,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 
+import com.google.common.base.Optional;
 import com.vividsolutions.jts.geom.Envelope;
 
 class QuadTreeClusteringStrategy extends ClusteringStrategy {
@@ -49,20 +50,19 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
     @Override
     public @Nullable QuadTreeNodeId computeId(final Node node) {
         QuadTreeNodeId nodeId = null;
-        if (node.bounds().isPresent()) {
-            nodeId = computeIdInternal(node);
+        Optional<Envelope> bounds = node.bounds();
+        if (bounds.isPresent()) {
+            nodeId = computeIdInternal(node, bounds.get());
         }
         return nodeId;
     }
 
-    private QuadTreeNodeId computeIdInternal(Node node) {
+    private QuadTreeNodeId computeIdInternal(Node node, Envelope nodeBounds) {
 
         final int maxDepth = this.maxDepth;
-
-        Envelope nodeBounds = node.bounds().get();
         List<Quadrant> quadrantsByDepth = new ArrayList<>(maxDepth);
 
-        final Quadrant[] quadrants = Quadrant.values();
+        final Quadrant[] quadrants = QuadTreeNodeId.QUADRANTS;
 
         Envelope parentQuadrantBounds = this.maxBounds;
 

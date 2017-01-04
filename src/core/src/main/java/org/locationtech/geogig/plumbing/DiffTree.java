@@ -94,7 +94,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
     private static ExecutorService producerThreads;
 
-    private StatsConsumer statsConsumer;
+    private Stats stats;
 
     private boolean recordStats;
 
@@ -116,8 +116,8 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         return this;
     }
 
-    public Stats getStats() {
-        return statsConsumer == null ? null : statsConsumer.stats;
+    public Optional<Stats> getStats() {
+        return Optional.fromNullable(stats);
     }
 
     /**
@@ -245,11 +245,16 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         diffProducer.setRecursive(this.recursive);
 
         final List<RuntimeException> producerErrors = new LinkedList<>();
-
+        if (recordStats) {
+            stats = new Stats();
+        }
         Runnable producer = new Runnable() {
             @Override
             public void run() {
                 Consumer consumer = diffProducer;
+                if (recordStats) {
+                    consumer = new AcceptedFeaturesStatsConsumer(consumer, stats);
+                }
                 if (limit != null) {// evaluated the latest
                     consumer = new PreOrderDiffWalk.MaxFeatureDiffsLimiter(consumer, limit);
                 }
@@ -267,10 +272,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                     consumer = new PathFilteringDiffConsumer(pathFilters, consumer);
                 }
                 if (recordStats) {
-                    statsConsumer = new StatsConsumer(consumer);
-                    consumer = statsConsumer;
-                } else {
-                    statsConsumer = null;
+                    consumer = new StatsConsumer(consumer, stats);
                 }
                 try {
                     LOGGER.trace("walking diff {} / {}", oldRefSpec, newRefSpec);
@@ -579,27 +581,45 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
     public static class Stats {
         public final AtomicLong allTrees = new AtomicLong(), acceptedTrees = new AtomicLong(),
                 allBuckets = new AtomicLong(), acceptedBuckets = new AtomicLong(),
-                features = new AtomicLong();
+                allFeatures = new AtomicLong(), acceptedFeatures = new AtomicLong();
 
         @Override
         public String toString() {
-            return String.format("Trees: %,d/%,d; buckets: %,d/%,d; features: %,d",
+            return String.format("Trees: %,d/%,d; buckets: %,d/%,d; features: %,d/%,d",
                     acceptedTrees.get(), allTrees.get(), acceptedBuckets.get(), allBuckets.get(),
-                    features.get());
+                    acceptedFeatures.get(), allFeatures.get());
         }
     }
 
-    private static class StatsConsumer extends ForwardingConsumer {
+    private static class AcceptedFeaturesStatsConsumer extends ForwardingConsumer {
 
-        private Stats stats = new Stats();
+        private final Stats stats;
 
-        public StatsConsumer(Consumer delegate) {
+        public AcceptedFeaturesStatsConsumer(Consumer delegate, Stats stats) {
             super(delegate);
+            this.stats = stats;
         }
 
         @Override
         public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
-            stats.features.incrementAndGet();
+            stats.acceptedFeatures.incrementAndGet();
+            return super.feature(left, right);
+        }
+
+    }
+
+    private static class StatsConsumer extends ForwardingConsumer {
+
+        private Stats stats;
+
+        public StatsConsumer(Consumer delegate, Stats stats) {
+            super(delegate);
+            this.stats = stats;
+        }
+
+        @Override
+        public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            stats.allFeatures.incrementAndGet();
             return super.feature(left, right);
         }
 

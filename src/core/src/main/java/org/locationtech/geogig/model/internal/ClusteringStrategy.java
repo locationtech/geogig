@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -46,6 +45,8 @@ public abstract class ClusteringStrategy {
     private static final TreeId ROOT_ID = new TreeId(new byte[0]);
 
     private DAG root;
+
+    private TreeId rootId = ROOT_ID;
 
     protected ClusteringStrategy(RevTree original, DAGStorageProvider storageProvider) {
         checkNotNull(original);
@@ -73,11 +74,11 @@ public abstract class ClusteringStrategy {
 
         final DAGStorageProviderFactory dagStorageFactory;
         // dagStorageFactory = new RocksdbDAGStorageProviderFactory(store);
-        dagStorageFactory = new CachingDAGStorageProviderFactory(store);
-        // dagStorageFactory = new HeapDAGStorageProviderFactory(store);
+        // dagStorageFactory = new CachingDAGStorageProviderFactory(store);
+        dagStorageFactory = new HeapDAGStorageProviderFactory(store);
         ClusteringStrategyFactory quadtree = ClusteringStrategyFactory.quadtree(maxBounds,
                 maxDepth);
-        return null;
+        return quadtree.create(original, dagStorageFactory);
     }
 
     abstract int maxBuckets(final int depthIndex);
@@ -129,7 +130,7 @@ public abstract class ClusteringStrategy {
         this.storageProvider.dispose();
     }
 
-    int depth() {
+    public int depth() {
         return depth(buildRoot());
     }
 
@@ -154,8 +155,6 @@ public abstract class ClusteringStrategy {
         put(removeNode);
     }
 
-    Set<NodeId> nodeIdBuff = new TreeSet<>();
-
     public void put(final Node node) {
         @Nullable
         final NodeId nodeId = computeId(node);
@@ -163,7 +162,11 @@ public abstract class ClusteringStrategy {
         // feature in a spatial index)
         if (nodeId != null) {
             boolean remove = node.getObjectId().isNull();
-            put(ROOT_ID, root, nodeId, remove, 0);
+            int rootDepth = rootId.depthLength();// usually zero, unless buildRoot() has already
+                                                 // been called and it reset the root DAG to be
+                                                 // _the_ single bucket root had (in case it had
+                                                 // only one)
+            put(rootId, root, nodeId, remove, rootDepth);
             if (!remove) {
                 storageProvider.saveNode(nodeId, node);
             }
@@ -174,11 +177,24 @@ public abstract class ClusteringStrategy {
         }
     }
 
+    public TreeId getRootId() {
+        return rootId;
+    }
+
     public DAG buildRoot() {
         if (!treeBuff.isEmpty()) {
             storageProvider.save(treeBuff);
             treeBuff.clear();
         }
+        ///
+        while (1 == root.numBuckets() && 0 == root.numUnpromotable()) {
+            root.forEachBucket((treeId) -> {
+                DAG actual = getOrCreateDAG(treeId);
+                root = actual;
+                rootId = treeId;
+            });
+        }
+
         return root;
     }
 
@@ -226,7 +242,7 @@ public abstract class ClusteringStrategy {
                     // created
                     if (bucketId == null) {
                         // node can't be promoted to depth + 1, must stay in children's list
-                        dag.addNonPromotable(nodeId);
+                        dag.addNonPromotable(childId);
                     } else {
                         DAG bucketDAG = getOrCreateDAG(bucketId);
                         dag.addBucket(bucketId);

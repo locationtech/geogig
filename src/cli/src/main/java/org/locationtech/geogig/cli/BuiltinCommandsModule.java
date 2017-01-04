@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli;
 
 import org.locationtech.geogig.cli.plumbing.Cat;
+import org.locationtech.geogig.cli.plumbing.CreateIndex;
 import org.locationtech.geogig.cli.plumbing.DiffTree;
 import org.locationtech.geogig.cli.plumbing.Insert;
 import org.locationtech.geogig.cli.plumbing.LsTree;
@@ -131,6 +132,7 @@ public class BuiltinCommandsModule extends AbstractModule implements CLIModule {
         bind(WalkGraph.class);
         bind(Version.class);
         bind(RebuildGraph.class);
+        bind(CreateIndex.class);
     }
 
 }

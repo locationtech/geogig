@@ -65,21 +65,29 @@ public class Serve extends AbstractCommand {
     protected void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
 
-        String loc = repo != null && repo.size() > 0 ? repo.get(0) : ".";
-
-        URI repoURI = null;
-        try {
-            repoURI = RepositoryResolver.resolveRepoUriFromString(cli.getPlatform(), loc);
-        } catch (URISyntaxException e) {
-            throw new CommandFailedException("Unable to parse the root repository URI.", e);
-        }
+        String loc = repo != null && repo.size() > 0 ? repo.get(0) : null;
 
         RepositoryProvider provider = null;
-        if (multiRepo) {
-            provider = new MultiRepositoryProvider(repoURI);
+        if (cli.getGeogig() != null && cli.getGeogig().isOpen()) {
+            if (loc != null || multiRepo) {
+                throw new CommandFailedException("Cannot specify a repository or serve multiple repositories from within a repository.");
+            }
+            provider = new SingleRepositoryProvider(cli.getGeogig().getRepository());
         } else {
-            provider = new SingleRepositoryProvider(loadGeoGIG(repoURI, cli));
+            URI repoURI = null;
+            try {
+                repoURI = RepositoryResolver.resolveRepoUriFromString(cli.getPlatform(), loc == null ? "." : loc);
+            } catch (URISyntaxException e) {
+                throw new CommandFailedException("Unable to parse the root repository URI.", e);
+            }
+    
+            if (multiRepo) {
+                provider = new MultiRepositoryProvider(repoURI);
+            } else {
+                provider = new SingleRepositoryProvider(loadGeoGIG(repoURI, cli));
+            }
         }
+        
         Application application = new Main(provider, multiRepo);
 
         Component comp = new Component();

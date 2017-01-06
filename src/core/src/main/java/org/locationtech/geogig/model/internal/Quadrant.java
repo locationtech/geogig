@@ -24,13 +24,7 @@ public enum Quadrant {
     }
 
     public int getBucketNumber() {
-        int i = 0;
-        for (Quadrant q : Quadrant.values()) {
-            if (q.equals(this))
-                return i;
-            i++;
-        }
-        return -1;
+       return this.ordinal();
     }
 
     public Envelope slice(Envelope parent) {

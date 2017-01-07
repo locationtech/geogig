@@ -14,6 +14,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.featureNode;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.featureNodes;
+import static org.mockito.Mockito.doReturn;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,22 +36,17 @@ import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.LegacyTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
-import org.locationtech.geogig.model.internal.ClusteringStrategy;
-import org.locationtech.geogig.model.internal.ClusteringStrategyFactory;
-import org.locationtech.geogig.model.internal.DAG;
-import org.locationtech.geogig.model.internal.DAGStorageProviderFactory;
-import org.locationtech.geogig.model.internal.NodeId;
-import org.locationtech.geogig.model.internal.TreeId;
-import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
+import org.mockito.Mockito;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
@@ -64,23 +60,23 @@ import com.google.common.collect.Sets;
 
 public abstract class CanonicalClusteringStrategyTest {
 
-    private DAGStorageProviderFactory storageProvider;
-
     private ObjectStore store;
 
-    private ClusteringStrategyFactory canonical;
+    private ClusteringStrategyBuilder canonical;
 
     private ClusteringStrategy strategy;
 
     @Before
     public void before() {
-        canonical = ClusteringStrategyFactory.canonical();
         store = new HeapObjectStore();
         store.open();
-        storageProvider = createStorageProvider(store);
+        canonical = ClusteringStrategyBuilder.canonical(store);
+        canonical = Mockito.spy(canonical);
+        DAGStorageProvider dagStore = createStorageProvider(store);
+        doReturn(dagStore).when(canonical).createDAGStoreageProvider();
     }
 
-    protected abstract DAGStorageProviderFactory createStorageProvider(ObjectStore source);
+    protected abstract DAGStorageProvider createStorageProvider(ObjectStore source);
 
     @After
     public void after() {
@@ -92,7 +88,7 @@ public abstract class CanonicalClusteringStrategyTest {
 
     @Test
     public void buildSimpleDAGFromScratch() {
-        strategy = canonical.create(RevTree.EMPTY, storageProvider);
+        strategy = canonical.build();
         for (int i = 0; i < strategy.normalizedSizeLimit(0); i++) {
             Node node = featureNode("f", i);
             strategy.put(node);
@@ -107,7 +103,7 @@ public abstract class CanonicalClusteringStrategyTest {
 
     @Test
     public void buildSplittedDAGFromScratch() {
-        strategy = canonical.create(RevTree.EMPTY, storageProvider);
+        strategy = canonical.build();
 
         final int numNodes = 2 * strategy.normalizedSizeLimit(0);
 
@@ -132,7 +128,7 @@ public abstract class CanonicalClusteringStrategyTest {
                 CanonicalNodeNameOrder.normalizedSizeLimit(0));
         store.put(original);
 
-        strategy = canonical.create(original, storageProvider);
+        strategy = canonical.original(original).build();
 
         final int numNodes = 2 * strategy.normalizedSizeLimit(0);
 
@@ -159,7 +155,7 @@ public abstract class CanonicalClusteringStrategyTest {
         final RevTree original = manuallyCreateBucketsTree();
         store.put(original);
 
-        strategy = canonical.create(original, storageProvider);
+        strategy = canonical.original(original).build();
 
         final int numNodes = 10_000;
 
@@ -198,7 +194,7 @@ public abstract class CanonicalClusteringStrategyTest {
         // original = manuallyCreateBucketsTree();
         store.put(original);
 
-        strategy = canonical.create(original, storageProvider);
+        strategy = canonical.original(original).build();
 
         Stopwatch sw = Stopwatch.createStarted();
         for (Node node : addedNodes) {
@@ -234,7 +230,7 @@ public abstract class CanonicalClusteringStrategyTest {
         // original = manuallyCreateBucketsTree();
         store.put(original);
 
-        strategy = canonical.create(original, storageProvider);
+        strategy = canonical.original(original).build();
 
         Stopwatch sw = Stopwatch.createStarted();
         for (Node node : addedNodes) {
@@ -257,7 +253,7 @@ public abstract class CanonicalClusteringStrategyTest {
     public void randomEdits() throws Exception {
         final int numEntries = 20 * CanonicalNodeNameOrder.normalizedSizeLimit(0) + 1500;
 
-        strategy = canonical.create(RevTree.EMPTY, storageProvider);
+        strategy = canonical.build();
 
         List<Node> nodes = featureNodes(0, numEntries, false);
         for (Node n : nodes) {
@@ -315,7 +311,7 @@ public abstract class CanonicalClusteringStrategyTest {
         // original = manuallyCreateBucketsTree();
         store.put(original);
 
-        strategy = canonical.create(original, storageProvider);
+        strategy = canonical.original(original).build();
 
         Stopwatch sw = Stopwatch.createStarted();
         for (Node node : removeNodes) {
@@ -353,7 +349,7 @@ public abstract class CanonicalClusteringStrategyTest {
         // original = manuallyCreateBucketsTree();
         store.put(original);
 
-        strategy = canonical.create(original, storageProvider);
+        strategy = canonical.original(original).build();
 
         Stopwatch sw = Stopwatch.createStarted();
         for (Node node : removeNodes) {
@@ -378,7 +374,7 @@ public abstract class CanonicalClusteringStrategyTest {
 
     @Test
     public void nodeReplacedOnEdits() {
-        strategy = canonical.create(RevTree.EMPTY, storageProvider);
+        strategy = canonical.build();
 
         final int numNodes = 2 * strategy.normalizedSizeLimit(0);
 
@@ -443,7 +439,7 @@ public abstract class CanonicalClusteringStrategyTest {
             assertFalse(original.equals(edited));
         }
 
-        strategy = canonical.create(origTree, storageProvider);
+        strategy = canonical.original(origTree).build();
 
         for (Node n : edited) {
             strategy.put(n);

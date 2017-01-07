@@ -9,12 +9,11 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 
-class CanonicalNodeId extends NodeId implements Serializable {
+class CanonicalNodeId extends NodeId  {
 
     private transient long bucketsByDepthLongBits = 0L;
 

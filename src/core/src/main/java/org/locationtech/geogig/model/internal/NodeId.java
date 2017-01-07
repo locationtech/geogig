@@ -9,9 +9,7 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import java.io.Serializable;
-
-abstract class NodeId implements Comparable<NodeId>, Serializable {
+abstract class NodeId implements Comparable<NodeId> {
 
     protected final String name;
 

@@ -28,16 +28,23 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
-import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
-import com.vividsolutions.jts.geom.Envelope;
 
+/**
+ * Base class for strategy objects that define the internal structure of a {@link RevTree}.
+ * 
+ * @apiNote instances of this class might hold references to temporary resources that need to be
+ *          cleaned up after usage, hence the use of the {@link #dispose()} method is mandatory. In
+ *          general, the {@link RevTreeBuilder} that's using this object will do so as part of its
+ *          own clean up phase before returning from its own {@code build()} method.
+ */
 public abstract class ClusteringStrategy {
 
     private DAGStorageProvider storageProvider;
@@ -54,31 +61,6 @@ public abstract class ClusteringStrategy {
         this.storageProvider = storageProvider;
         this.root = new DAG(original.getId());
         this.root.setChildCount(original.size());
-    }
-
-    public static ClusteringStrategy canonical(final ObjectStore store, final RevTree original) {
-        checkNotNull(store);
-        checkNotNull(original);
-
-        final DAGStorageProviderFactory dagStorageFactory;
-        // dagStorageFactory = new RocksdbDAGStorageProviderFactory(store);
-        dagStorageFactory = new CachingDAGStorageProviderFactory(store);
-        // dagStorageFactory = new HeapDAGStorageProviderFactory(store);
-        return ClusteringStrategyFactory.canonical().create(original, dagStorageFactory);
-    }
-
-    public static ClusteringStrategy quadTree(ObjectStore store, RevTree original,
-            Envelope maxBounds, int maxDepth) {
-        checkNotNull(store);
-        checkNotNull(original);
-
-        final DAGStorageProviderFactory dagStorageFactory;
-        // dagStorageFactory = new RocksdbDAGStorageProviderFactory(store);
-        // dagStorageFactory = new CachingDAGStorageProviderFactory(store);
-        dagStorageFactory = new HeapDAGStorageProviderFactory(store);
-        ClusteringStrategyFactory quadtree = ClusteringStrategyFactory.quadtree(maxBounds,
-                maxDepth);
-        return quadtree.create(original, dagStorageFactory);
     }
 
     abstract int maxBuckets(final int depthIndex);

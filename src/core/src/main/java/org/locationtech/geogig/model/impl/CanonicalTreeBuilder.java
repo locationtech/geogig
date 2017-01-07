@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.impl;
 
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
+import org.locationtech.geogig.model.internal.ClusteringStrategyBuilder;
 import org.locationtech.geogig.storage.ObjectStore;
 
 public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTreeBuilder {
@@ -26,8 +27,11 @@ public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTree
      */
     public CanonicalTreeBuilder(final ObjectStore store, final RevTree original) {
         super(store, original);
-        ClusteringStrategy strategy = ClusteringStrategy.canonical(store, original);
-        this.clusteringStrategy = strategy;
+
+        ClusteringStrategy canonical = ClusteringStrategyBuilder.canonical(store).original(original)
+                .build();
+
+        this.clusteringStrategy = canonical;
     }
 
     @Override

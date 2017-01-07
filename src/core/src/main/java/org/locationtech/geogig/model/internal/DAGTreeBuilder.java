@@ -245,7 +245,9 @@ public class DAGTreeBuilder {
             Set<NodeId> unpromotableIds = new HashSet<>();
             root.forEachUnpromotableChild((id) -> unpromotableIds.add(id));
             final ImmutableList<Node> unpromotable = toNodes(unpromotableIds);
-
+            
+            size += unpromotable.size();
+            
             ImmutableSortedMap<Integer, Bucket> buckets = bucketsByIndex.build();
             ImmutableList<Node> treeNodes = null;
             ImmutableList<Node> featureNodes = unpromotable;

@@ -59,6 +59,10 @@ class TableNames {
         return name("object");
     }
 
+    public String index() {
+        return name("index");
+    }
+
     public String features(final int hash) {
         final int min = Integer.MIN_VALUE;
         final long max = (long) Integer.MAX_VALUE + 1;

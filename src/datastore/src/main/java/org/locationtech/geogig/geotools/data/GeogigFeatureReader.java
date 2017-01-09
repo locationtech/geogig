@@ -44,10 +44,10 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
-import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.Index;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -150,9 +150,12 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
 
             Preconditions.checkArgument(oldTreeRef.isPresent() || newTreeRef.isPresent());
             typeTreeRef = newTreeRef.isPresent() ? newTreeRef.get() : oldTreeRef.get();
+            
+            Optional<Index> index = context.indexDatabase().getIndex(typeTreePath,
+                    schema.getGeometryDescriptor().getName().toString());
 
-            final Optional<ObjectId> oldQuadTree = resolveQuadTree(oldTreeRef);
-            final Optional<ObjectId> newQuadTree = resolveQuadTree(newTreeRef);
+            final Optional<ObjectId> oldQuadTree = resolveQuadTree(oldTreeRef, index);
+            final Optional<ObjectId> newQuadTree = resolveQuadTree(newTreeRef, index);
 
             diffOp = context.command(DiffTree.class);
             diffOp.setDefaultMetadataId(typeTreeRef.getMetadataId());
@@ -161,6 +164,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             if (oldQuadTree.isPresent() && newQuadTree.isPresent()) {
                 diffOp.setOldTree(oldQuadTree.get());
                 diffOp.setNewTree(newQuadTree.get());
+                diffOp.setLeftSource(context.indexDatabase());
+                diffOp.setRightSource(context.indexDatabase());
                 System.err.printf("Using Quad-Tree %s for %s\n",
                         newQuadTree.get().toString().substring(0, 8),
                         newTreeRef.get().getNode().getName());
@@ -250,11 +255,15 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         return treeRef.isPresent() ? treeRef.get().getObjectId() : EMPTY_TREE_ID;
     }
 
-    private Optional<ObjectId> resolveQuadTree(Optional<NodeRef> treeRef) {
+    private Optional<ObjectId> resolveQuadTree(Optional<NodeRef> treeRef, Optional<Index> index) {
         Optional<ObjectId> quadTreeId = Optional.of(EMPTY_TREE_ID);
         if (treeRef.isPresent()) {
-            final String refSpec = "indexes/" + treeRef.get().getObjectId();
-            quadTreeId = context.command(RevParse.class).setRefSpec(refSpec).call();
+            if (index.isPresent()) {
+                quadTreeId = context.indexDatabase().resolveTreeId(index.get(),
+                        treeRef.get().getObjectId());
+            } else {
+                quadTreeId = Optional.absent();
+            }
             if (quadTreeId.isPresent() && Boolean.getBoolean("geogig.ignoreindex")) {
                 System.err.printf(
                         "Ignoring index for %s as indicated by -Dgeogig.ignoreindex=true\n",

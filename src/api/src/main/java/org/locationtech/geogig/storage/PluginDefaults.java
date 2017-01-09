@@ -24,6 +24,8 @@ public final class PluginDefaults {
 
     private VersionedFormat graph;
 
+    private VersionedFormat index;
+
     /**
      * Constructs a new {@code PluginDefaults} with no configured formats or versions.
      */
@@ -37,11 +39,14 @@ public final class PluginDefaults {
      * @param objects the format and version of the {@link ObjectDatabase}
      * @param refs the format and version of the {@link RefDatabase}
      * @param graph the format and version of the {@link GraphDatabase}
+     * @param index the format and version of the {@link IndexDatabase}
      */
-    public PluginDefaults(VersionedFormat objects, VersionedFormat refs, VersionedFormat graph) {
+    public PluginDefaults(VersionedFormat objects, VersionedFormat refs, VersionedFormat graph,
+            VersionedFormat index) {
         this.refs = refs;
         this.objects = objects;
         this.graph = graph;
+        this.index = index;
     }
 
     /**
@@ -53,6 +58,7 @@ public final class PluginDefaults {
         refs = provider.getRefsDatabaseFormat();
         objects = provider.getObjectDatabaseFormat();
         graph = provider.getGraphDatabaseFormat();
+        index = provider.getIndexDatabaseFormat();
     }
 
     /**
@@ -80,6 +86,14 @@ public final class PluginDefaults {
     }
 
     /**
+     * @return an {@link Optional} with the {@link IndexDatabase} format and version, or
+     *         {@link Optional#absent()} if there wasn't one
+     */
+    public Optional<VersionedFormat> getIndex() {
+        return Optional.fromNullable(index);
+    }
+
+    /**
      * Sets the {@link ObjectDatabase} format and version to the provided one.
      * 
      * @param objects the format and version
@@ -91,7 +105,7 @@ public final class PluginDefaults {
     /**
      * Sets the {@link RefDatabase} format and version to the provided one.
      * 
-     * @param objects the format and version
+     * @param refs the format and version
      */
     public void setRefs(VersionedFormat refs) {
         this.refs = refs;
@@ -100,10 +114,19 @@ public final class PluginDefaults {
     /**
      * Sets the {@link GraphDatabase} format and version to the provided one.
      * 
-     * @param objects the format and version
+     * @param graph the format and version
      */
     public void setGraph(VersionedFormat graph) {
         this.graph = graph;
+    }
+
+    /**
+     * Sets the {@link IndexDatabase} format and version to the provided one.
+     * 
+     * @param index the format and version
+     */
+    public void setIndex(VersionedFormat index) {
+        this.index = index;
     }
 
     /**

@@ -21,9 +21,10 @@ public class StorageTypeTest {
     public void testKeys() {
         assertEquals("graph", StorageType.GRAPH.key);
         assertEquals("objects", StorageType.OBJECT.key);
+        assertEquals("index", StorageType.INDEX.key);
         assertEquals("refs", StorageType.REF.key);
         assertEquals("staging", StorageType.STAGING.key);
-        assertEquals(4, StorageType.values().length);
+        assertEquals(5, StorageType.values().length);
     }
 
     @Test
@@ -31,22 +32,26 @@ public class StorageTypeTest {
         ConfigDatabase testConfig = new TestConfigDatabase();
         StorageType.GRAPH.configure(testConfig, "testGraph", "1.0");
         StorageType.OBJECT.configure(testConfig, "testObject", "2.0");
-        StorageType.REF.configure(testConfig, "testRef", "3.0");
-        StorageType.STAGING.configure(testConfig, "testStaging", "4.0");
+        StorageType.INDEX.configure(testConfig, "testIndex", "3.0");
+        StorageType.REF.configure(testConfig, "testRef", "4.0");
+        StorageType.STAGING.configure(testConfig, "testStaging", "5.0");
 
         assertEquals("testGraph", testConfig.get("storage.graph").get());
         assertEquals("1.0", testConfig.get("testGraph.version").get());
         assertEquals("testObject", testConfig.get("storage.objects").get());
         assertEquals("2.0", testConfig.get("testObject.version").get());
+        assertEquals("testIndex", testConfig.get("storage.index").get());
+        assertEquals("3.0", testConfig.get("testIndex.version").get());
         assertEquals("testRef", testConfig.get("storage.refs").get());
-        assertEquals("3.0", testConfig.get("testRef.version").get());
+        assertEquals("4.0", testConfig.get("testRef.version").get());
         assertEquals("testStaging", testConfig.get("storage.staging").get());
-        assertEquals("4.0", testConfig.get("testStaging.version").get());
+        assertEquals("5.0", testConfig.get("testStaging.version").get());
 
         StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
         StorageType.OBJECT.verify(testConfig, "testObject", "2.0");
-        StorageType.REF.verify(testConfig, "testRef", "3.0");
-        StorageType.STAGING.verify(testConfig, "testStaging", "4.0");
+        StorageType.INDEX.verify(testConfig, "testIndex", "3.0");
+        StorageType.REF.verify(testConfig, "testRef", "4.0");
+        StorageType.STAGING.verify(testConfig, "testStaging", "5.0");
     }
 
     @Test

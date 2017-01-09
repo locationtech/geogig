@@ -43,6 +43,7 @@ import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.slf4j.Logger;
@@ -94,6 +95,7 @@ public class RepositoryImpl implements Repository {
     public void configure() throws RepositoryConnectionException {
         context.refDatabase().configure();
         context.objectDatabase().configure();
+        context.indexDatabase().configure();
         context.graphDatabase().configure();
     }
 
@@ -111,9 +113,11 @@ public class RepositoryImpl implements Repository {
 
         context.refDatabase().checkConfig();
         context.objectDatabase().checkConfig();
+        context.indexDatabase().checkConfig();
         context.graphDatabase().checkConfig();
         context.refDatabase().create();
         context.objectDatabase().open();
+        context.indexDatabase().open();
         context.graphDatabase().open();
         for (RepositoryListener l : listeners) {
             l.opened(this);
@@ -129,6 +133,7 @@ public class RepositoryImpl implements Repository {
         open = false;
         close(context.refDatabase());
         close(context.objectDatabase());
+        close(context.indexDatabase());
         close(context.graphDatabase());
         executor.shutdownNow();
         close(context.configDatabase());
@@ -389,6 +394,11 @@ public class RepositoryImpl implements Repository {
     @Override
     public ObjectDatabase objectDatabase() {
         return context.objectDatabase();
+    }
+
+    @Override
+    public IndexDatabase indexDatabase() {
+        return context.indexDatabase();
     }
 
     // @Override

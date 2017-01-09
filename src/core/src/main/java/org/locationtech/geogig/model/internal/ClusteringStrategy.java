@@ -51,7 +51,7 @@ public abstract class ClusteringStrategy {
 
     private static final TreeId ROOT_ID = new TreeId(new byte[0]);
 
-    private DAG root;
+    protected DAG root;
 
     private TreeId rootId = ROOT_ID;
 
@@ -88,7 +88,7 @@ public abstract class ClusteringStrategy {
         return getOrCreateDAG(treeId, RevTree.EMPTY_TREE_ID);
     }
 
-    private Map<TreeId, DAG> treeBuff = new HashMap<>();
+      Map<TreeId, DAG> treeBuff = new HashMap<>();
 
     private synchronized DAG getOrCreateDAG(TreeId treeId, ObjectId originalTreeId) {
         DAG dag = treeBuff.get(treeId);

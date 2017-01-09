@@ -10,6 +10,7 @@
 package org.locationtech.geogig.model.internal;
 
 
+import com.google.common.hash.HashCode;
 import com.vividsolutions.jts.geom.Envelope;
 import org.junit.Assert;
 
@@ -36,9 +37,9 @@ import java.util.Random;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-public class QuadTreeClusteringStrategyTest {
+public class QuadTreeClusteringStrategy_computeIdTest {
 
-    Envelope MAX_BOUNDS_WGS84 = new Envelope(-180, 180, -90, 90);
+    public static Envelope MAX_BOUNDS_WGS84 = new Envelope(-180, 180, -90, 90);
 
     @Test
     public void test_nullEnvelope() {
@@ -59,7 +60,7 @@ public class QuadTreeClusteringStrategyTest {
     public void test_level0() {
         QuadTreeClusteringStrategy quadStrategy = createQuadStrategy();
 
-        Node n = createNode(MAX_BOUNDS_WGS84, new Quadrant[] {});
+        Node n = createNode("node", MAX_BOUNDS_WGS84, new Quadrant[] {});
         QuadTreeNodeId quadID = quadStrategy.computeId(n);
 
         assertEquals(0, quadID.quadrantsByDepth().length);
@@ -73,7 +74,7 @@ public class QuadTreeClusteringStrategyTest {
         // create quad-sized node for each of the first level (1/4 world) quads
         for (Quadrant q : Quadrant.values()) {
             Quadrant[] location = new Quadrant[] { q };
-            Node n = createNode(MAX_BOUNDS_WGS84, location);
+            Node n = createNode("node", MAX_BOUNDS_WGS84, location);
             QuadTreeNodeId quadID = quadStrategy.computeId(n);
 
             // should only be one level deep (too big to go further)
@@ -90,7 +91,7 @@ public class QuadTreeClusteringStrategyTest {
         for (Quadrant q1 : Quadrant.values()) {
             for (Quadrant q2 : Quadrant.values()) {
                 Quadrant[] location = new Quadrant[] { q1, q2 };
-                Node n = createNode(MAX_BOUNDS_WGS84, location);
+                Node n = createNode("node", MAX_BOUNDS_WGS84, location);
                 QuadTreeNodeId quadID = quadStrategy.computeId(n);
 
                 // should only be 2 levels deep (too big to go further)
@@ -111,7 +112,7 @@ public class QuadTreeClusteringStrategyTest {
             for (Quadrant q2 : Quadrant.values()) {
                 for (Quadrant q3 : Quadrant.values()) {
                     Quadrant[] location = new Quadrant[] { q1, q2, q3 };
-                    Node n = createNode(MAX_BOUNDS_WGS84, location);
+                    Node n = createNode("node", MAX_BOUNDS_WGS84, location);
                     QuadTreeNodeId quadID = quadStrategy.computeId(n);
 
                     // should only be 3 levels deep (too big to go further)
@@ -136,7 +137,7 @@ public class QuadTreeClusteringStrategyTest {
         }
 
         Quadrant[] location = (Quadrant[]) quads.toArray(new Quadrant[quads.size()]);
-        Node n = createNode(MAX_BOUNDS_WGS84, location);
+        Node n = createNode("node", MAX_BOUNDS_WGS84, location);
         QuadTreeNodeId quadID = quadStrategy.computeId(n);
 
         assertEquals(quadID.quadrantsByDepth().length, quads.size());
@@ -157,7 +158,7 @@ public class QuadTreeClusteringStrategyTest {
         }
 
         Quadrant[] location = (Quadrant[]) quads.toArray(new Quadrant[quads.size()]);
-        Node n = createNode(MAX_BOUNDS_WGS84, location);
+        Node n = createNode("node", MAX_BOUNDS_WGS84, location);
         QuadTreeNodeId quadID = quadStrategy.computeId(n);
 
         assertEquals(quadID.quadrantsByDepth().length, quadStrategy.getMaxDepth());
@@ -167,13 +168,14 @@ public class QuadTreeClusteringStrategyTest {
     }
 
 
-    public Node createNode(String name, Envelope bounds) {
-        return Node.create(name, ObjectId.NULL, ObjectId.NULL, RevObject.TYPE.FEATURE, bounds);
+    public static Node createNode(String name, Envelope bounds) {
+        HashCode hc = ObjectId.HASH_FUNCTION.hashUnencodedChars(name);
+        Node n =  Node.create(name,  new ObjectId( hc.asBytes()), ObjectId.NULL,RevObject.TYPE.FEATURE, bounds);
+         return n;
     }
 
     // given a list of quandrants, create a node with a bounding box that JUST fits inside
-    public Node createNode(Envelope projBounds, Quadrant[] quadrants) {
-        String name = "node: ";
+    public static Node createNode(String name, Envelope projBounds, Quadrant[] quadrants) {
         Envelope envelope = projBounds;
         for (Quadrant quad : quadrants) {
             envelope = quad.slice(envelope);
@@ -186,7 +188,7 @@ public class QuadTreeClusteringStrategyTest {
         return createNode(name, envelope);
     }
 
-    public QuadTreeClusteringStrategy createQuadStrategy() {
+    public static QuadTreeClusteringStrategy createQuadStrategy() {
         ObjectStore store = new HeapObjectStore();
 
         int DEFAULT_MAX_DEPTH = 12;

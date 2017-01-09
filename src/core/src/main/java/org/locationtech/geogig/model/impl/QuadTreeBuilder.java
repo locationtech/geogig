@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.impl;
 
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
+import org.locationtech.geogig.model.internal.ClusteringStrategyBuilder;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
@@ -48,8 +49,8 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         Preconditions.checkNotNull(maxBounds);
         Preconditions.checkArgument(maxDepth > 0);
 
-        ClusteringStrategy strategy = ClusteringStrategy.quadTree(store, original, maxBounds,
-                maxDepth);
+        ClusteringStrategy strategy = ClusteringStrategyBuilder.quadTree(store).original(original)
+                .maxBounds(maxBounds).maxDepth(maxDepth).build();
         QuadTreeBuilder builder = new QuadTreeBuilder(store, RevTree.EMPTY, strategy);
         return builder;
     }

@@ -9,15 +9,13 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import org.locationtech.geogig.model.internal.DAGStorageProviderFactory;
-import org.locationtech.geogig.model.internal.HeapDAGStorageProviderFactory;
 import org.locationtech.geogig.storage.ObjectStore;
 
 public class CanonicalClusteringStrategyHeapStorageTest extends CanonicalClusteringStrategyTest {
 
     @Override
-    protected DAGStorageProviderFactory createStorageProvider(ObjectStore source) {
-        return new HeapDAGStorageProviderFactory(source);
+    protected HeapDAGStorageProvider createStorageProvider(ObjectStore source) {
+        return new HeapDAGStorageProvider(source);
     }
 
 }

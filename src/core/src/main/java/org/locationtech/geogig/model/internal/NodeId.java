@@ -9,9 +9,7 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import java.io.Serializable;
-
-abstract class NodeId implements Comparable<NodeId>, Serializable {
+abstract class NodeId implements Comparable<NodeId> {
 
     protected final String name;
 
@@ -31,12 +29,4 @@ abstract class NodeId implements Comparable<NodeId>, Serializable {
 
     @Override
     public abstract String toString();
-
-    /**
-     * 
-     * @param depth the tree depth for which to return the bucket index for this node
-     * @return a positive integer (in the range of an unsigned byte value) or {@code -1} if this
-     *         node can't be added at the specified depth
-     */
-    public abstract int bucket(int depth);
 }

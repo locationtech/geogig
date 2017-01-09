@@ -9,15 +9,14 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import org.locationtech.geogig.model.internal.DAGStorageProviderFactory;
-import org.locationtech.geogig.model.internal.RocksdbDAGStorageProviderFactory;
 import org.locationtech.geogig.storage.ObjectStore;
 
 public class CanonicalClusteringStrategyRocksdbStorageTest extends CanonicalClusteringStrategyTest {
 
+
     @Override
-    protected DAGStorageProviderFactory createStorageProvider(ObjectStore source) {
-        return new RocksdbDAGStorageProviderFactory(source);
+    protected RocksdbDAGStorageProvider createStorageProvider(ObjectStore source){
+        return new RocksdbDAGStorageProvider(source);
     }
 
 }

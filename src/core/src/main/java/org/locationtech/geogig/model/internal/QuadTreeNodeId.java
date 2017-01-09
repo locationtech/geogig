@@ -11,8 +11,6 @@ package org.locationtech.geogig.model.internal;
 
 import java.util.Arrays;
 
-import org.locationtech.geogig.model.RevTree;
-
 import com.google.common.collect.Ordering;
 
 class QuadTreeNodeId extends NodeId {
@@ -90,20 +88,4 @@ class QuadTreeNodeId extends NodeId {
                 + Arrays.toString(quadrantsByDepth) + "]";
     }
 
-    /**
-     * Returns the bucket index in the range 0-3 corresponding to this node at the specified depth
-     * (i.e. the bucket index represents a quadrant), or {@code -1} if the spatial bounds of this
-     * node don't fit on a single child quadrant and hence the node shall be kept at the current
-     * tree node (hence creating a mixed {@link RevTree} with both direct children and buckets).
-     * 
-     * @see org.locationtech.geogig.model.internal.NodeId#bucket(int)
-     */
-    @Override
-    public int bucket(final int depth) {
-        if (depth < quadrantsByDepth.length) {
-            Quadrant quadrant = quadrantsByDepth[depth];
-            return quadrant.ordinal();
-        }
-        return -1;
-    }
 }

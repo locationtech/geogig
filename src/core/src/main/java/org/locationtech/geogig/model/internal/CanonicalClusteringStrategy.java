@@ -23,14 +23,32 @@ class CanonicalClusteringStrategy extends ClusteringStrategy {
         super(original, storageProvider);
     }
 
+    /**
+     * @return the max number of buckets a leaf tree is split into at depth {@code depthIndex} as
+     *         mandated by {@link CanonicalNodeNameOrder}
+     */
     @Override
     public int maxBuckets(final int depthIndex) {
         return CanonicalNodeNameOrder.maxBucketsForLevel(depthIndex);
     }
 
+    /**
+     * @return the max number of nodes a leaf tree can hold at depth {@code depthIndex} as mandated
+     *         by {@link CanonicalNodeNameOrder}
+     */
     @Override
     public int normalizedSizeLimit(final int depthIndex) {
         return CanonicalNodeNameOrder.normalizedSizeLimit(depthIndex);
+    }
+
+    /**
+     * @return the bucket corresponding to {@code nodeId} at depth {@code depthIndex} as mandated by
+     *         {@link CanonicalNodeNameOrder}
+     */
+    public int bucket(final NodeId nodeId, final int depthIndex) {
+        long bucketsByDepth = ((CanonicalNodeId) nodeId).bucketsByDepth();
+        int bucket = CanonicalNodeNameOrder.bucket(bucketsByDepth, depthIndex);
+        return bucket;
     }
 
     @Override

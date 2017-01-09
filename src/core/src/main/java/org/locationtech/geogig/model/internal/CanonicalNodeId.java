@@ -9,11 +9,9 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import java.util.Arrays;
-
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 
-class CanonicalNodeId extends NodeId  {
+class CanonicalNodeId extends NodeId {
 
     private transient long bucketsByDepthLongBits = 0L;
 
@@ -51,19 +49,6 @@ class CanonicalNodeId extends NodeId  {
 
     @Override
     public String toString() {
-
-        int[] bucketIndexes = new int[8];
-        for (int i = 0; i < 8; i++) {
-            bucketIndexes[i] = bucket(i);
-        }
-
-        return getClass().getSimpleName() + "[ name: " + super.name + ", buckets by depth: "
-                + Arrays.toString(bucketIndexes) + "]";
-    }
-
-    @Override
-    public int bucket(int depth) {
-        int bucket = CanonicalNodeNameOrder.bucket(bucketsByDepth(), depth);
-        return bucket;
+        return getClass().getSimpleName() + "[ name: " + super.name + "]";
     }
 }

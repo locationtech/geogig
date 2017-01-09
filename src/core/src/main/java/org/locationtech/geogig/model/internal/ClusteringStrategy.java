@@ -73,6 +73,17 @@ public abstract class ClusteringStrategy {
      */
     public abstract @Nullable NodeId computeId(Node node);
 
+    /**
+     * Computes the bucket a given {@link NodeId} lays into for a given tree depth.
+     * 
+     * @param depthIndex the tree depth for which to return the bucket index for this node
+     * @return a positive integer (in the range of an unsigned byte value) or {@code -1} if this
+     *         node can't be added at the specified depth, and hence the node shall be kept at the
+     *         current tree node (hence creating a mixed {@link RevTree} with both direct children
+     *         and buckets).
+     */
+    public abstract int bucket(NodeId nodeId, int depthIndex);
+
     DAG getOrCreateDAG(TreeId treeId) {
         return getOrCreateDAG(treeId, RevTree.EMPTY_TREE_ID);
     }
@@ -366,12 +377,12 @@ public abstract class ClusteringStrategy {
     @Nullable
     TreeId computeBucketId(final NodeId nodeId, final int childDepthIndex) {
         byte[] treeId = new byte[childDepthIndex + 1];
-        for (int i = 0; i <= childDepthIndex; i++) {
-            final int bucketIndex = nodeId.bucket(i);
+        for (int depthIndex = 0; depthIndex <= childDepthIndex; depthIndex++) {
+            final int bucketIndex = bucket(nodeId, depthIndex);
             if (-1 == bucketIndex) {
                 return null;
             }
-            treeId[i] = (byte) bucketIndex;
+            treeId[depthIndex] = (byte) bucketIndex;
         }
         return new TreeId(treeId);
     }

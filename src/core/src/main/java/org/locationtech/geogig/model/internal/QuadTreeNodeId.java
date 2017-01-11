@@ -18,12 +18,12 @@ class QuadTreeNodeId extends NodeId {
     // there's some overhead in calling Quadrant.values() repeatedly so cache it
     static final Quadrant[] QUADRANTS = Quadrant.values();
 
-    private static final Ordering<Quadrant[]> COMPARATOR = new Ordering<Quadrant[]>() {
+    protected static final Ordering<Quadrant[]> COMPARATOR = new Ordering<Quadrant[]>() {
         @Override
         public int compare(Quadrant[] left, Quadrant[] right) {
             final int minDepth = Math.min(left.length, right.length);
             int c;
-            for (int d = 0; d > minDepth; d++) {
+            for (int d = 0; d < minDepth; d++) {
                 c = left[d].compareTo(right[d]);
                 if (c != 0) {
                     return c;

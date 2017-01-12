@@ -308,10 +308,10 @@ final class DAG implements Cloneable, Serializable {
         Varint.writeUnsignedVarInt(buckets.size(), out);
 
         for (NodeId nodeid : nonPromotable) {
-            out.writeUTF(((CanonicalNodeId) nodeid).name());
+            NodeIdIO.write(nodeid, out);
         }
         for (NodeId nodeid : children) {
-            out.writeUTF(((CanonicalNodeId) nodeid).name());
+            NodeIdIO.write(nodeid, out);
         }
         for (TreeId tid : buckets) {
             byte[] bucketIndicesByDepth = tid.bucketIndicesByDepth;
@@ -336,15 +336,15 @@ final class DAG implements Cloneable, Serializable {
         if (nonPromotableSize > 0) {
             nonPromotable = new HashSet<>();
             for (int i = 0; i < nonPromotableSize; i++) {
-                String name = in.readUTF();
-                nonPromotable.add(new CanonicalNodeId(name));
+                NodeId nid = NodeIdIO.read(in);
+                nonPromotable.add(nid);
             }
         }
         if (childrenSize > 0) {
             children = new HashSet<>();
             for (int i = 0; i < childrenSize; i++) {
-                String name = in.readUTF();
-                children.add(new CanonicalNodeId(name));
+                NodeId nid = NodeIdIO.read(in);
+                children.add(nid);
             }
         }
         if (bucketSize > 0) {

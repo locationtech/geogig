@@ -15,9 +15,6 @@ import com.google.common.collect.Ordering;
 
 class QuadTreeNodeId extends NodeId {
 
-    // there's some overhead in calling Quadrant.values() repeatedly so cache it
-    static final Quadrant[] QUADRANTS = Quadrant.values();
-
     protected static final Ordering<Quadrant[]> COMPARATOR = new Ordering<Quadrant[]>() {
         @Override
         public int compare(Quadrant[] left, Quadrant[] right) {
@@ -44,7 +41,7 @@ class QuadTreeNodeId extends NodeId {
 
         Quadrant[] quadrantsByDepth = new Quadrant[maxDepth];
         for (int i = 0; i < maxDepth; i++) {
-            quadrantsByDepth[i] = QUADRANTS[quadrantIndexes[i] & 0xFF];
+            quadrantsByDepth[i] = Quadrant.VALUES[quadrantIndexes[i] & 0xFF];
         }
 
         this.quadrantsByDepth = quadrantsByDepth;

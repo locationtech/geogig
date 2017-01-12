@@ -60,8 +60,6 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
                     "An index has already been created on that tree and attribute.");
         }
 
-        Index index = indexDatabase.createIndex(tree, attribute, IndexType.QUADTREE);
-
         Optional<RevFeatureType> featureTypeOpt = geogig.command(ResolveFeatureType.class)
                 .setRefSpec("HEAD:" + tree).call();
         if (!featureTypeOpt.isPresent()) {
@@ -89,6 +87,8 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
             throw new UnsupportedOperationException(
                     "Only indexes on spatial attributes are currently supported.");
         }
+
+        Index index = indexDatabase.createIndex(tree, attribute, IndexType.QUADTREE);
 
         if (indexHistory) {
             ImmutableList<Ref> branches = geogig.command(BranchListOp.class).setLocal(true)

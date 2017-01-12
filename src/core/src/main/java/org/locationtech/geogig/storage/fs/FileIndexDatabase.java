@@ -94,6 +94,7 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
     @Override
     public void close() {
         super.close();
+        this.indexes.clear();
     }
 
     @Override

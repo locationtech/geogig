@@ -11,7 +11,6 @@ package org.locationtech.geogig.rocksdb;
 
 import org.locationtech.geogig.storage.StorageProvider;
 import org.locationtech.geogig.storage.VersionedFormat;
-import org.locationtech.geogig.storage.fs.FileIndexDatabase;
 import org.locationtech.geogig.storage.fs.FileRefDatabase;
 
 public class RocksdbStorageProvider extends StorageProvider {
@@ -35,8 +34,8 @@ public class RocksdbStorageProvider extends StorageProvider {
     static final VersionedFormat OBJECTS = new VersionedFormat(FORMAT_NAME, VERSION,
             RocksdbObjectDatabase.class);
 
-    static final VersionedFormat INDEX = new VersionedFormat("file", "1.0",
-            FileIndexDatabase.class);
+    static final VersionedFormat INDEX = new VersionedFormat(FORMAT_NAME, VERSION,
+            RocksdbIndexDatabase.class);
 
     @Override
     public String getName() {

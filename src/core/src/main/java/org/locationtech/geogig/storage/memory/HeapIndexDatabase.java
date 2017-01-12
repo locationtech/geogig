@@ -10,6 +10,7 @@
 package org.locationtech.geogig.storage.memory;
 
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,8 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
 
     public HeapIndexDatabase() {
         super(new HeapObjectStore(), false);
+        this.indexes = new HashMap<String, List<Index>>();
+        this.indexTreeMappings = new HashMap<ObjectId, ObjectId>();
     }
 
     public HeapIndexDatabase(Platform platform, Hints hints) {
@@ -64,6 +67,8 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     @Override
     public void close() {
         super.close();
+        this.indexes.clear();
+        this.indexTreeMappings.clear();
     }
 
     /**

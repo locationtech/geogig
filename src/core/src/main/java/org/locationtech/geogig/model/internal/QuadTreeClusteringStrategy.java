@@ -113,7 +113,7 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
         final int maxDepth = this.maxDepth;
         List<Quadrant> quadrantsByDepth = new ArrayList<>(maxDepth);
 
-        final Quadrant[] quadrants = QuadTreeNodeId.QUADRANTS;
+        final Quadrant[] quadrants = Quadrant.VALUES;
 
         Envelope parentQuadrantBounds = this.maxBounds;
 

@@ -14,6 +14,9 @@ import com.vividsolutions.jts.geom.Envelope;
 public enum Quadrant {
     SW(0, 0), NW(0, 1), NE(1, 1), SE(1, 0);
 
+    // there's some overhead in calling Quadrant.values() repeatedly so cache it
+    static final Quadrant[] VALUES = values();
+
     private final int offsetX;
 
     private final int offsetY;
@@ -24,7 +27,7 @@ public enum Quadrant {
     }
 
     public int getBucketNumber() {
-       return this.ordinal();
+        return this.ordinal();
     }
 
     public Envelope slice(Envelope parent) {

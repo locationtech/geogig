@@ -100,12 +100,6 @@ public abstract class ClusteringStrategyBuilder {
         }
 
         @Override
-        protected DAGStorageProvider createDAGStoreageProvider() {
-            // @TODO: temporary measure until we can persist mutable quadtrees to disk
-            return new HeapDAGStorageProvider(treeStore);
-        }
-
-        @Override
         protected ClusteringStrategy buildInternal(DAGStorageProvider dagStoreProvider) {
             checkState(maxBounds != null, "QuadTree max bounds was not set");
             return new QuadTreeClusteringStrategy(original, dagStoreProvider, maxBounds, maxDepth);

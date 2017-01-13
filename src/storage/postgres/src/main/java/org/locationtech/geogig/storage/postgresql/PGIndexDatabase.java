@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.storage.postgresql;
 
+import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
+import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +28,12 @@ import org.locationtech.geogig.repository.Index;
 import org.locationtech.geogig.repository.Index.IndexType;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
+import org.locationtech.geogig.storage.StorageType;
 
 import com.google.common.base.Optional;
+import com.google.inject.Inject;
 
 /**
  * PostgreSQL implementation for {@link IndexDatabase}.
@@ -37,22 +43,28 @@ import com.google.common.base.Optional;
  */
 public class PGIndexDatabase implements IndexDatabase {
 
+    private ConfigDatabase configdb;
+
+    private boolean isOpen = false;
+
+    @Inject
+    public PGIndexDatabase(final ConfigDatabase configdb) {
+        this.configdb = configdb;
+    }
+
     @Override
     public void open() {
-        // TODO Auto-generated method stub
-
+        isOpen = true;
     }
 
     @Override
     public void close() {
-        // TODO Auto-generated method stub
-
+        isOpen = false;
     }
 
     @Override
     public boolean isOpen() {
-        // TODO Auto-generated method stub
-        return false;
+        return isOpen;
     }
 
     @Override
@@ -178,21 +190,19 @@ public class PGIndexDatabase implements IndexDatabase {
     }
 
     @Override
-    public void configure() throws RepositoryConnectionException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public boolean isReadOnly() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        // TODO Auto-generated method stub
+    public void configure() throws RepositoryConnectionException {
+        StorageType.INDEX.configure(configdb, FORMAT_NAME, VERSION);
 
+    }
+
+    @Override
+    public void checkConfig() throws RepositoryConnectionException {
+        StorageType.INDEX.verify(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override
@@ -203,18 +213,16 @@ public class PGIndexDatabase implements IndexDatabase {
 
     @Override
     public Optional<Index> getIndex(String treeName, String attributeName) {
-        // TODO Auto-generated method stub
-        return null;
+        return Optional.absent();
     }
 
     @Override
     public void addIndexedTree(Index index, ObjectId originalTree, ObjectId indexedTree) {
-
+        throw new UnsupportedOperationException("Not yet implemented.");
     }
 
     @Override
     public Optional<ObjectId> resolveIndexedTree(Index index, ObjectId treeId) {
-
         return Optional.absent();
     }
 

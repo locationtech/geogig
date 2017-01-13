@@ -26,8 +26,8 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.ProgressListener;
@@ -242,15 +242,9 @@ public class DAGTreeBuilder {
                 }
             }
 
-            Set<NodeId> unpromotableIds = new HashSet<>();
-            root.forEachUnpromotableChild((id) -> unpromotableIds.add(id));
-            final ImmutableList<Node> unpromotable = toNodes(unpromotableIds);
-            
-            size += unpromotable.size();
-            
             ImmutableSortedMap<Integer, Bucket> buckets = bucketsByIndex.build();
             ImmutableList<Node> treeNodes = null;
-            ImmutableList<Node> featureNodes = unpromotable;
+            ImmutableList<Node> featureNodes = null;
 
             RevTree result = RevTreeBuilder.build(size, childTreeCount, treeNodes, featureNodes,
                     buckets);
@@ -264,7 +258,6 @@ public class DAGTreeBuilder {
             {
                 Set<NodeId> childrenIds = new HashSet<>();
                 root.forEachChild((id) -> childrenIds.add(id));
-                root.forEachUnpromotableChild((id) -> childrenIds.add(id));
                 children = toNodes(childrenIds);
             }
 

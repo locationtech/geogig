@@ -151,10 +151,6 @@ class RocksdbDAGStore {
         return treeId.bucketIndicesByDepth;
     }
 
-    private TreeId fromKey(byte[] key) {
-        return new TreeId(key);
-    }
-
     private DAG decode(byte[] value) {
         DAG dag;
         try {

@@ -63,15 +63,12 @@ public abstract class ClusteringStrategy {
         this.root.setChildCount(original.size());
     }
 
-    abstract int maxBuckets(final int depthIndex);
-
     abstract int normalizedSizeLimit(final int depthIndex);
 
     /**
-     * @return {@code null} if the node shall not be added to the tree (e.g. a non spatial node on a
-     *         quadtree)
+     * @return the {@link NodeId} that matches the given node
      */
-    public abstract @Nullable NodeId computeId(Node node);
+    public @Nullable abstract NodeId computeId(Node node);
 
     /**
      * Computes the bucket a given {@link NodeId} lays into for a given tree depth.
@@ -88,7 +85,7 @@ public abstract class ClusteringStrategy {
         return getOrCreateDAG(treeId, RevTree.EMPTY_TREE_ID);
     }
 
-      Map<TreeId, DAG> treeBuff = new HashMap<>();
+    Map<TreeId, DAG> treeBuff = new HashMap<>();
 
     private synchronized DAG getOrCreateDAG(TreeId treeId, ObjectId originalTreeId) {
         DAG dag = treeBuff.get(treeId);
@@ -180,7 +177,7 @@ public abstract class ClusteringStrategy {
             treeBuff.clear();
         }
         ///
-        while (1 == root.numBuckets() && 0 == root.numUnpromotable()) {
+        while (1 == root.numBuckets()) {
             root.forEachBucket((treeId) -> {
                 DAG actual = getOrCreateDAG(treeId);
                 root = actual;
@@ -204,18 +201,14 @@ public abstract class ClusteringStrategy {
         final int normalizedSizeLimit = normalizedSizeLimit(dagDepth);
 
         if (dag.numBuckets() > 0) {
-            @Nullable
-            final TreeId bucketId = computeBucketId(nodeId, dagDepth);
-            // handle the case where null is returned and hence a mixed tree shall be created
-            if (bucketId == null) {
-                // node can't be promoted to depth + 1, must stay in children's list
-                dag.addNonPromotable(nodeId);
-                deltaSize = 1;
-            } else {
+            final @Nullable TreeId bucketId = computeBucketId(nodeId, dagDepth);
+            if (bucketId != null) {
                 DAG bucketDAG = getOrCreateDAG(bucketId);
                 dag.addBucket(bucketId);
                 deltaSize = put(bucketId, bucketDAG, nodeId, remove, dagDepth + 1);
                 changed = bucketDAG.getState() == STATE.CHANGED;
+            }else{
+                deltaSize = 0;
             }
         } else {
             if (remove) {
@@ -229,19 +222,17 @@ public abstract class ClusteringStrategy {
 
             if (size > normalizedSizeLimit) {
                 dag.forEachChild((childId) -> {
+
+                    int childDepthIndex = dagDepth + 1;
                     @Nullable
-                    final TreeId bucketId = computeBucketId(childId, dagDepth);
-                    // handle the case where null is returned and hence a mixed tree shall be
-                    // created
-                    if (bucketId == null) {
-                        // node can't be promoted to depth + 1, must stay in children's list
-                        dag.addNonPromotable(childId);
-                    } else {
+                    TreeId bucketId = computeBucketId(childId, dagDepth);
+                    if (bucketId != null) {
+                        checkNotNull(bucketId);
                         DAG bucketDAG = getOrCreateDAG(bucketId);
                         dag.addBucket(bucketId);
-                        put(bucketId, bucketDAG, childId, remove, dagDepth + 1);
-                        /// changed = bucketDAG.getState() == STATE.CHANGED;
+                        put(bucketId, bucketDAG, childId, remove, childDepthIndex);
                     }
+                    /// changed = bucketDAG.getState() == STATE.CHANGED;
                 });
 
                 dag.clearChildren();
@@ -282,8 +273,6 @@ public abstract class ClusteringStrategy {
             return children;
         }
 
-        dag.forEachUnpromotableChild((id) -> children.add(id));
-
         dag.forEachBucket((bucketId) -> {
             DAG bucket = getOrCreateDAG(bucketId);
             mergeRoot(bucket, nodeId, depth);
@@ -322,24 +311,15 @@ public abstract class ClusteringStrategy {
                     storageProvider.saveNodes(origNodes);
                     origNodes.keySet().forEach((id) -> root.addChild(id));
                 }
+
             } else {
 
-                @Nullable
-                final TreeId nodeBucketId = computeBucketId(nodeId, depthIndex);
+                final @Nullable TreeId nodeBucketId = computeBucketId(nodeId, depthIndex);
                 final ImmutableSortedMap<Integer, Bucket> buckets = original.buckets();
 
                 if (root.getState() == STATE.INITIALIZED) {
-                    { // make DAG a bucket tree
-                        checkState(root.numChildren() == 0);
-                    }
-                    {// keep any non promotable node (i.e. if RevTree has both leaf nodes and
-                     // buckets, the leaf nodes _are_ non promotable)
-                        final Map<NodeId, DAGNode> unprommottable = lazyNodes(original);
-                        if (!unprommottable.isEmpty()) {
-                            storageProvider.saveNodes(unprommottable);
-                            unprommottable.keySet().forEach((id) -> root.addNonPromotable(id));
-                        }
-                    }
+                    // make DAG a bucket tree
+                    checkState(root.numChildren() == 0);
 
                     // initialize buckets
                     preload(buckets.values());
@@ -377,9 +357,10 @@ public abstract class ClusteringStrategy {
     @Nullable
     TreeId computeBucketId(final NodeId nodeId, final int childDepthIndex) {
         byte[] treeId = new byte[childDepthIndex + 1];
+
         for (int depthIndex = 0; depthIndex <= childDepthIndex; depthIndex++) {
-            final int bucketIndex = bucket(nodeId, depthIndex);
-            if (-1 == bucketIndex) {
+            int bucketIndex = bucket(nodeId, depthIndex);
+            if (bucketIndex == -1) {
                 return null;
             }
             treeId[depthIndex] = (byte) bucketIndex;
@@ -387,7 +368,7 @@ public abstract class ClusteringStrategy {
         return new TreeId(treeId);
     }
 
-    private @Nullable TreeId computeBucketId(final TreeId treeId, final Integer leafOverride) {
+    private TreeId computeBucketId(final TreeId treeId, final Integer leafOverride) {
         byte[] bucketIndicesByDepth = treeId.bucketIndicesByDepth.clone();
         bucketIndicesByDepth[bucketIndicesByDepth.length - 1] = leafOverride.byteValue();
         return new TreeId(bucketIndicesByDepth);

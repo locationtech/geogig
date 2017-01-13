@@ -259,7 +259,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         Optional<ObjectId> quadTreeId = Optional.of(EMPTY_TREE_ID);
         if (treeRef.isPresent()) {
             if (index.isPresent()) {
-                quadTreeId = context.indexDatabase().resolveTreeId(index.get(),
+                quadTreeId = context.indexDatabase().resolveIndexedTree(index.get(),
                         treeRef.get().getObjectId());
             } else {
                 quadTreeId = Optional.absent();

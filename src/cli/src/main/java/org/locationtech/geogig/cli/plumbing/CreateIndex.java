@@ -88,7 +88,11 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
                     "Only indexes on spatial attributes are currently supported.");
         }
 
-        Index index = indexDatabase.createIndex(tree, attribute, IndexType.QUADTREE);
+        // Map<String, Object> indexProperties = new HashMap<String, Object>();
+        // indexProperties.put("extraAttributes", "attr1, attr2");
+
+        Index index = indexDatabase.createIndex(tree, attribute, IndexType.QUADTREE,
+                null/* indexProperties */);
 
         if (indexHistory) {
             ImmutableList<Ref> branches = geogig.command(BranchListOp.class).setLocal(true)
@@ -122,7 +126,7 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
             return;
         }
 
-        if (indexDatabase.resolveTreeId(index, treeId.get()).isPresent()) {
+        if (indexDatabase.resolveIndexedTree(index, treeId.get()).isPresent()) {
             cli.getConsole().println(String.format("Quad-tree already created for %s.", treeSpec));
             return;
         }
@@ -132,7 +136,7 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
 
         ProgressListener listener = cli.getProgressListener();
         RevTree quadTree = command.setProgressListener(listener).call();
-        geogig.getRepository().indexDatabase().updateIndex(index, treeId.get(), quadTree.getId());
+        geogig.getRepository().indexDatabase().addIndexedTree(index, treeId.get(), quadTree.getId());
 
         cli.getConsole().println(String.format("Created quad-tree %s. Size: %,d", quadTree.getId(),
                 quadTree.size()));

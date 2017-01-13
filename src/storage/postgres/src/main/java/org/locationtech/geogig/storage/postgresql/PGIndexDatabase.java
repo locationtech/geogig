@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage.postgresql;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -195,7 +196,8 @@ public class PGIndexDatabase implements IndexDatabase {
     }
 
     @Override
-    public Index createIndex(String featureType, String attribute, IndexType strategy) {
+    public Index createIndex(String featureType, String attribute, IndexType strategy,
+            @Nullable Map<String, Object> metadata) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
@@ -206,12 +208,12 @@ public class PGIndexDatabase implements IndexDatabase {
     }
 
     @Override
-    public void updateIndex(Index index, ObjectId originalTree, ObjectId indexedTree) {
+    public void addIndexedTree(Index index, ObjectId originalTree, ObjectId indexedTree) {
 
     }
 
     @Override
-    public Optional<ObjectId> resolveTreeId(Index index, ObjectId treeId) {
+    public Optional<ObjectId> resolveIndexedTree(Index index, ObjectId treeId) {
 
         return Optional.absent();
     }

@@ -9,18 +9,15 @@
  */
 package org.locationtech.geogig.storage.fs;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Index;
@@ -30,22 +27,17 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.StorageType;
+import org.locationtech.geogig.storage.impl.IndexSerializer;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 import com.google.common.hash.Hasher;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
-import com.google.common.io.Files;
 import com.google.inject.Inject;
 
 public class FileIndexDatabase extends FileObjectStore implements IndexDatabase {
 
     private final ConfigDatabase configDB;
-
-    private Map<String, List<Index>> indexes;
 
     /**
      * Constructs a new {@code FileIndexDatabase} using the given platform.
@@ -57,7 +49,6 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
             final Hints hints) {
         super(platform, "index", configDB, hints);
         this.configDB = configDB;
-        this.indexes = new HashMap<String, List<Index>>();
     }
 
     @Override
@@ -71,21 +62,6 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
     @Override
     public void open() {
         super.open();
-
-        for (final File indexFile : getDataRoot().listFiles()) {
-            if (indexFile.getAbsolutePath().endsWith(".index")) {
-                addIndex(readIndex(indexFile));
-            }
-        }
-    }
-
-    private void addIndex(Index index) {
-        String treeName = index.getTreeName();
-        if (indexes.containsKey(treeName)) {
-            indexes.get(treeName).add(index);
-        } else {
-            indexes.put(treeName, Lists.newArrayList(index));
-        }
     }
 
     /**
@@ -94,7 +70,6 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
     @Override
     public void close() {
         super.close();
-        this.indexes.clear();
     }
 
     @Override
@@ -108,73 +83,42 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
     }
 
     @Override
-    public Index createIndex(String treeName, String attributeName, IndexType strategy) {
-        Index index = new Index(treeName, attributeName, strategy);
-        addIndex(index);
-        UUID id = UUID.randomUUID();
-        File indexFile = new File(getDataRoot(), id.toString() + ".index");
-        writeIndex(indexFile, index);
-        return index;
-    }
-
-    private void writeIndex(File indexFile, Index index) {
-        BufferedWriter writer;
-        try {
-            writer = Files.newWriter(indexFile, Charsets.UTF_8);
-            writer.write(index.getTreeName());
-            writer.newLine();
-            writer.write(index.getAttributeName());
-            writer.newLine();
-            writer.write(index.getIndexType().toString());
-            writer.newLine();
-            writer.close();
+    public Index createIndex(String treeName, String attributeName, IndexType strategy,
+            @Nullable Map<String, Object> metadata) {
+        Index index = new Index(treeName, attributeName, strategy, metadata);
+        try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+            DataOutput out = ByteStreams.newDataOutput(outStream);
+            IndexSerializer.serialize(index, out);
+            this.putInternal(index.getId(), outStream.toByteArray());
         } catch (IOException e) {
             Throwables.propagate(e);
-        }
-    }
-
-    private Index readIndex(File indexFile) {
-        String treeName, attributeName;
-        IndexType indexType;
-        FileInputStream stream = null;
-        BufferedReader reader = null;
-        Index index = null;
-        try {
-            stream = new FileInputStream(indexFile);
-            reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-            treeName = reader.readLine();
-            attributeName = reader.readLine();
-            indexType = IndexType.valueOf(reader.readLine());
-            index = new Index(treeName, attributeName, indexType);
-        } catch (IOException e) {
-            Throwables.propagate(e);
-        } finally {
-            Closeables.closeQuietly(reader);
-            Closeables.closeQuietly(stream);
         }
         return index;
     }
 
     @Override
     public Optional<Index> getIndex(String treeName, String attributeName) {
-        if (indexes.containsKey(treeName)) {
-            for (Index index : indexes.get(treeName)) {
-                if (index.getAttributeName().equals(attributeName)) {
-                    return Optional.of(index);
-                }
+        ObjectId indexId = Index.getIndexId(treeName, attributeName);
+        try (InputStream inputStream = this.getRawInternal(indexId, false)) {
+            if (inputStream != null) {
+                DataInput in = new DataInputStream(inputStream);
+                Index index = IndexSerializer.deserialize(in);
+                return Optional.of(index);
             }
+        } catch (IOException e) {
+            Throwables.propagate(e);
         }
         return Optional.absent();
     }
 
     @Override
-    public void updateIndex(Index index, ObjectId originalTree, ObjectId indexedTree) {
+    public void addIndexedTree(Index index, ObjectId originalTree, ObjectId indexedTree) {
         ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
         this.putInternal(indexTreeLookupId, indexedTree.getRawValue());
     }
 
     @Override
-    public Optional<ObjectId> resolveTreeId(Index index, ObjectId treeId) {
+    public Optional<ObjectId> resolveIndexedTree(Index index, ObjectId treeId) {
         ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), treeId);
         InputStream indexTreeStream = this.getRawInternal(indexTreeLookupId, false);
         if (indexTreeStream != null) {

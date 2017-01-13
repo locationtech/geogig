@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.repository;
 
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.hash.Hasher;
@@ -18,23 +21,27 @@ public class Index {
         QUADTREE
     };
 
+    private final ObjectId indexId;
+
     private final String treeName;
 
     private final String attributeName;
 
     private final IndexType indexType;
 
-    private final ObjectId indexId;
+    private final Map<String, Object> metadata;
 
-    public Index(String treeName, String attributeName, IndexType indexType) {
-        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-        hasher.putBytes(treeName.getBytes());
-        hasher.putBytes(attributeName.getBytes());
-        hasher.putInt(indexType.ordinal());
+    public Index(String treeName, String attributeName, IndexType indexType,
+            @Nullable Map<String, Object> metadata) {
+        this.indexId = getIndexId(treeName, attributeName);
         this.treeName = treeName;
         this.attributeName = attributeName;
         this.indexType = indexType;
-        this.indexId = ObjectId.createNoClone(hasher.hash().asBytes());
+        this.metadata = metadata;
+    }
+
+    public ObjectId getId() {
+        return indexId;
     }
 
     public String getTreeName() {
@@ -49,7 +56,14 @@ public class Index {
         return indexType;
     }
 
-    public ObjectId getId() {
-        return indexId;
+    public Map<String, Object> getMetadata() {
+        return metadata;
+    }
+
+    public static ObjectId getIndexId(String treeName, String attributeName) {
+        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
+        hasher.putBytes(treeName.getBytes());
+        hasher.putBytes(attributeName.getBytes());
+        return ObjectId.createNoClone(hasher.hash().asBytes());
     }
 }

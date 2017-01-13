@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Index;
@@ -127,8 +128,9 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     @Override
-    public Index createIndex(String treeName, String attributeName, IndexType strategy) {
-        Index index = new Index(treeName, attributeName, strategy);
+    public Index createIndex(String treeName, String attributeName, IndexType strategy,
+            @Nullable Map<String, Object> metadata) {
+        Index index = new Index(treeName, attributeName, strategy, metadata);
         addIndex(index);
         return index;
     }
@@ -146,13 +148,13 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     @Override
-    public void updateIndex(Index index, ObjectId originalTree, ObjectId indexedTree) {
+    public void addIndexedTree(Index index, ObjectId originalTree, ObjectId indexedTree) {
         ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
         indexTreeMappings.put(indexTreeLookupId, indexedTree);
     }
 
     @Override
-    public Optional<ObjectId> resolveTreeId(Index index, ObjectId treeId) {
+    public Optional<ObjectId> resolveIndexedTree(Index index, ObjectId treeId) {
         ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), treeId);
         return Optional.fromNullable(indexTreeMappings.get(indexTreeLookupId));
     }

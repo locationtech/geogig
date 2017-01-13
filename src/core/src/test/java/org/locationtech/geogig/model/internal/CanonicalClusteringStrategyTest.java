@@ -94,7 +94,6 @@ public abstract class CanonicalClusteringStrategyTest {
             strategy.put(node);
         }
         DAG root = strategy.buildRoot();
-        assertTrue(unpromotable(root).isEmpty());
         assertTrue(buckets(root).isEmpty());
         assertFalse(children(root).isEmpty());
         assertEquals(strategy.normalizedSizeLimit(0), children(root).size());
@@ -112,7 +111,6 @@ public abstract class CanonicalClusteringStrategyTest {
             strategy.put(node);
         }
         DAG root = strategy.buildRoot();
-        assertTrue(unpromotable(root).isEmpty());
         assertTrue(children(root).isEmpty());
         assertFalse(buckets(root).isEmpty());
         assertEquals(1, strategy.depth());
@@ -140,7 +138,6 @@ public abstract class CanonicalClusteringStrategyTest {
         System.err.printf("Added %,d nodes in %s\n", numNodes, sw.stop());
 
         DAG root = strategy.buildRoot();
-        assertTrue(unpromotable(root).isEmpty());
         assertTrue(children(root).isEmpty());
         assertFalse(buckets(root).isEmpty());
         assertEquals(1, strategy.depth());
@@ -167,7 +164,6 @@ public abstract class CanonicalClusteringStrategyTest {
         System.err.printf("Added %,d nodes in %s\n", numNodes, sw.stop());
 
         DAG root = strategy.buildRoot();
-        assertTrue(unpromotable(root).isEmpty());
         assertTrue(children(root).isEmpty());
         assertFalse(buckets(root).isEmpty());
         // assertEquals(1, strategy.depth());
@@ -203,7 +199,6 @@ public abstract class CanonicalClusteringStrategyTest {
         System.err.printf("Added %,d nodes in %s\n", addedNodes.size(), sw.stop());
 
         DAG root = strategy.buildRoot();
-        assertTrue(unpromotable(root).isEmpty());
         assertTrue(children(root).isEmpty());
         assertFalse(buckets(root).isEmpty());
         // assertEquals(1, strategy.depth());
@@ -239,7 +234,6 @@ public abstract class CanonicalClusteringStrategyTest {
         System.err.printf("Added %,d nodes in %s\n", addedNodes.size(), sw.stop());
 
         DAG root = strategy.buildRoot();
-        assertTrue(unpromotable(root).isEmpty());
         assertTrue(children(root).isEmpty());
         assertFalse(buckets(root).isEmpty());
         // assertEquals(1, strategy.depth());
@@ -320,7 +314,6 @@ public abstract class CanonicalClusteringStrategyTest {
         System.err.printf("Removed %,d nodes in %s\n", removeNodes.size(), sw.stop());
 
         DAG root = strategy.buildRoot();
-        assertTrue(unpromotable(root).isEmpty());
         assertFalse(children(root).isEmpty());
         assertTrue(buckets(root).isEmpty());
         // assertEquals(1, strategy.depth());
@@ -359,7 +352,6 @@ public abstract class CanonicalClusteringStrategyTest {
 
         DAG root = strategy.buildRoot();
         assertEquals(nodes.size() - removeNodes.size(), root.getChildCount());
-        assertTrue(unpromotable(root).isEmpty());
         assertFalse(children(root).isEmpty());
         assertTrue(buckets(root).isEmpty());
         // assertEquals(1, strategy.depth());
@@ -528,14 +520,11 @@ public abstract class CanonicalClusteringStrategyTest {
         List<NodeId> nodes = new ArrayList<NodeId>();
 
         Set<NodeId> children = children(root);
-        Set<NodeId> unpromotable = unpromotable(root);
         Set<TreeId> buckets = buckets(root);
         if (children != null) {
             nodes.addAll(children);
         }
-        if (unpromotable != null) {
-            nodes.addAll(unpromotable);
-        }
+
         if (buckets != null) {
             for (TreeId bucketTreeId : buckets) {
                 DAG bucketDAG = strategy.getOrCreateDAG(bucketTreeId);
@@ -543,12 +532,6 @@ public abstract class CanonicalClusteringStrategyTest {
             }
         }
         return nodes;
-    }
-
-    Set<NodeId> unpromotable(DAG root) {
-        Set<NodeId> ids = new HashSet<>();
-        root.forEachUnpromotableChild((id) -> ids.add(id));
-        return ids;
     }
 
     Set<NodeId> children(DAG root) {

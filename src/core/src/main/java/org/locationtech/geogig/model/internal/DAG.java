@@ -46,19 +46,12 @@ final class DAG implements Cloneable, Serializable {
     }
 
     /**
-     * Nodes (both features and trees) that can't be promoted to one more depth level than this tree
-     * is at (at the discretion of the {@link ClusteringStrategy})
-     */
-    private Set<NodeId> nonPromotable;
-
-    /**
      * Direct children feature and tree nodes that can be promoted to buckets if need be
      */
     private Set<NodeId> children;
 
     /**
-     * Bucket tree ids. At any point in time, a DAG has either buckets or feature/tree nodes. It can
-     * have non promotable nodes at any time.
+     * Bucket tree ids. At any point in time, a DAG has either buckets or feature/tree nodes.
      */
     private Set<TreeId> buckets;
 
@@ -81,9 +74,6 @@ final class DAG implements Cloneable, Serializable {
     @Override
     public DAG clone() {
         DAG c = new DAG(originalTreeId);
-        if (!nonPromotable.isEmpty()) {
-            c.nonPromotable = new HashSet<>(nonPromotable);
-        }
         if (!children.isEmpty()) {
             c.children = new HashSet<>(children);
         }
@@ -103,13 +93,12 @@ final class DAG implements Cloneable, Serializable {
     }
 
     DAG(final ObjectId originalTreeId, long childCount, STATE state, Set<NodeId> children,
-            Set<NodeId> unpromotable, Set<TreeId> buckets) {
+            Set<TreeId> buckets) {
 
         this.originalTreeId = originalTreeId;
         this.setChildCount(childCount);
         this.state = state;
         this.children = children;
-        this.nonPromotable = unpromotable;
         this.buckets = buckets;
     }
 
@@ -117,7 +106,6 @@ final class DAG implements Cloneable, Serializable {
         this.children = new HashSet<>();
         this.originalTreeId = originalTreeId;
         this.state = STATE.INITIALIZED;
-        this.nonPromotable = ImmutableSet.of();
         this.children = ImmutableSet.of();
         this.buckets = ImmutableSet.of();
     }
@@ -140,32 +128,6 @@ final class DAG implements Cloneable, Serializable {
         return this.state;
     }
 
-    // public Set<NodeId> unpromotable() {
-    // return nonPromotable;
-    // }
-    //
-    public void clearUnpromotable() {
-        if (!nonPromotable.isEmpty()) {
-            this.mutated = true;
-            this.nonPromotable = ImmutableSet.of();
-        }
-    }
-
-    public boolean addUnpromotable(NodeId nodeId) {
-        if (this.nonPromotable.isEmpty()) {
-            this.nonPromotable = new HashSet<>();
-        }
-        boolean changed = this.nonPromotable.add(nodeId);
-        if (changed) {
-            this.mutated = true;
-        }
-        return changed;
-    }
-
-    // public Set<NodeId> children() {
-    // return children;
-    // }
-    //
     public void clearChildren() {
         if (!children.isEmpty()) {
             this.mutated = true;
@@ -206,16 +168,6 @@ final class DAG implements Cloneable, Serializable {
         return changed;
     }
 
-    public void addNonPromotable(NodeId id) {
-        if (nonPromotable.isEmpty()) {
-            nonPromotable = new HashSet<>();
-        }
-        if (!nonPromotable.add(id)) {
-            nonPromotable.remove(id);
-            nonPromotable.add(id);
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof DAG)) {
@@ -224,17 +176,16 @@ final class DAG implements Cloneable, Serializable {
         DAG d = (DAG) o;
         return equal(originalTreeId, d.originalTreeId) && equal(getChildCount(), d.getChildCount())
                 && equal(state, d.state) && equal(children, d.children)
-                && equal(nonPromotable, d.nonPromotable) && equal(buckets, d.buckets);
+                && equal(buckets, d.buckets);
     }
 
     @Override
     public String toString() {
-        return "DAG[features: " + children + ", buckets: " + buckets + ", non promotable: "
-                + nonPromotable + "]";
+        return "DAG[features: " + children + ", buckets: " + buckets + "]";
     }
 
     public boolean isEmpty() {
-        return children.isEmpty() && buckets.isEmpty() && nonPromotable.isEmpty();
+        return children.isEmpty() && buckets.isEmpty();
     }
 
     public long getChildCount() {
@@ -267,20 +218,12 @@ final class DAG implements Cloneable, Serializable {
         return children.size();
     }
 
-    public int numUnpromotable() {
-        return nonPromotable.size();
-    }
-
     public void forEachBucket(Consumer<? super TreeId> action) {
         this.buckets.forEach(action);
     }
 
     public void forEachChild(Consumer<? super NodeId> action) {
         this.children.forEach(action);
-    }
-
-    public void forEachUnpromotableChild(Consumer<? super NodeId> action) {
-        this.nonPromotable.forEach(action);
     }
 
     boolean isMutated() {
@@ -295,7 +238,6 @@ final class DAG implements Cloneable, Serializable {
         final ObjectId treeId = dag.originalTreeId;
         final STATE state = dag.getState();
         final long childCount = dag.getChildCount();
-        final Set<NodeId> nonPromotable = dag.nonPromotable;
         final Set<NodeId> children = dag.children;
         final Set<TreeId> buckets = dag.buckets;
 
@@ -303,13 +245,9 @@ final class DAG implements Cloneable, Serializable {
         out.writeByte(state.ordinal());
         Varint.writeUnsignedVarLong(childCount, out);
 
-        Varint.writeUnsignedVarInt(nonPromotable.size(), out);
         Varint.writeUnsignedVarInt(children.size(), out);
         Varint.writeUnsignedVarInt(buckets.size(), out);
 
-        for (NodeId nodeid : nonPromotable) {
-            NodeIdIO.write(nodeid, out);
-        }
         for (NodeId nodeid : children) {
             NodeIdIO.write(nodeid, out);
         }
@@ -325,21 +263,12 @@ final class DAG implements Cloneable, Serializable {
         final STATE state = STATE.values()[in.readByte() & 0xFF];
         final long childCount = Varint.readUnsignedVarLong(in);
 
-        final int nonPromotableSize = Varint.readUnsignedVarInt(in);
         final int childrenSize = Varint.readUnsignedVarInt(in);
         final int bucketSize = Varint.readUnsignedVarInt(in);
 
-        Set<NodeId> nonPromotable = ImmutableSet.of();
         Set<NodeId> children = ImmutableSet.of();
         Set<TreeId> buckets = ImmutableSet.of();
 
-        if (nonPromotableSize > 0) {
-            nonPromotable = new HashSet<>();
-            for (int i = 0; i < nonPromotableSize; i++) {
-                NodeId nid = NodeIdIO.read(in);
-                nonPromotable.add(nid);
-            }
-        }
         if (childrenSize > 0) {
             children = new HashSet<>();
             for (int i = 0; i < childrenSize; i++) {
@@ -357,7 +286,7 @@ final class DAG implements Cloneable, Serializable {
             }
         }
 
-        DAG dag = new DAG(treeId, childCount, state, children, nonPromotable, buckets);
+        DAG dag = new DAG(treeId, childCount, state, children, buckets);
         return dag;
     }
 }

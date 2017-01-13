@@ -12,7 +12,6 @@ package org.locationtech.geogig.model.internal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 
@@ -65,9 +64,12 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
         this.maxDepth = maxDepth;
     }
 
-    @Override
-    protected int maxBuckets(final int depthIndex) {
-        return 4;
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+
+    public Envelope getMaxBound() {
+        return maxBounds;
     }
 
     @Override
@@ -83,6 +85,10 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
      */
     @Override
     public int bucket(final NodeId nodeId, final int depthIndex) {
+        if (nodeId instanceof CanonicalNodeId) {
+            return -1;
+        }
+
         Quadrant[] quadrantsByDepth = ((QuadTreeNodeId) nodeId).quadrantsByDepth();
         if (depthIndex < quadrantsByDepth.length) {
             Quadrant quadrant = quadrantsByDepth[depthIndex];
@@ -91,19 +97,11 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
         return -1;
     }
 
-    public int getMaxDepth() {
-        return maxDepth;
-    }
-
-    public Envelope getMaxBound() {
-        return maxBounds;
-    }
-
     @Override
-    public @Nullable QuadTreeNodeId computeId(final Node node) {
+    public NodeId computeId(final Node node) {
         Optional<Envelope> bounds = node.bounds();
         if (!bounds.isPresent() || bounds.get().isNull()) {
-            return null; // no bounds -> not in tree
+            return null; // no bounds -> not in quad tree
         }
         return computeIdInternal(node, bounds.get());
     }

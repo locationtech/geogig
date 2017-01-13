@@ -75,6 +75,7 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
             if (descriptor.getName().toString().equals(attribute)) {
                 attributeFound = true;
                 attributeType = descriptor.getType();
+                break;
             }
         }
 
@@ -136,7 +137,7 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
 
         ProgressListener listener = cli.getProgressListener();
         RevTree quadTree = command.setProgressListener(listener).call();
-        geogig.getRepository().indexDatabase().addIndexedTree(index, treeId.get(), quadTree.getId());
+        indexDatabase.addIndexedTree(index, treeId.get(), quadTree.getId());
 
         cli.getConsole().println(String.format("Created quad-tree %s. Size: %,d", quadTree.getId(),
                 quadTree.size()));

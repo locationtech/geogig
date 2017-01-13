@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage.impl;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.Map;
 
@@ -33,8 +34,13 @@ public class IndexSerializer {
         String attributeName = (String) DataStreamValueSerializerV2.read(FieldType.STRING, in);
         IndexType indexType = IndexType
                 .valueOf((String) DataStreamValueSerializerV2.read(FieldType.STRING, in));
-        Map<String, Object> metadata = (Map<String, Object>) DataStreamValueSerializerV2
+        Map<String, Object> metadata;
+        try {
+            metadata = (Map<String, Object>) DataStreamValueSerializerV2
                 .read(FieldType.MAP, in);
+        } catch (EOFException e) {
+            metadata = null;
+        }
         return new Index(treeName, attributeName, indexType, metadata);
     }
 }

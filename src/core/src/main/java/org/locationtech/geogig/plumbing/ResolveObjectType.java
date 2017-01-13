@@ -13,6 +13,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.ObjectStore;
 
 /**
  * Gets the object type of the object that matches the given {@link ObjectId}.
@@ -20,6 +21,8 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 public class ResolveObjectType extends AbstractGeoGigOp<RevObject.TYPE> {
 
     private ObjectId oid;
+
+    private ObjectStore source = null;
 
     /**
      * @param oid the {@link ObjectId object id} of the object to check
@@ -31,6 +34,15 @@ public class ResolveObjectType extends AbstractGeoGigOp<RevObject.TYPE> {
     }
 
     /**
+     * @param source the object store to use
+     * @return {@code this}
+     */
+    public ResolveObjectType setSource(final ObjectStore source) {
+        this.source = source;
+        return this;
+    }
+
+    /**
      * Executes the command.
      * 
      * @return the type of the object specified by the object id.
@@ -38,7 +50,8 @@ public class ResolveObjectType extends AbstractGeoGigOp<RevObject.TYPE> {
      */
     @Override
     protected TYPE _call() throws IllegalArgumentException {
-        RevObject o = objectDatabase().get(oid);
+        ObjectStore source = this.source == null ? objectDatabase() : this.source;
+        RevObject o = source.get(oid);
         return o.getType();
     }
 }

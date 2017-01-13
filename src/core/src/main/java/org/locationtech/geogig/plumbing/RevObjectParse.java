@@ -13,6 +13,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -29,6 +30,8 @@ public class RevObjectParse extends AbstractGeoGigOp<Optional<RevObject>> {
     private ObjectId objectId;
 
     private String refSpec;
+
+    private ObjectStore source = null;
 
     /**
      * @param refSpec the ref spec to resolve
@@ -51,6 +54,15 @@ public class RevObjectParse extends AbstractGeoGigOp<Optional<RevObject>> {
     }
 
     /**
+     * @param source the object store to use
+     * @return {@code this}
+     */
+    public RevObjectParse setSource(final ObjectStore source) {
+        this.source = source;
+        return this;
+    }
+
+    /**
      * @return the resolved object id
      * @throws IllegalArgumentException if the provided refspec doesn't resolve to any known object
      * @see RevObject
@@ -66,9 +78,11 @@ public class RevObjectParse extends AbstractGeoGigOp<Optional<RevObject>> {
      * @see RevObject
      */
     public <T extends RevObject> Optional<T> call(Class<T> clazz) {
+        this.source = this.source == null ? objectDatabase() : this.source;
         final ObjectId resolvedObjectId;
         if (objectId == null) {
-            Optional<ObjectId> parsed = command(RevParse.class).setRefSpec(refSpec).call();
+            Optional<ObjectId> parsed = command(RevParse.class).setSource(source)
+                    .setRefSpec(refSpec).call();
             if (parsed.isPresent()) {
                 resolvedObjectId = parsed.get();
             } else {
@@ -84,7 +98,7 @@ public class RevObjectParse extends AbstractGeoGigOp<Optional<RevObject>> {
         if (RevTree.EMPTY_TREE_ID.equals(resolvedObjectId)) {
             revObject = RevTree.EMPTY;
         } else {
-            revObject = objectDatabase().get(resolvedObjectId, clazz);
+            revObject = source.get(resolvedObjectId, clazz);
         }
         Preconditions.checkArgument(clazz.isAssignableFrom(revObject.getClass()),
                 "Wrong return class for RevObjectParse operation. Expected %s, got %s",

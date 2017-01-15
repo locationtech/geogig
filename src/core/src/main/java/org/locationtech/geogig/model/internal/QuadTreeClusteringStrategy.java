@@ -100,6 +100,11 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
     }
 
     @Override
+    protected int unpromotableBucketIndex(final int depthIndex) {
+        return 4;
+    }
+
+    @Override
     public NodeId computeId(final Node node) {
         Optional<Envelope> bounds = node.bounds();
         if (!bounds.isPresent() || bounds.get().isNull()) {
@@ -108,6 +113,7 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
         return new NodeId(node.getName(), bounds.get());
     }
 
+    @Nullable
     Quadrant computeQuadrant(@Nullable Envelope nodeBounds, int depthIndex) {
         if (nodeBounds != null && !nodeBounds.isNull()) {
             Envelope parentQuadrantBounds = this.maxBounds;

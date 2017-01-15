@@ -88,6 +88,15 @@ public abstract class ClusteringStrategy {
      */
     public abstract int bucket(NodeId nodeId, int depthIndex);
 
+    /**
+     * @return the bucket corresponding to {@code nodeId} at depth {@code depthIndex} as mandated by
+     *         {@link CanonicalNodeNameOrder}
+     */
+    public final int canonicalBucket(final NodeId nodeId, final int depthIndex) {
+        int bucket = CanonicalNodeNameOrder.bucket(nodeId.name(), depthIndex);
+        return bucket;
+    }
+
     DAG getOrCreateDAG(TreeId treeId) {
         return getOrCreateDAG(treeId, RevTree.EMPTY_TREE_ID);
     }
@@ -189,7 +198,7 @@ public abstract class ClusteringStrategy {
             if (!remove) {
                 storageProvider.saveNode(nodeId, node);
             }
-            if (treeBuff.size() >= 10_000) {
+            if (treeBuff.size() >= 35_000) {
                 writeLock.lock();
                 try {
                     storageProvider.save(treeBuff);
@@ -259,14 +268,11 @@ public abstract class ClusteringStrategy {
                 dag.forEachChild((childId) -> {
 
                     int childDepthIndex = dagDepth + 1;
-                    @Nullable
                     TreeId bucketId = computeBucketId(childId, dagDepth);
-                    if (bucketId != null) {
-                        checkNotNull(bucketId);
-                        DAG bucketDAG = getOrCreateDAG(bucketId);
-                        dag.addBucket(bucketId);
-                        put(bucketId, bucketDAG, childId, remove, childDepthIndex);
-                    }
+                    checkNotNull(bucketId);
+                    DAG bucketDAG = getOrCreateDAG(bucketId);
+                    dag.addBucket(bucketId);
+                    put(bucketId, bucketDAG, childId, remove, childDepthIndex);
                     /// changed = bucketDAG.getState() == STATE.CHANGED;
                 });
 
@@ -349,7 +355,7 @@ public abstract class ClusteringStrategy {
 
             } else {
 
-                final @Nullable TreeId nodeBucketId = computeBucketId(nodeId, depthIndex);
+                final TreeId nodeBucketId = computeBucketId(nodeId, depthIndex);
                 final ImmutableSortedMap<Integer, Bucket> buckets = original.buckets();
 
                 if (root.getState() == STATE.INITIALIZED) {
@@ -389,18 +395,36 @@ public abstract class ClusteringStrategy {
         return original;
     }
 
-    @Nullable
     TreeId computeBucketId(final NodeId nodeId, final int childDepthIndex) {
         byte[] treeId = new byte[childDepthIndex + 1];
+
+        int unpromotableDepth = -1;
 
         for (int depthIndex = 0; depthIndex <= childDepthIndex; depthIndex++) {
             int bucketIndex = bucket(nodeId, depthIndex);
             if (bucketIndex == -1) {
-                return null;
+                unpromotableDepth = depthIndex;
+                break;
             }
             treeId[depthIndex] = (byte) bucketIndex;
         }
+
+        if (unpromotableDepth > -1) {
+            final int extraBucketIndex = unpromotableBucketIndex(unpromotableDepth);
+            treeId[unpromotableDepth] = (byte) extraBucketIndex;
+            unpromotableDepth++;
+            final int missingDepthCount = 1 + childDepthIndex - unpromotableDepth;
+            for (int i = 0; i < missingDepthCount; i++, unpromotableDepth++) {
+                int bucketIndex = canonicalBucket(nodeId, i);
+                treeId[unpromotableDepth] = (byte) bucketIndex;
+            }
+        }
+
         return new TreeId(treeId);
+    }
+
+    protected int unpromotableBucketIndex(final int depthIndex) {
+        throw new UnsupportedOperationException();
     }
 
     private TreeId computeBucketId(final TreeId treeId, final Integer leafOverride) {

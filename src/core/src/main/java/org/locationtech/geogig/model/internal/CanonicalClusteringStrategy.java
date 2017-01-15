@@ -9,15 +9,22 @@
  */
 package org.locationtech.geogig.model.internal;
 
+import java.util.Comparator;
+
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 
-import com.google.common.primitives.UnsignedLong;
+import com.google.common.collect.Ordering;
 
 class CanonicalClusteringStrategy extends ClusteringStrategy {
 
-    private static final CanonicalNodeNameOrder CANONICAL_ORDER = CanonicalNodeNameOrder.INSTANCE;
+    static final Ordering<NodeId> CANONICAL_ORDER = new Ordering<NodeId>() {
+        @Override
+        public int compare(NodeId left, NodeId right) {
+            return CanonicalNodeNameOrder.INSTANCE.compare(left.name(), right.name());
+        }
+    };
 
     public CanonicalClusteringStrategy(RevTree original, DAGStorageProvider storageProvider) {
         super(original, storageProvider);
@@ -37,18 +44,22 @@ class CanonicalClusteringStrategy extends ClusteringStrategy {
      *         {@link CanonicalNodeNameOrder}
      */
     public int bucket(final NodeId nodeId, final int depthIndex) {
-        long bucketsByDepth = ((CanonicalNodeId) nodeId).bucketsByDepth();
-        int bucket = CanonicalNodeNameOrder.bucket(bucketsByDepth, depthIndex);
+        // long bucketsByDepth = ((CanonicalNodeId) nodeId).bucketsByDepth();
+        // int bucket = CanonicalNodeNameOrder.bucket(bucketsByDepth, depthIndex);
+        // return bucket;
+        int bucket = CanonicalNodeNameOrder.bucket(nodeId.name(), depthIndex);
         return bucket;
     }
 
     @Override
-    public CanonicalNodeId computeId(Node node) {
-
+    public NodeId computeId(Node node) {
         String name = node.getName();
-        UnsignedLong hashCodeLong = CANONICAL_ORDER.hashCodeLong(name);
+        return new NodeId(name);
+    }
 
-        return new CanonicalNodeId(hashCodeLong.longValue(), name);
+    @Override
+    protected Comparator<NodeId> getNodeOrdering() {
+        return CANONICAL_ORDER;
     }
 
 }

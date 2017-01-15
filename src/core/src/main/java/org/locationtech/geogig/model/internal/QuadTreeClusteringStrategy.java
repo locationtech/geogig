@@ -10,8 +10,11 @@
 package org.locationtech.geogig.model.internal;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 
@@ -25,13 +28,13 @@ import com.vividsolutions.jts.geom.Envelope;
  * location in the tree - the quad that it is fully enclosed by (which might be the root node).
  *
  * NOTE: if the feature doesn't have a bounds (i.e. null or empty), then it is NOT put in the tree
- * (null QuadTreeNodeId).
+ * (null NodeId).
  *
- * The main entry point is computeId(), which returns a QuadTreeNodeId that defines where that Node
- * should be in the QuadTree. The QuadTreeNodeId contains a list of Quandrants defining which
- * quadrant the feature lies completely inside for EACH level of the quadtree.
+ * The main entry point is computeId(), which returns a NodeId that defines where that Node should
+ * be in the QuadTree. The NodeId contains a list of Quandrants defining which quadrant the feature
+ * lies completely inside for EACH level of the quadtree.
  *
- * If QuadTreeNodeId contains quadrants NE, then SE, then NW then it means that:
+ * If NodeId contains quadrants NE, then SE, then NW then it means that:
  *
  * The feature is completely in the NE quadrant for the "world" (level 0).
  *
@@ -77,6 +80,11 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
         return 128;
     }
 
+    @Override
+    protected Comparator<NodeId> getNodeOrdering() {
+        return CanonicalClusteringStrategy.CANONICAL_ORDER;
+    }
+
     /**
      * Returns the bucket index in the range 0-3 corresponding to this node at the specified depth
      * (i.e. the bucket index represents a quadrant), or {@code -1} if the spatial bounds of this
@@ -85,16 +93,10 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
      */
     @Override
     public int bucket(final NodeId nodeId, final int depthIndex) {
-        if (nodeId instanceof CanonicalNodeId) {
-            return -1;
-        }
+        final Envelope nodeBounds = nodeId.value();
+        final Quadrant quadrantAtDepth = computeQuadrant(nodeBounds, depthIndex);
 
-        Quadrant[] quadrantsByDepth = ((QuadTreeNodeId) nodeId).quadrantsByDepth();
-        if (depthIndex < quadrantsByDepth.length) {
-            Quadrant quadrant = quadrantsByDepth[depthIndex];
-            return quadrant.ordinal();
-        }
-        return -1;
+        return quadrantAtDepth == null ? -1 : quadrantAtDepth.ordinal();
     }
 
     @Override
@@ -103,10 +105,35 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
         if (!bounds.isPresent() || bounds.get().isNull()) {
             return null; // no bounds -> not in quad tree
         }
-        return computeIdInternal(node, bounds.get());
+        return new NodeId(node.getName(), bounds.get());
     }
 
-    private QuadTreeNodeId computeIdInternal(Node node, Envelope nodeBounds) {
+    Quadrant computeQuadrant(@Nullable Envelope nodeBounds, int depthIndex) {
+        if (nodeBounds != null && !nodeBounds.isNull()) {
+            Envelope parentQuadrantBounds = this.maxBounds;
+
+            for (int depth = 0; depth <= depthIndex; depth++) {
+                for (int q = 0; q < 4; q++) {
+                    Quadrant quadrant = Quadrant.VALUES[q];
+                    Envelope qBounds = quadrant.slice(parentQuadrantBounds);
+                    if (qBounds.contains(nodeBounds)) {
+                        if (depth == depthIndex) {
+                            return quadrant;
+                        }
+                        parentQuadrantBounds = qBounds;
+                        break;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    List<Quadrant> quadrantsByDepth(NodeId node) {
+        final Envelope nodeBounds = node.value();
+        if (nodeBounds == null || nodeBounds.isNull()) {
+            return Collections.emptyList();
+        }
 
         final int maxDepth = this.maxDepth;
         List<Quadrant> quadrantsByDepth = new ArrayList<>(maxDepth);
@@ -126,9 +153,7 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
                 }
             }
         }
-
-        Quadrant[] nodeQuadrants = quadrantsByDepth.toArray(new Quadrant[quadrantsByDepth.size()]);
-        return new QuadTreeNodeId(node.getName(), nodeQuadrants);
+        return quadrantsByDepth;
     }
 
 }

@@ -95,8 +95,8 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public SortedMap<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
-        SortedMap<NodeId, DAGNode> dagNodes = nodeStore.getAll(nodeIds);
+    public Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
+        Map<NodeId, DAGNode> dagNodes = nodeStore.getAll(nodeIds);
         return Maps.transformValues(dagNodes, (dn) -> dn.resolve(treeCache));
     }
 

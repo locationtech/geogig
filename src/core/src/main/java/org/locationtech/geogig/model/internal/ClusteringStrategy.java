@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,10 +21,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -85,9 +92,9 @@ public abstract class ClusteringStrategy {
         return getOrCreateDAG(treeId, RevTree.EMPTY_TREE_ID);
     }
 
-    Map<TreeId, DAG> treeBuff = new HashMap<>();
+    ConcurrentMap<TreeId, DAG> treeBuff = new ConcurrentHashMap<>();
 
-    private synchronized DAG getOrCreateDAG(TreeId treeId, ObjectId originalTreeId) {
+    private DAG getOrCreateDAG(TreeId treeId, ObjectId originalTreeId) {
         DAG dag = treeBuff.get(treeId);
         if (dag == null) {
             dag = storageProvider.getOrCreateTree(treeId, originalTreeId);
@@ -111,10 +118,25 @@ public abstract class ClusteringStrategy {
         return node;
     }
 
+    /**
+     * Returns a set of {@link Node} objects by their {@link NodeId}s in the order imposed by the
+     * clustering strategy, to be held as direct children of a leaf {@link RevTree}.
+     * <p>
+     * For a canonical tree, the order must follow the one imposed by
+     * {@link CanonicalNodeNameOrder}.
+     * <p>
+     * For an index tree, the order is first mandated by the natural order of the index attribute
+     * values, followed by canonical order.
+     */
     public SortedMap<NodeId, Node> getNodes(Set<NodeId> nodeIds) {
-
-        return storageProvider.getNodes(nodeIds);
+        Map<NodeId, Node> nodes = storageProvider.getNodes(nodeIds);
+        Comparator<NodeId> nodeOrdering = getNodeOrdering();
+        TreeMap<NodeId, Node> sorted = new TreeMap<>(nodeOrdering);
+        sorted.putAll(nodes);
+        return sorted;
     }
+
+    protected abstract Comparator<NodeId> getNodeOrdering();
 
     public void dispose() {
         this.storageProvider.dispose();
@@ -145,6 +167,8 @@ public abstract class ClusteringStrategy {
         put(removeNode);
     }
 
+    private Lock writeLock = new ReentrantLock();
+
     public void put(final Node node) {
         @Nullable
         final NodeId nodeId = computeId(node);
@@ -156,15 +180,26 @@ public abstract class ClusteringStrategy {
                                                  // been called and it reset the root DAG to be
                                                  // _the_ single bucket root had (in case it had
                                                  // only one)
-            put(rootId, root, nodeId, remove, rootDepth);
+            writeLock.lock();
+            try {
+                put(rootId, root, nodeId, remove, rootDepth);
+            } finally {
+                writeLock.unlock();
+            }
             if (!remove) {
                 storageProvider.saveNode(nodeId, node);
             }
             if (treeBuff.size() >= 10_000) {
-                storageProvider.save(treeBuff);
-                treeBuff.clear();
+                writeLock.lock();
+                try {
+                    storageProvider.save(treeBuff);
+                    treeBuff.clear();
+                } finally {
+                    writeLock.unlock();
+                }
             }
         }
+
     }
 
     public TreeId getRootId() {
@@ -188,8 +223,8 @@ public abstract class ClusteringStrategy {
         return root;
     }
 
-    private synchronized int put(final TreeId dagId, final DAG dag, final NodeId nodeId,
-            final boolean remove, final int dagDepth) {
+    private int put(final TreeId dagId, final DAG dag, final NodeId nodeId, final boolean remove,
+            final int dagDepth) {
         checkNotNull(dag);
         checkNotNull(nodeId);
         checkArgument(dagDepth > -1);
@@ -207,7 +242,7 @@ public abstract class ClusteringStrategy {
                 dag.addBucket(bucketId);
                 deltaSize = put(bucketId, bucketDAG, nodeId, remove, dagDepth + 1);
                 changed = bucketDAG.getState() == STATE.CHANGED;
-            }else{
+            } else {
                 deltaSize = 0;
             }
         } else {

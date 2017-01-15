@@ -331,6 +331,7 @@ public class HashObjectFunnelsTest {
         values.add(Optional.of(new java.sql.Timestamp(0L)));
         values.add(Optional.of('a'));
         values.add(Optional.of(new char[] { 'a', 'b' }));
+        values.add(Optional.of(new Envelope()));
         Map<String, String> testMap = new HashMap<String, String>();
         testMap.put("key", "value");
         values.add(Optional.of(testMap));
@@ -368,7 +369,7 @@ public class HashObjectFunnelsTest {
         // If this fails it means a new type was added and this test needs to be updated with the
         // new type.
         exception.expect(ArrayIndexOutOfBoundsException.class);
-        FieldType.valueOf(0x24);
+        FieldType.valueOf(0x25);
 
     }
     

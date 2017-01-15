@@ -35,6 +35,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
@@ -550,6 +551,25 @@ public class DataStreamValueSerializerV2 {
                 }
             }
         });
+        serializers.put(FieldType.ENVELOPE_2D, new ValueSerializer() {
+            @Override
+            public Object read(DataInput in) throws IOException {
+                double minx = in.readDouble();
+                double miny = in.readDouble();
+                double maxx = in.readDouble();
+                double maxy = in.readDouble();
+                return new Envelope(minx, maxx, miny, maxy);
+            }
+
+            @Override
+            public void write(Object field, DataOutput data) throws IOException {
+                Envelope e = (Envelope) field;
+                data.writeDouble(e.getMinX());
+                data.writeDouble(e.getMinY());
+                data.writeDouble(e.getMaxX());
+                data.writeDouble(e.getMaxY());
+            }
+        });
     }
 
     /**
@@ -570,6 +590,11 @@ public class DataStreamValueSerializerV2 {
 
     public static void write(@Nullable Object value, DataOutput data) throws IOException {
         FieldType type = FieldType.forValue(value);
+        write(type, value, data);
+    }
+
+    public static void write(FieldType type, @Nullable Object value, DataOutput data)
+            throws IOException {
         ValueSerializer valueSerializer = serializers.get(type);
         if (null == valueSerializer) {
             throw new IllegalArgumentException(

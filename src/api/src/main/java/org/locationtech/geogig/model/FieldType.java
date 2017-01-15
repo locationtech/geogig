@@ -19,6 +19,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
@@ -155,6 +156,7 @@ public enum FieldType {
     MAP(0x20, java.util.Map.class, (v) -> new HashMap<>((Map) v)), //
     CHAR(0x21, Character.class), //
     CHAR_ARRAY(0x22, char[].class), //
+    ENVELOPE_2D(0x23, Envelope.class, (v) -> new Envelope((Envelope) v)), //
     UNKNOWN(-1, null);
 
     private final byte tagValue;
@@ -209,7 +211,8 @@ public enum FieldType {
         }
         // NOTE: we're using the tagValue as the ordinal index because they match, the moment they
         // don't we need to reimplement this method accordingly.
-        return VALUES_CACHE[tagValue];
+        FieldType fieldType = VALUES_CACHE[tagValue];
+        return fieldType;
     }
 
     /**

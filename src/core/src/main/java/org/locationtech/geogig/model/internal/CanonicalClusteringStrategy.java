@@ -44,11 +44,7 @@ class CanonicalClusteringStrategy extends ClusteringStrategy {
      *         {@link CanonicalNodeNameOrder}
      */
     public int bucket(final NodeId nodeId, final int depthIndex) {
-        // long bucketsByDepth = ((CanonicalNodeId) nodeId).bucketsByDepth();
-        // int bucket = CanonicalNodeNameOrder.bucket(bucketsByDepth, depthIndex);
-        // return bucket;
-        int bucket = CanonicalNodeNameOrder.bucket(nodeId.name(), depthIndex);
-        return bucket;
+        return canonicalBucket(nodeId, depthIndex);
     }
 
     @Override

@@ -20,11 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
 
-@Ignore // until implementing unpromotables to special bucket
 public class QuadTreeClusteringStrategy_putTest {
 
     @Test
@@ -158,7 +156,7 @@ public class QuadTreeClusteringStrategy_putTest {
         assertNotNull(dag);
         // assertEquals(dag.numUnpromotable(), 129);
         assertEquals(129, dag.getChildCount());
-        assertEquals(0, dag.numBuckets());
+        assertEquals(1, dag.numBuckets());
         assertEquals(0, dag.numChildren());
 
         // lets add some unpromotables to existing nodes

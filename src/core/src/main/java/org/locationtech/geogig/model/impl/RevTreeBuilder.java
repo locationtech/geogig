@@ -47,6 +47,11 @@ import com.google.common.collect.ImmutableSortedMap;
  */
 public interface RevTreeBuilder {
 
+    /**
+     * @param node
+     * @return
+     * @apiNote this method is thread-safe
+     */
     public RevTreeBuilder put(Node node);
 
     public RevTreeBuilder remove(String featureId);

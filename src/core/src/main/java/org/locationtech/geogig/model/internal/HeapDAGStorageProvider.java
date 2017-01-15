@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
@@ -25,7 +26,7 @@ import com.google.common.base.Preconditions;
 
 class HeapDAGStorageProvider implements DAGStorageProvider {
 
-    SortedMap<NodeId, DAGNode> nodes;
+    Map<NodeId, DAGNode> nodes;
 
     SortedMap<TreeId, DAG> trees;
 
@@ -40,7 +41,7 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     HeapDAGStorageProvider(ObjectStore source, TreeCache treeCache) {
         this.source = source;
         this.treeCache = treeCache;
-        this.nodes = new TreeMap<>();
+        this.nodes = new ConcurrentHashMap<>();
         this.trees = new TreeMap<>();
     }
 
@@ -97,9 +98,9 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public SortedMap<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
+    public Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
 
-        TreeMap<NodeId, Node> res = new TreeMap<>();
+        Map<NodeId, Node> res = new HashMap<>();
         nodeIds.forEach((nid) -> {
             DAGNode dagNode = nodes.get(nid);
             Preconditions.checkState(dagNode != null);

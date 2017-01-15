@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.google.common.base.Optional;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
@@ -74,6 +75,7 @@ public class FieldTypeTest {
         assertEquals(Map.class, FieldType.MAP.getBinding());
         assertEquals(Character.class, FieldType.CHAR.getBinding());
         assertEquals(char[].class, FieldType.CHAR_ARRAY.getBinding());
+        assertEquals(Envelope.class, FieldType.ENVELOPE_2D.getBinding());
         assertEquals(null, FieldType.UNKNOWN.getBinding());
     }
 
@@ -116,12 +118,13 @@ public class FieldTypeTest {
         assertEquals(FieldType.MAP, FieldType.valueOf(FieldType.MAP.getTag()));
         assertEquals(FieldType.CHAR, FieldType.valueOf(FieldType.CHAR.getTag()));
         assertEquals(FieldType.CHAR_ARRAY, FieldType.valueOf(FieldType.CHAR_ARRAY.getTag()));
+        assertEquals(FieldType.ENVELOPE_2D, FieldType.valueOf(FieldType.ENVELOPE_2D.getTag()));
         assertEquals(FieldType.UNKNOWN, FieldType.valueOf(-1));
 
         // If this fails it means a new type was added and all of these unit tests need to be
         // updated with the new type.
         exception.expect(ArrayIndexOutOfBoundsException.class);
-        FieldType.valueOf(0x24);
+        FieldType.valueOf(0x25);
     }
 
     @Test
@@ -170,6 +173,7 @@ public class FieldTypeTest {
         assertEquals(FieldType.MAP, FieldType.forValue(Optional.of(new HashMap<String, String>())));
         assertEquals(FieldType.CHAR, FieldType.forValue(Optional.of('a')));
         assertEquals(FieldType.CHAR_ARRAY, FieldType.forValue(Optional.of(new char[2])));
+        assertEquals(FieldType.ENVELOPE_2D, FieldType.forValue(Optional.of(new Envelope())));
     }
 
     @Test
@@ -209,6 +213,7 @@ public class FieldTypeTest {
         assertEquals(FieldType.MAP, FieldType.forBinding(Map.class));
         assertEquals(FieldType.CHAR, FieldType.forBinding(Character.class));
         assertEquals(FieldType.CHAR_ARRAY, FieldType.forBinding(char[].class));
+        assertEquals(FieldType.ENVELOPE_2D, FieldType.forBinding(Envelope.class));
         assertEquals(FieldType.UNKNOWN, FieldType.forBinding(Object.class));
     }
 

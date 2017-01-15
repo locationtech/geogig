@@ -12,11 +12,10 @@ package org.locationtech.geogig.model.internal;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
@@ -29,7 +28,7 @@ import org.rocksdb.WriteOptions;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
 
 class RocksdbNodeStore {
@@ -83,12 +82,12 @@ class RocksdbNodeStore {
         return decode(value);
     }
 
-    public SortedMap<NodeId, DAGNode> getAll(Set<NodeId> nodeIds) {
+    public Map<NodeId, DAGNode> getAll(Set<NodeId> nodeIds) {
         if (nodeIds.isEmpty()) {
-            return ImmutableSortedMap.of();
+            return ImmutableMap.of();
         }
         flush();
-        SortedMap<NodeId, DAGNode> res = new TreeMap<>();
+        Map<NodeId, DAGNode> res = new HashMap<>();
         byte[] valueBuff = new byte[512];
         nodeIds.forEach((id) -> {
             try {
@@ -158,11 +157,6 @@ class RocksdbNodeStore {
     private byte[] toKey(NodeId nodeId) {
         byte[] key = nodeId.name().getBytes(Charsets.UTF_8);
         return key;
-    }
-
-    private NodeId fromKey(byte[] key) {
-        String name = new String(key, Charsets.UTF_8);
-        return new CanonicalNodeId(name);
     }
 
     private byte[] encode(DAGNode node) {

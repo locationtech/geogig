@@ -121,7 +121,7 @@ final class CachingDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public SortedMap<NodeId, Node> getNodes(Set<NodeId> nodeIds) {
+    public Map<NodeId, Node> getNodes(Set<NodeId> nodeIds) {
         return nodeStore.getNodes(nodeIds);
     }
 

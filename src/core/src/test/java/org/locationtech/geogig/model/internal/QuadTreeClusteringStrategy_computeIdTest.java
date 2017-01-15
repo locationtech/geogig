@@ -50,9 +50,9 @@ public class QuadTreeClusteringStrategy_computeIdTest {
         QuadTreeClusteringStrategy quadStrategy = createQuadStrategy();
 
         Node n = createNode("node", MAX_BOUNDS_WGS84, new Quadrant[] {});
-        QuadTreeNodeId quadID = (QuadTreeNodeId) quadStrategy.computeId(n);
+        NodeId quadID = quadStrategy.computeId(n);
 
-        assertEquals(0, quadID.quadrantsByDepth().length);
+        assertEquals(0, quadStrategy.quadrantsByDepth(quadID).size());
         assertEquals(-1, quadStrategy.bucket(quadID, 0));
     }
 
@@ -64,10 +64,10 @@ public class QuadTreeClusteringStrategy_computeIdTest {
         for (Quadrant q : Quadrant.values()) {
             Quadrant[] location = new Quadrant[] { q };
             Node n = createNode("node", MAX_BOUNDS_WGS84, location);
-            QuadTreeNodeId quadID = (QuadTreeNodeId) quadStrategy.computeId(n);
+            NodeId quadID = quadStrategy.computeId(n);
 
             // should only be one level deep (too big to go further)
-            assertEquals(1, quadID.quadrantsByDepth().length);
+            assertEquals(1, quadStrategy.quadrantsByDepth(quadID).size());
             assertEquals(location[0].getBucketNumber(), quadStrategy.bucket(quadID, 0));
         }
     }
@@ -81,10 +81,10 @@ public class QuadTreeClusteringStrategy_computeIdTest {
             for (Quadrant q2 : Quadrant.values()) {
                 Quadrant[] location = new Quadrant[] { q1, q2 };
                 Node n = createNode("node", MAX_BOUNDS_WGS84, location);
-                QuadTreeNodeId quadID = (QuadTreeNodeId) quadStrategy.computeId(n);
+                NodeId quadID = quadStrategy.computeId(n);
 
                 // should only be 2 levels deep (too big to go further)
-                assertEquals(2, quadID.quadrantsByDepth().length);
+                assertEquals(2, quadStrategy.quadrantsByDepth(quadID).size());
                 assertEquals(location[0].getBucketNumber(), quadStrategy.bucket(quadID, 0));
                 assertEquals(location[1].getBucketNumber(), quadStrategy.bucket(quadID, 1));
 
@@ -102,10 +102,10 @@ public class QuadTreeClusteringStrategy_computeIdTest {
                 for (Quadrant q3 : Quadrant.values()) {
                     Quadrant[] location = new Quadrant[] { q1, q2, q3 };
                     Node n = createNode("node", MAX_BOUNDS_WGS84, location);
-                    QuadTreeNodeId quadID = (QuadTreeNodeId) quadStrategy.computeId(n);
+                    NodeId quadID = quadStrategy.computeId(n);
 
                     // should only be 3 levels deep (too big to go further)
-                    assertEquals(3, quadID.quadrantsByDepth().length);
+                    assertEquals(3, quadStrategy.quadrantsByDepth(quadID).size());
                     assertEquals(location[0].getBucketNumber(), quadStrategy.bucket(quadID, 0));
                     assertEquals(location[1].getBucketNumber(), quadStrategy.bucket(quadID, 1));
                     assertEquals(location[2].getBucketNumber(), quadStrategy.bucket(quadID, 2));
@@ -127,9 +127,9 @@ public class QuadTreeClusteringStrategy_computeIdTest {
 
         Quadrant[] location = (Quadrant[]) quads.toArray(new Quadrant[quads.size()]);
         Node n = createNode("node", MAX_BOUNDS_WGS84, location);
-        QuadTreeNodeId quadID = (QuadTreeNodeId) quadStrategy.computeId(n);
+        NodeId quadID = quadStrategy.computeId(n);
 
-        assertEquals(quadID.quadrantsByDepth().length, quads.size());
+        assertEquals(quadStrategy.quadrantsByDepth(quadID).size(), quads.size());
         for (int t = 0; t < quadStrategy.getMaxDepth(); t++) {
             assertEquals(location[t].getBucketNumber(), quadStrategy.bucket(quadID, t));
         }
@@ -148,9 +148,9 @@ public class QuadTreeClusteringStrategy_computeIdTest {
 
         Quadrant[] location = (Quadrant[]) quads.toArray(new Quadrant[quads.size()]);
         Node n = createNode("node", MAX_BOUNDS_WGS84, location);
-        QuadTreeNodeId quadID = (QuadTreeNodeId) quadStrategy.computeId(n);
+        NodeId quadID = quadStrategy.computeId(n);
 
-        assertEquals(quadID.quadrantsByDepth().length, quadStrategy.getMaxDepth());
+        assertEquals(quadStrategy.quadrantsByDepth(quadID).size(), quadStrategy.getMaxDepth());
         for (int t = 0; t < quadStrategy.getMaxDepth(); t++) {
             assertEquals(location[t].getBucketNumber(), quadStrategy.bucket(quadID, t));
         }

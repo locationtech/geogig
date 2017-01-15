@@ -99,8 +99,8 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
         progress.setDescription(String.format("Creating Quad Tree for %,d features", tree.size()));
 
         Consumer consumer;
-        // consumer= new SimpleQuadTreeBuilderConsumer(builder, odb, progress);
-        consumer = new MaterializedQuadTreeBuilderConsumer(builder, odb, progress);
+        consumer = new SimpleQuadTreeBuilderConsumer(builder, odb, progress);
+        // consumer = new MaterializedQuadTreeBuilderConsumer(builder, odb, progress);
 
         walk.walk(consumer);
 
@@ -146,28 +146,21 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
 
         @Override
         public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
-            boolean isSpatial = right.bounds().isPresent();
-            return !progress.isCanceled() && isSpatial;
+            return !progress.isCanceled();
         }
 
         @Override
         public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
                 @Nullable Bucket left, @Nullable Bucket right) {
-            boolean isSpatial = right.bounds().isPresent();
-            return !progress.isCanceled() && isSpatial;
+            return !progress.isCanceled();
         }
 
         @Override
-        public synchronized boolean feature(final @Nullable NodeRef left,
-                final NodeRef featureNode) {
-            final Optional<Envelope> bounds = featureNode.bounds();
+        public boolean feature(final @Nullable NodeRef left, final NodeRef featureNode) {
             Node node = featureNode.getNode();
-            if (bounds.isPresent()) {
-                builder.put(node);
-                progress.setProgress(count.incrementAndGet());
-            }
-            final boolean keepGoing = !progress.isCanceled();
-            return keepGoing;
+            builder.put(node);
+            progress.setProgress(count.incrementAndGet());
+            return !progress.isCanceled();
         }
 
     };
@@ -230,9 +223,7 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
                         featureNode = Node.create(name, oid, metadataId, TYPE.FEATURE, envelope,
                                 extraData);
                     }
-                    synchronized (builder) {
-                        builder.put(featureNode);
-                    }
+                    builder.put(featureNode);
                 }
             }
 

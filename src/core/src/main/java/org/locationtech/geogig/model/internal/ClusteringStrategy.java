@@ -38,9 +38,11 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 
@@ -121,10 +123,10 @@ public abstract class ClusteringStrategy {
         return trees;
     }
 
-    public Node getNode(NodeId nodeId) {
-
-        Node node = storageProvider.getNode(nodeId);
-        return node;
+    @VisibleForTesting
+    Node getNode(NodeId nodeId) {
+        SortedMap<NodeId, Node> nodes = getNodes(ImmutableSet.of(nodeId));
+        return nodes.get(nodeId);
     }
 
     /**
@@ -198,7 +200,7 @@ public abstract class ClusteringStrategy {
             if (!remove) {
                 storageProvider.saveNode(nodeId, node);
             }
-            if (treeBuff.size() >= 35_000) {
+            if (treeBuff.size() >= 10_000) {
                 writeLock.lock();
                 try {
                     storageProvider.save(treeBuff);

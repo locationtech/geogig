@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.junit.After;
@@ -513,7 +514,9 @@ public abstract class CanonicalClusteringStrategyTest {
 
     private List<Node> toNode(List<NodeId> nodeIds) {
 
-        return Lists.transform(nodeIds, (n) -> strategy.getNode(n));
+        SortedMap<NodeId, Node> nodes = strategy.getNodes(new HashSet<>(nodeIds));
+        assertEquals(nodeIds.size(), nodes.size());
+        return new ArrayList<>(nodes.values());
     }
 
     private List<NodeId> flatten(DAG root) {

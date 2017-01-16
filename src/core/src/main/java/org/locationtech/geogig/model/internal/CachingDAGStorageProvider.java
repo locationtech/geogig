@@ -11,7 +11,6 @@ package org.locationtech.geogig.model.internal;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -113,11 +112,6 @@ final class CachingDAGStorageProvider implements DAGStorageProvider {
         if (cached.size() < dags.size()) {
             disk().save(Maps.filterKeys(dags, diskTrees));
         }
-    }
-
-    @Override
-    public Node getNode(NodeId nodeId) {
-        return nodeStore.getNode(nodeId);
     }
 
     @Override

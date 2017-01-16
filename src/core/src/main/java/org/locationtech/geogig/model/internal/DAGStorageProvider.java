@@ -10,7 +10,6 @@
 package org.locationtech.geogig.model.internal;
 
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -27,13 +26,6 @@ interface DAGStorageProvider {
     public DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId);
 
     public void save(Map<TreeId, DAG> dags);
-
-    /**
-     * @param nodeId
-     * @return
-     * @throws NoSuchElementException
-     */
-    public Node getNode(NodeId nodeId);
 
     public Map<NodeId, Node> getNodes(Set<NodeId> nodeIds);
 

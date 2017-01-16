@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
@@ -87,11 +86,6 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
     @Override
     public void save(Map<TreeId, DAG> dags) {
         dagStore.putAll(dags);
-    }
-
-    @Override
-    public Node getNode(NodeId nodeId) {
-        return nodeStore.get(nodeId).resolve(treeCache);
     }
 
     @Override

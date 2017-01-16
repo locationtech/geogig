@@ -16,7 +16,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
@@ -85,16 +84,6 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
             dag = createTree(treeId, originalTreeId);
         }
         return dag;// .clone();
-    }
-
-    @Override
-    public @Nullable Node getNode(NodeId nodeId) {
-        DAGNode dagNode = nodes.get(nodeId);
-        Node node = null;
-        if (dagNode != null) {
-            node = dagNode.resolve(this.treeCache);
-        }
-        return node;
     }
 
     @Override

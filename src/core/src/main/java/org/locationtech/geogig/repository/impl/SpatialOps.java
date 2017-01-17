@@ -9,25 +9,21 @@
  */
 package org.locationtech.geogig.repository.impl;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.locationtech.geogig.data.EPSGBoundsCalc;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.porcelain.CRSException;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.geometry.BoundingBox;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 
 import com.google.common.base.Splitter;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -111,41 +107,7 @@ public class SpatialOps {
      *         if the crs cannot be found
      */
     public @Nullable static Envelope boundsOf(CoordinateReferenceSystem crs) throws Exception {
-
-        final Extent domainOfValidity = crs.getDomainOfValidity();
-
-        if (null == domainOfValidity) {
-            return null;
-        }
-
-        Collection<? extends GeographicExtent> geographicElements;
-        geographicElements = domainOfValidity.getGeographicElements();
-
-        GeographicExtent geographicExtent = geographicElements.iterator().next();
-        GeographicBoundingBox geographicBoundingBox = (GeographicBoundingBox) geographicExtent;
-
-        double minx = geographicBoundingBox.getWestBoundLongitude();
-        double miny = geographicBoundingBox.getSouthBoundLatitude();
-        double maxx = geographicBoundingBox.getEastBoundLongitude();
-        double maxy = geographicBoundingBox.getNorthBoundLatitude();
-
-        CoordinateReferenceSystem wgs84LongFirst;
-
-        wgs84LongFirst = CRS.decode("EPSG:4326", true);
-        CoordinateOperationFactory coordOpFactory = CRS.getCoordinateOperationFactory(true);
-        CoordinateOperation op = coordOpFactory.createOperation(wgs84LongFirst, crs);
-
-        ReferencedEnvelope refEnvelope = new ReferencedEnvelope(minx, maxx, miny, maxy,
-                wgs84LongFirst);
-        GeneralEnvelope genEnvelope = CRS.transform(op, refEnvelope);
-
-        double xmax = genEnvelope.getMaximum(0);
-        double ymax = genEnvelope.getMaximum(1);
-        double xmin = genEnvelope.getMinimum(0);
-        double ymin = genEnvelope.getMinimum(1);
-
-        Envelope envelope = new Envelope(xmin, xmax, ymin, ymax);
-        return envelope;
+        return EPSGBoundsCalc.getExtents(crs);
     }
 
     /**
@@ -195,4 +157,24 @@ public class SpatialOps {
         return env;
     }
 
+    public static CoordinateReferenceSystem findIdentifier(GeometryDescriptor geometryDescriptor) throws FactoryException, CRSException {
+        CoordinateReferenceSystem crs = null;
+        if (geometryDescriptor != null) {
+            crs = geometryDescriptor.getCoordinateReferenceSystem();
+            String srs = CRS.toSRS(crs);
+            if (srs != null && !srs.startsWith("EPSG:")) {
+                boolean fullScan = true;
+                String knownIdentifier;
+                knownIdentifier = CRS.lookupIdentifier(crs, fullScan);
+                if (knownIdentifier != null) {
+                    boolean longitudeFirst = CRS.getAxisOrder(crs).equals(CRS.AxisOrder.EAST_NORTH);
+                    crs = CRS.decode(knownIdentifier, longitudeFirst);
+                } else {
+                    throw new CRSException(
+                        "Could not find identifier associated with the defined CRS: \n" + crs);
+                }
+            }
+        }
+        return crs;
+    }
 }

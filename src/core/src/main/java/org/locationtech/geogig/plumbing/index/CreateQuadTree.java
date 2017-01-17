@@ -19,6 +19,7 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.QuadTreeBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.AbstractConsumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
@@ -33,6 +34,7 @@ import org.locationtech.geogig.storage.ObjectStore;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -93,8 +95,9 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
 
         final ProgressListener progress = getProgressListener();
 
-        final QuadTreeBuilder builder = QuadTreeBuilder.quadTree(odb, RevTree.EMPTY, maxBounds,
-                maxDepth);
+        final RevTreeBuilder builder;
+        builder = QuadTreeBuilder.quadTree(odb, RevTree.EMPTY, maxBounds, maxDepth);
+        // builder = RevTreeBuilder.canonical(odb);
 
         progress.setDescription(String.format("Creating Quad Tree for %,d features", tree.size()));
 
@@ -102,15 +105,18 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
         consumer = new SimpleQuadTreeBuilderConsumer(builder, odb, progress);
         // consumer = new MaterializedQuadTreeBuilderConsumer(builder, odb, progress);
 
+        final Stopwatch dagTime = Stopwatch.createStarted();
         walk.walk(consumer);
+        dagTime.stop();
 
         if (progress.isCanceled()) {
             return null;
         }
 
-        progress.setDescription("Building final tree...");
+        progress.setDescription(String.format("%s. Building final tree...", dagTime));
 
-        int depth = builder.getDepth();
+        int depth = 0;// builder.getDepth();
+        final Stopwatch revTreeTime = Stopwatch.createStarted();
         RevTree quadTree;
         try {
             quadTree = builder.build();
@@ -118,8 +124,9 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
             e.printStackTrace();
             throw Throwables.propagate(Throwables.getRootCause(e));
         }
-        progress.setDescription(
-                String.format("QuadTree created. Size: %,d, depth: %d", quadTree.size(), depth));
+        revTreeTime.stop();
+        progress.setDescription(String.format("QuadTree created. Size: %,d, depth: %d, time: %s",
+                quadTree.size(), depth, revTreeTime));
 
         progress.complete();
 
@@ -131,13 +138,13 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
 
         protected final AtomicLong count = new AtomicLong();
 
-        protected final QuadTreeBuilder builder;
+        protected final RevTreeBuilder builder;
 
         protected final ProgressListener progress;
 
         protected ObjectStore source;
 
-        SimpleQuadTreeBuilderConsumer(QuadTreeBuilder builder, ObjectStore odb,
+        SimpleQuadTreeBuilderConsumer(RevTreeBuilder builder, ObjectStore odb,
                 ProgressListener listener) {
             this.builder = builder;
             this.source = odb;
@@ -171,7 +178,7 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
 
         private BlockingQueue<Node> nodes = new ArrayBlockingQueue<>(batchSize);
 
-        MaterializedQuadTreeBuilderConsumer(QuadTreeBuilder builder, ObjectStore odb,
+        MaterializedQuadTreeBuilderConsumer(RevTreeBuilder builder, ObjectStore odb,
                 ProgressListener listener) {
             super(builder, odb, listener);
         }

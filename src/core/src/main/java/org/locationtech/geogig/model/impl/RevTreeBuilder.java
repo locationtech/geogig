@@ -130,4 +130,6 @@ public interface RevTreeBuilder {
         return RevTreeImpl.create(id, size, childTreeCount, trees, features, immutableBuckets);
 
     }
+
+    public int getDepth();
 }

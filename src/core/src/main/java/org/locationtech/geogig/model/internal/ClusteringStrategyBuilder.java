@@ -46,7 +46,9 @@ public abstract class ClusteringStrategyBuilder {
     }
 
     protected DAGStorageProvider createDAGStoreageProvider() {
-        return new CachingDAGStorageProvider(treeStore);
+//        return new CachingDAGStorageProvider(treeStore);
+//        return new HeapDAGStorageProvider(treeStore);
+        return new RocksdbDAGStorageProvider(treeStore);
     }
 
     protected abstract ClusteringStrategy buildInternal(DAGStorageProvider dagStoreProvider);

@@ -54,8 +54,4 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         QuadTreeBuilder builder = new QuadTreeBuilder(store, RevTree.EMPTY, strategy);
         return builder;
     }
-
-    public int getDepth() {
-        return clusteringStrategy.depth();
-    }
 }

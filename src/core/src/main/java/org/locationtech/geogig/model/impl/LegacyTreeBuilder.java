@@ -652,4 +652,9 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
         RevTree theEmptyTree = new LegacyTreeBuilder().build();
         return theEmptyTree;
     }
+
+    @Override
+    public int getDepth() {
+        throw new UnsupportedOperationException();
+    }
 }

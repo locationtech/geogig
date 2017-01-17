@@ -114,19 +114,22 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
     }
 
     @Nullable
-    Quadrant computeQuadrant(@Nullable Envelope nodeBounds, int depthIndex) {
+    Quadrant computeQuadrant(@Nullable final Envelope nodeBounds, int depthIndex) {
         if (nodeBounds != null && !nodeBounds.isNull()) {
-            Envelope parentQuadrantBounds = this.maxBounds;
+
+            final Envelope parentQuadrantBounds = new Envelope(this.maxBounds);
+
+            Envelope qBounds = new Envelope();
 
             for (int depth = 0; depth <= depthIndex; depth++) {
                 for (int q = 0; q < 4; q++) {
                     Quadrant quadrant = Quadrant.VALUES[q];
-                    Envelope qBounds = quadrant.slice(parentQuadrantBounds);
+                    quadrant.slice(parentQuadrantBounds, qBounds);
                     if (qBounds.contains(nodeBounds)) {
                         if (depth == depthIndex) {
                             return quadrant;
                         }
-                        parentQuadrantBounds = qBounds;
+                        parentQuadrantBounds.init(qBounds);
                         break;
                     }
                 }
@@ -146,15 +149,17 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
 
         final Quadrant[] quadrants = Quadrant.VALUES;
 
-        Envelope parentQuadrantBounds = this.maxBounds;
-
+        final Envelope parentQuadrantBounds = new Envelope(this.maxBounds);
+        
+        Envelope qBounds = new Envelope();
+        
         for (int depth = 0; depth < maxDepth; depth++) {
             for (int q = 0; q < 4; q++) {
                 Quadrant quadrant = quadrants[q];
-                Envelope qBounds = quadrant.slice(parentQuadrantBounds);
+                quadrant.slice(parentQuadrantBounds, qBounds);
                 if (qBounds.contains(nodeBounds)) {
                     quadrantsByDepth.add(quadrant);
-                    parentQuadrantBounds = qBounds;
+                    parentQuadrantBounds.init(qBounds);
                     break;
                 }
             }

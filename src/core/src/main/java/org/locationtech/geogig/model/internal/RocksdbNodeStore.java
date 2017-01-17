@@ -25,7 +25,6 @@ import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 
 import com.google.common.base.Charsets;
@@ -71,7 +70,6 @@ class RocksdbNodeStore {
     }
 
     public void close() {
-        batch.close();
         readOptions.close();
         writeOptions.close();
         column.close();
@@ -79,7 +77,6 @@ class RocksdbNodeStore {
     }
 
     public DAGNode get(NodeId nodeId) {
-        flush();
         byte[] value;
         byte[] key = toKey(nodeId);
         try {
@@ -97,7 +94,6 @@ class RocksdbNodeStore {
         if (nodeIds.isEmpty()) {
             return ImmutableMap.of();
         }
-        flush();
         Map<NodeId, DAGNode> res = new HashMap<>();
         byte[] valueBuff = new byte[512];
         nodeIds.forEach((id) -> {
@@ -118,17 +114,14 @@ class RocksdbNodeStore {
         return res;
     }
 
-    private WriteBatch batch = new WriteBatch();
-
-    private int batchSize;
-
     public void put(NodeId nodeId, DAGNode node) {
-        synchronized (batch) {
-            batch.put(column, toKey(nodeId), encode(node));
-            batchSize++;
+        byte[] key = toKey(nodeId);
+        byte[] value = encode(node);
+        try {
+            db.put(column, writeOptions, key, value);
+        } catch (RocksDBException e) {
+            throw Throwables.propagate(e);
         }
-
-        flush(1_000);
     }
 
     public void putAll(Map<NodeId, DAGNode> nodeMappings) {
@@ -139,30 +132,12 @@ class RocksdbNodeStore {
             encode(dagNode, out);
             byte[] value = out.toByteArray();
             byte[] key = toKey(nodeId);
-            synchronized (batch) {
-                batch.put(column, key, value);
-                batchSize++;
+            try {
+                db.put(column, writeOptions, key, value);
+            } catch (RocksDBException e) {
+                throw Throwables.propagate(e);
             }
-            flush(1_000);
         });
-    }
-
-    private void flush() {
-        flush(1);
-    }
-
-    private void flush(int limit) {
-        if (batchSize >= limit) {
-            synchronized (batch) {
-                try {
-                    db.write(writeOptions, batch);
-                } catch (Exception ex) {
-                    throw Throwables.propagate(ex);
-                }
-                batchSize = 0;
-                batch.clear();
-            }
-        }
     }
 
     private byte[] toKey(NodeId nodeId) {

@@ -24,7 +24,6 @@ import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 
 import com.google.common.base.Charsets;
@@ -80,7 +79,7 @@ class RocksdbDAGStore {
         byte[] key = toKey(treeId);
         DAG dag;
         try {
-            dag = getInternal(treeId);
+            dag = getInternal(key);
             if (dag == null) {
                 dag = new DAG(originalTreeId);
                 putInternal(key, dag);
@@ -92,10 +91,9 @@ class RocksdbDAGStore {
     }
 
     @Nullable
-    private DAG getInternal(final TreeId id) {
+    private DAG getInternal(final byte[] key) {
         DAG dag = null;
         try {
-            byte[] key = toKey(id);
             byte[] value = db.get(column, readOptions, key);
             if (null != value) {
                 dag = decode(value);
@@ -139,14 +137,14 @@ class RocksdbDAGStore {
 
     public void putAll(Map<TreeId, DAG> dags) {
         Map<TreeId, DAG> changed = Maps.filterValues(dags, (d) -> d.isMutated());
-        // treeCache.putAll(changed);
 
-        try (WriteBatch batch = new WriteBatch()) {
-            changed.forEach((id, dag) -> batch.put(column, toKey(id), encode(dag)));
-            db.write(writeOptions, batch);
-        } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
-        }
+        changed.forEach((id, dag) -> {
+            try {
+                db.put(column, writeOptions, toKey(id), encode(dag));
+            } catch (RocksDBException e) {
+                throw Throwables.propagate(e);
+            }
+        });
     }
 
     private void putInternal(byte[] key, DAG dag) {

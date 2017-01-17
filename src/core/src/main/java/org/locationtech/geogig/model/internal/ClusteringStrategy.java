@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -64,12 +63,16 @@ public abstract class ClusteringStrategy {
 
     private TreeId rootId = ROOT_ID;
 
+    @VisibleForTesting
+    final DAGCache dagCache;
+
     protected ClusteringStrategy(RevTree original, DAGStorageProvider storageProvider) {
         checkNotNull(original);
         checkNotNull(storageProvider);
         this.storageProvider = storageProvider;
         this.root = new DAG(original.getId());
         this.root.setChildCount(original.size());
+        this.dagCache = new DAGCache(storageProvider);
     }
 
     abstract int normalizedSizeLimit(final int depthIndex);
@@ -103,23 +106,13 @@ public abstract class ClusteringStrategy {
         return getOrCreateDAG(treeId, RevTree.EMPTY_TREE_ID);
     }
 
-    ConcurrentMap<TreeId, DAG> treeBuff = new ConcurrentHashMap<>();
-
     private DAG getOrCreateDAG(TreeId treeId, ObjectId originalTreeId) {
-        DAG dag = treeBuff.get(treeId);
-        if (dag == null) {
-            dag = storageProvider.getOrCreateTree(treeId, originalTreeId);
-            treeBuff.put(treeId, dag);
-        }
+        DAG dag = dagCache.getOrCreate(treeId, originalTreeId);
         return dag;
     }
 
     public Map<TreeId, DAG> getDagTrees(Set<TreeId> ids) {
-        if (!treeBuff.isEmpty()) {
-            storageProvider.save(treeBuff);
-            treeBuff.clear();
-        }
-        Map<TreeId, DAG> trees = storageProvider.getTrees(ids);
+        Map<TreeId, DAG> trees = dagCache.getAll(ids);
         return trees;
     }
 
@@ -150,6 +143,7 @@ public abstract class ClusteringStrategy {
     protected abstract Comparator<NodeId> getNodeOrdering();
 
     public void dispose() {
+        this.dagCache.dispose();
         this.storageProvider.dispose();
     }
 
@@ -200,15 +194,16 @@ public abstract class ClusteringStrategy {
             if (!remove) {
                 storageProvider.saveNode(nodeId, node);
             }
-            if (treeBuff.size() >= 10_000) {
-                writeLock.lock();
-                try {
-                    storageProvider.save(treeBuff);
-                    treeBuff.clear();
-                } finally {
-                    writeLock.unlock();
-                }
-            }
+            // if (treeBuff.size() >= 100_000) {
+            // writeLock.lock();
+            // try {
+            // System.err.printf("Saving %,d DAG's.....\n", treeBuff.size());
+            // storageProvider.save(treeBuff);
+            // treeBuff.clear();
+            // } finally {
+            // writeLock.unlock();
+            // }
+            // }
         }
 
     }
@@ -218,11 +213,6 @@ public abstract class ClusteringStrategy {
     }
 
     public DAG buildRoot() {
-        if (!treeBuff.isEmpty()) {
-            storageProvider.save(treeBuff);
-            treeBuff.clear();
-        }
-        ///
         while (1 == root.numBuckets()) {
             root.forEachBucket((treeId) -> {
                 DAG actual = getOrCreateDAG(treeId);
@@ -459,6 +449,53 @@ public abstract class ClusteringStrategy {
             dagNodes.put(nodeId, dagNode);
         }
         return dagNodes;
+    }
+
+    @VisibleForTesting
+    static class DAGCache {
+        private DAGStorageProvider store;
+
+        @VisibleForTesting
+        final Map<TreeId, DAG> treeBuff = new ConcurrentHashMap<>();
+
+        DAGCache(DAGStorageProvider store) {
+            this.store = store;
+        }
+
+        public void dispose() {
+            treeBuff.clear();
+        }
+
+        /**
+         * Returns all the DAG's for the argument ids, which must already exist
+         */
+        public Map<TreeId, DAG> getAll(Set<TreeId> ids) {
+            Map<TreeId, DAG> map = new HashMap<>();
+            Set<TreeId> missing = new HashSet<>();
+            for (TreeId id : ids) {
+                DAG dag = treeBuff.get(id);
+                if (dag == null) {
+                    missing.add(id);
+                } else {
+                    map.put(id, dag);
+                }
+            }
+            Map<TreeId, DAG> uncached = store.getTrees(missing);
+            map.putAll(uncached);
+            return map;
+        }
+
+        public DAG getOrCreate(TreeId treeId, ObjectId originalTreeId) {
+            DAG dag = treeBuff.get(treeId);
+            if (dag == null) {
+                dag = store.getOrCreateTree(treeId, originalTreeId);
+                DAG existing = treeBuff.putIfAbsent(treeId, dag);
+                if (existing != null) {
+                    dag = existing;
+                }
+            }
+            return dag;
+        }
     }
 
 }

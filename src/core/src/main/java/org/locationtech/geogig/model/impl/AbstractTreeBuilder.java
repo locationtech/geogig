@@ -72,4 +72,9 @@ abstract class AbstractTreeBuilder implements RevTreeBuilder {
         return tree;
     }
 
+
+    public int getDepth() {
+        return clusteringStrategy().depth();
+    }
+
 }

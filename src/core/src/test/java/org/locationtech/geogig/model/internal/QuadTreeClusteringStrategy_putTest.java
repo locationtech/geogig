@@ -18,10 +18,10 @@ import static org.locationtech.geogig.model.internal.QuadTreeClusteringStrategy_
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.internal.ClusteringStrategy.DAGCache;
 
 public class QuadTreeClusteringStrategy_putTest {
 
@@ -52,7 +52,7 @@ public class QuadTreeClusteringStrategy_putTest {
         assertEquals(0, quadStrategy.root.numChildren());
         assertEquals(2, quadStrategy.root.numBuckets());
 
-        DAG dag = findDAG(quadStrategy.treeBuff, "[0]");
+        DAG dag = findDAG(quadStrategy.dagCache, "[0]");
         assertNotNull(dag);
         assertEquals(128, dag.getChildCount());
         assertEquals(0, dag.numBuckets());
@@ -69,28 +69,28 @@ public class QuadTreeClusteringStrategy_putTest {
         assertEquals(2, quadStrategy.root.numBuckets());
 
         // [0] -> will be empty (just a link node)
-        dag = findDAG(quadStrategy.treeBuff, "[0]");
+        dag = findDAG(quadStrategy.dagCache, "[0]");
         assertNotNull(dag);
         assertEquals(129, dag.getChildCount());
         assertEquals(1, dag.numBuckets());
         assertEquals(0, dag.numChildren());
 
         // [0,1] -> will be empty (just a link node)
-        dag = findDAG(quadStrategy.treeBuff, "[0, 1]");
+        dag = findDAG(quadStrategy.dagCache, "[0, 1]");
         assertNotNull(dag);
         assertEquals(129, dag.getChildCount());
         assertEquals(1, dag.numBuckets());
         assertEquals(0, dag.numChildren());
 
         // [0,1,2] -> will be empty (just a link node)
-        dag = findDAG(quadStrategy.treeBuff, "[0, 1, 2]");
+        dag = findDAG(quadStrategy.dagCache, "[0, 1, 2]");
         assertNotNull(dag);
         assertEquals(129, dag.getChildCount());
         assertEquals(1, dag.numBuckets());
         assertEquals(0, dag.numChildren());
 
         // [0,1,2,3] -> will have the 129 unpromotable children
-        dag = findDAG(quadStrategy.treeBuff, "[0, 1, 2, 3]");
+        dag = findDAG(quadStrategy.dagCache, "[0, 1, 2, 3]");
         assertNotNull(dag);
         assertEquals(129, dag.getChildCount());
         assertEquals(1, dag.numBuckets());
@@ -111,7 +111,7 @@ public class QuadTreeClusteringStrategy_putTest {
         assertEquals(3, quadStrategy.root.numBuckets());
 
         // [1]
-        dag = findDAG(quadStrategy.treeBuff, "[1]");
+        dag = findDAG(quadStrategy.dagCache, "[1]");
         assertNotNull(dag);
         assertEquals(1, dag.getChildCount());
         assertEquals(0, dag.numBuckets());
@@ -121,7 +121,7 @@ public class QuadTreeClusteringStrategy_putTest {
         putNodes(127, quadStrategy,
                 new Quadrant[] { Quadrant.NW, Quadrant.NE, Quadrant.NE, Quadrant.SE });
 
-        dag = findDAG(quadStrategy.treeBuff, "[1]");
+        dag = findDAG(quadStrategy.dagCache, "[1]");
         assertNotNull(dag);
         assertEquals(128, dag.getChildCount());
         assertEquals(0, dag.numBuckets());
@@ -132,27 +132,27 @@ public class QuadTreeClusteringStrategy_putTest {
                 new Quadrant[] { Quadrant.NW, Quadrant.NE, Quadrant.NE, Quadrant.SE });
 
         // [1] will be empty (just a link)
-        dag = findDAG(quadStrategy.treeBuff, "[1]");
+        dag = findDAG(quadStrategy.dagCache, "[1]");
         assertEquals(129, dag.getChildCount());
         assertEquals(1, dag.numBuckets());
         assertEquals(0, dag.numChildren());
 
         // [1, 2] -> will be empty (just a link node)
-        dag = findDAG(quadStrategy.treeBuff, "[1, 2]");
+        dag = findDAG(quadStrategy.dagCache, "[1, 2]");
         assertNotNull(dag);
         assertEquals(129, dag.getChildCount());
         assertEquals(1, dag.numBuckets());
         assertEquals(0, dag.numChildren());
 
         // [1,2,2] -> will be empty (just a link node)
-        dag = findDAG(quadStrategy.treeBuff, "[1, 2, 2]");
+        dag = findDAG(quadStrategy.dagCache, "[1, 2, 2]");
         assertNotNull(dag);
         assertEquals(129, dag.getChildCount());
         assertEquals(1, dag.numBuckets());
         assertEquals(0, dag.numChildren());
 
         // [1,2,2,3] -> will have the 129 unpromotable children
-        dag = findDAG(quadStrategy.treeBuff, "[1, 2, 2, 3]");
+        dag = findDAG(quadStrategy.dagCache, "[1, 2, 2, 3]");
         assertNotNull(dag);
         // assertEquals(dag.numUnpromotable(), 129);
         assertEquals(129, dag.getChildCount());
@@ -164,20 +164,20 @@ public class QuadTreeClusteringStrategy_putTest {
         // [1]
         putNode(quadStrategy, new Quadrant[] { Quadrant.NW });
         // [1] will have one un-promotable
-        dag = findDAG(quadStrategy.treeBuff, "[1]");
+        dag = findDAG(quadStrategy.dagCache, "[1]");
         /// assertEquals(dag.numUnpromotable(), 1);
 
         // [1, 2]
         putNode(quadStrategy, new Quadrant[] { Quadrant.NW, Quadrant.NE });
         // [1, 2] will have one un-promotable
-        dag = findDAG(quadStrategy.treeBuff, "[1, 2]");
+        dag = findDAG(quadStrategy.dagCache, "[1, 2]");
         /// assertEquals(dag.numUnpromotable(), 1);
 
         // [1, 2, 2]
         putNode(quadStrategy, new Quadrant[] { Quadrant.NW, Quadrant.NE, Quadrant.NE });
 
         // [1, 2, 2] will have one un-promotable
-        dag = findDAG(quadStrategy.treeBuff, "[1, 2, 2]");
+        dag = findDAG(quadStrategy.dagCache, "[1, 2, 2]");
         /// assertEquals(dag.numUnpromotable(), 1);
     }
 
@@ -207,10 +207,10 @@ public class QuadTreeClusteringStrategy_putTest {
         return n;
     }
 
-    public static DAG findDAG(Map<TreeId, DAG> map, String key) {
-        for (TreeId id : map.keySet()) {
+    public static DAG findDAG(DAGCache cache, String key) {
+        for (TreeId id : cache.treeBuff.keySet()) {
             if (id.toString().equals(key))
-                return map.get(id);
+                return cache.treeBuff.get(id);
         }
         return null;
     }

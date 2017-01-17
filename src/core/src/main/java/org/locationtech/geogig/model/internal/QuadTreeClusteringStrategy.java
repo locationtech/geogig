@@ -101,7 +101,7 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
 
     @Override
     protected int unpromotableBucketIndex(final int depthIndex) {
-        return 4;
+        return Quadrant.VALUES.length;
     }
 
     @Override
@@ -122,7 +122,7 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
             Envelope qBounds = new Envelope();
 
             for (int depth = 0; depth <= depthIndex; depth++) {
-                for (int q = 0; q < 4; q++) {
+                for (int q = 0; q < Quadrant.VALUES.length; q++) {
                     Quadrant quadrant = Quadrant.VALUES[q];
                     quadrant.slice(parentQuadrantBounds, qBounds);
                     if (qBounds.contains(nodeBounds)) {
@@ -150,9 +150,9 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
         final Quadrant[] quadrants = Quadrant.VALUES;
 
         final Envelope parentQuadrantBounds = new Envelope(this.maxBounds);
-        
+
         Envelope qBounds = new Envelope();
-        
+
         for (int depth = 0; depth < maxDepth; depth++) {
             for (int q = 0; q < 4; q++) {
                 Quadrant quadrant = quadrants[q];

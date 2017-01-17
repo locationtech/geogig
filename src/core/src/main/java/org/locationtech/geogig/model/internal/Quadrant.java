@@ -9,9 +9,10 @@
  */
 package org.locationtech.geogig.model.internal;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.vividsolutions.jts.geom.Envelope;
 
-public enum Quadrant {
+enum Quadrant {
     SW(0, 0), NW(0, 1), NE(1, 1), SE(1, 0);
 
     // there's some overhead in calling Quadrant.values() repeatedly so cache it
@@ -30,7 +31,22 @@ public enum Quadrant {
         return this.ordinal();
     }
 
-    public Envelope slice(Envelope parent) {
+    @VisibleForTesting
+    Envelope slice(Envelope parent) {
+        Envelope target = new Envelope();
+        slice(parent, target);
+        return target;
+    }
+
+    /**
+     * Given a parent's quadrant envelope, computes the bounds of this quadrant and initializes the
+     * {@code target} envelope with it.
+     * 
+     * @param parent the bounds of the parent quadrant
+     * @param target output argument where to store the bounds of the child quadrant this
+     *        {@code Quadrant} represents
+     */
+    public void slice(Envelope parent, Envelope target) {
 
         double w = parent.getWidth() / 2.0;
         double h = parent.getHeight() / 2.0;
@@ -40,7 +56,6 @@ public enum Quadrant {
         double y1 = parent.getMinY() + offsetY * h;
         double y2 = y1 + h;
 
-        return new Envelope(x1, x2, y1, y2);
-
+        target.init(x1, x2, y1, y2);
     }
 }

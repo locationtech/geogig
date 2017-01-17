@@ -17,8 +17,11 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.rocksdb.BlockBasedTableConfig;
+import org.rocksdb.BloomFilter;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -43,9 +46,17 @@ class RocksdbNodeStore {
 
     public RocksdbNodeStore(RocksDB db) {
         this.db = db;
-        ColumnFamilyDescriptor columnDescriptor = new ColumnFamilyDescriptor(
-                "nodes".getBytes(Charsets.UTF_8));
         try {
+            // enable bloom filter to speed up RocksDB.get() calls
+            BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
+            tableFormatConfig.setFilter(new BloomFilter());
+
+            ColumnFamilyOptions colFamilyOptions = new ColumnFamilyOptions();
+            colFamilyOptions.setTableFormatConfig(tableFormatConfig);
+
+            byte[] tableNameKey = "nodes".getBytes(Charsets.UTF_8);
+            ColumnFamilyDescriptor columnDescriptor = new ColumnFamilyDescriptor(tableNameKey,
+                    colFamilyOptions);
             column = db.createColumnFamily(columnDescriptor);
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
@@ -56,7 +67,7 @@ class RocksdbNodeStore {
         writeOptions.setSync(false);
 
         readOptions = new ReadOptions();
-        readOptions.setFillCache(true).setVerifyChecksums(false);
+        readOptions.setFillCache(false).setVerifyChecksums(false);
     }
 
     public void close() {

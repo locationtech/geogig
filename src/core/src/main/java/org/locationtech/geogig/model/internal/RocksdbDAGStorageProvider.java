@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.internal;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -74,7 +75,7 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public Map<TreeId, DAG> getTrees(Set<TreeId> ids) {
+    public List<DAG> getTrees(Set<TreeId> ids) {
         return dagStore.getTrees(ids);
     }
 

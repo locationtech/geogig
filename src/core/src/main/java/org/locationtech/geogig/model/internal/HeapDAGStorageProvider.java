@@ -9,7 +9,9 @@
  */
 package org.locationtech.geogig.model.internal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -59,18 +61,18 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public Map<TreeId, DAG> getTrees(Set<TreeId> ids) {
-        Map<TreeId, DAG> res = new HashMap<>();
+    public List<DAG> getTrees(Set<TreeId> ids) {
+        List<DAG> res = new ArrayList<>(ids.size());
         ids.forEach((id) -> {
             DAG dag = trees.get(id);
             Preconditions.checkState(dag != null);
-            res.put(id, dag);
+            res.add(dag);
         });
         return res;
     }
 
     private DAG createTree(TreeId treeId, ObjectId originalTreeId) {
-        DAG dag = new DAG(originalTreeId);
+        DAG dag = new DAG(treeId, originalTreeId);
         DAG existing = trees.putIfAbsent(treeId, dag);
         Preconditions.checkState(existing == null, "DAG %s[%s] already exists: %s", treeId,
                 originalTreeId, existing);

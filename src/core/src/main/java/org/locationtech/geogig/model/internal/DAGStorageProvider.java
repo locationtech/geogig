@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.model.internal;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ interface DAGStorageProvider {
 
     public TreeCache getTreeCache();
 
-    public Map<TreeId, DAG> getTrees(Set<TreeId> ids);
+    public List<DAG> getTrees(Set<TreeId> ids);
 
     public DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId);
 

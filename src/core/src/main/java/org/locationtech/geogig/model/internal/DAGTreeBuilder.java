@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.internal;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -197,7 +198,7 @@ public class DAGTreeBuilder {
 
         private RevTree buildBucketsTree(final DAG root) {
 
-            final Map<TreeId, DAG> mutableBuckets;
+            final List<DAG> mutableBuckets;
             {
                 final Set<TreeId> dagBuckets = new HashSet<>();
                 root.forEachBucket((b) -> dagBuckets.add(b));
@@ -208,9 +209,8 @@ public class DAGTreeBuilder {
 
             Map<Integer, ForkJoinTask<RevTree>> subtasks = new HashMap<>();
 
-            for (Map.Entry<TreeId, DAG> e : mutableBuckets.entrySet()) {
-                final TreeId dagBucketId = e.getKey();
-                final DAG bucketDAG = e.getValue();
+            for (DAG bucketDAG : mutableBuckets) {
+                final TreeId dagBucketId = bucketDAG.getId();
 
                 final Integer bucketIndex = dagBucketId.bucketIndex(depth);
                 TreeBuildTask subtask = new TreeBuildTask(state, bucketDAG, this.depth + 1);

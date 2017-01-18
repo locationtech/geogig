@@ -10,7 +10,8 @@
 package org.locationtech.geogig.model.internal;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -79,9 +80,9 @@ class RocksdbDAGStore {
         byte[] key = toKey(treeId);
         DAG dag;
         try {
-            dag = getInternal(key);
+            dag = getInternal(treeId, key);
             if (dag == null) {
-                dag = new DAG(originalTreeId);
+                dag = new DAG(treeId, originalTreeId);
                 putInternal(key, dag);
             }
         } catch (Exception e) {
@@ -91,12 +92,12 @@ class RocksdbDAGStore {
     }
 
     @Nullable
-    private DAG getInternal(final byte[] key) {
+    private DAG getInternal(TreeId id, final byte[] key) {
         DAG dag = null;
         try {
             byte[] value = db.get(column, readOptions, key);
             if (null != value) {
-                dag = decode(value);
+                dag = decode(id, value);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -104,7 +105,7 @@ class RocksdbDAGStore {
         return dag;
     }
 
-    public Map<TreeId, DAG> getTrees(final Set<TreeId> ids) {
+    public List<DAG> getTrees(final Set<TreeId> ids) {
         try {
             return getInternal(ids);
         } catch (Exception e) {
@@ -112,8 +113,8 @@ class RocksdbDAGStore {
         }
     }
 
-    private Map<TreeId, DAG> getInternal(final Set<TreeId> ids) {
-        Map<TreeId, DAG> res = new HashMap<>();
+    private List<DAG> getInternal(final Set<TreeId> ids) {
+        List<DAG> res = new ArrayList<>(ids.size());
         byte[] valueBuff = new byte[16 * 1024];
         ids.forEach((id) -> {
             byte[] key = toKey(id);
@@ -124,8 +125,8 @@ class RocksdbDAGStore {
                 if (size > valueBuff.length) {
                     val = db.get(column, readOptions, key);
                 }
-                DAG dag = decode(val);
-                res.put(id, dag);
+                DAG dag = decode(id, val);
+                res.add(dag);
             } catch (RocksDBException e) {
                 throw Throwables.propagate(e);
             }
@@ -160,10 +161,10 @@ class RocksdbDAGStore {
         return treeId.bucketIndicesByDepth;
     }
 
-    private DAG decode(byte[] value) {
+    private DAG decode(TreeId id, byte[] value) {
         DAG dag;
         try {
-            dag = DAG.deserialize(ByteStreams.newDataInput(value));
+            dag = DAG.deserialize(id, ByteStreams.newDataInput(value));
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

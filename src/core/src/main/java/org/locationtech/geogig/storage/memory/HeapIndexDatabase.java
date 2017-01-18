@@ -38,14 +38,12 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
 
     static HeapObjectDatabaseConnectionManager CONN_MANAGER = new HeapObjectDatabaseConnectionManager();
 
-    private Map<String, List<Index>> indexes;
+    private Map<String, List<Index>> indexes = null;
 
-    private Map<ObjectId, ObjectId> indexTreeMappings;
+    private Map<ObjectId, ObjectId> indexTreeMappings = null;
 
     public HeapIndexDatabase() {
         super(new HeapObjectStore(), false);
-        this.indexes = new HashMap<String, List<Index>>();
-        this.indexTreeMappings = new HashMap<ObjectId, ObjectId>();
     }
 
     public HeapIndexDatabase(Platform platform, Hints hints) {
@@ -68,8 +66,14 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     @Override
     public void close() {
         super.close();
-        this.indexes.clear();
-        this.indexTreeMappings.clear();
+        if (indexes != null) {
+            indexes.clear();
+            indexes = null;
+        }
+        if (indexTreeMappings != null) {
+            indexTreeMappings.clear();
+            indexTreeMappings = null;
+        }
     }
 
     /**
@@ -80,6 +84,8 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
         if (isOpen()) {
             return;
         }
+        indexes = new HashMap<String, List<Index>>();
+        indexTreeMappings = new HashMap<ObjectId, ObjectId>();
         super.open();
     }
 

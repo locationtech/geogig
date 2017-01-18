@@ -63,6 +63,14 @@ class TableNames {
         return name("index");
     }
 
+    public String indexMappings() {
+        return name("index_mappings");
+    }
+
+    public String indexObjects() {
+        return name("index_object");
+    }
+
     public String features(final int hash) {
         final int min = Integer.MIN_VALUE;
         final long max = (long) Integer.MAX_VALUE + 1;
@@ -127,9 +135,9 @@ class TableNames {
     }
 
     public List<String> all() {
-        return ImmutableList.of(repositories(), config(), refs(), conflicts(), objects(), commits(),
-                features(), featureTypes(), trees(), graphEdges(), graphMappings(),
-                graphProperties(), blobs());
+        return ImmutableList.of(repositories(), config(), refs(), conflicts(), objects(), index(),
+                indexMappings(), indexObjects(), commits(), features(), featureTypes(), trees(),
+                graphEdges(), graphMappings(), graphProperties(), blobs());
     }
 
 }

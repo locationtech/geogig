@@ -46,8 +46,8 @@ public abstract class ClusteringStrategyBuilder {
     }
 
     protected DAGStorageProvider createDAGStoreageProvider() {
-//        return new CachingDAGStorageProvider(treeStore);
-//        return new HeapDAGStorageProvider(treeStore);
+        // return new CachingDAGStorageProvider(treeStore);
+        // return new HeapDAGStorageProvider(treeStore);
         return new RocksdbDAGStorageProvider(treeStore);
     }
 
@@ -84,8 +84,6 @@ public abstract class ClusteringStrategyBuilder {
 
         private Envelope maxBounds;
 
-        private int maxDepth = 16;
-
         QuadTreeClusteringStrategyBuilder(ObjectStore treeStore) {
             super(treeStore);
         }
@@ -104,13 +102,7 @@ public abstract class ClusteringStrategyBuilder {
         @Override
         protected ClusteringStrategy buildInternal(DAGStorageProvider dagStoreProvider) {
             checkState(maxBounds != null, "QuadTree max bounds was not set");
-            return new QuadTreeClusteringStrategy(original, dagStoreProvider, maxBounds, maxDepth);
-        }
-
-        public QuadTreeClusteringStrategyBuilder maxDepth(int maxDepth) {
-            checkArgument(maxDepth > 0, "maxDepth must be >= 0");
-            this.maxDepth = maxDepth;
-            return this;
+            return new QuadTreeClusteringStrategy(original, dagStoreProvider, maxBounds);
         }
 
         public QuadTreeClusteringStrategyBuilder maxBounds(Envelope maxBounds) {

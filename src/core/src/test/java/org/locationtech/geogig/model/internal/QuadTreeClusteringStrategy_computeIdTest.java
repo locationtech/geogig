@@ -52,7 +52,7 @@ public class QuadTreeClusteringStrategy_computeIdTest {
         Node n = createNode("node", MAX_BOUNDS_WGS84, new Quadrant[] {});
         NodeId quadID = quadStrategy.computeId(n);
 
-        assertEquals(0, quadStrategy.quadrantsByDepth(quadID).size());
+        assertEquals(0, quadStrategy.quadrantsByDepth(quadID, 8).size());
         assertEquals(-1, quadStrategy.bucket(quadID, 0));
     }
 
@@ -67,7 +67,7 @@ public class QuadTreeClusteringStrategy_computeIdTest {
             NodeId quadID = quadStrategy.computeId(n);
 
             // should only be one level deep (too big to go further)
-            assertEquals(1, quadStrategy.quadrantsByDepth(quadID).size());
+            assertEquals(1, quadStrategy.quadrantsByDepth(quadID, 8).size());
             assertEquals(location[0].getBucketNumber(), quadStrategy.bucket(quadID, 0));
         }
     }
@@ -84,7 +84,7 @@ public class QuadTreeClusteringStrategy_computeIdTest {
                 NodeId quadID = quadStrategy.computeId(n);
 
                 // should only be 2 levels deep (too big to go further)
-                assertEquals(2, quadStrategy.quadrantsByDepth(quadID).size());
+                assertEquals(2, quadStrategy.quadrantsByDepth(quadID, 8).size());
                 assertEquals(location[0].getBucketNumber(), quadStrategy.bucket(quadID, 0));
                 assertEquals(location[1].getBucketNumber(), quadStrategy.bucket(quadID, 1));
 
@@ -105,7 +105,7 @@ public class QuadTreeClusteringStrategy_computeIdTest {
                     NodeId quadID = quadStrategy.computeId(n);
 
                     // should only be 3 levels deep (too big to go further)
-                    assertEquals(3, quadStrategy.quadrantsByDepth(quadID).size());
+                    assertEquals(3, quadStrategy.quadrantsByDepth(quadID, 8).size());
                     assertEquals(location[0].getBucketNumber(), quadStrategy.bucket(quadID, 0));
                     assertEquals(location[1].getBucketNumber(), quadStrategy.bucket(quadID, 1));
                     assertEquals(location[2].getBucketNumber(), quadStrategy.bucket(quadID, 2));
@@ -120,8 +120,8 @@ public class QuadTreeClusteringStrategy_computeIdTest {
 
         // random path to depth
         Random rand = new Random();
-        List<Quadrant> quads = new ArrayList<>(quadStrategy.getMaxDepth());
-        for (int t = 0; t < quadStrategy.getMaxDepth(); t++) {
+        List<Quadrant> quads = new ArrayList<>(8);
+        for (int t = 0; t < 8; t++) {
             quads.add(Quadrant.values()[rand.nextInt(3)]);
         }
 
@@ -129,8 +129,8 @@ public class QuadTreeClusteringStrategy_computeIdTest {
         Node n = createNode("node", MAX_BOUNDS_WGS84, location);
         NodeId quadID = quadStrategy.computeId(n);
 
-        assertEquals(quadStrategy.quadrantsByDepth(quadID).size(), quads.size());
-        for (int t = 0; t < quadStrategy.getMaxDepth(); t++) {
+        assertEquals(quadStrategy.quadrantsByDepth(quadID, 8).size(), quads.size());
+        for (int t = 0; t < 8; t++) {
             assertEquals(location[t].getBucketNumber(), quadStrategy.bucket(quadID, t));
         }
     }
@@ -141,8 +141,8 @@ public class QuadTreeClusteringStrategy_computeIdTest {
 
         // random path to depth
         Random rand = new Random();
-        List<Quadrant> quads = new ArrayList<>(quadStrategy.getMaxDepth() + 1);
-        for (int t = 0; t < quadStrategy.getMaxDepth(); t++) {
+        List<Quadrant> quads = new ArrayList<>(8);
+        for (int t = 0; t < 8; t++) {
             quads.add(Quadrant.values()[rand.nextInt(3)]);
         }
 
@@ -150,8 +150,8 @@ public class QuadTreeClusteringStrategy_computeIdTest {
         Node n = createNode("node", MAX_BOUNDS_WGS84, location);
         NodeId quadID = quadStrategy.computeId(n);
 
-        assertEquals(quadStrategy.quadrantsByDepth(quadID).size(), quadStrategy.getMaxDepth());
-        for (int t = 0; t < quadStrategy.getMaxDepth(); t++) {
+        assertEquals(quadStrategy.quadrantsByDepth(quadID, 8).size(), 8);
+        for (int t = 0; t < 8; t++) {
             assertEquals(location[t].getBucketNumber(), quadStrategy.bucket(quadID, t));
         }
     }
@@ -180,13 +180,10 @@ public class QuadTreeClusteringStrategy_computeIdTest {
     public static QuadTreeClusteringStrategy createQuadStrategy() {
         ObjectStore store = new HeapObjectStore();
 
-        int DEFAULT_MAX_DEPTH = 12;
-
         QuadTreeClusteringStrategy quadStrategy = ClusteringStrategyBuilder//
                 .quadTree(store)//
                 .original(RevTree.EMPTY)//
                 .maxBounds(MAX_BOUNDS_WGS84)//
-                .maxDepth(DEFAULT_MAX_DEPTH)//
                 .build();
 
         return quadStrategy;

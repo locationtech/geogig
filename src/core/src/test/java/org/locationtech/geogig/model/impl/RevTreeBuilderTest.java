@@ -14,7 +14,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,18 +22,16 @@ import java.util.Random;
 import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.JTS;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.LegacyTreeBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
@@ -45,16 +43,11 @@ import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.PrecisionModel;
-import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
 
 public abstract class RevTreeBuilderTest {
 
@@ -120,7 +113,7 @@ public abstract class RevTreeBuilderTest {
 
     @Test
     public void testPutIterate() throws Exception {
-        final int numEntries = 513;//100 * 1000;
+        final int numEntries = 513;// 100 * 1000;
         ObjectId treeId;
 
         treeId = createAndSaveTree(numEntries, true);
@@ -287,6 +280,7 @@ public abstract class RevTreeBuilderTest {
         checkTreeBounds(100 * 1000);
     }
 
+    @Ignore // we're no longer supporting mixed trees
     @Test
     public void testBuildWithChildTreesUnsplittedRoot() {
         // create a somewhat uncommon tree in that it contains both trees and features. Despite
@@ -316,38 +310,6 @@ public abstract class RevTreeBuilderTest {
         assertFalse(root.trees().isEmpty());
         assertFalse(root.features().isEmpty());
         assertTrue(root.buckets().isEmpty());
-    }
-
-    @Test
-    public void testBuildWithChildTreesSplittedRoot() {
-        // create a somewhat uncommon tree in that it contains both trees and features. Despite
-        // not commonly used, it's a perfectly valid tree wrt the object model.
-        final int rootFeatureCount = 1024;
-        final int numSubTrees = 64;
-
-        RevTreeBuilder builder = createTree(rootFeatureCount, false);
-        long totalSize = rootFeatureCount;
-
-        for (int i = 0; i < numSubTrees; i++) {
-            int size = i * 1024;
-            totalSize += size;
-            RevTree subtree = createTree(size, false).build();
-            assertEquals(size, subtree.size());
-            String name = "tree-" + i;
-            ObjectId metadataId = RevObjectTestSupport.hashString(name);
-            Node node = Node.create(name, subtree.getId(), metadataId, TYPE.TREE,
-                    SpatialOps.boundsOf(subtree));
-            builder.put(node);
-        }
-        RevTree root = builder.build();
-        assertEquals(totalSize, root.size());
-        assertEquals(numSubTrees, root.numTrees());
-
-        // This root tree shall be split into buckets since the sum of direct features and trees
-        // does exceed the normalization limit
-        assertTrue(root.trees().isEmpty());
-        assertTrue(root.features().isEmpty());
-        assertFalse(root.buckets().isEmpty());
     }
 
     private void checkTreeBounds(int size) {
@@ -400,32 +362,39 @@ public abstract class RevTreeBuilderTest {
         return node;
     }
 
-    protected void printTreeBounds(RevTree root) {
+    protected void print(RevTree root) {
 
-        final GeometryFactory gf = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING),
-                4326, new PackedCoordinateSequenceFactory());
+        PreOrderDiffWalk walk = new PreOrderDiffWalk(RevTree.EMPTY, root, objectStore, objectStore,
+                true);
 
-        final List<Geometry> geoms = new ArrayList<>();
+        PrintStream out = System.err;
 
-        geoms.add(JTS.toGeometry(SpatialOps.boundsOf(root), gf));
-
-        PreOrderDiffWalk walk = new PreOrderDiffWalk(RevTree.EMPTY, root, objectStore, objectStore);
         walk.walk(new PreOrderDiffWalk.AbstractConsumer() {
-            @Override
-            public synchronized boolean bucket(NodeRef leftParent, NodeRef rightParent,
-                    BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
+            String indent = "";
 
-                Optional<Envelope> bounds = right.bounds();
-                if (bounds.isPresent()) {
-                    Envelope env = bounds.get();
-                    Polygon geometry = JTS.toGeometry(env, gf);
-                    geoms.add(geometry);
-                }
+            @Override
+            public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                    @Nullable Bucket left, @Nullable Bucket right) {
+                out.printf("%sBUCKET: [%s] %s\n", indent, bucketIndex, right);
+                int indentLength = 2 * (1 + bucketIndex.depthIndex());
+                indent = Strings.padStart("", indentLength, ' ');
+                return true;
+            }
+
+            @Override
+            public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
+                    @Nullable Bucket left, @Nullable Bucket right) {
+                int indentLength = 2 * (bucketIndex.depthIndex());
+                indent = Strings.padStart("", indentLength, ' ');
+                out.printf("%sEND BUCKET: [%s] %s\n", indent, bucketIndex, right);
+            }
+
+            @Override
+            public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+                out.printf("%s%s\n", indent, right.name());
                 return true;
             }
         });
 
-        Geometry buildGeometry = gf.buildGeometry(geoms);
-        System.err.println(buildGeometry);
     }
 }

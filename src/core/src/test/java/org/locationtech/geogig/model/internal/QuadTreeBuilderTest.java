@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2016 Boundless and others.
+/* Copyright (c) 2015-2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -10,61 +10,45 @@
 package org.locationtech.geogig.model.internal;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.referencing.operation.transform.IdentityTransform;
-import org.geotools.renderer.ScreenMap;
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
-import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
-import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilderTest;
-import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.plumbing.DiffTree;
-import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
-import org.locationtech.geogig.test.TestPlatform;
-import org.locationtech.geogig.test.integration.TestContextBuilder;
-import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Polygon;
-@Ignore
+
 public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
     @Override
@@ -83,253 +67,166 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
     }
 
     @Test
-    public void testSmallRects() throws IOException {
-        Envelope maxBounds = new Envelope(-180, 180, -90, 90);
-        int maxDepth = 8;
-        final int ncount = 129;
-
-        List<Node> nodes = createSmallRectNodes(nodeRange(ncount), maxBounds);
-
-        RevTreeBuilder sequentialTree = createQuadTree(maxBounds, maxDepth, nodes);
-        RevTree revTreeFromSequentialQuadTree = createRevTree(sequentialTree);
-        printTreeBounds(revTreeFromSequentialQuadTree);
-
-        // for (Bucket b : revTreeFromSequentialQuadTree.buckets().get().values()) {
-        // System.err.println(b.getExtraData().get("geometry"));
-        // }
-
-        assertEquals(ncount, revTreeFromSequentialQuadTree.size());
-
-        Collections.shuffle(nodes);
-
-        RevTreeBuilder randomOrderTree = createQuadTree(maxBounds, maxDepth, nodes);
-        RevTree revTreeFromRandomQuadTree = createRevTree(randomOrderTree);
-        assertEquals(ncount, revTreeFromRandomQuadTree.size());
-
-        // Geometry g = (Geometry)
-        // revTreeFromSequentialQuadTree.buckets().get().get(0).getExtraData()
-        // .get("geometry");
-        // PrecisionModel pm = new PrecisionModel(1000);
-        // GeometryFactory gf = new GeometryFactory(pm);
-        // g = gf.createGeometry(g);
-        // WKTWriter writer = new WKTWriter();
-        // try (FileOutputStream out = new FileOutputStream("wkt.txt")) {
-        // OutputStreamWriter w = new OutputStreamWriter(out);
-        // writer.writeFormatted(g, w);
-        // w.flush();
-        // w.close();
-        // }
-
+    public void testCreatePointsQuadTree() {
+        testPoints(0);
+        testPoints(1);
+        testPoints(128);
+        testPoints(129);
+        testPoints(1000);
     }
 
-    @Ignore
-    @Test
-    public void testTreeWithDifferentTopologyAndSameContentsHashTheSame() {
-        final Envelope maxBounds = new Envelope(0, 100, 0, 100);
-        final int ncount = 100_000;
-
-        final List<Node> nodes = createSmallRectNodes(nodeRange(ncount), maxBounds);
-
-        int maxDepth;
-        maxDepth = 4;
-        RevTreeBuilder sequentialTree = createQuadTree(maxBounds, maxDepth, nodes);
-        // assertTrue(String.format("expected size >= %,d, got %,d", ncount, sequentialTree.size()),
-        // sequentialTree.size() >= ncount);
-        // assertEquals(maxDepth, sequentialTree.depth());
-        // sequentialTree.print(System.err);
-
-        Collections.shuffle(nodes);
-
-        maxDepth = 3;
-        RevTreeBuilder randomOrderTree = createQuadTree(maxBounds, maxDepth, nodes);
-        // assertTrue(String.format("expected size >= %,d, got %,d", ncount,
-        // randomOrderTree.size()),
-        // randomOrderTree.size() >= ncount);
-        // assertEquals(maxDepth, randomOrderTree.depth());
-        // randomOrderTree.print(System.out);
-
-        RevTree revTreeFromSequentialQuadTree = createRevTree(sequentialTree);
-        RevTree revTreeFromRandomQuadTree = createRevTree(randomOrderTree);
-
-        assertEquals(revTreeFromSequentialQuadTree, revTreeFromRandomQuadTree);
-        assertTrue(
-                String.format("expected size >= %,d, got %,d", ncount,
-                        revTreeFromRandomQuadTree.size()),
-                revTreeFromRandomQuadTree.size() >= ncount);
-    }
-
-    @Test
-    public void testRandomRects() {
+    private void testPoints(final int size) {
         final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
-        final int maxDepth = 6;
-        final int ncount = 100_000;
-
-        List<Node> nodes = createRandomRectNodes(nodeRange(ncount), maxBounds);
-        RevTreeBuilder sequentialTree = createQuadTree(maxBounds, maxDepth, nodes);
-        // sequentialTree.print(System.err);
-
-        // Collections.shuffle(nodes);
-
-        // QuadTreeBuilder randomOrderTree = createQuadTree(maxBounds, maxDepth, nodes);
-        // randomOrderTree.print(System.out);
-
-        ObjectDatabase odb = new HeapObjectDatabase();
-        odb.open();
-
-        RevTree revTreeFromSequentialQuadTree = createRevTree(sequentialTree);
-        printTreeBounds(revTreeFromSequentialQuadTree);
-
-        for (Bucket b : revTreeFromSequentialQuadTree.buckets().values()) {
-            // System.err.println(b.getExtraData());
-        }
-        //
-        //
-        // RevTree revTreeFromRandomQuadTree = createRevTree(randomOrderTree, odb);
-        //
-        // assertEquals(sequentialTree.size(), revTreeFromSequentialQuadTree.size());
-        // assertEquals(randomOrderTree.size(), revTreeFromRandomQuadTree.size());
-        //
-        // assertEquals(revTreeFromSequentialQuadTree, revTreeFromRandomQuadTree);
-        // assertTrue(
-        // String.format("expected size >= %,d, got %,d", ncount,
-        // revTreeFromRandomQuadTree.size()),
-        // revTreeFromRandomQuadTree.size() >= ncount);
+        List<Node> nodes = createPointNodes(nodeRange(size), maxBounds);
+        testCreateQuadTree(maxBounds, nodes);
     }
 
     @Test
-    public void testPoints() {
+    public void testCreateQuadTreeSmallRects() throws IOException {
+        testSmallRects(0);
+        testSmallRects(1);
+        testSmallRects(128);
+        testSmallRects(129);
+        testSmallRects(1000);
+    }
+
+    private void testSmallRects(final int size) {
         final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
-        final int maxDepth = 3;
-        final int ncount = 100_000;
+        List<Node> nodes = createSmallRectNodes(nodeRange(size), maxBounds);
+        testCreateQuadTree(maxBounds, nodes);
+    }
 
-        List<Node> nodes = createPointNodes(nodeRange(ncount), maxBounds);
+    @Test
+    public void testCreateQuadTreeRandomRects() {
+        testRandomRects(0);
+        testRandomRects(1);
+        testRandomRects(128);
+        testRandomRects(4 * 128);
+    }
 
-        RevTreeBuilder sequentialTree = createQuadTree(maxBounds, maxDepth, nodes);
-        final RevTree revTreeFromSequentialQuadTree = createRevTree(sequentialTree);
-        printTreeBounds(revTreeFromSequentialQuadTree);
+    private void testRandomRects(final int size) {
+        final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
+        List<Node> nodes = createRandomRectNodes(nodeRange(size), maxBounds);
+        testCreateQuadTree(maxBounds, nodes);
+    }
+
+    private RevTree testCreateQuadTree(final Envelope maxBounds, List<Node> nodes) {
+        RevTreeBuilder sequentialBuilder = createQuadTree(maxBounds, nodes);
 
         Collections.shuffle(nodes);
 
-        RevTreeBuilder randomOrderTree = createQuadTree(maxBounds, maxDepth, nodes);
-        final RevTree revTreeFromRandomQuadTree = createRevTree(randomOrderTree);
+        RevTreeBuilder randomOrderTree = createQuadTree(maxBounds, nodes);
 
+        RevTree revTreeFromSequentialQuadTree = sequentialBuilder.build();
+        RevTree revTreeFromRandomQuadTree = randomOrderTree.build();
         assertEquals(revTreeFromSequentialQuadTree, revTreeFromRandomQuadTree);
 
-        assertTrue(
-                String.format("expected size >= %,d, got %,d", ncount,
-                        revTreeFromSequentialQuadTree.size()),
-                revTreeFromSequentialQuadTree.size() >= ncount);
+        Set<Node> expectedNodes = new HashSet<>(nodes);
+        Set<Node> actualNodes = getNodes(revTreeFromRandomQuadTree);
+        if (!expectedNodes.equals(actualNodes)) {
+            SetView<Node> difference = Sets.difference(expectedNodes, actualNodes);
+            Assert.fail("Missing: " + difference);
+        }
+        // print(revTreeFromSequentialQuadTree);
+        assertEquals(nodes.size(), revTreeFromSequentialQuadTree.size());
 
-        assertTrue(
-                String.format("expected size >= %,d, got %,d", ncount,
-                        revTreeFromRandomQuadTree.size()),
-                revTreeFromRandomQuadTree.size() >= ncount);
-    }
-
-    @Test
-    public void pointsPerformanceComparison() throws Exception {
-        Envelope maxBounds = new Envelope(-180, 180, -90, 90);
-        int maxDepth = 6;
-        final int ncount = 2_00_000;
-
-        Context context = createTestContext();
-        ObjectDatabase odb = context.objectDatabase();
-        odb.put(RevTree.EMPTY);
-
-        final RevTree quadTree;
-        final RevTree canonicalTree;
-        {
-            List<Node> nodes;
-
-            // nodes = createSmallRectNodes(nodeRange(ncount), maxBounds);
-            nodes = createPointNodes(nodeRange(ncount), maxBounds);
-            // nodes = createRandomRectNodes(nodeRange(ncount), maxBounds);
-
-            RevTreeBuilder quadTreeBuilder = createQuadTree(maxBounds, maxDepth, nodes, odb);
-            // System.err.printf("Creating RevTree from QuadTree (depth %d)...\n",
-            // quadTreeBuilder.depth());
-            quadTree = createRevTree(quadTreeBuilder);
-
-            Collections.sort(nodes, CanonicalNodeOrder.INSTANCE);// make it easier for the tree
-            // builder
-            System.err.println("Creating regular tree...");
-            canonicalTree = createCanonicalTree(nodes, odb);
-
-            nodes.clear();
-            nodes = null;
-            quadTreeBuilder = null;
-            System.gc();
-            Thread.sleep(1000);
+        final int size = nodes.size();
+        final RevTree tree = revTreeFromRandomQuadTree;
+        if (size == 0) {
+            assertEquals(RevTree.EMPTY, tree);
+        } else {
+            if (size < 129) {
+                assertTrue(tree.buckets().isEmpty());
+                assertFalse(tree.features().isEmpty());
+            } else {
+                assertFalse(tree.buckets().isEmpty());
+                assertTrue(tree.features().isEmpty());
+            }
         }
 
-        Envelope queryEnvelope = new Envelope(30, 32, 30, 32);
+        return revTreeFromRandomQuadTree;
+    }
 
-        // warm up...
-        System.err.println("Warming up...");
-        search(canonicalTree, queryEnvelope, context);
-        search(quadTree, queryEnvelope, context);
-
-        Stopwatch sw;
-
-        System.err.println("Searching quad tree...");
-        sw = Stopwatch.createStarted();
-        long foundByQuadTree = search(quadTree, queryEnvelope, context);
-        System.err.printf("Search by %s took %s. Found %,d nodes.\n", queryEnvelope, sw.stop(),
-                foundByQuadTree);
-
-        System.err.println("Searching regular tree...");
-        sw = Stopwatch.createStarted();
-        long foundByRegularTree = search(canonicalTree, queryEnvelope, context);
-        System.err.printf("Search by %s took %s. Found %,d nodes.\n", queryEnvelope, sw.stop(),
-                foundByRegularTree);
-
-        // System.err.println(foundByQuadTree);
-        assertEquals(foundByRegularTree, foundByQuadTree);
+    private Set<Node> getNodes(RevTree t) {
+        Set<Node> nodes = new TreeSet<>();
+        if (t.buckets().isEmpty()) {
+            nodes.addAll(t.features());
+        } else {
+            for (Bucket b : t.buckets().values()) {
+                RevTree subtree = objectStore.getTree(b.getObjectId());
+                nodes.addAll(getNodes(subtree));
+            }
+        }
+        return nodes;
     }
 
     @Test
     public void diffQuadTreeTest() throws Exception {
-        Envelope maxBounds = new Envelope(-180, 180, -90, 90);
-        int maxDepth = 16;
-        final int ncount = 100_000;
+        final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
+        final int ncount = 1000;
 
-        Context context = createTestContext();
-        ObjectStore odb = context.objectDatabase();
-        odb.put(RevTree.EMPTY);
+        final List<Node> oldNodes = createPointNodes(nodeRange(ncount), maxBounds);
+        final List<Node> newNodes = new ArrayList<>(oldNodes);
+        final Set<Node> expectedRemoves = new HashSet<>();
+        final Map<Node, Node> expectedChanges = new HashMap<>();
+        final Set<Node> expectedAdditions = new HashSet<>();
 
-        List<Node> nodes;
-        // nodes = createSmallRectNodes(nodeIds, maxBounds);
-        nodes = createPointNodes(nodeRange(ncount), maxBounds);
-        // nodes = createRandomRectNodes(nodeIds, maxBounds);
+        {
+            expectedRemoves.addAll(oldNodes.subList(0, 10));
+            newNodes.removeAll(expectedRemoves);
 
-        RevTreeBuilder origQuadTree = createQuadTree(maxBounds, maxDepth, nodes);
-        // quadTree.print(System.out);
-        final RevTree revQTree1 = createRevTree(origQuadTree);
+            List<Node> changes = new ArrayList<>(oldNodes.subList(50, 60));
+            newNodes.removeAll(changes);
 
-        Node orig = nodes.get(1);
-        Envelope bounds = new Envelope();
-        orig.expand(bounds);
-        bounds.expandBy(0.0001);
-        Node change = Node.create(orig.getName(), RevObjectTestSupport.hashString("changes"),
-                ObjectId.NULL, TYPE.FEATURE, bounds);
-        nodes.set(1, change);
-        // nodes.remove(2000);
-        // nodes.remove(200);
-        // nodes.remove(20);
-        // nodes.remove(2);
+            for (Node n : changes) {
+                ObjectId newId = RevObjectTestSupport.hashString(n.toString());
+                Envelope newBounds = new Envelope(n.bounds().get());
+                newBounds.translate(0.1, 0.1);
+                Node c = n.update(newId, newBounds);
+                expectedChanges.put(n, c);
+                newNodes.add(c);
+            }
 
-        System.err.printf("orig: %s, new: %s\n", orig, change);
-
-        RevTreeBuilder changedQhadTree = createQuadTree(maxBounds, maxDepth, nodes);
-        final RevTree revQTree2 = createRevTree(changedQhadTree);
-
-        Iterator<DiffEntry> diffs = context.command(DiffTree.class).setOldTree(revQTree1.getId())
-                .setNewTree(revQTree2.getId()).call();
-        while (diffs.hasNext()) {
-            DiffEntry next = diffs.next();
-            System.err.println(
-                    next.changeType() + ": " + next.getOldObject() + " --- " + next.getNewObject());
+            List<Integer> newNodeIds = new ArrayList<>();
+            for (int i = 0; i < 10; i++) {
+                newNodeIds.add(ncount + i);
+            }
+            expectedAdditions.addAll(createPointNodes(newNodeIds, maxBounds));
+            newNodes.addAll(expectedAdditions);
         }
+
+        final RevTree oldTree = createQuadTree(maxBounds, oldNodes).build();
+        final RevTree newTree = createQuadTree(maxBounds, newNodes).build();
+
+        PreOrderDiffWalk walk = new PreOrderDiffWalk(oldTree, newTree, objectStore, objectStore,
+                true);
+
+        Map<String, Node> added = new HashMap<>();
+        Map<String, Node> removed = new HashMap<>();
+        walk.walk(new PreOrderDiffWalk.AbstractConsumer() {
+            @Override
+            public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+                if (left != null) {
+                    removed.put(left.name(), left.getNode());
+                }
+                if (right != null) {
+                    added.put(right.name(), right.getNode());
+                }
+                return true;
+            }
+        });
+        // since they're not canonical trees, diff reports adds and removes instead of changes
+        Map<Node, Node> changed = new HashMap<>();
+        for (String name : new HashSet<>(Sets.union(added.keySet(), removed.keySet()))) {
+            if (added.containsKey(name) && removed.containsKey(name)) {
+                changed.put(removed.remove(name), added.remove(name));
+            }
+        }
+
+        assertEquals(expectedAdditions, new HashSet<>(added.values()));
+        assertEquals(expectedChanges.size(), changed.size());
+        assertEquals(expectedChanges, changed);
+        assertEquals(expectedRemoves, new HashSet<>(removed.values()));
     }
 
     private List<Integer> nodeRange(final int ncount) {
@@ -338,128 +235,13 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         return nodeIds;
     }
 
-    private static class ScreenMapFilter implements Predicate<Bounded> {
-
-        static final class Stats {
-            private long skippedTrees, skippedBuckets, skippedFeatures;
-
-            private long acceptedTrees, acceptedBuckets, acceptedFeatures;
-
-            void add(final Bounded b, final boolean skip) {
-                Node n = b instanceof Node ? (Node) b : null;
-                Bucket bucket = b instanceof Bucket ? (Bucket) b : null;
-                if (skip) {
-                    if (bucket == null) {
-                        if (n.getType() == TYPE.FEATURE) {
-                            skippedFeatures++;
-                        } else {
-                            skippedTrees++;
-                        }
-                    } else {
-                        skippedBuckets++;
-                    }
-                } else {
-                    if (bucket == null) {
-                        if (n.getType() == TYPE.FEATURE) {
-                            acceptedFeatures++;
-                        } else {
-                            acceptedTrees++;
-                        }
-                    } else {
-                        acceptedBuckets++;
-                    }
-                }
-            }
-
-            @Override
-            public String toString() {
-                return String.format(
-                        "skipped/accepted: Features(%,d/%,d) Buckets(%,d/%,d) Trees(%,d/%,d)",
-                        skippedFeatures, acceptedFeatures, skippedBuckets, acceptedBuckets,
-                        skippedTrees, acceptedTrees);
-            }
-        }
-
-        private ScreenMap screenMap;
-
-        private Envelope envelope = new Envelope();
-
-        private Stats stats = new Stats();
-
-        public ScreenMapFilter(ScreenMap screenMap) {
-            this.screenMap = screenMap;
-        }
-
-        public Stats stats() {
-            return stats;
-        }
-
-        @Override
-        public boolean apply(@Nullable Bounded b) {
-            if (b == null) {
-                return false;
-            }
-            envelope.setToNull();
-            b.expand(envelope);
-            if (envelope.isNull()) {
-                return true;
-            }
-            boolean skip;
-            try {
-                skip = screenMap.checkAndSet(envelope);
-            } catch (TransformException e) {
-                e.printStackTrace();
-                return true;
-            }
-            stats.add(b, skip);
-            return !skip;
-        }
-
-    }
-
-    private long search(RevTree tree, Envelope queryEnvelope, Context context) {
-
-        ScreenMap screenMap = new ScreenMap(-180, -90, 360, 180);
-        screenMap.setTransform(IdentityTransform.create(2));
-        screenMap.setSpans(2, 2);
-        ScreenMapFilter screenmapFilter = new ScreenMapFilter(screenMap);
-
-        DiffTree diff = new DiffTree();
-        diff.setContext(context);
-        diff.setOldTree(RevTree.EMPTY_TREE_ID);
-        diff.setNewTree(tree.getId());
-
-        // diff.setCustomFilter(screenmapFilter);
-
-        diff.setBoundsFilter(new ReferencedEnvelope(queryEnvelope, DefaultGeographicCRS.WGS84));
-
-        Iterator<DiffEntry> entries = diff.call();
-
-        Stopwatch sw = Stopwatch.createStarted();
-        long matchCount = Iterators.size(entries);
-        sw.stop();
-        // System.out.println(screenmapFilter.stats().toString());
-        return matchCount;
-    }
-
-    protected Context createTestContext() {
-        Platform testPlatform = new TestPlatform(new File("target"));
-        GlobalContextBuilder.builder(new TestContextBuilder(testPlatform));
-        Context context = GlobalContextBuilder.builder().build();
-        context.objectDatabase().open();
-        context.refDatabase().create();
-
-        return context;
-    }
-
     private List<Node> createPointNodes(List<Integer> nodeIds, Envelope maxBounds) {
 
         final double minX = maxBounds.getMinX();
         final double minY = maxBounds.getMinY();
 
         List<Node> nodes = new ArrayList<Node>(nodeIds.size());
-        // List<Geometry> geoms = new ArrayList<Geometry>(nodeIds.size());
-        GeometryFactory gf = new GeometryFactory();
+
         Random random = new Random();
         for (Integer intId : nodeIds) {
             String nodeName = String.valueOf(intId);
@@ -468,13 +250,13 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
             double x = minX + maxBounds.getWidth() * random.nextDouble();
             double y = minY + maxBounds.getHeight() * random.nextDouble();
-            // geoms.add(gf.createPoint(new Coordinate(x, y)));
+
             Envelope bounds = new Envelope(x, x, y, y);
 
             Node node = Node.create(nodeName, oid, ObjectId.NULL, TYPE.FEATURE, bounds);
             nodes.add(node);
         }
-        // System.err.println(gf.buildGeometry(geoms));
+
         return nodes;
     }
 
@@ -485,16 +267,11 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         final double stepx = maxBounds.getWidth() / nodeIds.size();
         final double stepy = maxBounds.getHeight() / nodeIds.size();
 
-        Stopwatch nodeTime = Stopwatch.createUnstarted();
-
         List<Node> nodes = new ArrayList<Node>(nodeIds.size());
 
         Random random = new Random();
 
-        GeometryFactory gf = new GeometryFactory();
-        // List<Geometry> geoms = new ArrayList<Geometry>(nodeIds.size());
         for (Integer intId : nodeIds) {
-            nodeTime.start();
             String nodeName = String.valueOf(intId);
             String sid = Strings.padStart(nodeName, 40, '0');
             ObjectId oid = RevObjectTestSupport.hashString(sid);
@@ -508,14 +285,9 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
             Preconditions.checkState(!bounds.isNull() && maxBounds.contains(bounds));
 
-            Polygon geometry = JTS.toGeometry(bounds, gf);
-            Map<String, Object> extraData = ImmutableMap.<String, Object> of("geometry", geometry);
-            Node node = Node.create(nodeName, oid, ObjectId.NULL, TYPE.FEATURE, bounds, extraData);
-            nodeTime.stop();
+            Node node = Node.create(nodeName, oid, ObjectId.NULL, TYPE.FEATURE, bounds, null);
             nodes.add(node);
         }
-        System.err.printf("%,d unique nodes created in %s.\n", nodeIds.size(), nodeTime);
-        // System.err.println(gf.buildGeometry(geoms));
         return nodes;
     }
 
@@ -529,17 +301,11 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         final double maxHeight = maxBounds.getHeight();
 
         Random random = new Random();
-
-        Stopwatch nodeTime = Stopwatch.createUnstarted();
-
-        GeometryFactory gf = new GeometryFactory();
-
         List<Node> nodes = new ArrayList<Node>(nodeIds.size());
 
         for (Integer intId : nodeIds) {
-            nodeTime.start();
-            String sid = Strings.padStart(String.valueOf(intId), 40, '0');
-            ObjectId oid = ObjectId.valueOf(sid);
+            String fid = String.valueOf(intId);
+            ObjectId oid = RevObjectTestSupport.hashString(fid);
 
             double x1 = minX + maxWidth * random.nextDouble();
             double y1 = minY + maxHeight * random.nextDouble();
@@ -548,99 +314,26 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
             Envelope bounds = new Envelope(x1, x2, y1, y2);
 
-            Polygon geometry = JTS.toGeometry(bounds, gf);
-            Map<String, Object> extraData = ImmutableMap.<String, Object> of("geometry", geometry);
-
-            Node node = Node.create(String.valueOf(intId), oid, ObjectId.NULL, TYPE.FEATURE, bounds,
-                    extraData);
+            Map<String, Object> extraData = null;
+            Node node = Node.create(fid, oid, ObjectId.NULL, TYPE.FEATURE, bounds, extraData);
             nodes.add(node);
-            nodeTime.stop();
-
-            // geoms.add(JTS.toGeometry(bounds, gf));
         }
-
-        // System.err.println(gf.buildGeometry(geoms));
-        System.err.printf("%,d unique random rect nodes created in %s.\n", nodeIds.size(),
-                nodeTime);
         return nodes;
     }
 
-    private RevTree createRevTree(RevTreeBuilder quadTree) {
-        Stopwatch treeTime = Stopwatch.createStarted();
-        RevTree revTreeFromSequentialQuadTree = quadTree.build();
-        treeTime.stop();
-        System.err.printf("RevTree created from QuadTree in %s: %s\n", treeTime,
-                revTreeFromSequentialQuadTree);
-        return revTreeFromSequentialQuadTree;
+    private RevTreeBuilder createQuadTree(Envelope maxBounds, final List<Node> nodes) {
+        return createQuadTree(maxBounds, nodes, this.objectStore);
     }
 
-    private RevTree createCanonicalTree(List<Node> nodes, ObjectStore odb) {
-        RevTreeBuilder builder;
-        builder = RevTreeBuilder.canonical(odb);
-        Stopwatch treeTime = Stopwatch.createStarted();
-        for (Node n : nodes) {
-            builder.put(n);
-        }
-        RevTree tree = builder.build();
-        treeTime.stop();
-        odb.put(tree);
-        return tree;
-    }
-
-    private RevTreeBuilder createQuadTree(Envelope maxBounds, int maxDepth,
-            final List<Node> nodes) {
-        return createQuadTree(maxBounds, maxDepth, nodes, this.objectStore);
-    }
-
-    private RevTreeBuilder createQuadTree(Envelope maxBounds, int maxDepth, final List<Node> nodes,
+    private RevTreeBuilder createQuadTree(Envelope maxBounds, final List<Node> nodes,
             final ObjectStore objectStore) {
-        System.err.printf("Creating QuadTree with %,d nodes...", nodes.size());
 
-        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(objectStore, RevTree.EMPTY, maxBounds,
-                maxDepth);
+        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(objectStore, RevTree.EMPTY, maxBounds);
 
-        Stopwatch sw = Stopwatch.createUnstarted();
-
-        sw.start();
         for (Node node : nodes) {
             qtree.put(node);
         }
-
-        sw.stop();
-        System.err.printf(" DAG Created in %s.\n", sw);
-        sw.reset().start();
-
         return qtree;
-    }
-
-    public static void main(String[] args) {
-        final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
-        final int maxDepth = 12;
-        final int ncount = 2_000_000;
-
-        QuadTreeBuilderTest test = new QuadTreeBuilderTest();
-        List<Node> nodes = test.createPointNodes(test.nodeRange(ncount), maxBounds);
-        // nodes = createRandomRectNodes(nodeRange(ncount), maxBounds);
-
-        ObjectStore odb = new HeapObjectDatabase();
-        odb.open();
-
-        System.err.printf("Creating QuadTree with %,d nodes...", nodes.size());
-
-        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(odb, RevTree.EMPTY, maxBounds, maxDepth);
-
-        Stopwatch sw = Stopwatch.createUnstarted();
-
-        sw.start();
-        for (Node node : nodes) {
-            qtree.put(node);
-        }
-
-        sw.stop();
-        System.err.printf(" DAG Created in %s.\n", sw);
-
-        RevTree quadTree = test.createRevTree(qtree);
-        System.err.println(quadTree);
     }
 
 }

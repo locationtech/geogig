@@ -39,18 +39,16 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         Preconditions.checkNotNull(store);
         Preconditions.checkNotNull(original);
         final Envelope MAX_BOUNDS_WGS84 = new Envelope(-180, 180, -90, 90);
-        final int DEFAULT_MAX_DEPTH = 12;
-        return QuadTreeBuilder.quadTree(store, original, MAX_BOUNDS_WGS84, DEFAULT_MAX_DEPTH);
+        return QuadTreeBuilder.quadTree(store, original, MAX_BOUNDS_WGS84);
     }
 
     public static QuadTreeBuilder quadTree(final ObjectStore store, final RevTree original,
-            final Envelope maxBounds, final int maxDepth) {
+            final Envelope maxBounds) {
         Preconditions.checkNotNull(store);
         Preconditions.checkNotNull(maxBounds);
-        Preconditions.checkArgument(maxDepth > 0);
 
         ClusteringStrategy strategy = ClusteringStrategyBuilder.quadTree(store).original(original)
-                .maxBounds(maxBounds).maxDepth(maxDepth).build();
+                .maxBounds(maxBounds).build();
         QuadTreeBuilder builder = new QuadTreeBuilder(store, RevTree.EMPTY, strategy);
         return builder;
     }

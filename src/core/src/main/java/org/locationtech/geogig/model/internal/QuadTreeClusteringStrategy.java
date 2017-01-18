@@ -58,17 +58,10 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
 
     private final Envelope maxBounds;
 
-    private final int maxDepth;
-
     public QuadTreeClusteringStrategy(RevTree original, DAGStorageProvider storageProvider,
-            Envelope maxBounds, int maxDepth) {
+            Envelope maxBounds) {
         super(original, storageProvider);
         this.maxBounds = maxBounds;
-        this.maxDepth = maxDepth;
-    }
-
-    public int getMaxDepth() {
-        return maxDepth;
     }
 
     public Envelope getMaxBound() {
@@ -138,13 +131,12 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
         return null;
     }
 
-    List<Quadrant> quadrantsByDepth(NodeId node) {
+    List<Quadrant> quadrantsByDepth(NodeId node, int maxDepth) {
         final Envelope nodeBounds = node.value();
         if (nodeBounds == null || nodeBounds.isNull()) {
             return Collections.emptyList();
         }
 
-        final int maxDepth = this.maxDepth;
         List<Quadrant> quadrantsByDepth = new ArrayList<>(maxDepth);
 
         final Quadrant[] quadrants = Quadrant.VALUES;

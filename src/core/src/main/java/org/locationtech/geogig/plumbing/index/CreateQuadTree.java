@@ -80,16 +80,6 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
         final ObjectDatabase odb = objectDatabase();
 
         final RevTree tree = odb.getTree(treeId);
-        final long size = tree.size();
-        int maxDepth = 1;
-
-        int numLeafTrees = 4;
-        while (numLeafTrees * 64 < size) {
-            maxDepth++;
-            numLeafTrees = numLeafTrees * 4;
-        }
-        maxDepth = 16;
-        System.err.println("Setting max depth = " + maxDepth);
 
         boolean preserveIterationOrder = true;
         PreOrderDiffWalk walk = new PreOrderDiffWalk(RevTree.EMPTY, tree, odb, odb, preserveIterationOrder);
@@ -97,7 +87,7 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
         final ProgressListener progress = getProgressListener();
 
         final RevTreeBuilder builder;
-        builder = QuadTreeBuilder.quadTree(odb, RevTree.EMPTY, maxBounds, maxDepth);
+        builder = QuadTreeBuilder.quadTree(odb, RevTree.EMPTY, maxBounds);
         // builder = RevTreeBuilder.canonical(odb);
 
         progress.setDescription(String.format("Creating Quad Tree for %,d features", tree.size()));

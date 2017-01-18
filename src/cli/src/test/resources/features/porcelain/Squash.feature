@@ -9,7 +9,8 @@ Scenario: Squash commits
      When I run the command "squash HEAD~2 HEAD"
       And I run the command "log --oneline"
      Then the response should contain 2 lines
-     
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
   Scenario: Squash commits with message
     Given I have a repository
       And I have several commits
@@ -17,7 +18,8 @@ Scenario: Squash commits
       And I run the command "log --oneline"
      Then the response should contain 2 lines  
       And the response should contain "squashed"
-      
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
   Scenario: Squash commits in wrong order
     Given I have a repository
       And I have several commits

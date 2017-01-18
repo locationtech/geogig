@@ -10,14 +10,16 @@ Feature: "commit" command
      And I run the command "commit -t 2010-04-22T19:53:23Z -m msg"
     When I run the command "log --utc"
     Then the response should contain "2010-04-22"
+     And the response should contain variable "{@ObjectId|localrepo|HEAD}"
     
   Scenario: Try to commit with timestamp in millisecs
     Given I have a repository
      And I have staged "points1"     
      And I run the command "commit -t 1000000000 -m msg"
     When I run the command "log"
-    Then the response should contain "1970-01"    
-    
+    Then the response should contain "1970-01"
+     And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
   Scenario: Try to commit current staged features
     Given I have a repository
       And I have staged "points1"
@@ -25,7 +27,8 @@ Feature: "commit" command
       And I have staged "lines1"
      When I run the command "commit -m Test"
      Then the response should contain "3 features added"
-     
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
   Scenario: Try to commit current staged features using a message with blank spaces
     Given I have a repository
       And I have staged "points1"
@@ -33,8 +36,9 @@ Feature: "commit" command
       And I have staged "lines1"
      When I run the command "commit -m "A message with spaces""
      Then the response should contain "3 features added" 
-      And the response should contain "A message with spaces"    
-     
+      And the response should contain "A message with spaces"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
   Scenario: Try to perform multiple commits
     Given I have a repository
       And I have staged "points1"
@@ -45,7 +49,8 @@ Feature: "commit" command
      When I modify and add a feature
       And I run the command "commit -m Test2"
      Then the response should contain "1 changed"
-     
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
   Scenario: Try to commit without providing a message
     Given I have a repository
       And I have staged "points1"
@@ -87,8 +92,10 @@ Feature: "commit" command
       And I run the command "commit -m Test"
       And I have staged "points2"
      When I run the command "commit --amend"
-     Then the response should contain "2 features added"     
-     
+     Then the response should contain "2 features added"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
+
   Scenario: Try to amend last commit, when no previous commit has been made
     Given I have a repository
       And I have staged "points1"
@@ -113,6 +120,8 @@ Feature: "commit" command
      And I have staged "lines2"
     When I run the command "commit -m Test Points"
     Then the response should contain "2 features added"
+     And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
     
 
          

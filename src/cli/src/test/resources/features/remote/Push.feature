@@ -7,12 +7,12 @@ Feature: "push" command
     Given I am in an empty directory
      When I run the command "push origin"
      Then the response should start with "Not in a geogig repository"
-     
+
   Scenario: Try to push with no changes
     Given I clone a remote repository
      When I run the command "push"
      Then the response should contain "Nothing to push."
-  
+
   Scenario: Try to push to origin
     Given I clone a remote repository
      When I modify and add a feature

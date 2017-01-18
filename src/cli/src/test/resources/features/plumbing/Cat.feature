@@ -11,6 +11,7 @@ Scenario: Try to show the content of a tree.
      Then the response should contain "Points.1"
       And the response should contain "Points.2"
       And the response should contain "Points.3"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD:Points}"
      
 Scenario: Try to show the content of a feature.
     Given I have a repository
@@ -20,6 +21,7 @@ Scenario: Try to show the content of a feature.
      Then the response should contain "1000"
       And the response should contain "POINT (1 1)"
       And the response should contain "StringProp1_1"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD:Points/Points.1}"
    
 Scenario: Try to show the content of a feature that does not exist
     Given I have a repository           
@@ -34,6 +36,7 @@ Scenario: Try to show the content of a feature in the working tree.
      Then the response should contain "1000"
       And the response should contain "POINT (1 1)"
       And the response should contain "StringProp1_1"
+      And the response should contain variable "{@ObjectId|localrepo|WORK_HEAD:Points/Points.1}"
            
 Scenario: Try to show the content of HEAD.
     Given I have a repository

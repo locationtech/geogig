@@ -55,7 +55,9 @@ Feature: "branch" command
      When I run the command "branch -c newestBranch master"
       And I run the command "log"
      Then the response should contain "Commit1"
+      And the response should contain variable "{@ObjectId|localrepo|master}"
       And the response should not contain "Commit2"
+      And the response should not contain variable "{@ObjectId|localrepo|newBranch}"
      
   Scenario: Try to create a branch with the same name as an existing branch
     Given I have a repository

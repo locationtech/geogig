@@ -33,6 +33,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,8 +42,11 @@ import org.junit.Assert;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
@@ -65,6 +69,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
@@ -86,6 +91,8 @@ public class DefaultStepDefinitions {
     private CLIContextProvider contextProvider;
 
     private CLIContext localRepo;
+
+    private Map<String, String> variables = new HashMap<>();
 
     private String replaceKnownVariables(String s) throws IOException {
         if (s.contains("${currentdir}")) {
@@ -142,6 +149,12 @@ public class DefaultStepDefinitions {
                 contextProvider.getURIBuilder().getClass().getSimpleName());
         contextProvider.before();
         this.localRepo = contextProvider.getOrCreateRepositoryContext("localrepo");
+
+        RevFeatureType rft = RevFeatureTypeBuilder.build(TestFeatures.pointsType);
+        setVariable("@PointsTypeID", rft.getId().toString());
+
+        rft = RevFeatureTypeBuilder.build(TestFeatures.linesType);
+        setVariable("@LinesTypeID", rft.getId().toString());
     }
 
     @cucumber.api.java.After
@@ -224,6 +237,23 @@ public class DefaultStepDefinitions {
         String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
                 .replaceAll("\\\\", "/");
         assertFalse(actual, actual.contains(expected));
+    }
+
+    @Then("^the response should contain variable \"([^\"]*)\"$")
+    public void checkResponseTextContains(String substring) {
+        substring = replaceVariables(substring);
+        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
+                .replaceAll("\\\\", "/");
+        assertTrue("'" + actual + "' does not contain '" + substring + "'",
+                actual.contains(substring));
+    }
+
+    @Then("^the response should not contain variable \"([^\"]*)\"$")
+     public void checkResponseTextDoesNotContain(String substring) {
+        substring = replaceVariables(substring);
+        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
+                .replaceAll("\\\\", "/");
+        assertFalse(actual, actual.contains(substring));
     }
 
     @Then("^the response should contain ([^\"]*) lines$")
@@ -657,6 +687,64 @@ public class DefaultStepDefinitions {
         String[] commitId = actual.split(" ");
         localRepo.runCommand(true, "checkout " + commitId[0]);
     }
-    
 
+    public void setVariable(String name, String value) {
+                this.variables.put(name, value);
+    }
+
+    public String getVariable(String name) {
+        return getVariable(name, this.variables);
+    }
+
+    static public String getVariable(String varName, Map<String, String> variables) {
+        String varValue = variables.get(varName);
+        Preconditions.checkState(varValue != null, "Variable " + varName + " does not exist");
+        return varValue;
+    }
+
+    public String replaceVariables(final String text) {
+        return replaceVariables(text, this.variables, this);
+    }
+
+    public String replaceVariables(final String text, Map<String, String> variables,
+        DefaultStepDefinitions defaultStepDefinitions) {
+        String resource = text;
+        int varIndex = -1;
+        while ((varIndex = resource.indexOf("{@")) > -1) {
+            for (int i = varIndex + 1; i < resource.length(); i++) {
+                char c = resource.charAt(i);
+                if (c == '}') {
+                    String varName = resource.substring(varIndex + 1, i);
+                    String varValue;
+                    if (defaultStepDefinitions != null && varName.startsWith("@ObjectId|")) {
+                        String[] parts = varName.split("\\|");
+                        String repoName = parts[1];
+                        // repoName for remote = "remoterepo", "localrepo" for local
+                        CLIContext context = contextProvider.getRepositoryContext(repoName);
+                        Repository repo = context.geogigCLI.getGeogig().getRepository();
+                        String ref;
+                        Optional<RevObject> object;
+                        ref = parts[2];
+                        object = repo.command(RevObjectParse.class).setRefSpec(ref).call();
+
+                        if (object.isPresent()) {
+                            varValue = object.get().getId().toString();
+                        } else {
+                            varValue = "specified ref doesn't exist";
+                        }
+                    } else {
+                        varValue = getVariable(varName, variables);
+                    }
+                    String tmp = resource.replace("{" + varName + "}", varValue);
+                    resource = tmp;
+                    break;
+                }
+            }
+        }
+        return resource;
+    }
+
+    String replaceVariables(final String text, Map<String, String> variables) {
+        return replaceVariables(text, variables, null);
+    }
 }

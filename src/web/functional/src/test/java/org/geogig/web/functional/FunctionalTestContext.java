@@ -38,7 +38,6 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.web.api.TestData;
 import org.restlet.data.Method;
-import org.restlet.data.Status;
 import org.w3c.dom.Document;
 
 import com.google.common.base.Optional;

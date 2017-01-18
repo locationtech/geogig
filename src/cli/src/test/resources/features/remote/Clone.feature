@@ -31,8 +31,10 @@ Feature: "clone" command
      When I run the command "log"
      Then the response should contain "Commit5"
       And the response should contain "Commit4"
+      And the response should contain variable "{@ObjectId|localrepo|master}"
       And the response should not contain "Commit3"
       And the response should not contain "Commit2"
+      And the response should not contain variable "{@ObjectId|localrepo|branch1}"
       And the response should contain "Commit1"
   
   #annotate with FileSystemReposOnly because other URI providers don't allow spaces
@@ -48,7 +50,8 @@ Feature: "clone" command
       And the response should contain "Commit4"
       And the response should not contain "Commit3"
       And the response should not contain "Commit2"
-      And the response should contain "Commit1"  
+      And the response should contain "Commit1"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~2}"
       
   Scenario: Try to clone a remote repository that does not exist
     Given I am in an empty directory
@@ -65,9 +68,11 @@ Feature: "clone" command
      When I run the command "log"
      Then the response should contain "Commit5"
       And the response should contain "Commit4"
+      And the response should contain variable "{@ObjectId|localrepo|master~1}"
       And the response should not contain "Commit3"
       And the response should not contain "Commit2"
       And the response should not contain "Commit1"
+      And the response should not contain variable "{@ObjectId|remoterepo|branch1}"
       
   Scenario: Try to clone a remote repository with a branch specified
     Given I am in an empty directory
@@ -78,10 +83,13 @@ Feature: "clone" command
      When I run the command "log"
      Then the response should not contain "Commit5"
       And the response should not contain "Commit4"
+      And the response should not contain variable "{@ObjectId|remoterepo|master}"
       And the response should contain "Commit3"
       And the response should contain "Commit2"
       And the response should contain "Commit1"
-      
+      And the response should contain variable "{@ObjectId|localrepo|branch1}"
+      And the response should contain variable "{@ObjectId|localrepo|branch1~1}"
+
   Scenario: Try to do a sparse clone of a remote repository with no branch specified
     Given I am in an empty directory
       And there is a remote repository
@@ -100,3 +108,4 @@ Feature: "clone" command
       And there is a remote repository
      When I run the command "clone fakeRepo"
      Then the response should contain "Remote repository has no HEAD"
+

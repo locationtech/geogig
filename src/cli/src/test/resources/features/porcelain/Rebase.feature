@@ -11,8 +11,11 @@ Feature: "rebase" command
      Then the response should contain "Commit1"
       And the response should contain "Commit2"
       And the response should contain "Commit3"
+      And the response should contain variable "{@ObjectId|localrepo|branch1}"
       And the response should not contain "Commit4"
+      And the response should not contain variable "{@ObjectId|localrepo|branch2}"
       And the response should contain "Commit5"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
       
   Scenario: Try to rebase one branch to a parent branch
     Given I have a repository
@@ -23,7 +26,9 @@ Feature: "rebase" command
       And the response should not contain "Commit2"
       And the response should not contain "Commit3"      
       And the response should not contain "Commit4"
+      And the response should not contain variable "{@ObjectId|localrepo|branch2}"
       And the response should contain "Commit5"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
       And the response should contain "squashmessage"
             
   Scenario: Try to graft a branch onto another branch
@@ -62,8 +67,8 @@ Feature: "rebase" command
     Given I am in an empty directory
      When I run the command "rebase master branch1"
      Then the response should start with "Not in a geogig repository"
-      And it should exit with non-zero exit code    
-   
+      And it should exit with non-zero exit code
+
   Scenario: Try to rebase with conflicts and skip
     Given I have a repository
       And I have conflicting branches
@@ -75,7 +80,8 @@ Feature: "rebase" command
      Then the response should contain "Commit1"
       And the response should not contain "Commit2"
       And the response should contain "Commit3"
-      And the response should contain "Commit4"        
+      And the response should contain "Commit4"
+      And the response should contain variable "{@ObjectId|localrepo|branch1}"
       
   Scenario: Try to rebase with conflicts and continue
     Given I have a repository
@@ -88,8 +94,10 @@ Feature: "rebase" command
      Then the response should contain "Commit1"
       And the response should contain "Commit2"
       And the response should contain "Commit3"
-      And the response should contain "Commit4"      
-	 
+      And the response should contain "Commit4"
+      And the response should contain variable "{@ObjectId|localrepo|branch1}"
+      And the response should contain variable "{@ObjectId|localrepo|master~3}"
+
   Scenario: Try to rebase with conflicts and abort
     Given I have a repository
       And I have conflicting branches

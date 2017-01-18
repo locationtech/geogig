@@ -134,7 +134,7 @@ Feature: "reset" command
      When I run the command "status"
      Then the response should contain "Changes not staged for commit"
       And the response should not contain "Changes to be committed"
-      
+
   Scenario: Try to reset to the state of another branch
     Given I have a repository
       And I have several branches
@@ -146,8 +146,10 @@ Feature: "reset" command
      Then the response should contain "Subject: Commit1"
       And the response should contain "Subject: Commit2"
       And the response should contain "Subject: Commit3"
+      And the response should contain variable "{@ObjectId|localrepo|branch1}"
       And the response should not contain "Subject: Commit4"
       And the response should not contain "Subject: Commit5"
+      And the response should not contain variable "{@ObjectId|localrepo|master}"
       
   Scenario: Try to do a reset with a mode and paths
     Given I have a repository

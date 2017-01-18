@@ -16,16 +16,19 @@ Feature: "log" command
      Then the response should contain "3 features added"
      When I run the command "log"
      Then the response should contain "Subject: TestCommit"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
      
   Scenario: Try to show a log of a repository with several commits.
     Given I have a repository
       And I have several commits
       And I run the command "log"
      Then the response should contain "Subject: Commit1"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~3}"
       And the response should contain "Subject: Commit2"
       And the response should contain "Subject: Commit3"
       And the response should contain "Subject: Commit4"
-      
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
   Scenario: Try to show a log of the commits that have changed the points feature
   	Given I have a repository
   	  And I have several commits
@@ -33,14 +36,18 @@ Feature: "log" command
   	 Then the response should contain "Subject: Commit1"
   	  And the response should contain "Subject: Commit2"
   	  And the response should contain "Subject: Commit4"
-  	  
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~3}"
+
   Scenario: Try to show a log of the commits that have changed the lines feature
     Given I have a repository
       And I have several commits
       And I run the command "log --path Lines"
      Then the response should contain "Subject: Commit2"
       And the response should contain "Subject: Commit3"
-      
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~1}"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~2}"
+
   Scenario: Try to show a log of the commits that have changed the points and lines features
     Given I have a repository
       And I have several commits
@@ -49,16 +56,20 @@ Feature: "log" command
       And the response should contain "Subject: Commit2"
       And the response should contain "Subject: Commit3"
       And the response should contain "Subject: Commit4"
-      
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~1}"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~3}"
+
   Scenario: Try to show only the last two commits.
     Given I have a repository
       And I have several commits
       And I run the command "log -n 2"
      Then the response should not contain "Subject: Commit1"
       And the response should not contain "Subject: Commit2"
+      And the response should not contain variable "{@ObjectId|localrepo|HEAD~2}"
       And the response should contain "Subject: Commit3"
       And the response should contain "Subject: Commit4"
-      
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
   Scenario: Try to show the log, skipping the last 2 commits
     Given I have a repository
       And I have several commits
@@ -67,16 +78,22 @@ Feature: "log" command
       And the response should contain "Subject: Commit2"
       And the response should not contain "Subject: Commit3"
       And the response should not contain "Subject: Commit4"
-      
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~3}"
+      And the response should not contain variable "{ObjectId|localrepo|HEAD}"
+
   Scenario: Try to show the last 2 commits before the most recent
     Given I have a repository
       And I have several commits
       And I run the command "log -n 2 --skip 1"
      Then the response should not contain "Subject: Commit1"
+      And the response should not contain variable "{@ObjectId|localrepo|HEAD~3}"
       And the response should contain "Subject: Commit2"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~2}"
       And the response should contain "Subject: Commit3"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD~1}"
       And the response should not contain "Subject: Commit4"
-      
+      And the response should not contain variable "{@ObjectId|localrepo|HEAD}"
+
   Scenario: Try to show a log from an empty directory
     Given I am in an empty directory
      When I run the command "log"
@@ -91,8 +108,11 @@ Feature: "log" command
       And the response should contain "Commit2"
       And the response should contain "Commit3"
       And the response should contain "Commit4"
-      And the response should contain "Commit5"    
-      
+      And the response should contain "Commit5"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+      And the response should contain variable "{@ObjectId|localrepo|branch1}"
+      And the response should contain variable "{@ObjectId|localrepo|branch2}"
+
   Scenario: Try to show a log of a single branch
     Given I have a repository
       And I have several branches
@@ -100,6 +120,7 @@ Feature: "log" command
      Then the response should contain "Commit1"
       And the response should contain "Commit2"
       And the response should contain "Commit3"
+      And the response should contain variable "{@ObjectId|localrepo|branch1}"
       And the response should not contain "Commit4"
       And the response should not contain "Commit5"          
        
@@ -119,6 +140,9 @@ Feature: "log" command
       And the response should contain "Commit3"
       And the response should contain "Commit4"
       And the response should contain "Commit5"
+      And the response should contain variable "{@ObjectId|localrepo|branch1}"
+      And the response should contain variable "{@ObjectId|localrepo|branch2}"
+      And the response should contain variable "{@ObjectId|localrepo|master}"
      Then the response should contain "HEAD"
      Then the response should contain "master"    
   
@@ -132,7 +156,8 @@ Feature: "log" command
      When I run the command "log --oneline"
      Then the response should contain 1 lines
       And the response should contain "TestCommit"
-     
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
+
   Scenario: Try to show a log of a repository with a single commit and decoration
     Given I have a repository
       And I have staged "points1"
@@ -142,7 +167,8 @@ Feature: "log" command
      Then the response should contain "3 features added"
      When I run the command "log --oneline --decoration"
      Then the response should contain 1 lines
-      And the response should contain "(HEAD, refs/heads/master) TestCommit"     
+      And the response should contain "(HEAD, refs/heads/master) TestCommit"
+      And the response should contain variable "{@ObjectId|localrepo|HEAD}"
       
   Scenario: Try to show a log of a repository showing only names of affected elements
     Given I have a repository

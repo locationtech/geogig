@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,7 +73,7 @@ public abstract class ClusteringStrategy {
         checkNotNull(original);
         checkNotNull(storageProvider);
         this.storageProvider = storageProvider;
-        this.root = new DAG(original.getId());
+        this.root = new DAG(ROOT_ID, original.getId());
         this.root.setChildCount(original.size());
         this.dagCache = new DAGCache(storageProvider);
     }
@@ -104,17 +105,24 @@ public abstract class ClusteringStrategy {
         return bucket;
     }
 
+    /**
+     * @see #getOrCreateDAG(TreeId, ObjectId)
+     */
     DAG getOrCreateDAG(TreeId treeId) {
         return getOrCreateDAG(treeId, RevTree.EMPTY_TREE_ID);
     }
 
+    /**
+     * Returns the mutable tree (DAG) associated to the given {@link TreeId}, creating it if it
+     * doesn't exist and setting it's original {@link RevTree} identifier as {@code originalTreeId}
+     */
     private DAG getOrCreateDAG(TreeId treeId, ObjectId originalTreeId) {
         DAG dag = dagCache.getOrCreate(treeId, originalTreeId);
         return dag;
     }
 
-    public Map<TreeId, DAG> getDagTrees(Set<TreeId> ids) {
-        Map<TreeId, DAG> trees = dagCache.getAll(ids);
+    public List<DAG> getDagTrees(Set<TreeId> ids) {
+        List<DAG> trees = dagCache.getAll(ids);
         return trees;
     }
 
@@ -190,22 +198,13 @@ public abstract class ClusteringStrategy {
             writeLock.lock();
             try {
                 put(rootId, root, nodeId, remove, rootDepth);
+                dagCache.prune();
             } finally {
                 writeLock.unlock();
             }
             if (!remove) {
                 storageProvider.saveNode(nodeId, node);
             }
-            // if (treeBuff.size() >= 100_000) {
-            // writeLock.lock();
-            // try {
-            // System.err.printf("Saving %,d DAG's.....\n", treeBuff.size());
-            // storageProvider.save(treeBuff);
-            // treeBuff.clear();
-            // } finally {
-            // writeLock.unlock();
-            // }
-            // }
         }
 
     }
@@ -367,8 +366,8 @@ public abstract class ClusteringStrategy {
                         Integer bucketIndex = e.getKey();
                         TreeId dagBucketId = computeBucketId(nodeBucketId, bucketIndex);
                         ObjectId bucketId = e.getValue().getObjectId();
-                        getOrCreateDAG(dagBucketId, bucketId);// make sure the DAG exists and is
-                        // initialized
+                        // make sure the DAG exists and is initialized
+                        DAG dag = getOrCreateDAG(dagBucketId, bucketId);
                         root.addBucket(dagBucketId);
                     }
                 }
@@ -465,6 +464,8 @@ public abstract class ClusteringStrategy {
         @VisibleForTesting
         final Map<TreeId, DAG> treeBuff = new ConcurrentHashMap<>();
 
+        private Set<TreeId> dirty = new HashSet<>();
+
         DAGCache(DAGStorageProvider store) {
             this.store = store;
         }
@@ -476,32 +477,64 @@ public abstract class ClusteringStrategy {
         /**
          * Returns all the DAG's for the argument ids, which must already exist
          */
-        public Map<TreeId, DAG> getAll(Set<TreeId> ids) {
-            Map<TreeId, DAG> map = new HashMap<>();
+        public List<DAG> getAll(Set<TreeId> ids) {
+            List<DAG> all = new ArrayList<>();
             Set<TreeId> missing = new HashSet<>();
             for (TreeId id : ids) {
                 DAG dag = treeBuff.get(id);
                 if (dag == null) {
                     missing.add(id);
                 } else {
-                    map.put(id, dag);
+                    all.add(dag);
                 }
             }
-            Map<TreeId, DAG> uncached = store.getTrees(missing);
-            map.putAll(uncached);
-            return map;
+            List<DAG> uncached = store.getTrees(missing);
+            all.addAll(uncached);
+            return all;
         }
 
         public DAG getOrCreate(TreeId treeId, ObjectId originalTreeId) {
             DAG dag = treeBuff.get(treeId);
             if (dag == null) {
                 dag = store.getOrCreateTree(treeId, originalTreeId);
+                dag.changeListener = this::changed;
                 DAG existing = treeBuff.putIfAbsent(treeId, dag);
                 if (existing != null) {
                     dag = existing;
                 }
             }
             return dag;
+        }
+
+        /**
+         * Decides whether to mark a changed DAG as "dirty" (candidate to be returned to the DAG
+         * store)
+         */
+        private void changed(DAG dag) {
+            // currently keeps all bucket DAGs in the cache, and flushes leaf DAGs to the underlying
+            // temporary store
+            if (dag.numChildren() > 64) {
+                dirty.add(dag.getId());
+            }
+        }
+
+        public void prune() {
+            final int dirtySize = dirty.size();
+            if (dirtySize < 10_000) {
+                return;
+            }
+
+            // Stopwatch sw = Stopwatch.createStarted();
+            Map<TreeId, DAG> toSave = new HashMap<>();
+            for (TreeId id : dirty) {
+                DAG saveme = treeBuff.remove(id);
+                checkNotNull(saveme);
+                toSave.put(id, saveme);
+            }
+            dirty.clear();
+            store.save(toSave);
+            // System.err.printf("Saved %,d dirty DAGs in %s, remaining %,d\n", toSave.size(),
+            // sw.stop(), treeBuff.size());
         }
     }
 

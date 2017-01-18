@@ -20,15 +20,8 @@ import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.feature.type.PropertyDescriptor;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 
-import java.util.List;
-
-/**
- * Created by mthompson on 2017-01-12.
- */
 public class EPSGBoundsCalcTest extends RepositoryTestCase {
 
     @Override
@@ -38,29 +31,15 @@ public class EPSGBoundsCalcTest extends RepositoryTestCase {
     }
 
     @Test
-    public void metadataIdTest() throws Exception {
-        Envelope bounds = null;
-        ReferenceIdentifier code = null;
-
+    public void featureTypeTest() throws Exception {
         insertAndAdd(points1);
         geogig.command(CommitOp.class).setMessage("Commit1").call();
 
         Optional<RevFeatureType> featureType = geogig.command(ResolveFeatureType.class)
             .setRefSpec("WORK_HEAD:" + NodeRef.appendChild(pointsName, idP1)).call();
 
-        List<PropertyDescriptor> descList = featureType.get().descriptors().asList();
+        Envelope bounds = new EPSGBoundsCalc().getCRSBounds(featureType);
 
-        for (PropertyDescriptor desc : descList) {
-            if (desc instanceof GeometryDescriptor) {
-                code = ((GeometryDescriptor) desc).getCoordinateReferenceSystem().getName();
-            }
-        }
-
-        try {
-            bounds = new EPSGBoundsCalc().findCode(code.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         Envelope wgs84 = new Envelope(-180.0, 180.0, -90.0, 90.0);
         assertEquals(bounds, wgs84);
     }
@@ -78,28 +57,20 @@ public class EPSGBoundsCalcTest extends RepositoryTestCase {
         testEnvelopes[5] = new Envelope(-3333134.027630277, 3333134.027630277, -3333134.027630277, 3333134.027630277);
 
         for (int i = 0; i < testArray.length; i++) {
-            try {
-                bounds = new EPSGBoundsCalc().findCode(testArray[i]);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            bounds = new EPSGBoundsCalc().findCode(testArray[i]);
             assertEquals(bounds, testEnvelopes[i]);
         }
     }
 
-    @Test
-    public void nullBoundsTest() throws Exception{
-        Envelope bounds = null;
-        String[] testArray = {"EPSG:900913","random stuff!!!"};
-
-        for (int i = 0; i < testArray.length; i++) {
-            try {
-                bounds = new EPSGBoundsCalc().findCode(testArray[i]);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            assertNull(bounds);
-        }
+    @Test(expected=NoSuchAuthorityCodeException.class)
+    public void googleProjectionTest() throws Exception{
+        Envelope bounds = new EPSGBoundsCalc().findCode("EPSG:900913");
+        assertNull(bounds);
     }
 
+    @Test(expected=NoSuchAuthorityCodeException.class)
+    public void badCodeTest() throws Exception{
+        Envelope bounds = new EPSGBoundsCalc().findCode("random stuff!!!");
+        assertNull(bounds);
+    }
 }

@@ -38,12 +38,14 @@ import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.ListMultimap;
 
 /**
  * Base class for strategy objects that define the internal structure of a {@link RevTree}.
@@ -257,15 +259,20 @@ public abstract class ClusteringStrategy {
             final int size = dag.numChildren();
 
             if (size > normalizedSizeLimit) {
+                ListMultimap<TreeId, NodeId> promotions = ArrayListMultimap.create();
                 dag.forEachChild((childId) -> {
-
-                    int childDepthIndex = dagDepth + 1;
                     TreeId bucketId = computeBucketId(childId, dagDepth);
                     checkNotNull(bucketId);
+                    promotions.put(bucketId, childId);
+                });
+
+                final int childDepthIndex = dagDepth + 1;
+                promotions.asMap().forEach((bucketId, childIds) -> {
                     DAG bucketDAG = getOrCreateDAG(bucketId);
                     dag.addBucket(bucketId);
-                    put(bucketId, bucketDAG, childId, remove, childDepthIndex);
-                    /// changed = bucketDAG.getState() == STATE.CHANGED;
+                    for (NodeId childId : childIds) {
+                        put(bucketId, bucketDAG, childId, remove, childDepthIndex);
+                    }
                 });
 
                 dag.clearChildren();

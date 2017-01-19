@@ -19,6 +19,7 @@ import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
@@ -100,6 +101,11 @@ public class GuiceInjector implements Context {
     @Override
     public ObjectDatabase objectDatabase() {
         return getDecoratedInstance(ObjectDatabase.class);
+    }
+
+    @Override
+    public IndexDatabase indexDatabase() {
+        return getDecoratedInstance(IndexDatabase.class);
     }
 
     @Override

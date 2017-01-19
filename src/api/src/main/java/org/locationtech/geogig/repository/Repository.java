@@ -21,6 +21,7 @@ import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 
@@ -226,6 +227,11 @@ public interface Repository {
      * @return the repository {@link ObjectDatabase}
      */
     ObjectDatabase objectDatabase();
+
+    /**
+     * @return the repository {@link IndexDatabase}
+     */
+    IndexDatabase indexDatabase();
 
     /**
      * @return the repository {@link ConflictsDatabase}

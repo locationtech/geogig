@@ -34,6 +34,9 @@ public class RocksdbStorageProvider extends StorageProvider {
     static final VersionedFormat OBJECTS = new VersionedFormat(FORMAT_NAME, VERSION,
             RocksdbObjectDatabase.class);
 
+    static final VersionedFormat INDEX = new VersionedFormat(FORMAT_NAME, VERSION,
+            RocksdbIndexDatabase.class);
+
     @Override
     public String getName() {
         return FORMAT_NAME;
@@ -62,6 +65,11 @@ public class RocksdbStorageProvider extends StorageProvider {
     @Override
     public VersionedFormat getRefsDatabaseFormat() {
         return REFS;
+    }
+
+    @Override
+    public VersionedFormat getIndexDatabaseFormat() {
+        return INDEX;
     }
 
 }

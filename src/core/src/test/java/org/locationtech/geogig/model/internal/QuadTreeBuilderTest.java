@@ -58,12 +58,12 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
     @Override
     protected RevTreeBuilder createBuiler() {
-        return QuadTreeBuilder.quadTree(objectStore);
+        return QuadTreeBuilder.quadTree(objectStore, objectStore);
     }
 
     @Override
     protected RevTreeBuilder createBuiler(RevTree original) {
-        return QuadTreeBuilder.quadTree(objectStore, original);
+        return QuadTreeBuilder.quadTree(objectStore, objectStore, original);
     }
 
     @Test
@@ -328,7 +328,8 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
     private RevTreeBuilder createQuadTree(Envelope maxBounds, final List<Node> nodes,
             final ObjectStore objectStore) {
 
-        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(objectStore, RevTree.EMPTY, maxBounds);
+        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(objectStore, objectStore, RevTree.EMPTY,
+                maxBounds);
 
         for (Node node : nodes) {
             qtree.put(node);

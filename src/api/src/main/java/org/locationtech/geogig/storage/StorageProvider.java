@@ -47,6 +47,11 @@ public abstract class StorageProvider {
     public abstract VersionedFormat getObjectDatabaseFormat();
 
     /**
+     * @return the format of the {@link IndexDatabase}
+     */
+    public abstract VersionedFormat getIndexDatabaseFormat();
+
+    /**
      * @return the format of the {@link GraphDatabase}
      */
     public abstract VersionedFormat getGraphDatabaseFormat();

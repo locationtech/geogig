@@ -272,6 +272,7 @@ public class PGStorage {
                 createRefsTable(cx, tables);
                 createConflictsTable(cx, tables);
                 createBlobsTable(cx, tables);
+                createIndexTables(cx, tables);
                 createObjectsTables(cx, tables);
                 createGraphTables(cx, tables);
                 cx.commit();
@@ -400,6 +401,28 @@ public class PGStorage {
                         + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
                 blobsTable, tables.repositories());
         run(cx, sql);
+    }
+
+    private static void createIndexTables(Connection cx, TableNames tables) throws SQLException {
+        String indexTable = tables.index();
+        String sql = format(
+                "CREATE TABLE %s (repository INTEGER, treeName TEXT, attributeName TEXT, strategy TEXT, metadata BYTEA"
+                        + ", PRIMARY KEY(repository, treeName, attributeName)"
+                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
+                indexTable, tables.repositories());
+        run(cx, sql);
+        String indexMappings = tables.indexMappings();
+        sql = format(
+                "CREATE TABLE %s (repository INTEGER, indexId OBJECTID, treeId OBJECTID, indexTreeId OBJECTID"
+                        + ", PRIMARY KEY(repository, indexId, treeId)"
+                        + ", FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE)",
+                indexMappings, tables.repositories());
+        run(cx, sql);
+        String indexObjects = tables.indexObjects();
+        sql = format(OBJECT_TABLE_STMT, indexObjects);
+        run(cx, sql);
+        createIgnoreDuplicatesRule(cx, indexObjects);
+
     }
 
     /**

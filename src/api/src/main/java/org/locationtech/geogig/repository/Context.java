@@ -13,6 +13,7 @@ import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
@@ -57,6 +58,11 @@ public interface Context {
      * @return the {@link ObjectDatabase} for this context
      */
     public ObjectDatabase objectDatabase();
+
+    /**
+     * @return the {@link IndexDatabase} for this context
+     */
+    public IndexDatabase indexDatabase();
 
     /**
      * @return the {@link ConflictsDatabase} for this context

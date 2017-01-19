@@ -24,6 +24,7 @@ import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 
@@ -43,12 +44,23 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
 
     private static final Pattern HEX_PATTERN = Pattern.compile("^[0-9a-f]+$");
 
+    private ObjectStore source = null;
+
     /**
      * @param refSpec the ref spec to resolve
      * @return {@code this}
      */
     public RevParse setRefSpec(final String refSpec) {
         this.refSpec = refSpec;
+        return this;
+    }
+
+    /**
+     * @param source the object store to use
+     * @return {@code this}
+     */
+    public RevParse setSource(final ObjectStore source) {
+        this.source = source;
         return this;
     }
 
@@ -100,6 +112,8 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
     }
 
     private Optional<ObjectId> revParse(String refSpec) {
+
+        this.source = this.source == null ? objectDatabase() : this.source;
 
         String path = null;
         if (refSpec.contains(PATH_SEPARATOR)) {
@@ -158,12 +172,14 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
 
         if (path != null) {
             NodeRef.checkValidPath(path);
-            Optional<ObjectId> treeId = command(ResolveTreeish.class).setTreeish(resolved.get())
+            Optional<ObjectId> treeId = command(ResolveTreeish.class).setSource(source)
+                    .setTreeish(resolved.get())
                     .call();
             if (!treeId.isPresent() || treeId.get().isNull()) {
                 return Optional.absent();
             }
-            Optional<RevTree> revTree = command(RevObjectParse.class).setObjectId(treeId.get())
+            Optional<RevTree> revTree = command(RevObjectParse.class).setSource(source)
+                    .setObjectId(treeId.get())
                     .call(RevTree.class);
             Optional<NodeRef> ref = command(FindTreeChild.class).setParent(revTree.get())
                     .setChildPath(path).call();
@@ -184,7 +200,8 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
         }
         if (parentN == 0) {
             // 0 == check id is a commit
-            Optional<RevObject> object = command(RevObjectParse.class).setObjectId(objectId).call();
+            Optional<RevObject> object = command(RevObjectParse.class).setSource(source)
+                    .setObjectId(objectId).call();
             checkArgument(object.isPresent() && object.get() instanceof RevCommit,
                     "%s is not a commit: %s", objectId,
                     (object.isPresent() ? object.get().getType() : "null"));
@@ -205,7 +222,8 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
      */
     private RevCommit resolveCommit(ObjectId objectId) {
 
-        final Optional<RevObject> object = command(RevObjectParse.class).setObjectId(objectId)
+        final Optional<RevObject> object = command(RevObjectParse.class).setSource(source)
+                .setObjectId(objectId)
                 .call();
         checkArgument(object.isPresent(), "No object named %s could be found", objectId);
         final RevObject revObject = object.get();
@@ -216,7 +234,8 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
             break;
         case TAG:
             ObjectId commitId = ((RevTag) revObject).getCommitId();
-            commit = command(RevObjectParse.class).setObjectId(commitId).call(RevCommit.class)
+            commit = command(RevObjectParse.class).setSource(source).setObjectId(commitId)
+                    .call(RevCommit.class)
                     .get();
             break;
         default:
@@ -248,7 +267,8 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
     }
 
     private Optional<ObjectId> verifyId(ObjectId objectId, RevObject.TYPE type) {
-        final Optional<RevObject> object = command(RevObjectParse.class).setObjectId(objectId)
+        final Optional<RevObject> object = command(RevObjectParse.class).setSource(source)
+                .setObjectId(objectId)
                 .call();
 
         checkArgument(object.isPresent(), "No object named %s could be found", objectId);
@@ -327,13 +347,13 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
                     if (parsed.equals(RevTree.EMPTY_TREE_ID)) {
                         return Optional.of(RevTree.EMPTY_TREE_ID);
                     }
-                    if (objectDatabase().exists(parsed)) {
+                    if (source.exists(parsed)) {
                         return Optional.of(parsed);
                     }
                 } catch (IllegalArgumentException ignore) {
                     // its a partial id
                 }
-                List<ObjectId> hashMatches = objectDatabase().lookUp(refSpec);
+                List<ObjectId> hashMatches = source.lookUp(refSpec);
                 if (hashMatches.size() > 1) {
                     throw new IllegalArgumentException(
                             String.format("Ref spec (%s) matches more than one object id: %s",

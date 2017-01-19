@@ -26,8 +26,8 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         clusteringStrategy = strategy;
     }
 
-    public static RevTreeBuilder quadTree(final ObjectStore store) {
-        return QuadTreeBuilder.quadTree(store, RevTree.EMPTY);
+    public static RevTreeBuilder quadTree(final ObjectStore source, final ObjectStore target) {
+        return QuadTreeBuilder.quadTree(source, target, RevTree.EMPTY);
     }
 
     @Override
@@ -35,21 +35,24 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         return clusteringStrategy;
     }
 
-    public static QuadTreeBuilder quadTree(final ObjectStore store, final RevTree original) {
-        Preconditions.checkNotNull(store);
+    public static QuadTreeBuilder quadTree(final ObjectStore source, final ObjectStore target,
+            final RevTree original) {
+        Preconditions.checkNotNull(source);
+        Preconditions.checkNotNull(target);
         Preconditions.checkNotNull(original);
         final Envelope MAX_BOUNDS_WGS84 = new Envelope(-180, 180, -90, 90);
-        return QuadTreeBuilder.quadTree(store, original, MAX_BOUNDS_WGS84);
+        return QuadTreeBuilder.quadTree(source, target, original, MAX_BOUNDS_WGS84);
     }
 
-    public static QuadTreeBuilder quadTree(final ObjectStore store, final RevTree original,
-            final Envelope maxBounds) {
-        Preconditions.checkNotNull(store);
+    public static QuadTreeBuilder quadTree(final ObjectStore source, final ObjectStore target,
+            final RevTree original, final Envelope maxBounds) {
+        Preconditions.checkNotNull(source);
+        Preconditions.checkNotNull(target);
         Preconditions.checkNotNull(maxBounds);
 
-        ClusteringStrategy strategy = ClusteringStrategyBuilder.quadTree(store).original(original)
+        ClusteringStrategy strategy = ClusteringStrategyBuilder.quadTree(source).original(original)
                 .maxBounds(maxBounds).build();
-        QuadTreeBuilder builder = new QuadTreeBuilder(store, RevTree.EMPTY, strategy);
+        QuadTreeBuilder builder = new QuadTreeBuilder(target, RevTree.EMPTY, strategy);
         return builder;
     }
 }

@@ -78,6 +78,7 @@ public class PGRepositoryResolver extends RepositoryResolver {
                 configDb.put(PGStorageProvider.FORMAT_NAME + ".version", PGStorageProvider.VERSION);
                 configDb.put("storage.refs", PGStorageProvider.FORMAT_NAME);
                 configDb.put("storage.objects", PGStorageProvider.FORMAT_NAME);
+                configDb.put("storage.index", PGStorageProvider.FORMAT_NAME);
                 configDb.put("storage.graph", PGStorageProvider.FORMAT_NAME);
             }
         }

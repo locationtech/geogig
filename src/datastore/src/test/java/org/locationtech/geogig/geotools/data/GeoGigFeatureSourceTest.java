@@ -29,10 +29,17 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.IdentityTransform;
 import org.geotools.renderer.ScreenMap;
 import org.junit.Test;
+import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.repository.Index;
+import org.locationtech.geogig.repository.Index.IndexType;
 import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -146,6 +153,46 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
     @Test
     public void testGetBoundsQuery() throws Exception {
 
+        ReferencedEnvelope bounds;
+        Filter filter;
+
+        filter = ff.id(Collections.singleton(ff.featureId(RepositoryTestCase.idP2)));
+        bounds = pointsSource.getBounds(new Query(pointsName, filter));
+        assertEquals(boundsOf(points2), bounds);
+
+        ReferencedEnvelope queryBounds = boundsOf(points1, points2);
+
+        Polygon geometry = JTS.toGeometry(queryBounds);
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+                ff.literal(geometry));
+
+        bounds = pointsSource.getBounds(new Query(pointsName, filter));
+        assertEquals(boundsOf(points1, points2), bounds);
+
+        ReferencedEnvelope transformedQueryBounds;
+        CoordinateReferenceSystem queryCrs = CRS.decode("EPSG:3857");
+        transformedQueryBounds = queryBounds.transform(queryCrs, true);
+
+        geometry = JTS.toGeometry(transformedQueryBounds);
+        geometry.setUserData(queryCrs);
+
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+                ff.literal(geometry));
+
+        bounds = pointsSource.getBounds(new Query(pointsName, filter));
+        assertEquals(boundsOf(points1, points2), bounds);
+
+        filter = ECQL.toFilter("sp = 'StringProp2_3' OR ip = 2000");
+        bounds = linesSource.getBounds(new Query(linesName, filter));
+        assertEquals(boundsOf(lines3, lines2), bounds);
+    }
+
+    @Test
+    public void testGetBoundsQueryWithSpatialIndex() throws Exception {
+
+        Index index = geogig.getRepository().indexDatabase().createIndex(pointsName, "pp",
+                IndexType.QUADTREE, null);
+        createQuadTree("HEAD", pointsName, index);
         ReferencedEnvelope bounds;
         Filter filter;
 
@@ -386,6 +433,18 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
             iterator.close();
         }
         return features;
+    }
+
+    private void createQuadTree(String commitish, String tree, Index index) throws IOException {
+        IndexDatabase indexDatabase = geogig.getRepository().indexDatabase();
+        String treeSpec = commitish + ":" + tree;
+        ObjectId treeId = geogig.command(ResolveTreeish.class).setTreeish(treeSpec).call().get();
+
+        CreateQuadTree command = geogig.command(CreateQuadTree.class);
+        command.setFeatureTree(treeId);
+
+        RevTree quadTree = command.call();
+        indexDatabase.addIndexedTree(index, treeId, quadTree.getId());
     }
 
 }

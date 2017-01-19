@@ -20,6 +20,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.impl.ContextBuilder;
 import org.locationtech.geogig.rocksdb.RocksdbStorageProvider;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
@@ -59,6 +60,10 @@ public class CLIContextBuilder extends ContextBuilder {
                     .newMapBinder(binder(), VersionedFormat.class, ObjectDatabase.class)
                     .permitDuplicates();
 
+            MapBinder<VersionedFormat, IndexDatabase> indexPlugins = MapBinder
+                    .newMapBinder(binder(), VersionedFormat.class, IndexDatabase.class)
+                    .permitDuplicates();
+
             MapBinder<VersionedFormat, GraphDatabase> graphPlugins = MapBinder
                     .newMapBinder(binder(), VersionedFormat.class, GraphDatabase.class)
                     .permitDuplicates();
@@ -67,11 +72,15 @@ public class CLIContextBuilder extends ContextBuilder {
 
             for (StorageProvider sp : providers) {
                 VersionedFormat objectDatabaseFormat = sp.getObjectDatabaseFormat();
+                VersionedFormat indexDatabaseFormat = sp.getIndexDatabaseFormat();
                 VersionedFormat graphDatabaseFormat = sp.getGraphDatabaseFormat();
                 VersionedFormat refsDatabaseFormat = sp.getRefsDatabaseFormat();
 
                 if (objectDatabaseFormat != null) {
                     CLIContextBuilder.bind(objectPlugins, objectDatabaseFormat);
+                }
+                if (indexDatabaseFormat != null) {
+                    CLIContextBuilder.bind(indexPlugins, indexDatabaseFormat);
                 }
                 if (graphDatabaseFormat != null) {
                     CLIContextBuilder.bind(graphPlugins, graphDatabaseFormat);

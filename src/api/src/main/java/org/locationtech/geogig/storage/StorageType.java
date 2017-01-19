@@ -20,7 +20,7 @@ import com.google.common.base.Optional;
  * @since 1.0
  */
 public enum StorageType {
-    GRAPH("graph"), OBJECT("objects"), REF("refs"), STAGING("staging");
+    GRAPH("graph"), OBJECT("objects"), INDEX("index"), REF("refs"), STAGING("staging");
 
     private StorageType(String key) {
         this.key = key;

@@ -359,13 +359,13 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
             if (ObjectId.NULL.equals(treeOid) || RevTree.EMPTY_TREE_ID.equals(treeOid)) {
                 tree = RevTree.EMPTY;
             } else {
-                command = command(ResolveTreeish.class).setTreeish(treeOid);
+                command = command(ResolveTreeish.class).setSource(source).setTreeish(treeOid);
             }
         } else if (treeIsh.equals(ObjectId.NULL.toString())
                 || RevTree.EMPTY_TREE_ID.toString().equals(treeIsh)) {
             tree = RevTree.EMPTY;
         } else {
-            command = command(ResolveTreeish.class).setTreeish(treeIsh);
+            command = command(ResolveTreeish.class).setSource(source).setTreeish(treeIsh);
         }
 
         if (tree == null) {

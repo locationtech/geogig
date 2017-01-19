@@ -87,7 +87,7 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
         final ProgressListener progress = getProgressListener();
 
         final RevTreeBuilder builder;
-        builder = QuadTreeBuilder.quadTree(odb, RevTree.EMPTY, maxBounds);
+        builder = QuadTreeBuilder.quadTree(odb, indexDatabase(), RevTree.EMPTY, maxBounds);
         // builder = RevTreeBuilder.canonical(odb);
 
         progress.setDescription(String.format("Creating Quad Tree for %,d features", tree.size()));

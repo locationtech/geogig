@@ -19,6 +19,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
@@ -40,6 +41,8 @@ public class PluginsModule extends AbstractModule {
         bind(ConfigDatabase.class).toProvider(PluginConfigDatabaseProvider.class)
                 .in(Scopes.SINGLETON);
         bind(ObjectDatabase.class).toProvider(PluginObjectDatabaseProvider.class)
+                .in(Scopes.SINGLETON);
+        bind(IndexDatabase.class).toProvider(PluginIndexDatabaseProvider.class)
                 .in(Scopes.SINGLETON);
         bind(RefDatabase.class).toProvider(PluginRefDatabaseProvider.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).toProvider(PluginGraphDatabaseProvider.class)
@@ -109,6 +112,50 @@ public class PluginsModule extends AbstractModule {
                 if (objectFormat != null && format.equals(objectFormat.getFormat())
                         && version.equals(objectFormat.getVersion())) {
                     return objectFormat;
+                }
+            }
+            throw new IllegalStateException(
+                    String.format("No storage provider found for %s='%s' and %s='%s'", formatKey,
+                            format, versionKey, version));
+        }
+
+    }
+
+    private static class PluginIndexDatabaseProvider extends FormatSelector<IndexDatabase> {
+        private final PluginDefaults defaults;
+
+        @Inject
+        public PluginIndexDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
+                Map<VersionedFormat, Provider<IndexDatabase>> plugins) {
+            super(config, plugins);
+            this.defaults = defaults;
+        }
+
+        @Override
+        protected final VersionedFormat readConfig(ConfigDatabase config) {
+            final String formatKey = "storage.index";
+            String versionKey = null;
+            String format = null, version = null;
+            try {
+                format = getConfig(formatKey, config).orNull();
+                if (format != null) {
+                    versionKey = format + ".version";
+                    version = getConfig(versionKey, config).orNull();
+                }
+            } catch (RuntimeException e) {
+                // ignore, the config may not be available when we need this.
+            }
+            if (format == null || version == null) {
+                // .get, not .orNull. we should only be using the plugin providers when there are
+                // plugins set up
+                return defaults.getObjects().get();
+            }
+
+            for (StorageProvider p : StorageProvider.findProviders()) {
+                VersionedFormat indexFormat = p.getIndexDatabaseFormat();
+                if (indexFormat != null && format.equals(indexFormat.getFormat())
+                        && version.equals(indexFormat.getVersion())) {
+                    return indexFormat;
                 }
             }
             throw new IllegalStateException(

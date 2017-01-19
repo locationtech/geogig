@@ -25,9 +25,11 @@ import org.locationtech.geogig.repository.impl.RepositoryImpl;
 import org.locationtech.geogig.repository.impl.WorkingTreeImpl;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
+import org.locationtech.geogig.storage.fs.FileIndexDatabase;
 import org.locationtech.geogig.storage.fs.FileObjectDatabase;
 import org.locationtech.geogig.storage.fs.FileRefDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
@@ -90,6 +92,7 @@ public class GeogigModule extends AbstractModule {
         bind(GraphDatabase.class).to(HeapGraphDatabase.class).in(Scopes.SINGLETON);
 
         bind(ObjectDatabase.class).to(FileObjectDatabase.class).in(Scopes.SINGLETON);
+        bind(IndexDatabase.class).to(FileIndexDatabase.class).in(Scopes.SINGLETON);
         bind(RefDatabase.class).to(FileRefDatabase.class).in(Scopes.SINGLETON);
 
         bind(ObjectSerializingFactory.class).to(DataStreamSerializationFactoryV2.class)

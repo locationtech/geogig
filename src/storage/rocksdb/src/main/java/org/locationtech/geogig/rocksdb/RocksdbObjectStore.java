@@ -61,17 +61,21 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     protected final boolean readOnly;
 
-    private DBHandle dbhandle;
+    protected DBHandle dbhandle;
 
     private ReadOptions bulkReadOptions;
 
     @Inject
     public RocksdbObjectStore(Platform platform, @Nullable Hints hints) {
+        this(platform, hints, "objects.rocksdb");
+    }
+
+    public RocksdbObjectStore(Platform platform, @Nullable Hints hints, String databaseName) {
         Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
         checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
         URI uri = repoUriOpt.get();
         checkArgument("file".equals(uri.getScheme()));
-        this.path = new File(new File(uri), "objects.rocksdb").getAbsolutePath();
+        this.path = new File(new File(uri), databaseName).getAbsolutePath();
 
         this.readOnly = hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
     }

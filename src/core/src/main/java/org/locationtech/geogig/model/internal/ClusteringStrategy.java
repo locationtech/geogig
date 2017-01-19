@@ -38,6 +38,7 @@ import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
@@ -180,6 +181,19 @@ public abstract class ClusteringStrategy {
             node = node.update(ObjectId.NULL);
         }
         put(node);
+    }
+
+    /**
+     * Replaces {@code oldNode} by {@code newNode}
+     * <p>
+     * This default implemetation just calls {@link #remove(Node) remove(oldNode)} and then
+     * {@link #put(Node) put(newNode)}. Subclasses are encouraged to override with optimized
+     * versions whenever possible.
+     */
+    public void update(Node oldNode, Node newNode) {
+        Preconditions.checkArgument(oldNode.getName().equals(newNode.getName()));
+        remove(oldNode);
+        put(newNode);
     }
 
     private Lock writeLock = new ReentrantLock();
@@ -537,5 +551,4 @@ public abstract class ClusteringStrategy {
             // sw.stop(), treeBuff.size());
         }
     }
-
 }

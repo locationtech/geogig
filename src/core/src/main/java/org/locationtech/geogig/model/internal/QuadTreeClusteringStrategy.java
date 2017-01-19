@@ -19,6 +19,7 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -104,6 +105,23 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
             return null; // no bounds -> not in quad tree
         }
         return new NodeId(node.getName(), bounds.get());
+    }
+
+    /**
+     * Overrides to implement a simple optimization for the case where the node bounds haven't
+     * changed and hence avoid calling remove and then put, but call put only, since the
+     * {@code NodeId} is guaranteed to lay on the same bucket at any depth.
+     */
+    @Override
+    public void update(Node oldNode, Node newNode) {
+        if (oldNode.bounds().equals(newNode.bounds())) {
+            // in case the bounds didn't change, put will override the old value,
+            // otherwise need to remove old and add new separately
+            Preconditions.checkArgument(oldNode.getName().equals(newNode.getName()));
+            put(newNode);
+        } else {
+            super.update(oldNode, newNode);
+        }
     }
 
     @Nullable

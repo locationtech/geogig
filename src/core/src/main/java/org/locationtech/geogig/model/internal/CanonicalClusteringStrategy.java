@@ -15,6 +15,7 @@ import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
 
 class CanonicalClusteringStrategy extends ClusteringStrategy {
@@ -56,6 +57,16 @@ class CanonicalClusteringStrategy extends ClusteringStrategy {
     @Override
     protected Comparator<NodeId> getNodeOrdering() {
         return CANONICAL_ORDER;
+    }
+
+    /**
+     * Overrides to only call {@link #put(Node) put(newNode)} since both old and new are guaranteed
+     * to fall on the same bucket as mandated by the canonical node order.
+     */
+    @Override
+    public void update(Node oldNode, Node newNode) {
+        Preconditions.checkArgument(oldNode.getName().equals(newNode.getName()));
+        put(newNode);
     }
 
 }

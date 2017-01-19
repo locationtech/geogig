@@ -663,4 +663,10 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
     public int getDepth() {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public RevTreeBuilder update(Node oldNode, Node newNode) {
+        put(newNode);
+        return this;
+    }
 }

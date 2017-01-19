@@ -18,8 +18,8 @@ import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.impl.DepthSearch;
@@ -58,7 +58,7 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testSimple() {
 
-        RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
+        RevTree tree = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
         NodeRef child = NodeRef.tree("subtree", tree.getId(), ObjectId.NULL);
         RevTree newRoot = context.command(UpdateTree.class).setRoot(RevTree.EMPTY).setChild(child)
                 .call();
@@ -72,7 +72,7 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testSingleLevel() {
 
-        RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
+        RevTree tree = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
 
         NodeRef level1 = NodeRef.tree("level1", tree.getId(), hashString("fake"));
         RevTree newRoot = context.command(UpdateTree.class).setRoot(RevTree.EMPTY).setChild(level1)
@@ -92,7 +92,7 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testSingleNested() {
 
-        RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
+        RevTree tree = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
 
         NodeRef level2 = NodeRef.tree("level1/level2", tree.getId(), hashString("fake"));
 
@@ -115,8 +115,8 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testSiblingsSingleLevel() {
 
-        RevTree tree1 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
-        RevTree tree2 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
+        RevTree tree1 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
+        RevTree tree2 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
 
         NodeRef subtree1 = NodeRef.tree("subtree1", tree1.getId(), hashString("md1"));
         RevTree newRoot1 = context.command(UpdateTree.class).setRoot(RevTree.EMPTY)
@@ -137,8 +137,8 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testSiblingsNested() {
 
-        RevTree tree1 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
-        RevTree tree2 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
+        RevTree tree1 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
+        RevTree tree2 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
 
         Preconditions.checkState(odb.isOpen());
 
@@ -168,8 +168,8 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testRemove() {
 
-        RevTree tree1 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
-        RevTree tree2 = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
+        RevTree tree1 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
+        RevTree tree2 = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
 
         NodeRef level2 = NodeRef.tree("subtree1/level2", tree1.getId(), hashString("tree1"));
         NodeRef level3 = NodeRef.tree("subtree2/level2/level3", tree2.getId(), hashString("tree2"));
@@ -209,7 +209,7 @@ public class UpdateTreeTest extends Assert {
     @Test
     public void testPreserveMetadataId() {
 
-        RevTree tree = RevTreeBuilder.canonical(odb).put(blob("blob")).build();
+        RevTree tree = CanonicalTreeBuilder.create(odb).put(blob("blob")).build();
 
         final ObjectId treeMetadataId = hashString("fakeMdId");
 

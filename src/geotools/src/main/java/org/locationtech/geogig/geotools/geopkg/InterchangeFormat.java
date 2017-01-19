@@ -277,7 +277,7 @@ public class InterchangeFormat {
 
             RevCommit commit = context.objectDatabase().getCommit(commitId);
             RevTree baseTree = context.objectDatabase().getTree(commit.getTreeId());
-            RevTreeBuilder newTreeBuilder = RevTreeBuilder.canonical(context.objectDatabase(),
+            RevTreeBuilder newTreeBuilder = CanonicalTreeBuilder.create(context.objectDatabase(),
                     baseTree);
 
             Map<String, String> fidMappings = null;
@@ -413,7 +413,7 @@ public class InterchangeFormat {
             Iterator<Change> changes, Map<String, String> fidMappings, AuditReport report)
             throws SQLException {
 
-        CanonicalTreeBuilder builder = RevTreeBuilder.canonical(store, currentFeatureTree);
+        CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(store, currentFeatureTree);
 
         progressListener.setProgress(0);
 

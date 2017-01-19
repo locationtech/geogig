@@ -210,7 +210,7 @@ public class WorkingTreeImpl implements WorkingTree {
             final NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(workHead)
                     .setChildPath(parentTreePath).call().get();
             final RevTree currentParent = indexDatabase.getTree(typeTreeRef.getObjectId());
-            CanonicalTreeBuilder parentBuilder = RevTreeBuilder.canonical(indexDatabase,
+            CanonicalTreeBuilder parentBuilder = CanonicalTreeBuilder.create(indexDatabase,
                     currentParent);
             parentBuilder.remove(featureId);
 
@@ -419,7 +419,7 @@ public class WorkingTreeImpl implements WorkingTree {
                 treeRef = new NodeRef(treeNode, parentPath, featureMetadataId);
                 currentTrees.put(treePath, treeRef);
             }
-            builder = RevTreeBuilder.canonical(indexDatabase,
+            builder = CanonicalTreeBuilder.create(indexDatabase,
                     context.command(FindOrCreateSubtree.class).setParent(getTree())
                             .setChildPath(treePath).call());
             treeBuilders.put(treePath, builder);
@@ -537,7 +537,7 @@ public class WorkingTreeImpl implements WorkingTree {
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
 
         // rebuild the tree with nodes with updated metadata id as necessary
-        RevTreeBuilder newTreeBuilder = RevTreeBuilder.canonical(indexDatabase);
+        RevTreeBuilder newTreeBuilder = CanonicalTreeBuilder.create(indexDatabase);
 
         while (oldFeatureRefs.hasNext()) {
             NodeRef ref = oldFeatureRefs.next();

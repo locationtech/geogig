@@ -29,7 +29,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -277,7 +276,7 @@ public class MutableTree implements Cloneable {
         final ObjectId treeId = this.node.getObjectId();
         final RevTree original = EMPTY_TREE_ID.equals(treeId) ? EMPTY : store.getTree(treeId);
 
-        CanonicalTreeBuilder builder = RevTreeBuilder.canonical(store, original);// .clearSubtrees();
+        CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(store, original);// .clearSubtrees();
         ImmutableList<Node> currentTrees = original.trees();
         currentTrees.forEach((n) -> builder.remove(n.getName()));
 

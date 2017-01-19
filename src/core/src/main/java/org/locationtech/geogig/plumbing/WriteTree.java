@@ -249,18 +249,18 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         CanonicalTreeBuilder treeBuilder = treeCache.get(treePath);
         if (treeBuilder == null) {
             if (NodeRef.ROOT.equals(treePath)) {
-                treeBuilder = RevTreeBuilder.canonical(repositoryDatabase, root);
+                treeBuilder = CanonicalTreeBuilder.create(repositoryDatabase, root);
             } else {
                 Optional<NodeRef> treeRef = command(FindTreeChild.class).setParent(root)
                         .setChildPath(treePath).call();
                 if (treeRef.isPresent()) {
                     metadataCache.put(treePath, treeRef.get().getMetadataId());
-                    treeBuilder = RevTreeBuilder.canonical(repositoryDatabase,
+                    treeBuilder = CanonicalTreeBuilder.create(repositoryDatabase,
                             command(RevObjectParse.class).setObjectId(treeRef.get().getObjectId())
                                     .call(RevTree.class).get());
                 } else {
                     metadataCache.put(treePath, fallbackMetadataId);
-                    treeBuilder = RevTreeBuilder.canonical(repositoryDatabase);
+                    treeBuilder = CanonicalTreeBuilder.create(repositoryDatabase);
                 }
             }
             treeCache.put(treePath, treeBuilder);

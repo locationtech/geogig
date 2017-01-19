@@ -12,6 +12,7 @@ package org.locationtech.geogig.model.impl;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -68,5 +69,25 @@ public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTree
         Node removeNode = Node.create(featureId, ObjectId.NULL, ObjectId.NULL, TYPE.FEATURE, null);
         clusteringStrategy().remove(removeNode);
         return this;
+    }
+
+    /**
+     * Factory method to create a tree builder that clusters subtrees and nodes according to
+     * {@link CanonicalNodeNameOrder}
+     */
+    public static CanonicalTreeBuilder create(final ObjectStore store) {
+        return create(store, RevTree.EMPTY);
+    }
+
+    /**
+     * Factory method to create a tree builder that clusters subtrees and nodes according to
+     * {@link CanonicalNodeNameOrder}, and whose internal structure starts by matching the provided
+     * {@code original} tree.
+     */
+    public static CanonicalTreeBuilder create(final ObjectStore store, final RevTree original) {
+        checkNotNull(store);
+        checkNotNull(original);
+        CanonicalTreeBuilder builder = new CanonicalTreeBuilder(store, original);
+        return builder;
     }
 }

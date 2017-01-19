@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
@@ -58,8 +61,10 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
     }
 
     @Override
-    public RevTreeBuilder remove(Node node) {
-        // TODO Auto-generated method stub
-        return null;
+    public QuadTreeBuilder remove(Node node) {
+        checkNotNull(node, "Argument node is null");
+        checkState(!disposed.get(), "TreeBuilder is already disposed");
+        clusteringStrategy().remove(node);
+        return this;
     }
 }

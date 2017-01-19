@@ -32,8 +32,8 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.QuadTreeBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
+import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -48,11 +48,6 @@ import com.google.common.collect.Sets.SetView;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class QuadTreeBuilderTest extends RevTreeBuilderTest {
-
-    @Override
-    protected ObjectStore createObjectStore() {
-        return super.createObjectStore();
-    }
 
     @Override
     protected RevTreeBuilder createBuiler() {
@@ -99,7 +94,8 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         testRandomRects(0);
         testRandomRects(1);
         testRandomRects(128);
-        testRandomRects(4 * 128);
+        testRandomRects(129);
+        testRandomRects(1000);
     }
 
     private void testRandomRects(final int size) {
@@ -227,6 +223,42 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         assertEquals(expectedRemoves, new HashSet<>(removed.values()));
     }
 
+    @Test
+    public void testRemove() throws Exception {
+        final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
+        final int ncount = 1000;
+        final Set<Node> nodes = new HashSet<>(createPointNodes(nodeRange(ncount), maxBounds));
+
+        final RevTree tree = createQuadTree(maxBounds, nodes).build();
+
+        // collect some keys to remove
+        final Set<Node> removedNodes = new HashSet<>();
+        {
+            int i = 0;
+            DepthTreeIterator it = new DepthTreeIterator("", ObjectId.NULL, tree, objectStore,
+                    Strategy.CHILDREN);
+            for (; it.hasNext(); i++) {
+                NodeRef entry = it.next();
+                if (i % 10 == 0) {
+                    removedNodes.add(entry.getNode());
+                }
+            }
+        }
+
+        QuadTreeBuilder builder = QuadTreeBuilder.create(objectStore, tree, maxBounds);
+        for (Node key : removedNodes) {
+            builder.remove(key);
+        }
+        final RevTree result = builder.build();
+
+        Set<Node> resultNodes = getNodes(result);
+
+        SetView<Node> difference = Sets.difference(nodes, resultNodes);
+        assertEquals(removedNodes.size(), difference.size());
+
+        assertEquals(removedNodes, difference);
+    }
+
     private List<Integer> nodeRange(final int ncount) {
         List<Integer> nodeIds = new ArrayList<>(ContiguousSet
                 .create(Range.closedOpen(0, ncount), DiscreteDomain.integers()).asList());
@@ -319,11 +351,11 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         return nodes;
     }
 
-    private RevTreeBuilder createQuadTree(Envelope maxBounds, final List<Node> nodes) {
+    private RevTreeBuilder createQuadTree(Envelope maxBounds, final Iterable<Node> nodes) {
         return createQuadTree(maxBounds, nodes, this.objectStore);
     }
 
-    private RevTreeBuilder createQuadTree(Envelope maxBounds, final List<Node> nodes,
+    private RevTreeBuilder createQuadTree(Envelope maxBounds, final Iterable<Node> nodes,
             final ObjectStore objectStore) {
 
         RevTreeBuilder qtree = QuadTreeBuilder.quadTree(objectStore, objectStore, RevTree.EMPTY,

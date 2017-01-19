@@ -51,12 +51,12 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
     @Override
     protected RevTreeBuilder createBuiler() {
-        return QuadTreeBuilder.quadTree(objectStore, objectStore);
+        return QuadTreeBuilder.create(objectStore, objectStore);
     }
 
     @Override
     protected RevTreeBuilder createBuiler(RevTree original) {
-        return QuadTreeBuilder.quadTree(objectStore, objectStore, original);
+        return QuadTreeBuilder.create(objectStore, objectStore, original);
     }
 
     @Test
@@ -231,6 +231,8 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         final RevTree tree = createQuadTree(maxBounds, nodes).build();
 
+        QuadTreeBuilder builder = QuadTreeBuilder.create(objectStore, objectStore, tree,
+                maxBounds);
         // collect some keys to remove
         final Set<Node> removedNodes = new HashSet<>();
         {
@@ -240,15 +242,14 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
             for (; it.hasNext(); i++) {
                 NodeRef entry = it.next();
                 if (i % 10 == 0) {
-                    removedNodes.add(entry.getNode());
+                    Node node = entry.getNode();
+                    builder.remove(node);
+                    removedNodes.add(node);
                 }
             }
+            assertFalse(removedNodes.isEmpty());
         }
 
-        QuadTreeBuilder builder = QuadTreeBuilder.create(objectStore, tree, maxBounds);
-        for (Node key : removedNodes) {
-            builder.remove(key);
-        }
         final RevTree result = builder.build();
 
         Set<Node> resultNodes = getNodes(result);
@@ -257,6 +258,55 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
         assertEquals(removedNodes.size(), difference.size());
 
         assertEquals(removedNodes, difference);
+    }
+
+    @Test
+    public void testUpdate() throws Exception {
+        final Envelope maxBounds = new Envelope(-180, 180, -90, 90);
+        final int ncount = 1000;
+        final Set<Node> origNodes = new HashSet<>(createPointNodes(nodeRange(ncount), maxBounds));
+
+        final RevTree tree = createQuadTree(maxBounds, origNodes).build();
+
+        QuadTreeBuilder builder = QuadTreeBuilder.create(objectStore, objectStore, tree,
+                maxBounds);
+
+        final Set<Node> removedNodes = new HashSet<>();
+        final Set<Node> addedNodes = new HashSet<>();
+        {
+            int i = 0;
+            DepthTreeIterator it = new DepthTreeIterator("", ObjectId.NULL, tree, objectStore,
+                    Strategy.CHILDREN);
+            for (; it.hasNext(); i++) {
+                NodeRef entry = it.next();
+                if (i % 5 == 0) {
+                    Node oldNode = entry.getNode();
+                    ObjectId newId = RevObjectTestSupport.hashString(oldNode.toString());
+                    Envelope newBounds = new Envelope(oldNode.bounds().get());
+                    if (i % 10 == 0) {
+                        newBounds.translate(0.1, 0.1);
+                    }
+                    Node newNode = oldNode.update(newId, newBounds);
+                    builder.update(oldNode, newNode);
+                    removedNodes.add(oldNode);
+                    addedNodes.add(newNode);
+                }
+            }
+            assertFalse(removedNodes.isEmpty());
+        }
+
+        final RevTree result = builder.build();
+
+        Set<Node> resultNodes = getNodes(result);
+
+        SetView<Node> removed = Sets.difference(origNodes, resultNodes);
+        SetView<Node> added = Sets.difference(resultNodes, origNodes);
+
+        assertEquals(removedNodes.size(), removed.size());
+        assertEquals(addedNodes.size(), added.size());
+
+        assertEquals(removedNodes, removed);
+        assertEquals(addedNodes, added);
     }
 
     private List<Integer> nodeRange(final int ncount) {
@@ -358,7 +408,7 @@ public class QuadTreeBuilderTest extends RevTreeBuilderTest {
     private RevTreeBuilder createQuadTree(Envelope maxBounds, final Iterable<Node> nodes,
             final ObjectStore objectStore) {
 
-        RevTreeBuilder qtree = QuadTreeBuilder.quadTree(objectStore, objectStore, RevTree.EMPTY,
+        RevTreeBuilder qtree = QuadTreeBuilder.create(objectStore, objectStore, RevTree.EMPTY,
                 maxBounds);
 
         for (Node node : nodes) {

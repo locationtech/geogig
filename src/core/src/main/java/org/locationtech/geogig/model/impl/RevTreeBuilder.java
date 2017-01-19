@@ -42,14 +42,37 @@ import com.google.common.collect.ImmutableSortedMap;
 public interface RevTreeBuilder {
 
     /**
-     * @param node
-     * @return
-     * @apiNote this method is thread-safe
+     * Add a node to the mutable tree representation.
      */
     public RevTreeBuilder put(Node node);
 
+    /**
+     * Removes a node to the mutable tree representation.
+     */
     public RevTreeBuilder remove(Node node);
 
+    /**
+     * Replace {@code oldNode} by {@code newNode} in the mutable tree representation.
+     * <p>
+     * This method is an opportunity for RevTreeBuilder implementations to optimize for the case
+     * when a node is being replaced instead of just added.
+     * <p>
+     * In any case the result must be the same as calling {@code remove(oldNode)} followed by
+     * {@code put(newNode)}, and both {@code oldNode} and {@code newNode} must refer to the same
+     * node name.
+     * 
+     */
+    public RevTreeBuilder update(Node oldNode, Node newNode);
+
+    /**
+     * Builds a final immutable tree out of the current state of this tree builder.
+     * <p>
+     * The builder is disposed after this method is called, so calling any of the mutator methods
+     * after calling build leads to an unspecified behavior, most probably throwing an unchecked
+     * exception.
+     * 
+     * @return the created tree
+     */
     public RevTree build();
 
     static RevTree build(final long size, final int childTreeCount,

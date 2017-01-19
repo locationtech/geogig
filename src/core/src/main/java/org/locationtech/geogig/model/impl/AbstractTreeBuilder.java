@@ -44,10 +44,27 @@ public abstract class AbstractTreeBuilder implements RevTreeBuilder {
     protected abstract ClusteringStrategy clusteringStrategy();
 
     @Override
-    public final AbstractTreeBuilder put(final Node node) {
+    public AbstractTreeBuilder put(final Node node) {
         checkNotNull(node, "Argument node is null");
         checkState(!disposed.get(), "TreeBuilder is already disposed");
         clusteringStrategy().put(node);
+        return this;
+    }
+
+    @Override
+    public AbstractTreeBuilder remove(Node node) {
+        checkNotNull(node, "Argument node is null");
+        checkState(!disposed.get(), "TreeBuilder is already disposed");
+        clusteringStrategy().remove(node);
+        return this;
+    }
+
+    @Override
+    public AbstractTreeBuilder update(Node oldNode, Node newNode) {
+        checkNotNull(oldNode, "Argument oldNode is null");
+        checkNotNull(newNode, "Argument newNode is null");
+        checkState(!disposed.get(), "TreeBuilder is already disposed");
+        clusteringStrategy().update(oldNode, newNode);
         return this;
     }
 

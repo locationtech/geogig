@@ -9,9 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
@@ -30,8 +27,22 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         clusteringStrategy = strategy;
     }
 
-    public static RevTreeBuilder quadTree(final ObjectStore source, final ObjectStore target) {
-        return QuadTreeBuilder.quadTree(source, target, RevTree.EMPTY);
+    @Override
+    public QuadTreeBuilder put(Node node) {
+        super.put(node);
+        return this;
+    }
+
+    @Override
+    public QuadTreeBuilder remove(Node node) {
+        super.remove(node);
+        return this;
+    }
+
+    @Override
+    public QuadTreeBuilder update(Node oldNode, Node newNode) {
+        super.update(oldNode, newNode);
+        return this;
     }
 
     @Override
@@ -39,16 +50,20 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         return clusteringStrategy;
     }
 
-    public static QuadTreeBuilder quadTree(final ObjectStore source, final ObjectStore target,
+    public static QuadTreeBuilder create(final ObjectStore source, final ObjectStore target) {
+        return QuadTreeBuilder.create(source, target, RevTree.EMPTY);
+    }
+
+    public static QuadTreeBuilder create(final ObjectStore source, final ObjectStore target,
             final RevTree original) {
         Preconditions.checkNotNull(source);
         Preconditions.checkNotNull(target);
         Preconditions.checkNotNull(original);
         final Envelope MAX_BOUNDS_WGS84 = new Envelope(-180, 180, -90, 90);
-        return QuadTreeBuilder.quadTree(source, target, original, MAX_BOUNDS_WGS84);
+        return QuadTreeBuilder.create(source, target, original, MAX_BOUNDS_WGS84);
     }
 
-    public static QuadTreeBuilder quadTree(final ObjectStore source, final ObjectStore target,
+    public static QuadTreeBuilder create(final ObjectStore source, final ObjectStore target,
             final RevTree original, final Envelope maxBounds) {
         Preconditions.checkNotNull(source);
         Preconditions.checkNotNull(target);
@@ -58,13 +73,5 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
                 .maxBounds(maxBounds).build();
         QuadTreeBuilder builder = new QuadTreeBuilder(target, RevTree.EMPTY, strategy);
         return builder;
-    }
-
-    @Override
-    public QuadTreeBuilder remove(Node node) {
-        checkNotNull(node, "Argument node is null");
-        checkState(!disposed.get(), "TreeBuilder is already disposed");
-        clusteringStrategy().remove(node);
-        return this;
     }
 }

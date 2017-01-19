@@ -32,7 +32,7 @@ public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTree
      *        initialize this RevTreeBuilder.
      * @param original {@link org.locationtech.geogig.api.RevTree RevTree} to copy.
      */
-    public CanonicalTreeBuilder(final ObjectStore store, final RevTree original) {
+    CanonicalTreeBuilder(final ObjectStore store, final RevTree original) {
         super(store, original);
 
         ClusteringStrategy canonical = ClusteringStrategyBuilder.canonical(store).original(original)
@@ -42,15 +42,20 @@ public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTree
     }
 
     @Override
-    protected final ClusteringStrategy clusteringStrategy() {
-        return clusteringStrategy;
+    public CanonicalTreeBuilder put(Node node) {
+        super.put(node);
+        return this;
+    }
+
+    @Override
+    public CanonicalTreeBuilder update(Node oldNode, Node newNode) {
+        super.update(oldNode, newNode);
+        return this;
     }
 
     @Override
     public CanonicalTreeBuilder remove(Node node) {
-        checkNotNull(node, "Argument node is null");
-        checkState(!disposed.get(), "TreeBuilder is already disposed");
-        clusteringStrategy().remove(node);
+        super.remove(node);
         return this;
     }
 
@@ -69,6 +74,11 @@ public class CanonicalTreeBuilder extends AbstractTreeBuilder implements RevTree
         Node removeNode = Node.create(featureId, ObjectId.NULL, ObjectId.NULL, TYPE.FEATURE, null);
         clusteringStrategy().remove(removeNode);
         return this;
+    }
+
+    @Override
+    protected final ClusteringStrategy clusteringStrategy() {
+        return clusteringStrategy;
     }
 
     /**

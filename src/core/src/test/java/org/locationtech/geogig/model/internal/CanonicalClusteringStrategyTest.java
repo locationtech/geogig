@@ -310,7 +310,7 @@ public abstract class CanonicalClusteringStrategyTest {
 
         Stopwatch sw = Stopwatch.createStarted();
         for (Node node : removeNodes) {
-            strategy.remove(node.getName());
+            strategy.remove(node);
         }
         System.err.printf("Removed %,d nodes in %s\n", removeNodes.size(), sw.stop());
 
@@ -347,7 +347,7 @@ public abstract class CanonicalClusteringStrategyTest {
 
         Stopwatch sw = Stopwatch.createStarted();
         for (Node node : removeNodes) {
-            strategy.remove(node.getName());
+            strategy.remove(node);
         }
         System.err.printf("Removed %,d nodes in %s\n", removeNodes.size(), sw.stop());
 

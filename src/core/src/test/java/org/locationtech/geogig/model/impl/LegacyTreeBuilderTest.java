@@ -9,20 +9,11 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.LegacyTreeBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
-
 public class LegacyTreeBuilderTest extends CanonicalTreeBuilderTest {
 
     @Override
     protected RevTreeBuilder createBuiler() {
         return new LegacyTreeBuilder(objectStore);
-    }
-
-    @Override
-    protected RevTreeBuilder createBuiler(RevTree original) {
-        return new LegacyTreeBuilder(objectStore, original);
     }
 
 }

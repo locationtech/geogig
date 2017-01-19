@@ -30,15 +30,19 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
-import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.DiffWorkTree;
 import org.locationtech.geogig.plumbing.FindOrCreateSubtree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
@@ -49,9 +53,6 @@ import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.plumbing.ResolveTreeish;
-import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.feature.type.FeatureType;
 
@@ -209,7 +210,8 @@ public class WorkingTreeImpl implements WorkingTree {
             final NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(workHead)
                     .setChildPath(parentTreePath).call().get();
             final RevTree currentParent = indexDatabase.getTree(typeTreeRef.getObjectId());
-            RevTreeBuilder parentBuilder = RevTreeBuilder.canonical(indexDatabase, currentParent);
+            CanonicalTreeBuilder parentBuilder = RevTreeBuilder.canonical(indexDatabase,
+                    currentParent);
             parentBuilder.remove(featureId);
 
             final RevTree newParent = parentBuilder.build();
@@ -328,7 +330,7 @@ public class WorkingTreeImpl implements WorkingTree {
         final Map<String, NodeRef> currentTrees = Maps
                 .newHashMap(Maps.uniqueIndex(getFeatureTypeTrees(), (nr) -> nr.path()));
 
-        Map<String, RevTreeBuilder> parentBuilders = new HashMap<>();
+        Map<String, CanonicalTreeBuilder> parentBuilders = new HashMap<>();
 
         progress.setProgress(0);
         final AtomicLong p = new AtomicLong();
@@ -337,8 +339,8 @@ public class WorkingTreeImpl implements WorkingTree {
             final String fid = NodeRef.nodeFromPath(fi.getPath());
             @Nullable
             ObjectId metadataId = fi.getFeatureTypeId();
-            RevTreeBuilder parentBuilder = getTreeBuilder(currentTrees, parentBuilders, parentPath,
-                    metadataId);
+            CanonicalTreeBuilder parentBuilder = getTreeBuilder(currentTrees, parentBuilders,
+                    parentPath, metadataId);
 
             if (fi.isDelete()) {
                 if (parentBuilder != null) {
@@ -398,12 +400,12 @@ public class WorkingTreeImpl implements WorkingTree {
     }
 
     @Nullable
-    private RevTreeBuilder getTreeBuilder(final Map<String, NodeRef> currentTrees,
-            final Map<String, RevTreeBuilder> treeBuilders, final String treePath,
+    private CanonicalTreeBuilder getTreeBuilder(final Map<String, NodeRef> currentTrees,
+            final Map<String, CanonicalTreeBuilder> treeBuilders, final String treePath,
             final @Nullable ObjectId featureMetadataId) {
 
         checkNotNull(treePath);
-        RevTreeBuilder builder = treeBuilders.get(treePath);
+        CanonicalTreeBuilder builder = treeBuilders.get(treePath);
         if (builder == null) {
             NodeRef treeRef = currentTrees.get(treePath);
             if (treeRef == null) {

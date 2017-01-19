@@ -22,13 +22,13 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
 
-abstract class AbstractTreeBuilder implements RevTreeBuilder {
+public abstract class AbstractTreeBuilder implements RevTreeBuilder {
 
     protected final ObjectStore target;
 
     protected RevTree original;
 
-    private final AtomicBoolean disposed = new AtomicBoolean(false);
+    protected final AtomicBoolean disposed = new AtomicBoolean(false);
 
     protected AbstractTreeBuilder(final ObjectStore store) {
         this(store, RevTree.EMPTY);
@@ -52,14 +52,6 @@ abstract class AbstractTreeBuilder implements RevTreeBuilder {
     }
 
     @Override
-    public final AbstractTreeBuilder remove(final String featureId) {
-        checkNotNull(featureId, "Argument featureId is null");
-        checkState(!disposed.get(), "TreeBuilder is already disposed");
-        clusteringStrategy().remove(featureId);
-        return this;
-    }
-
-    @Override
     public RevTree build() {
         boolean alreadyDisposed = disposed.getAndSet(true);
         checkState(!alreadyDisposed, "TreeBuilder is already disposed");
@@ -71,7 +63,6 @@ abstract class AbstractTreeBuilder implements RevTreeBuilder {
         clusteringStrategy().dispose();
         return tree;
     }
-
 
     public int getDepth() {
         return clusteringStrategy().depth();

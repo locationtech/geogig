@@ -33,7 +33,6 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
@@ -176,10 +175,11 @@ public abstract class ClusteringStrategy {
         return 1 + maxDepth.get();
     }
 
-    public void remove(final String featureId) {
-        Node removeNode = Node.create(featureId, ObjectId.NULL, ObjectId.NULL, TYPE.FEATURE, null);
-        // put(ROOT_ID, this.root, removeNode);
-        put(removeNode);
+    public void remove(Node node) {
+        if (!node.getObjectId().isNull()) {
+            node = node.update(ObjectId.NULL);
+        }
+        put(node);
     }
 
     private Lock writeLock = new ReentrantLock();

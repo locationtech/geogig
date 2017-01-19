@@ -25,8 +25,6 @@ import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.impl.LegacyTreeBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.repository.NodeRef;
@@ -43,7 +41,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
     }
 
     @Override
-    protected RevTreeBuilder createBuiler(RevTree original) {
+    protected CanonicalTreeBuilder createBuiler(RevTree original) {
         return RevTreeBuilder.canonical(objectStore, original);
     }
 
@@ -69,7 +67,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         }
 
         final LegacyTreeBuilder legacy = createLegacyBuilder(tree);
-        final RevTreeBuilder builder = createBuiler(tree);
+        final CanonicalTreeBuilder builder = createBuiler(tree);
         for (String key : removedKeys) {
             builder.remove(key);
             legacy.remove(key);
@@ -114,7 +112,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         }
 
         final LegacyTreeBuilder legacy = createLegacyBuilder(tree);
-        final RevTreeBuilder builder = createBuiler(tree);
+        final CanonicalTreeBuilder builder = createBuiler(tree);
         for (String key : removedKeys) {
             builder.remove(key);
             legacy.remove(key);
@@ -157,7 +155,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         }
 
         final LegacyTreeBuilder legacy = createLegacyBuilder(tree);
-        final RevTreeBuilder builder = createBuiler(tree);
+        final CanonicalTreeBuilder builder = createBuiler(tree);
         for (String key : removedKeys) {
             builder.remove(key);
             legacy.remove(key);

@@ -17,8 +17,9 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
@@ -107,7 +108,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         final RevTree oldRootTree = resolveRootTree();
         final ObjectDatabase repositoryDatabase = objectDatabase();
 
-        Map<String, RevTreeBuilder> repositoryChangedTrees = Maps.newHashMap();
+        Map<String, CanonicalTreeBuilder> repositoryChangedTrees = Maps.newHashMap();
         Map<String, NodeRef> indexChangedTrees = Maps.newHashMap();
         Map<String, ObjectId> changedTreesMetadataId = Maps.newHashMap();
         Set<String> deletedTrees = Sets.newHashSet();
@@ -147,7 +148,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
                     // tree delete entry was processed
                     continue;
                 }
-                RevTreeBuilder parentTree = resolveTargetTree(oldRootTree, parentPath,
+                CanonicalTreeBuilder parentTree = resolveTargetTree(oldRootTree, parentPath,
                         repositoryChangedTrees, changedTreesMetadataId, ObjectId.NULL,
                         repositoryDatabase);
                 if (type == TYPE.TREE && !isDelete) {
@@ -200,7 +201,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         }
 
         UpdateTree updateTree = command(UpdateTree.class).setRoot(newTargetRootId);
-        for (Map.Entry<String, RevTreeBuilder> e : repositoryChangedTrees.entrySet()) {
+        for (Map.Entry<String, CanonicalTreeBuilder> e : repositoryChangedTrees.entrySet()) {
             String treePath = e.getKey();
             ObjectId metadataId = changedTreesMetadataId.get(treePath);
             RevTreeBuilder treeBuilder = e.getValue();
@@ -241,11 +242,11 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         }
     }
 
-    private RevTreeBuilder resolveTargetTree(final RevTree root, String treePath,
-            Map<String, RevTreeBuilder> treeCache, Map<String, ObjectId> metadataCache,
+    private CanonicalTreeBuilder resolveTargetTree(final RevTree root, String treePath,
+            Map<String, CanonicalTreeBuilder> treeCache, Map<String, ObjectId> metadataCache,
             ObjectId fallbackMetadataId, ObjectDatabase repositoryDatabase) {
 
-        RevTreeBuilder treeBuilder = treeCache.get(treePath);
+        CanonicalTreeBuilder treeBuilder = treeCache.get(treePath);
         if (treeBuilder == null) {
             if (NodeRef.ROOT.equals(treePath)) {
                 treeBuilder = RevTreeBuilder.canonical(repositoryDatabase, root);

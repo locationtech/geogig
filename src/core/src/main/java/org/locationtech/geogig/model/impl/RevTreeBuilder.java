@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.SortedMap;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -40,9 +38,6 @@ import com.google.common.collect.ImmutableSortedMap;
  * resulting {@code RevTree} and any internal {@code RevTree} the built tree is to be split into. So
  * when {@link #build()} returns, the resulting {@code RevTree} is guaranteed to be fully stored on
  * the provided {@code ObjectStore}.
- * 
- * <p>
- * When a
  */
 public interface RevTreeBuilder {
 
@@ -56,26 +51,6 @@ public interface RevTreeBuilder {
     public RevTreeBuilder remove(Node node);
 
     public RevTree build();
-
-    /**
-     * Factory method to create a tree builder that clusters subtrees and nodes according to
-     * {@link CanonicalNodeNameOrder}
-     */
-    static CanonicalTreeBuilder canonical(final ObjectStore store) {
-        return RevTreeBuilder.canonical(store, RevTree.EMPTY);
-    }
-
-    /**
-     * Factory method to create a tree builder that clusters subtrees and nodes according to
-     * {@link CanonicalNodeNameOrder}, and whose internal structure starts by matching the provided
-     * {@code original} tree.
-     */
-    static CanonicalTreeBuilder canonical(final ObjectStore store, final RevTree original) {
-        checkNotNull(store);
-        checkNotNull(original);
-        CanonicalTreeBuilder builder = new CanonicalTreeBuilder(store, original);
-        return builder;
-    }
 
     static RevTree build(final long size, final int childTreeCount,
             @Nullable ImmutableList<Node> trees, @Nullable ImmutableList<Node> features,

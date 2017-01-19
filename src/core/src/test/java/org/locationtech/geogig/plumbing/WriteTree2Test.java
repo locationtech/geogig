@@ -25,6 +25,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
@@ -657,7 +658,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         final ObjectId treeId = id(id);
         final ObjectId metadataId = id(mdId);
         final String feturePrefix = NodeRef.nodeFromPath(path);
-        RevTreeBuilder b = RevTreeBuilder.canonical(db);
+        RevTreeBuilder b = CanonicalTreeBuilder.create(db);
         if (numFeatures > 0) {
             for (int i = 0; i < numFeatures; i++) {
                 Node fn = feature(db, feturePrefix, i);

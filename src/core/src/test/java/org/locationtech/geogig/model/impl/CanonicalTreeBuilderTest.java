@@ -37,12 +37,12 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
     @Override
     protected RevTreeBuilder createBuiler() {
-        return RevTreeBuilder.canonical(objectStore);
+        return CanonicalTreeBuilder.create(objectStore);
     }
 
     @Override
     protected CanonicalTreeBuilder createBuiler(RevTree original) {
-        return RevTreeBuilder.canonical(objectStore, original);
+        return CanonicalTreeBuilder.create(objectStore, original);
     }
 
     @Test

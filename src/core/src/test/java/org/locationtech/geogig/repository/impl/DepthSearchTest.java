@@ -31,6 +31,7 @@ import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
@@ -94,7 +95,7 @@ public class DepthSearchTest {
 
         Context mockInjector = mock(Context.class);
         when(mockInjector.objectDatabase()).thenReturn(odb);
-        RevTreeBuilder subTreeBuilder = RevTreeBuilder.canonical(mockInjector.objectDatabase());
+        RevTreeBuilder subTreeBuilder = CanonicalTreeBuilder.create(mockInjector.objectDatabase());
 
         if (singleNodeNames != null) {
             for (String singleNodeName : singleNodeNames) {

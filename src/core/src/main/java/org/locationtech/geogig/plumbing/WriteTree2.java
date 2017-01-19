@@ -26,7 +26,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.diff.MutableTree;
 import org.locationtech.geogig.plumbing.diff.TreeDifference;
@@ -324,7 +323,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
         final RevTree currentLeftTree = repositoryDatabase.getTree(leftTreeId);
 
-        final CanonicalTreeBuilder builder = RevTreeBuilder.canonical(repositoryDatabase,
+        final CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(repositoryDatabase,
                 currentLeftTree);
 
         // create the new trees taking into account all the nodes

@@ -322,7 +322,7 @@ public class Index implements StagingArea {
             } else {
                 currentTypeTree = context.objectDatabase().getTree(typeTreeRef.getObjectId());
             }
-            typeTreeBuilder = RevTreeBuilder.canonical(context.objectDatabase(), currentTypeTree);
+            typeTreeBuilder = CanonicalTreeBuilder.create(context.objectDatabase(), currentTypeTree);
             currentFeatureTypeRefs.put(typeTreePath, typeTreeRef);
             featureTypeTrees.put(typeTreePath, typeTreeBuilder);
         }

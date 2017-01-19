@@ -200,7 +200,7 @@ class WorkingTreeInsertHelper {
 
     private CanonicalTreeBuilder createBuilder(final RevTree origTree) {
         CanonicalTreeBuilder builder;
-        builder = RevTreeBuilder.canonical(db, origTree);
+        builder = CanonicalTreeBuilder.create(db, origTree);
         return builder;
     }
 

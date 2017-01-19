@@ -205,7 +205,7 @@ public class DiffTreeTest extends Assert {
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;
         {
-            CanonicalTreeBuilder builder = RevTreeBuilder.canonical(db, tree2);
+            CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(db, tree2);
             // add 10 changed features, and delete 10 more
             for (int i = 0; i < 20; i++) {
                 if (i % 2 == 0) {
@@ -241,7 +241,7 @@ public class DiffTreeTest extends Assert {
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;
         {
-            CanonicalTreeBuilder builder = RevTreeBuilder.canonical(db, tree2);
+            CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(db, tree2);
             // add 10 changed features, and delete 10 more
             for (int i = 0; i < 20; i++) {
                 if (i % 2 == 0) {
@@ -313,7 +313,7 @@ public class DiffTreeTest extends Assert {
     }
 
     private RevTree createRoot(ObjectDatabase db, final RevTree tree1, final RevTree tree2) {
-        RevTreeBuilder rootBuilder = RevTreeBuilder.canonical(db);
+        RevTreeBuilder rootBuilder = CanonicalTreeBuilder.create(db);
         rootBuilder.put(Node.create("tree1", tree1.getId(), metadataId, TYPE.TREE,
                 SpatialOps.boundsOf(tree1)));
         rootBuilder.put(Node.create("tree2", tree2.getId(), metadataId, TYPE.TREE,
@@ -324,7 +324,7 @@ public class DiffTreeTest extends Assert {
     }
 
     private RevTree tree(int nFeatures, ObjectDatabase db) {
-        RevTreeBuilder b = RevTreeBuilder.canonical(db);
+        RevTreeBuilder b = CanonicalTreeBuilder.create(db);
         for (int i = 0; i < nFeatures; i++) {
             b.put(feature(i));
         }

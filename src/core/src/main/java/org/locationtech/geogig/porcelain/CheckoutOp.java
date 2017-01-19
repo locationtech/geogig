@@ -259,7 +259,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             } else {
                 currentTypeTree = context.objectDatabase().getTree(typeTreeRef.getObjectId());
             }
-            typeTreeBuilder = RevTreeBuilder.canonical(context.objectDatabase(), currentTypeTree);
+            typeTreeBuilder = CanonicalTreeBuilder.create(context.objectDatabase(), currentTypeTree);
             currentFeatureTypeRefs.put(typeTreePath, typeTreeRef);
             featureTypeTrees.put(typeTreePath, typeTreeBuilder);
         }

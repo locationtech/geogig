@@ -43,7 +43,7 @@ public class RevObjectTestSupport {
     public static RevTreeBuilder createTreesTreeBuilder(ObjectStore source, int numSubTrees,
             int featuresPerSubtre, ObjectId metadataId) {
 
-        RevTreeBuilder builder = RevTreeBuilder.canonical(source);
+        RevTreeBuilder builder = CanonicalTreeBuilder.create(source);
         for (int treeN = 0; treeN < numSubTrees; treeN++) {
             RevTree subtree = createFeaturesTreeBuilder(source, "subtree" + treeN,
                     featuresPerSubtre).build();
@@ -70,7 +70,7 @@ public class RevObjectTestSupport {
             final String namePrefix, final int numEntries, final int startIndex,
             boolean randomIds) {
 
-        RevTreeBuilder tree = RevTreeBuilder.canonical(source);
+        RevTreeBuilder tree = CanonicalTreeBuilder.create(source);
         for (int i = startIndex; i < startIndex + numEntries; i++) {
             tree.put(featureNode(namePrefix, i, randomIds));
         }
@@ -90,7 +90,7 @@ public class RevObjectTestSupport {
             final String namePrefix, final int numEntries, final int startIndex,
             boolean randomIds) {
 
-        RevTreeBuilder tree = RevTreeBuilder.canonical(source);
+        RevTreeBuilder tree = CanonicalTreeBuilder.create(source);
 
         for (int i = startIndex; i < startIndex + numEntries; i++) {
             tree.put(featureNode(namePrefix, i, randomIds));

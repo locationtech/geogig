@@ -25,8 +25,9 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.DiffIndex;
 import org.locationtech.geogig.plumbing.FindTreeChild;
@@ -37,11 +38,11 @@ import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
-import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 
@@ -164,7 +165,7 @@ public class Index implements StagingArea {
 
         final RevTree currentIndexHead = getTree();
 
-        Map<String, RevTreeBuilder> featureTypeTrees = Maps.newHashMap();
+        Map<String, CanonicalTreeBuilder> featureTypeTrees = Maps.newHashMap();
         Map<String, NodeRef> currentFeatureTypeRefs = Maps.newHashMap();
         Set<String> removedTrees = Sets.newHashSet();
 
@@ -249,7 +250,7 @@ public class Index implements StagingArea {
                 }
             }
 
-            for (Map.Entry<String, RevTreeBuilder> entry : featureTypeTrees.entrySet()) {
+            for (Map.Entry<String, CanonicalTreeBuilder> entry : featureTypeTrees.entrySet()) {
                 final String changedTreePath = entry.getKey();
                 final NodeRef currentTreeRef = currentFeatureTypeRefs.get(changedTreePath);
                 checkState(null != currentTreeRef);
@@ -299,14 +300,14 @@ public class Index implements StagingArea {
         progress.complete();
     }
 
-    private RevTreeBuilder getTreeBuilder(RevTree currentIndexHead, NodeRef featureRef,
-            Map<String, RevTreeBuilder> featureTypeTrees,
+    private CanonicalTreeBuilder getTreeBuilder(RevTree currentIndexHead, NodeRef featureRef,
+            Map<String, CanonicalTreeBuilder> featureTypeTrees,
             Map<String, NodeRef> currentFeatureTypeRefs) {
 
         checkArgument(TYPE.FEATURE.equals(featureRef.getType()));
 
         final String typeTreePath = featureRef.getParentPath();
-        RevTreeBuilder typeTreeBuilder = featureTypeTrees.get(typeTreePath);
+        CanonicalTreeBuilder typeTreeBuilder = featureTypeTrees.get(typeTreePath);
         if (typeTreeBuilder == null) {
             NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(currentIndexHead)
                     .setChildPath(typeTreePath).call().orNull();

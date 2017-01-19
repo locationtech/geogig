@@ -30,18 +30,19 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
-import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
-import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.MemoryModule;
 import org.locationtech.geogig.test.TestPlatform;
@@ -204,7 +205,7 @@ public class DiffTreeTest extends Assert {
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;
         {
-            RevTreeBuilder builder = RevTreeBuilder.canonical(db, tree2);
+            CanonicalTreeBuilder builder = RevTreeBuilder.canonical(db, tree2);
             // add 10 changed features, and delete 10 more
             for (int i = 0; i < 20; i++) {
                 if (i % 2 == 0) {
@@ -240,7 +241,7 @@ public class DiffTreeTest extends Assert {
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;
         {
-            RevTreeBuilder builder = RevTreeBuilder.canonical(db, tree2);
+            CanonicalTreeBuilder builder = RevTreeBuilder.canonical(db, tree2);
             // add 10 changed features, and delete 10 more
             for (int i = 0; i < 20; i++) {
                 if (i % 2 == 0) {

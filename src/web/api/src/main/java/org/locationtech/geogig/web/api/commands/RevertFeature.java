@@ -16,6 +16,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
@@ -198,7 +199,7 @@ public class RevertFeature extends AbstractWebAPICommand {
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class).setParent(newTree.get())
                 .setChildPath(node.getParentPath()).call();
 
-        RevTreeBuilder treeBuilder;
+        CanonicalTreeBuilder treeBuilder;
         if (parentNode.isPresent()) {
             metadataId = parentNode.get().getMetadataId();
             Optional<RevTree> parsed = geogig.command(RevObjectParse.class)

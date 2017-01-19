@@ -18,8 +18,9 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.UpdateTree;
@@ -130,7 +131,7 @@ public class ResolveConflict extends AbstractWebAPICommand {
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class)
                 .setParent(geogig.workingTree().getTree())
                 .setChildPath(newFeatureNode.getParentPath()).call();
-        RevTreeBuilder treeBuilder;
+        CanonicalTreeBuilder treeBuilder;
         ObjectId metadataId = ObjectId.NULL;
         if (parentNode.isPresent()) {
             metadataId = parentNode.get().getMetadataId();

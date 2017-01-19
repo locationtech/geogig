@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.model.internal;
+package org.locationtech.geogig.model.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -33,9 +33,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.QuadTreeBuilder;
-import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilderTest;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectStore;

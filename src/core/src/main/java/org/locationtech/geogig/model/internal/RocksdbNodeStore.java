@@ -33,7 +33,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
 
-class RocksdbNodeStore {
+class RocksdbNodeStore implements NodeStore {
 
     private RocksDB db;
 

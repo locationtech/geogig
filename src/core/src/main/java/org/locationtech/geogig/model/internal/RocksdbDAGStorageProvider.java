@@ -32,7 +32,7 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
 
     private final RocksdbHandle dagDb;
 
-    private final RocksdbNodeStore nodeStore;
+    private final NodeStore nodeStore;
 
     private final RocksdbDAGStore dagStore;
 
@@ -49,7 +49,8 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
             dagDb = RocksdbHandle.create(dagDbDir);
 
             this.dagStore = new RocksdbDAGStore(dagDb.db);
-            this.nodeStore = new RocksdbNodeStore(dagDb.db);
+             this.nodeStore = new BackgroundingNodeStore(new RocksdbNodeStore(dagDb.db));
+           // this.nodeStore =  new RocksdbNodeStore(dagDb.db);
         } catch (Exception e) {
             RocksdbHandle.delete(dagDbDir.toFile());
             throw Throwables.propagate(e);

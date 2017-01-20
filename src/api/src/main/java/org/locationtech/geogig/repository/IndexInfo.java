@@ -17,7 +17,7 @@ import org.locationtech.geogig.model.ObjectId;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hasher;
 
-public class Index {
+public class IndexInfo {
     public static enum IndexType {
         QUADTREE
     };
@@ -32,7 +32,7 @@ public class Index {
 
     private final Map<String, Object> metadata;
 
-    public Index(String treeName, String attributeName, IndexType indexType,
+    public IndexInfo(String treeName, String attributeName, IndexType indexType,
             @Nullable Map<String, Object> metadata) {
         this.indexId = getIndexId(treeName, attributeName);
         this.treeName = treeName;

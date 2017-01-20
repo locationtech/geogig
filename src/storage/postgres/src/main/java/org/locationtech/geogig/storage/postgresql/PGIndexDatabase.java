@@ -34,8 +34,8 @@ import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Index;
-import org.locationtech.geogig.repository.Index.IndexType;
+import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
@@ -132,9 +132,9 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     }
 
     @Override
-    public Index createIndex(String treeName, String attributeName, IndexType strategy,
+    public IndexInfo createIndex(String treeName, String attributeName, IndexType strategy,
             @Nullable Map<String, Object> metadata) {
-        Index index = new Index(treeName, attributeName, strategy, metadata);
+        IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         final String sql = format(
                 "INSERT INTO %s (repository, treeName, attributeName, strategy, metadata) VALUES(?, ?, ?, ?, ?)",
                 config.getTables().index());
@@ -170,12 +170,12 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Optional<Index> getIndex(String treeName, String attributeName) {
+    public Optional<IndexInfo> getIndex(String treeName, String attributeName) {
         final String sql = format(
                 "SELECT strategy, metadata FROM %s WHERE repository = ? AND treeName = ? AND attributeName = ?",
                 config.getTables().index());
 
-        Index index = null;
+        IndexInfo index = null;
 
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             try (PreparedStatement ps = cx
@@ -196,7 +196,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                                         .read(FieldType.MAP, in);
                             }
                         }
-                        index = new Index(treeName, attributeName, strategy, metadata);
+                        index = new IndexInfo(treeName, attributeName, strategy, metadata);
                     }
                 }
             }
@@ -208,7 +208,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     }
 
     @Override
-    public void addIndexedTree(Index index, ObjectId originalTree, ObjectId indexedTree) {
+    public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
         PGId pgIndexId = PGId.valueOf(index.getId());
         PGId pgTreeId = PGId.valueOf(originalTree);
         PGId pgIndexedTreeId = PGId.valueOf(indexedTree);
@@ -236,7 +236,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     }
 
     @Override
-    public Optional<ObjectId> resolveIndexedTree(Index index, ObjectId treeId) {
+    public Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
         final PGId pgIndexId = PGId.valueOf(index.getId());
         final PGId pgTreeId = PGId.valueOf(treeId);
         final String sql = format(

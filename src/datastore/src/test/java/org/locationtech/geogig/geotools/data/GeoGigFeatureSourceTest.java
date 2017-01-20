@@ -36,8 +36,8 @@ import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.Index;
-import org.locationtech.geogig.repository.Index.IndexType;
+import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
@@ -190,7 +190,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
     @Test
     public void testGetBoundsQueryWithSpatialIndex() throws Exception {
 
-        Index index = geogig.getRepository().indexDatabase().createIndex(pointsName, "pp",
+        IndexInfo index = geogig.getRepository().indexDatabase().createIndex(pointsName, "pp",
                 IndexType.QUADTREE, null);
         createQuadTree("HEAD", pointsName, index);
         ReferencedEnvelope bounds;
@@ -435,7 +435,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         return features;
     }
 
-    private void createQuadTree(String commitish, String tree, Index index) throws IOException {
+    private void createQuadTree(String commitish, String tree, IndexInfo index) throws IOException {
         IndexDatabase indexDatabase = geogig.getRepository().indexDatabase();
         String treeSpec = commitish + ":" + tree;
         ObjectId treeId = geogig.command(ResolveTreeish.class).setTreeish(treeSpec).call().get();

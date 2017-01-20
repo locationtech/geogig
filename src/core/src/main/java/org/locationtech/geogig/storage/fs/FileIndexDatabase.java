@@ -32,7 +32,7 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.StorageType;
-import org.locationtech.geogig.storage.impl.IndexSerializer;
+import org.locationtech.geogig.storage.impl.IndexInfoSerializer;
 import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Optional;
@@ -98,7 +98,7 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
             DataOutput out = ByteStreams.newDataOutput(outStream);
-            IndexSerializer.serialize(index, out);
+            IndexInfoSerializer.serialize(index, out);
             this.putInternal(index.getId(), outStream.toByteArray());
         } catch (IOException e) {
             Throwables.propagate(e);
@@ -112,7 +112,7 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
         try (InputStream inputStream = this.getRawInternal(indexId, false)) {
             if (inputStream != null) {
                 DataInput in = new DataInputStream(inputStream);
-                IndexInfo index = IndexSerializer.deserialize(in);
+                IndexInfo index = IndexInfoSerializer.deserialize(in);
                 return Optional.of(index);
             }
         } catch (IOException e) {

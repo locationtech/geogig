@@ -29,18 +29,12 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.IdentityTransform;
 import org.geotools.renderer.ScreenMap;
 import org.junit.Test;
-import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.plumbing.ResolveTreeish;
-import org.locationtech.geogig.plumbing.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.IndexInfo;
-import org.locationtech.geogig.repository.IndexInfo.IndexType;
+import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.repository.NodeRef;
-import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -53,8 +47,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Polygon;
 
 public class GeoGigFeatureSourceTest extends RepositoryTestCase {
@@ -192,9 +186,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
     @Test
     public void testGetBoundsQueryWithSpatialIndex() throws Exception {
 
-        IndexInfo index = geogig.getRepository().indexDatabase().createIndex(pointsName, "pp",
-                IndexType.QUADTREE, null);
-        createQuadTree(Ref.HEAD, pointsName, index);
+        createQuadTree(pointsName);
         ReferencedEnvelope bounds;
         Filter filter;
 
@@ -437,17 +429,16 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         return features;
     }
 
-    private void createQuadTree(String commitish, String tree, IndexInfo index) throws IOException {
-        IndexDatabase indexDatabase = geogig.getRepository().indexDatabase();
-        String treeSpec = commitish + ":" + tree;
-        ObjectId treeId = geogig.command(ResolveTreeish.class).setTreeish(treeSpec).call().get();
+    private void createQuadTree(String tree) throws IOException {
 
+        Map<String, NodeRef> all = Maps.uniqueIndex(
+                geogig.command(FindFeatureTypeTrees.class).setRootTreeRef("HEAD").call(),
+                (r) -> r.path());
+        NodeRef typeTreeRef = all.get(tree);
+        assertNotNull(typeTreeRef);
         CreateQuadTree command = geogig.command(CreateQuadTree.class);
-        command.setFeatureTree(treeId);
-        command.setMaxBounds(new Envelope(-180, 180, -90, 90));
-
-        RevTree quadTree = command.call();
-        indexDatabase.addIndexedTree(index, treeId, quadTree.getId());
+        command.setTypeTreeRef(typeTreeRef);
+        command.call();
     }
 
 }

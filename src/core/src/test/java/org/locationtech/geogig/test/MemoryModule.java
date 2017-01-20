@@ -10,9 +10,11 @@
 package org.locationtech.geogig.test;
 
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.memory.HeapGraphDatabase;
+import org.locationtech.geogig.storage.memory.HeapIndexDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapRefDatabase;
 
@@ -31,6 +33,7 @@ public class MemoryModule extends AbstractModule {
         bind(ObjectDatabase.class).to(HeapObjectDatabase.class).in(Scopes.SINGLETON);
         bind(RefDatabase.class).to(HeapRefDatabase.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).to(HeapGraphDatabase.class).in(Scopes.SINGLETON);
+        bind(IndexDatabase.class).to(HeapIndexDatabase.class).in(Scopes.SINGLETON);
     }
 
 }

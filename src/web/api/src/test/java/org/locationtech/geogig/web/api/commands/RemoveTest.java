@@ -78,7 +78,7 @@ public class RemoveTest extends AbstractWebOpTest {
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
 
-        RevTree index = transaction.index().getTree();
+        RevTree index = transaction.stagingArea().getTree();
 
         Optional<NodeRef> node = transaction.command(FindTreeChild.class).setParent(index)
                 .setChildPath(path).call();
@@ -101,7 +101,7 @@ public class RemoveTest extends AbstractWebOpTest {
                 "true", "transactionId", transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
 
-        RevTree index = transaction.index().getTree();
+        RevTree index = transaction.stagingArea().getTree();
 
         Optional<NodeRef> node = transaction.command(FindTreeChild.class).setParent(index)
                 .setChildPath(TestData.pointsType.getTypeName()).call();

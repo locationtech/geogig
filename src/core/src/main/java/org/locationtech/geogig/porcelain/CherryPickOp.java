@@ -75,7 +75,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                 "Can't cherry pick from detached HEAD");
         final SymRef headRef = (SymRef) currHead.get();
 
-        Preconditions.checkState(index().isClean() && workingTree().isClean(),
+        Preconditions.checkState(stagingArea().isClean() && workingTree().isClean(),
                 "You must have a clean working tree and index to perform a cherry pick.");
 
         getProgressListener().started();
@@ -118,7 +118,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                         diffEntryBuffer.add(diff);
                         if (diffEntryBuffer.size() == BUFFER_SIZE) {
                             // Stage it
-                            index().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
+                            stagingArea().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
                             diffEntryBuffer.clear();
                         }
 
@@ -130,7 +130,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                         workingTree().insert(featureInfo);
                         try (AutoCloseableIterator<DiffEntry> unstaged = workingTree()
                                 .getUnstaged(null)) {
-                            index().stage(getProgressListener(), unstaged, 0);
+                            stagingArea().stage(getProgressListener(), unstaged, 0);
                         }
                     }
 
@@ -143,7 +143,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                         }
                         if (diffEntryBuffer.size() > 0) {
                             // Stage it
-                            index().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
+                            stagingArea().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
                             diffEntryBuffer.clear();
                         }
                     }
@@ -164,7 +164,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
         }
 
         // stage changes
-        workingTree().updateWorkHead(index().getTree().getId());
+        workingTree().updateWorkHead(stagingArea().getTree().getId());
 
         command(UpdateRef.class).setName(Ref.CHERRY_PICK_HEAD).setNewValue(commit).call();
         command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(headId).call();

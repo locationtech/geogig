@@ -154,7 +154,7 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
             switch (mode) {
             case HARD:
                 // Update the index and the working tree to the target tree
-                index().updateStageHead(oldCommit.getTreeId());
+                stagingArea().updateStageHead(oldCommit.getTreeId());
                 workingTree().updateWorkHead(oldCommit.getTreeId());
                 break;
             case SOFT:
@@ -162,7 +162,7 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
                 break;
             case MIXED:
                 // Only update the index to the target tree
-                index().updateStageHead(oldCommit.getTreeId());
+                stagingArea().updateStageHead(oldCommit.getTreeId());
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported reset mode.");

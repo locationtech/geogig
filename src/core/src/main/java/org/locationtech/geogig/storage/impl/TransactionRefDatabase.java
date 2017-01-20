@@ -25,7 +25,7 @@ import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
-import org.locationtech.geogig.repository.impl.Index;
+import org.locationtech.geogig.repository.impl.StagingAreaImpl;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ import com.google.common.collect.Maps;
  * namespace.
  * <p>
  * This is so that every command created through the {@link GeogigTransaction transaction} used as a
- * {@link Context}, as well as the transaction specific {@link Index} and {@link WorkingTree} , are
+ * {@link Context}, as well as the transaction specific {@link StagingAreaImpl} and {@link WorkingTree} , are
  * given this instance of {@code RefDatabase} and can do its work without ever noticing its
  * "running inside a transaction". For the command nothing changes.
  * <p>

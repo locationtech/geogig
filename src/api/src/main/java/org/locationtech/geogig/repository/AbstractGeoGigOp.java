@@ -188,10 +188,10 @@ public abstract class AbstractGeoGigOp<T> {
     }
 
     /**
-     * Shortcut for {@link Context#index()}
+     * Shortcut for {@link Context#stagingArea()}
      */
-    protected StagingArea index() {
-        return context.index();
+    protected StagingArea stagingArea() {
+        return context.stagingArea();
     }
 
     /**

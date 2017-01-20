@@ -21,9 +21,11 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import com.google.common.base.Optional;
 
 /**
- * Serves as an interface for the index of the GeoGig repository.
+ * Serves as an interface for the staging area of the GeoGig repository.
+ * <p>
+ * The staging area keeps track of the changes that have been staged, but not yet committed to the
+ * repository.
  * 
- * @see StagingDatabase
  * @since 1.0
  */
 public interface StagingArea {

@@ -81,7 +81,7 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
     @Override
     protected StatusSummary _call() {
         WorkingTree workTree = workingTree();
-        StagingArea index = index();
+        StagingArea index = stagingArea();
 
         StatusSummary summary = new StatusSummary();
 

@@ -88,7 +88,7 @@ public class AddOp extends AbstractGeoGigOp<WorkingTree> {
 
         // short cut for the case where the index is empty and we're staging all changes in the
         // working tree, so it's just a matter of updating the index ref to working tree RevTree id
-        final StagingArea index = index();
+        final StagingArea index = stagingArea();
         try (AutoCloseableIterator<DiffEntry> staged = index.getStaged(null)) {
             if (null == pathFilter && !staged.hasNext() && !updateOnly
                     && index.countConflicted(null) == 0) {

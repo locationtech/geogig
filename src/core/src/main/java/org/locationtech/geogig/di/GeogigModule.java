@@ -20,7 +20,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.Index;
+import org.locationtech.geogig.repository.impl.StagingAreaImpl;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 import org.locationtech.geogig.repository.impl.WorkingTreeImpl;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -87,7 +87,7 @@ public class GeogigModule extends AbstractModule {
 
         bind(Repository.class).to(RepositoryImpl.class).in(Scopes.SINGLETON);
         bind(ConfigDatabase.class).to(IniFileConfigDatabase.class).in(Scopes.SINGLETON);
-        bind(StagingArea.class).to(Index.class).in(Scopes.SINGLETON);
+        bind(StagingArea.class).to(StagingAreaImpl.class).in(Scopes.SINGLETON);
         bind(WorkingTree.class).to(WorkingTreeImpl.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).to(HeapGraphDatabase.class).in(Scopes.SINGLETON);
 

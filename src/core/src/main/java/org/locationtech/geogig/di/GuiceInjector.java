@@ -84,7 +84,13 @@ public class GuiceInjector implements Context {
     }
 
     @Override
+    @Deprecated
     public StagingArea index() {
+        return stagingArea();
+    }
+
+    @Override
+    public StagingArea stagingArea() {
         return getDecoratedInstance(StagingArea.class);
     }
 

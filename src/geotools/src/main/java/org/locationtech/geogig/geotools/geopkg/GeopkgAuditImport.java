@@ -64,7 +64,7 @@ public class GeopkgAuditImport extends AbstractGeoGigOp<GeopkgImportResult> {
         checkArgument(commitMessage != null, "Commit message not provided");
         checkState(workingTree().isClean(),
                 "The working tree has unstaged changes. It must be clean for the import to run cleanly.");
-        checkState(index().isClean(),
+        checkState(stagingArea().isClean(),
                 "The staging ares has uncommitted changes. It must be clean for the import to run cleanly.");
 
         GeopkgImportResult importResult = null;

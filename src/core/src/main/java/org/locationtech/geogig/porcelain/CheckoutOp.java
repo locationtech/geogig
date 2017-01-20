@@ -167,7 +167,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             checkState(id.isPresent(), "'" + branchOrCommit + "' not found in repository.");
             checkOutFromTree = objectDatabase.getTree(id.get());
         } else {
-            checkOutFromTree = index().getTree();
+            checkOutFromTree = stagingArea().getTree();
         }
 
         UpdateTree updateTree = command(UpdateTree.class).setRoot(currentWorkHead);
@@ -350,14 +350,14 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         }
         if (targetTreeId.isPresent()) {
             if (!force) {
-                if (!index().isClean() || !workingTree().isClean()) {
+                if (!stagingArea().isClean() || !workingTree().isClean()) {
                     throw new CheckoutException(StatusCode.LOCAL_CHANGES_NOT_COMMITTED);
                 }
             }
             // update work tree
             ObjectId treeId = targetTreeId.get();
             workingTree().updateWorkHead(treeId);
-            index().updateStageHead(treeId);
+            stagingArea().updateStageHead(treeId);
             result.setNewTree(treeId);
             if (targetRef.isPresent()) {
                 // update HEAD

@@ -260,7 +260,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 return null;
             }
 
-            workingTree().updateWorkHead(index().getTree().getId());
+            workingTree().updateWorkHead(stagingArea().getTree().getId());
 
             if (!ours && mergeScenario.getConflicts() > 0) {
                 // In case we use the "ours" strategy, we do nothing. We ignore conflicting
@@ -328,10 +328,10 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                         .setReportTrees(true).call()) {
                     // stage changes
                     progress.setProgress(0);
-                    index().stage(progress, diff, -1);
+                    stagingArea().stage(progress, diff, -1);
                     mergeStatusBuilder.setChanged(true);
                     mergeStatusBuilder.setFastFoward(false);
-                    workingTree().updateWorkHead(index().getTree().getId());
+                    workingTree().updateWorkHead(stagingArea().getTree().getId());
                 }
             }
 
@@ -366,7 +366,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         }
 
         workingTree().updateWorkHead(commitId);
-        index().updateStageHead(commitId);
+        stagingArea().updateStageHead(commitId);
         mergeStatusBuilder.setChanged(true);
         return headRef;
     }

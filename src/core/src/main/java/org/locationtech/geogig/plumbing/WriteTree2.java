@@ -137,7 +137,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         final ProgressListener progress = getProgressListener();
 
         if (pathFilters.isEmpty()) {
-            final ObjectId stageRootId = index().getTree().getId();
+            final ObjectId stageRootId = stagingArea().getTree().getId();
             return stageRootId;
         }
 
@@ -463,7 +463,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         final String rightTreeish = Ref.STAGE_HEAD;
 
         final ObjectId rootTreeId = resolveRootTreeId();
-        final ObjectId stageRootId = index().getTree().getId();
+        final ObjectId stageRootId = stagingArea().getTree().getId();
 
         final Supplier<Iterator<NodeRef>> leftTreeRefs;
         final Supplier<Iterator<NodeRef>> rightTreeRefs;

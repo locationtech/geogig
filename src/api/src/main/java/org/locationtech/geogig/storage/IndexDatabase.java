@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage;
 
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -64,6 +65,14 @@ public interface IndexDatabase extends ObjectStore {
      *         index
      */
     public Optional<IndexInfo> getIndex(String treeName, String attributeName);
+
+    /**
+     * Gets all of the indexes for a given tree.
+     * 
+     * @param treeName the name of the tree
+     * @return a list with all of the {@link IndexInfo} associated with the given tree
+     */
+    public List<IndexInfo> getIndexes(String treeName);
 
     /**
      * Associates an indexed tree with a tree from the {@link ObjectDatabase}.

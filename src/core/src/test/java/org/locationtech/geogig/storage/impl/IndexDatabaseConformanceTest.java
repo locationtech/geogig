@@ -15,6 +15,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -71,6 +72,8 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
         String attributeName = "attribute";
         indexDb.createIndex(treeName, attributeName, IndexType.QUADTREE, metadata);
 
+        indexDb.createIndex("otherTree", "someAttribute", IndexType.QUADTREE, null);
+
         Optional<IndexInfo> indexOpt = indexDb.getIndex(treeName, attributeName);
         assertTrue(indexOpt.isPresent());
         IndexInfo index = indexOpt.get();
@@ -82,12 +85,79 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
     }
 
     @Test
+    public void testGetIndexes() {
+        Map<String, Object> metadata = new HashMap<String, Object>();
+        metadata.put("meta1", 5L);
+        metadata.put("meta2", "someValue");
+        String treeName = "tree";
+        String attributeName = "attribute";
+        indexDb.createIndex(treeName, attributeName, IndexType.QUADTREE, metadata);
+
+        String attributeName2 = "attribute2";
+        indexDb.createIndex(treeName, attributeName2, IndexType.QUADTREE, null);
+
+        indexDb.createIndex("otherTree", "someAttribute", IndexType.QUADTREE, null);
+
+        List<IndexInfo> indexes = indexDb.getIndexes(treeName);
+        assertEquals(2, indexes.size());
+
+        if (indexes.get(0).getAttributeName().equals(attributeName)) {
+            IndexInfo index = indexes.get(0);
+            assertEquals(treeName, index.getTreeName());
+            assertEquals(attributeName, index.getAttributeName());
+            assertEquals(IndexType.QUADTREE, index.getIndexType());
+            assertEquals(metadata, index.getMetadata());
+            assertEquals(IndexInfo.getIndexId(treeName, attributeName), index.getId());
+
+            index = indexes.get(1);
+            assertEquals(treeName, index.getTreeName());
+            assertEquals(attributeName2, index.getAttributeName());
+            assertEquals(IndexType.QUADTREE, index.getIndexType());
+            assertNull(index.getMetadata());
+            assertEquals(IndexInfo.getIndexId(treeName, attributeName2), index.getId());
+        } else {
+            IndexInfo index = indexes.get(0);
+            assertEquals(treeName, index.getTreeName());
+            assertEquals(attributeName2, index.getAttributeName());
+            assertEquals(IndexType.QUADTREE, index.getIndexType());
+            assertNull(index.getMetadata());
+            assertEquals(IndexInfo.getIndexId(treeName, attributeName2), index.getId());
+
+            index = indexes.get(1);
+            assertEquals(treeName, index.getTreeName());
+            assertEquals(attributeName, index.getAttributeName());
+            assertEquals(IndexType.QUADTREE, index.getIndexType());
+            assertEquals(metadata, index.getMetadata());
+            assertEquals(IndexInfo.getIndexId(treeName, attributeName), index.getId());
+        }
+
+    }
+
+    @Test
     public void testGetIndexNotPresent() {
         String treeName = "tree";
         String attributeName = "attribute";
 
         Optional<IndexInfo> indexOpt = indexDb.getIndex(treeName, attributeName);
         assertFalse(indexOpt.isPresent());
+
+        indexDb.createIndex("otherTree", "someAttribute", IndexType.QUADTREE, null);
+
+        indexOpt = indexDb.getIndex(treeName, attributeName);
+        assertFalse(indexOpt.isPresent());
+    }
+
+    @Test
+    public void testGetIndexesNone() {
+        String treeName = "tree";
+
+        List<IndexInfo> indexes = indexDb.getIndexes(treeName);
+        assertTrue(indexes.isEmpty());
+
+        indexDb.createIndex("otherTree", "someAttribute", IndexType.QUADTREE, null);
+
+        indexes = indexDb.getIndexes(treeName);
+        assertTrue(indexes.isEmpty());
     }
 
     @Test

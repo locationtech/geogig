@@ -154,6 +154,14 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     @Override
+    public List<IndexInfo> getIndexes(String treeName) {
+        if (indexes.containsKey(treeName)) {
+            return indexes.get(treeName);
+        }
+        return Lists.newArrayList();
+    }
+
+    @Override
     public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
         ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
         indexTreeMappings.put(indexTreeLookupId, indexedTree);

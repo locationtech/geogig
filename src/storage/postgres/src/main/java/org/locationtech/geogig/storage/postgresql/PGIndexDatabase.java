@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -43,6 +44,7 @@ import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 
@@ -205,6 +207,45 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         }
 
         return Optional.fromNullable(index);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<IndexInfo> getIndexes(String treeName) {
+        final String sql = format(
+                "SELECT attributeName, strategy, metadata FROM %s WHERE repository = ? AND treeName = ?",
+                config.getTables().index());
+
+        List<IndexInfo> indexes = Lists.newArrayList();
+
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
+            try (PreparedStatement ps = cx
+                    .prepareStatement(log(sql, LOG, repositoryId, treeName))) {
+                ps.setInt(1, repositoryId);
+                ps.setString(2, treeName);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String attributeName = rs.getString(1);
+                        IndexType strategy = IndexType.valueOf(rs.getString(2));
+                        byte[] metadataBytes = rs.getBytes(3);
+                        Map<String, Object> metadata = null;
+                        if (metadataBytes != null) {
+                            try (ByteArrayInputStream metadataStream = new ByteArrayInputStream(
+                                    metadataBytes)) {
+                                DataInput in = new DataInputStream(metadataStream);
+                                metadata = (Map<String, Object>) DataStreamValueSerializerV2
+                                        .read(FieldType.MAP, in);
+                            }
+                        }
+                        indexes.add(new IndexInfo(treeName, attributeName, strategy, metadata));
+                    }
+                }
+            }
+        } catch (SQLException | IOException e) {
+            throw propagate(e);
+        }
+
+        return indexes;
     }
 
     @Override

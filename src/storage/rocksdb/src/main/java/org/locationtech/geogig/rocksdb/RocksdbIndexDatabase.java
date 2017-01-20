@@ -12,12 +12,14 @@ package org.locationtech.geogig.rocksdb;
 import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.FORMAT_NAME;
 import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.VERSION;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -33,14 +35,18 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.impl.IndexSerializer;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import com.google.common.hash.Hasher;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 
 public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDatabase {
+
+    private static final String INDEX_PREFIX = "index";
 
     private final ConfigDatabase configdb;
 
@@ -78,33 +84,77 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         super.close();
     }
 
+    private static byte[] indexKey(String treeName, @Nullable String attributeName) {
+        return (INDEX_PREFIX + "." + treeName + "." + (attributeName != null ? attributeName : ""))
+                .getBytes();
+    }
+
     @Override
     public IndexInfo createIndex(String treeName, String attributeName, IndexType strategy,
             @Nullable Map<String, Object> metadata) {
+        checkWritable();
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
             DataOutput out = ByteStreams.newDataOutput(outStream);
             IndexSerializer.serialize(index, out);
-            this.putInternal(index.getId(), outStream.toByteArray());
+            try (RocksDBReference dbRef = dbhandle.getReference()) {
+                dbRef.db().put(indexKey(treeName, attributeName), outStream.toByteArray());
+            } catch (RocksDBException e) {
+                throw Throwables.propagate(e);
+            }
         } catch (IOException e) {
             Throwables.propagate(e);
         }
         return index;
     }
 
-    @Override
-    public Optional<IndexInfo> getIndex(String treeName, String attributeName) {
-        ObjectId indexId = IndexInfo.getIndexId(treeName, attributeName);
-        try (InputStream inputStream = this.getRawInternal(indexId, false)) {
-            if (inputStream != null) {
-                DataInput in = new DataInputStream(inputStream);
-                IndexInfo index = IndexSerializer.deserialize(in);
-                return Optional.of(index);
-            }
+    private IndexInfo readIndex(byte[] indexBytes) {
+        try (InputStream inputStream = new ByteArrayInputStream(indexBytes)) {
+            DataInput in = new DataInputStream(inputStream);
+            IndexInfo index = IndexSerializer.deserialize(in);
+            return index;
         } catch (IOException e) {
             Throwables.propagate(e);
         }
+        return null;
+    }
+
+    @Override
+    public Optional<IndexInfo> getIndex(String treeName, String attributeName) {
+        checkOpen();
+        byte[] indexKey = indexKey(treeName, attributeName);
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            byte[] indexBytes = dbRef.db().get(indexKey);
+            if (indexBytes != null) {
+                return Optional.of(readIndex(indexBytes));
+            }
+        } catch (RocksDBException e) {
+            throw Throwables.propagate(e);
+        }
         return Optional.absent();
+    }
+
+    @Override
+    public List<IndexInfo> getIndexes(String treeName) {
+        checkOpen();
+        byte[] indexKey = indexKey(treeName, null);
+        List<IndexInfo> indexes = Lists.newArrayList();
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            try (RocksIterator it = dbRef.db().newIterator()) {
+                it.seek(indexKey);
+                while (it.isValid()) {
+                    byte[] key = it.key();
+                    for (int i = 0; i < indexKey.length; i++) {
+                        if (indexKey[i] != key[i]) {
+                            break;
+                        }
+                    }
+                    indexes.add(readIndex(it.value()));
+                    it.next();
+                }
+            }
+        }
+        return indexes;
     }
 
     @Override

@@ -178,10 +178,10 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
         final RevTree finalWorkTree = workingTree.getTree();
 
         Optional<ObjectId> headTree = command(ResolveTreeish.class).setTreeish(Ref.HEAD).call();
-        ObjectId stageTree = index().getTree().getId();
+        ObjectId stageTree = stagingArea().getTree().getId();
         final boolean nothingElseStaged = headTree.isPresent() && headTree.get().equals(stageTree);
         if (nothingElseStaged) {
-            index().updateStageHead(finalWorkTree.getId());
+            stagingArea().updateStageHead(finalWorkTree.getId());
         } else {
             stageDeletes(deleteTrees.values().iterator(), deleteFeatures.iterator());
         }
@@ -199,7 +199,7 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
     }
 
     private void stageDeletes(Iterator<NodeRef> trees, Iterator<String> features) {
-        final StagingArea index = index();
+        final StagingArea index = stagingArea();
 
         Iterator<DiffEntry> treeDeletes = Iterators.transform(trees,
                 (treeRef) -> new DiffEntry(treeRef, null));

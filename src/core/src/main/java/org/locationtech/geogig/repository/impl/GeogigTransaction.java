@@ -76,7 +76,7 @@ public class GeogigTransaction implements Context {
         this.context = context;
         this.transactionId = transactionId;
 
-        transactionIndex = new TransactionStagingArea(new Index(this), transactionId);
+        transactionIndex = new TransactionStagingArea(new StagingAreaImpl(this), transactionId);
         transactionWorkTree = new WorkingTreeImpl(this);
         transactionRefDatabase = new TransactionRefDatabase(context.refDatabase(), transactionId);
         transactionBlobStore = new TransactionBlobStoreImpl(
@@ -118,7 +118,13 @@ public class GeogigTransaction implements Context {
     }
 
     @Override
+    @Deprecated
     public StagingArea index() {
+        return stagingArea();
+    }
+    
+    @Override
+    public StagingArea stagingArea() {
         return transactionIndex;
     }
 

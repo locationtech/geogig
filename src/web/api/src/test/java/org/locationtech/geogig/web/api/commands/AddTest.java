@@ -56,7 +56,7 @@ public class AddTest extends AbstractWebOpTest {
         testData.init();
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
         testData.setTransaction(transaction);
-        StagingArea staging = transaction.index();
+        StagingArea staging = transaction.stagingArea();
         testData.insert(TestData.point1);
         assertEquals(0, staging.countStaged(null).featureCount());
         ParameterSet options = TestParams.of("transactionId",
@@ -74,7 +74,7 @@ public class AddTest extends AbstractWebOpTest {
         testData.init();
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
         testData.setTransaction(transaction);
-        StagingArea staging = transaction.index();
+        StagingArea staging = transaction.stagingArea();
         testData.insert(TestData.point1);
         testData.insert(TestData.point2);
         assertEquals(0, staging.countStaged(null).featureCount());

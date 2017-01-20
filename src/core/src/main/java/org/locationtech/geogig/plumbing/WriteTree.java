@@ -114,7 +114,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         Set<String> deletedTrees = Sets.newHashSet();
         final boolean copyObjects = this.fromDb != null;
         NodeRef ref;
-        RevTree stageHead = index().getTree();
+        RevTree stageHead = stagingArea().getTree();
         try (final AutoCloseableIterator<DiffEntry> diffs = diffSupplier.get()) {
             if (!diffs.hasNext()) {
                 return oldRootTree.getId();

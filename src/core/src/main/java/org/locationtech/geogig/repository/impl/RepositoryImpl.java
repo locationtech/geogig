@@ -375,7 +375,7 @@ public class RepositoryImpl implements Repository {
     // @Override
     @Override
     public StagingArea index() {
-        return context.index();
+        return context.stagingArea();
     }
 
     // @Override

@@ -80,7 +80,7 @@ public class MergeStatusBuilder extends MergeScenarioConsumer {
     public MergeStatusBuilder(Context context, boolean ours, List<ObjectId> commits,
             ProgressListener progress) {
         this.context = context;
-        this.index = context.index();
+        this.index = context.stagingArea();
         this.workingTree = context.workingTree();
         this.ours = ours;
         this.progress = progress;

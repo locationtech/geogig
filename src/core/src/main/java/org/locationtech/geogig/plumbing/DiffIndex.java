@@ -98,7 +98,7 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
         rootTree = command(RevObjectParse.class).setObjectId(rootTreeId.get()).call(RevTree.class)
                 .get();
 
-        final RevTree newTree = index().getTree();
+        final RevTree newTree = stagingArea().getTree();
 
         DiffTree diff = command(DiffTree.class).setPathFilter(this.pathFilters)
                 .setReportTrees(this.reportTrees).setOldTree(rootTree.getId())

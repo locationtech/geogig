@@ -40,9 +40,14 @@ public interface Context {
     public WorkingTree workingTree();
 
     /**
-     * @return the {@link StagingArea} for this context
+     * @deprecated use {@link #stagingArea()} instead
      */
     public StagingArea index();
+
+    /**
+     * @return the {@link StagingArea} for this context
+     */
+    public StagingArea stagingArea();
 
     /**
      * @return the {@link RefDatabase} for this context

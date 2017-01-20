@@ -54,29 +54,14 @@ import com.google.inject.Inject;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
- * The Index keeps track of the changes that have been staged, but not yet committed to the
- * repository.
- * <p>
- * The Index uses an {@link StagingDatabase object database} as storage for the staged changes. This
- * allows for really large operations not to eat up too much heap, and also works better and allows
- * for easier implementation of operations that need to manipulate the index.
- * <p>
- * The Index database is a composite of its own ObjectDatabase and the repository's. Object look ups
- * against the index first search on the index db, and if not found defer to the repository object
- * db.
- * <p>
- * Internally, finding out what changes are unstaged is a matter of comparing (through a diff tree
- * walk) the working tree and the staged changes tree. And finding out what changes are staged to be
- * committed is performed through a diff tree walk comparing the staged changes tree and the
- * repository's head tree.
- * 
+ * Default implementation of {@link StagingArea}
  */
-public class Index implements StagingArea {
+public class StagingAreaImpl implements StagingArea {
 
     private Context context;
 
     @Inject
-    public Index(final Context context) {
+    public StagingAreaImpl(final Context context) {
         Preconditions.checkNotNull(context);
         this.context = context;
     }
@@ -322,7 +307,8 @@ public class Index implements StagingArea {
             } else {
                 currentTypeTree = context.objectDatabase().getTree(typeTreeRef.getObjectId());
             }
-            typeTreeBuilder = CanonicalTreeBuilder.create(context.objectDatabase(), currentTypeTree);
+            typeTreeBuilder = CanonicalTreeBuilder.create(context.objectDatabase(),
+                    currentTypeTree);
             currentFeatureTypeRefs.put(typeTreePath, typeTreeRef);
             featureTypeTrees.put(typeTreePath, typeTreeBuilder);
         }

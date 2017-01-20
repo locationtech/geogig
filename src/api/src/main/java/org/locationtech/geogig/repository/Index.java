@@ -14,6 +14,7 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 
+import com.google.common.base.Charsets;
 import com.google.common.hash.Hasher;
 
 public class Index {
@@ -62,8 +63,8 @@ public class Index {
 
     public static ObjectId getIndexId(String treeName, String attributeName) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-        hasher.putBytes(treeName.getBytes());
-        hasher.putBytes(attributeName.getBytes());
+        hasher.putBytes(treeName.getBytes(Charsets.UTF_8));
+        hasher.putBytes(attributeName.getBytes(Charsets.UTF_8));
         return ObjectId.createNoClone(hasher.hash().asBytes());
     }
 }

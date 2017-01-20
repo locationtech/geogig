@@ -17,8 +17,8 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Index;
-import org.locationtech.geogig.repository.Index.IndexType;
+import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
@@ -38,7 +38,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
 
     static HeapObjectDatabaseConnectionManager CONN_MANAGER = new HeapObjectDatabaseConnectionManager();
 
-    private Map<String, List<Index>> indexes = null;
+    private Map<String, List<IndexInfo>> indexes = null;
 
     private Map<ObjectId, ObjectId> indexTreeMappings = null;
 
@@ -84,7 +84,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
         if (isOpen()) {
             return;
         }
-        indexes = new HashMap<String, List<Index>>();
+        indexes = new HashMap<String, List<IndexInfo>>();
         indexTreeMappings = new HashMap<ObjectId, ObjectId>();
         super.open();
     }
@@ -124,7 +124,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
 
     }
 
-    private void addIndex(Index index) {
+    private void addIndex(IndexInfo index) {
         String treeName = index.getTreeName();
         if (indexes.containsKey(treeName)) {
             indexes.get(treeName).add(index);
@@ -134,17 +134,17 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     @Override
-    public Index createIndex(String treeName, String attributeName, IndexType strategy,
+    public IndexInfo createIndex(String treeName, String attributeName, IndexType strategy,
             @Nullable Map<String, Object> metadata) {
-        Index index = new Index(treeName, attributeName, strategy, metadata);
+        IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         addIndex(index);
         return index;
     }
 
     @Override
-    public Optional<Index> getIndex(String treeName, String attributeName) {
+    public Optional<IndexInfo> getIndex(String treeName, String attributeName) {
         if (indexes.containsKey(treeName)) {
-            for (Index index : indexes.get(treeName)) {
+            for (IndexInfo index : indexes.get(treeName)) {
                 if (index.getAttributeName().equals(attributeName)) {
                     return Optional.of(index);
                 }
@@ -154,13 +154,13 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     @Override
-    public void addIndexedTree(Index index, ObjectId originalTree, ObjectId indexedTree) {
+    public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
         ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
         indexTreeMappings.put(indexTreeLookupId, indexedTree);
     }
 
     @Override
-    public Optional<ObjectId> resolveIndexedTree(Index index, ObjectId treeId) {
+    public Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
         ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), treeId);
         return Optional.fromNullable(indexTreeMappings.get(indexTreeLookupId));
     }

@@ -16,12 +16,12 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.locationtech.geogig.model.FieldType;
-import org.locationtech.geogig.repository.Index;
-import org.locationtech.geogig.repository.Index.IndexType;
+import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
 
 public class IndexSerializer {
-    public static void serialize(Index index, DataOutput out) throws IOException {
+    public static void serialize(IndexInfo index, DataOutput out) throws IOException {
         DataStreamValueSerializerV2.write(index.getTreeName(), out);
         DataStreamValueSerializerV2.write(index.getAttributeName(), out);
         DataStreamValueSerializerV2.write(index.getIndexType().toString(), out);
@@ -29,7 +29,7 @@ public class IndexSerializer {
     }
 
     @SuppressWarnings("unchecked")
-    public static Index deserialize(DataInput in) throws IOException {
+    public static IndexInfo deserialize(DataInput in) throws IOException {
         String treeName = (String) DataStreamValueSerializerV2.read(FieldType.STRING, in);
         String attributeName = (String) DataStreamValueSerializerV2.read(FieldType.STRING, in);
         IndexType indexType = IndexType
@@ -41,6 +41,6 @@ public class IndexSerializer {
         } catch (EOFException e) {
             metadata = null;
         }
-        return new Index(treeName, attributeName, indexType, metadata);
+        return new IndexInfo(treeName, attributeName, indexType, metadata);
     }
 }

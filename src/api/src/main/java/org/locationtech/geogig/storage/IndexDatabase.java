@@ -13,8 +13,8 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.repository.Index;
-import org.locationtech.geogig.repository.Index.IndexType;
+import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 import com.google.common.base.Optional;
@@ -52,7 +52,7 @@ public interface IndexDatabase extends ObjectStore {
      * @param metadata extra properties to be used by the index
      * @return the new index
      */
-    public Index createIndex(String treeName, String attributeName, IndexType strategy,
+    public IndexInfo createIndex(String treeName, String attributeName, IndexType strategy,
             @Nullable Map<String, Object> metadata);
 
     /**
@@ -63,7 +63,7 @@ public interface IndexDatabase extends ObjectStore {
      * @return an {@link Optional} with the index, or {@link Optional#absent()} if there wasn't an
      *         index
      */
-    public Optional<Index> getIndex(String treeName, String attributeName);
+    public Optional<IndexInfo> getIndex(String treeName, String attributeName);
 
     /**
      * Associates an indexed tree with a tree from the {@link ObjectDatabase}.
@@ -72,7 +72,7 @@ public interface IndexDatabase extends ObjectStore {
      * @param originalTree the {@link ObjectId} of the canonical tree
      * @param indexedTree the {@link ObjectId} of the indexed tree
      */
-    public void addIndexedTree(Index index, ObjectId originalTree, ObjectId indexedTree);
+    public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree);
 
     /**
      * Resolves a given tree id to the indexed version of the tree, if one exists.
@@ -80,5 +80,5 @@ public interface IndexDatabase extends ObjectStore {
      * @param index the index
      * @param treeId the {@link ObjectId} of the canonical tree
      */
-    public Optional<ObjectId> resolveIndexedTree(Index index, ObjectId treeId);
+    public Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId);
 }

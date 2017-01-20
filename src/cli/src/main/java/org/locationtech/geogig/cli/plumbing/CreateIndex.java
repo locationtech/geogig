@@ -19,8 +19,8 @@ import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.LogOp;
-import org.locationtech.geogig.repository.Index;
-import org.locationtech.geogig.repository.Index.IndexType;
+import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.IndexDatabase;
@@ -92,7 +92,7 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
         // Map<String, Object> indexProperties = new HashMap<String, Object>();
         // indexProperties.put("extraAttributes", "attr1, attr2");
 
-        Index index = indexDatabase.createIndex(tree, attribute, IndexType.QUADTREE,
+        IndexInfo index = indexDatabase.createIndex(tree, attribute, IndexType.QUADTREE,
                 null/* indexProperties */);
 
         if (indexHistory) {
@@ -114,7 +114,7 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
 
     }
 
-    private void createQuadTree(GeogigCLI cli, String commitish, Index index)
+    private void createQuadTree(GeogigCLI cli, String commitish, IndexInfo index)
             throws IOException {
         GeoGIG geogig = cli.getGeogig();
         IndexDatabase indexDatabase = geogig.getRepository().indexDatabase();

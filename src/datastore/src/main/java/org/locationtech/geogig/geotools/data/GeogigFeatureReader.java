@@ -47,7 +47,7 @@ import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
-import org.locationtech.geogig.repository.Index;
+import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -151,7 +151,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             Preconditions.checkArgument(oldTreeRef.isPresent() || newTreeRef.isPresent());
             typeTreeRef = newTreeRef.isPresent() ? newTreeRef.get() : oldTreeRef.get();
             
-            Optional<Index> index = context.indexDatabase().getIndex(typeTreePath,
+            Optional<IndexInfo> index = context.indexDatabase().getIndex(typeTreePath,
                     schema.getGeometryDescriptor().getName().toString());
 
             final Optional<ObjectId> oldQuadTree = resolveQuadTree(oldTreeRef, index);
@@ -255,7 +255,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         return treeRef.isPresent() ? treeRef.get().getObjectId() : EMPTY_TREE_ID;
     }
 
-    private Optional<ObjectId> resolveQuadTree(Optional<NodeRef> treeRef, Optional<Index> index) {
+    private Optional<ObjectId> resolveQuadTree(Optional<NodeRef> treeRef, Optional<IndexInfo> index) {
         Optional<ObjectId> quadTreeId = Optional.of(EMPTY_TREE_ID);
         if (treeRef.isPresent()) {
             if (index.isPresent()) {

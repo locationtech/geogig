@@ -20,8 +20,8 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Index;
-import org.locationtech.geogig.repository.Index.IndexType;
+import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -83,9 +83,9 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
     }
 
     @Override
-    public Index createIndex(String treeName, String attributeName, IndexType strategy,
+    public IndexInfo createIndex(String treeName, String attributeName, IndexType strategy,
             @Nullable Map<String, Object> metadata) {
-        Index index = new Index(treeName, attributeName, strategy, metadata);
+        IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
             DataOutput out = ByteStreams.newDataOutput(outStream);
             IndexSerializer.serialize(index, out);
@@ -97,12 +97,12 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
     }
 
     @Override
-    public Optional<Index> getIndex(String treeName, String attributeName) {
-        ObjectId indexId = Index.getIndexId(treeName, attributeName);
+    public Optional<IndexInfo> getIndex(String treeName, String attributeName) {
+        ObjectId indexId = IndexInfo.getIndexId(treeName, attributeName);
         try (InputStream inputStream = this.getRawInternal(indexId, false)) {
             if (inputStream != null) {
                 DataInput in = new DataInputStream(inputStream);
-                Index index = IndexSerializer.deserialize(in);
+                IndexInfo index = IndexSerializer.deserialize(in);
                 return Optional.of(index);
             }
         } catch (IOException e) {
@@ -112,13 +112,13 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
     }
 
     @Override
-    public void addIndexedTree(Index index, ObjectId originalTree, ObjectId indexedTree) {
+    public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
         ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
         this.putInternal(indexTreeLookupId, indexedTree.getRawValue());
     }
 
     @Override
-    public Optional<ObjectId> resolveIndexedTree(Index index, ObjectId treeId) {
+    public Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
         ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), treeId);
         InputStream indexTreeStream = this.getRawInternal(indexTreeLookupId, false);
         if (indexTreeStream != null) {

@@ -15,6 +15,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hasher;
 
 public class IndexInfo {
@@ -38,7 +39,7 @@ public class IndexInfo {
         this.treeName = treeName;
         this.attributeName = attributeName;
         this.indexType = indexType;
-        this.metadata = metadata;
+        this.metadata = metadata == null ? ImmutableMap.of() : ImmutableMap.copyOf(metadata);
     }
 
     public ObjectId getId() {

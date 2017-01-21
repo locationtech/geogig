@@ -9,7 +9,9 @@
  */
 package org.locationtech.geogig.rocksdb;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import org.rocksdb.ColumnFamilyHandle;
 
@@ -23,14 +25,25 @@ class DBConfig {
 
     private ImmutableMap<String, String> defaultMetadata;
 
+    private Set<String> columnFamilyNames;
+
     public DBConfig(String dbpath, boolean readOnly) {
-        this(dbpath, readOnly, ImmutableMap.of());
+        this(dbpath, readOnly, ImmutableMap.of(), Collections.emptySet());
     }
 
-    public DBConfig(String dbpath, boolean readOnly, Map<String, String> defaultMetadata) {
+    public DBConfig(String dbpath, boolean readOnly, Map<String, String> defaultMetadata,
+            Set<String> columnFamilyNames) {
         this.dbpath = dbpath;
         this.readOnly = readOnly;
+        this.columnFamilyNames = columnFamilyNames;
         this.defaultMetadata = ImmutableMap.copyOf(defaultMetadata);
+    }
+    
+    /**
+     * @return the names of extra columns to create when the database is created
+     */
+    public Set<String> getColumnFamilyNames(){
+        return columnFamilyNames;
     }
 
     /**

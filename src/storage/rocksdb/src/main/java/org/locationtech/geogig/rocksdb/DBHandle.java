@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.rocksdb;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -39,6 +40,8 @@ class DBHandle {
      */
     private AtomicInteger references = new AtomicInteger();
 
+    private Map<String, ColumnFamilyHandle> extraColumns;
+
     /**
      * A reference to the RocksDB instance. This needs to be closed after it's used to free up the
      * reference.
@@ -64,11 +67,12 @@ class DBHandle {
     }
 
     public DBHandle(final DBConfig config, final org.rocksdb.DBOptions options, final RocksDB db,
-            @Nullable ColumnFamilyHandle metadata) {
+            @Nullable ColumnFamilyHandle metadata, Map<String, ColumnFamilyHandle> extraColumns) {
         this.config = config;
         this.options = options;
         this.db = db;
         this.metadata = metadata;
+        this.extraColumns = extraColumns;
     }
 
     public synchronized void close() {
@@ -84,6 +88,7 @@ class DBHandle {
             }
         }
         close(metadata);
+        extraColumns.values().forEach((c) -> close(c));
         close(options);
         close(db);
     }
@@ -141,4 +146,9 @@ class DBHandle {
         }
         return Optional.fromNullable(value);
     }
+
+    public @Nullable ColumnFamilyHandle getColumnFamily(final String columnFamilyName) {
+        return extraColumns.get(columnFamilyName);
+    }
+
 }

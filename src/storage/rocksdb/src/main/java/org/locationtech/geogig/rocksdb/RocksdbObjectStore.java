@@ -18,11 +18,13 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -82,13 +84,17 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     @Override
     public synchronized void open() {
+        open(Collections.emptySet());
+    }
+
+    protected synchronized void open(Set<String> columnFamilyNames) {
         if (isOpen()) {
             return;
         }
         Map<String, String> defaultMetadata = ImmutableMap.of("version",
                 RocksdbStorageProvider.VERSION, "serializer", "proxy");
 
-        DBConfig address = new DBConfig(path, readOnly, defaultMetadata);
+        DBConfig address = new DBConfig(path, readOnly, defaultMetadata, columnFamilyNames);
         this.dbhandle = RocksConnectionManager.INSTANCE.acquire(address);
 
         this.bulkReadOptions = new ReadOptions();
@@ -283,8 +289,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
         byte[] keybuff = new byte[ObjectId.NUM_BYTES];
 
-        try (RocksDBReference dbRef = dbhandle.getReference();
-                ReadOptions ro = new ReadOptions()) {
+        try (RocksDBReference dbRef = dbhandle.getReference(); ReadOptions ro = new ReadOptions()) {
             ro.setFillCache(false);
             ro.setVerifyChecksums(false);
             try (WriteOptions writeOps = new WriteOptions()) {
@@ -342,8 +347,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream(4096);
         byte[] keybuff = new byte[ObjectId.NUM_BYTES];
 
-	Map<ObjectId, Integer> insertedIds = new HashMap<ObjectId, Integer>();        
-	try (RocksDBReference dbRef = dbhandle.getReference();
+        Map<ObjectId, Integer> insertedIds = new HashMap<ObjectId, Integer>();
+        try (RocksDBReference dbRef = dbhandle.getReference();
                 WriteOptions wo = new WriteOptions()) {
             wo.setDisableWAL(true);
             wo.setSync(false);

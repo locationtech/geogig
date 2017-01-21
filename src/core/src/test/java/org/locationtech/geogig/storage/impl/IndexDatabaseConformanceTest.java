@@ -54,7 +54,8 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
         metadata.put("meta2", "someValue");
         String treeName = "tree";
         String attributeName = "attribute";
-        IndexInfo index = indexDb.createIndex(treeName, attributeName, IndexType.QUADTREE, metadata);
+        IndexInfo index = indexDb.createIndex(treeName, attributeName, IndexType.QUADTREE,
+                metadata);
 
         assertEquals(treeName, index.getTreeName());
         assertEquals(attributeName, index.getAttributeName());
@@ -113,7 +114,7 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
             assertEquals(treeName, index.getTreeName());
             assertEquals(attributeName2, index.getAttributeName());
             assertEquals(IndexType.QUADTREE, index.getIndexType());
-            assertNull(index.getMetadata());
+            assertTrue(index.getMetadata().isEmpty());
             assertEquals(IndexInfo.getIndexId(treeName, attributeName2), index.getId());
         } else {
             IndexInfo index = indexes.get(0);
@@ -169,7 +170,7 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
         assertEquals(treeName, index.getTreeName());
         assertEquals(attributeName, index.getAttributeName());
         assertEquals(IndexType.QUADTREE, index.getIndexType());
-        assertNull(index.getMetadata());
+        assertTrue(index.getMetadata().isEmpty());
         assertEquals(IndexInfo.getIndexId(treeName, attributeName), index.getId());
 
         Optional<IndexInfo> indexOpt = indexDb.getIndex(treeName, attributeName);
@@ -178,7 +179,7 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
         assertEquals(treeName, index.getTreeName());
         assertEquals(attributeName, index.getAttributeName());
         assertEquals(IndexType.QUADTREE, index.getIndexType());
-        assertNull(index.getMetadata());
+        assertTrue(index.getMetadata().isEmpty());
         assertEquals(IndexInfo.getIndexId(treeName, attributeName), index.getId());
     }
 

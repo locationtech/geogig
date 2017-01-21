@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
+import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
 import org.geotools.data.store.FeatureIteratorIterator;
@@ -30,6 +31,8 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.type.AttributeDescriptorImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.jdbc.JDBCFeatureSource;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.CRS.AxisOrder;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.data.ForwardingFeatureCollection;
 import org.locationtech.geogig.data.ForwardingFeatureIterator;
@@ -57,8 +60,10 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.identity.FeatureId;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -210,6 +215,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             }
 
             featureType = overrideGeometryName(featureType);
+            featureType = tryForceKnownCRS(featureType);
 
             featureSource = new ForceTypeAndFidFeatureSource<FeatureType, Feature>(featureSource,
                     featureType, fidPrefix);
@@ -261,6 +267,34 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             return ((JDBCFeatureSource) featureSource).getPrimaryKey().getColumns().size() != 0;
         }
         return false;
+    }
+
+    private SimpleFeatureType tryForceKnownCRS(SimpleFeatureType orig) {
+        SimpleFeatureType override = orig;
+
+        GeometryDescriptor geometryDescriptor = orig.getGeometryDescriptor();
+        if (geometryDescriptor != null) {
+            CoordinateReferenceSystem crs = geometryDescriptor.getCoordinateReferenceSystem();
+            String srs = CRS.toSRS(crs);
+            if (srs != null && !srs.contains("EPSG:")) {
+                boolean fullScan = true;
+                String knownIdentifier;
+                try {
+                    knownIdentifier = CRS.lookupIdentifier(crs, fullScan);
+                    if (knownIdentifier != null) {
+                        LOG.info("Identified CRS as " + knownIdentifier);
+                        boolean longitudeFirst = CRS.getAxisOrder(crs).equals(AxisOrder.EAST_NORTH);
+                        CoordinateReferenceSystem crsOverride;
+                        crsOverride = CRS.decode(knownIdentifier, longitudeFirst);
+                        override = DataUtilities.createSubType(orig, null, crsOverride);
+                    }
+                } catch (Exception e) {
+                    LOG.warn("Error looking known identifier for CRS " + crs, e);
+                }
+            }
+        }
+
+        return override;
     }
 
     private SimpleFeatureType overrideGeometryName(SimpleFeatureType featureType) {

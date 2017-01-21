@@ -14,10 +14,12 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
@@ -43,6 +45,9 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.FeatureType;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -238,7 +243,7 @@ public class ImportOpTest extends RepositoryTestCase {
         GeometryFactory gf = new GeometryFactory();
         SimpleFeature feature = SimpleFeatureBuilder.build(type,
                 new Object[] { gf.createPoint(new Coordinate(0, 0)), "feature0" }, "feature");
-        
+
         FeatureInfo fi = featureInfo("dest", feature);
         WorkingTree workingTree = geogig.getRepository().workingTree();
         workingTree.insert(fi);
@@ -439,6 +444,89 @@ public class ImportOpTest extends RepositoryTestCase {
         } catch (GeoToolsOpException e) {
             assertEquals(GeoToolsOpException.StatusCode.INCOMPATIBLE_FEATURE_TYPE, e.statusCode);
         }
+    }
+
+    @Test
+    public void testForcedKnownCrsIdentifier() throws Exception {
+        String esri26918 = "PROJCS[\"NAD_1983_UTM_Zone_18N\", GEOGCS[\"GCS_North_American_1983\", DATUM[\"D_North_American_1983\", SPHEROID[\"GRS_1980\", 6378137.0, 298.257222101]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"degree\", 0.017453292519943295], AXIS[\"Longitude\", EAST], AXIS[\"Latitude\", NORTH]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"central_meridian\", -75.0], PARAMETER[\"latitude_of_origin\", 0.0], PARAMETER[\"scale_factor\", 0.9996], PARAMETER[\"false_easting\", 500000.0], PARAMETER[\"false_northing\", 0.0], UNIT[\"m\", 1.0], AXIS[\"x\", EAST], AXIS[\"y\", NORTH]]";
+        String esriWGS84 = "GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.017453292519943295]]";
+
+        testForceKnownCRS("EPSG:26918", esri26918);
+        testForceKnownCRS("EPSG:4326", esriWGS84);
+    }
+
+    @Test
+    public void testForcedKnownCrsIdentifierNoMatch() throws Exception {
+        // there's no matching EPSG code for the following CRS (changed WGS_1984 to WGS_1985)
+        String noEPSGMatchWKT = "GEOGCS[\"GCS_WGS_1985\",DATUM[\"D_WGS_1985\",SPHEROID[\"WGS_1985\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.017453292519943295]]";
+
+        CoordinateReferenceSystem origCrs = CRS.parseWKT(noEPSGMatchWKT);
+
+        String typeName = "noCrsMatchType";
+
+        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+        builder.setCRS(origCrs);
+        builder.add("geom", Point.class);
+        builder.setName(typeName);
+
+        SimpleFeatureType type = builder.buildFeatureType();
+        MemoryDataStore dataStore = new MemoryDataStore();
+        dataStore.createSchema(type);
+
+        ImportOp importOp = geogig.command(ImportOp.class);
+        importOp.setDataStore(dataStore);
+        importOp.setTable(typeName);
+        importOp.call();
+
+        Optional<RevFeatureType> typeRef = geogig.command(ResolveFeatureType.class)
+                .setRefSpec("WORK_HEAD:" + typeName).call();
+        assertTrue(typeRef.isPresent());
+        Optional<RevFeatureType> revType = geogig.command(RevObjectParse.class)
+                .setRefSpec(typeRef.get().getId().toString()).call(RevFeatureType.class);
+        assertTrue(revType.isPresent());
+
+        FeatureType storedType = revType.get().type();
+        CoordinateReferenceSystem storedCrs = storedType.getGeometryDescriptor()
+                .getCoordinateReferenceSystem();
+
+        assertEquals(origCrs, storedCrs);
+    }
+
+    private void testForceKnownCRS(final String expectedSRS, String actualCRSWKT)
+            throws FactoryException, IOException {
+        CoordinateReferenceSystem origCrs = CRS.parseWKT(actualCRSWKT);
+
+        String typeName = "forcedType";
+
+        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+        builder.setCRS(origCrs);
+        builder.add("geom", Point.class);
+        builder.add("label", String.class);
+        builder.setName(typeName);
+
+        SimpleFeatureType type = builder.buildFeatureType();
+        MemoryDataStore dataStore = new MemoryDataStore();
+        dataStore.createSchema(type);
+
+        ImportOp importOp = geogig.command(ImportOp.class);
+        importOp.setDataStore(dataStore);
+        importOp.setTable(typeName);
+        importOp.call();
+
+        Optional<RevFeatureType> typeRef = geogig.command(ResolveFeatureType.class)
+                .setRefSpec("WORK_HEAD:" + typeName).call();
+        assertTrue(typeRef.isPresent());
+        Optional<RevFeatureType> revType = geogig.command(RevObjectParse.class)
+                .setRefSpec(typeRef.get().getId().toString()).call(RevFeatureType.class);
+        assertTrue(revType.isPresent());
+
+        FeatureType storedType = revType.get().type();
+        CoordinateReferenceSystem storedCrs = storedType.getGeometryDescriptor()
+                .getCoordinateReferenceSystem();
+
+        assertNotEquals(origCrs, storedCrs);
+        assertTrue(CRS.equalsIgnoreMetadata(origCrs, storedCrs));
+        assertEquals(expectedSRS, CRS.toSRS(storedCrs));
     }
 
     @Override

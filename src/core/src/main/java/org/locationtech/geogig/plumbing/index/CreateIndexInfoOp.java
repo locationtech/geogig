@@ -24,7 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 /**
- * Creates an {@link Index}.
+ * Creates an {@link IndexInfo}.
  */
 public class CreateIndexInfoOp extends AbstractGeoGigOp<IndexInfo> {
 
@@ -119,8 +119,8 @@ public class CreateIndexInfoOp extends AbstractGeoGigOp<IndexInfo> {
         if (!treeId.isPresent()) {
             return;
         }
-        command(BuildIndexOp.class).setIndex(index).setCanonicalTreeId(treeId.get())
-                .setProgressListener(getProgressListener()).call();
+        ObjectId indexTreeId = command(BuildIndexOp.class).setIndex(index)
+                .setCanonicalTreeId(treeId.get()).setProgressListener(getProgressListener()).call();
+        System.err.printf("--Created index tree %s\n", indexTreeId);
     }
 }
-

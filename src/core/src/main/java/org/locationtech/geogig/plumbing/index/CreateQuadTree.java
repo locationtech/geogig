@@ -49,13 +49,9 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
 
-    private Envelope maxBounds = wgs84Bounds();
-
     private ObjectId treeId;
 
-    private static final Envelope wgs84Bounds() {
-        return new Envelope(-180, 180, -90, 90);
-    }
+    private @Nullable Envelope maxBounds;
 
     /**
      * @param maxBounds Optional; the quad-tree max bounds, default to WGS84 bounds if not set
@@ -76,13 +72,15 @@ public class CreateQuadTree extends AbstractGeoGigOp<RevTree> {
     @Override
     protected RevTree _call() {
         Preconditions.checkArgument(treeId != null, "FeatureTree not provided");
+        Preconditions.checkArgument(maxBounds != null, "maxBounds not provided");
 
         final ObjectDatabase odb = objectDatabase();
 
         final RevTree tree = odb.getTree(treeId);
 
         boolean preserveIterationOrder = true;
-        PreOrderDiffWalk walk = new PreOrderDiffWalk(RevTree.EMPTY, tree, odb, odb, preserveIterationOrder);
+        PreOrderDiffWalk walk = new PreOrderDiffWalk(RevTree.EMPTY, tree, odb, odb,
+                preserveIterationOrder);
 
         final ProgressListener progress = getProgressListener();
 

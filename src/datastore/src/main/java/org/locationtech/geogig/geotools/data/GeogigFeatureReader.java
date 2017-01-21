@@ -150,7 +150,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
 
             Preconditions.checkArgument(oldTreeRef.isPresent() || newTreeRef.isPresent());
             typeTreeRef = newTreeRef.isPresent() ? newTreeRef.get() : oldTreeRef.get();
-            
+
             Optional<IndexInfo> index = context.indexDatabase().getIndex(typeTreePath,
                     schema.getGeometryDescriptor().getName().toString());
 
@@ -255,7 +255,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         return treeRef.isPresent() ? treeRef.get().getObjectId() : EMPTY_TREE_ID;
     }
 
-    private Optional<ObjectId> resolveQuadTree(Optional<NodeRef> treeRef, Optional<IndexInfo> index) {
+    private Optional<ObjectId> resolveQuadTree(Optional<NodeRef> treeRef,
+            Optional<IndexInfo> index) {
         Optional<ObjectId> quadTreeId = Optional.of(EMPTY_TREE_ID);
         if (treeRef.isPresent()) {
             if (index.isPresent()) {
@@ -346,8 +347,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             timer.stop();
             sourceIterator.close();
             sourceIterator = null;
-            // System.err.printf("######## Stats: %s, Time: %s ########\n\n",
-            // diffOp.getStats().orNull(), timer);
+            System.err.printf("######## Stats: %s, Time: %s ########\n\n",
+                    diffOp.getStats().orNull(), timer);
             LOGGER.debug(String.format("######## Stats: %s, Time: %s ########\n\n",
                     diffOp.getStats().orNull(), timer));
 

@@ -9,6 +9,7 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.plumbing.index.CreateIndexInfoOp;
+import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.beust.jcommander.Parameter;
@@ -34,11 +35,11 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
 
         GeoGIG geogig = cli.getGeogig();
 
-        geogig.command(CreateIndexInfoOp.class).setTreeName(tree)
+        IndexInfo indexInfo = geogig.command(CreateIndexInfoOp.class).setTreeName(tree)
                 .setAttributeName(attribute).setIndexHistory(indexHistory)
                 .setProgressListener(cli.getProgressListener()).call();
 
+        
         cli.getConsole().println("Index created successfully.");
-
     }
 }

@@ -54,6 +54,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Polygon;
 
 public class GeoGigFeatureSourceTest extends RepositoryTestCase {
@@ -443,6 +444,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
         CreateQuadTree command = geogig.command(CreateQuadTree.class);
         command.setFeatureTree(treeId);
+        command.setMaxBounds(new Envelope(-180, 180, -90, 90));
 
         RevTree quadTree = command.call();
         indexDatabase.addIndexedTree(index, treeId, quadTree.getId());

@@ -30,6 +30,7 @@ import org.geotools.referencing.operation.transform.IdentityTransform;
 import org.geotools.renderer.ScreenMap;
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
@@ -192,7 +193,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
         IndexInfo index = geogig.getRepository().indexDatabase().createIndex(pointsName, "pp",
                 IndexType.QUADTREE, null);
-        createQuadTree("HEAD", pointsName, index);
+        createQuadTree(Ref.HEAD, pointsName, index);
         ReferencedEnvelope bounds;
         Filter filter;
 

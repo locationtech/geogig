@@ -15,22 +15,29 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevFeatureType;
+import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.impl.IndexSerializer;
+import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import com.google.common.hash.Hasher;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
@@ -39,6 +46,8 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
 
     private final ConfigDatabase configDB;
 
+    private final Repository repository;
+
     /**
      * Constructs a new {@code FileIndexDatabase} using the given platform.
      * 
@@ -46,9 +55,10 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
      */
     @Inject
     public FileIndexDatabase(final Platform platform, final ConfigDatabase configDB,
-            final Hints hints) {
+            final Hints hints, final Repository repository) {
         super(platform, "index", configDB, hints);
         this.configDB = configDB;
+        this.repository = repository;
     }
 
     @Override
@@ -109,6 +119,24 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
             Throwables.propagate(e);
         }
         return Optional.absent();
+    }
+
+    @Override
+    public List<IndexInfo> getIndexes(String treeName) {
+        Optional<RevFeatureType> featureTypeOpt = repository.command(ResolveFeatureType.class)
+                .setRefSpec(Ref.HEAD + ":" + treeName).call();
+
+        List<IndexInfo> indexes = Lists.newArrayList();
+        if (featureTypeOpt.isPresent()) {
+            RevFeatureType treeType = featureTypeOpt.get();
+            for (PropertyDescriptor descriptor : treeType.descriptors()) {
+                Optional<IndexInfo> index = getIndex(treeName, descriptor.getName().toString());
+                if (index.isPresent()) {
+                    indexes.add(index.get());
+                }
+            }
+        }
+        return indexes;
     }
 
     @Override

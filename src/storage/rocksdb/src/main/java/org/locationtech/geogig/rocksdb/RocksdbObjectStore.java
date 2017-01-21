@@ -129,11 +129,11 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         return open;
     }
 
-    private void checkOpen() {
+    protected void checkOpen() {
         Preconditions.checkState(isOpen(), "Database is closed");
     }
 
-    public void checkWritable() {
+    protected void checkWritable() {
         checkOpen();
         if (readOnly) {
             throw new IllegalStateException("db is read only.");

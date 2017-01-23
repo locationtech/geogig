@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  *
@@ -91,6 +92,7 @@ class GeogigFeatureSource extends ContentFeatureSource {
     protected void addHints(Set<Hints.Key> hints) {
         hints.add(Hints.FEATURE_DETACHED);
         hints.add(Hints.SCREENMAP);
+        hints.add(Hints.JTS_GEOMETRY_FACTORY);
     }
 
     @Override
@@ -204,8 +206,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
             Integer offset = query.getStartIndex();
             Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null
                     : query.getMaxFeatures();
-            ScreenMap screenMap = (ScreenMap) query.getHints().get(Hints.SCREENMAP);
-            features = getNativeReader(Query.NO_NAMES, filter, offset, maxFeatures, screenMap);
+            features = getNativeReader(Query.NO_NAMES, filter, offset, maxFeatures,
+                    query.getHints());
         } else {
             features = getReader(query);
         }
@@ -248,8 +250,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
 
         FeatureReader<SimpleFeatureType, SimpleFeature> features;
         if (isNaturalOrder(query.getSortBy())) {
-            ScreenMap screenMap = (ScreenMap) query.getHints().get(Hints.SCREENMAP);
-            features = getNativeReader(Query.NO_NAMES, filter, offset, maxFeatures, screenMap);
+            features = getNativeReader(Query.NO_NAMES, filter, offset, maxFeatures,
+                    query.getHints());
         } else {
             features = getReader(query);
         }
@@ -277,12 +279,12 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null
                 : query.getMaxFeatures();
         final Filter filter = query.getFilter();
-        final ScreenMap screenMap = (ScreenMap) query.getHints().get(Hints.SCREENMAP);
         final String[] propertyNames = query.getPropertyNames();
         if (naturalOrder) {
-            reader = getNativeReader(propertyNames, filter, startIndex, maxFeatures, screenMap);
+            reader = getNativeReader(propertyNames, filter, startIndex, maxFeatures,
+                    query.getHints());
         } else {
-            reader = getNativeReader(propertyNames, filter, null, null, screenMap);
+            reader = getNativeReader(propertyNames, filter, null, null, query.getHints());
             // sorting
             reader = new SortedFeatureReader(DataUtilities.simple(reader), query);
             if (startIndex > 0) {
@@ -314,13 +316,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
      */
     private FeatureReader<SimpleFeatureType, SimpleFeature> getNativeReader(
             @Nullable String[] propertyNames, Filter filter, @Nullable Integer offset,
-            @Nullable Integer maxFeatures, @Nullable final ScreenMap screenMap) {
+            @Nullable Integer maxFeatures, @Nullable Hints hints) {
 
-        if (screenMap == null) {
-            LOGGER.trace("GeoGigFeatureSource.getNativeReader: no screenMap provided");
-        } else {
-            LOGGER.trace("GeoGigFeatureSource.getNativeReader: using screenMap filter");
-        }
         LOGGER.trace("Query filter: {}", filter);
         filter = (Filter) filter.accept(new SimplifyingFilterVisitor(), null);
         LOGGER.trace("Simplified filter: {}", filter);
@@ -342,9 +339,15 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final GeoGigDataStore.ChangeType changeType = changeType();
         final Context context = getCommandLocator();
 
+        ScreenMap screenMap = null;
+        GeometryFactory geomFac = null;
+        if (hints != null) {
+            screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
+            geomFac = (GeometryFactory) hints.get(Hints.JTS_GEOMETRY_FACTORY);
+        }
         nativeReader = new GeogigFeatureReader<SimpleFeatureType, SimpleFeature>(context, fullType,
                 filter, featureTypeTreePath, rootRef, compareRootRef, changeType, offset,
-                maxFeatures, screenMap, ignoreAttributes);
+                maxFeatures, screenMap, ignoreAttributes, geomFac);
         return nativeReader;
     }
 

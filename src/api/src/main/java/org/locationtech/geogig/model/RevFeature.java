@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * A {@code RevFeature} is an immutable data structure that contains the attribute value instances
@@ -67,6 +68,8 @@ public interface RevFeature extends RevObject {
      *         is thrown)
      */
     public Optional<Object> get(final int index);
+
+    public Optional<Geometry> get(final int index, final GeometryFactory gf);
 
     /**
      * Performs the given action for each attribute in the feature, in it's natural order, until all

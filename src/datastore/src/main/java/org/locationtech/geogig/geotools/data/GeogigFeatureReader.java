@@ -122,12 +122,13 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
      * @param maxFeatures
      * @param changeType
      * @param ignoreAttributes
+     * @param geomFac
      */
     public GeogigFeatureReader(final Context context, final SimpleFeatureType schema,
             final Filter origFilter, final String typeTreePath, final String headRef,
             String oldHead, ChangeType changeType, @Nullable Integer offset,
             @Nullable Integer maxFeatures, @Nullable final ScreenMap screenMap,
-            final boolean ignoreAttributes) {
+            final boolean ignoreAttributes, @Nullable GeometryFactory geomFac) {
         this.context = context;
         checkNotNull(context);
         checkNotNull(schema);
@@ -232,7 +233,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         }
 
         final Function<List<NodeRef>, Iterator<SimpleFeature>> function;
-        function = new FetchFunction(objectStore, schema);
+        function = new FetchFunction(objectStore, schema, geomFac);
         final int fetchSize = 1000;
         Iterator<List<NodeRef>> partition = Iterators.partition(featureRefs, fetchSize);
         Iterator<Iterator<SimpleFeature>> transformed = Iterators.transform(partition, function);
@@ -452,7 +453,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
 
     }
 
-    private class FetchFunction implements Function<List<NodeRef>, Iterator<SimpleFeature>> {
+    private static class FetchFunction implements Function<List<NodeRef>, Iterator<SimpleFeature>> {
 
         private class AsFeature implements Function<RevObject, SimpleFeature> {
 
@@ -460,10 +461,13 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
 
             private final ArrayListMultimap<ObjectId, String> fidIndex;
 
+            private GeometryFactory gf;
+
             public AsFeature(FeatureBuilder featureBuilder,
-                    ArrayListMultimap<ObjectId, String> fidIndex) {
+                    ArrayListMultimap<ObjectId, String> fidIndex, GeometryFactory gf) {
                 this.featureBuilder = featureBuilder;
                 this.fidIndex = fidIndex;
+                this.gf = gf;
             }
 
             @Override
@@ -473,7 +477,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
                 List<String> list = fidIndex.get(id);
                 final String fid = list.remove(0);
 
-                Feature feature = featureBuilder.build(fid, revFeature);
+                Feature feature = featureBuilder.build(fid, revFeature, gf);
                 return (SimpleFeature) feature;
             }
         }
@@ -488,16 +492,21 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
 
         private String geomName;
 
-        private GeometryFactory gf = new GeometryFactory(new PackedCoordinateSequenceFactory());
+        private static GeometryFactory DEFAULT_GEOMFAC = new GeometryFactory(
+                new PackedCoordinateSequenceFactory());
+
+        private final GeometryFactory gf;
 
         // RevObjectParse parser = context.command(RevObjectParse.class);
-        public FetchFunction(ObjectDatabase source, SimpleFeatureType schema) {
+        public FetchFunction(ObjectDatabase source, SimpleFeatureType schema,
+                GeometryFactory geomFac) {
             this.schema = schema;
             this.simpleFeatureBuilder = new SimpleFeatureBuilder(schema);
             this.geomName = schema.getGeometryDescriptor().getLocalName();
 
             this.featureBuilder = new FeatureBuilder(schema);
             this.source = source;
+            this.gf = geomFac == null ? DEFAULT_GEOMFAC : geomFac;
         }
 
         @Override
@@ -569,7 +578,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             Iterator<RevFeature> all = source.getAll(ids, BulkOpListener.NOOP_LISTENER,
                     RevFeature.class);
 
-            AsFeature asFeature = new AsFeature(featureBuilder, fidIndex);
+            AsFeature asFeature = new AsFeature(featureBuilder, fidIndex, this.gf);
             Iterator<SimpleFeature> features = Iterators.transform(all, asFeature);
             return features;
         }

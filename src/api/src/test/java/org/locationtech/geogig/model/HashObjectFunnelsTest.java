@@ -43,6 +43,8 @@ import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -240,7 +242,7 @@ public class HashObjectFunnelsTest {
         assertEquals(treeHash2, id1);
 
     }
-    
+
     @Test
     public void testFeatureFunnel() throws ParseException {
         List<Optional<Object>> values = new LinkedList<Optional<Object>>();
@@ -276,6 +278,11 @@ public class HashObjectFunnelsTest {
                 for (int i = 0; i < values.size(); i++) {
                     consumer.accept(values.get(i).orNull());
                 }
+            }
+
+            @Override
+            public Optional<Geometry> get(int index, GeometryFactory gf) {
+                throw new UnsupportedOperationException();
             }
         };
 
@@ -372,7 +379,7 @@ public class HashObjectFunnelsTest {
         FieldType.valueOf(0x25);
 
     }
-    
+
     @Test
     public void testTagFunnel() {
         RevTag testTag = new RevTag() {

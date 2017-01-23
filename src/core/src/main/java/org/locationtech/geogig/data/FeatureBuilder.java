@@ -21,6 +21,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.identity.FeatureId;
 
 import com.google.common.base.Preconditions;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * Provides a method of building features from {@link RevFeature} objects that have the type
@@ -77,6 +78,20 @@ public class FeatureBuilder {
 
         GeogigSimpleFeature feature = new GeogigSimpleFeature(revFeature, featureType, fid,
                 attNameToRevTypeIndex);
+        return feature;
+    }
+
+    public Feature build(final String id, final RevFeature revFeature,
+            final GeometryFactory geometryFactory) {
+        Preconditions.checkNotNull(id);
+        Preconditions.checkNotNull(revFeature);
+
+        final FeatureId fid = new LazyVersionedFeatureId(id, revFeature.getId());
+
+        SimpleFeatureType featureType = (SimpleFeatureType) type.type();
+
+        GeogigSimpleFeature feature = new GeogigSimpleFeature(revFeature, featureType, fid,
+                attNameToRevTypeIndex, geometryFactory);
         return feature;
     }
 

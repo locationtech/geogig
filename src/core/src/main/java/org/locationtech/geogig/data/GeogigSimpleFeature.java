@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.GeometryAttributeImpl;
 import org.geotools.feature.type.AttributeDescriptorImpl;
 import org.geotools.feature.type.Types;
@@ -48,6 +49,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  */
@@ -68,6 +70,8 @@ public class GeogigSimpleFeature implements SimpleFeature {
 
         public abstract Object get(int index);
 
+        public abstract Geometry get(int index, GeometryFactory geomFac);
+
         public abstract void getBounds(Envelope bounds);
 
         protected State setNext(State newState) {
@@ -80,6 +84,8 @@ public class GeogigSimpleFeature implements SimpleFeature {
 
         private RevFeature feature;
 
+        private Object[] values;
+
         ImmutableState(RevFeature feature) {
             this(new AtomicReference<>(), feature);
         }
@@ -87,6 +93,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
         ImmutableState(AtomicReference<State> currentState, RevFeature feature) {
             super(currentState);
             this.feature = feature;
+            this.values = new Object[feature.size()];
         }
 
         @Override
@@ -98,7 +105,22 @@ public class GeogigSimpleFeature implements SimpleFeature {
 
         @Override
         public Object get(int index) {
-            return feature.get(index).orNull();
+            Object v = values[index];
+            if (v == null) {
+                v = feature.get(index).orNull();
+                values[index] = v;
+            }
+            return v;
+        }
+
+        @Override
+        public Geometry get(int index, GeometryFactory gf) {
+            Geometry v = (Geometry) values[index];
+            if (v == null) {
+                v = feature.get(index, gf).orNull();
+                values[index] = v;
+            }
+            return v;
         }
 
         @Override
@@ -131,13 +153,23 @@ public class GeogigSimpleFeature implements SimpleFeature {
         }
 
         @Override
+        public Geometry get(int index, GeometryFactory geomFac) {
+            Geometry geom = (Geometry) get(index);
+            if (geom != null) {
+                if (geom.getFactory() != geomFac) {
+                    geom = geomFac.createGeometry(geom);
+                }
+            }
+            return geom;
+        }
+
+        @Override
         public void getBounds(Envelope bounds) {
             values.forEach((v) -> {
                 if (v instanceof Geometry)
                     bounds.expandToInclude(((Geometry) v).getEnvelopeInternal());
             });
         }
-
     }
 
     private final AtomicReference<State> state;
@@ -161,26 +193,34 @@ public class GeogigSimpleFeature implements SimpleFeature {
      */
     private Map<Object, Object>[] attributeUserData;
 
-    // private final int defaultGeomIndex;
+    private final int defaultGeomIndex;
     //
     // private final boolean defaultGeomIsPoint;
 
+    private @Nullable GeometryFactory geomFac;
+
     public GeogigSimpleFeature(RevFeature feature, SimpleFeatureType featureType, FeatureId id,
             Map<String, Integer> nameToRevTypeInded) {
+        this(feature, featureType, id, nameToRevTypeInded, null);
+    }
+
+    public GeogigSimpleFeature(RevFeature feature, SimpleFeatureType featureType, FeatureId id,
+            Map<String, Integer> nameToRevTypeInded, GeometryFactory geomFac) {
         this.id = id;
         this.featureType = featureType;
+        this.geomFac = geomFac;
         this.state = new GeogigSimpleFeature.ImmutableState(feature).currentState;
 
         this.nameToRevTypeIndex = nameToRevTypeInded;
-        // Integer defaultGeomIndex = nameToRevTypeInded.get(null);
-        // if (defaultGeomIndex == null) {
-        // this.defaultGeomIndex = -1;
-        // defaultGeomIsPoint = false;
-        // } else {
-        // this.defaultGeomIndex = defaultGeomIndex.intValue();
-        // Class<?> binding = featureType.getGeometryDescriptor().getType().getBinding();
-        // defaultGeomIsPoint = Point.class.isAssignableFrom(binding);
-        // }
+        Integer defaultGeomIndex = nameToRevTypeInded.get(null);
+        if (defaultGeomIndex == null) {
+            this.defaultGeomIndex = -1;
+            // defaultGeomIsPoint = false;
+        } else {
+            this.defaultGeomIndex = defaultGeomIndex.intValue();
+            // Class<?> binding = featureType.getGeometryDescriptor().getType().getBinding();
+            // defaultGeomIsPoint = Point.class.isAssignableFrom(binding);
+        }
     }
 
     @Override
@@ -206,7 +246,14 @@ public class GeogigSimpleFeature implements SimpleFeature {
         // }
         // return DEFAULT_GEOM_FACTORY.createPoint(new Coordinate(e.getMinX(), e.getMinY()));
         // }
-        return state.get().get(index);
+        Object value;
+        State state = this.state.get();
+        if (index == defaultGeomIndex && geomFac != null) {
+            value = state.get(index, geomFac);
+        } else {
+            value = state.get(index);
+        }
+        return value;
     }
 
     @Override

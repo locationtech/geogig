@@ -470,12 +470,10 @@ public class PGStorage {
     private static void createObjectTableIndex(Connection cx, String tableName)
             throws SQLException {
 
-        String index = String.format("CREATE INDEX %s_objectid_h1_hash ON %s USING HASH(((id).h1))",
+        String index = String.format("CREATE INDEX %s_objectid_h1_hash ON %s (((id).h1))",
                 stripSchema(tableName), tableName);
         run(cx, index);
-        // index = String.format("CREATE INDEX %s_hash2 ON %s USING HASH(hash2)",
-        // stripSchema(tableName), tableName);
-        // run(cx, index);
+
     }
 
     private static void createPartitionedChildTables(final Connection cx, final String parentTable)

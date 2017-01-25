@@ -188,7 +188,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
     }
 
     @Override
-    public void checkConfig() {
-        // No-op
+    public boolean checkConfig() {
+        return true;
     }
 }

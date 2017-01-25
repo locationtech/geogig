@@ -44,6 +44,7 @@ import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
@@ -77,6 +78,22 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     public void open() {
         super.open();
         repositoryId = config.getRepositoryId();
+        if (this.dataSource != null) {
+            if (!PGStorage.tableExists(dataSource, config.getTables().index())) {
+                try (Connection cx = PGStorage.newConnection(dataSource)) {
+                    try {
+                        cx.setAutoCommit(false);
+                        PGStorage.createIndexTables(cx, config.getTables());
+                        cx.commit();
+                    } catch (SQLException e) {
+                        cx.rollback();
+                        Throwables.propagate(e);
+                    }
+                } catch (SQLException e) {
+                    throw propagate(e);
+                }
+            }
+        }
     }
 
     @Override
@@ -95,8 +112,8 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     }
 
     @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        StorageType.INDEX.verify(configdb, FORMAT_NAME, VERSION);
+    public boolean checkConfig() throws RepositoryConnectionException {
+        return StorageType.INDEX.verify(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override

@@ -43,8 +43,8 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
     }
 
     @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
+    public boolean checkConfig() throws RepositoryConnectionException {
+        return StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override

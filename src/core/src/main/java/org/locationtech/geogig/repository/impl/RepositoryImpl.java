@@ -111,10 +111,18 @@ public class RepositoryImpl implements Repository {
         Preconditions.checkState(repoUrl.isPresent(), "Repository URL can't be located");
         this.repositoryLocation = repoUrl.get();
 
-        context.refDatabase().checkConfig();
-        context.objectDatabase().checkConfig();
-        context.indexDatabase().checkConfig();
-        context.graphDatabase().checkConfig();
+        if (!context.refDatabase().checkConfig()) {
+            context.refDatabase().configure();
+        }
+        if (!context.objectDatabase().checkConfig()) {
+            context.objectDatabase().configure();
+        }
+        if (!context.indexDatabase().checkConfig()) {
+            context.indexDatabase().configure();
+        }
+        if (!context.graphDatabase().checkConfig()) {
+            context.graphDatabase().configure();
+        }
         context.refDatabase().create();
         context.objectDatabase().open();
         context.indexDatabase().open();

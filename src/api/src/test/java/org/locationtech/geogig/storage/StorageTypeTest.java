@@ -10,6 +10,8 @@
 package org.locationtech.geogig.storage;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -82,7 +84,8 @@ public class StorageTypeTest {
     public void testVerify() throws RepositoryConnectionException {
         ConfigDatabase testConfig = new TestConfigDatabase();
         // nothing configured
-        StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
+        boolean verified = StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
+        assertFalse(verified);
 
         testConfig.put("storage.graph", "testGraph");
         try {
@@ -95,13 +98,10 @@ public class StorageTypeTest {
 
         testConfig.remove("storage.graph");
         testConfig.put("testGraph.version", "1.0");
-        try {
-            // only version configured
-            StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
-            fail();
-        } catch (RepositoryConnectionException e) {
-            // expected
-        }
+
+        // only the format version was configured
+        verified = StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
+        assertFalse(verified);
 
         testConfig.put("storage.graph", "testGraph");
         try {
@@ -120,6 +120,7 @@ public class StorageTypeTest {
             // expected
         }
 
-        StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
+        verified = StorageType.GRAPH.verify(testConfig, "testGraph", "1.0");
+        assertTrue(verified);
     }
 }

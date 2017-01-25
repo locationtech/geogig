@@ -62,13 +62,15 @@ public enum StorageType {
      * @param configDB the config database
      * @param formatName the format name of the storage type
      * @param version the version of the storage format
+     * @return {@code true} if the storage type was configured and verified, {@code false} if it was
+     *         unset
      * @throws RepositoryConnectionException
      */
-    public void verify(ConfigDatabase configDB, String formatName, String version)
+    public boolean verify(ConfigDatabase configDB, String formatName, String version)
             throws RepositoryConnectionException {
         Optional<String> storageName = configDB.get("storage." + key);
         Optional<String> storageVersion = configDB.get(formatName + ".version");
-        boolean unset = !(storageName.isPresent() || storageVersion.isPresent());
+        boolean unset = !storageName.isPresent();
         boolean valid = storageName.isPresent() && formatName.equals(storageName.get())
                 && storageVersion.isPresent() && version.equals(storageVersion.get());
         if (!(unset || valid)) {
@@ -76,5 +78,6 @@ public enum StorageType {
                     + formatName + " and version: " + version + ", found format: "
                     + storageName.orNull() + ", version: " + storageVersion.orNull());
         }
+        return !unset;
     }
 }

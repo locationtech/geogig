@@ -81,8 +81,8 @@ public class PGRefDatabase implements RefDatabase {
     }
 
     @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        StorageType.OBJECT.verify(configDB, FORMAT_NAME, VERSION);
+    public boolean checkConfig() throws RepositoryConnectionException {
+        return StorageType.OBJECT.verify(configDB, FORMAT_NAME, VERSION);
     }
 
     @Override

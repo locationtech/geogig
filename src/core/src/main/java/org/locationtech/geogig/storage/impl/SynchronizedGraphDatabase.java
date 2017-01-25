@@ -34,9 +34,9 @@ public class SynchronizedGraphDatabase implements GraphDatabase {
         }
     }
 
-    public void checkConfig() throws RepositoryConnectionException {
+    public boolean checkConfig() throws RepositoryConnectionException {
         synchronized (delegate) {
-            delegate.checkConfig();
+            return delegate.checkConfig();
         }
     }
 

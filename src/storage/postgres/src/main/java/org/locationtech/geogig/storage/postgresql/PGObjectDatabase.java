@@ -58,8 +58,8 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
     }
 
     @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
+    public boolean checkConfig() throws RepositoryConnectionException {
+        return StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override

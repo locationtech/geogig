@@ -89,8 +89,8 @@ public class FileObjectDatabase extends FileObjectStore implements ObjectDatabas
     }
 
     @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        StorageType.OBJECT.verify(configDB, "file", "1.0");
+    public boolean checkConfig() throws RepositoryConnectionException {
+        return StorageType.OBJECT.verify(configDB, "file", "1.0");
     }
 
 

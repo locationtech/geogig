@@ -88,8 +88,8 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
     }
 
     @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        StorageType.INDEX.verify(configDB, "file", "1.0");
+    public boolean checkConfig() throws RepositoryConnectionException {
+        return StorageType.INDEX.verify(configDB, "file", "1.0");
     }
 
     @Override

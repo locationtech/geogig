@@ -167,9 +167,9 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
                 diffOp.setNewTree(newQuadTree.get());
                 diffOp.setLeftSource(context.indexDatabase());
                 diffOp.setRightSource(context.indexDatabase());
-                System.err.printf("Using Quad-Tree %s for %s\n",
-                        newQuadTree.get().toString().substring(0, 8),
-                        newTreeRef.get().getNode().getName());
+                // System.err.printf("Using Quad-Tree %s for %s\n",
+                // newQuadTree.get().toString().substring(0, 8),
+                // newTreeRef.get().getNode().getName());
             } else {
                 ObjectId oldTreeId = resolveTreeId(oldTreeRef);
                 ObjectId newTreeId = resolveTreeId(newTreeRef);
@@ -348,8 +348,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             timer.stop();
             sourceIterator.close();
             sourceIterator = null;
-            System.err.printf("######## Stats: %s, Time: %s ########\n\n",
-                    diffOp.getStats().orNull(), timer);
+            // System.err.printf("######## Stats: %s, Time: %s ########\n\n",
+            // diffOp.getStats().orNull(), timer);
             LOGGER.debug(String.format("######## Stats: %s, Time: %s ########\n\n",
                     diffOp.getStats().orNull(), timer));
 

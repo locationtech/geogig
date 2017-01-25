@@ -21,7 +21,7 @@ import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
 
 import com.google.common.base.Throwables;
 
-public class IndexSerializer {
+public class IndexInfoSerializer {
 
     public static void serialize(IndexInfo index, DataOutput out) {
         try {

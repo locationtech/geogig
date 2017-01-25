@@ -20,7 +20,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
  * <p>
  * Implementations of this interface are discovered using the standard Java {@link ServiceLoader}
  * SPI lookup, by looking for implementing class names at
- * {@code META-INF/services/org.locationtech.geogig.api.hooks.CommandHook} resources.
+ * {@code META-INF/services/org.locationtech.geogig.hooks.CommandHook} resources.
  * <p>
  * Implementations must have a default constructor (or no explicit constructor at all), and must be
  * thread safe.

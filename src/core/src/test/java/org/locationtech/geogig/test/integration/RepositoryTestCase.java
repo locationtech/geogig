@@ -534,4 +534,8 @@ public abstract class RepositoryTestCase extends Assert {
         return map;
     }
 
+    public void add() {
+        repo.command(AddOp.class).call();
+    }
+
 }

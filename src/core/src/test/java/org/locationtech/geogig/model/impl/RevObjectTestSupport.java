@@ -11,21 +11,24 @@ package org.locationtech.geogig.model.impl;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevFeatureBuilder;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.HashObject;
+import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.hash.HashCode;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -170,4 +173,20 @@ public class RevObjectTestSupport {
         return ObjectId.createNoClone(hashCode.asBytes());
     }
 
+    public static Set<Node> getTreeNodes(RevTree tree, ObjectStore source) {
+        Set<Node> nodes = new HashSet<>();
+        if (tree.buckets().isEmpty()) {
+            nodes.addAll(tree.features());
+            nodes.addAll(tree.trees());
+        } else {
+            Iterable<ObjectId> ids = Iterables.transform(tree.buckets().values(),
+                    (b) -> b.getObjectId());
+            Iterator<RevTree> buckets = source.getAll(ids, BulkOpListener.NOOP_LISTENER,
+                    RevTree.class);
+            while (buckets.hasNext()) {
+                nodes.addAll(getTreeNodes(buckets.next(), source));
+            }
+        }
+        return nodes;
+    }
 }

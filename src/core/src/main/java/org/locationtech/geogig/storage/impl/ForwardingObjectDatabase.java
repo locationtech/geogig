@@ -46,8 +46,8 @@ public class ForwardingObjectDatabase implements ObjectDatabase {
     }
 
     @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        subject.get().checkConfig();
+    public boolean checkConfig() throws RepositoryConnectionException {
+        return subject.get().checkConfig();
     }
 
     @Override

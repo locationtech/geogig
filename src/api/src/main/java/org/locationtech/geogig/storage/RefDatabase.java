@@ -35,8 +35,11 @@ public interface RefDatabase extends Closeable {
 
     /**
      * Verify the configuration before opening.
+     * 
+     * @return {@code true} if the config was set, {@code false} otherwise
+     * @throws RepositoryConnectionException if the config is incompatible
      */
-    public abstract void checkConfig() throws RepositoryConnectionException;
+    public abstract boolean checkConfig() throws RepositoryConnectionException;
 
     /**
      * Unlocks access to the main repository refs.

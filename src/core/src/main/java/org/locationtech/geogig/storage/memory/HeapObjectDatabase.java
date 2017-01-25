@@ -97,8 +97,8 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     }
 
     @Override
-    public void checkConfig() {
-        // No-op
+    public boolean checkConfig() {
+        return true;
     }
 
     @Override

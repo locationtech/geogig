@@ -95,8 +95,8 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     }
 
     @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        StorageType.INDEX.verify(configdb, FORMAT_NAME, VERSION);
+    public boolean checkConfig() throws RepositoryConnectionException {
+        return StorageType.INDEX.verify(configdb, FORMAT_NAME, VERSION);
     }
 
     @Override

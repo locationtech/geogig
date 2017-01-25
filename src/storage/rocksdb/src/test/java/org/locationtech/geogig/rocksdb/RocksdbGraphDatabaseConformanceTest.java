@@ -10,6 +10,7 @@
 package org.locationtech.geogig.rocksdb;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
@@ -42,7 +43,7 @@ public class RocksdbGraphDatabaseConformanceTest extends GraphDatabaseTest {
         assertEquals(RocksdbStorageProvider.FORMAT_NAME,
                 configDB.get("storage." + StorageType.GRAPH.key).get());
 
-        database.checkConfig();
+        assertTrue(database.checkConfig());
 
     }
 

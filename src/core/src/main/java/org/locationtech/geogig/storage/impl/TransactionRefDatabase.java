@@ -340,7 +340,7 @@ public class TransactionRefDatabase implements RefDatabase {
     }
 
     @Override
-    public void checkConfig() {
-        // No-op
+    public boolean checkConfig() {
+        return true;
     }
 }

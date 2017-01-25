@@ -100,8 +100,8 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     @Override
-    public void checkConfig() {
-        // No-op
+    public boolean checkConfig() {
+        return true;
     }
 
     @Override

@@ -229,6 +229,23 @@ public class PGStorage {
         return true;
     }
 
+    public static boolean tableExists(final DataSource dataSource, final String tableName) {
+        boolean tableExists = false;
+        if (dataSource != null) {
+            try (Connection cx = PGStorage.newConnection(dataSource)) {
+                DatabaseMetaData md = cx.getMetaData();
+                final String schema = PGStorage.schema(tableName);
+                final String table = PGStorage.stripSchema(tableName);
+                try (ResultSet tables = md.getTables(null, schema, table, null)) {
+                    tableExists = tables.next();
+                }
+            } catch (SQLException e) {
+                throw propagate(e);
+            }
+        }
+        return tableExists;
+    }
+
     public static void createTables(final Environment config) {
 
         final TableNames tables = config.getTables();
@@ -403,7 +420,7 @@ public class PGStorage {
         run(cx, sql);
     }
 
-    private static void createIndexTables(Connection cx, TableNames tables) throws SQLException {
+    public static void createIndexTables(Connection cx, TableNames tables) throws SQLException {
         String indexTable = tables.index();
         String sql = format(
                 "CREATE TABLE %s (repository INTEGER, treeName TEXT, attributeName TEXT, strategy TEXT, metadata BYTEA"

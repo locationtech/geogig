@@ -148,7 +148,7 @@ public class PluginsModule extends AbstractModule {
             if (format == null || version == null) {
                 // .get, not .orNull. we should only be using the plugin providers when there are
                 // plugins set up
-                return defaults.getObjects().get();
+                return defaults.getIndex().get();
             }
 
             for (StorageProvider p : StorageProvider.findProviders()) {

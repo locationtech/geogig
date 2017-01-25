@@ -73,6 +73,14 @@ CREATE TABLE geogig_blob (repository INTEGER, namespace TEXT, path TEXT, blob BY
                           PRIMARY KEY(repository,namespace,path), 
                           FOREIGN KEY (repository) REFERENCES geogig_repository(repository) ON DELETE CASCADE);
 
+-- tables related to DAG indexing
+CREATE TABLE geogig_index (repository INTEGER, treeName TEXT, attributeName TEXT, strategy TEXT, metadata BYTEA, PRIMARY KEY(repository, treeName, attributeName), FOREIGN KEY (repository) REFERENCES geogig_repository(repository) ON DELETE CASCADE);
+CREATE TABLE geogig_index_mappings (repository INTEGER, indexId OBJECTID, treeId OBJECTID, indexTreeId OBJECTID, PRIMARY KEY(repository, indexId, treeId), FOREIGN KEY (repository) REFERENCES geogig_repository(repository) ON DELETE CASCADE);
+CREATE TABLE geogig_index_object (id OBJECTID, object BYTEA) WITHOUT OIDS;
+CREATE OR REPLACE RULE geogig_index_object_ignore_duplicate_inserts AS ON INSERT TO geogig_index_object WHERE (EXISTS ( SELECT 1 FROM geogig_index_object WHERE ((id).h1) = (NEW.id).h1 AND id = NEW.id)) DO INSTEAD NOTHING;
+CREATE INDEX geogig_index_object_objectid_h1_hash ON geogig_index_object (((id).h1));
+
+
 -- The commit graph "database", discriminated by repository PK, used to have a two-way navigable commit graph
 -- to speed up some operations and to hold extra commit metadata such as the upstream commit a given commit is
 -- mapped to when creating sparse and shallow clones 

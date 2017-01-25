@@ -293,11 +293,11 @@ public class PGStorage {
     }
 
     private static void run(final Connection cx, final String sql) throws SQLException {
-        // String s = sql;
-        // if (!s.endsWith(";")) {
-        // s += ";";
-        // }
-        // System.out.println(s);
+        String s = sql;
+        if (!s.endsWith(";")) {
+            s += ";";
+        }
+        System.out.println(s);
         try (Statement st = cx.createStatement()) {
             st.execute(log(sql, LOG));
         }
@@ -422,7 +422,7 @@ public class PGStorage {
         sql = format(OBJECT_TABLE_STMT, indexObjects);
         run(cx, sql);
         createIgnoreDuplicatesRule(cx, indexObjects);
-
+        createObjectTableIndex(cx, indexObjects);
     }
 
     /**
@@ -493,12 +493,9 @@ public class PGStorage {
     private static void createObjectTableIndex(Connection cx, String tableName)
             throws SQLException {
 
-        String index = String.format("CREATE INDEX %s_objectid_h1_hash ON %s USING HASH(((id).h1))",
+        String index = String.format("CREATE INDEX %s_objectid_h1_hash ON %s (((id).h1))",
                 stripSchema(tableName), tableName);
         run(cx, index);
-        // index = String.format("CREATE INDEX %s_hash2 ON %s USING HASH(hash2)",
-        // stripSchema(tableName), tableName);
-        // run(cx, index);
     }
 
     private static void createPartitionedChildTables(final Connection cx, final String parentTable)

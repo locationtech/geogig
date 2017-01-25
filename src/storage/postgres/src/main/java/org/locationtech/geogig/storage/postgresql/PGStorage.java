@@ -293,11 +293,11 @@ public class PGStorage {
     }
 
     private static void run(final Connection cx, final String sql) throws SQLException {
-        String s = sql;
-        if (!s.endsWith(";")) {
-            s += ";";
-        }
-        System.out.println(s);
+        // String s = sql;
+        // if (!s.endsWith(";")) {
+        // s += ";";
+        // }
+        // System.out.println(s);
         try (Statement st = cx.createStatement()) {
             st.execute(log(sql, LOG));
         }

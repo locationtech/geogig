@@ -13,24 +13,21 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureSource;
-import org.geotools.data.MaxFeatureReader;
 import org.geotools.data.Query;
 import org.geotools.data.QueryCapabilities;
 import org.geotools.data.Transaction;
-import org.geotools.data.sort.SortedFeatureReader;
 import org.geotools.data.store.ContentEntry;
 import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.data.store.ContentState;
 import org.geotools.factory.Hints;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.filter.Filters;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.renderer.ScreenMap;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
+import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
@@ -201,24 +198,16 @@ class GeogigFeatureSource extends ContentFeatureSource {
             return ReferencedEnvelope.create(crs);
         }
 
-        FeatureReader<SimpleFeatureType, SimpleFeature> features;
-        if (isNaturalOrder(query.getSortBy())) {
-            Integer offset = query.getStartIndex();
-            Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null
-                    : query.getMaxFeatures();
-            features = getNativeReader(Query.NO_NAMES, filter, offset, maxFeatures,
-                    query.getHints());
-        } else {
-            features = getReader(query);
-        }
+        query = new Query(query);
+        query.setPropertyNames(Query.NO_NAMES);
+
         ReferencedEnvelope bounds = new ReferencedEnvelope(crs);
-        try {
+        try (FeatureReader<SimpleFeatureType, SimpleFeature> features = getReaderInternal(query)) {
             while (features.hasNext()) {
                 bounds.expandToInclude((ReferencedEnvelope) features.next().getBounds());
             }
-        } finally {
-            features.close();
         }
+
         return bounds;
     }
 
@@ -248,23 +237,17 @@ class GeogigFeatureSource extends ContentFeatureSource {
             return size;
         }
 
-        FeatureReader<SimpleFeatureType, SimpleFeature> features;
-        if (isNaturalOrder(query.getSortBy())) {
-            features = getNativeReader(Query.NO_NAMES, filter, offset, maxFeatures,
-                    query.getHints());
-        } else {
-            features = getReader(query);
-        }
+        query = new Query(query);
+        query.setPropertyNames(Query.NO_NAMES);
+        query.setSortBy(null);
+
         int count = 0;
-        try {
+        try (FeatureReader<SimpleFeatureType, SimpleFeature> features = getReaderInternal(query)) {
             while (features.hasNext()) {
                 features.next();
                 count++;
             }
-        } finally {
-            features.close();
         }
-
         return count;
     }
 
@@ -272,34 +255,38 @@ class GeogigFeatureSource extends ContentFeatureSource {
     protected FeatureReader<SimpleFeatureType, SimpleFeature> getReaderInternal(final Query query)
             throws IOException {
 
-        FeatureReader<SimpleFeatureType, SimpleFeature> reader;
+        final Context context = getCommandLocator();
 
-        final boolean naturalOrder = isNaturalOrder(query.getSortBy());
-        final int startIndex = Optional.fromNullable(query.getStartIndex()).or(Integer.valueOf(0));
-        final Integer maxFeatures = query.getMaxFeatures() == Integer.MAX_VALUE ? null
+        final Hints hints = query.getHints();
+        final @Nullable GeometryFactory geometryFactory = (GeometryFactory) hints
+                .get(Hints.JTS_GEOMETRY_FACTORY);
+        final @Nullable Integer offset = query.getStartIndex();
+        final @Nullable Integer limit = query.isMaxFeaturesUnlimited() ? null
                 : query.getMaxFeatures();
-        final Filter filter = query.getFilter();
-        final String[] propertyNames = query.getPropertyNames();
-        if (naturalOrder) {
-            reader = getNativeReader(propertyNames, filter, startIndex, maxFeatures,
-                    query.getHints());
-        } else {
-            reader = getNativeReader(propertyNames, filter, null, null, query.getHints());
-            // sorting
-            reader = new SortedFeatureReader(DataUtilities.simple(reader), query);
-            if (startIndex > 0) {
-                // skip the first n records
-                for (int i = 0; i < startIndex && reader.hasNext(); i++) {
-                    reader.next();
-                }
-            }
-            if (maxFeatures != null && maxFeatures > 0) {
-                reader = new MaxFeatureReader<SimpleFeatureType, SimpleFeature>(reader,
-                        maxFeatures);
-            }
-        }
+        final @Nullable ScreenMap screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
+        final @Nullable String[] propertyNames = query.getPropertyNames();
+        final @Nullable SortBy[] sortBy = query.getSortBy();
 
-        return reader;
+        final Filter filter = query.getFilter();
+
+        FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, getTypeTreePath());
+
+        FeatureReader<SimpleFeatureType, SimpleFeature> featureReader = builder//
+                .filter(filter)//
+                .headRef(getRootRef())//
+                .oldHeadRef(oldRoot())//
+                .changeType(changeType())//
+                .geometryFactory(geometryFactory)//
+                .filter(filter)//
+                .offset(offset)//
+                .limit(limit)//
+                .propertyNames(propertyNames)//
+                .screenMap(screenMap)//
+                .sortBy(sortBy)//
+                .build();
+
+        return featureReader;
+
     }
 
     private boolean isNaturalOrder(@Nullable SortBy[] sortBy) {
@@ -314,42 +301,42 @@ class GeogigFeatureSource extends ContentFeatureSource {
      * @param propertyNames properties to retrieve, empty array for no properties at all
      *        {@link Query#NO_NAMES}, {@code null} means all properties {@link Query#ALL_NAMES}
      */
-    private FeatureReader<SimpleFeatureType, SimpleFeature> getNativeReader(
-            @Nullable String[] propertyNames, Filter filter, @Nullable Integer offset,
-            @Nullable Integer maxFeatures, @Nullable Hints hints) {
-
-        LOGGER.trace("Query filter: {}", filter);
-        filter = (Filter) filter.accept(new SimplifyingFilterVisitor(), null);
-        LOGGER.trace("Simplified filter: {}", filter);
-
-        GeogigFeatureReader<SimpleFeatureType, SimpleFeature> nativeReader;
-
-        final String rootRef = getRootRef();
-        final String featureTypeTreePath = getTypeTreePath();
-
-        final SimpleFeatureType fullType = getSchema();
-
-        boolean ignoreAttributes = false;
-        if (propertyNames != null && propertyNames.length == 0) {
-            String[] inProcessFilteringAttributes = Filters.attributeNames(filter, fullType);
-            ignoreAttributes = inProcessFilteringAttributes.length == 0;
-        }
-
-        final String compareRootRef = oldRoot();
-        final GeoGigDataStore.ChangeType changeType = changeType();
-        final Context context = getCommandLocator();
-
-        ScreenMap screenMap = null;
-        GeometryFactory geomFac = null;
-        if (hints != null) {
-            screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
-            geomFac = (GeometryFactory) hints.get(Hints.JTS_GEOMETRY_FACTORY);
-        }
-        nativeReader = new GeogigFeatureReader<SimpleFeatureType, SimpleFeature>(context, fullType,
-                filter, featureTypeTreePath, rootRef, compareRootRef, changeType, offset,
-                maxFeatures, screenMap, ignoreAttributes, geomFac);
-        return nativeReader;
-    }
+    // private FeatureReader<SimpleFeatureType, SimpleFeature> getNativeReader(
+    // @Nullable String[] propertyNames, Filter filter, @Nullable Integer offset,
+    // @Nullable Integer maxFeatures, @Nullable Hints hints) {
+    //
+    // LOGGER.trace("Query filter: {}", filter);
+    // filter = (Filter) filter.accept(new SimplifyingFilterVisitor(), null);
+    // LOGGER.trace("Simplified filter: {}", filter);
+    //
+    // GeogigFeatureReader<SimpleFeatureType, SimpleFeature> nativeReader;
+    //
+    // final String rootRef = getRootRef();
+    // final String featureTypeTreePath = getTypeTreePath();
+    //
+    // final SimpleFeatureType fullType = getSchema();
+    //
+    // boolean ignoreAttributes = false;
+    // if (propertyNames != null && propertyNames.length == 0) {
+    // String[] inProcessFilteringAttributes = Filters.attributeNames(filter, fullType);
+    // ignoreAttributes = inProcessFilteringAttributes.length == 0;
+    // }
+    //
+    // final String compareRootRef = oldRoot();
+    // final GeoGigDataStore.ChangeType changeType = changeType();
+    // final Context context = getCommandLocator();
+    //
+    // ScreenMap screenMap = null;
+    // GeometryFactory geomFac = null;
+    // if (hints != null) {
+    // screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
+    // geomFac = (GeometryFactory) hints.get(Hints.JTS_GEOMETRY_FACTORY);
+    // }
+    // nativeReader = new GeogigFeatureReader<SimpleFeatureType, SimpleFeature>(context, fullType,
+    // filter, featureTypeTreePath, rootRef, compareRootRef, changeType, offset,
+    // maxFeatures, screenMap, ignoreAttributes, geomFac);
+    // return nativeReader;
+    // }
 
     public void setChangeType(GeoGigDataStore.ChangeType changeType) {
         this.changeType = changeType;

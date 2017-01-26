@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.geotools.data;
+package org.locationtech.geogig.geotools.data.reader;
 
 import java.util.ArrayList;
 import java.util.List;

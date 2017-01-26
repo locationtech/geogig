@@ -269,7 +269,9 @@ class GeogigFeatureSource extends ContentFeatureSource {
 
         final Filter filter = query.getFilter();
 
-        FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, getTypeTreePath());
+        final SimpleFeatureType fullSchema = getAbsoluteSchema();
+
+        FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, fullSchema);
 
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader = builder//
                 .filter(filter)//

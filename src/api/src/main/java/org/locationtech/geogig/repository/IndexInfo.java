@@ -11,6 +11,7 @@ package org.locationtech.geogig.repository;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
@@ -20,6 +21,8 @@ import org.locationtech.geogig.model.RevTree;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.common.hash.Hasher;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -101,6 +104,17 @@ public class IndexInfo {
         hasher.putBytes(treeName.getBytes(Charsets.UTF_8));
         hasher.putBytes(attributeName.getBytes(Charsets.UTF_8));
         return ObjectId.createNoClone(hasher.hash().asBytes());
+    }
+
+    public static Set<String> getMaterializedAttributeNames(IndexInfo info) {
+        Set<String> availableAttNames = ImmutableSet.of();
+
+        final @Nullable String[] attNames = (String[]) info.getMetadata()
+                .get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
+        if (attNames != null) {
+            availableAttNames = Sets.newHashSet(attNames);
+        }
+        return availableAttNames;
     }
 
     @SuppressWarnings("unchecked")

@@ -81,7 +81,7 @@ public class BackgroundingIterator<T> implements Iterator<T>, Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         executorService.shutdownNow(); // the thread could be blocked
         queue.clear();
     }

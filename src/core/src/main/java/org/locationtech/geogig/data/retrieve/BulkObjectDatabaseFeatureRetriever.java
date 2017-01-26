@@ -12,14 +12,19 @@ package org.locationtech.geogig.data.retrieve;
 
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-import com.google.common.base.Function;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.NodeRef;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
+
+import com.google.common.base.Function;
 
 
 /**
@@ -33,9 +38,9 @@ import org.locationtech.geogig.storage.ObjectDatabase;
  * This provides non-geotools access to the feature data.
  */
 public class BulkObjectDatabaseFeatureRetriever implements Function<List<NodeRef>, Iterator<FeatureInfo>> {
-    ObjectDatabase odb;
+    ObjectStore odb;
 
-    public BulkObjectDatabaseFeatureRetriever(ObjectDatabase odb) {
+    public BulkObjectDatabaseFeatureRetriever(ObjectStore odb) {
         this.odb = odb;
     }
 

@@ -12,15 +12,16 @@ package org.locationtech.geogig.data.retrieve;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.common.base.Function;
 import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.NodeRef;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
-import org.locationtech.geogig.repository.FeatureInfo;
 
 
 /**
@@ -39,7 +40,7 @@ import org.locationtech.geogig.repository.FeatureInfo;
  *         construct features.
  */
 public class BulkFeatureRetriever {
-    ObjectDatabase odb;
+    ObjectStore odb;
 
     int nodeFetchSize = 10_000;
 
@@ -47,7 +48,7 @@ public class BulkFeatureRetriever {
 
     int featureSize = featureFetchSize / 5;
 
-    public BulkFeatureRetriever(ObjectDatabase odb) {
+    public BulkFeatureRetriever(ObjectStore odb) {
         this.odb = odb;
     }
 
@@ -104,7 +105,7 @@ public class BulkFeatureRetriever {
      * @param schema
      * @return
      */
-    public Iterator<SimpleFeature> getGeoToolsFeatures(Iterator<NodeRef> refs, SimpleFeatureType schema) {
+    public AutoCloseableIterator<SimpleFeature> getGeoToolsFeatures(AutoCloseableIterator<NodeRef> refs, SimpleFeatureType schema) {
         //builder for this particular schema
         FeatureBuilder featureBuilder = new FeatureBuilder(schema);
 
@@ -113,6 +114,28 @@ public class BulkFeatureRetriever {
 
         Iterator<FeatureInfo> fis = getGeoGIGFeatures(refs);
         Iterator<SimpleFeature> result = Iterators.transform(fis, funcBuildFeature);
-        return new BackgroundingIterator<>(result, featureSize);
+        final BackgroundingIterator<SimpleFeature> backgroundingIterator = new BackgroundingIterator<>(result, featureSize);
+        
+        return new AutoCloseableIterator<SimpleFeature>() {
+
+            @Override
+            public void close() {
+                try {
+                    backgroundingIterator.close();
+                } finally {
+                    refs.close();
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                return backgroundingIterator.hasNext();
+            }
+
+            @Override
+            public SimpleFeature next() {
+                return backgroundingIterator.next();
+            }
+        };
     }
 }

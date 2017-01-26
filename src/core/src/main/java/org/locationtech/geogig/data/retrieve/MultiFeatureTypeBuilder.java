@@ -17,21 +17,21 @@ import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Function;
-import org.locationtech.geogig.repository.FeatureInfo;
 
 
 public class MultiFeatureTypeBuilder implements Function<FeatureInfo, SimpleFeature> {
 
     Map<ObjectId, FeatureBuilder> cache = new HashMap<ObjectId, FeatureBuilder>();
 
-    ObjectDatabase odb;
+    ObjectStore odb;
 
-    public MultiFeatureTypeBuilder(ObjectDatabase odb) {
+    public MultiFeatureTypeBuilder(ObjectStore odb) {
         this.odb = odb;
     }
 

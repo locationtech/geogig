@@ -73,12 +73,24 @@ public class PGRepositoryResolver extends RepositoryResolver {
         }
         PGConfigDatabase configDb = new PGConfigDatabase(config);
         if (config.getRepositoryName() != null) {
-            Optional<String> refsFormat = configDb.get("storage.refs");
-            if (!refsFormat.isPresent()) {
+            Optional<String> configEntry = configDb.get(PGStorageProvider.FORMAT_NAME + ".version");
+            if (!configEntry.isPresent()) {
                 configDb.put(PGStorageProvider.FORMAT_NAME + ".version", PGStorageProvider.VERSION);
+            }
+            configEntry = configDb.get("storage.refs");
+            if (!configEntry.isPresent()) {
                 configDb.put("storage.refs", PGStorageProvider.FORMAT_NAME);
+            }
+            configEntry = configDb.get("storage.objects");
+            if (!configEntry.isPresent()) {
                 configDb.put("storage.objects", PGStorageProvider.FORMAT_NAME);
+            }
+            configEntry = configDb.get("storage.index");
+            if (!configEntry.isPresent()) {
                 configDb.put("storage.index", PGStorageProvider.FORMAT_NAME);
+            }
+            configEntry = configDb.get("storage.graph");
+            if (!configEntry.isPresent()) {
                 configDb.put("storage.graph", PGStorageProvider.FORMAT_NAME);
             }
         }

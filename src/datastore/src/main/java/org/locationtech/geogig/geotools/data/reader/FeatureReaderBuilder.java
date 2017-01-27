@@ -1,3 +1,12 @@
+/* Copyright (c) 2017 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Gabriel Roldan (Boundless) - initial implementation
+ */
 package org.locationtech.geogig.geotools.data.reader;
 
 import static com.google.common.base.Optional.absent;
@@ -5,6 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.notNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +25,7 @@ import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.Query;
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.feature.SchemaException;
 import org.geotools.filter.spatial.ReprojectingFilterVisitor;
 import org.geotools.filter.visitor.SpatialFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -27,6 +38,8 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.DiffTree;
+import org.locationtech.geogig.plumbing.DiffTree.Stats;
+import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
@@ -39,6 +52,7 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
@@ -48,19 +62,26 @@ import org.opengis.filter.identity.Identifier;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
 
 public class FeatureReaderBuilder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FeatureReaderBuilder.class);
 
     private static final GeometryFactory DEFAULT_GEOMETRY_FACTORY = new GeometryFactory(
             new PackedCoordinateSequenceFactory());
@@ -72,6 +93,10 @@ public class FeatureReaderBuilder {
     private final Context repo;
 
     private final SimpleFeatureType fullSchema;
+
+    private final Set<String> fullSchemaAttributeNames;
+
+    private @Nullable String oldHeadRef;
 
     private String headRef = Ref.HEAD;
 
@@ -87,19 +112,23 @@ public class FeatureReaderBuilder {
 
     private @Nullable Integer offset;
 
-    private @Nullable String oldHeadRef;
-
     private ChangeType changeType = ChangeType.ADDED;
 
     private GeometryFactory geometryFactory = DEFAULT_GEOMETRY_FACTORY;
 
-    public FeatureReaderBuilder(Context repo, SimpleFeatureType fullSchema) {
+    private NodeRef typeRef;
+
+    public FeatureReaderBuilder(Context repo, SimpleFeatureType fullSchema, NodeRef typeRef) {
         this.repo = repo;
         this.fullSchema = fullSchema;
+        this.typeRef = typeRef;
+        this.fullSchemaAttributeNames = Sets.newHashSet(
+                Lists.transform(fullSchema.getAttributeDescriptors(), (a) -> a.getLocalName()));
     }
 
-    public static FeatureReaderBuilder builder(Context repo, SimpleFeatureType fullSchema) {
-        return new FeatureReaderBuilder(repo, fullSchema);
+    public static FeatureReaderBuilder builder(Context repo, SimpleFeatureType fullSchema,
+            NodeRef typeRef) {
+        return new FeatureReaderBuilder(repo, fullSchema, typeRef);
     }
 
     public FeatureReaderBuilder oldHeadRef(@Nullable String oldHeadRef) {
@@ -119,6 +148,10 @@ public class FeatureReaderBuilder {
         return this;
     }
 
+    /**
+     * @param propertyNames which property names to include as the output schema, {@code null} means
+     *        all properties
+     */
     public FeatureReaderBuilder propertyNames(@Nullable String... propertyNames) {
         this.outputSchemaPropertyNames = propertyNames;
         return this;
@@ -161,18 +194,20 @@ public class FeatureReaderBuilder {
         // query filter in native CRS
         final Filter nativeFilter = resolveNativeFilter();
 
-        // properties needed by the output schema and the in-process filter
-        final Set<String> requiredProperties = resolveRequiredProperties(nativeFilter);
+        // properties needed by the output schema and the in-process filter, null means all
+        // properties, empty list means no-propertires needed
+        final @Nullable Set<String> requiredProperties = resolveRequiredProperties(nativeFilter);
         // properties present in the RevTree nodes' extra data
         final Set<String> materializedProperties;
         // whether the RevTree nodes contain all required properties (hence no need to fetch
         // RevFeatures from the database)
         final boolean indexContainsAllRequiredProperties;
         // whether the filter is fully supported by the NodeRef filtering (hence no need for
-        // pos-processing filtering)
+        // pos-processing filtering). This is the case if the filter is a simple BBOX, Id, or
+        // INCLUDE, or all the required properties are present in the index Nodes
         final boolean filterIsFullySupported;
-        
-        final ObjectId featureTypeId = null;
+
+        final ObjectId featureTypeId = typeRef.getMetadataId();
 
         // the RevTree id at the left side of the diff
         final ObjectId oldFeatureTypeTree;
@@ -188,11 +223,18 @@ public class FeatureReaderBuilder {
             final Optional<Index> oldHeadIndex;
             final Optional<Index> headIndex;
 
-            final ObjectId oldCanonicalTree = resolveCanonicalTree(oldHeadRef, typeName);
-            final ObjectId newCanonicalTree = resolveCanonicalTree(headRef, typeName);
+            final Optional<NodeRef> oldCanonicalTree = resolveCanonicalTree(oldHeadRef, typeName);
+            final Optional<NodeRef> newCanonicalTree = resolveCanonicalTree(headRef, typeName);
+            final ObjectId oldCanonicalTreeId = oldCanonicalTree.isPresent()
+                    ? oldCanonicalTree.get().getObjectId() : RevTree.EMPTY_TREE_ID;
+            final ObjectId newCanonicalTreeId = newCanonicalTree.isPresent()
+                    ? newCanonicalTree.get().getObjectId() : RevTree.EMPTY_TREE_ID;
+
+            // featureTypeId = newCanonicalTree.isPresent() ? newCanonicalTree.get().getMetadataId()
+            // : oldCanonicalTree.get().getMetadataId();
 
             Optional<Index> indexes[];
-            indexes = resolveIndex(oldCanonicalTree, newCanonicalTree, typeName,
+            indexes = resolveIndex(oldCanonicalTreeId, newCanonicalTreeId, typeName,
                     geometryAttribute.getLocalName());
 
             oldHeadIndex = indexes[0];
@@ -205,8 +247,8 @@ public class FeatureReaderBuilder {
                 oldFeatureTypeTree = oldHeadIndex.get().indexTreeId();
                 newFeatureTypeTree = headIndex.get().indexTreeId();
             } else {
-                oldFeatureTypeTree = oldCanonicalTree;
-                newFeatureTypeTree = newCanonicalTree;
+                oldFeatureTypeTree = oldCanonicalTreeId;
+                newFeatureTypeTree = newCanonicalTreeId;
             }
 
             materializedProperties = resolveMaterializedProperties(headIndex);
@@ -220,6 +262,9 @@ public class FeatureReaderBuilder {
         // perform the diff op with the supported Bucket/NodeRef filtering that'll provide the
         // NodeRef iterator to back the FeatureReader with
         DiffTree diffOp = repo.command(DiffTree.class);
+        // TODO: for some reason setting the default metadata id is making several tests fail,
+        // though it's not really needed here because we have the FeatureType already. Nonetheless
+        // this is strange and needs to be revisited.
         diffOp.setDefaultMetadataId(featureTypeId);
         diffOp.setPreserveIterationOrder(needsPreserveIterationOrder());
         diffOp.setPathFilter(resolveFidFilter(nativeFilter));
@@ -232,7 +277,15 @@ public class FeatureReaderBuilder {
         diffOp.setRightSource(treeSource);
         diffOp.recordStats();
 
-        final AutoCloseableIterator<DiffEntry> diffs = diffOp.call();
+        AutoCloseableIterator<DiffEntry> diffs;
+        diffs = diffOp.call();
+        {
+            // Stopwatch sw = Stopwatch.createStarted();
+            // int size = Iterators.size(diffs);
+            // diffs.close();
+            // System.err.printf("traversed %,d noderefs in %s\n", size, sw.stop());
+            // diffs = diffOp.call();
+        }
         AutoCloseableIterator<NodeRef> featureRefs = toFeatureRefs(diffs, changeType);
 
         // post-processing
@@ -245,19 +298,25 @@ public class FeatureReaderBuilder {
         AutoCloseableIterator<SimpleFeature> features;
 
         // contains only the required attributes
-        SimpleFeatureType resultSchema;
+        final SimpleFeatureType resultSchema = resolveOutputSchema(requiredProperties);
 
-        BulkFeatureRetriever retriever = new BulkFeatureRetriever(featureSource);
-        features = retriever.getGeoToolsFeatures(featureRefs, fullSchema);
-
-        if (!Filter.INCLUDE.equals(nativeFilter)) {
-            FilterPredicate filterPredicate = new FilterPredicate(nativeFilter);
-            features = AutoCloseableIterator.filter(features, filterPredicate);
+        final String strategy;
+        if (indexContainsAllRequiredProperties) {
+            strategy = MaterializedIndexFeatureIterator.class.getSimpleName();
+            features = MaterializedIndexFeatureIterator.create(resultSchema, featureRefs);
+        } else {
+            strategy = BulkFeatureRetriever.class.getSimpleName();
+            BulkFeatureRetriever retriever = new BulkFeatureRetriever(featureSource);
+            features = retriever.getGeoToolsFeatures(featureRefs, fullSchema);
         }
 
         if (!filterIsFullySupported) {
+            FilterPredicate filterPredicate = new FilterPredicate(nativeFilter);
+            features = AutoCloseableIterator.filter(features, filterPredicate);
             features = applyOffsetAndLimit(features);
         }
+
+        features = loggingIterator(strategy, features, diffOp.getStats());
 
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
 
@@ -265,6 +324,60 @@ public class FeatureReaderBuilder {
                 features);
 
         return featureReader;
+    }
+
+    private AutoCloseableIterator<SimpleFeature> loggingIterator(final String strategy,
+            final AutoCloseableIterator<SimpleFeature> features, final Optional<Stats> stats) {
+
+        return new AutoCloseableIterator<SimpleFeature>() {
+
+            private final Stopwatch sw = Stopwatch.createStarted();
+
+            @Override
+            public SimpleFeature next() {
+                return features.next();
+            }
+
+            @Override
+            public boolean hasNext() {
+                return features.hasNext();
+            }
+
+            @Override
+            public void close() {
+                sw.stop();
+                String msg = strategy + ": " + sw.toString();
+                if (stats.isPresent()) {
+                    Stats s = stats.get();
+                    msg += ", stats: " + s;
+                }
+                System.err.println(msg);
+            }
+        };
+    }
+
+    private SimpleFeatureType resolveOutputSchema(Set<String> requiredProperties) {
+        SimpleFeatureType resultSchema;
+
+        if (requiredProperties.equals(fullSchemaAttributeNames)) {
+            resultSchema = fullSchema;
+        } else {
+            List<String> atts = new ArrayList<>();
+            for (AttributeDescriptor d : fullSchema.getAttributeDescriptors()) {
+                String attName = d.getLocalName();
+                if (requiredProperties.contains(attName)) {
+                    atts.add(attName);
+                }
+            }
+            try {
+                String[] properties = atts.toArray(new String[requiredProperties.size()]);
+                resultSchema = DataUtilities.createSubType(fullSchema, properties);
+            } catch (SchemaException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+
+        return resultSchema;
     }
 
     private <T> AutoCloseableIterator<T> applyOffsetAndLimit(AutoCloseableIterator<T> iterator) {
@@ -311,14 +424,18 @@ public class FeatureReaderBuilder {
         return indexes;
     }
 
-    private ObjectId resolveCanonicalTree(@Nullable String head, String treeName) {
-        if (head == null) {
-            return RevTree.EMPTY_TREE_ID;
+    private Optional<NodeRef> resolveCanonicalTree(@Nullable String head, String treeName) {
+        Optional<NodeRef> treeRef = Optional.absent();
+        if (head != null) {
+            Optional<ObjectId> rootTree = repo.command(ResolveTreeish.class).setTreeish(head)
+                    .call();
+            if (rootTree.isPresent()) {
+                RevTree tree = repo.objectDatabase().getTree(rootTree.get());
+                treeRef = repo.command(FindTreeChild.class).setParent(tree).setChildPath(treeName)
+                        .call();
+            }
         }
-        String treeishRefSpec = head + ":" + treeName;
-        Optional<ObjectId> canonicalTreeId;
-        canonicalTreeId = repo.command(ResolveTreeish.class).setTreeish(treeishRefSpec).call();
-        return canonicalTreeId.or(RevTree.EMPTY_TREE_ID);
+        return treeRef;
     }
 
     private Optional<Index> resolveIndex(ObjectId canonicalTreeId, IndexInfo indexInfo,
@@ -338,13 +455,12 @@ public class FeatureReaderBuilder {
     private boolean filterIsFullySupported(Filter nativeFilter,
             boolean indexContainsAllRequiredProperties) {
 
-        if (indexContainsAllRequiredProperties) {
-            boolean filterSupported = Filter.INCLUDE.equals(nativeFilter) || //
-                    nativeFilter instanceof BBOX || //
-                    nativeFilter instanceof Id;
-            return filterSupported;
-        }
-        return false;
+        boolean filterSupported = Filter.INCLUDE.equals(nativeFilter) || //
+                nativeFilter instanceof BBOX || //
+                nativeFilter instanceof Id || //
+                indexContainsAllRequiredProperties;
+
+        return filterSupported;
     }
 
     private Set<String> resolveMaterializedProperties(Optional<Index> index) {
@@ -357,11 +473,34 @@ public class FeatureReaderBuilder {
     }
 
     private Set<String> resolveRequiredProperties(Filter nativeFilter) {
-        String[] attributeNames = DataUtilities.attributeNames(nativeFilter);
-        if (attributeNames == null || attributeNames.length == 0) {
+        if (outputSchemaPropertyNames == Query.ALL_NAMES) {
+            return fullSchemaAttributeNames;
+        }
+
+        final Set<String> filterAttributes = requiredAttributes(nativeFilter);
+
+        if (outputSchemaPropertyNames.length == 0
+                /* Query.NO_NAMES */ && filterAttributes.isEmpty()) {
             return Collections.emptySet();
         }
-        return ImmutableSet.copyOf(attributeNames);
+
+        Set<String> requiredProps = Sets.newHashSet(outputSchemaPropertyNames);
+        // if the filter is a simple BBOX filter against the default geometry attribute, don't force
+        // it, we can optimize bbox filter out of Node.bounds()
+        if (!(nativeFilter instanceof BBOX)) {
+            requiredProps.addAll(filterAttributes);
+        }
+        // props required to evaluate the filter in-process
+        return requiredProps;
+    }
+
+    private Set<String> requiredAttributes(Filter filter) {
+        String[] filterAttributes = DataUtilities.attributeNames(filter);
+        if (filterAttributes == null || filterAttributes.length == 0) {
+            return Collections.emptySet();
+        }
+
+        return Sets.newHashSet(filterAttributes);
     }
 
     private AutoCloseableIterator<NodeRef> toFeatureRefs(
@@ -422,7 +561,8 @@ public class FeatureReaderBuilder {
         if (crs == null) {
             crs = DefaultEngineeringCRS.GENERIC_2D;
         }
-        ReferencedEnvelope queryBounds = new ReferencedEnvelope(crs);
+
+        final ReferencedEnvelope queryBounds = new ReferencedEnvelope(crs);
         @SuppressWarnings("unchecked")
         List<ReferencedEnvelope> bounds = (List<ReferencedEnvelope>) filterInNativeCrs
                 .accept(new ExtractBounds(crs), null);
@@ -435,10 +575,10 @@ public class FeatureReaderBuilder {
 
             ReferencedEnvelope clipped = fullBounds.intersection(queryBounds);
             if (clipped.equals(fullBounds)) {
-                queryBounds = null;
+                queryBounds.setToNull();
             }
         }
-        return queryBounds;
+        return queryBounds.isNull() ? null : queryBounds;
     }
 
     private void expandToInclude(ReferencedEnvelope queryBounds, List<ReferencedEnvelope> bounds) {
@@ -449,7 +589,8 @@ public class FeatureReaderBuilder {
 
     private Predicate<Bounded> resolveNodeRefFilter() {
         Predicate<Bounded> predicate = Predicates.alwaysTrue();
-        if (screenMap != null) {
+        final boolean ignore = Boolean.getBoolean("geogig.ignorescreenmap");
+        if (screenMap != null && !ignore) {
             predicate = new ScreenMapPredicate(screenMap);
         }
         return predicate;

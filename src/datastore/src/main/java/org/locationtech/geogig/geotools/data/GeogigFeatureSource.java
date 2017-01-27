@@ -270,8 +270,9 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final Filter filter = query.getFilter();
 
         final SimpleFeatureType fullSchema = getAbsoluteSchema();
+        final NodeRef typeRef = this.getTypeRef();
 
-        FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, fullSchema);
+        FeatureReaderBuilder builder = FeatureReaderBuilder.builder(context, fullSchema, typeRef);
 
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader = builder//
                 .filter(filter)//
@@ -385,15 +386,8 @@ class GeogigFeatureSource extends ContentFeatureSource {
         final ObjectId metadataId = typeRef.getMetadataId();
 
         Context commandLocator = getCommandLocator();
-        Optional<RevFeatureType> revType = commandLocator.command(RevObjectParse.class)
-                .setObjectId(metadataId).call(RevFeatureType.class);
-
-        if (!revType.isPresent()) {
-            throw new IllegalStateException(
-                    String.format("Feature type for tree %s not found", treePath));
-        }
-
-        SimpleFeatureType featureType = (SimpleFeatureType) revType.get().type();
+        RevFeatureType revType = commandLocator.objectDatabase().getFeatureType(metadataId);
+        SimpleFeatureType featureType = (SimpleFeatureType) revType.type();
         return featureType;
     }
 

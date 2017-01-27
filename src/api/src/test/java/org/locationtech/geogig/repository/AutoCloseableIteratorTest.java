@@ -14,6 +14,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -22,6 +23,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 public class AutoCloseableIteratorTest {
@@ -135,5 +137,38 @@ public class AutoCloseableIteratorTest {
         }
         assertTrue(closed1.get());
         assertTrue(closed2.get());
+    }
+
+    @Test
+    public void testLimit() {
+        AtomicBoolean closed = new AtomicBoolean(false);
+        try (AutoCloseableIterator<String> testIter = new TestAutoCloseableIterator(closed)) {
+            assertEquals(3, Iterators.size(testIter));
+        }
+        assertTrue(closed.get());
+        closed.set(false);
+
+        AutoCloseableIterator<String> testIter = new TestAutoCloseableIterator(closed);
+        AutoCloseableIterator<String> limit = AutoCloseableIterator.limit(testIter, 2);
+        assertEquals(2, Iterators.size(limit));
+        limit.close();
+        assertTrue(closed.get());
+    }
+    
+    @Test
+    public void testPartition() {
+        AtomicBoolean closed = new AtomicBoolean(false);
+        AutoCloseableIterator<String> orig = new TestAutoCloseableIterator(closed);
+
+        AutoCloseableIterator<List<String>> partition = AutoCloseableIterator.partition(orig, 2);
+        assertTrue(partition.hasNext());
+        assertEquals(2, partition.next().size());
+        
+        assertTrue(partition.hasNext());
+        assertEquals(1, partition.next().size());
+
+        assertFalse(partition.hasNext());
+        partition.close();
+        assertTrue(closed.get());
     }
 }

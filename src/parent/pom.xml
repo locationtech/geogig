@@ -107,6 +107,13 @@
     <rocksdb.version>4.13.4</rocksdb.version>
     <springweb.version>4.2.5.RELEASE</springweb.version>
 
+    <appassembler.plugin.version>1.2.2</appassembler.plugin.version>
+    <war.plugin.version>2.4</war.plugin.version>
+    <jetty.plugin.version>7.1.6.v20100715</jetty.plugin.version>
+    <dependency.plugin.version>2.2</dependency.plugin.version>
+    <surefire.plugin.version>2.17</surefire.plugin.version>
+    <assembly.plugin.version>2.2-beta-5</assembly.plugin.version>
+
     <test.maxHeapSize>512M</test.maxHeapSize>
     <maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
     <build.timestamp>${maven.build.timestamp}</build.timestamp>
@@ -407,27 +414,32 @@
           -->
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>appassembler-maven-plugin</artifactId>
-          <version>1.2.2</version>
+          <version>${appassembler.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
-          <version>2.4</version>
+          <version>${war.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>7.1.6.v20100715</version>
+          <version>${jetty.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.2</version>
+          <version>${dependency.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.17</version>
+          <version>${surefire.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>${assembly.plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -442,7 +454,7 @@
           </includes>
           <excludes>
             <exclude>${online.skip.pattern}</exclude>
-	    <exclude>${postgresOnline.skip.pattern}</exclude>
+            <exclude>${postgresOnline.skip.pattern}</exclude>
           </excludes>
           <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
           <reuseForks>true</reuseForks>

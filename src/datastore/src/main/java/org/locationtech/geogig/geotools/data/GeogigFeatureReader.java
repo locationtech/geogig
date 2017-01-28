@@ -30,6 +30,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
 import org.geotools.renderer.ScreenMap;
 import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore.ChangeType;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
@@ -180,17 +181,8 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             featureRefs = applyRefsOffsetLimit(featureRefs);
         }
 
-        // NodeRefToFeature refToFeature = new NodeRefToFeature(context, schema);
-
-        final Function<List<NodeRef>, Iterator<SimpleFeature>> function;
-        function = new FetchFunction(context.objectDatabase(), schema);
-        final int fetchSize = 1000;
-        Iterator<List<NodeRef>> partition = Iterators.partition(featureRefs, fetchSize);
-        Iterator<Iterator<SimpleFeature>> transformed = Iterators.transform(partition, function);
-
-        // final Iterator<SimpleFeature> featuresUnfiltered = transform(featureRefs,
-        // refToFeature);
-        final Iterator<SimpleFeature> featuresUnfiltered = Iterators.concat(transformed);
+        BulkFeatureRetriever retriever = new BulkFeatureRetriever(context.objectDatabase());
+        final Iterator<SimpleFeature> featuresUnfiltered = retriever.getGeoToolsFeatures(featureRefs, schema);
 
         FilterPredicate filterPredicate = new FilterPredicate(filter);
         Iterator<SimpleFeature> featuresFiltered = filter(featuresUnfiltered, filterPredicate);
@@ -265,6 +257,14 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             LOGGER.debug("GeoGigFeatureReader.close(): ScreenMap filtering: {}, time: {}",
                     screenMapFilter.stats(), stopwatch);
         }
+        if ( (this.features != null) && (this.features instanceof AutoCloseable)) {
+            try {
+                ((AutoCloseable)this.features ).close();
+            } catch (Exception e) {
+                //do nothing - not much we can do if the iterator cannot close...
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -303,91 +303,6 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
         }
         return featureRefs;
     }
-
-    private class FetchFunction implements Function<List<NodeRef>, Iterator<SimpleFeature>> {
-
-        private class AsFeature implements Function<RevObject, SimpleFeature> {
-
-            private final FeatureBuilder featureBuilder;
-
-            private final ArrayListMultimap<ObjectId, String> fidIndex;
-
-            public AsFeature(FeatureBuilder featureBuilder,
-                    ArrayListMultimap<ObjectId, String> fidIndex) {
-                this.featureBuilder = featureBuilder;
-                this.fidIndex = fidIndex;
-            }
-
-            @Override
-            public SimpleFeature apply(RevObject obj) {
-                final RevFeature revFeature = (RevFeature) obj;
-                final ObjectId id = obj.getId();
-                List<String> list = fidIndex.get(id);
-                final String fid = list.remove(0);
-
-                Feature feature = featureBuilder.build(fid, revFeature);
-                return (SimpleFeature) feature;
-            }
-        }
-
-        private final ObjectDatabase source;
-
-        private final FeatureBuilder featureBuilder;
-
-        // RevObjectParse parser = context.command(RevObjectParse.class);
-        public FetchFunction(ObjectDatabase source, SimpleFeatureType schema) {
-            this.featureBuilder = new FeatureBuilder(schema);
-            this.source = source;
-        }
-
-        @Override
-        public Iterator<SimpleFeature> apply(List<NodeRef> refs) {
-            // Envelope env = new Envelope();
-            // List<SimpleFeature> features = new ArrayList<>(refs.size());
-            // for(NodeRef ref : refs){
-            // env.setToNull();
-            // String id = ref.name();
-            // Node node = ref.getNode();
-            // SimpleFeature feature = (SimpleFeature) featureBuilder.buildLazy(id, node, parser);
-            // features.add(feature);
-            // }
-            // return features.iterator();
-
-            // handle the case where more than one feature has the same hash
-            ArrayListMultimap<ObjectId, String> fidIndex = ArrayListMultimap.create();
-            for (NodeRef ref : refs) {
-                fidIndex.put(ref.getObjectId(), ref.name());
-            }
-            Iterable<ObjectId> ids = fidIndex.keySet();
-            Iterator<RevFeature> all = source.getAll(ids, NOOP_LISTENER, RevFeature.class);
-
-            AsFeature asFeature = new AsFeature(featureBuilder, fidIndex);
-            Iterator<SimpleFeature> features = Iterators.transform(all, asFeature);
-            return features;
-        }
-
-    }
-
-    // private static class NodeRefToFeature implements Function<NodeRef, SimpleFeature> {
-    //
-    // private RevObjectParse parseRevFeatureCommand;
-    //
-    // private FeatureBuilder featureBuilder;
-    //
-    // public NodeRefToFeature(Context commandLocator, SimpleFeatureType schema) {
-    // this.featureBuilder = new FeatureBuilder(schema);
-    // this.parseRevFeatureCommand = commandLocator.command(RevObjectParse.class);
-    // }
-    //
-    // @Override
-    // public SimpleFeature apply(final NodeRef featureRef) {
-    // final Node node = featureRef.getNode();
-    // final String id = featureRef.name();
-    //
-    // Feature feature = featureBuilder.buildLazy(id, node, parseRevFeatureCommand);
-    // return (SimpleFeature) feature;
-    // }
-    // };
 
     private static final class FilterPredicate implements Predicate<SimpleFeature> {
         private Filter filter;

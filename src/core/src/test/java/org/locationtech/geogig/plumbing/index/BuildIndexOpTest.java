@@ -60,7 +60,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
             metadata.put(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA, extraAttributes);
         }
         IndexInfo indexInfo;
-        indexInfo = indexdb.createIndex(worldPointsLayer.getName(), "geom", IndexType.QUADTREE,
+        indexInfo = indexdb.createIndexInfo(worldPointsLayer.getName(), "geom", IndexType.QUADTREE,
                 metadata);
         return indexInfo;
     }

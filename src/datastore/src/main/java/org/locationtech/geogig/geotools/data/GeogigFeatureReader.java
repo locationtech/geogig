@@ -152,7 +152,7 @@ class GeogigFeatureReader<T extends FeatureType, F extends Feature>
             Preconditions.checkArgument(oldTreeRef.isPresent() || newTreeRef.isPresent());
             typeTreeRef = newTreeRef.isPresent() ? newTreeRef.get() : oldTreeRef.get();
 
-            Optional<IndexInfo> index = context.indexDatabase().getIndex(typeTreePath,
+            Optional<IndexInfo> index = context.indexDatabase().getIndexInfo(typeTreePath,
                     schema.getGeometryDescriptor().getName().toString());
 
             final Optional<ObjectId> oldQuadTree = resolveQuadTree(oldTreeRef, index);

@@ -93,7 +93,7 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
     }
 
     @Override
-    public IndexInfo createIndex(String treeName, String attributeName, IndexType strategy,
+    public IndexInfo createIndexInfo(String treeName, String attributeName, IndexType strategy,
             @Nullable Map<String, Object> metadata) {
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
@@ -107,7 +107,13 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
     }
 
     @Override
-    public Optional<IndexInfo> getIndex(String treeName, String attributeName) {
+    public IndexInfo updateIndexInfo(String treeName, String attributeName, IndexType strategy,
+            Map<String, Object> metadata) {
+        return createIndexInfo(treeName, attributeName, strategy, metadata);
+    }
+
+    @Override
+    public Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
         ObjectId indexId = IndexInfo.getIndexId(treeName, attributeName);
         try (InputStream inputStream = this.getRawInternal(indexId, false)) {
             if (inputStream != null) {
@@ -122,7 +128,7 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
     }
 
     @Override
-    public List<IndexInfo> getIndexes(String treeName) {
+    public List<IndexInfo> getIndexInfos(String treeName) {
         Optional<RevFeatureType> featureTypeOpt = repository.command(ResolveFeatureType.class)
                 .setRefSpec(Ref.HEAD + ":" + treeName).call();
 
@@ -130,13 +136,19 @@ public class FileIndexDatabase extends FileObjectStore implements IndexDatabase 
         if (featureTypeOpt.isPresent()) {
             RevFeatureType treeType = featureTypeOpt.get();
             for (PropertyDescriptor descriptor : treeType.descriptors()) {
-                Optional<IndexInfo> index = getIndex(treeName, descriptor.getName().toString());
+                Optional<IndexInfo> index = getIndexInfo(treeName, descriptor.getName().toString());
                 if (index.isPresent()) {
                     indexes.add(index.get());
                 }
             }
         }
         return indexes;
+    }
+
+    @Override
+    public List<IndexInfo> getIndexInfos() {
+        throw new UnsupportedOperationException(
+                "Unable to list all indexes with a file index database.");
     }
 
     @Override

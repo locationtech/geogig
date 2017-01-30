@@ -5,7 +5,7 @@
  * https://www.eclipse.org/org/documents/edl-v10.html
  *
  * Contributors:
- * Gabriel Roldan (Boundless) - initial implementation
+ * Johnathan Garrett (Prominent Edge) - initial implementation
  */
 package org.locationtech.geogig.cli.porcelain.index;
 
@@ -18,8 +18,8 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
-import org.locationtech.geogig.porcelain.index.CreateQuadTree;
-import org.locationtech.geogig.porcelain.index.Index;
+import org.locationtech.geogig.porcelain.index.UpdateIndexOp;
+import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
 
 import com.beust.jcommander.Parameter;
@@ -27,22 +27,30 @@ import com.beust.jcommander.Parameters;
 
 @RequiresRepository(true)
 @Parameters(commandNames = {
-        "create" }, commandDescription = "Creates a spatial index for the specified feature tree")
-public class CreateIndex extends AbstractCommand implements CLICommand {
+        "update" }, commandDescription = "Update the extra attributes of an index.")
+public class UpdateIndex extends AbstractCommand implements CLICommand {
 
     @Parameter(names = "--tree", required = true, description = "Name or path of the feature tree to create the index for.")
     private String treeRefSpec;
 
     @Parameter(names = { "-a",
-            "--attribute" }, required = false, description = "Attribute to create the index for.")
+            "--attribute" }, description = "Attribute to update the index for.")
     private String attribute;
-
-    @Parameter(names = "--index-history", description = "If specified, indexes will be created for all commits in the history.")
-    private boolean indexHistory = false;
 
     @Parameter(names = { "-e",
             "--extra-attributes" }, description = "Comma separated list of extra attribute names to hold inside index")
     private List<String> extraAttributes;
+
+    @Parameter(names = { "-o",
+            "--overwrite" }, description = "Replace existing list of extra attributes held by the index")
+    private boolean overwrite;
+
+    @Parameter(names = {
+            "--add" }, description = "Add new attributes to existing list of extra attributes held by the index")
+    private boolean add;
+
+    @Parameter(names = "--rebuild-history", description = "If specified, indexes will be rebuilt for all commits in the history.")
+    private boolean rebuildHistory = false;
 
     @Override
     protected void runInternal(GeogigCLI cli)
@@ -50,15 +58,18 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
 
         Repository repo = cli.getGeogig().getRepository();
 
-        Index index = repo.command(CreateQuadTree.class)//
-                .setTreeRefSpec(treeRefSpec)//
-                .setGeometryAttributeName(attribute)//
+        IndexInfo index = repo.command(UpdateIndexOp.class)//
+                .setTreeRefSpec(treeRefSpec)
+                .setAttributeName(attribute)//
                 .setExtraAttributes(extraAttributes)//
-                .setIndexHistory(indexHistory)//
+                .setOverwrite(overwrite)//
+                .setAdd(add)//
+                .setIndexHistory(rebuildHistory)//
                 .setProgressListener(cli.getProgressListener())//
                 .call();
 
-        cli.getConsole().println(
-                "Index created successfully: " + index.indexTreeId().toString().substring(0, 8));
+        cli.getConsole()
+                .println("Index updated successfully: " + index.getId().toString().substring(0, 8));
+
     }
 }

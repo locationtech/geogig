@@ -57,6 +57,7 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
@@ -419,6 +420,31 @@ public class ResponseWriter {
 
     public void writeTag(RevTag revTag, String tag) throws StreamWriterException {
         writeTag(revTag, tag, false);
+    }
+
+    public void writeIndexInfos(final List<IndexInfo> indexInfos, String tag) {
+        out.writeStartArray(tag);
+        for (IndexInfo indexInfo : indexInfos) {
+            out.writeStartArrayElement(tag);
+            writeElement("treeName", indexInfo.getTreeName());
+            writeElement("attributeName", indexInfo.getAttributeName());
+            writeElement("indexType", indexInfo.getIndexType().toString());
+            Map<String, Object> metadata = indexInfo.getMetadata();
+            if (metadata.containsKey(IndexInfo.MD_QUAD_MAX_BOUNDS)) {
+                writeElement("bounds", metadata.get(IndexInfo.MD_QUAD_MAX_BOUNDS).toString());
+            }
+            if (metadata.containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA)) {
+                String[] extraAttributes = (String[]) metadata
+                        .get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
+                out.writeStartArray("extraAttribute");
+                for (String extraAttribute : extraAttributes) {
+                    out.writeArrayElement("extraAttribute", extraAttribute);
+                }
+                out.writeEndArray();
+            }
+            out.writeEndArrayElement();
+        }
+        out.writeEndArray();
     }
 
     private void writeTagImpl(RevTag revTag, String tag) throws StreamWriterException {

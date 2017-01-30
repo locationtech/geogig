@@ -23,9 +23,7 @@ import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.storage.IndexDatabase;
 
 /**
- * Creates an {@link IndexInfo} and builds the index tree for it.
- * 
- * @see BuildIndexOp
+ * Creates an {@link IndexInfo} in the index database.
  */
 public class CreateIndexInfoOp extends AbstractGeoGigOp<IndexInfo> {
 
@@ -65,12 +63,12 @@ public class CreateIndexInfoOp extends AbstractGeoGigOp<IndexInfo> {
         checkArgument(attributeName != null, "indexing attribute name not provided");
         checkArgument(indexType != null, "index type not provided");
 
-        checkState(!indexDatabase.getIndex(treeName, attributeName).isPresent(),
+        checkState(!indexDatabase.getIndexInfo(treeName, attributeName).isPresent(),
                 "An index has already been created on that tree and attribute.");
 
         Map<String, Object> metadata = this.metadata;
 
-        IndexInfo index = indexDatabase.createIndex(treeName, attributeName, indexType, metadata);
+        IndexInfo index = indexDatabase.createIndexInfo(treeName, attributeName, indexType, metadata);
 
         return index;
     }

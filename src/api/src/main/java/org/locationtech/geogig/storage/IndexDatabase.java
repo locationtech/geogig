@@ -56,8 +56,20 @@ public interface IndexDatabase extends ObjectStore {
      * @param metadata extra properties to be used by the index
      * @return the new index
      */
-    public IndexInfo createIndex(String treeName, String attributeName, IndexType strategy,
+    public IndexInfo createIndexInfo(String treeName, String attributeName, IndexType strategy,
             @Nullable Map<String, Object> metadata);
+
+    /**
+     * Updates the metadata of an {@link IndexInfo} in the index database.
+     * 
+     * @param treeName the feature type name of the index info
+     * @param attributeName the attribute of the index info
+     * @param strategy the indexing strategy
+     * @param metadata extra properties of the index info
+     * @return the updated {@link IndexInfo}
+     */
+    public IndexInfo updateIndexInfo(String treeName, String attributeName, IndexType strategy,
+            Map<String, Object> metadata);
 
     /**
      * Gets the index for the given tree and attribute if it exists.
@@ -67,7 +79,7 @@ public interface IndexDatabase extends ObjectStore {
      * @return an {@link Optional} with the index, or {@link Optional#absent()} if there wasn't an
      *         index
      */
-    public Optional<IndexInfo> getIndex(String treeName, String attributeName);
+    public Optional<IndexInfo> getIndexInfo(String treeName, String attributeName);
 
     /**
      * Gets all of the indexes for a given tree.
@@ -75,7 +87,14 @@ public interface IndexDatabase extends ObjectStore {
      * @param treeName the name of the tree
      * @return a list with all of the {@link IndexInfo} associated with the given tree
      */
-    public List<IndexInfo> getIndexes(String treeName);
+    public List<IndexInfo> getIndexInfos(String treeName);
+    
+    /**
+     * Gets all of the indexes in the database.
+     * 
+     * @return a list with all of the {@link IndexInfo} in the database
+     */
+    public List<IndexInfo> getIndexInfos();
 
     /**
      * Associates an indexed tree with a tree from the {@link ObjectDatabase}.

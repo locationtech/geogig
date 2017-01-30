@@ -25,6 +25,7 @@ import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.locationtech.geogig.storage.impl.ForwardingObjectStore;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hasher;
 
@@ -134,7 +135,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     @Override
-    public IndexInfo createIndex(String treeName, String attributeName, IndexType strategy,
+    public IndexInfo createIndexInfo(String treeName, String attributeName, IndexType strategy,
             @Nullable Map<String, Object> metadata) {
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         addIndex(index);
@@ -142,7 +143,19 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     @Override
-    public Optional<IndexInfo> getIndex(String treeName, String attributeName) {
+    public IndexInfo updateIndexInfo(String treeName, String attributeName, IndexType strategy,
+            Map<String, Object> metadata) {
+        IndexInfo newIndexInfo = new IndexInfo(treeName, attributeName, strategy, metadata);
+        Optional<IndexInfo> oldIndexInfo = getIndexInfo(treeName, attributeName);
+        Preconditions.checkState(oldIndexInfo.isPresent());
+        List<IndexInfo> indexInfos = indexes.get(treeName);
+        indexInfos.remove(oldIndexInfo.get());
+        indexInfos.add(newIndexInfo);
+        return newIndexInfo;
+    }
+
+    @Override
+    public Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
         if (indexes.containsKey(treeName)) {
             for (IndexInfo index : indexes.get(treeName)) {
                 if (index.getAttributeName().equals(attributeName)) {
@@ -154,11 +167,20 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     @Override
-    public List<IndexInfo> getIndexes(String treeName) {
+    public List<IndexInfo> getIndexInfos(String treeName) {
         if (indexes.containsKey(treeName)) {
             return indexes.get(treeName);
         }
         return Lists.newArrayList();
+    }
+
+    @Override
+    public List<IndexInfo> getIndexInfos() {
+        List<IndexInfo> indexInfos = Lists.newLinkedList();
+        for (List<IndexInfo> treeInfos : indexes.values()) {
+            indexInfos.addAll(treeInfos);
+        }
+        return indexInfos;
     }
 
     @Override

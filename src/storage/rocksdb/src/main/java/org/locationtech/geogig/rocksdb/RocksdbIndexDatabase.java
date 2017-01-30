@@ -97,7 +97,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     }
 
     @Override
-    public IndexInfo createIndex(String treeName, String attributeName, IndexType strategy,
+    public IndexInfo createIndexInfo(String treeName, String attributeName, IndexType strategy,
             @Nullable Map<String, Object> metadata) {
         checkWritable();
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
@@ -113,13 +113,19 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return index;
     }
 
+    @Override
+    public IndexInfo updateIndexInfo(String treeName, String attributeName, IndexType strategy,
+            Map<String, Object> metadata) {
+        return createIndexInfo(treeName, attributeName, strategy, metadata);
+    }
+
     private IndexInfo readIndex(byte[] indexBytes) {
         IndexInfo index = IndexInfoSerializer.deserialize(ByteStreams.newDataInput(indexBytes));
         return index;
     }
 
     @Override
-    public Optional<IndexInfo> getIndex(String treeName, String attributeName) {
+    public Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
         checkOpen();
         byte[] indexKey = indexKey(treeName, attributeName);
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -134,7 +140,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     }
 
     @Override
-    public List<IndexInfo> getIndexes(String treeName) {
+    public List<IndexInfo> getIndexInfos(String treeName) {
         checkOpen();
         byte[] indexKey = indexKey(treeName, null);
         List<IndexInfo> indexes = Lists.newArrayList();
@@ -148,6 +154,22 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
                             break;
                         }
                     }
+                    indexes.add(readIndex(it.value()));
+                    it.next();
+                }
+            }
+        }
+        return indexes;
+    }
+
+    @Override
+    public List<IndexInfo> getIndexInfos() {
+        checkOpen();
+        List<IndexInfo> indexes = Lists.newArrayList();
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            try (RocksIterator it = dbRef.db().newIterator(indexMetadataColumn)) {
+                it.seekToFirst();
+                while (it.isValid()) {
                     indexes.add(readIndex(it.value()));
                     it.next();
                 }

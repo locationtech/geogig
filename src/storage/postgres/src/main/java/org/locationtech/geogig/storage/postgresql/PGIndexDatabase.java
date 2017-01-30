@@ -151,7 +151,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     }
 
     @Override
-    public IndexInfo createIndex(String treeName, String attributeName, IndexType strategy,
+    public IndexInfo createIndexInfo(String treeName, String attributeName, IndexType strategy,
             @Nullable Map<String, Object> metadata) {
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         final String sql = format(
@@ -187,9 +187,60 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return index;
     }
 
+    @Override
+    public IndexInfo updateIndexInfo(String treeName, String attributeName, IndexType strategy,
+            Map<String, Object> metadata) {
+        IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
+        final String deleteSql = format(
+                "DELETE FROM %s WHERE repository = ? AND treeName = ? AND attributeName = ?",
+                config.getTables().index());
+        final String insertSql = format(
+                "INSERT INTO %s (repository, treeName, attributeName, strategy, metadata) VALUES(?, ?, ?, ?, ?)",
+                config.getTables().index());
+
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
+            cx.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps = cx.prepareStatement(
+                        log(deleteSql, LOG, repositoryId, treeName, attributeName))) {
+                    ps.setInt(1, repositoryId);
+                    ps.setString(2, treeName);
+                    ps.setString(3, attributeName);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = cx.prepareStatement(log(insertSql, LOG, repositoryId,
+                        treeName, attributeName, strategy, metadata));
+                        ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+                    ps.setInt(1, repositoryId);
+                    ps.setString(2, treeName);
+                    ps.setString(3, attributeName);
+                    ps.setString(4, strategy.toString());
+                    if (index.getMetadata() != null) {
+                        DataOutput out = ByteStreams.newDataOutput(outStream);
+                        DataStreamValueSerializerV2.write(index.getMetadata(), out);
+                        ps.setBytes(5, outStream.toByteArray());
+                    } else {
+                        ps.setNull(5, java.sql.Types.OTHER, "bytea");
+                    }
+                    ps.executeUpdate();
+                } catch (IOException e) {
+                    rollbackAndRethrow(cx, e);
+                }
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+            } finally {
+                cx.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+        return index;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
-    public Optional<IndexInfo> getIndex(String treeName, String attributeName) {
+    public Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
         final String sql = format(
                 "SELECT strategy, metadata FROM %s WHERE repository = ? AND treeName = ? AND attributeName = ?",
                 config.getTables().index());
@@ -228,7 +279,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
 
     @SuppressWarnings("unchecked")
     @Override
-    public List<IndexInfo> getIndexes(String treeName) {
+    public List<IndexInfo> getIndexInfos(String treeName) {
         final String sql = format(
                 "SELECT attributeName, strategy, metadata FROM %s WHERE repository = ? AND treeName = ?",
                 config.getTables().index());
@@ -265,26 +316,79 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return indexes;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<IndexInfo> getIndexInfos() {
+        final String sql = format(
+                "SELECT treeName, attributeName, strategy, metadata FROM %s WHERE repository = ?",
+                config.getTables().index());
+
+        List<IndexInfo> indexes = Lists.newArrayList();
+
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
+            try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId))) {
+                ps.setInt(1, repositoryId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String treeName = rs.getString(1);
+                        String attributeName = rs.getString(2);
+                        IndexType strategy = IndexType.valueOf(rs.getString(3));
+                        byte[] metadataBytes = rs.getBytes(4);
+                        Map<String, Object> metadata = null;
+                        if (metadataBytes != null) {
+                            try (ByteArrayInputStream metadataStream = new ByteArrayInputStream(
+                                    metadataBytes)) {
+                                DataInput in = new DataInputStream(metadataStream);
+                                metadata = (Map<String, Object>) DataStreamValueSerializerV2
+                                        .read(FieldType.MAP, in);
+                            }
+                        }
+                        indexes.add(new IndexInfo(treeName, attributeName, strategy, metadata));
+                    }
+                }
+            }
+        } catch (SQLException | IOException e) {
+            throw propagate(e);
+        }
+
+        return indexes;
+    }
+
     @Override
     public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
         PGId pgIndexId = PGId.valueOf(index.getId());
         PGId pgTreeId = PGId.valueOf(originalTree);
         PGId pgIndexedTreeId = PGId.valueOf(indexedTree);
-        final String sql = format(
+        final String deleteSql = format(
+                "DELETE FROM %s WHERE repository = ? AND ((indexId).h1) = ? AND indexId = CAST(ROW(?,?,?) AS OBJECTID)"
+                        + " AND ((treeId).h1) = ? AND treeId = CAST(ROW(?,?,?) AS OBJECTID)",
+                config.getTables().indexMappings());
+        final String insertSql = format(
                 "INSERT INTO %s (repository, indexId, treeId, indexTreeId) VALUES(?, ROW(?,?,?), ROW(?,?,?), ROW(?,?,?))",
                 config.getTables().indexMappings());
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
-            try (PreparedStatement ps = cx.prepareStatement(
-                    log(sql, LOG, repositoryId, pgIndexId, pgTreeId, pgIndexedTreeId))) {
-                ps.setInt(1, repositoryId);
-                pgIndexId.setArgs(ps, 2);
-                pgTreeId.setArgs(ps, 5);
-                pgIndexedTreeId.setArgs(ps, 8);
-                ps.executeUpdate();
+            try {
+                try (PreparedStatement ps = cx
+                        .prepareStatement(log(deleteSql, LOG, repositoryId, pgIndexId, pgTreeId))) {
+                    ps.setInt(1, repositoryId);
+                    ps.setInt(2, pgIndexId.hash1());
+                    pgIndexId.setArgs(ps, 3);
+                    ps.setInt(6, pgTreeId.hash1());
+                    pgTreeId.setArgs(ps, 7);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = cx.prepareStatement(
+                        log(insertSql, LOG, repositoryId, pgIndexId, pgTreeId, pgIndexedTreeId))) {
+                    ps.setInt(1, repositoryId);
+                    pgIndexId.setArgs(ps, 2);
+                    pgTreeId.setArgs(ps, 5);
+                    pgIndexedTreeId.setArgs(ps, 8);
+                    ps.executeUpdate();
+                }
                 cx.commit();
             } catch (SQLException e) {
-                rollbackAndRethrow(cx, e);
+                cx.rollback();
             } finally {
                 cx.setAutoCommit(true);
             }

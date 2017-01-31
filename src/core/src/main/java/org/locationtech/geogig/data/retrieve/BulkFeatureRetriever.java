@@ -22,22 +22,18 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
-
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * This is the main entry class for retrieving features from GeoGIG.
  *
- * It comes in 3 flavors;
- *   a) getGeoGIGFeatures - (low level) this returns FeatureInfos
- *                           for the requested NodeRefs
- *   b) getGeoToolsFeatures - (high level) this returns SimpleFeatures
- *          for the requested NodeRefs.  The FeatureType Metadata
- *          is retrieved from the ObjectDB to construct the Features.
+ * It comes in 3 flavors; a) getGeoGIGFeatures - (low level) this returns FeatureInfos for the
+ * requested NodeRefs b) getGeoToolsFeatures - (high level) this returns SimpleFeatures for the
+ * requested NodeRefs. The FeatureType Metadata is retrieved from the ObjectDB to construct the
+ * Features.
  *
- *   c) getGeoToolsFeatures w/Schema - (high level) this returns
- *         SimpleFeatures for the requested NodeRefs.  It ignores the
- *         FeatureType Metadata and uses the supplied schema to
- *         construct features.
+ * c) getGeoToolsFeatures w/Schema - (high level) this returns SimpleFeatures for the requested
+ * NodeRefs. It ignores the FeatureType Metadata and uses the supplied schema to construct features.
  */
 public class BulkFeatureRetriever {
     ObjectStore odb;
@@ -53,9 +49,9 @@ public class BulkFeatureRetriever {
     }
 
     /**
-     * Given a bunch of NodeRefs, create FeatureInfos for them.
-     * FeatureInfo contains the actual GIG feature, and its metadata
-     * (i.e. FeatureTypeId + path (including name))
+     * Given a bunch of NodeRefs, create FeatureInfos for them. FeatureInfo contains the actual GIG
+     * feature, and its metadata (i.e. FeatureTypeId + path (including name))
+     * 
      * @param refs
      * @return
      */
@@ -67,7 +63,8 @@ public class BulkFeatureRetriever {
         Iterator<List<NodeRef>> partition = Iterators.partition(featureRefs, featureFetchSize);
 
         // used to get a group of features from the DB
-        BulkObjectDatabaseFeatureRetriever bulkFeatureRetriever = new BulkObjectDatabaseFeatureRetriever(odb);
+        BulkObjectDatabaseFeatureRetriever bulkFeatureRetriever = new BulkObjectDatabaseFeatureRetriever(
+                odb);
 
         Iterator<Iterator<FeatureInfo>> transformed = Iterators.transform(partition,
                 bulkFeatureRetriever);
@@ -78,12 +75,12 @@ public class BulkFeatureRetriever {
     }
 
     /**
-     * Given a bunch of NodeRefs, create SimpleFeatures from the results.
-     * The result might be mixed FeatureTypes
+     * Given a bunch of NodeRefs, create SimpleFeatures from the results. The result might be mixed
+     * FeatureTypes
      *
      * This retrieves FeatureType info from the ObjectDatabase as needed.
      *
-     *  @see BulkFeatureRetriever#getGeoGIGFeatures
+     * @see BulkFeatureRetriever#getGeoGIGFeatures
      *
      * @param refs
      * @return
@@ -96,8 +93,8 @@ public class BulkFeatureRetriever {
     }
 
     /**
-     * Given a bunch of NodeRefs, create SimpleFeatures from the results.
-     * This builds a particular FeatureType from the ObjectDatabase.
+     * Given a bunch of NodeRefs, create SimpleFeatures from the results. This builds a particular
+     * FeatureType from the ObjectDatabase.
      *
      * This DOES NOT retrieves FeatureType info from the ObjectDatabase.
      *
@@ -105,17 +102,21 @@ public class BulkFeatureRetriever {
      * @param schema
      * @return
      */
-    public AutoCloseableIterator<SimpleFeature> getGeoToolsFeatures(AutoCloseableIterator<NodeRef> refs, SimpleFeatureType schema) {
-        //builder for this particular schema
+    public AutoCloseableIterator<SimpleFeature> getGeoToolsFeatures(
+            AutoCloseableIterator<NodeRef> refs, SimpleFeatureType schema,
+            GeometryFactory geometryFactory) {
+        // builder for this particular schema
         FeatureBuilder featureBuilder = new FeatureBuilder(schema);
 
-        //function that converts the FeatureInfo a feature of the given schema
-        Function<FeatureInfo, SimpleFeature> funcBuildFeature = (input -> MultiFeatureTypeBuilder.build(featureBuilder, input));
+        // function that converts the FeatureInfo a feature of the given schema
+        Function<FeatureInfo, SimpleFeature> funcBuildFeature = (input -> MultiFeatureTypeBuilder
+                .build(featureBuilder, input, geometryFactory));
 
         Iterator<FeatureInfo> fis = getGeoGIGFeatures(refs);
         Iterator<SimpleFeature> result = Iterators.transform(fis, funcBuildFeature);
-        final BackgroundingIterator<SimpleFeature> backgroundingIterator = new BackgroundingIterator<>(result, featureSize);
-        
+        final BackgroundingIterator<SimpleFeature> backgroundingIterator = new BackgroundingIterator<>(
+                result, featureSize);
+
         return new AutoCloseableIterator<SimpleFeature>() {
 
             @Override

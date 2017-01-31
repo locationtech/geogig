@@ -12,6 +12,7 @@ package org.locationtech.geogig.data.retrieve;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.factory.Hints;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.ObjectId;
@@ -23,7 +24,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Function;
-
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 public class MultiFeatureTypeBuilder implements Function<FeatureInfo, SimpleFeature> {
 
@@ -48,13 +49,15 @@ public class MultiFeatureTypeBuilder implements Function<FeatureInfo, SimpleFeat
     @Override
     public SimpleFeature apply(FeatureInfo info) {
         FeatureBuilder featureBuilder = get(info.getFeatureTypeId());
-        return build(featureBuilder,info);
+        return build(featureBuilder, info, null);
     }
 
-    public static SimpleFeature build( FeatureBuilder featureBuilder, FeatureInfo info) {
+    public static SimpleFeature build(FeatureBuilder featureBuilder, FeatureInfo info,
+            @Nullable GeometryFactory geometryFactory) {
+
         String fid = info.getName();
         RevFeature revFeature = info.getFeature();
-        Feature feature = featureBuilder.build(fid, revFeature);
+        Feature feature = featureBuilder.build(fid, revFeature, geometryFactory);
         feature.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
         feature.getUserData().put(Hints.PROVIDED_FID, fid);
         feature.getUserData().put(RevFeature.class, revFeature);

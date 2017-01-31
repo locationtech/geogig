@@ -49,7 +49,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.PrecisionModel;
 
 public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
@@ -414,6 +417,21 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         assertEquals(points1.getIdentifier().getID(), iter.next().getID());
 
         assertTrue(screenMap.get(boundsOf(points1)));
+    }
+
+    @Test
+    public void testRespectsSuppliedGeometryFactory() throws Exception {
+        SimpleFeatureSource source = this.linesSource;
+        Query query = new Query();
+        GeometryFactory suppliedGeomFac = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING_SINGLE));
+        query.getHints().put(Hints.JTS_GEOMETRY_FACTORY, suppliedGeomFac);
+        
+        SimpleFeature[] collection = (SimpleFeature[]) source.getFeatures(query).toArray();
+        assertEquals(3, collection.length);
+        for(SimpleFeature f : collection){
+            Geometry g = (Geometry) f.getDefaultGeometry();
+            assertSame(suppliedGeomFac, g.getFactory());
+        }
     }
 
     private List<SimpleFeature> toList(SimpleFeatureCollection collection) {

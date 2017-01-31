@@ -118,12 +118,30 @@ public class FeatureReaderBuilder {
 
     private NodeRef typeRef;
 
+    private boolean ignoreIndex;
+
     public FeatureReaderBuilder(Context repo, SimpleFeatureType fullSchema, NodeRef typeRef) {
         this.repo = repo;
         this.fullSchema = fullSchema;
         this.typeRef = typeRef;
         this.fullSchemaAttributeNames = Sets.newHashSet(
                 Lists.transform(fullSchema.getAttributeDescriptors(), (a) -> a.getLocalName()));
+    }
+
+    /**
+     * Sets the {@code ignoreIndex} flag to true, indicating that a spatial index lookup will be
+     * ignored and only the canonical tree will be used by the returned feature reader.
+     * <p>
+     * This is particularly useful if the reader is constructed out of a diff between two version of
+     * a featuretype tree (e.g. both {@link #oldHeadRef(String)} and {@link #headRef(String)} have
+     * been provided), in order for the {@link DiffTree} op used to create the feature stream to
+     * accurately represent changes, since most of the time an index reports changes as two separate
+     * events for the removal and addition of the feature instead of one single event for the
+     * change.
+     */
+    public FeatureReaderBuilder ignoreIndex() {
+        this.ignoreIndex = true;
+        return this;
     }
 
     public static FeatureReaderBuilder builder(Context repo, SimpleFeatureType fullSchema,
@@ -195,7 +213,7 @@ public class FeatureReaderBuilder {
         final Filter nativeFilter = resolveNativeFilter();
 
         // properties needed by the output schema and the in-process filter, null means all
-        // properties, empty list means no-propertires needed
+        // properties, empty list means no-properties needed
         final @Nullable Set<String> requiredProperties = resolveRequiredProperties(nativeFilter);
         // properties present in the RevTree nodes' extra data
         final Set<String> materializedProperties;
@@ -303,11 +321,12 @@ public class FeatureReaderBuilder {
         final String strategy;
         if (indexContainsAllRequiredProperties) {
             strategy = MaterializedIndexFeatureIterator.class.getSimpleName();
-            features = MaterializedIndexFeatureIterator.create(resultSchema, featureRefs);
+            features = MaterializedIndexFeatureIterator.create(resultSchema, featureRefs,
+                    geometryFactory);
         } else {
             strategy = BulkFeatureRetriever.class.getSimpleName();
             BulkFeatureRetriever retriever = new BulkFeatureRetriever(featureSource);
-            features = retriever.getGeoToolsFeatures(featureRefs, fullSchema);
+            features = retriever.getGeoToolsFeatures(featureRefs, fullSchema, geometryFactory);
         }
 
         if (!filterIsFullySupported) {
@@ -398,6 +417,9 @@ public class FeatureReaderBuilder {
     @SuppressWarnings("unchecked")
     private Optional<Index>[] resolveIndex(final ObjectId oldCanonical, final ObjectId newCanonical,
             final String treeName, final String attributeName) {
+        if (ignoreIndex) {
+            return NO_INDEX;
+        }
         if (Boolean.getBoolean("geogig.ignoreindex")) {
             // TODO: remove debugging aid
             System.err.printf(

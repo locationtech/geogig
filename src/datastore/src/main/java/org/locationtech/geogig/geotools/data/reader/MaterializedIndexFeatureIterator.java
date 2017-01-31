@@ -30,23 +30,29 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.geometry.BoundingBox;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+
 class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFeature> {
 
     private final AutoCloseableIterator<NodeRef> nodes;
 
     private final SimpleFeatureBuilder featureBuilder;
 
+    private final GeometryFactory geometryFactory;
+
     private MaterializedIndexFeatureIterator(final SimpleFeatureBuilder builder,
-            AutoCloseableIterator<NodeRef> nodes) {
+            AutoCloseableIterator<NodeRef> nodes, GeometryFactory geometryFactory) {
         this.featureBuilder = builder;
         this.nodes = nodes;
+        this.geometryFactory = geometryFactory;
     }
 
     public static MaterializedIndexFeatureIterator create(SimpleFeatureType outputSchema,
-            AutoCloseableIterator<NodeRef> nodes) {
+            AutoCloseableIterator<NodeRef> nodes, GeometryFactory geometryFactory) {
 
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(outputSchema);
-        return new MaterializedIndexFeatureIterator(builder, nodes);
+        return new MaterializedIndexFeatureIterator(builder, nodes, geometryFactory);
     }
 
     @Override
@@ -90,6 +96,9 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
                 AttributeDescriptor descriptor = attributeDescriptors.get(i);
                 String localName = descriptor.getLocalName();
                 Object value = materializedAttributes.get(localName);
+                if (value instanceof Geometry) {
+                    value = geometryFactory.createGeometry((Geometry) value);
+                }
                 featureBuilder.set(localName, value);
             }
         }

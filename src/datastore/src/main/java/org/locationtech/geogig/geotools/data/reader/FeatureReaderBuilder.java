@@ -39,7 +39,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.DiffTree;
-import org.locationtech.geogig.plumbing.DiffTree.Stats;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.porcelain.index.Index;
@@ -63,14 +62,11 @@ import org.opengis.filter.identity.Identifier;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -81,9 +77,13 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
 
+/**
+ * A builder object for a {@link FeatureReader} that fetches data from a geogig {@link RevTree}
+ * representing a "layer".
+ * <p>
+ * 
+ */
 public class FeatureReaderBuilder {
-
-    private static final Logger LOG = LoggerFactory.getLogger(FeatureReaderBuilder.class);
 
     private static final GeometryFactory DEFAULT_GEOMETRY_FACTORY = new GeometryFactory(
             new PackedCoordinateSequenceFactory());
@@ -254,9 +254,16 @@ public class FeatureReaderBuilder {
             // : oldCanonicalTree.get().getMetadataId();
 
             Optional<Index> indexes[];
-            indexes = resolveIndex(oldCanonicalTreeId, newCanonicalTreeId, typeName,
-                    geometryAttribute.getLocalName());
 
+            // if native filter is a simple "fid filter" then force ignoring the index for a faster
+            // look-up (looking up for a fid in the canonical tree is much faster)
+            final boolean ignoreIndex = this.ignoreIndex || nativeFilter instanceof Id;
+            if (ignoreIndex) {
+                indexes = NO_INDEX;
+            } else {
+                indexes = resolveIndex(oldCanonicalTreeId, newCanonicalTreeId, typeName,
+                        geometryAttribute.getLocalName());
+            }
             oldHeadIndex = indexes[0];
             headIndex = indexes[1];
             // neither is present or both have the same indexinfo
@@ -286,7 +293,7 @@ public class FeatureReaderBuilder {
         // though it's not really needed here because we have the FeatureType already. Nonetheless
         // this is strange and needs to be revisited.
         diffOp.setDefaultMetadataId(featureTypeId);
-        diffOp.setPreserveIterationOrder(needsPreserveIterationOrder());
+        diffOp.setPreserveIterationOrder(shallPreserveIterationOrder());
         diffOp.setPathFilter(resolveFidFilter(nativeFilter));
         diffOp.setCustomFilter(resolveNodeRefFilter());
         diffOp.setBoundsFilter(resolveBoundsFilter(nativeFilter, newFeatureTypeTree, treeSource));
@@ -320,13 +327,10 @@ public class FeatureReaderBuilder {
         // contains only the required attributes
         final SimpleFeatureType resultSchema = resolveOutputSchema(requiredProperties);
 
-        final String strategy;
         if (indexContainsAllRequiredProperties) {
-            strategy = MaterializedIndexFeatureIterator.class.getSimpleName();
             features = MaterializedIndexFeatureIterator.create(resultSchema, featureRefs,
                     geometryFactory);
         } else {
-            strategy = BulkFeatureRetriever.class.getSimpleName();
             BulkFeatureRetriever retriever = new BulkFeatureRetriever(featureSource);
             features = retriever.getGeoToolsFeatures(featureRefs, fullSchema, geometryFactory);
         }
@@ -337,53 +341,12 @@ public class FeatureReaderBuilder {
             features = applyOffsetAndLimit(features);
         }
 
-        features = loggingIterator(strategy, features, diffOp.getStats());
-
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
 
-        featureReader = new FeatureReaderAdapter<SimpleFeatureType, SimpleFeature>(fullSchema,
+        featureReader = new FeatureReaderAdapter<SimpleFeatureType, SimpleFeature>(resultSchema,
                 features);
 
         return featureReader;
-    }
-
-    private CoordinateReferenceSystem resolveNativeCrs(SimpleFeatureType schema) {
-        CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
-        if (crs == null) {
-            crs = DefaultEngineeringCRS.GENERIC_2D;
-        }
-        return crs;
-    }
-
-    private AutoCloseableIterator<SimpleFeature> loggingIterator(final String strategy,
-            final AutoCloseableIterator<SimpleFeature> features, final Optional<Stats> stats) {
-
-        return new AutoCloseableIterator<SimpleFeature>() {
-
-            private final Stopwatch sw = Stopwatch.createStarted();
-
-            @Override
-            public SimpleFeature next() {
-                return features.next();
-            }
-
-            @Override
-            public boolean hasNext() {
-                return features.hasNext();
-            }
-
-            @Override
-            public void close() {
-                sw.stop();
-                String msg = strategy + ": " + sw.toString();
-                if (stats.isPresent()) {
-                    Stats s = stats.get();
-                    msg += ", stats: " + s;
-                }
-                System.err.println(msg);
-                features.close();
-            }
-        };
     }
 
     private SimpleFeatureType resolveOutputSchema(Set<String> requiredProperties) {
@@ -428,9 +391,6 @@ public class FeatureReaderBuilder {
     @SuppressWarnings("unchecked")
     private Optional<Index>[] resolveIndex(final ObjectId oldCanonical, final ObjectId newCanonical,
             final String treeName, final String attributeName) {
-        if (ignoreIndex) {
-            return NO_INDEX;
-        }
         if (Boolean.getBoolean("geogig.ignoreindex")) {
             // TODO: remove debugging aid
             System.err.printf(
@@ -441,7 +401,7 @@ public class FeatureReaderBuilder {
 
         Optional<Index>[] indexes = NO_INDEX;
         final IndexDatabase indexDatabase = repo.indexDatabase();
-        Optional<IndexInfo> indexInfo = indexDatabase.getIndex(treeName, attributeName);
+        Optional<IndexInfo> indexInfo = indexDatabase.getIndexInfo(treeName, attributeName);
         if (indexInfo.isPresent()) {
             IndexInfo info = indexInfo.get();
             Optional<Index> oldIndex = resolveIndex(oldCanonical, info, indexDatabase);
@@ -505,6 +465,11 @@ public class FeatureReaderBuilder {
         return availableAtts;
     }
 
+    /**
+     * Resolves the properties needed for the output schema, which are mandated both by the
+     * properties requested by {@link #propertyNames} and any other property needed to evaluate the
+     * {@link #filter} in-process.
+     */
     private Set<String> resolveRequiredProperties(Filter nativeFilter) {
         if (outputSchemaPropertyNames == Query.ALL_NAMES) {
             return fullSchemaAttributeNames;
@@ -639,8 +604,23 @@ public class FeatureReaderBuilder {
         return pathFilters;
     }
 
-    private boolean needsPreserveIterationOrder() {
-        // TODO
-        return false;
+    /**
+     * Determines if the returned iterator shall preserve iteration order among successive calls of
+     * the same query.
+     * <p>
+     * This is the case if:
+     * <ul>
+     * <li>{@link #limit} and/or {@link #offset} have been set, since most probably the caller is
+     * doing paging
+     * </ul>
+     */
+    private boolean shallPreserveIterationOrder() {
+        boolean preserveIterationOrder = false;
+        preserveIterationOrder |= limit != null || offset != null;
+        // TODO: revisit, sortBy should only force iteration order if we can return features in the
+        // requested order, otherwise a higher level decorator will still perform the sort
+        // in-process so there's no point in forcing the iteration order here
+        // preserveIterationOrder |= sortBy != null && sortBy.length > 0;
+        return preserveIterationOrder;
     }
 }

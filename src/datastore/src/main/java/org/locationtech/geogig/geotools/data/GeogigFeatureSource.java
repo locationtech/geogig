@@ -43,8 +43,6 @@ import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -54,8 +52,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  *
  */
 class GeogigFeatureSource extends ContentFeatureSource {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GeogigFeatureSource.class);
 
     private GeoGigDataStore.ChangeType changeType;
 
@@ -280,7 +276,6 @@ class GeogigFeatureSource extends ContentFeatureSource {
                 .oldHeadRef(oldRoot())//
                 .changeType(changeType())//
                 .geometryFactory(geometryFactory)//
-                .filter(filter)//
                 .offset(offset)//
                 .limit(limit)//
                 .propertyNames(propertyNames)//
@@ -299,47 +294,6 @@ class GeogigFeatureSource extends ContentFeatureSource {
         }
         return false;
     }
-
-    /**
-     * @param propertyNames properties to retrieve, empty array for no properties at all
-     *        {@link Query#NO_NAMES}, {@code null} means all properties {@link Query#ALL_NAMES}
-     */
-    // private FeatureReader<SimpleFeatureType, SimpleFeature> getNativeReader(
-    // @Nullable String[] propertyNames, Filter filter, @Nullable Integer offset,
-    // @Nullable Integer maxFeatures, @Nullable Hints hints) {
-    //
-    // LOGGER.trace("Query filter: {}", filter);
-    // filter = (Filter) filter.accept(new SimplifyingFilterVisitor(), null);
-    // LOGGER.trace("Simplified filter: {}", filter);
-    //
-    // GeogigFeatureReader<SimpleFeatureType, SimpleFeature> nativeReader;
-    //
-    // final String rootRef = getRootRef();
-    // final String featureTypeTreePath = getTypeTreePath();
-    //
-    // final SimpleFeatureType fullType = getSchema();
-    //
-    // boolean ignoreAttributes = false;
-    // if (propertyNames != null && propertyNames.length == 0) {
-    // String[] inProcessFilteringAttributes = Filters.attributeNames(filter, fullType);
-    // ignoreAttributes = inProcessFilteringAttributes.length == 0;
-    // }
-    //
-    // final String compareRootRef = oldRoot();
-    // final GeoGigDataStore.ChangeType changeType = changeType();
-    // final Context context = getCommandLocator();
-    //
-    // ScreenMap screenMap = null;
-    // GeometryFactory geomFac = null;
-    // if (hints != null) {
-    // screenMap = (ScreenMap) hints.get(Hints.SCREENMAP);
-    // geomFac = (GeometryFactory) hints.get(Hints.JTS_GEOMETRY_FACTORY);
-    // }
-    // nativeReader = new GeogigFeatureReader<SimpleFeatureType, SimpleFeature>(context, fullType,
-    // filter, featureTypeTreePath, rootRef, compareRootRef, changeType, offset,
-    // maxFeatures, screenMap, ignoreAttributes, geomFac);
-    // return nativeReader;
-    // }
 
     public void setChangeType(GeoGigDataStore.ChangeType changeType) {
         this.changeType = changeType;

@@ -17,12 +17,18 @@ import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 
+import com.google.common.annotations.VisibleForTesting;
+
+/**
+ * Adapts a closeable iterator of features as a {@link FeatureReader}
+ */
 class FeatureReaderAdapter<T extends FeatureType, F extends Feature>
         implements FeatureReader<T, F> {
 
     private final T schema;
 
-    private final AutoCloseableIterator<F> iterator;
+    @VisibleForTesting
+    final AutoCloseableIterator<F> iterator;
 
     public FeatureReaderAdapter(T schema, AutoCloseableIterator<F> iterator) {
         this.schema = schema;

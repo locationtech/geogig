@@ -66,7 +66,7 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
         return this;
     }
 
-    public CreateQuadTree setExtraAttributes(List<String> extraAttributes) {
+    public CreateQuadTree setExtraAttributes(@Nullable List<String> extraAttributes) {
         this.extraAttributes = extraAttributes;
         return this;
     }

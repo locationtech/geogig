@@ -21,18 +21,29 @@ import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.geometry.BoundingBox;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
+/**
+ * A {@link SimpleFeature} iterator used to build features out of nodes {@link Node#getExtraData()
+ * extra data} maps.
+ * <p>
+ * When the nodes in the provided {@link NodeRef} iterator are known to contain the required
+ * attribute values on their extra data map, this iterator is used to avoid querying the repository
+ * for the actual {@link RevFeature} objects and instead built {@link SimpleFeature}s directly from
+ * the data stored with the nodes.
+ */
 class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFeature> {
 
     private final AutoCloseableIterator<NodeRef> nodes;
@@ -75,7 +86,14 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
         return feature;
     }
 
+    /**
+     * Creates a {@link SimpleFeature} out of a Node's {@link Node#getExtraData() extra data} map
+     * <p>
+     * The {@link #featureBuilder} shall be configured with a {@link FeatureType} whose attributes
+     * are present in the node's extra data.
+     */
     private SimpleFeature adapt(NodeRef node) {
+
         final SimpleFeatureType featureType = featureBuilder.getFeatureType();
         final List<AttributeDescriptor> attributeDescriptors = featureType
                 .getAttributeDescriptors();
@@ -107,6 +125,11 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
         return feature;
     }
 
+    /**
+     * Provides SimpleFeature implementations that can still return their bounding box even if they
+     * don't have a geometry attribute set, getting it from the underlying feature
+     * {@link Node#bounds() node bounds}
+     */
     private static class BoundedSimpleFeature extends SimpleFeatureImpl {
 
         private ReferencedEnvelope bounds;

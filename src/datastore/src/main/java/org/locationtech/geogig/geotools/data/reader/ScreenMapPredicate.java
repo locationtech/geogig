@@ -18,7 +18,6 @@ import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Stopwatch;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -32,8 +31,6 @@ class ScreenMapPredicate implements Predicate<Bounded> {
         private long skippedTrees, skippedBuckets, skippedFeatures;
 
         private long acceptedTrees, acceptedBuckets, acceptedFeatures;
-
-        Stopwatch sw = Stopwatch.createStarted();
 
         void add(final Bounded b, final boolean skip) {
             NodeRef n = b instanceof NodeRef ? (NodeRef) b : null;

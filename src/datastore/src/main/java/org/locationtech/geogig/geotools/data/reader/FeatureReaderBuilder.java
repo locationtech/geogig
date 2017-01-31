@@ -27,6 +27,7 @@ import org.geotools.data.Query;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.SchemaException;
 import org.geotools.filter.spatial.ReprojectingFilterVisitor;
+import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.filter.visitor.SpatialFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
@@ -76,6 +77,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
 
@@ -345,6 +347,14 @@ public class FeatureReaderBuilder {
         return featureReader;
     }
 
+    private CoordinateReferenceSystem resolveNativeCrs(SimpleFeatureType schema) {
+        CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
+        if (crs == null) {
+            crs = DefaultEngineeringCRS.GENERIC_2D;
+        }
+        return crs;
+    }
+
     private AutoCloseableIterator<SimpleFeature> loggingIterator(final String strategy,
             final AutoCloseableIterator<SimpleFeature> features, final Optional<Stats> stats) {
 
@@ -540,18 +550,17 @@ public class FeatureReaderBuilder {
     }
 
     private Filter resolveNativeFilter() {
-        Filter nativeFilter = reprojectFilter(this.filter);
+        Filter nativeFilter = this.filter;
+        nativeFilter = SimplifyingFilterVisitor.simplify(nativeFilter, fullSchema);
+        nativeFilter = reprojectFilter(this.filter);
         return nativeFilter;
     }
 
     private Filter reprojectFilter(Filter filter) {
         if (hasSpatialFilter(filter)) {
-            CoordinateReferenceSystem crs = fullSchema.getCoordinateReferenceSystem();
-            if (crs != null) {
-                ReprojectingFilterVisitor visitor;
-                visitor = new ReprojectingFilterVisitor(filterFactory, fullSchema);
-                filter = (Filter) filter.accept(visitor, null);
-            }
+            ReprojectingFilterVisitor visitor;
+            visitor = new ReprojectingFilterVisitor(filterFactory, fullSchema);
+            filter = (Filter) filter.accept(visitor, null);
         }
         return filter;
     }
@@ -579,32 +588,29 @@ public class FeatureReaderBuilder {
             return null;
         }
 
-        CoordinateReferenceSystem crs = fullSchema.getCoordinateReferenceSystem();
-        if (crs == null) {
-            crs = DefaultEngineeringCRS.GENERIC_2D;
+        CoordinateReferenceSystem nativeCrs = fullSchema.getCoordinateReferenceSystem();
+        if (nativeCrs == null) {
+            nativeCrs = DefaultEngineeringCRS.GENERIC_2D;
         }
 
-        final ReferencedEnvelope queryBounds = new ReferencedEnvelope(crs);
-        @SuppressWarnings("unchecked")
-        List<ReferencedEnvelope> bounds = (List<ReferencedEnvelope>) filterInNativeCrs
-                .accept(new ExtractBounds(crs), null);
+        final Envelope queryBounds = new Envelope();
+        List<Envelope> bounds = ExtractBounds.getBounds(filterInNativeCrs);
 
         if (bounds != null && !bounds.isEmpty()) {
             final RevTree tree = treeSource.getTree(featureTypeTreeId);
-            final ReferencedEnvelope fullBounds = new ReferencedEnvelope(SpatialOps.boundsOf(tree),
-                    crs);
+            final Envelope fullBounds = SpatialOps.boundsOf(tree);
             expandToInclude(queryBounds, bounds);
 
-            ReferencedEnvelope clipped = fullBounds.intersection(queryBounds);
+            Envelope clipped = fullBounds.intersection(queryBounds);
             if (clipped.equals(fullBounds)) {
                 queryBounds.setToNull();
             }
         }
-        return queryBounds.isNull() ? null : queryBounds;
+        return queryBounds.isNull() ? null : new ReferencedEnvelope(queryBounds, nativeCrs);
     }
 
-    private void expandToInclude(ReferencedEnvelope queryBounds, List<ReferencedEnvelope> bounds) {
-        for (ReferencedEnvelope e : bounds) {
+    private void expandToInclude(Envelope queryBounds, List<Envelope> bounds) {
+        for (Envelope e : bounds) {
             queryBounds.expandToInclude(e);
         }
     }

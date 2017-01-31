@@ -44,6 +44,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
@@ -644,7 +645,7 @@ public class FormatCommonV2 {
             final CoordinateReferenceSystem crs;
             try {
                 if (isCRSCode) {
-                    if ("urn:ogc:def:crs:EPSG::0".equals(crsText)) {
+                    if (RevObjects.NULL_CRS_IDENTIFIER.equals(crsText)) {
                         crs = null;
                     } else {
                         boolean forceLongitudeFirst = crsText.startsWith("EPSG:");
@@ -694,7 +695,7 @@ public class FormatCommonV2 {
             CoordinateReferenceSystem crs = gType.getCoordinateReferenceSystem();
             String srsName;
             if (crs == null) {
-                srsName = "urn:ogc:def:crs:EPSG::0";
+                srsName = RevObjects.NULL_CRS_IDENTIFIER;
             } else {
                 final boolean longitudeFirst = CRS.getAxisOrder(crs, false) == AxisOrder.EAST_NORTH;
                 final boolean codeOnly = true;

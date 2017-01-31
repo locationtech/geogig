@@ -10,12 +10,14 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.geotools.data.DataUtilities;
 import org.geotools.data.Query;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -38,6 +40,7 @@ import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.identity.FeatureId;
@@ -423,15 +426,54 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
     public void testRespectsSuppliedGeometryFactory() throws Exception {
         SimpleFeatureSource source = this.linesSource;
         Query query = new Query();
-        GeometryFactory suppliedGeomFac = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING_SINGLE));
+        GeometryFactory suppliedGeomFac = new GeometryFactory(
+                new PrecisionModel(PrecisionModel.FLOATING_SINGLE));
         query.getHints().put(Hints.JTS_GEOMETRY_FACTORY, suppliedGeomFac);
-        
+
         SimpleFeature[] collection = (SimpleFeature[]) source.getFeatures(query).toArray();
         assertEquals(3, collection.length);
-        for(SimpleFeature f : collection){
+        for (SimpleFeature f : collection) {
             Geometry g = (Geometry) f.getDefaultGeometry();
             assertSame(suppliedGeomFac, g.getFactory());
         }
+    }
+
+    /**
+     * Make sure a spatial query against a geometry attribute that does not define a CRS just
+     * assumes the query is in the native CRS
+     */
+    @Test
+    public void testSpatialQueryOnNullCrsAttribute() throws Exception {
+
+        final String typeName = "nullcrs";
+        final SimpleFeatureType type = DataUtilities.createType(typeName,
+                "the_geom:Point,name:String");
+
+        assertNull(type.getGeometryDescriptor().getCoordinateReferenceSystem());
+
+        List<Feature> features = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            Feature f = super.feature(type, String.valueOf(i), String.format("POINT(%d %d)", i, i),
+                    "f-" + i);
+            features.add(f);
+        }
+        super.insert(features);
+        super.add();
+        super.commit("created feature type with null CRS");
+
+        SimpleFeatureSource source = dataStore.getFeatureSource(typeName);
+        assertNull(source.getSchema().getGeometryDescriptor().getCoordinateReferenceSystem());
+        
+        Filter bbox;
+        SimpleFeatureCollection coll;
+
+        bbox = ff.bbox("the_geom", -0.5, -0.5, 0.5, 0.5, "EPSG:4326");
+        coll = source.getFeatures(bbox);
+        assertEquals(1, coll.size());
+
+        bbox = ff.bbox("the_geom", -0.5, -0.5, 0.5, 0.5, "EPSG:3857");
+        coll = source.getFeatures(bbox);
+        assertEquals(1, coll.size());
     }
 
     private List<SimpleFeature> toList(SimpleFeatureCollection collection) {

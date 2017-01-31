@@ -477,7 +477,7 @@ public class HashObjectFunnels {
                 crs = ((GeometryDescriptor) descriptor).getCoordinateReferenceSystem();
                 String srsName;
                 if (crs == null) {
-                    srsName = "urn:ogc:def:crs:EPSG::0";
+                    srsName = RevObjects.NULL_CRS_IDENTIFIER;
                 } else {
                     srsName = CRS.toSRS(crs);
                 }

@@ -26,6 +26,11 @@ import com.google.common.collect.Iterators;
  */
 public class RevObjects {
 
+    /**
+     * An identifier for a null coordinate reference system.
+     */
+    public static final String NULL_CRS_IDENTIFIER = "urn:ogc:def:crs:EPSG::0";
+
     private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
 
     /**

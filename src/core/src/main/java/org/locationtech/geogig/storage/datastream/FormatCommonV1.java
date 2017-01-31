@@ -32,6 +32,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
@@ -339,7 +340,7 @@ public class FormatCommonV1 {
             final CoordinateReferenceSystem crs;
             try {
                 if (isCRSCode) {
-                    if ("urn:ogc:def:crs:EPSG::0".equals(crsText)) {
+                    if (RevObjects.NULL_CRS_IDENTIFIER.equals(crsText)) {
                         crs = null;
                     } else {
                         boolean forceLongitudeFirst = crsText.startsWith("EPSG:");

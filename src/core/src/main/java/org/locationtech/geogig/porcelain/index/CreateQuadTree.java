@@ -109,16 +109,9 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
                 .setFeatureTypeId(featureType.getId())//
                 .setIndexType(IndexType.QUADTREE)//
                 .setMetadata(metadata)//
+                .setIndexHistory(indexHistory)//
                 .setProgressListener(getProgressListener())//
                 .call();
-
-        if (indexHistory) {
-            command(BuildFullHistoryIndexOp.class)//
-                    .setTreeRefSpec(treeName)//
-                    .setAttributeName(attributeName)//
-                    .setProgressListener(getProgressListener())//
-                    .call();
-        }
 
         return index;
     }

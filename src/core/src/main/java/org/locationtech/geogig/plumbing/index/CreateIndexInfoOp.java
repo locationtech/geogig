@@ -10,7 +10,6 @@
 package org.locationtech.geogig.plumbing.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.HashMap;
@@ -51,8 +50,7 @@ public class CreateIndexInfoOp extends AbstractGeoGigOp<IndexInfo> {
     }
 
     public CreateIndexInfoOp setMetadata(@Nullable Map<String, Object> metadata) {
-        checkNotNull(metadata);
-        this.metadata = new HashMap<>(metadata);
+        this.metadata = metadata != null ? new HashMap<>(metadata) : null;
         return this;
     };
 

@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (Prominent Edge) - initial implementation
  */
-package org.locationtech.geogig.porcelain.index;
+package org.locationtech.geogig.plumbing.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -22,9 +22,9 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
-import org.locationtech.geogig.plumbing.index.BuildIndexOp;
 import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.LogOp;
+import org.locationtech.geogig.porcelain.index.IndexUtils;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.NodeRef;
@@ -66,10 +66,9 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
 
         Optional<IndexInfo> index = indexDatabase().getIndexInfo(treeName, geometryAttributeName);
         checkState(index.isPresent(), "a matching index could not be found");
-        int builtTrees = 0;
-        if (index.isPresent()) {
-            builtTrees = indexHistory(index.get());
-        }
+
+        indexDatabase().clearIndex(index.get());
+        int builtTrees = indexHistory(index.get());
         return builtTrees;
     }
 
@@ -95,6 +94,9 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
         Optional<NodeRef> treeNode = command(FindTreeChild.class).setChildPath(index.getTreeName())
                 .setParent(commitTree).call();
         if (!treeNode.isPresent()) {
+            return false;
+        }
+        if (indexDatabase().resolveIndexedTree(index, treeNode.get().getObjectId()).isPresent()) {
             return false;
         }
         RevTree newCanonicalTree = objectDatabase().getTree(treeNode.get().getObjectId());

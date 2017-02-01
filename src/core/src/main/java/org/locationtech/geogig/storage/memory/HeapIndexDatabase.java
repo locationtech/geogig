@@ -27,7 +27,6 @@ import org.locationtech.geogig.storage.impl.ForwardingObjectStore;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.google.common.hash.Hasher;
 
 /**
  * Provides an implementation of a GeoGig index database that utilizes the heap for the storage of
@@ -41,7 +40,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
 
     private Map<String, List<IndexInfo>> indexes = null;
 
-    private Map<ObjectId, ObjectId> indexTreeMappings = null;
+    private Map<ObjectId, Map<ObjectId, ObjectId>> indexTreeMappings = null;
 
     public HeapIndexDatabase() {
         super(new HeapObjectStore(), false);
@@ -86,7 +85,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
             return;
         }
         indexes = new HashMap<String, List<IndexInfo>>();
-        indexTreeMappings = new HashMap<ObjectId, ObjectId>();
+        indexTreeMappings = new HashMap<ObjectId, Map<ObjectId, ObjectId>>();
         super.open();
     }
 
@@ -184,21 +183,24 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     @Override
+    public void clearIndex(IndexInfo index) {
+        indexTreeMappings.remove(index.getId());
+    }
+
+    @Override
     public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
-        ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
-        indexTreeMappings.put(indexTreeLookupId, indexedTree);
+        if (!indexTreeMappings.containsKey(index.getId())) {
+            indexTreeMappings.put(index.getId(), new HashMap<ObjectId, ObjectId>());
+        }
+        indexTreeMappings.get(index.getId()).put(originalTree, indexedTree);
     }
 
     @Override
     public Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
-        ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), treeId);
-        return Optional.fromNullable(indexTreeMappings.get(indexTreeLookupId));
-    }
-
-    private ObjectId computeIndexTreeLookupId(ObjectId indexId, ObjectId treeId) {
-        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-        hasher.putBytes(indexId.getRawValue());
-        hasher.putBytes(treeId.getRawValue());
-        return ObjectId.createNoClone(hasher.hash().asBytes());
+        Map<ObjectId, ObjectId> indexMappings = indexTreeMappings.get(index.getId());
+        if (indexMappings != null) {
+            return Optional.fromNullable(indexMappings.get(treeId));
+        }
+        return Optional.absent();
     }
 }

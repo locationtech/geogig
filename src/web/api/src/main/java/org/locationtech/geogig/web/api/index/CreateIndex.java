@@ -44,7 +44,7 @@ public class CreateIndex extends AbstractWebAPICommand {
         super(options);
         setTreeRefSpec(options.getFirstValue("treeRefSpec", null));
         setGeometryAttributeName(options.getFirstValue("geometryAttributeName", null));
-        String[] extraAttributes = options.getValuesArray("path");
+        String[] extraAttributes = options.getValuesArray("extraAttributes");
         if (extraAttributes == null) {
             setExtraAttributes(null);
         } else {
@@ -105,7 +105,8 @@ public class CreateIndex extends AbstractWebAPICommand {
             @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();
-                out.writeTree(index.indexTree(), "tree");
+                out.writeIndexInfo(index.info(), "index", false);
+                out.writeElement("indexedTreeId", index.indexTreeId().toString());
                 out.finish();
             }
         });

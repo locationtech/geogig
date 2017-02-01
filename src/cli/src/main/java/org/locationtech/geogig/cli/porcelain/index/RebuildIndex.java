@@ -17,7 +17,7 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
-import org.locationtech.geogig.porcelain.index.BuildFullHistoryIndexOp;
+import org.locationtech.geogig.plumbing.index.BuildFullHistoryIndexOp;
 import org.locationtech.geogig.repository.Repository;
 
 import com.beust.jcommander.Parameter;

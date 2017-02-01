@@ -355,6 +355,31 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     }
 
     @Override
+    public void clearIndex(IndexInfo index) {
+        PGId pgIndexId = PGId.valueOf(index.getId());
+        final String deleteSql = format(
+                "DELETE FROM %s WHERE repository = ? AND ((indexId).h1) = ? AND indexId = CAST(ROW(?,?,?) AS OBJECTID)",
+                config.getTables().indexMappings());
+        try (Connection cx = PGStorage.newConnection(dataSource)) {
+            cx.setAutoCommit(false);
+            try (PreparedStatement ps = cx
+                    .prepareStatement(log(deleteSql, LOG, repositoryId, pgIndexId))) {
+                ps.setInt(1, repositoryId);
+                ps.setInt(2, pgIndexId.hash1());
+                pgIndexId.setArgs(ps, 3);
+                ps.executeUpdate();
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+            } finally {
+                cx.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw propagate(e);
+        }
+    }
+
+    @Override
     public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
         PGId pgIndexId = PGId.valueOf(index.getId());
         PGId pgTreeId = PGId.valueOf(originalTree);

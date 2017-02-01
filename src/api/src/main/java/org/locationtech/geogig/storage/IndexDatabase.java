@@ -97,6 +97,13 @@ public interface IndexDatabase extends ObjectStore {
     public List<IndexInfo> getIndexInfos();
 
     /**
+     * Removes all canonical/index tree associations for the given index.
+     * 
+     * @Param index the index to clear
+     */
+    public void clearIndex(IndexInfo index);
+
+    /**
      * Associates an indexed tree with a tree from the {@link ObjectDatabase}.
      * 
      * @param index the index that the indexed tree belongs to

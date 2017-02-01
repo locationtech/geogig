@@ -18,8 +18,8 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.porcelain.index.UpdateIndexOp;
-import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
 
 import com.beust.jcommander.Parameter;
@@ -49,8 +49,8 @@ public class UpdateIndex extends AbstractCommand implements CLICommand {
             "--add" }, description = "Add new attributes to existing list of extra attributes held by the index")
     private boolean add;
 
-    @Parameter(names = "--rebuild-history", description = "If specified, indexes will be rebuilt for all commits in the history.")
-    private boolean rebuildHistory = false;
+    @Parameter(names = "--index-history", description = "If specified, indexes will be rebuilt for all commits in the history.")
+    private boolean indexHistory = false;
 
     @Override
     protected void runInternal(GeogigCLI cli)
@@ -58,18 +58,18 @@ public class UpdateIndex extends AbstractCommand implements CLICommand {
 
         Repository repo = cli.getGeogig().getRepository();
 
-        IndexInfo index = repo.command(UpdateIndexOp.class)//
+        Index index = repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(treeRefSpec)
                 .setAttributeName(attribute)//
                 .setExtraAttributes(extraAttributes)//
                 .setOverwrite(overwrite)//
                 .setAdd(add)//
-                .setIndexHistory(rebuildHistory)//
+                .setIndexHistory(indexHistory)//
                 .setProgressListener(cli.getProgressListener())//
                 .call();
 
-        cli.getConsole()
-                .println("Index updated successfully: " + index.getId().toString().substring(0, 8));
+        cli.getConsole().println(
+                "Index updated successfully: " + index.indexTreeId().toString().substring(0, 8));
 
     }
 }

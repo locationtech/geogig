@@ -15,8 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.index.BuildFullHistoryIndexOp;
 import org.locationtech.geogig.plumbing.index.BuildIndexOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
@@ -30,7 +32,7 @@ import com.google.common.collect.Maps;
 /**
  * Updates an {@link IndexInfo} with new metadata.
  */
-public class UpdateIndexOp extends AbstractGeoGigOp<IndexInfo> {
+public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
 
     private String treeRefSpec;
 
@@ -75,7 +77,7 @@ public class UpdateIndexOp extends AbstractGeoGigOp<IndexInfo> {
     }
 
     @Override
-    protected IndexInfo _call() {
+    protected Index _call() {
         final RevFeatureType featureType;
 
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(context(), treeRefSpec);
@@ -106,7 +108,7 @@ public class UpdateIndexOp extends AbstractGeoGigOp<IndexInfo> {
             }
         } else {
             checkState(overwrite || add,
-                    "Extra attirbutes already exist on index, specify add or overwrite to update.");
+                    "Extra attributes already exist on index, specify add or overwrite to update.");
             if (overwrite) {
                 if (newAttributes == null) {
                     updatedAttributes = null;
@@ -135,22 +137,29 @@ public class UpdateIndexOp extends AbstractGeoGigOp<IndexInfo> {
 
         RevTree canonicalTree = objectDatabase().getTree(typeTreeRef.getObjectId());
 
+        ObjectId indexedTreeId;
+
         if (indexHistory) {
             command(BuildFullHistoryIndexOp.class)//
                     .setTreeRefSpec(treeRefSpec)//
                     .setAttributeName(geometryAttributeName)//
                     .setProgressListener(getProgressListener())//
                     .call();
+            Optional<ObjectId> headIndexedTreeId = indexDatabase().resolveIndexedTree(newIndexInfo,
+                    canonicalTree.getId());
+            checkState(headIndexedTreeId.isPresent(),
+                    "HEAD indexed tree could not be resolved after building history indexes.");
+            indexedTreeId = headIndexedTreeId.get();
         } else {
-            command(BuildIndexOp.class)//
+            indexedTreeId = command(BuildIndexOp.class)//
                     .setIndex(newIndexInfo)//
                     .setOldCanonicalTree(RevTree.EMPTY)//
                     .setNewCanonicalTree(canonicalTree)//
                     .setRevFeatureTypeId(featureType.getId())//
                     .setProgressListener(getProgressListener())//
-                    .call();
+                    .call().getId();
         }
 
-        return newIndexInfo;
+        return new Index(newIndexInfo, indexedTreeId, indexDatabase());
     }
 }

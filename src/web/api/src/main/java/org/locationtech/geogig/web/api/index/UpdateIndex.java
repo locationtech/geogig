@@ -12,8 +12,8 @@ package org.locationtech.geogig.web.api.index;
 import java.util.Arrays;
 import java.util.List;
 
+import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.porcelain.index.UpdateIndexOp;
-import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
@@ -38,7 +38,7 @@ public class UpdateIndex extends AbstractWebAPICommand {
 
     List<String> extraAttributes;
 
-    boolean rebuildHistory;
+    boolean indexHistory;
 
     boolean overwrite;
 
@@ -48,13 +48,13 @@ public class UpdateIndex extends AbstractWebAPICommand {
         super(options);
         setTreeRefSpec(options.getFirstValue("treeRefSpec", null));
         setGeometryAttributeName(options.getFirstValue("geometryAttributeName", null));
-        String[] extraAttributes = options.getValuesArray("path");
+        String[] extraAttributes = options.getValuesArray("extraAttributes");
         if (extraAttributes == null) {
             setExtraAttributes(null);
         } else {
             setExtraAttributes(Arrays.asList(extraAttributes));
         }
-        setRebuildHistory(Boolean.valueOf(options.getFirstValue("rebuildHistory", "false")));
+        setIndexHistory(Boolean.valueOf(options.getFirstValue("indexHistory", "false")));
         setAdd(Boolean.valueOf(options.getFirstValue("add", "false")));
         setOverwrite(Boolean.valueOf(options.getFirstValue("overwrite", "false")));
     }
@@ -71,8 +71,8 @@ public class UpdateIndex extends AbstractWebAPICommand {
         this.extraAttributes = extraAttributes;
     }
 
-    public void setRebuildHistory(boolean rebuildHistory) {
-        this.rebuildHistory = rebuildHistory;
+    public void setIndexHistory(boolean indexHistory) {
+        this.indexHistory = indexHistory;
     }
 
     public void setAdd(boolean add) {
@@ -108,11 +108,11 @@ public class UpdateIndex extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         Repository repository = context.getRepository();
-        final IndexInfo index = repository.command(UpdateIndexOp.class)//
+        final Index index = repository.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(treeRefSpec)//
                 .setAttributeName(geometryAttributeName)//
                 .setExtraAttributes(extraAttributes)//
-                .setIndexHistory(rebuildHistory)//
+                .setIndexHistory(indexHistory)//
                 .setAdd(add)//
                 .setOverwrite(overwrite)//
                 .call();
@@ -121,7 +121,8 @@ public class UpdateIndex extends AbstractWebAPICommand {
             @Override
             public void write(ResponseWriter out) throws Exception {
                 out.start();
-                // out.writeTree(index.indexTree(), "tree");
+                out.writeIndexInfo(index.info(), "index", false);
+                out.writeElement("indexedTreeId", index.indexTreeId().toString());
                 out.finish();
             }
         });

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.web.api.index;
 
-import org.locationtech.geogig.porcelain.index.BuildFullHistoryIndexOp;
+import org.locationtech.geogig.plumbing.index.BuildFullHistoryIndexOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;

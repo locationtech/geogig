@@ -13,7 +13,6 @@ import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.FORMAT_NAME
 import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.VERSION;
 
 import java.io.DataInput;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +39,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.hash.Hasher;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
@@ -186,10 +184,33 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     }
 
     @Override
-    public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
-        ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
+    public void clearIndex(IndexInfo index) {
+        checkOpen();
+        byte[] mappingKey = computeIndexTreeLookupId(index.getId(), null);
         try (RocksDBReference dbRef = dbhandle.getReference()) {
-            dbRef.db().put(indexMappingsColumn, indexTreeLookupId.getRawValue(),
+            try (RocksIterator it = dbRef.db().newIterator(indexMappingsColumn)) {
+                it.seek(mappingKey);
+                while (it.isValid()) {
+                    byte[] key = it.key();
+                    for (int i = 0; i < mappingKey.length; i++) {
+                        if (mappingKey[i] != key[i]) {
+                            return;
+                        }
+                    }
+                    it.next();
+                    dbRef.db().delete(indexMappingsColumn, key);
+                }
+            } catch (RocksDBException e) {
+                Throwables.propagate(e);
+            }
+        }
+    }
+
+    @Override
+    public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
+        byte[] indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            dbRef.db().put(indexMappingsColumn, indexTreeLookupId,
                     indexedTree.getRawValue());
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
@@ -198,11 +219,11 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
 
     @Override
     public Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
-        ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), treeId);
+        byte[] indexTreeLookupId = computeIndexTreeLookupId(index.getId(), treeId);
 
         byte[] indexTreeBytes;
         try (RocksDBReference dbRef = dbhandle.getReference()) {
-            indexTreeBytes = dbRef.db().get(indexMappingsColumn, indexTreeLookupId.getRawValue());
+            indexTreeBytes = dbRef.db().get(indexMappingsColumn, indexTreeLookupId);
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }
@@ -213,10 +234,8 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return Optional.absent();
     }
 
-    private ObjectId computeIndexTreeLookupId(ObjectId indexId, ObjectId treeId) {
-        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-        hasher.putBytes(indexId.getRawValue());
-        hasher.putBytes(treeId.getRawValue());
-        return ObjectId.createNoClone(hasher.hash().asBytes());
+    private static byte[] computeIndexTreeLookupId(ObjectId indexId, @Nullable ObjectId treeId) {
+        return (indexId.toString() + "." + (treeId == null ? "" : treeId.toString()))
+                .getBytes(Charsets.UTF_8);
     }
 }

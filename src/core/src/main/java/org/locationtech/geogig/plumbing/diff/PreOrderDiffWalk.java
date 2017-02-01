@@ -30,6 +30,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -74,7 +75,23 @@ public class PreOrderDiffWalk {
 
     public static final CanonicalNodeOrder ORDER = CanonicalNodeOrder.INSTANCE;
 
-    private static final ForkJoinPool FORK_JOIN_POOL;
+    // this is the same as the defaultForkJoinWorkerThreadFactory but gives the threads a
+    // different name (easier to see in debugger)
+     static ForkJoinPool.ForkJoinWorkerThreadFactory threadFactoryPrivate = pool -> {
+        final ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+        worker.setName("PreOrderDiffWalk-private-" + worker.getPoolIndex());
+        return worker;
+    };
+
+    // this is the same as the defaultForkJoinWorkerThreadFactory but gives the threads a
+    // different name (easier to see in debugger)
+    static ForkJoinPool.ForkJoinWorkerThreadFactory threadFactoryShared = pool -> {
+        final ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+        worker.setName("PreOrderDiffWalk-shared-" + worker.getPoolIndex());
+        return worker;
+    };
+
+    private static final ForkJoinPool SHARED_FORK_JOIN_POOL;
 
     static {
         final int parallelism = Math.max(2, Runtime.getRuntime().availableProcessors());
@@ -82,9 +99,10 @@ public class PreOrderDiffWalk {
         // more appropriate than default locally stack-based mode when
         // worker threads only process event-style asynchronous tasks
         final boolean asyncMode = true;
-        FORK_JOIN_POOL = new ForkJoinPool(parallelism,
-                ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, asyncMode);
+        SHARED_FORK_JOIN_POOL = new ForkJoinPool(parallelism,
+                threadFactoryShared, null, asyncMode);
     }
+
 
     /**
      * Contains the full path to the bucket as an array of integers where the array length
@@ -202,9 +220,9 @@ public class PreOrderDiffWalk {
         this.leftSource = leftSource;
         this.rightSource = rightSource;
         if (preserveIterationOrder) {
-            forkJoinPool = new ForkJoinPool(1);
+            forkJoinPool = new ForkJoinPool(1, threadFactoryPrivate, null, false);
         } else {
-            forkJoinPool = FORK_JOIN_POOL;
+            forkJoinPool = SHARED_FORK_JOIN_POOL;
         }
     }
 
@@ -312,7 +330,15 @@ public class PreOrderDiffWalk {
             }
         } finally {
             finished.set(true);
+            cleanupForkJoinPool();
         }
+    }
+
+    private void cleanupForkJoinPool() {
+        if (forkJoinPool == SHARED_FORK_JOIN_POOL)
+            return; //no need to clean up
+        else
+            forkJoinPool.shutdown(); //private pool needs cleaning
     }
 
     /**

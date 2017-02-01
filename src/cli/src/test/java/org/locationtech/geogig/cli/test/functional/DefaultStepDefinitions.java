@@ -9,22 +9,11 @@
  */
 package org.locationtech.geogig.cli.test.functional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.locationtech.geogig.cli.test.functional.TestFeatures.feature;
-import static org.locationtech.geogig.cli.test.functional.TestFeatures.idP1;
-import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines1;
-import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines2;
-import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines3;
-import static org.locationtech.geogig.cli.test.functional.TestFeatures.points1;
-import static org.locationtech.geogig.cli.test.functional.TestFeatures.points1_modified;
-import static org.locationtech.geogig.cli.test.functional.TestFeatures.points2;
-import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
-import static org.locationtech.geogig.cli.test.functional.TestFeatures.pointsName;
-import static org.locationtech.geogig.cli.test.functional.TestFeatures.pointsType;
+import cucumber.api.Scenario;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+import cucumber.runtime.java.StepDefAnnotation;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -33,6 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,21 +31,17 @@ import org.junit.Assert;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.diff.AttributeDiff;
-import org.locationtech.geogig.plumbing.diff.FeatureDiff;
-import org.locationtech.geogig.plumbing.diff.GenericAttributeDiffImpl;
-import org.locationtech.geogig.plumbing.diff.Patch;
-import org.locationtech.geogig.plumbing.diff.PatchSerializer;
+import org.locationtech.geogig.plumbing.diff.*;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.TagCreateOp;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.NodeRef;
-import org.locationtech.geogig.repository.RepositoryResolver;
-import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.repository.*;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.PropertyDescriptor;
@@ -64,14 +50,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+import static org.junit.Assert.*;
+import static org.locationtech.geogig.cli.test.functional.TestFeatures.*;
 
-import cucumber.api.Scenario;
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
-import cucumber.api.java.en.When;
-import cucumber.runtime.java.StepDefAnnotation;
 
 /**
  *
@@ -85,6 +69,9 @@ public class DefaultStepDefinitions {
     private CLIContextProvider contextProvider;
 
     private CLIContext localRepo;
+
+    private Map<String, String> variables = new HashMap<>();
+
 
     private String replaceKnownVariables(String s) throws IOException {
         if (s.contains("${currentdir}")) {
@@ -618,4 +605,44 @@ public class DefaultStepDefinitions {
         assertTrue(dir.mkdirs());
         localRepo.platform.setWorkingDir(dir);
     }
+
+    @Then("^the response should contain the index ID for tree \"([^\"]*)\"$")
+    public void the_response_contains_indexID(String tree) throws Throwable {
+        GeoGIG gig = localRepo.geogigCLI.getGeogig();
+
+        ObjectId canonicalTreeId = gig.command(ResolveTreeish.class).setTreeish("HEAD:" + tree).call().get();
+        Optional<IndexInfo> indexInfo = gig.getRepository().indexDatabase().getIndexInfo(tree,"pp");
+
+        Optional<ObjectId> indexedTree = gig.getRepository().indexDatabase().resolveIndexedTree(indexInfo.get(),canonicalTreeId);
+
+        if (!indexedTree.isPresent()) {
+            fail();
+        }
+        String indexId = indexedTree.get().toString();
+        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
+            .replaceAll("\\\\", "/");
+        assertTrue("'" + actual + "' does not contain ID '" + indexId.substring(0,8),
+                actual.contains(indexId.toString().substring(0,8)));
+    }
+
+    @Then("^the response should contain index info ID for tree \"([^\"]*)\"$")
+    public void the_response_contains_indexInfoID(String tree) throws Throwable {
+        Repository repo = localRepo.geogigCLI.getGeogig().getRepository();
+
+        Optional<IndexInfo> indexInfo = repo.indexDatabase().getIndexInfo(tree,"pp");
+        ObjectId oid = null;
+        if (indexInfo.isPresent()) {
+           oid = indexInfo.get().getId();
+        }
+
+        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
+            .replaceAll("\\\\", "/");
+        if (oid == null) {
+            fail();
+        } else {
+            assertTrue("'" + actual + "' does not contain ID for '"  + oid.toString(),
+                actual.contains(oid.toString()));
+        }
+    }
+
 }

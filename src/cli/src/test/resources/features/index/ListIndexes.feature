@@ -13,9 +13,12 @@ Feature: "index update" command
      When I run the command "index list"
      Then the response should contain "Lines"
       And the response should contain "[sp]"
+      And the response should contain index info ID for tree "Lines"
       And the response should contain "Points"
       And the response should contain "[ip]"
-      
+      And the response should contain index info ID for tree "Points"
+
+
   Scenario: Try to list indexes in a specific feature type tree
     Given I have a repository
       And I have several commits
@@ -28,3 +31,4 @@ Feature: "index update" command
       And the response should not contain "[sp]"
       And the response should contain "Points"
       And the response should contain "[ip]"
+      And the response should contain index info ID for tree "Points"

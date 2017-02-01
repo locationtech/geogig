@@ -10,6 +10,7 @@ Feature: "index create" command
      Then the response should contain "Index created successfully"
       And the response should contain "Size: 3"
       And the response should not contain "Size: 2"
+      And the response should contain the index ID for tree "Points"
       
   Scenario: Try to create an index with extra attributes
     Given I have a repository
@@ -18,6 +19,8 @@ Feature: "index create" command
      Then the response should contain "Index created successfully"
       And the response should contain "Size: 3"
       And the response should not contain "Size: 2"
+      And the response should contain the index ID for tree "Points"
+
 
   Scenario: Try to create an index on a nonexistent tree
     Given I have a repository
@@ -44,3 +47,5 @@ Feature: "index create" command
      Then the response should contain "Index created successfully"
       And the response should contain "Size: 3"
       And the response should contain "Size: 2"
+      And the response should contain the index ID for tree "Points"
+

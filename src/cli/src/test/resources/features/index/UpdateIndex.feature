@@ -11,6 +11,7 @@ Feature: "index update" command
      When I run the command "index update --tree Points --extra-attributes sp"
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 3"
+      And the response should contain the index ID for tree "Points"
 
   Scenario: Try to update a nonexistent index
     Given I have a repository
@@ -27,7 +28,8 @@ Feature: "index update" command
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 3"
       And the response should contain "Size: 2"
-      
+      And the response should contain the index ID for tree "Points"
+
   Scenario: Try to add attributes to an index
     Given I have a repository
       And I have several commits
@@ -36,7 +38,8 @@ Feature: "index update" command
      When I run the command "index update --tree Points --extra-attributes sp --add"
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 3"
-      
+      And the response should contain the index ID for tree "Points"
+
   Scenario: Try to replace attributes of an index
     Given I have a repository
       And I have several commits
@@ -45,7 +48,8 @@ Feature: "index update" command
      When I run the command "index update --tree Points --extra-attributes sp --overwrite"
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 3"
-      
+      And the response should contain the index ID for tree "Points"
+
   Scenario: Try to change existing attributes without specifying add or overwrite
     Given I have a repository
       And I have several commits

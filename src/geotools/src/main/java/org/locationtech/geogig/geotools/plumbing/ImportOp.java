@@ -50,6 +50,7 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.porcelain.CRSException;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.NodeRef;
@@ -63,6 +64,7 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.identity.FeatureId;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +77,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.CoordinateSequenceFactory;
 import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
+import static org.locationtech.geogig.repository.impl.SpatialOps.findIdentifier;
 
 /**
  * Internal operation for importing tables from a GeoTools {@link DataStore}.
@@ -273,27 +276,13 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         SimpleFeatureType override = orig;
 
         GeometryDescriptor geometryDescriptor = orig.getGeometryDescriptor();
-        if (geometryDescriptor != null) {
-            CoordinateReferenceSystem crs = geometryDescriptor.getCoordinateReferenceSystem();
-            String srs = CRS.toSRS(crs);
-            if (srs != null && !srs.contains("EPSG:")) {
-                boolean fullScan = true;
-                String knownIdentifier;
-                try {
-                    knownIdentifier = CRS.lookupIdentifier(crs, fullScan);
-                    if (knownIdentifier != null) {
-                        LOG.info("Identified CRS as " + knownIdentifier);
-                        boolean longitudeFirst = CRS.getAxisOrder(crs).equals(AxisOrder.EAST_NORTH);
-                        CoordinateReferenceSystem crsOverride;
-                        crsOverride = CRS.decode(knownIdentifier, longitudeFirst);
-                        override = DataUtilities.createSubType(orig, null, crsOverride);
-                    }
-                } catch (Exception e) {
-                    LOG.warn("Error looking known identifier for CRS " + crs, e);
-                }
-            }
+        CoordinateReferenceSystem crs = null;
+        try {
+            crs = findIdentifier(geometryDescriptor);
+            override = DataUtilities.createSubType(orig, null, crs);
+        } catch (Exception e) {
+            LOG.warn("Error looking for known identifier for CRS " + crs, e);
         }
-
         return override;
     }
 

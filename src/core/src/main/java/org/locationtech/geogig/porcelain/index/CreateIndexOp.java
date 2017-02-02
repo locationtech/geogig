@@ -10,17 +10,21 @@
 package org.locationtech.geogig.porcelain.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.index.BuildFullHistoryIndexOp;
 import org.locationtech.geogig.plumbing.index.BuildIndexOp;
 import org.locationtech.geogig.plumbing.index.CreateIndexInfoOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
+
+import com.google.common.base.Optional;
 
 public class CreateIndexOp extends AbstractGeoGigOp<Index> {
 
@@ -35,6 +39,8 @@ public class CreateIndexOp extends AbstractGeoGigOp<Index> {
     private RevTree canonicalTypeTree;
 
     private ObjectId featureTypeId;
+
+    private boolean indexHistory = false;
 
     @Override
     protected Index _call() {
@@ -51,15 +57,30 @@ public class CreateIndexOp extends AbstractGeoGigOp<Index> {
                 .setMetadata(metadata)//
                 .call();
 
-        final RevTree indexTree = command(BuildIndexOp.class)//
-                .setIndex(indexInfo)//
-                .setOldCanonicalTree(RevTree.EMPTY)//
-                .setNewCanonicalTree(canonicalTypeTree)//
-                .setRevFeatureTypeId(featureTypeId)//
-                .setProgressListener(getProgressListener())//
-                .call();
+        final ObjectId indexedTreeId;
 
-        return new Index(indexInfo, indexTree.getId(), indexDatabase());
+        if (indexHistory) {
+            command(BuildFullHistoryIndexOp.class)//
+                    .setTreeRefSpec(treeName)//
+                    .setAttributeName(attributeName)//
+                    .setProgressListener(getProgressListener())//
+                    .call();
+            Optional<ObjectId> headIndexedTreeId = indexDatabase().resolveIndexedTree(indexInfo,
+                    canonicalTypeTree.getId());
+            checkState(headIndexedTreeId.isPresent(),
+                    "HEAD indexed tree could not be resolved after building history indexes.");
+            indexedTreeId = headIndexedTreeId.get();
+        } else {
+            indexedTreeId = command(BuildIndexOp.class)//
+                    .setIndex(indexInfo)//
+                    .setOldCanonicalTree(RevTree.EMPTY)//
+                    .setNewCanonicalTree(canonicalTypeTree)//
+                    .setRevFeatureTypeId(featureTypeId)//
+                    .setProgressListener(getProgressListener())//
+                    .call().getId();
+        }
+
+        return new Index(indexInfo, indexedTreeId, indexDatabase());
     }
 
     public CreateIndexOp setTreeName(String treeName) {
@@ -89,6 +110,11 @@ public class CreateIndexOp extends AbstractGeoGigOp<Index> {
 
     public CreateIndexOp setFeatureTypeId(ObjectId featureTypeId) {
         this.featureTypeId = featureTypeId;
+        return this;
+    }
+
+    public CreateIndexOp setIndexHistory(boolean indexHistory) {
+        this.indexHistory = indexHistory;
         return this;
     }
 }

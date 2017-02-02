@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage.postgresql.functional;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
 import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
@@ -18,6 +19,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 
 import cucumber.runtime.java.StepDefAnnotation;
 
@@ -38,7 +40,7 @@ public class PostgreSQLStepDefinitions {
     }
 
     static final class PGTestRepoURIBuilder extends TestRepoURIBuilder {
-        private PGTemporaryTestConfig testConfig;
+        private List<PGTemporaryTestConfig> testConfigs = Lists.newArrayList();
 
         @Override
         public void before() throws Throwable {
@@ -47,25 +49,30 @@ public class PostgreSQLStepDefinitions {
 
         @Override
         public void after() {
-            if (testConfig != null) {
-                testConfig.after();
+            for (PGTemporaryTestConfig testConfig : testConfigs) {
+                if (testConfig != null) {
+                    testConfig.after();
+                }
             }
+            testConfigs.clear();
         }
 
         @Override
         public URI newRepositoryURI(String name, Platform platform) throws URISyntaxException {
-            testConfig = new PGTemporaryTestConfig(name);
+            PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(name);
             try {
                 testConfig.before();
             } catch (Throwable e) {
                 throw Throwables.propagate(e);
             }
             String repoURI = testConfig.getRepoURL();
+            testConfigs.add(testConfig);
             return new URI(repoURI);
         }
 
         @Override
         public URI buildRootURI(Platform platform) {
+            PGTemporaryTestConfig testConfig = testConfigs.get(testConfigs.size() - 1);
             String rootURI = testConfig.getRepoURL()
                     .replace("/" + testConfig.getEnvironment().getRepositoryName(), "");
             URI rootUri = null;

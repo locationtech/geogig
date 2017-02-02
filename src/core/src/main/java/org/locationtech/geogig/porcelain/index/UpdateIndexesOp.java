@@ -78,7 +78,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
 
         for (NodeRef treeRef : featureTypeTreeRefs) {
             final String treePath = treeRef.path();
-            final List<IndexInfo> layerIndexes = indexDatabase.getIndexes(treePath);
+            final List<IndexInfo> layerIndexes = indexDatabase.getIndexInfos(treePath);
             if (!layerIndexes.isEmpty()) {
                 final @Nullable NodeRef oldTreeRef = previousTreeRefs.get(treePath);
 

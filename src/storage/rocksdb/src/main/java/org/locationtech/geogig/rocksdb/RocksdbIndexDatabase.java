@@ -12,7 +12,7 @@ package org.locationtech.geogig.rocksdb;
 import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.FORMAT_NAME;
 import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.VERSION;
 
-import java.util.Collections;
+import java.io.DataInput;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +38,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.google.common.hash.Hasher;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
@@ -54,6 +54,8 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     private final ConfigDatabase configdb;
 
     private ColumnFamilyHandle indexMetadataColumn;
+
+    private ColumnFamilyHandle indexMappingsColumn;
 
     @Inject
     public RocksdbIndexDatabase(Platform platform, Hints hints, ConfigDatabase configdb) {
@@ -81,9 +83,11 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         if (isOpen()) {
             return;
         }
-        super.open(Collections.singleton("indexMetadata"));
+        super.open(Sets.newHashSet("indexMetadata", "indexMappings"));
         this.indexMetadataColumn = super.dbhandle.getColumnFamily("indexMetadata");
+        this.indexMappingsColumn = super.dbhandle.getColumnFamily("indexMappings");
         Preconditions.checkState(this.indexMetadataColumn != null);
+        Preconditions.checkState(this.indexMappingsColumn != null);
     }
 
     @Override
@@ -92,12 +96,15 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     }
 
     private static byte[] indexKey(String treeName, @Nullable String attributeName) {
-        return (treeName + "." + (attributeName == null ? "" : attributeName))
-                .getBytes(Charsets.UTF_8);
+        StringBuilder sb = new StringBuilder(treeName).append(".");
+        if (attributeName != null) {
+            sb.append(attributeName);
+        }
+        return sb.toString().getBytes(Charsets.UTF_8);
     }
 
     @Override
-    public IndexInfo createIndex(String treeName, String attributeName, IndexType strategy,
+    public IndexInfo createIndexInfo(String treeName, String attributeName, IndexType strategy,
             @Nullable Map<String, Object> metadata) {
         checkWritable();
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
@@ -113,13 +120,20 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return index;
     }
 
+    @Override
+    public IndexInfo updateIndexInfo(String treeName, String attributeName, IndexType strategy,
+            Map<String, Object> metadata) {
+        return createIndexInfo(treeName, attributeName, strategy, metadata);
+    }
+
     private IndexInfo readIndex(byte[] indexBytes) {
-        IndexInfo index = IndexInfoSerializer.deserialize(ByteStreams.newDataInput(indexBytes));
+        DataInput input = ByteStreams.newDataInput(indexBytes);
+        IndexInfo index = IndexInfoSerializer.deserialize(input);
         return index;
     }
 
     @Override
-    public Optional<IndexInfo> getIndex(String treeName, String attributeName) {
+    public Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
         checkOpen();
         byte[] indexKey = indexKey(treeName, attributeName);
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -134,7 +148,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     }
 
     @Override
-    public List<IndexInfo> getIndexes(String treeName) {
+    public List<IndexInfo> getIndexInfos(String treeName) {
         checkOpen();
         byte[] indexKey = indexKey(treeName, null);
         List<IndexInfo> indexes = Lists.newArrayList();
@@ -145,7 +159,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
                     byte[] key = it.key();
                     for (int i = 0; i < indexKey.length; i++) {
                         if (indexKey[i] != key[i]) {
-                            break;
+                            return indexes;
                         }
                     }
                     indexes.add(readIndex(it.value()));
@@ -157,10 +171,49 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     }
 
     @Override
-    public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
-        ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
+    public List<IndexInfo> getIndexInfos() {
+        checkOpen();
+        List<IndexInfo> indexes = Lists.newArrayList();
         try (RocksDBReference dbRef = dbhandle.getReference()) {
-            dbRef.db().put(indexMetadataColumn, indexTreeLookupId.getRawValue(),
+            try (RocksIterator it = dbRef.db().newIterator(indexMetadataColumn)) {
+                it.seekToFirst();
+                while (it.isValid()) {
+                    indexes.add(readIndex(it.value()));
+                    it.next();
+                }
+            }
+        }
+        return indexes;
+    }
+
+    @Override
+    public void clearIndex(IndexInfo index) {
+        checkOpen();
+        byte[] mappingKey = computeIndexTreeLookupId(index.getId(), null);
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            try (RocksIterator it = dbRef.db().newIterator(indexMappingsColumn)) {
+                it.seek(mappingKey);
+                while (it.isValid()) {
+                    byte[] key = it.key();
+                    for (int i = 0; i < mappingKey.length; i++) {
+                        if (mappingKey[i] != key[i]) {
+                            return;
+                        }
+                    }
+                    it.next();
+                    dbRef.db().delete(indexMappingsColumn, key);
+                }
+            } catch (RocksDBException e) {
+                Throwables.propagate(e);
+            }
+        }
+    }
+
+    @Override
+    public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
+        byte[] indexTreeLookupId = computeIndexTreeLookupId(index.getId(), originalTree);
+        try (RocksDBReference dbRef = dbhandle.getReference()) {
+            dbRef.db().put(indexMappingsColumn, indexTreeLookupId,
                     indexedTree.getRawValue());
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
@@ -169,11 +222,11 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
 
     @Override
     public Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
-        ObjectId indexTreeLookupId = computeIndexTreeLookupId(index.getId(), treeId);
+        byte[] indexTreeLookupId = computeIndexTreeLookupId(index.getId(), treeId);
 
         byte[] indexTreeBytes;
         try (RocksDBReference dbRef = dbhandle.getReference()) {
-            indexTreeBytes = dbRef.db().get(indexMetadataColumn, indexTreeLookupId.getRawValue());
+            indexTreeBytes = dbRef.db().get(indexMappingsColumn, indexTreeLookupId);
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }
@@ -184,10 +237,11 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         return Optional.absent();
     }
 
-    private ObjectId computeIndexTreeLookupId(ObjectId indexId, ObjectId treeId) {
-        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-        hasher.putBytes(indexId.getRawValue());
-        hasher.putBytes(treeId.getRawValue());
-        return ObjectId.createNoClone(hasher.hash().asBytes());
+    private static byte[] computeIndexTreeLookupId(ObjectId indexId, @Nullable ObjectId treeId) {
+        StringBuilder sb = new StringBuilder(indexId.toString()).append(".");
+        if (treeId != null) {
+            sb.append(treeId.toString());
+        }
+        return sb.toString().getBytes(Charsets.UTF_8);
     }
 }

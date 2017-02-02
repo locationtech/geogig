@@ -59,7 +59,7 @@ public class QuadTreeTestSupport {
         for (int x = -180; x <= 180; x += 5) {
             for (int y = -90; y <= 90; y += 5) {
 
-                String fid = String.format("%03d,%03d", x, y);
+                String fid = getPointFid(x, y);
 
                 RevFeature feature = createPointFeature(x, y, Double.valueOf(x), Double.valueOf(y),
                         fid);
@@ -73,6 +73,10 @@ public class QuadTreeTestSupport {
         }
         RevTree tree = builder.build();
         return tree;
+    }
+
+    public static String getPointFid(int x, int y) {
+        return String.format("%03d,%03d", x, y);
     }
 
     public static List<RevFeature> createWorldPointFeatures() {

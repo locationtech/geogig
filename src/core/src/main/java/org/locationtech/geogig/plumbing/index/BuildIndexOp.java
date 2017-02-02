@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.plumbing.index;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.HashMap;
@@ -168,9 +167,11 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
         } else {
             final Optional<ObjectId> oldIndexTreeId = indexDatabase.resolveIndexedTree(index,
                     oldCanonicalTree.getId());
-            checkArgument(oldIndexTreeId.isPresent(), "No index tree exists for %s",
-                    oldCanonicalTree.getId());
-            oldIndexTree = indexDatabase.getTree(oldIndexTreeId.get());
+            if (oldIndexTreeId.isPresent()) {
+                oldIndexTree = indexDatabase.getTree(oldIndexTreeId.get());
+            } else {
+                oldIndexTree = RevTree.EMPTY;
+            }
         }
 
         final IndexType indexType = index.getIndexType();

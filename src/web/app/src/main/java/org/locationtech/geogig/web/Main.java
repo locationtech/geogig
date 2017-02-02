@@ -34,6 +34,7 @@ import org.locationtech.geogig.rest.repository.RepositoryResource;
 import org.locationtech.geogig.rest.repository.RepositoryRouter;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.locationtech.geogig.rest.repository.UploadCommandResource;
+import org.locationtech.geogig.web.api.index.IndexCommandResource;
 import org.restlet.Application;
 import org.restlet.Component;
 import org.restlet.Restlet;
@@ -140,6 +141,8 @@ public class Main extends Application {
         singleRepoRouter.attach("/init", InitCommandResource.class);
         singleRepoRouter.attach("/{command}.{extension}", CommandResource.class);
         singleRepoRouter.attach("/{command}", CommandResource.class);
+        singleRepoRouter.attach("/index/{command}.{extension}", IndexCommandResource.class);
+        singleRepoRouter.attach("/index/{command}", IndexCommandResource.class);
 
         org.restlet.Context context = getContext();
         // enable support for compressing responses if the client supports it.

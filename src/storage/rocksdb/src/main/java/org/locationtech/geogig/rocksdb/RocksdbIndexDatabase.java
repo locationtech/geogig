@@ -96,8 +96,11 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     }
 
     private static byte[] indexKey(String treeName, @Nullable String attributeName) {
-        return (treeName + "." + (attributeName == null ? "" : attributeName))
-                .getBytes(Charsets.UTF_8);
+        StringBuilder sb = new StringBuilder(treeName).append(".");
+        if (attributeName != null) {
+            sb.append(attributeName);
+        }
+        return sb.toString().getBytes(Charsets.UTF_8);
     }
 
     @Override
@@ -235,7 +238,10 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     }
 
     private static byte[] computeIndexTreeLookupId(ObjectId indexId, @Nullable ObjectId treeId) {
-        return (indexId.toString() + "." + (treeId == null ? "" : treeId.toString()))
-                .getBytes(Charsets.UTF_8);
+        StringBuilder sb = new StringBuilder(indexId.toString()).append(".");
+        if (treeId != null) {
+            sb.append(treeId.toString());
+        }
+        return sb.toString().getBytes(Charsets.UTF_8);
     }
 }

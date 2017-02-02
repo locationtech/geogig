@@ -17,6 +17,7 @@ import java.util.function.Consumer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
 
 /**
  * Interface for an iterator that can do some cleanup or other work when it is no longer needed. Can
@@ -196,6 +197,31 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
             }
         };
     }
+
+    public static <T> AutoCloseableIterator<T> concat(AutoCloseableIterator<Iterator<T>> its)
+    {
+        Iterator<T> result = Iterators.concat(its);
+
+        return new AutoCloseableIterator<T>() {
+
+            @Override
+            public boolean hasNext() {
+               return result.hasNext();
+            }
+
+            @Override
+            public T next() {
+                return result.next();
+            }
+
+            @Override
+            public void close() {
+                its.close();
+            }
+
+        };
+    }
+
 
     /**
      * Concatenates two {@code AutoCloseableIterators} into a single one, closing both when closed.

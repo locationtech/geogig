@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -37,14 +38,14 @@ import com.google.common.base.Function;
  * 
  * This provides non-geotools access to the feature data.
  */
-public class BulkObjectDatabaseFeatureRetriever implements Function<List<NodeRef>, Iterator<FeatureInfo>> {
+public class BulkObjectDatabaseFeatureRetriever implements Function<List<NodeRef>,  Iterator<FeatureInfo>> {
     ObjectStore odb;
 
     public BulkObjectDatabaseFeatureRetriever(ObjectStore odb) {
         this.odb = odb;
     }
 
-    public Iterator<FeatureInfo> apply(List<NodeRef> refs) {
+    public  Iterator<FeatureInfo> apply(List<NodeRef> refs) {
         Map<ObjectId, RevFeature> correlationIndex =
                 new HashMap<>(refs.size());
 
@@ -59,6 +60,6 @@ public class BulkObjectDatabaseFeatureRetriever implements Function<List<NodeRef
         ArrayList<FeatureInfo> result = new ArrayList<>(refs.size());
         refs.forEach( ref-> result.add(FeatureInfo.insert(correlationIndex.get(ref.getObjectId()), ref.getMetadataId(), ref.path()    )));
 
-        return result.iterator();
+        return  (result.iterator() );
     }
 }

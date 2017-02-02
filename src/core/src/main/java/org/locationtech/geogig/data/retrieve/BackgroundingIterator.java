@@ -9,15 +9,14 @@
  */
 package org.locationtech.geogig.data.retrieve;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.locationtech.geogig.repository.AutoCloseableIterator;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * This is a simple producer-consumer based Iterator that pulls using a background thread.
@@ -41,7 +40,7 @@ import java.util.concurrent.Future;
  *
  * @param <T>
  */
-public class BackgroundingIterator<T> implements Iterator<T>, Closeable {
+public class BackgroundingIterator<T> implements Iterator<T>, Closeable,AutoCloseableIterator<T> {
 
     BlockingQueue<Object> queue;
 
@@ -66,7 +65,9 @@ public class BackgroundingIterator<T> implements Iterator<T>, Closeable {
         }
         queue = new ArrayBlockingQueue<Object>(queueSize);
         producer = new Producer(underlyingIterator, queue);
-        executorService = Executors.newSingleThreadExecutor();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("backgrounding-iterator-%d").build();
+        executorService = Executors.newSingleThreadExecutor(nameThreadFactory);
         future = executorService.submit(producer);
     }
 
@@ -82,6 +83,7 @@ public class BackgroundingIterator<T> implements Iterator<T>, Closeable {
 
     @Override
     public void close() {
+        queue.clear();
         executorService.shutdownNow(); // the thread could be blocked
         queue.clear();
     }
@@ -217,5 +219,6 @@ public class BackgroundingIterator<T> implements Iterator<T>, Closeable {
             return throwable;
         }
     }
+
 
 }

@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -115,6 +116,27 @@ public class AutoCloseableIteratorTest {
             filtered.next();
 
         }
+        assertTrue(closed.get());
+    }
+
+    @Test
+    public void testConcat2() {
+        AtomicBoolean closed = new AtomicBoolean(false);
+        TestAutoCloseableIterator testIter1 = new TestAutoCloseableIterator(closed);
+
+        AutoCloseableIterator<List<String>> partition = AutoCloseableIterator.partition(testIter1, 1);
+
+        AutoCloseableIterator<Iterator<String>> main = AutoCloseableIterator.transform(partition, item -> item.iterator());
+
+        AutoCloseableIterator<String> result = AutoCloseableIterator.concat(main);
+        assertEquals("item1", result.next());
+        assertEquals("item2", result.next());
+        assertEquals("item11", result.next());
+
+        assertTrue(!closed.get());
+
+        result.close();
+
         assertTrue(closed.get());
     }
 

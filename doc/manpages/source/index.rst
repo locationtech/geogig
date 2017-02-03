@@ -32,14 +32,11 @@ Contents:
     log.rst
     ls.rst
     merge.rst
-    osmchangeset.rst
-    osmdownload.rst
-    osmexport.rst
-    osmexportpg.rst
-    osmexportshp.rst
-    osmimport.rst
-    osmmap.rst
-    osmunmap.rst
+    indexing.rst
+    indexcreate.rst
+    indexupdate.rst
+    indexrebuild.rst
+    indexlist.rst
     pg.rst
     pgdescribe.rst
     pgexport.rst

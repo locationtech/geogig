@@ -23,43 +23,43 @@ import sys, os, string
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('geogig', 'geogig', 'Runs a geogig command', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('init', 'geogig-init', 'Create and initialize a new geogig repository', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('add', 'geogig-add', 'Stage changes to the index to prepare for commit', ['OpenGeo <http://opengeo.org>'], '1'),
+    ('geogig', 'geogig', 'Runs a geogig command', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('init', 'geogig-init', 'Create and initialize a new geogig repository', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('add', 'geogig-add', 'Stage changes to the index to prepare for commit', ['Boundless <http://boundlessgeo.com>'], '1'),
     ('branch', 'geogig-branch', 'Create, delete, or list branches', ['OpenGeo <http://opengeo.org'], '1'),
     ('checkout', 'geogig-checkout', 'Checkout a branch', ['OpenGeo <http://opengeo.org'], '1'),
-    ('commit', 'geogig-commit', 'Commits staged changes to the repository', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('config', 'geogig-config', 'Get and set repository or global options', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('cherrypick', 'geogig-cherrypick', 'Apply the changes introduced by some existing commits', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('diff', 'geogig-diff', 'Show changes between two tree-ish references.', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('log', 'geogig-log', 'Show commit logs', ['OpenGeo <http://opengeo.org>'], '1'),
+    ('commit', 'geogig-commit', 'Commits staged changes to the repository', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('config', 'geogig-config', 'Get and set repository or global options', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('cherrypick', 'geogig-cherrypick', 'Apply the changes introduced by some existing commits', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('diff', 'geogig-diff', 'Show changes between two tree-ish references.', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('log', 'geogig-log', 'Show commit logs', ['Boundless <http://boundlessgeo.com>'], '1'),
     ('help', 'geogig-help', 'Get help for a command', ['OpenGeo <http://opengeo.org'], 1),
-    ('status', 'geogig-status', 'Show the working tree and index status', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('merge', 'geogig-merge', 'Merge two or more histories into one', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('rebase', 'geogig-rebase', 'Forward-port local commits to the updated upstream head', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('reset', 'geogig-reset', 'Reset current HEAD to the specified state', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('remote', 'geogig-remote', 'Remote management command extension', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('remoteadd', 'geogig-remote-add', 'Add a repository whose branches should be tracked', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('remotelist', 'geogig-remote-list', 'List all repositories being tracked', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('remoteremove', 'geogig-remote-remove', 'Remove a repository whose branches are being tracked', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('revert', 'geogig-revert', 'Revert changes that were committed', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('clone', 'geogig-clone', 'Clone a repository into a new directory', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('fetch', 'geogig-fetch', 'Download objects and refs from another repository', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('pull', 'geogig-pull', 'Fetch from and merge with another repository or a local branch', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('push', 'geogig-push', 'Update remote refs along with associated objects', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('pg', 'geogig-pg', 'PostGIS command extension', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('pgimport', 'geogig-pg-import', 'Import features from a PostGIS database', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('pgexport', 'geogig-pg-export', 'Export features to a PostGIS database', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('pglist', 'geogig-pg-list', 'List tables in a PostGIS database', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('pgdescribe', 'geogig-pg-describe', 'Describe properties of a table in a PostGIS database', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('sl', 'geogig-sl', 'SpatiaLite command extension', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('slimport', 'geogig-sl-import', 'Import features from a SpatiaLite database', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('slexport', 'geogig-sl-export', 'Export features to a SpatiaLite database', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('sllist', 'geogig-sl-list', 'List tables in a SpatiaLite database', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('sldescribe', 'geogig-sl-describe', 'Describe properties of a table in a SpatiaLite database', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('shp', 'geogig-shp', 'Shapefile command extension', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('shpimport', 'geogig-shp-import', 'Import features from shapefiles', ['OpenGeo <http://opengeo.org>'], '1'),
-    ('shpexport', 'geogig-shp-export', 'Import features to shapefiles', ['OpenGeo <http://opengeo.org>'], '1')
+    ('indexing', 'geogig-index', 'Index command extension', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('indexcreate', 'geogig-index-create', 'Create a new index on a feature tree', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('indexupdate', 'geogig-index-update', 'Change the extra attributes tracked by an index', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('indexrebuild', 'geogig-index-rebuild', 'Rebuild indexes for the whole history of a feature tree', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('indexlist', 'geogig-index-list', 'List indexes in the repository', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('status', 'geogig-status', 'Show the working tree and index status', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('merge', 'geogig-merge', 'Merge two or more histories into one', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('rebase', 'geogig-rebase', 'Forward-port local commits to the updated upstream head', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('reset', 'geogig-reset', 'Reset current HEAD to the specified state', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('remote', 'geogig-remote', 'Remote management command extension', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('remoteadd', 'geogig-remote-add', 'Add a repository whose branches should be tracked', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('remotelist', 'geogig-remote-list', 'List all repositories being tracked', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('remoteremove', 'geogig-remote-remove', 'Remove a repository whose branches are being tracked', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('revert', 'geogig-revert', 'Revert changes that were committed', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('clone', 'geogig-clone', 'Clone a repository into a new directory', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('fetch', 'geogig-fetch', 'Download objects and refs from another repository', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('pull', 'geogig-pull', 'Fetch from and merge with another repository or a local branch', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('push', 'geogig-push', 'Update remote refs along with associated objects', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('pg', 'geogig-pg', 'PostGIS command extension', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('pgimport', 'geogig-pg-import', 'Import features from a PostGIS database', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('pgexport', 'geogig-pg-export', 'Export features to a PostGIS database', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('pglist', 'geogig-pg-list', 'List tables in a PostGIS database', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('pgdescribe', 'geogig-pg-describe', 'Describe properties of a table in a PostGIS database', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('shp', 'geogig-shp', 'Shapefile command extension', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('shpimport', 'geogig-shp-import', 'Import features from shapefiles', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('shpexport', 'geogig-shp-export', 'Import features to shapefiles', ['Boundless <http://boundlessgeo.com>'], '1')
 ]
 
 # General configuration
@@ -91,7 +91,7 @@ master_doc = 'geogig'
 # General substitutions.
 project = u'GeoGig'
 manual = u'Man Pages'
-copyright = u'OpenGeo <http://opengeo.org>'
+copyright = u'Boundless <http://boundlessgeo.com>'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.

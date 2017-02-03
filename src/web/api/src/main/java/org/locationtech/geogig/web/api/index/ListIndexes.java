@@ -11,13 +11,16 @@ package org.locationtech.geogig.web.api.index;
 
 import java.util.List;
 
+import org.locationtech.geogig.porcelain.index.IndexUtils;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
+import org.restlet.data.Status;
 
 /**
  * Lists all indexes in the database, or all of the indexes on a given feature type tree.
@@ -57,6 +60,15 @@ public class ListIndexes extends AbstractWebAPICommand {
         final List<IndexInfo> indexInfos;
         if (treeName != null) {
             indexInfos = geogig.indexDatabase().getIndexInfos(treeName);
+            if (indexInfos.size() == 0) {
+                try {
+                    IndexUtils.resolveTypeTreeRef(geogig, treeName);
+                } catch (IllegalArgumentException e) {
+                    throw new CommandSpecException(
+                            "The provided tree name was not found in the HEAD commit.",
+                            Status.CLIENT_ERROR_NOT_FOUND);
+                }
+            }
         } else {
             indexInfos = geogig.indexDatabase().getIndexInfos();
         }

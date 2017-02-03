@@ -28,18 +28,15 @@ Contents:
     geojsonimport.rst
     geojsonexport.rst
     help.rst
+    indexing.rst
+    indexcreate.rst
+    indexupdate.rst
+    indexrebuild.rst
+    indexlist.rst
     init.rst
     log.rst
     ls.rst
     merge.rst
-    osmchangeset.rst
-    osmdownload.rst
-    osmexport.rst
-    osmexportpg.rst
-    osmexportshp.rst
-    osmimport.rst
-    osmmap.rst
-    osmunmap.rst
     pg.rst
     pgdescribe.rst
     pgexport.rst

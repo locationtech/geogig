@@ -21,6 +21,7 @@ import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.AbstractWebOpTest;
+import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.TestData;
 import org.locationtech.geogig.web.api.TestParams;
@@ -133,6 +134,47 @@ public class ListIndexesTest extends AbstractWebOpTest {
         JsonArray extraAttributesArr = index.getJsonArray("extraAttribute");
         assertEquals(1, extraAttributesArr.size());
         assertEquals("sp", extraAttributesArr.getString(0));
+    }
+
+    @Test
+    public void testListIndexesNonexistentTreeName() throws Exception {
+        Repository geogig = testContext.get().getRepository();
+        TestData testData = new TestData(geogig);
+        testData.init();
+        testData.loadDefaultData();
+
+        geogig.command(CreateQuadTree.class).setTreeRefSpec("Points")
+                .setExtraAttributes(Lists.newArrayList("sp")).call();
+        geogig.command(CreateQuadTree.class).setTreeRefSpec("Lines")
+                .setExtraAttributes(Lists.newArrayList("ip")).call();
+
+        ParameterSet options = TestParams.of("treeName", "nonexistent");
+
+        ex.expect(CommandSpecException.class);
+        ex.expectMessage("The provided tree name was not found in the HEAD commit.");
+        buildCommand(options).run(testContext.get());
+    }
+
+    @Test
+    public void testListIndexesNonIndexedTreeName() throws Exception {
+        Repository geogig = testContext.get().getRepository();
+        TestData testData = new TestData(geogig);
+        testData.init();
+        testData.loadDefaultData();
+
+        geogig.command(CreateQuadTree.class).setTreeRefSpec("Points")
+                .setExtraAttributes(Lists.newArrayList("sp")).call();
+        geogig.command(CreateQuadTree.class).setTreeRefSpec("Lines")
+                .setExtraAttributes(Lists.newArrayList("ip")).call();
+
+        ParameterSet options = TestParams.of("treeName", "Polygons");
+
+        buildCommand(options).run(testContext.get());
+
+        JsonObject response = getJSONResponse().getJsonObject("response");
+        assertTrue(response.getBoolean("success"));
+        JsonArray indexes = response.getJsonArray("index");
+        assertEquals(0, indexes.size());
     }
 
     @Test

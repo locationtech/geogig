@@ -28,15 +28,15 @@ Contents:
     geojsonimport.rst
     geojsonexport.rst
     help.rst
-    init.rst
-    log.rst
-    ls.rst
-    merge.rst
     indexing.rst
     indexcreate.rst
     indexupdate.rst
     indexrebuild.rst
     indexlist.rst
+    init.rst
+    log.rst
+    ls.rst
+    merge.rst
     pg.rst
     pgdescribe.rst
     pgexport.rst

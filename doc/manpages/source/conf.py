@@ -34,7 +34,7 @@ man_pages = [
     ('diff', 'geogig-diff', 'Show changes between two tree-ish references.', ['Boundless <http://boundlessgeo.com>'], '1'),
     ('log', 'geogig-log', 'Show commit logs', ['Boundless <http://boundlessgeo.com>'], '1'),
     ('help', 'geogig-help', 'Get help for a command', ['OpenGeo <http://opengeo.org'], 1),
-    ('index', 'geogig-index', 'Index command extension', ['Boundless <http://boundlessgeo.com>'], '1'),
+    ('indexing', 'geogig-index', 'Index command extension', ['Boundless <http://boundlessgeo.com>'], '1'),
     ('indexcreate', 'geogig-index-create', 'Create a new index on a feature tree', ['Boundless <http://boundlessgeo.com>'], '1'),
     ('indexupdate', 'geogig-index-update', 'Change the extra attributes tracked by an index', ['Boundless <http://boundlessgeo.com>'], '1'),
     ('indexrebuild', 'geogig-index-rebuild', 'Rebuild indexes for the whole history of a feature tree', ['Boundless <http://boundlessgeo.com>'], '1'),

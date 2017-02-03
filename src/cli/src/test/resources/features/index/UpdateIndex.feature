@@ -57,3 +57,76 @@ Feature: "index update" command
      Then the response should contain "Index created successfully"
      When I run the command "index update --tree Points --extra-attributes sp"
      Then the response should contain "Extra attributes already exist on index, specify add or overwrite to update."
+
+  Scenario: I try to update the index without specifying a tree
+    Given I have a repository
+    And I have several commits
+    And I run the command "index create --tree Points --extra-attributes ip"
+    Then the response should contain "Index created successfully"
+    When I run the command "index update --extra-attributes sp"
+    Then the response should contain "The following option is required: --tree"
+
+  Scenario: I try to update the index for a non-existent attribute
+    Given I have a repository
+    And I have several commits
+    And I run the command "index create --tree Points --extra-attributes ip"
+    Then the response should contain "Index created successfully"
+    When I run the command "index update --tree Points --attribute fakeAttrib"
+    Then the response should contain "property fakeAttrib does not exist"
+
+  Scenario: I try to update the index leaving the extra-attribute param empty
+    Given I have a repository
+    And I have several commits
+    And I run the command "index create --tree Points --extra-attributes ip"
+    Then the response should contain "Index created successfully"
+    When I run the command "index update --tree Points --extra-attributes"
+    Then the response should contain "Expected a value after parameter --extra-attributes"
+
+  Scenario: I try to update the index for a non-existent extra-attribute
+    Given I have a repository
+    And I have several commits
+    And I run the command "index create --tree Points --extra-attributes ip"
+    Then the response should contain "Index created successfully"
+    When I run the command "index update --tree Points --extra-attributes fakeAttrib"
+    Then the response should contain "FeatureType Points does not define attribute 'fakeAttrib'"
+
+  Scenario: I try to overwrite a non-existent extra-attribute
+    Given I have a repository
+      And I have several commits
+      And I run the command "index create --tree Points --extra-attributes ip"
+     Then the response should contain "Index created successfully"
+     When I run the command "index update --tree Points --extra-attributes fakeAttrib --overwrite"
+     Then the response should contain "FeatureType Points does not define attribute 'fakeAttrib'"
+
+  Scenario: I try to add a non-existent attribute to the index
+    Given I have a repository
+      And I have several commits
+      And I run the command "index create --tree Points --extra-attributes ip"
+     Then the response should contain "Index created successfully"
+     When I run the command "index update --tree Points --extra-attributes sp"
+     Then the response should contain "Extra attributes already exist on index, specify add or overwrite"
+
+  Scenario: I try to update the index for the full history when there is only one commit
+    Given I have a repository
+      And I have staged "points1"
+      And I run the command "commit -m "point1 added"
+      And I run the command "index create --tree Points --extra-attributes ip"
+     Then the response should contain "Index created successfully"
+     When I run the command "index update --tree Points --index-history --overwrite"
+     Then the response should contain "Index updated successfully"
+      And the response should contain "Size: 1"
+      And the response should contain the index ID for tree "Points"
+
+  Scenario: I try to update the index for the full history without specifying overwrite
+    Given I have a repository
+      And I have several commits
+      And I run the command "index create --tree Points --extra-attributes ip"
+     Then the response should contain "Index created successfully"
+     When I run the command "index update --tree Points --index-history"
+     Then the response should contain "Extra attributes already exist on index"
+      And the response should contain "specify add or overwrite to update"
+
+  Scenario: I try to update the index in an empty repository
+    Given I have a repository
+     When I run the command "index update --tree Points"
+     Then the response should contain "Can't find feature tree 'Points'"

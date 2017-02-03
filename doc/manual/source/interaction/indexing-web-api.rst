@@ -115,7 +115,7 @@ If the index does not contain any extra attributes, you do not need to specify `
 
 ::
 
-	$ curl -X POST -v "http://localhost:8182/repos/repo1/index/create?treeRefSpec=Points&extraAttributes=ip" | xmllint --format -
+	$ curl -X POST -v "http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&extraAttributes=ip" | xmllint --format -
 	< HTTP/1.1 201 Created
 	< Content-Type: application/xml
 	<?xml version="1.0" encoding="UTF-8"?>
@@ -138,7 +138,7 @@ In this case Points already has an extra attribute of ``sp``.  If we want to add
 
 ::
 
-	$ curl -X POST -v "http://localhost:8182/repos/repo1/index/create?treeRefSpec=Points&extraAttributes=ip&add=true" | xmllint --format -
+	$ curl -X POST -v "http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&extraAttributes=ip&add=true" | xmllint --format -
 	< HTTP/1.1 201 Created
 	< Content-Type: application/xml
 	<?xml version="1.0" encoding="UTF-8"?>
@@ -162,7 +162,7 @@ In this case Points already has an extra attribute of ``sp``.  If we want to rem
 
 ::
 
-	$ curl -X POST -v "http://localhost:8182/repos/repo1/index/create?treeRefSpec=Points&overwrite=true" | xmllint --format -
+	$ curl -X POST -v "http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&overwrite=true" | xmllint --format -
 	< HTTP/1.1 201 Created
 	< Content-Type: application/xml
 	<?xml version="1.0" encoding="UTF-8"?>

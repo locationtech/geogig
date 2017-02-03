@@ -43,6 +43,7 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
@@ -231,7 +232,7 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
                 CoordinateReferenceSystem crs = gType.getCoordinateReferenceSystem();
                 String srsName;
                 if (crs == null) {
-                    srsName = "urn:ogc:def:crs:EPSG::0";
+                    srsName = RevObjects.NULL_CRS_IDENTIFIER;
                 } else {
                     final boolean longitudeFirst = CRS.getAxisOrder(crs,
                             false) == AxisOrder.EAST_NORTH;

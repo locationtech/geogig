@@ -11,6 +11,7 @@ package org.locationtech.geogig.data;
 
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.filter.identity.FeatureIdVersionedImpl;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -82,7 +83,7 @@ public class FeatureBuilder {
     }
 
     public Feature build(final String id, final RevFeature revFeature,
-            final GeometryFactory geometryFactory) {
+            final @Nullable GeometryFactory geometryFactory) {
         Preconditions.checkNotNull(id);
         Preconditions.checkNotNull(revFeature);
 

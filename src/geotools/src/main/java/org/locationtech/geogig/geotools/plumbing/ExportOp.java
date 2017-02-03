@@ -12,6 +12,7 @@ package org.locationtech.geogig.geotools.plumbing;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -22,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DefaultTransaction;
+import org.geotools.data.FeatureReader;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.Hints;
@@ -33,6 +35,8 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
+import org.locationtech.geogig.data.retrieve.IteratorBackedFeatureReader;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.Bounded;
@@ -194,7 +198,12 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         try {
             targetStore.setTransaction(transaction);
             try {
-                targetStore.addFeatures(asFeatureCollection);
+                 targetStore.addFeatures(asFeatureCollection);
+//                ArrayList al = new ArrayList();
+//                while (filtered.hasNext())
+//                    al.add(filtered.next());
+             //   FeatureReader<SimpleFeatureType, SimpleFeature> reader = new IteratorBackedFeatureReader(null,filtered );
+             //   targetStore.setFeatures(reader);
                 transaction.commit();
             } catch (final Exception e) {
                 if (transactional) {
@@ -214,7 +223,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         return targetStore;
 
     }
-
+     
     private static Iterator<SimpleFeature> getFeatures(final RevTree typeTree,
             final ObjectDatabase database, final ObjectId defaultMetadataId,
             final @Nullable ReferencedEnvelope bboxFilter,
@@ -232,60 +241,21 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             }
             nodes = iterator;
         }
-        // progress reporting
-        nodes = Iterators.transform(nodes, new Function<NodeRef, NodeRef>() {
+        BulkFeatureRetriever gf = new BulkFeatureRetriever(database);
+        Iterator<SimpleFeature> feats =  gf.getGeoToolsFeatures(nodes);
+        
+        Iterator<SimpleFeature> result=   Iterators.transform(feats, new Function<SimpleFeature, SimpleFeature>() {
 
             private AtomicInteger count = new AtomicInteger();
 
             @Override
-            public NodeRef apply(NodeRef input) {
+            public SimpleFeature apply(SimpleFeature input) {
                 progressListener.setProgress((count.incrementAndGet() * 100.f) / typeTree.size());
                 return input;
             }
         });
-
-        Function<NodeRef, SimpleFeature> asFeature = new Function<NodeRef, SimpleFeature>() {
-
-            private Map<ObjectId, FeatureBuilder> ftCache = Maps.newHashMap();
-
-            @Override
-            @Nullable
-            public SimpleFeature apply(final NodeRef input) {
-                final ObjectId metadataId = input.getMetadataId();
-                final RevFeature revFeature = database.getFeature(input.getObjectId());
-
-                FeatureBuilder featureBuilder = getBuilderFor(metadataId);
-                final String fid = input.name();
-                Feature feature = featureBuilder.build(fid, revFeature);
-                feature.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
-                feature.getUserData().put(Hints.PROVIDED_FID, fid);
-                feature.getUserData().put(RevFeature.class, revFeature);
-                feature.getUserData().put(RevFeatureType.class, featureBuilder.getType());
-
-                if (feature instanceof SimpleFeature) {
-                    return (SimpleFeature) feature;
-                }
-                return null;
-            }
-
-            private FeatureBuilder getBuilderFor(final ObjectId metadataId) {
-                FeatureBuilder featureBuilder = ftCache.get(metadataId);
-                if (featureBuilder == null) {
-                    RevFeatureType revFtype = database.getFeatureType(metadataId);
-                    featureBuilder = new FeatureBuilder(revFtype);
-                    ftCache.put(metadataId, featureBuilder);
-                }
-                return featureBuilder;
-            }
-        };
-
-        Iterator<SimpleFeature> asFeatures = Iterators.transform(nodes, asFeature);
-
-        UnmodifiableIterator<SimpleFeature> filterNulls = Iterators.filter(asFeatures,
-                Predicates.notNull());
-
-        return filterNulls;
-    }
+        return result;
+ }
 
     private Iterator<SimpleFeature> adaptToArguments(final Iterator<SimpleFeature> plainFeatures,
             final ObjectId defaultMetadataId) {

@@ -13,8 +13,8 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
@@ -35,7 +35,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
@@ -115,10 +114,9 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
     }
 
     private Consumer resolveConsumer(RevTreeBuilder builder) {
-        final @Nullable String[] attNames = (String[]) index.getMetadata()
-                .get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
+        final Set<String> attNames = IndexInfo.getMaterializedAttributeNames(index);
 
-        final boolean isMaterialized = attNames != null && attNames.length > 0;
+        final boolean isMaterialized = !attNames.isEmpty();
         final Consumer consumer;
 
         final ProgressListener progressListener = getProgressListener();
@@ -134,11 +132,11 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
         return consumer;
     }
 
-    private Map<String, Integer> attributeIndexMapping(String... attNames) {
+    private Map<String, Integer> attributeIndexMapping(Set<String> attNames) {
         Map<String, Integer> attToValueIndex = new HashMap<>();
 
         RevFeatureType featureType = objectDatabase().getFeatureType(revFeatureTypeId);
-        for (String attName : ImmutableSet.copyOf(attNames)) {
+        for (String attName : attNames) {
             int attIndex = indexOf(attName, featureType);
             attToValueIndex.put(attName, Integer.valueOf(attIndex));
         }

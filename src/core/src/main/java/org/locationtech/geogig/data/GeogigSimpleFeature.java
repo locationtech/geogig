@@ -55,8 +55,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  */
 public class GeogigSimpleFeature implements SimpleFeature {
 
-    // private static final GeometryFactory DEFAULT_GEOM_FACTORY = new GeometryFactory();
-
     static abstract class State {
 
         final AtomicReference<State> currentState;
@@ -205,7 +203,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
     }
 
     public GeogigSimpleFeature(RevFeature feature, SimpleFeatureType featureType, FeatureId id,
-            Map<String, Integer> nameToRevTypeInded, GeometryFactory geomFac) {
+            Map<String, Integer> nameToRevTypeInded, @Nullable GeometryFactory geomFac) {
         this.id = id;
         this.featureType = featureType;
         this.geomFac = geomFac;

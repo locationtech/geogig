@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2016 Boundless and others.
+/* Copyright (c) 2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
@@ -7,16 +7,15 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.geotools.data;
+package org.locationtech.geogig.geotools.data.reader;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.filter.visitor.DefaultFilterVisitor;
-import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.opengis.filter.Filter;
 import org.opengis.filter.expression.Literal;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -26,28 +25,22 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 class ExtractBounds extends DefaultFilterVisitor {
 
-    private CoordinateReferenceSystem nativeCrs;
-
-    private List<ReferencedEnvelope> bounds = new ArrayList<>(2);
-
-    public ExtractBounds(final CoordinateReferenceSystem nativeCrs) {
-        this.nativeCrs = nativeCrs;
-    }
+    private List<Envelope> bounds = new ArrayList<>(2);
 
     @Override
-    public List<ReferencedEnvelope> visit(Literal literal, @Nullable Object data) {
+    public List<Envelope> visit(Literal literal, @Nullable Object data) {
 
         Object value = literal.getValue();
         if (value instanceof Geometry) {
             Geometry geom = (Geometry) value;
             Envelope literalEnvelope = geom.getEnvelopeInternal();
-            CoordinateReferenceSystem crs = nativeCrs;
-            if (geom.getUserData() instanceof CoordinateReferenceSystem) {
-                crs = (CoordinateReferenceSystem) geom.getUserData();
-            }
-            ReferencedEnvelope bbox = new ReferencedEnvelope(literalEnvelope, crs);
-            bounds.add(bbox);
+            bounds.add(literalEnvelope);
         }
         return bounds;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<Envelope> getBounds(Filter filterInNativeCrs) {
+        return (List<Envelope>) filterInNativeCrs.accept(new ExtractBounds(), null);
     }
 }

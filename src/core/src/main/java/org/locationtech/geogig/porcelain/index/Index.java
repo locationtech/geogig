@@ -13,7 +13,7 @@ public class Index {
 
     private final IndexDatabase indexdb;
 
-    Index(IndexInfo indexInfo, ObjectId indexTree, IndexDatabase indexdb) {
+    public Index(IndexInfo indexInfo, ObjectId indexTree, IndexDatabase indexdb) {
         this.indexInfo = indexInfo;
         this.indexTree = indexTree;
         this.indexdb = indexdb;

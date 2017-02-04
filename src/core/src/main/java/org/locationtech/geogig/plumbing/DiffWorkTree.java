@@ -82,7 +82,7 @@ public class DiffWorkTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEnt
 
         final Optional<String> ref = Optional.fromNullable(refSpec);
 
-        final RevTree oldTree = ref.isPresent() ? getOldTree() : index().getTree();
+        final RevTree oldTree = ref.isPresent() ? getOldTree() : stagingArea().getTree();
         final RevTree newTree = workingTree().getTree();
 
         DiffTree diff = command(DiffTree.class).setReportTrees(this.reportTrees)

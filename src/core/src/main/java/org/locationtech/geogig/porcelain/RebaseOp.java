@@ -264,7 +264,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 command(UpdateRef.class).setName(currentBranch).setNewValue(upstream.get()).call();
                 command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
                 workingTree().updateWorkHead(upstream.get());
-                index().updateStageHead(upstream.get());
+                stagingArea().updateStageHead(upstream.get());
                 getProgressListener().complete();
                 return true;
             }
@@ -288,7 +288,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
 
                 workingTree().updateWorkHead(upstream.get());
-                index().updateStageHead(upstream.get());
+                stagingArea().updateStageHead(upstream.get());
                 getProgressListener().complete();
                 return true;
             }
@@ -461,7 +461,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                             diffEntryBuffer.add(diff);
                             if (diffEntryBuffer.size() == BUFFER_SIZE) {
                                 // Stage it
-                                index().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
+                                stagingArea().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
                                 diffEntryBuffer.clear();
                             }
 
@@ -473,7 +473,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                             workingTree().insert(featureInfo);
                             try (AutoCloseableIterator<DiffEntry> unstaged = workingTree()
                                     .getUnstaged(null)) {
-                                index().stage(getProgressListener(), unstaged, 0);
+                                stagingArea().stage(getProgressListener(), unstaged, 0);
                             }
                         }
 
@@ -487,7 +487,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                             }
                             if (diffEntryBuffer.size() > 0) {
                                 // Stage it
-                                index().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
+                                stagingArea().stage(getProgressListener(), diffEntryBuffer.iterator(), 0);
                                 diffEntryBuffer.clear();
                             }
                         }
@@ -514,11 +514,11 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
 
                 workingTree().updateWorkHead(newTreeId);
-                index().updateStageHead(newTreeId);
+                stagingArea().updateStageHead(newTreeId);
 
             } else {
 
-                workingTree().updateWorkHead(index().getTree().getId());
+                workingTree().updateWorkHead(stagingArea().getTree().getId());
 
                 try {
                     Blobs.putBlob(context().blobStore(), REBASE_BRANCH_BLOB, currentBranch);
@@ -550,7 +550,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
 
             workingTree().updateWorkHead(newTreeId);
-            index().updateStageHead(newTreeId);
+            stagingArea().updateStageHead(newTreeId);
         }
 
     }

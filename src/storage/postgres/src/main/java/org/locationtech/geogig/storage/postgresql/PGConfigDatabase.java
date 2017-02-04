@@ -18,7 +18,6 @@ import static org.locationtech.geogig.storage.postgresql.PGStorage.rollbackAndRe
 
 import java.net.URISyntaxException;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -429,19 +428,7 @@ public class PGConfigDatabase implements ConfigDatabase {
     synchronized DataSource connect(final Environment config) {
         if (this.dataSource == null) {
             this.dataSource = PGStorage.newDataSource(config);
-            boolean tablesExist;
-            try (Connection cx = PGStorage.newConnection(dataSource)) {
-                DatabaseMetaData md = cx.getMetaData();
-                final String configTable = config.getTables().config();
-                final String schema = PGStorage.schema(configTable);
-                final String table = PGStorage.stripSchema(configTable);
-                try (ResultSet tables = md.getTables(null, schema, table, null)) {
-                    tablesExist = tables.next();
-                }
-            } catch (SQLException e) {
-                throw propagate(e);
-            }
-            if (!tablesExist) {
+            if (!PGStorage.tableExists(this.dataSource, config.getTables().config())) {
                 PGStorage.createTables(config);
             }
         }

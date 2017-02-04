@@ -9,10 +9,7 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.SortedMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
@@ -41,55 +38,42 @@ import com.google.common.collect.ImmutableSortedMap;
  * resulting {@code RevTree} and any internal {@code RevTree} the built tree is to be split into. So
  * when {@link #build()} returns, the resulting {@code RevTree} is guaranteed to be fully stored on
  * the provided {@code ObjectStore}.
- * 
- * <p>
- * When a
  */
 public interface RevTreeBuilder {
 
+    /**
+     * Add a node to the mutable tree representation.
+     */
     public RevTreeBuilder put(Node node);
 
-    public RevTreeBuilder remove(String featureId);
+    /**
+     * Removes a node to the mutable tree representation.
+     */
+    public RevTreeBuilder remove(Node node);
 
+    /**
+     * Replace {@code oldNode} by {@code newNode} in the mutable tree representation.
+     * <p>
+     * This method is an opportunity for RevTreeBuilder implementations to optimize for the case
+     * when a node is being replaced instead of just added.
+     * <p>
+     * In any case the result must be the same as calling {@code remove(oldNode)} followed by
+     * {@code put(newNode)}, and both {@code oldNode} and {@code newNode} must refer to the same
+     * node name.
+     * 
+     */
+    public RevTreeBuilder update(Node oldNode, Node newNode);
+
+    /**
+     * Builds a final immutable tree out of the current state of this tree builder.
+     * <p>
+     * The builder is disposed after this method is called, so calling any of the mutator methods
+     * after calling build leads to an unspecified behavior, most probably throwing an unchecked
+     * exception.
+     * 
+     * @return the created tree
+     */
     public RevTree build();
-
-    /**
-     * Factory method to create a tree builder that clusters subtrees and nodes according to
-     * {@link CanonicalNodeNameOrder}
-     */
-    static RevTreeBuilder canonical(final ObjectStore store) {
-        return RevTreeBuilder.canonical(store, RevTree.EMPTY);
-    }
-
-    ////
-    // this is a temporary measure to defaulting to use the canonical tree builder but allowing to
-    // specify using the legacy one through a System property. Run CLI with
-    //// -Dtreebuilder.legacy=true (e.g. in
-    // JAVA_OPTS).
-    ////
-    static final AtomicBoolean notified = new AtomicBoolean();
-
-    /**
-     * Factory method to create a tree builder that clusters subtrees and nodes according to
-     * {@link CanonicalNodeNameOrder}, and whose internal structure starts by matching the provided
-     * {@code original} tree.
-     */
-    static RevTreeBuilder canonical(final ObjectStore store, final RevTree original) {
-        checkNotNull(store);
-        checkNotNull(original);
-        RevTreeBuilder builder;
-        final boolean USE_LEGACY_BUILDER = Boolean.getBoolean("treebuilder.legacy");
-        if (USE_LEGACY_BUILDER) {
-            if (!notified.getAndSet(true)) {
-                System.err
-                        .println("Using legacy tree builder " + LegacyTreeBuilder.class.getName());
-            }
-            builder = new LegacyTreeBuilder(store, original);
-        } else {
-            builder = new CanonicalTreeBuilder(store, original);
-        }
-        return builder;
-    }
 
     static RevTree build(final long size, final int childTreeCount,
             @Nullable ImmutableList<Node> trees, @Nullable ImmutableList<Node> features,
@@ -125,4 +109,6 @@ public interface RevTreeBuilder {
         return RevTreeImpl.create(id, size, childTreeCount, trees, features, immutableBuckets);
 
     }
+
+    public int getDepth();
 }

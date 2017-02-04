@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.text;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.CRS.AxisOrder;
 import org.geotools.referencing.wkt.Formattable;
+import org.locationtech.geogig.model.RevObjects;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -21,7 +22,7 @@ public class CrsTextSerializer {
     public static String serialize(CoordinateReferenceSystem crs) {
         String srsName;
         if (crs == null) {
-            srsName = "urn:ogc:def:crs:EPSG::0";
+            srsName = RevObjects.NULL_CRS_IDENTIFIER;
         } else {
             // use a flag to control whether the code is returned in EPSG: form instead of
             // urn:ogc:.. form irrespective of the org.geotools.referencing.forceXY System
@@ -63,7 +64,7 @@ public class CrsTextSerializer {
         boolean crsCode = crsText.startsWith("EPSG") || crsText.startsWith("urn:ogc:def:crs:EPSG");
         try {
             if (crsCode) {
-                if ("urn:ogc:def:crs:EPSG::0".equals(crsText)) {
+                if (RevObjects.NULL_CRS_IDENTIFIER.equals(crsText)) {
                     crs = null;
                 } else {
                     boolean forceLongitudeFirst = crsText.startsWith("EPSG:");

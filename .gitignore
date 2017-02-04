@@ -10,3 +10,5 @@ git.properties
 # Netbeans project files
 nb-configuration.xml
 .DS_store
+# IntelliJ module files
+*.iml

@@ -24,8 +24,8 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.diff.MutableTree;
 import org.locationtech.geogig.plumbing.diff.TreeDifference;
@@ -137,7 +137,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         final ProgressListener progress = getProgressListener();
 
         if (pathFilters.isEmpty()) {
-            final ObjectId stageRootId = index().getTree().getId();
+            final ObjectId stageRootId = stagingArea().getTree().getId();
             return stageRootId;
         }
 
@@ -323,7 +323,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
         final RevTree currentLeftTree = repositoryDatabase.getTree(leftTreeId);
 
-        final RevTreeBuilder builder = RevTreeBuilder.canonical(repositoryDatabase,
+        final CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(repositoryDatabase,
                 currentLeftTree);
 
         // create the new trees taking into account all the nodes
@@ -463,7 +463,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         final String rightTreeish = Ref.STAGE_HEAD;
 
         final ObjectId rootTreeId = resolveRootTreeId();
-        final ObjectId stageRootId = index().getTree().getId();
+        final ObjectId stageRootId = stagingArea().getTree().getId();
 
         final Supplier<Iterator<NodeRef>> leftTreeRefs;
         final Supplier<Iterator<NodeRef>> rightTreeRefs;

@@ -33,6 +33,9 @@ public class PGStorageProvider extends StorageProvider {
     static final VersionedFormat OBJECTS = new VersionedFormat(FORMAT_NAME, VERSION,
             PGObjectDatabase.class);
 
+    static final VersionedFormat INDEX = new VersionedFormat(FORMAT_NAME, VERSION,
+            PGIndexDatabase.class);
+
     @Override
     public String getName() {
         return FORMAT_NAME;
@@ -63,4 +66,8 @@ public class PGStorageProvider extends StorageProvider {
         return REFS;
     }
 
+    @Override
+    public VersionedFormat getIndexDatabaseFormat() {
+        return INDEX;
+    }
 }

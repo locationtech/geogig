@@ -11,7 +11,9 @@ package org.locationtech.geogig.rocksdb;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.impl.ConnectionManager;
@@ -79,6 +81,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
         final boolean readOnly = dbconfig.isReadOnly();
         @Nullable
         ColumnFamilyHandle metadata = null;
+        Map<String, ColumnFamilyHandle> extraColumns = new HashMap<>();
         try {
             List<ColumnFamilyDescriptor> colDescriptors = new ArrayList<>();
             for (String name : colFamilyNames) {
@@ -86,21 +89,34 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
                 ColumnFamilyOptions colFamilyOptions = newColFamilyOptions();
                 colDescriptors.add(new ColumnFamilyDescriptor(colFamilyName, colFamilyOptions));
             }
-            List<ColumnFamilyHandle> colFamiliesTarget = new ArrayList<>();
 
             DBHandle dbHandle;
             if (readOnly) {
+                List<ColumnFamilyHandle> colFamiliesTarget = new ArrayList<>();
                 Preconditions.checkState(dbExists, "database does not exist: %s", path);
                 db = RocksDB.openReadOnly(dbOptions, path, colDescriptors, colFamiliesTarget);
                 if (metadataExists) {
                     metadata = colFamiliesTarget.get(colFamilyNames.indexOf("metadata"));
                 }
-                dbHandle = new DBHandle(dbconfig, dbOptions, db, metadata);
+                for (int i = 0; i < colDescriptors.size(); i++) {
+                    String name = colFamilyNames.get(i);
+                    if (!"metadata".equals(name)) {
+                        ColumnFamilyHandle handle = colFamiliesTarget.get(i);
+                        extraColumns.put(name, handle);
+                    }
+                }
+                dbHandle = new DBHandle(dbconfig, dbOptions, db, metadata, extraColumns);
             } else {
                 if (!dbExists) {
                     colDescriptors.add(newColDescriptor("default"));
+                    for (String name : dbconfig.getColumnFamilyNames()) {
+                        if (colFamilyNames.indexOf(name) > -1) {
+                            colDescriptors.add(newColDescriptor(name));
+                        }
+                    }
                 }
 
+                List<ColumnFamilyHandle> colFamiliesTarget = new ArrayList<>();
                 db = RocksDB.open(dbOptions, path, colDescriptors, colFamiliesTarget);
                 if (metadataExists) {
                     metadata = colFamiliesTarget.get(colFamilyNames.indexOf("metadata"));
@@ -108,7 +124,20 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
                     ColumnFamilyDescriptor mdd = newColDescriptor("metadata");
                     metadata = db.createColumnFamily(mdd);
                 }
-                dbHandle = new DBHandle(dbconfig, dbOptions, db, metadata);
+                for (String name : dbconfig.getColumnFamilyNames()) {
+                    ColumnFamilyDescriptor colDescriptor;
+                    ColumnFamilyHandle colHandle;
+                    if (colFamilyNames.indexOf(name) == -1) {
+                        colDescriptor = newColDescriptor(name);
+                        colHandle = db.createColumnFamily(colDescriptor);
+                    } else {
+                        int colIndex = colFamilyNames.indexOf(name);
+                        colHandle = colFamiliesTarget.get(colIndex);
+                    }
+                    extraColumns.put(name, colHandle);
+                }
+
+                dbHandle = new DBHandle(dbconfig, dbOptions, db, metadata, extraColumns);
 
                 // save default metadata
                 if (!dbExists) {

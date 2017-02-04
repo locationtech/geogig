@@ -10,18 +10,21 @@
 package org.locationtech.geogig.model.internal;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
+import org.rocksdb.BlockBasedTableConfig;
+import org.rocksdb.BloomFilter;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 
 import com.google.common.base.Charsets;
@@ -43,9 +46,17 @@ class RocksdbDAGStore {
 
     public RocksdbDAGStore(RocksDB db) {
         this.db = db;
-        ColumnFamilyDescriptor columnDescriptor = new ColumnFamilyDescriptor(
-                "trees".getBytes(Charsets.UTF_8));
         try {
+            // enable bloom filter to speed up RocksDB.get() calls
+            BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
+            tableFormatConfig.setFilter(new BloomFilter());
+
+            ColumnFamilyOptions colFamilyOptions = new ColumnFamilyOptions();
+            colFamilyOptions.setTableFormatConfig(tableFormatConfig);
+
+            byte[] tableNameKey = "trees".getBytes(Charsets.UTF_8);
+            ColumnFamilyDescriptor columnDescriptor = new ColumnFamilyDescriptor(tableNameKey,
+                    colFamilyOptions);
             column = db.createColumnFamily(columnDescriptor);
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
@@ -69,9 +80,9 @@ class RocksdbDAGStore {
         byte[] key = toKey(treeId);
         DAG dag;
         try {
-            dag = getInternal(treeId);
+            dag = getInternal(treeId, key);
             if (dag == null) {
-                dag = new DAG(originalTreeId);
+                dag = new DAG(treeId, originalTreeId);
                 putInternal(key, dag);
             }
         } catch (Exception e) {
@@ -81,13 +92,12 @@ class RocksdbDAGStore {
     }
 
     @Nullable
-    private DAG getInternal(final TreeId id) {
+    private DAG getInternal(TreeId id, final byte[] key) {
         DAG dag = null;
         try {
-            byte[] key = toKey(id);
             byte[] value = db.get(column, readOptions, key);
             if (null != value) {
-                dag = decode(value);
+                dag = decode(id, value);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -95,7 +105,7 @@ class RocksdbDAGStore {
         return dag;
     }
 
-    public Map<TreeId, DAG> getTrees(final Set<TreeId> ids) {
+    public List<DAG> getTrees(final Set<TreeId> ids) {
         try {
             return getInternal(ids);
         } catch (Exception e) {
@@ -103,8 +113,8 @@ class RocksdbDAGStore {
         }
     }
 
-    private Map<TreeId, DAG> getInternal(final Set<TreeId> ids) {
-        Map<TreeId, DAG> res = new HashMap<>();
+    private List<DAG> getInternal(final Set<TreeId> ids) {
+        List<DAG> res = new ArrayList<>(ids.size());
         byte[] valueBuff = new byte[16 * 1024];
         ids.forEach((id) -> {
             byte[] key = toKey(id);
@@ -115,8 +125,8 @@ class RocksdbDAGStore {
                 if (size > valueBuff.length) {
                     val = db.get(column, readOptions, key);
                 }
-                DAG dag = decode(val);
-                res.put(id, dag);
+                DAG dag = decode(id, val);
+                res.add(dag);
             } catch (RocksDBException e) {
                 throw Throwables.propagate(e);
             }
@@ -128,14 +138,14 @@ class RocksdbDAGStore {
 
     public void putAll(Map<TreeId, DAG> dags) {
         Map<TreeId, DAG> changed = Maps.filterValues(dags, (d) -> d.isMutated());
-        // treeCache.putAll(changed);
 
-        try (WriteBatch batch = new WriteBatch()) {
-            changed.forEach((id, dag) -> batch.put(column, toKey(id), encode(dag)));
-            db.write(writeOptions, batch);
-        } catch (RocksDBException e) {
-            throw Throwables.propagate(e);
-        }
+        changed.forEach((id, dag) -> {
+            try {
+                db.put(column, writeOptions, toKey(id), encode(dag));
+            } catch (RocksDBException e) {
+                throw Throwables.propagate(e);
+            }
+        });
     }
 
     private void putInternal(byte[] key, DAG dag) {
@@ -151,14 +161,10 @@ class RocksdbDAGStore {
         return treeId.bucketIndicesByDepth;
     }
 
-    private TreeId fromKey(byte[] key) {
-        return new TreeId(key);
-    }
-
-    private DAG decode(byte[] value) {
+    private DAG decode(TreeId id, byte[] value) {
         DAG dag;
         try {
-            dag = DAG.deserialize(ByteStreams.newDataInput(value));
+            dag = DAG.deserialize(id, ByteStreams.newDataInput(value));
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

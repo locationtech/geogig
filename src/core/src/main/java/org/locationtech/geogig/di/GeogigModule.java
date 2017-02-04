@@ -20,11 +20,12 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.Index;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
+import org.locationtech.geogig.repository.impl.StagingAreaImpl;
 import org.locationtech.geogig.repository.impl.WorkingTreeImpl;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
@@ -33,6 +34,7 @@ import org.locationtech.geogig.storage.fs.FileRefDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.memory.HeapGraphDatabase;
+import org.locationtech.geogig.storage.memory.HeapIndexDatabase;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
@@ -85,11 +87,12 @@ public class GeogigModule extends AbstractModule {
 
         bind(Repository.class).to(RepositoryImpl.class).in(Scopes.SINGLETON);
         bind(ConfigDatabase.class).to(IniFileConfigDatabase.class).in(Scopes.SINGLETON);
-        bind(StagingArea.class).to(Index.class).in(Scopes.SINGLETON);
+        bind(StagingArea.class).to(StagingAreaImpl.class).in(Scopes.SINGLETON);
         bind(WorkingTree.class).to(WorkingTreeImpl.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).to(HeapGraphDatabase.class).in(Scopes.SINGLETON);
 
         bind(ObjectDatabase.class).to(FileObjectDatabase.class).in(Scopes.SINGLETON);
+        bind(IndexDatabase.class).to(HeapIndexDatabase.class).in(Scopes.SINGLETON);
         bind(RefDatabase.class).to(FileRefDatabase.class).in(Scopes.SINGLETON);
 
         bind(ObjectSerializingFactory.class).to(DataStreamSerializationFactoryV2.class)

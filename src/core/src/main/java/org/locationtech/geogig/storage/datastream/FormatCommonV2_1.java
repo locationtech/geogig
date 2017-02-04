@@ -15,7 +15,6 @@ import static org.locationtech.geogig.storage.datastream.Varint.writeUnsignedVar
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +31,8 @@ import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * Format common v2.1, differs from {@link FormatCommonV2 v2} only in {@link RevFeature}
@@ -184,6 +185,26 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
         @Override
         public Optional<Object> get(final int index) {
             return Optional.fromNullable(parse(index));
+        }
+
+        @Override
+        public Optional<Geometry> get(int index, GeometryFactory gf) {
+            final int offset = offsets[index];
+            final int tagValue = data[offset] & 0xFF;
+            final FieldType type = FieldType.valueOf(tagValue);
+            if (FieldType.NULL.equals(type)) {
+                return Optional.absent();
+            }
+            DataInput in = ByteStreams.newDataInput(data);
+
+            Geometry value;
+            try {
+                in.skipBytes(offset + 1);
+                value = DataStreamValueSerializerV2.read(in, gf);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+            return Optional.of(value);
         }
 
         @Override

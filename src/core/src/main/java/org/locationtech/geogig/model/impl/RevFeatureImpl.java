@@ -20,6 +20,8 @@ import org.locationtech.geogig.model.RevFeature;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * A binary representation of the values of a Feature.
@@ -54,6 +56,16 @@ class RevFeatureImpl extends AbstractRevObject implements RevFeature {
     @Override
     public Optional<Object> get(final int index) {
         return Optional.fromNullable(safeCopy(values.get(index)));
+    }
+
+    @Override
+    public Optional<Geometry> get(int index, GeometryFactory gf) {
+        Geometry g = (Geometry) values.get(index);
+        Geometry g2 = null;
+        if (g != null) {
+            g2 = gf.createGeometry(g);
+        }
+        return Optional.fromNullable(g2);
     }
 
     @Override

@@ -61,7 +61,12 @@ public class Cat extends AbstractCommand {
 
         String path = paths.get(0);
 
-        Optional<RevObject> obj = geogig.command(RevObjectParse.class).setRefSpec(path).call();
+        Optional<RevObject> obj;
+        RevObjectParse cmd = geogig.command(RevObjectParse.class).setRefSpec(path);
+        obj = cmd.call();
+        if (!obj.isPresent()) {
+            obj = cmd.setSource(geogig.getContext().indexDatabase()).call();
+        }
         checkParameter(obj.isPresent(), "refspec did not resolve to any object.");
         if (binary) {
             ObjectSerializingFactory factory = DataStreamSerializationFactoryV1.INSTANCE;

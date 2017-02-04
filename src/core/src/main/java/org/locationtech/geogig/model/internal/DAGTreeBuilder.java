@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.internal;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -26,8 +27,8 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.DAG.STATE;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.ProgressListener;
@@ -137,7 +138,9 @@ public class DAGTreeBuilder {
         SharedState state = new SharedState(targetStore, clusteringStrategy, listener);
 
         DAG root = clusteringStrategy.buildRoot();
-        TreeBuildTask task = new TreeBuildTask(state, root, 0);
+        TreeId rootId = clusteringStrategy.getRootId();
+        final int baseDepth = rootId.depthLength();
+        TreeBuildTask task = new TreeBuildTask(state, root, baseDepth);
 
         RevTree tree;
         try {
@@ -195,7 +198,7 @@ public class DAGTreeBuilder {
 
         private RevTree buildBucketsTree(final DAG root) {
 
-            final Map<TreeId, DAG> mutableBuckets;
+            final List<DAG> mutableBuckets;
             {
                 final Set<TreeId> dagBuckets = new HashSet<>();
                 root.forEachBucket((b) -> dagBuckets.add(b));
@@ -206,9 +209,8 @@ public class DAGTreeBuilder {
 
             Map<Integer, ForkJoinTask<RevTree>> subtasks = new HashMap<>();
 
-            for (Map.Entry<TreeId, DAG> e : mutableBuckets.entrySet()) {
-                final TreeId dagBucketId = e.getKey();
-                final DAG bucketDAG = e.getValue();
+            for (DAG bucketDAG : mutableBuckets) {
+                final TreeId dagBucketId = bucketDAG.getId();
 
                 final Integer bucketIndex = dagBucketId.bucketIndex(depth);
                 TreeBuildTask subtask = new TreeBuildTask(state, bucketDAG, this.depth + 1);
@@ -240,13 +242,9 @@ public class DAGTreeBuilder {
                 }
             }
 
-            Set<NodeId> unpromotableIds = new HashSet<>();
-            root.forEachUnpromotableChild((id) -> unpromotableIds.add(id));
-            final ImmutableList<Node> unpromotable = toNodes(unpromotableIds);
-
             ImmutableSortedMap<Integer, Bucket> buckets = bucketsByIndex.build();
             ImmutableList<Node> treeNodes = null;
-            ImmutableList<Node> featureNodes = unpromotable;
+            ImmutableList<Node> featureNodes = null;
 
             RevTree result = RevTreeBuilder.build(size, childTreeCount, treeNodes, featureNodes,
                     buckets);
@@ -254,7 +252,7 @@ public class DAGTreeBuilder {
         }
 
         private RevTree buildLeafTree(DAG root) {
-            Preconditions.checkState(root.numUnpromotable() == 0);
+            Preconditions.checkState(root.numBuckets() == 0);
 
             final ImmutableList<Node> children;
             {

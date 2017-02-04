@@ -9,8 +9,10 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
+import org.locationtech.geogig.model.internal.ClusteringStrategyBuilder;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
@@ -25,8 +27,22 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         clusteringStrategy = strategy;
     }
 
-    public static RevTreeBuilder quadTree(final ObjectStore store) {
-        return QuadTreeBuilder.quadTree(store, RevTree.EMPTY);
+    @Override
+    public QuadTreeBuilder put(Node node) {
+        super.put(node);
+        return this;
+    }
+
+    @Override
+    public QuadTreeBuilder remove(Node node) {
+        super.remove(node);
+        return this;
+    }
+
+    @Override
+    public QuadTreeBuilder update(Node oldNode, Node newNode) {
+        super.update(oldNode, newNode);
+        return this;
     }
 
     @Override
@@ -34,24 +50,28 @@ public class QuadTreeBuilder extends AbstractTreeBuilder implements RevTreeBuild
         return clusteringStrategy;
     }
 
-    public static RevTreeBuilder quadTree(final ObjectStore store, final RevTree original) {
-        Preconditions.checkNotNull(store);
+    public static QuadTreeBuilder create(final ObjectStore source, final ObjectStore target) {
+        return QuadTreeBuilder.create(source, target, RevTree.EMPTY);
+    }
+
+    public static QuadTreeBuilder create(final ObjectStore source, final ObjectStore target,
+            final RevTree original) {
+        Preconditions.checkNotNull(source);
+        Preconditions.checkNotNull(target);
         Preconditions.checkNotNull(original);
         final Envelope MAX_BOUNDS_WGS84 = new Envelope(-180, 180, -90, 90);
-        final int DEFAULT_MAX_DEPTH = 12;
-        return QuadTreeBuilder.quadTree(store, original, MAX_BOUNDS_WGS84, DEFAULT_MAX_DEPTH);
+        return QuadTreeBuilder.create(source, target, original, MAX_BOUNDS_WGS84);
     }
 
-    public static RevTreeBuilder quadTree(final ObjectStore store, final RevTree original,
-            final Envelope maxBounds, final int maxDepth) {
-        Preconditions.checkNotNull(store);
+    public static QuadTreeBuilder create(final ObjectStore source, final ObjectStore target,
+            final RevTree original, final Envelope maxBounds) {
+        Preconditions.checkNotNull(source);
+        Preconditions.checkNotNull(target);
         Preconditions.checkNotNull(maxBounds);
-        Preconditions.checkArgument(maxDepth > 0);
 
-        ClusteringStrategy strategy = ClusteringStrategy.quadTree(store, original, maxBounds,
-                maxDepth);
-        QuadTreeBuilder builder = new QuadTreeBuilder(store, RevTree.EMPTY, strategy);
+        ClusteringStrategy strategy = ClusteringStrategyBuilder.quadTree(source).original(original)
+                .maxBounds(maxBounds).build();
+        QuadTreeBuilder builder = new QuadTreeBuilder(target, RevTree.EMPTY, strategy);
         return builder;
     }
-
 }

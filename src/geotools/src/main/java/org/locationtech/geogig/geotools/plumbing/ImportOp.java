@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
+import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
 import org.geotools.data.store.FeatureIteratorIterator;
@@ -30,6 +31,8 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.type.AttributeDescriptorImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.jdbc.JDBCFeatureSource;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.CRS.AxisOrder;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.data.ForwardingFeatureCollection;
 import org.locationtech.geogig.data.ForwardingFeatureIterator;
@@ -47,6 +50,7 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
+import org.locationtech.geogig.porcelain.CRSException;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.NodeRef;
@@ -57,8 +61,11 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.identity.FeatureId;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +77,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.CoordinateSequenceFactory;
 import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
+import static org.locationtech.geogig.repository.impl.SpatialOps.findIdentifier;
 
 /**
  * Internal operation for importing tables from a GeoTools {@link DataStore}.
@@ -210,6 +218,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             }
 
             featureType = overrideGeometryName(featureType);
+            featureType = tryForceKnownCRS(featureType);
 
             featureSource = new ForceTypeAndFidFeatureSource<FeatureType, Feature>(featureSource,
                     featureType, fidPrefix);
@@ -261,6 +270,20 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             return ((JDBCFeatureSource) featureSource).getPrimaryKey().getColumns().size() != 0;
         }
         return false;
+    }
+
+    private SimpleFeatureType tryForceKnownCRS(SimpleFeatureType orig) {
+        SimpleFeatureType override = orig;
+
+        GeometryDescriptor geometryDescriptor = orig.getGeometryDescriptor();
+        CoordinateReferenceSystem crs = null;
+        try {
+            crs = findIdentifier(geometryDescriptor);
+            override = DataUtilities.createSubType(orig, null, crs);
+        } catch (Exception e) {
+            LOG.warn("Error looking for known identifier for CRS " + crs, e);
+        }
+        return override;
     }
 
     private SimpleFeatureType overrideGeometryName(SimpleFeatureType featureType) {

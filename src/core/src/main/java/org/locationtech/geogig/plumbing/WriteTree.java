@@ -17,8 +17,9 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
@@ -107,13 +108,13 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         final RevTree oldRootTree = resolveRootTree();
         final ObjectDatabase repositoryDatabase = objectDatabase();
 
-        Map<String, RevTreeBuilder> repositoryChangedTrees = Maps.newHashMap();
+        Map<String, CanonicalTreeBuilder> repositoryChangedTrees = Maps.newHashMap();
         Map<String, NodeRef> indexChangedTrees = Maps.newHashMap();
         Map<String, ObjectId> changedTreesMetadataId = Maps.newHashMap();
         Set<String> deletedTrees = Sets.newHashSet();
         final boolean copyObjects = this.fromDb != null;
         NodeRef ref;
-        RevTree stageHead = index().getTree();
+        RevTree stageHead = stagingArea().getTree();
         try (final AutoCloseableIterator<DiffEntry> diffs = diffSupplier.get()) {
             if (!diffs.hasNext()) {
                 return oldRootTree.getId();
@@ -147,7 +148,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
                     // tree delete entry was processed
                     continue;
                 }
-                RevTreeBuilder parentTree = resolveTargetTree(oldRootTree, parentPath,
+                CanonicalTreeBuilder parentTree = resolveTargetTree(oldRootTree, parentPath,
                         repositoryChangedTrees, changedTreesMetadataId, ObjectId.NULL,
                         repositoryDatabase);
                 if (type == TYPE.TREE && !isDelete) {
@@ -200,7 +201,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         }
 
         UpdateTree updateTree = command(UpdateTree.class).setRoot(newTargetRootId);
-        for (Map.Entry<String, RevTreeBuilder> e : repositoryChangedTrees.entrySet()) {
+        for (Map.Entry<String, CanonicalTreeBuilder> e : repositoryChangedTrees.entrySet()) {
             String treePath = e.getKey();
             ObjectId metadataId = changedTreesMetadataId.get(treePath);
             RevTreeBuilder treeBuilder = e.getValue();
@@ -241,25 +242,25 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         }
     }
 
-    private RevTreeBuilder resolveTargetTree(final RevTree root, String treePath,
-            Map<String, RevTreeBuilder> treeCache, Map<String, ObjectId> metadataCache,
+    private CanonicalTreeBuilder resolveTargetTree(final RevTree root, String treePath,
+            Map<String, CanonicalTreeBuilder> treeCache, Map<String, ObjectId> metadataCache,
             ObjectId fallbackMetadataId, ObjectDatabase repositoryDatabase) {
 
-        RevTreeBuilder treeBuilder = treeCache.get(treePath);
+        CanonicalTreeBuilder treeBuilder = treeCache.get(treePath);
         if (treeBuilder == null) {
             if (NodeRef.ROOT.equals(treePath)) {
-                treeBuilder = RevTreeBuilder.canonical(repositoryDatabase, root);
+                treeBuilder = CanonicalTreeBuilder.create(repositoryDatabase, root);
             } else {
                 Optional<NodeRef> treeRef = command(FindTreeChild.class).setParent(root)
                         .setChildPath(treePath).call();
                 if (treeRef.isPresent()) {
                     metadataCache.put(treePath, treeRef.get().getMetadataId());
-                    treeBuilder = RevTreeBuilder.canonical(repositoryDatabase,
+                    treeBuilder = CanonicalTreeBuilder.create(repositoryDatabase,
                             command(RevObjectParse.class).setObjectId(treeRef.get().getObjectId())
                                     .call(RevTree.class).get());
                 } else {
                     metadataCache.put(treePath, fallbackMetadataId);
-                    treeBuilder = RevTreeBuilder.canonical(repositoryDatabase);
+                    treeBuilder = CanonicalTreeBuilder.create(repositoryDatabase);
                 }
             }
             treeCache.put(treePath, treeBuilder);

@@ -9,13 +9,15 @@
  */
 package org.locationtech.geogig.model.internal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
@@ -25,7 +27,7 @@ import com.google.common.base.Preconditions;
 
 class HeapDAGStorageProvider implements DAGStorageProvider {
 
-    SortedMap<NodeId, DAGNode> nodes;
+    Map<NodeId, DAGNode> nodes;
 
     SortedMap<TreeId, DAG> trees;
 
@@ -40,7 +42,7 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     HeapDAGStorageProvider(ObjectStore source, TreeCache treeCache) {
         this.source = source;
         this.treeCache = treeCache;
-        this.nodes = new TreeMap<>();
+        this.nodes = new ConcurrentHashMap<>();
         this.trees = new TreeMap<>();
     }
 
@@ -59,18 +61,18 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public Map<TreeId, DAG> getTrees(Set<TreeId> ids) {
-        Map<TreeId, DAG> res = new HashMap<>();
+    public List<DAG> getTrees(Set<TreeId> ids) {
+        List<DAG> res = new ArrayList<>(ids.size());
         ids.forEach((id) -> {
             DAG dag = trees.get(id);
             Preconditions.checkState(dag != null);
-            res.put(id, dag);
+            res.add(dag);
         });
         return res;
     }
 
     private DAG createTree(TreeId treeId, ObjectId originalTreeId) {
-        DAG dag = new DAG(originalTreeId);
+        DAG dag = new DAG(treeId, originalTreeId);
         DAG existing = trees.putIfAbsent(treeId, dag);
         Preconditions.checkState(existing == null, "DAG %s[%s] already exists: %s", treeId,
                 originalTreeId, existing);
@@ -87,19 +89,9 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public @Nullable Node getNode(NodeId nodeId) {
-        DAGNode dagNode = nodes.get(nodeId);
-        Node node = null;
-        if (dagNode != null) {
-            node = dagNode.resolve(this.treeCache);
-        }
-        return node;
-    }
+    public Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
 
-    @Override
-    public SortedMap<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
-
-        TreeMap<NodeId, Node> res = new TreeMap<>();
+        Map<NodeId, Node> res = new HashMap<>();
         nodeIds.forEach((nid) -> {
             DAGNode dagNode = nodes.get(nid);
             Preconditions.checkState(dagNode != null);

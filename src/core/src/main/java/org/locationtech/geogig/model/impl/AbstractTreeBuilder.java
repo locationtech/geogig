@@ -22,13 +22,13 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
 
-abstract class AbstractTreeBuilder implements RevTreeBuilder {
+public abstract class AbstractTreeBuilder implements RevTreeBuilder {
 
     protected final ObjectStore target;
 
     protected RevTree original;
 
-    private final AtomicBoolean disposed = new AtomicBoolean(false);
+    protected final AtomicBoolean disposed = new AtomicBoolean(false);
 
     protected AbstractTreeBuilder(final ObjectStore store) {
         this(store, RevTree.EMPTY);
@@ -44,7 +44,7 @@ abstract class AbstractTreeBuilder implements RevTreeBuilder {
     protected abstract ClusteringStrategy clusteringStrategy();
 
     @Override
-    public final AbstractTreeBuilder put(final Node node) {
+    public AbstractTreeBuilder put(final Node node) {
         checkNotNull(node, "Argument node is null");
         checkState(!disposed.get(), "TreeBuilder is already disposed");
         clusteringStrategy().put(node);
@@ -52,10 +52,19 @@ abstract class AbstractTreeBuilder implements RevTreeBuilder {
     }
 
     @Override
-    public final AbstractTreeBuilder remove(final String featureId) {
-        checkNotNull(featureId, "Argument featureId is null");
+    public AbstractTreeBuilder remove(Node node) {
+        checkNotNull(node, "Argument node is null");
         checkState(!disposed.get(), "TreeBuilder is already disposed");
-        clusteringStrategy().remove(featureId);
+        clusteringStrategy().remove(node);
+        return this;
+    }
+
+    @Override
+    public AbstractTreeBuilder update(Node oldNode, Node newNode) {
+        checkNotNull(oldNode, "Argument oldNode is null");
+        checkNotNull(newNode, "Argument newNode is null");
+        checkState(!disposed.get(), "TreeBuilder is already disposed");
+        clusteringStrategy().update(oldNode, newNode);
         return this;
     }
 
@@ -70,6 +79,10 @@ abstract class AbstractTreeBuilder implements RevTreeBuilder {
         this.original = tree;
         clusteringStrategy().dispose();
         return tree;
+    }
+
+    public int getDepth() {
+        return clusteringStrategy().depth();
     }
 
 }

@@ -1,0 +1,2 @@
+#Built in command hooks
+org.locationtech.geogig.hooks.builtin.UpdateIndexesHook

@@ -381,8 +381,8 @@ public class FileRefDatabase extends AbstractRefDatabase {
     }
 
     @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        StorageType.REF.verify(configDB, "file", "1.0");
+    public boolean checkConfig() throws RepositoryConnectionException {
+        return StorageType.REF.verify(configDB, "file", "1.0");
     }
 
     @Override

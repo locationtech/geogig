@@ -73,7 +73,7 @@ public class RocksdbObjectStoreConformanceTest extends ObjectStoreConformanceTes
         assertEquals(RocksdbStorageProvider.FORMAT_NAME,
                 configDB.get("storage." + StorageType.OBJECT.key).get());
 
-        database.checkConfig();
+        assertTrue(database.checkConfig());
 
     }
 

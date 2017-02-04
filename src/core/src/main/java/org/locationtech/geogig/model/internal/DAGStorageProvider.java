@@ -9,10 +9,9 @@
  */
 package org.locationtech.geogig.model.internal;
 
+import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.SortedMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
@@ -23,20 +22,13 @@ interface DAGStorageProvider {
 
     public TreeCache getTreeCache();
 
-    public Map<TreeId, DAG> getTrees(Set<TreeId> ids);
+    public List<DAG> getTrees(Set<TreeId> ids);
 
     public DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId);
 
     public void save(Map<TreeId, DAG> dags);
 
-    /**
-     * @param nodeId
-     * @return
-     * @throws NoSuchElementException
-     */
-    public Node getNode(NodeId nodeId);
-
-    public SortedMap<NodeId, Node> getNodes(Set<NodeId> nodeIds);
+    public Map<NodeId, Node> getNodes(Set<NodeId> nodeIds);
 
     public void saveNode(NodeId nodeId, Node node);
 

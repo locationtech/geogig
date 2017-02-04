@@ -35,6 +35,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
@@ -55,6 +56,51 @@ public class DataStreamValueSerializerV2 {
         public void write(Object obj, DataOutput out) throws IOException;
 
     }
+
+    static final ValueSerializer byteArray = new ValueSerializer() {
+        @Override
+        public Object read(DataInput in) throws IOException {
+            final int len = readUnsignedVarInt(in);
+            byte[] bytes = new byte[len];
+            in.readFully(bytes);
+            return bytes;
+        }
+
+        @Override
+        public void write(Object field, DataOutput data) throws IOException {
+            writeUnsignedVarInt(((byte[]) field).length, data);
+            data.write((byte[]) field);
+        }
+    };
+
+    static final class WKBSerializer implements ValueSerializer {
+        final GeometryFactory GEOM_FACT = new GeometryFactory(
+                new PackedCoordinateSequenceFactory());
+
+        @Override
+        public Object read(DataInput in) throws IOException {
+            return read(in, GEOM_FACT);
+        }
+
+        public Geometry read(DataInput in, GeometryFactory geomFac) throws IOException {
+            byte[] bytes = (byte[]) byteArray.read(in);
+            WKBReader wkbReader = new WKBReader(geomFac);
+            try {
+                return wkbReader.read(bytes);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void write(Object field, DataOutput data) throws IOException {
+            WKBWriter wkbWriter = new WKBWriter();
+            byte[] bytes = wkbWriter.write((Geometry) field);
+            byteArray.write(bytes, data);
+        }
+    };
+
+    static final WKBSerializer geometry = new WKBSerializer();
 
     static final Map<FieldType, ValueSerializer> serializers = new EnumMap<>(FieldType.class);
     static {
@@ -248,21 +294,6 @@ public class DataStreamValueSerializerV2 {
                 data.write(bytes);
             }
         });
-        final ValueSerializer byteArray = new ValueSerializer() {
-            @Override
-            public Object read(DataInput in) throws IOException {
-                final int len = readUnsignedVarInt(in);
-                byte[] bytes = new byte[len];
-                in.readFully(bytes);
-                return bytes;
-            }
-
-            @Override
-            public void write(Object field, DataOutput data) throws IOException {
-                writeUnsignedVarInt(((byte[]) field).length, data);
-                data.write((byte[]) field);
-            }
-        };
         serializers.put(FieldType.BYTE_ARRAY, byteArray);
         serializers.put(FieldType.SHORT_ARRAY, new ValueSerializer() {
             @Override
@@ -372,29 +403,7 @@ public class DataStreamValueSerializerV2 {
                     stringSerializer.write(s, data);
             }
         });
-        ValueSerializer geometry = new ValueSerializer() {
-            final GeometryFactory GEOM_FACT = new GeometryFactory(
-                    new PackedCoordinateSequenceFactory());
 
-            @Override
-            public Object read(DataInput in) throws IOException {
-                byte[] bytes = (byte[]) byteArray.read(in);
-                WKBReader wkbReader = new WKBReader(GEOM_FACT);
-                try {
-                    return wkbReader.read(bytes);
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            @Override
-            public void write(Object field, DataOutput data) throws IOException {
-                WKBWriter wkbWriter = new WKBWriter();
-                byte[] bytes = wkbWriter.write((Geometry) field);
-                byteArray.write(bytes, data);
-            }
-        };
-        // ValueSerializer geometry = new GeometrySerializer();
         serializers.put(FieldType.GEOMETRY, geometry);
         serializers.put(FieldType.POINT, geometry);
         serializers.put(FieldType.LINESTRING, geometry);
@@ -550,6 +559,25 @@ public class DataStreamValueSerializerV2 {
                 }
             }
         });
+        serializers.put(FieldType.ENVELOPE_2D, new ValueSerializer() {
+            @Override
+            public Object read(DataInput in) throws IOException {
+                double minx = in.readDouble();
+                double miny = in.readDouble();
+                double maxx = in.readDouble();
+                double maxy = in.readDouble();
+                return new Envelope(minx, maxx, miny, maxy);
+            }
+
+            @Override
+            public void write(Object field, DataOutput data) throws IOException {
+                Envelope e = (Envelope) field;
+                data.writeDouble(e.getMinX());
+                data.writeDouble(e.getMinY());
+                data.writeDouble(e.getMaxX());
+                data.writeDouble(e.getMaxY());
+            }
+        });
     }
 
     /**
@@ -570,6 +598,11 @@ public class DataStreamValueSerializerV2 {
 
     public static void write(@Nullable Object value, DataOutput data) throws IOException {
         FieldType type = FieldType.forValue(value);
+        write(type, value, data);
+    }
+
+    public static void write(FieldType type, @Nullable Object value, DataOutput data)
+            throws IOException {
         ValueSerializer valueSerializer = serializers.get(type);
         if (null == valueSerializer) {
             throw new IllegalArgumentException(
@@ -591,5 +624,10 @@ public class DataStreamValueSerializerV2 {
         } else {
             throw new IllegalArgumentException("The specified type is not supported");
         }
+    }
+
+    public static Geometry read(DataInput in, GeometryFactory geomFac) throws IOException {
+        Geometry geom = geometry.read(in, geomFac);
+        return geom;
     }
 }

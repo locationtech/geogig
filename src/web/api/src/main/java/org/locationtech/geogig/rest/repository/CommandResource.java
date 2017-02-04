@@ -58,6 +58,10 @@ public class CommandResource extends Resource {
 
     private WebAPICommand command;
 
+    protected WebAPICommand buildCommand(String commandName, ParameterSet params) {
+        return CommandBuilder.build(commandName, params);
+    }
+
     @Override
     public void init(Context context, Request request, Response response) {
         super.init(context, request, response);
@@ -70,7 +74,7 @@ public class CommandResource extends Resource {
 
         options = getRequest().getResourceRef().getQueryAsForm();
         ParameterSet params = buildParameterSet(options);
-        command = CommandBuilder.build(commandName, params);
+        command = buildCommand(commandName, params);
         assert command != null;
     }
 

@@ -18,8 +18,8 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.UpdateTree;
@@ -130,17 +130,17 @@ public class ResolveConflict extends AbstractWebAPICommand {
         Optional<NodeRef> parentNode = geogig.command(FindTreeChild.class)
                 .setParent(geogig.workingTree().getTree())
                 .setChildPath(newFeatureNode.getParentPath()).call();
-        RevTreeBuilder treeBuilder;
+        CanonicalTreeBuilder treeBuilder;
         ObjectId metadataId = ObjectId.NULL;
         if (parentNode.isPresent()) {
             metadataId = parentNode.get().getMetadataId();
             Optional<RevTree> parsed = geogig.command(RevObjectParse.class)
                     .setObjectId(parentNode.get().getNode().getObjectId()).call(RevTree.class);
             checkState(parsed.isPresent(), "Parent tree couldn't be found in the repository.");
-            treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase(), parsed.get());
+            treeBuilder = CanonicalTreeBuilder.create(geogig.objectDatabase(), parsed.get());
             treeBuilder.remove(newFeatureNode.getNode().getName());
         } else {
-            treeBuilder = RevTreeBuilder.canonical(geogig.objectDatabase());
+            treeBuilder = CanonicalTreeBuilder.create(geogig.objectDatabase());
         }
         treeBuilder.put(newFeatureNode.getNode());
 

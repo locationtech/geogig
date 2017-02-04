@@ -113,7 +113,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         final SymRef headRef = (SymRef) currHead.get();
         final String currentBranch = headRef.getTarget();
 
-        Preconditions.checkState(index().isClean() && workingTree().isClean(),
+        Preconditions.checkState(stagingArea().isClean() && workingTree().isClean(),
                 "You must have a clean working tree and index to perform a squash.");
 
         Optional<ObjectId> ancestor = command(FindCommonAncestor.class).setLeft(since)
@@ -231,7 +231,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
 
         workingTree().updateWorkHead(newTreeId);
-        index().updateStageHead(newTreeId);
+        stagingArea().updateStageHead(newTreeId);
 
         // now put the other commits after the squashed one
         newHead = addCommits(commits, currentBranch, newHead);
@@ -272,7 +272,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
             command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
 
             workingTree().updateWorkHead(newTreeId);
-            index().updateStageHead(newTreeId);
+            stagingArea().updateStageHead(newTreeId);
         }
 
         return head;

@@ -82,6 +82,10 @@ public class PGTemporaryTestConfig extends ExternalResource {
             delete(cx, tables.conflicts());
             delete(cx, tables.blobs());
 
+            delete(cx, tables.index());
+            delete(cx, tables.indexMappings());
+            delete(cx, tables.indexObjects());
+
             delete(cx, tables.graphMappings());
             delete(cx, tables.graphEdges());
             delete(cx, tables.graphMappings());

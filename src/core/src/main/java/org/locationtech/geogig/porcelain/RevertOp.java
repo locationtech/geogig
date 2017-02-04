@@ -145,7 +145,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                 "Cannot continue and abort at the same time");
 
         // count staged and unstaged changes
-        final boolean indexClean = index().isClean();
+        final boolean indexClean = stagingArea().isClean();
         final boolean workTreeClean = workingTree().isClean();
         Preconditions.checkState((indexClean && workTreeClean) || abort || continueRevert,
                 "You must have a clean working tree and index to perform a revert.");
@@ -301,7 +301,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                         conflicts.add(new Conflict(diff.newPath(), diff.oldObjectId(),
                                 node.get().getObjectId(), diff.newObjectId()));
                     } else {
-                        index().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
+                        stagingArea().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
                     }
                 } else {
                     // Feature was added or modified
@@ -310,7 +310,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                     ObjectId nodeId = node.get().getNode().getObjectId();
                     // Make sure it wasn't changed
                     if (node.isPresent() && nodeId.equals(diff.oldObjectId())) {
-                        index().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
+                        stagingArea().stage(getProgressListener(), Iterators.singletonIterator(diff), 1);
                     } else {
                         // do not mark as conflict if reverting to the same feature currently in
                         // HEAD
@@ -357,7 +357,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
 
         workingTree().updateWorkHead(newTreeId);
-        index().updateStageHead(newTreeId);
+        stagingArea().updateStageHead(newTreeId);
 
     }
 

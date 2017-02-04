@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.model.internal;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -96,12 +96,12 @@ final class CachingDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public Map<TreeId, DAG> getTrees(Set<TreeId> ids) {
-        Map<TreeId, DAG> cached = heap.getTrees(Sets.filter(ids, heapTrees));
-        Map<TreeId, DAG> res = cached;
+    public List<DAG> getTrees(Set<TreeId> ids) {
+        List<DAG> cached = heap.getTrees(Sets.filter(ids, heapTrees));
+        List<DAG> res = cached;
         if (disk != null && cached.size() < ids.size()) {
-            Map<TreeId, DAG> stored = disk.getTrees(Sets.filter(ids, diskTrees));
-            res.putAll(stored);
+            List<DAG> stored = disk.getTrees(Sets.filter(ids, diskTrees));
+            res.addAll(stored);
         }
         return res;
     }
@@ -116,12 +116,7 @@ final class CachingDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public Node getNode(NodeId nodeId) {
-        return nodeStore.getNode(nodeId);
-    }
-
-    @Override
-    public SortedMap<NodeId, Node> getNodes(Set<NodeId> nodeIds) {
+    public Map<NodeId, Node> getNodes(Set<NodeId> nodeIds) {
         return nodeStore.getNodes(nodeIds);
     }
 

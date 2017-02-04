@@ -28,6 +28,7 @@ import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
@@ -75,7 +76,7 @@ public class GeogigTransaction implements Context {
         this.context = context;
         this.transactionId = transactionId;
 
-        transactionIndex = new TransactionStagingArea(new Index(this), transactionId);
+        transactionIndex = new TransactionStagingArea(new StagingAreaImpl(this), transactionId);
         transactionWorkTree = new WorkingTreeImpl(this);
         transactionRefDatabase = new TransactionRefDatabase(context.refDatabase(), transactionId);
         transactionBlobStore = new TransactionBlobStoreImpl(
@@ -117,7 +118,13 @@ public class GeogigTransaction implements Context {
     }
 
     @Override
+    @Deprecated
     public StagingArea index() {
+        return stagingArea();
+    }
+    
+    @Override
+    public StagingArea stagingArea() {
         return transactionIndex;
     }
 
@@ -167,6 +174,11 @@ public class GeogigTransaction implements Context {
     @Override
     public ObjectDatabase objectDatabase() {
         return context.objectDatabase();
+    }
+
+    @Override
+    public IndexDatabase indexDatabase() {
+        return context.indexDatabase();
     }
 
     @Override

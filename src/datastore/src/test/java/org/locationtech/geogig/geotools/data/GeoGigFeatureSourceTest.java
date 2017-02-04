@@ -10,12 +10,14 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.geotools.data.DataUtilities;
 import org.geotools.data.Query;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -29,13 +31,16 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.IdentityTransform;
 import org.geotools.renderer.ScreenMap;
 import org.junit.Test;
+import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.identity.FeatureId;
@@ -45,8 +50,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.PrecisionModel;
 
 public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
@@ -146,6 +155,44 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
     @Test
     public void testGetBoundsQuery() throws Exception {
 
+        ReferencedEnvelope bounds;
+        Filter filter;
+
+        filter = ff.id(Collections.singleton(ff.featureId(RepositoryTestCase.idP2)));
+        bounds = pointsSource.getBounds(new Query(pointsName, filter));
+        assertEquals(boundsOf(points2), bounds);
+
+        ReferencedEnvelope queryBounds = boundsOf(points1, points2);
+
+        Polygon geometry = JTS.toGeometry(queryBounds);
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+                ff.literal(geometry));
+
+        bounds = pointsSource.getBounds(new Query(pointsName, filter));
+        assertEquals(boundsOf(points1, points2), bounds);
+
+        ReferencedEnvelope transformedQueryBounds;
+        CoordinateReferenceSystem queryCrs = CRS.decode("EPSG:3857");
+        transformedQueryBounds = queryBounds.transform(queryCrs, true);
+
+        geometry = JTS.toGeometry(transformedQueryBounds);
+        geometry.setUserData(queryCrs);
+
+        filter = ff.intersects(ff.property(pointsType.getGeometryDescriptor().getLocalName()),
+                ff.literal(geometry));
+
+        bounds = pointsSource.getBounds(new Query(pointsName, filter));
+        assertEquals(boundsOf(points1, points2), bounds);
+
+        filter = ECQL.toFilter("sp = 'StringProp2_3' OR ip = 2000");
+        bounds = linesSource.getBounds(new Query(linesName, filter));
+        assertEquals(boundsOf(lines3, lines2), bounds);
+    }
+
+    @Test
+    public void testGetBoundsQueryWithSpatialIndex() throws Exception {
+
+        createQuadTree(pointsName);
         ReferencedEnvelope bounds;
         Filter filter;
 
@@ -375,6 +422,60 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         assertTrue(screenMap.get(boundsOf(points1)));
     }
 
+    @Test
+    public void testRespectsSuppliedGeometryFactory() throws Exception {
+        SimpleFeatureSource source = this.linesSource;
+        Query query = new Query();
+        GeometryFactory suppliedGeomFac = new GeometryFactory(
+                new PrecisionModel(PrecisionModel.FLOATING_SINGLE));
+        query.getHints().put(Hints.JTS_GEOMETRY_FACTORY, suppliedGeomFac);
+
+        SimpleFeature[] collection = (SimpleFeature[]) source.getFeatures(query).toArray();
+        assertEquals(3, collection.length);
+        for (SimpleFeature f : collection) {
+            Geometry g = (Geometry) f.getDefaultGeometry();
+            assertSame(suppliedGeomFac, g.getFactory());
+        }
+    }
+
+    /**
+     * Make sure a spatial query against a geometry attribute that does not define a CRS just
+     * assumes the query is in the native CRS
+     */
+    @Test
+    public void testSpatialQueryOnNullCrsAttribute() throws Exception {
+
+        final String typeName = "nullcrs";
+        final SimpleFeatureType type = DataUtilities.createType(typeName,
+                "the_geom:Point,name:String");
+
+        assertNull(type.getGeometryDescriptor().getCoordinateReferenceSystem());
+
+        List<Feature> features = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            Feature f = super.feature(type, String.valueOf(i), String.format("POINT(%d %d)", i, i),
+                    "f-" + i);
+            features.add(f);
+        }
+        super.insert(features);
+        super.add();
+        super.commit("created feature type with null CRS");
+
+        SimpleFeatureSource source = dataStore.getFeatureSource(typeName);
+        assertNull(source.getSchema().getGeometryDescriptor().getCoordinateReferenceSystem());
+        
+        Filter bbox;
+        SimpleFeatureCollection coll;
+
+        bbox = ff.bbox("the_geom", -0.5, -0.5, 0.5, 0.5, "EPSG:4326");
+        coll = source.getFeatures(bbox);
+        assertEquals(1, coll.size());
+
+        bbox = ff.bbox("the_geom", -0.5, -0.5, 0.5, 0.5, "EPSG:3857");
+        coll = source.getFeatures(bbox);
+        assertEquals(1, coll.size());
+    }
+
     private List<SimpleFeature> toList(SimpleFeatureCollection collection) {
         List<SimpleFeature> features = Lists.newArrayList();
         SimpleFeatureIterator iterator = collection.features();
@@ -386,6 +487,18 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
             iterator.close();
         }
         return features;
+    }
+
+    private void createQuadTree(String tree) throws IOException {
+
+        Map<String, NodeRef> all = Maps.uniqueIndex(
+                geogig.command(FindFeatureTypeTrees.class).setRootTreeRef("HEAD").call(),
+                (r) -> r.path());
+        NodeRef typeTreeRef = all.get(tree);
+        assertNotNull(typeTreeRef);
+        CreateQuadTree command = geogig.command(CreateQuadTree.class);
+        command.setTypeTreeRef(typeTreeRef);
+        command.call();
     }
 
 }

@@ -81,7 +81,5 @@ SEE ALSO
 
 :ref:`geogig-pg`
 
-:ref:`geogig-sl`
-
 :ref:`geogig-shp`
 

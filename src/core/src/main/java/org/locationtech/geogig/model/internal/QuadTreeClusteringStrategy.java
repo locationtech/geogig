@@ -10,35 +10,63 @@
 package org.locationtech.geogig.model.internal;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 
+import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.vividsolutions.jts.geom.Envelope;
 
+/**
+ * This class determines how the quadtree clustering strategy puts features in the tree.
+ *
+ * NOTE: This also supports polygons/lines (i.e. non-point objects). Each feature is only put in ONE
+ * location in the tree - the quad that it is fully enclosed by (which might be the root node).
+ *
+ * NOTE: if the feature doesn't have a bounds (i.e. null or empty), then it is NOT put in the tree
+ * (null NodeId).
+ *
+ * The main entry point is computeId(), which returns a NodeId that defines where that Node should
+ * be in the QuadTree. The NodeId contains a list of Quandrants defining which quadrant the feature
+ * lies completely inside for EACH level of the quadtree.
+ *
+ * If NodeId contains quadrants NE, then SE, then NW then it means that:
+ *
+ * The feature is completely in the NE quadrant for the "world" (level 0).
+ *
+ * Looking at the world's NE quadrant and subdividing it into 4 quads, the feature would be fully in
+ * the SE quadrant (level 1).
+ *
+ * The world's NE quadrant (level 0), then that quad's sub SE quadrant (level 1), the feature will
+ * be contains in that quad's NW quad (level 2).
+ *
+ * This continues until; + the max depth of the tree is reached + the feature in not fully contained
+ * in a single quad
+ *
+ * Typically, large features will need to be contained "higher" up in the tree. However, this can
+ * happen with very small features that are "unlucky" enough to cross ANY quad boundary. If this
+ * happens a lot, then the tree could become more degenerative and have large numbers of features
+ * associated with a single node that can NOT be moved into "lower" level nodes in the hierarchy.
+ *
+ *
+ */
 class QuadTreeClusteringStrategy extends ClusteringStrategy {
 
     private final Envelope maxBounds;
 
-    private final int maxDepth;
-
     public QuadTreeClusteringStrategy(RevTree original, DAGStorageProvider storageProvider,
-            Envelope maxBounds, int maxDepth) {
+            Envelope maxBounds) {
         super(original, storageProvider);
         this.maxBounds = maxBounds;
-        this.maxDepth = maxDepth;
     }
 
-    // @Override
-    // protected int maxDepth() {
-    // return 12;
-    // }
-    //
-    @Override
-    protected int maxBuckets(final int depthIndex) {
-        return 4;
+    public Envelope getMaxBound() {
+        return maxBounds;
     }
 
     @Override
@@ -47,39 +75,106 @@ class QuadTreeClusteringStrategy extends ClusteringStrategy {
     }
 
     @Override
-    public @Nullable QuadTreeNodeId computeId(final Node node) {
-        QuadTreeNodeId nodeId = null;
-        if (node.bounds().isPresent()) {
-            nodeId = computeIdInternal(node);
-        }
-        return nodeId;
+    protected Comparator<NodeId> getNodeOrdering() {
+        return CanonicalClusteringStrategy.CANONICAL_ORDER;
     }
 
-    private QuadTreeNodeId computeIdInternal(Node node) {
+    /**
+     * Returns the bucket index in the range 0-3 corresponding to this node at the specified depth
+     * (i.e. the bucket index represents a quadrant), or {@code -1} if the spatial bounds of this
+     * node don't fit on a single child quadrant and hence the node shall be kept at the current
+     * tree node (hence creating a mixed {@link RevTree} with both direct children and buckets).
+     */
+    @Override
+    public int bucket(final NodeId nodeId, final int depthIndex) {
+        final Envelope nodeBounds = nodeId.value();
+        final Quadrant quadrantAtDepth = computeQuadrant(nodeBounds, depthIndex);
 
-        final int maxDepth = this.maxDepth;
+        return quadrantAtDepth == null ? -1 : quadrantAtDepth.ordinal();
+    }
 
-        Envelope nodeBounds = node.bounds().get();
+    @Override
+    protected int unpromotableBucketIndex(final int depthIndex) {
+        return Quadrant.VALUES.length;
+    }
+
+    @Override
+    public NodeId computeId(final Node node) {
+        Optional<Envelope> bounds = node.bounds();
+        if (!bounds.isPresent() || bounds.get().isNull()) {
+            return null; // no bounds -> not in quad tree
+        }
+        return new NodeId(node.getName(), bounds.get());
+    }
+
+    /**
+     * Overrides to implement a simple optimization for the case where the node bounds haven't
+     * changed and hence avoid calling remove and then put, but call put only, since the
+     * {@code NodeId} is guaranteed to lay on the same bucket at any depth.
+     */
+    @Override
+    public void update(Node oldNode, Node newNode) {
+        if (oldNode.bounds().equals(newNode.bounds())) {
+            // in case the bounds didn't change, put will override the old value,
+            // otherwise need to remove old and add new separately
+            Preconditions.checkArgument(oldNode.getName().equals(newNode.getName()));
+            put(newNode);
+        } else {
+            super.update(oldNode, newNode);
+        }
+    }
+
+    @Nullable
+    Quadrant computeQuadrant(@Nullable final Envelope nodeBounds, int depthIndex) {
+        if (nodeBounds != null && !nodeBounds.isNull()) {
+
+            final Envelope parentQuadrantBounds = new Envelope(this.maxBounds);
+
+            Envelope qBounds = new Envelope();
+
+            for (int depth = 0; depth <= depthIndex; depth++) {
+                for (int q = 0; q < Quadrant.VALUES.length; q++) {
+                    Quadrant quadrant = Quadrant.VALUES[q];
+                    quadrant.slice(parentQuadrantBounds, qBounds);
+                    if (qBounds.contains(nodeBounds)) {
+                        if (depth == depthIndex) {
+                            return quadrant;
+                        }
+                        parentQuadrantBounds.init(qBounds);
+                        break;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    List<Quadrant> quadrantsByDepth(NodeId node, int maxDepth) {
+        final Envelope nodeBounds = node.value();
+        if (nodeBounds == null || nodeBounds.isNull()) {
+            return Collections.emptyList();
+        }
+
         List<Quadrant> quadrantsByDepth = new ArrayList<>(maxDepth);
 
-        final Quadrant[] quadrants = Quadrant.values();
+        final Quadrant[] quadrants = Quadrant.VALUES;
 
-        Envelope parentQuadrantBounds = this.maxBounds;
+        final Envelope parentQuadrantBounds = new Envelope(this.maxBounds);
+
+        Envelope qBounds = new Envelope();
 
         for (int depth = 0; depth < maxDepth; depth++) {
             for (int q = 0; q < 4; q++) {
                 Quadrant quadrant = quadrants[q];
-                Envelope qBounds = quadrant.slice(parentQuadrantBounds);
+                quadrant.slice(parentQuadrantBounds, qBounds);
                 if (qBounds.contains(nodeBounds)) {
                     quadrantsByDepth.add(quadrant);
-                    parentQuadrantBounds = qBounds;
+                    parentQuadrantBounds.init(qBounds);
                     break;
                 }
             }
         }
-
-        Quadrant[] nodeQuadrants = quadrantsByDepth.toArray(new Quadrant[quadrantsByDepth.size()]);
-        return new QuadTreeNodeId(node.getName(), nodeQuadrants);
+        return quadrantsByDepth;
     }
 
 }

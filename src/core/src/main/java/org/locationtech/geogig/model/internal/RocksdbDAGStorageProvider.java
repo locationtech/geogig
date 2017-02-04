@@ -11,9 +11,9 @@ package org.locationtech.geogig.model.internal;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
@@ -75,7 +75,7 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public Map<TreeId, DAG> getTrees(Set<TreeId> ids) {
+    public List<DAG> getTrees(Set<TreeId> ids) {
         return dagStore.getTrees(ids);
     }
 
@@ -90,13 +90,8 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
     }
 
     @Override
-    public Node getNode(NodeId nodeId) {
-        return nodeStore.get(nodeId).resolve(treeCache);
-    }
-
-    @Override
-    public SortedMap<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
-        SortedMap<NodeId, DAGNode> dagNodes = nodeStore.getAll(nodeIds);
+    public Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
+        Map<NodeId, DAGNode> dagNodes = nodeStore.getAll(nodeIds);
         return Maps.transformValues(dagNodes, (dn) -> dn.resolve(treeCache));
     }
 

@@ -33,12 +33,16 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
+import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CheckoutResult;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
@@ -532,6 +536,18 @@ public abstract class RepositoryTestCase extends Assert {
             map.put(kvp[i], kvp[i + 1]);
         }
         return map;
+    }
+
+    public void add() {
+        repo.command(AddOp.class).call();
+    }
+
+    protected CheckoutResult checkout(String branchName) {
+        return repo.command(CheckoutOp.class).setSource(branchName).call();
+    }
+
+    protected Ref branch(String branchName) {
+        return repo.command(BranchCreateOp.class).setName(branchName).call();
     }
 
 }

@@ -112,8 +112,8 @@ public class PGGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public void checkConfig() throws RepositoryConnectionException {
-        StorageType.GRAPH.verify(configdb, FORMAT_NAME, formatVersion);
+    public boolean checkConfig() throws RepositoryConnectionException {
+        return StorageType.GRAPH.verify(configdb, FORMAT_NAME, formatVersion);
     }
 
     /**

@@ -18,6 +18,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 
@@ -29,6 +30,8 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
     private String treeishRefSpec;
 
     private ObjectId treeish;
+
+    private ObjectStore source = null;
 
     /**
      * @param treeishRefSpec a ref spec that ultimately resolves to a tree id
@@ -54,6 +57,15 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
     }
 
     /**
+     * @param source the object store to use
+     * @return {@code this}
+     */
+    public ResolveTreeish setSource(ObjectStore source) {
+        this.source = source;
+        return this;
+    }
+
+    /**
      * Executes the command.
      * 
      * @return an {@link Optional} of the {@link ObjectId} that was resolved, or
@@ -63,9 +75,11 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
     protected Optional<ObjectId> _call() {
         checkState(treeishRefSpec != null || treeish != null, "tree-ish ref spec not set");
 
+        ObjectStore source = this.source == null ? objectDatabase() : this.source;
+
         Optional<ObjectId> resolved;
         if (treeishRefSpec != null) {
-            resolved = command(RevParse.class).setRefSpec(treeishRefSpec).call();
+            resolved = command(RevParse.class).setSource(source).setRefSpec(treeishRefSpec).call();
         } else {
             resolved = Optional.of(treeish);
         }
@@ -88,14 +102,18 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
             return Optional.of(RevTree.EMPTY_TREE_ID);
         }
 
-        final TYPE objectType = command(ResolveObjectType.class).setObjectId(objectId).call();
+        ObjectStore source = this.source == null ? objectDatabase() : this.source;
+
+        final TYPE objectType = command(ResolveObjectType.class).setSource(source)
+                .setObjectId(objectId).call();
 
         switch (objectType) {
         case TREE:
             // ok
             break;
         case COMMIT: {
-            Optional<RevCommit> commit = command(RevObjectParse.class).setObjectId(objectId)
+            Optional<RevCommit> commit = command(RevObjectParse.class).setSource(source)
+                    .setObjectId(objectId)
                     .call(RevCommit.class);
             if (commit.isPresent()) {
                 objectId = commit.get().getTreeId();
@@ -105,7 +123,8 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
             break;
         }
         case TAG: {
-            Optional<RevTag> tag = command(RevObjectParse.class).setObjectId(objectId)
+            Optional<RevTag> tag = command(RevObjectParse.class).setSource(source)
+                    .setObjectId(objectId)
                     .call(RevTag.class);
             if (tag.isPresent()) {
                 ObjectId commitId = tag.get().getCommitId();

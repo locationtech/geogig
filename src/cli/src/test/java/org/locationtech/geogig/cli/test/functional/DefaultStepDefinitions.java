@@ -46,6 +46,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff;
@@ -57,6 +58,7 @@ import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryResolver;
@@ -78,6 +80,7 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import cucumber.runtime.java.StepDefAnnotation;
+
 
 /**
  *
@@ -686,6 +689,45 @@ public class DefaultStepDefinitions {
                 .replaceAll("\\\\", "/");
         String[] commitId = actual.split(" ");
         localRepo.runCommand(true, "checkout " + commitId[0]);
+    }
+
+    @Then("^the response should contain the index ID for tree \"([^\"]*)\"$")
+    public void the_response_contains_indexID(String tree) throws Throwable {
+        GeoGIG gig = localRepo.geogigCLI.getGeogig();
+
+        ObjectId canonicalTreeId = gig.command(ResolveTreeish.class).setTreeish("HEAD:" + tree).call().get();
+        Optional<IndexInfo> indexInfo = gig.getRepository().indexDatabase().getIndexInfo(tree,"pp");
+
+        Optional<ObjectId> indexedTree = gig.getRepository().indexDatabase().resolveIndexedTree(indexInfo.get(),canonicalTreeId);
+
+        if (!indexedTree.isPresent()) {
+            fail();
+        }
+        String indexId = indexedTree.get().toString();
+        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
+            .replaceAll("\\\\", "/");
+        assertTrue("'" + actual + "' does not contain ID '" + indexId.substring(0,8),
+                actual.contains(indexId.toString().substring(0,8)));
+    }
+
+    @Then("^the response should contain index info ID for tree \"([^\"]*)\"$")
+    public void the_response_contains_indexInfoID(String tree) throws Throwable {
+        Repository repo = localRepo.geogigCLI.getGeogig().getRepository();
+
+        Optional<IndexInfo> indexInfo = repo.indexDatabase().getIndexInfo(tree,"pp");
+        ObjectId oid = null;
+        if (indexInfo.isPresent()) {
+           oid = indexInfo.get().getId();
+        }
+
+        String actual = localRepo.stdOut.toString().replaceAll(LINE_SEPARATOR, "")
+            .replaceAll("\\\\", "/");
+        if (oid == null) {
+            fail();
+        } else {
+            assertTrue("'" + actual + "' does not contain ID for '"  + oid.toString(),
+                actual.contains(oid.toString()));
+        }
     }
 
     public void setVariable(String name, String value) {

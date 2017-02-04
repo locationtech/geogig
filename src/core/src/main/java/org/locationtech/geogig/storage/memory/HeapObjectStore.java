@@ -25,7 +25,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
-import org.locationtech.geogig.storage.impl.AbstractObjectDatabase;
 import org.locationtech.geogig.storage.impl.AbstractObjectStore;
 
 import com.google.common.base.Preconditions;
@@ -38,7 +37,7 @@ import com.google.common.collect.Maps;
  * Provides an implementation of a GeoGig object database that utilizes the heap for the storage of
  * objects.
  * 
- * @see AbstractObjectDatabase
+ * @see AbstractObjectStore
  */
 public class HeapObjectStore extends AbstractObjectStore {
 

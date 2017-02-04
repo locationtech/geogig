@@ -144,8 +144,11 @@ public interface GraphDatabase extends Closeable {
 
     /**
      * Verify the configuration before opening the database
+     * 
+     * @return {@code true} if the config was set, {@code false} otherwise
+     * @throws RepositoryConnectionException if the config is incompatible
      */
-    public void checkConfig() throws RepositoryConnectionException;
+    public boolean checkConfig() throws RepositoryConnectionException;
 
     /**
      * @return true if the database is open, false otherwise

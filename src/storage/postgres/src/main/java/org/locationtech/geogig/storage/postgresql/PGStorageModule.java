@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage.postgresql;
 
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ public class PGStorageModule extends AbstractModule {
         bind(ConfigDatabase.class).to(PGConfigDatabase.class).in(Scopes.SINGLETON);
         bind(RefDatabase.class).to(PGRefDatabase.class).in(Scopes.SINGLETON);
         bind(ObjectDatabase.class).to(PGObjectDatabase.class).in(Scopes.SINGLETON);
+        bind(IndexDatabase.class).to(PGIndexDatabase.class).in(Scopes.SINGLETON);
         bind(GraphDatabase.class).to(PGGraphDatabase.class).in(Scopes.SINGLETON);
     }
 

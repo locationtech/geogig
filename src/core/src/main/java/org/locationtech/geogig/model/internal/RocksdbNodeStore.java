@@ -12,24 +12,25 @@ package org.locationtech.geogig.model.internal;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
+import org.rocksdb.BlockBasedTableConfig;
+import org.rocksdb.BloomFilter;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
 
 class RocksdbNodeStore {
@@ -44,9 +45,17 @@ class RocksdbNodeStore {
 
     public RocksdbNodeStore(RocksDB db) {
         this.db = db;
-        ColumnFamilyDescriptor columnDescriptor = new ColumnFamilyDescriptor(
-                "nodes".getBytes(Charsets.UTF_8));
         try {
+            // enable bloom filter to speed up RocksDB.get() calls
+            BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
+            tableFormatConfig.setFilter(new BloomFilter());
+
+            ColumnFamilyOptions colFamilyOptions = new ColumnFamilyOptions();
+            colFamilyOptions.setTableFormatConfig(tableFormatConfig);
+
+            byte[] tableNameKey = "nodes".getBytes(Charsets.UTF_8);
+            ColumnFamilyDescriptor columnDescriptor = new ColumnFamilyDescriptor(tableNameKey,
+                    colFamilyOptions);
             column = db.createColumnFamily(columnDescriptor);
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
@@ -57,11 +66,10 @@ class RocksdbNodeStore {
         writeOptions.setSync(false);
 
         readOptions = new ReadOptions();
-        readOptions.setFillCache(true).setVerifyChecksums(false);
+        readOptions.setFillCache(false).setVerifyChecksums(false);
     }
 
     public void close() {
-        batch.close();
         readOptions.close();
         writeOptions.close();
         column.close();
@@ -69,7 +77,6 @@ class RocksdbNodeStore {
     }
 
     public DAGNode get(NodeId nodeId) {
-        flush();
         byte[] value;
         byte[] key = toKey(nodeId);
         try {
@@ -83,12 +90,11 @@ class RocksdbNodeStore {
         return decode(value);
     }
 
-    public SortedMap<NodeId, DAGNode> getAll(Set<NodeId> nodeIds) {
+    public Map<NodeId, DAGNode> getAll(Set<NodeId> nodeIds) {
         if (nodeIds.isEmpty()) {
-            return ImmutableSortedMap.of();
+            return ImmutableMap.of();
         }
-        flush();
-        SortedMap<NodeId, DAGNode> res = new TreeMap<>();
+        Map<NodeId, DAGNode> res = new HashMap<>();
         byte[] valueBuff = new byte[512];
         nodeIds.forEach((id) -> {
             try {
@@ -108,17 +114,14 @@ class RocksdbNodeStore {
         return res;
     }
 
-    private WriteBatch batch = new WriteBatch();
-
-    private int batchSize;
-
     public void put(NodeId nodeId, DAGNode node) {
-        synchronized (batch) {
-            batch.put(column, toKey(nodeId), encode(node));
-            batchSize++;
+        byte[] key = toKey(nodeId);
+        byte[] value = encode(node);
+        try {
+            db.put(column, writeOptions, key, value);
+        } catch (RocksDBException e) {
+            throw Throwables.propagate(e);
         }
-
-        flush(1_000);
     }
 
     public void putAll(Map<NodeId, DAGNode> nodeMappings) {
@@ -129,40 +132,17 @@ class RocksdbNodeStore {
             encode(dagNode, out);
             byte[] value = out.toByteArray();
             byte[] key = toKey(nodeId);
-            synchronized (batch) {
-                batch.put(column, key, value);
-                batchSize++;
+            try {
+                db.put(column, writeOptions, key, value);
+            } catch (RocksDBException e) {
+                throw Throwables.propagate(e);
             }
-            flush(1_000);
         });
-    }
-
-    private void flush() {
-        flush(1);
-    }
-
-    private void flush(int limit) {
-        if (batchSize >= limit) {
-            synchronized (batch) {
-                try {
-                    db.write(writeOptions, batch);
-                } catch (Exception ex) {
-                    throw Throwables.propagate(ex);
-                }
-                batchSize = 0;
-                batch.clear();
-            }
-        }
     }
 
     private byte[] toKey(NodeId nodeId) {
         byte[] key = nodeId.name().getBytes(Charsets.UTF_8);
         return key;
-    }
-
-    private NodeId fromKey(byte[] key) {
-        String name = new String(key, Charsets.UTF_8);
-        return new CanonicalNodeId(name);
     }
 
     private byte[] encode(DAGNode node) {

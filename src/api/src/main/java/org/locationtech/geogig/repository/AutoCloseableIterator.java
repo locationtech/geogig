@@ -9,12 +9,15 @@
  */
 package org.locationtech.geogig.repository;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
 
 /**
  * Interface for an iterator that can do some cleanup or other work when it is no longer needed. Can
@@ -94,9 +97,9 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
         };
     }
 
-    public static <T, I extends Iterator<T>> AutoCloseableIterator<T> fromIterator(
-            I source, Consumer<I> closeAction) {
-        
+    public static <T, I extends Iterator<T>> AutoCloseableIterator<T> fromIterator(I source,
+            Consumer<I> closeAction) {
+
         return new AutoCloseableIterator<T>() {
 
             @Override
@@ -195,6 +198,31 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
         };
     }
 
+    public static <T> AutoCloseableIterator<T> concat(AutoCloseableIterator<Iterator<T>> its)
+    {
+        Iterator<T> result = Iterators.concat(its);
+
+        return new AutoCloseableIterator<T>() {
+
+            @Override
+            public boolean hasNext() {
+               return result.hasNext();
+            }
+
+            @Override
+            public T next() {
+                return result.next();
+            }
+
+            @Override
+            public void close() {
+                its.close();
+            }
+
+        };
+    }
+
+
     /**
      * Concatenates two {@code AutoCloseableIterators} into a single one, closing both when closed.
      * 
@@ -225,6 +253,63 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
                 second.close();
             }
 
+        };
+    }
+
+    public static <T> AutoCloseableIterator<T> limit(final AutoCloseableIterator<T> iterator,
+            final int limit) {
+
+        return new AutoCloseableIterator<T>() {
+            private int count;
+
+            @Override
+            public boolean hasNext() {
+                return count < limit && iterator.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                count++;
+                return iterator.next();
+            }
+
+            @Override
+            public void close() {
+                iterator.close();
+            }
+        };
+    }
+
+    public static <T> AutoCloseableIterator<List<T>> partition(AutoCloseableIterator<T> iterator,
+            int partitionSize) {
+
+        return new AutoCloseableIterator<List<T>>() {
+
+            @Override
+            public void close() {
+                iterator.close();
+            }
+
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public List<T> next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                List<T> list = new ArrayList<>(partitionSize);
+                for (int i = 0; i < partitionSize && iterator.hasNext(); i++) {
+                    T next = iterator.next();
+                    list.add(next);
+                }
+                return list;
+            }
         };
     }
 }

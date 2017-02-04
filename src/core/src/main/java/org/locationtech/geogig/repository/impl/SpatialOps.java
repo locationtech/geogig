@@ -15,9 +15,12 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.locationtech.geogig.data.EPSGBoundsCalc;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.porcelain.CRSException;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -96,6 +99,18 @@ public class SpatialOps {
     }
 
     /**
+     * Get the bounds of the desired CRS, uses JTS ReferencedEnvelope transform to properly handle
+     * polar projections
+     * 
+     * @param crs the target CoordinateReferenceSystem
+     * @return bounds an Envelope containing the CRS bounds, throws a NoSuchAuthorityCodeException
+     *         if the crs cannot be found
+     */
+    public @Nullable static Envelope boundsOf(CoordinateReferenceSystem crs) throws Exception {
+        return EPSGBoundsCalc.getExtents(crs);
+    }
+
+    /**
      * Parses a bounding box in the format {@code <minx,miny,maxx,maxy,SRS>} where SRS is an EPSG
      * code like {@code EPSG:4325} etc.
      * <p>
@@ -142,4 +157,24 @@ public class SpatialOps {
         return env;
     }
 
+    public static CoordinateReferenceSystem findIdentifier(GeometryDescriptor geometryDescriptor) throws FactoryException, CRSException {
+        CoordinateReferenceSystem crs = null;
+        if (geometryDescriptor != null) {
+            crs = geometryDescriptor.getCoordinateReferenceSystem();
+            String srs = CRS.toSRS(crs);
+            if (srs != null && !srs.startsWith("EPSG:")) {
+                boolean fullScan = true;
+                String knownIdentifier;
+                knownIdentifier = CRS.lookupIdentifier(crs, fullScan);
+                if (knownIdentifier != null) {
+                    boolean longitudeFirst = CRS.getAxisOrder(crs).equals(CRS.AxisOrder.EAST_NORTH);
+                    crs = CRS.decode(knownIdentifier, longitudeFirst);
+                } else {
+                    throw new CRSException(
+                        "Could not find identifier associated with the defined CRS: \n" + crs);
+                }
+            }
+        }
+        return crs;
+    }
 }

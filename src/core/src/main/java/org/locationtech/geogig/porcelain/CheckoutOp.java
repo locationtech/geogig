@@ -29,9 +29,10 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
+import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
@@ -166,12 +167,12 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             checkState(id.isPresent(), "'" + branchOrCommit + "' not found in repository.");
             checkOutFromTree = objectDatabase.getTree(id.get());
         } else {
-            checkOutFromTree = index().getTree();
+            checkOutFromTree = stagingArea().getTree();
         }
 
         UpdateTree updateTree = command(UpdateTree.class).setRoot(currentWorkHead);
 
-        Map<String, RevTreeBuilder> featureTypeTrees = new HashMap<>();
+        Map<String, CanonicalTreeBuilder> featureTypeTrees = new HashMap<>();
         Map<String, NodeRef> currentFeatureTypeRefs = new HashMap<>();
 
         for (String path : paths) {
@@ -220,7 +221,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
 
         }
 
-        for (Map.Entry<String, RevTreeBuilder> entry : featureTypeTrees.entrySet()) {
+        for (Map.Entry<String, CanonicalTreeBuilder> entry : featureTypeTrees.entrySet()) {
             final String changedTreePath = entry.getKey();
             final NodeRef currentTreeRef = currentFeatureTypeRefs.get(changedTreePath);
             checkState(null != currentTreeRef);
@@ -236,14 +237,14 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         return result;
     }
 
-    private RevTreeBuilder getTreeBuilder(RevTree currentIndexHead, NodeRef featureRef,
-            Map<String, RevTreeBuilder> featureTypeTrees,
+    private CanonicalTreeBuilder getTreeBuilder(RevTree currentIndexHead, NodeRef featureRef,
+            Map<String, CanonicalTreeBuilder> featureTypeTrees,
             Map<String, NodeRef> currentFeatureTypeRefs) {
 
         checkArgument(TYPE.FEATURE.equals(featureRef.getType()));
 
         final String typeTreePath = featureRef.getParentPath();
-        RevTreeBuilder typeTreeBuilder = featureTypeTrees.get(typeTreePath);
+        CanonicalTreeBuilder typeTreeBuilder = featureTypeTrees.get(typeTreePath);
         if (typeTreeBuilder == null) {
             NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(currentIndexHead)
                     .setChildPath(typeTreePath).call().orNull();
@@ -258,7 +259,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             } else {
                 currentTypeTree = context.objectDatabase().getTree(typeTreeRef.getObjectId());
             }
-            typeTreeBuilder = RevTreeBuilder.canonical(context.objectDatabase(), currentTypeTree);
+            typeTreeBuilder = CanonicalTreeBuilder.create(context.objectDatabase(), currentTypeTree);
             currentFeatureTypeRefs.put(typeTreePath, typeTreeRef);
             featureTypeTrees.put(typeTreePath, typeTreeBuilder);
         }
@@ -349,14 +350,14 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         }
         if (targetTreeId.isPresent()) {
             if (!force) {
-                if (!index().isClean() || !workingTree().isClean()) {
+                if (!stagingArea().isClean() || !workingTree().isClean()) {
                     throw new CheckoutException(StatusCode.LOCAL_CHANGES_NOT_COMMITTED);
                 }
             }
             // update work tree
             ObjectId treeId = targetTreeId.get();
             workingTree().updateWorkHead(treeId);
-            index().updateStageHead(treeId);
+            stagingArea().updateStageHead(treeId);
             result.setNewTree(treeId);
             if (targetRef.isPresent()) {
                 // update HEAD

@@ -18,11 +18,13 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -61,30 +63,38 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     protected final boolean readOnly;
 
-    private DBHandle dbhandle;
+    protected DBHandle dbhandle;
 
     private ReadOptions bulkReadOptions;
 
     @Inject
     public RocksdbObjectStore(Platform platform, @Nullable Hints hints) {
+        this(platform, hints, "objects.rocksdb");
+    }
+
+    public RocksdbObjectStore(Platform platform, @Nullable Hints hints, String databaseName) {
         Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
         checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
         URI uri = repoUriOpt.get();
         checkArgument("file".equals(uri.getScheme()));
-        this.path = new File(new File(uri), "objects.rocksdb").getAbsolutePath();
+        this.path = new File(new File(uri), databaseName).getAbsolutePath();
 
         this.readOnly = hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
     }
 
     @Override
     public synchronized void open() {
+        open(Collections.emptySet());
+    }
+
+    protected synchronized void open(Set<String> columnFamilyNames) {
         if (isOpen()) {
             return;
         }
         Map<String, String> defaultMetadata = ImmutableMap.of("version",
                 RocksdbStorageProvider.VERSION, "serializer", "proxy");
 
-        DBConfig address = new DBConfig(path, readOnly, defaultMetadata);
+        DBConfig address = new DBConfig(path, readOnly, defaultMetadata, columnFamilyNames);
         this.dbhandle = RocksConnectionManager.INSTANCE.acquire(address);
 
         this.bulkReadOptions = new ReadOptions();
@@ -125,11 +135,11 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         return open;
     }
 
-    private void checkOpen() {
+    protected void checkOpen() {
         Preconditions.checkState(isOpen(), "Database is closed");
     }
 
-    public void checkWritable() {
+    protected void checkWritable() {
         checkOpen();
         if (readOnly) {
             throw new IllegalStateException("db is read only.");
@@ -279,8 +289,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
         byte[] keybuff = new byte[ObjectId.NUM_BYTES];
 
-        try (RocksDBReference dbRef = dbhandle.getReference();
-                ReadOptions ro = new ReadOptions()) {
+        try (RocksDBReference dbRef = dbhandle.getReference(); ReadOptions ro = new ReadOptions()) {
             ro.setFillCache(false);
             ro.setVerifyChecksums(false);
             try (WriteOptions writeOps = new WriteOptions()) {
@@ -338,8 +347,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream(4096);
         byte[] keybuff = new byte[ObjectId.NUM_BYTES];
 
-	Map<ObjectId, Integer> insertedIds = new HashMap<ObjectId, Integer>();        
-	try (RocksDBReference dbRef = dbhandle.getReference();
+        Map<ObjectId, Integer> insertedIds = new HashMap<ObjectId, Integer>();
+        try (RocksDBReference dbRef = dbhandle.getReference();
                 WriteOptions wo = new WriteOptions()) {
             wo.setDisableWAL(true);
             wo.setSync(false);

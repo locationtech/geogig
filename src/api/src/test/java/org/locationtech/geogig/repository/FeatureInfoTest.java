@@ -20,6 +20,8 @@ import org.locationtech.geogig.model.RevObject;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 public class FeatureInfoTest {
 
@@ -55,6 +57,11 @@ public class FeatureInfoTest {
 
             @Override
             public void forEach(Consumer<Object> consumer) {
+            }
+
+            @Override
+            public Optional<Geometry> get(int index, GeometryFactory gf) {
+                throw new UnsupportedOperationException();
             }
         };
         FeatureInfo info = FeatureInfo.insert(testFeature, oid1, "Points/1");

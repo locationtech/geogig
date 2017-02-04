@@ -49,6 +49,7 @@ import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
@@ -821,7 +822,7 @@ public class PreOrderDiffWalkTest {
         ArrayList<NodeRef> leftFeatureNodes = Lists.newArrayList(new DepthTreeIterator("",
                 ObjectId.NULL, left, leftSource, Strategy.RECURSIVE_FEATURES_ONLY));
 
-        RevTreeBuilder rightBuilder = RevTreeBuilder.canonical(rightSource);
+        RevTreeBuilder rightBuilder = CanonicalTreeBuilder.create(rightSource);
 
         Map<String, Node> rightChanges = new HashMap<>();
         Collections.shuffle(leftFeatureNodes);
@@ -875,7 +876,7 @@ public class PreOrderDiffWalkTest {
         // the bucket tree from left that's used to create the modified nodes
         final RevTree leftBucketTree;
         {// create "right", same as left, except all nodes in the first bucket are changes
-            RevTreeBuilder rightBuilder = RevTreeBuilder.canonical(store, left);
+            RevTreeBuilder rightBuilder = CanonicalTreeBuilder.create(store, left);
             // change all features in first bucket
             ObjectId bucketId = leftBucket.getObjectId();
             leftBucketTree = store.getTree(bucketId);

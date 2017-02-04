@@ -13,7 +13,6 @@ This section will discuss alternate ways of interacting with GeoGig, both local 
    geoserver_ui
    geoserver_web-api
    web-api
+   indexing-web-api
    async-tasks
-   osm
-   osm-web-api
    geopackage-import-export

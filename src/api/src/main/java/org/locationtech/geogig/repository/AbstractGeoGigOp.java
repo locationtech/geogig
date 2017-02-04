@@ -19,6 +19,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 
@@ -187,10 +188,10 @@ public abstract class AbstractGeoGigOp<T> {
     }
 
     /**
-     * Shortcut for {@link Context#index()}
+     * Shortcut for {@link Context#stagingArea()}
      */
-    protected StagingArea index() {
-        return context.index();
+    protected StagingArea stagingArea() {
+        return context.stagingArea();
     }
 
     /**
@@ -212,6 +213,13 @@ public abstract class AbstractGeoGigOp<T> {
      */
     protected ObjectDatabase objectDatabase() {
         return context.objectDatabase();
+    }
+
+    /**
+     * Shortcut for {@link Context#indexDatabase()}
+     */
+    protected IndexDatabase indexDatabase() {
+        return context.indexDatabase();
     }
 
     /**

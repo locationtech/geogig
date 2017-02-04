@@ -52,7 +52,7 @@ public abstract class AbstractWebOpTest {
     @Test
     public void testSPI() {
         ParameterSet options = TestParams.of();
-        WebAPICommand cmd = CommandBuilder.build(getRoute(), options);
+        WebAPICommand cmd = (AbstractWebAPICommand) buildCommand(options);
         assertTrue(getCommandClass().isInstance(cmd));
     }
 

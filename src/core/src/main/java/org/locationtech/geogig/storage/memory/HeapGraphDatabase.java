@@ -78,8 +78,8 @@ public class HeapGraphDatabase implements GraphDatabase {
     }
 
     @Override
-    public void checkConfig() {
-        // No-op
+    public boolean checkConfig() {
+        return true;
     }
 
     @Override

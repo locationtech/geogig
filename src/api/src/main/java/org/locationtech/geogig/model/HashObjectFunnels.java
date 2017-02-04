@@ -37,6 +37,7 @@ import com.google.common.hash.Hasher;
 import com.google.common.hash.PrimitiveSink;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateFilter;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
@@ -404,6 +405,14 @@ public class HashObjectFunnels {
                 MapPropertyFunnel.funnel(map, into);
             }
                 break;
+            case ENVELOPE_2D: {
+                Envelope e = (Envelope) value;
+                into.putDouble(e.getMinX());
+                into.putDouble(e.getMaxX());
+                into.putDouble(e.getMinY());
+                into.putDouble(e.getMaxY());
+            }
+                break;
             default:
                 throw new RuntimeException(
                         "Unexpected exception, all FieldType enum values shall be covered");
@@ -468,7 +477,7 @@ public class HashObjectFunnels {
                 crs = ((GeometryDescriptor) descriptor).getCoordinateReferenceSystem();
                 String srsName;
                 if (crs == null) {
-                    srsName = "urn:ogc:def:crs:EPSG::0";
+                    srsName = RevObjects.NULL_CRS_IDENTIFIER;
                 } else {
                     srsName = CRS.toSRS(crs);
                 }

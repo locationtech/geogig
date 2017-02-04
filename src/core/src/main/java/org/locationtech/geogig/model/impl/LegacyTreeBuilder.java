@@ -29,9 +29,9 @@ import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.repository.impl.SpatialOps;
@@ -417,7 +417,7 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
             for (Integer bucketIndex : changedBucketIndexes) {
                 final RevTree currentBucketTree = bucketTrees.get(bucketIndex);
                 final int bucketDepth = this.depth + 1;
-                final RevTreeBuilder bucketTreeBuilder = new LegacyTreeBuilder(this.obStore,
+                final LegacyTreeBuilder bucketTreeBuilder = new LegacyTreeBuilder(this.obStore,
                         currentBucketTree, bucketDepth, this.pendingWritesCache,
                         this.normalizationThreshold);
                 {
@@ -615,6 +615,12 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
         return this;
     }
 
+    @Override
+    public RevTreeBuilder remove(final Node node) {
+        Preconditions.checkNotNull(node, "key can't be null");
+        return remove(node.getName());
+    }
+
     /**
      * @return the new tree, not saved to the object database. Any bucket tree though is saved when
      *         this method returns.
@@ -651,5 +657,16 @@ public class LegacyTreeBuilder implements RevTreeBuilder {
     public static RevTree empty() {
         RevTree theEmptyTree = new LegacyTreeBuilder().build();
         return theEmptyTree;
+    }
+
+    @Override
+    public int getDepth() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public RevTreeBuilder update(Node oldNode, Node newNode) {
+        put(newNode);
+        return this;
     }
 }

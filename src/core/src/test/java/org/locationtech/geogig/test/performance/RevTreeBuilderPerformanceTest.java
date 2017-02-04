@@ -25,6 +25,7 @@ import org.junit.runners.MethodSorters;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.model.RevTree;
@@ -159,7 +160,7 @@ public class RevTreeBuilderPerformanceTest {
         Stopwatch totalTime = Stopwatch.createUnstarted();
         Iterable<Node> nodes = nodes(size);
 
-        RevTreeBuilder builder = RevTreeBuilder.canonical(odb);
+        RevTreeBuilder builder = CanonicalTreeBuilder.create(odb);
 
         createTree(size, nodes, builder, totalTime);
 

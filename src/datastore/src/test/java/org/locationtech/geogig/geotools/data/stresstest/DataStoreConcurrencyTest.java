@@ -152,8 +152,8 @@ public class DataStoreConcurrencyTest {
     @Test
     public void testConcurrentEditsAndReads() throws Exception {
 
-        final int insertsPerTask = 40;
-        final int readsPerTask = 200;
+        final int insertsPerTask = 20;
+        final int readsPerTask = 40;
 
         // have something to read
         runInserts(1, insertsPerTask).get(0).get();

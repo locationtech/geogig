@@ -164,8 +164,8 @@ public class AbstractGeoGigOpTest {
         testOp.workingTree();
         verify(context).workingTree();
 
-        testOp.index();
-        verify(context).index();
+        testOp.stagingArea();
+        verify(context).stagingArea();
 
         testOp.refDatabase();
         verify(context).refDatabase();

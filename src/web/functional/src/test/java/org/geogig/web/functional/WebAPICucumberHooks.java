@@ -211,6 +211,21 @@ public class WebAPICucumberHooks {
         repo.close();
     }
 
+    @Given("There is a repo with some data")
+    public void setUpRepoWithData() throws Exception {
+        Repository repo = context.createRepo("repo1").init("myuser", "the_user@testing.com").getRepo();
+        TestData data = new TestData(repo);
+        data.addAndCommit("Added Point.1", TestData.point1);
+    }
+
+    @Then("We change, add and commit some more data")
+    public void addMoreDataIntoRepo() throws Exception {
+        Repository repo = context.getRepo("repo1");
+        TestData data = new TestData(repo);
+        data.addAndCommit("modify point1; add point2, line1, poly1", data.point1_modified,
+            data.point2, data.line1, data.poly1);
+    }
+
     /**
      * Checks that the repository named {@code repositoryName}, at it's commit {@code headRef}, has
      * the expected features as given by the {@code expectedFeatures} {@link DataTable}.

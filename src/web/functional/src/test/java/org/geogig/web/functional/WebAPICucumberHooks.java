@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -121,6 +122,9 @@ public class WebAPICucumberHooks {
     private static final Map<String, String> NSCONTEXT = ImmutableMap.of("atom",
             "http://www.w3.org/2005/Atom");
 
+    // set of repository names to track during Scenario execution
+    private final Set<String> openedRepos = new HashSet<>();
+
     @Inject
     public WebAPICucumberHooks(FunctionalTestContext context) {
         this.context = context;
@@ -128,11 +132,20 @@ public class WebAPICucumberHooks {
 
     @cucumber.api.java.Before
     public void before() throws Exception {
+        // before each Scenario, clear out the opened repository set
+        openedRepos.clear();
         context.before();
     }
 
     @cucumber.api.java.After
     public void after() {
+        // try to close any repositories used while executing a Scenario
+        for (String repoName : openedRepos) {
+            Repository repo = context.getRepo(repoName);
+            if (repo != null) {
+                repo.close();
+            }
+        }
         context.after();
     }
 
@@ -145,25 +158,25 @@ public class WebAPICucumberHooks {
     @Given("^There is a default multirepo server$")
     public void setUpDefaultMultiRepo() throws Exception {
         setUpEmptyMultiRepo();
-        context.setUpDefaultMultiRepoServer();
+        openedRepos.addAll(context.setUpDefaultMultiRepoServer());
     }
 
     @Given("^There is a default multirepo server with remotes$")
     public void setUpDefaultMultiRepoWithRemotes() throws Exception {
         setUpEmptyMultiRepo();
-        context.setUpDefaultMultiRepoServerWithRemotes(false);
+        openedRepos.addAll(context.setUpDefaultMultiRepoServerWithRemotes(false));
     }
 
     @Given("^There is a default multirepo server with http remotes$")
     public void setUpDefaultMultiRepoWithHttpRemotes() throws Exception {
         setUpEmptyMultiRepo();
-        context.setUpDefaultMultiRepoServerWithRemotes(true);
+        openedRepos.addAll(context.setUpDefaultMultiRepoServerWithRemotes(true));
     }
 
     @Given("^There is a default multirepo server with a shallow clone$")
     public void setUpDefaultMultiRepoWithShallowClone() throws Exception {
         setUpEmptyMultiRepo();
-        context.setUpDefaultMultiRepoServerWithShallowClone();
+        openedRepos.addAll(context.setUpDefaultMultiRepoServerWithShallowClone());
     }
     
     @Given("^There are three repos with remotes$")
@@ -185,11 +198,16 @@ public class WebAPICucumberHooks {
         repo2.close();
         repo3.close();
         repo4.close();
+        openedRepos.add("repo1");
+        openedRepos.add("repo2");
+        openedRepos.add("repo3");
+        openedRepos.add("repo4");
     }
 
     @Given("^There is an empty repository named ([^\"]*)$")
     public void setUpEmptyRepo(String name) throws Throwable {
         context.createRepo(name).init("webuser", "webuser@test.com").getRepo().close();
+        openedRepos.add(name);
     }
 
     @Given("^There is a repository with multiple branches named ([^\"]*)$")
@@ -209,6 +227,7 @@ public class WebAPICucumberHooks {
         data.addAndCommit("Added Point.2", TestData.point2);
         data.checkout("master");
         repo.close();
+        openedRepos.add(name);
     }
 
     /**
@@ -301,12 +320,16 @@ public class WebAPICucumberHooks {
         }
         assertEquals(0, expectedMap.size());
 
+        // add the repo to the set so it can be closed
+        openedRepos.add(repositoryName);
     }
     
     @Then("^the ([^\"]*) repository's \"([^\"]*)\" should have the following features:$")
     public void verifyRepositoryContents(String repositoryName, String headRef,
             DataTable expectedFeatures) throws Throwable {
         verifyRepositoryContentsTx(repositoryName, headRef, null, expectedFeatures);
+        // add the repo to the set so it can be closed
+        openedRepos.add(repositoryName);
     }
 
     @Given("^There are multiple branches on the \"([^\"]*)\" repo$")
@@ -330,6 +353,8 @@ public class WebAPICucumberHooks {
         repo.command(UpdateRef.class).setName(Ref.REMOTES_PREFIX + "origin/branch2_remote")
                 .setNewValue(branch2).call();
         data.checkout("master");
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     @Given("^There is a tag called \"([^\"]*)\" on the \"([^\"]*)\" repo pointing to \"([^\"]*)\" with the \"([^\"]*)\" message$")
@@ -338,6 +363,8 @@ public class WebAPICucumberHooks {
         target = context.replaceVariables(target);
         repo.command(TagCreateOp.class).setName(tagName).setCommitId(ObjectId.valueOf(target))
                 .setMessage(message).call();
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     @Given("^There are conflicts on the \"([^\"]*)\" repo in the (@[^\"]*) transaction$")
@@ -361,6 +388,8 @@ public class WebAPICucumberHooks {
             // Expected
         }
         assertEquals(1, transaction.command(ConflictsCountOp.class).call().longValue());
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     @Given("^There should be no conflicts on the \"([^\"]*)\" repo in the (@[^\"]*) transaction$")
@@ -370,6 +399,8 @@ public class WebAPICucumberHooks {
                 .setId(UUID.fromString(context.getVariable(txId))).call().get();
 
         assertEquals(0, transaction.command(ConflictsCountOp.class).call().longValue());
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     @Given("^There is a feature with multiple authors on the \"([^\"]*)\" repo$")
@@ -382,6 +413,8 @@ public class WebAPICucumberHooks {
         data.config("user.name", "Author2");
         data.config("user.email", "author2@test.com");
         data.addAndCommit("Modified Point.1", TestData.point1_modified);
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     @Given("^I have checked out \"([^\"]*)\" on the \"([^\"]*)\" repo$")
@@ -389,6 +422,8 @@ public class WebAPICucumberHooks {
         Repository repo = context.getRepo(repoName);
         TestData data = new TestData(repo);
         data.checkout(branch);
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     private SimpleFeature parseFeature(String featureName) throws Exception {
@@ -431,6 +466,8 @@ public class WebAPICucumberHooks {
             data.setTransaction(transaction);
         }
         data.insert(parseFeature(feature));
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
         return data;
     }
 
@@ -438,6 +475,8 @@ public class WebAPICucumberHooks {
     public void I_have_staged(String feature, String repoName, String txId) throws Throwable {
         TestData data = I_have_unstaged(feature, repoName, txId);
         data.add();
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     @Given("^I have committed \"([^\"]*)\" on the \"([^\"]*)\" repo in the \"([^\"]*)\" transaction$")
@@ -445,6 +484,8 @@ public class WebAPICucumberHooks {
         TestData data = I_have_unstaged(feature, repoName, txId);
         data.add();
         data.commit("Added " + feature);
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     @Given("^I have removed \"([^\"]*)\" on the \"([^\"]*)\" repo in the \"([^\"]*)\" transaction$")
@@ -459,12 +500,16 @@ public class WebAPICucumberHooks {
         data.remove(parseFeature(feature));
         data.add();
         data.commit("Removed " + feature);
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     @Given("^The graph database on the \"([^\"]*)\" repo has been truncated$")
     public void Truncate_graph_database(String repoName) throws Throwable {
         Repository repo = context.getRepo(repoName);
         repo.graphDatabase().truncate();
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     /**
@@ -502,6 +547,8 @@ public class WebAPICucumberHooks {
                 .call();
 
         context.setVariable(variableName, transaction.getTransactionId().toString());
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     /**
@@ -516,6 +563,8 @@ public class WebAPICucumberHooks {
         GeogigTransaction transaction = repo.command(TransactionResolve.class)
                 .setId(UUID.fromString(context.getVariable(variableName))).call().get();
         repo.command(TransactionEnd.class).setTransaction(transaction).call();
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     /**
@@ -878,6 +927,8 @@ public class WebAPICucumberHooks {
         geogig.command(GeopkgAuditExport.class).setDatabase(file).setTargetTableName("Points")
                 .setSourcePathspec("Points").call();
         context.setVariable(fileVariableName, file.getAbsolutePath());
+        // add the repo to the set so it can be closed
+        openedRepos.add(repoName);
     }
 
     /**
@@ -1165,6 +1216,8 @@ public class WebAPICucumberHooks {
 
         assertTrue("\"user.email\" missing in repository config", config.containsKey("user.email"));
         assertEquals("geogig@geogig.org", config.get("user.email"));
+        // add the repo to the set so it can be closed
+        openedRepos.add(repo);
     }
 
     @When("^I call \"([^\"]*)\" with Author and the System Temp Directory as the parentDirectory$")
@@ -1204,6 +1257,8 @@ public class WebAPICucumberHooks {
         // request.
         String parentDir = new File(repoURI).getParentFile().getParentFile().getCanonicalPath();
         assertNotEquals("Unexpected parent directory", systemTempPath(), parentDir);
+        // add the repo to the set so it can be closed
+        openedRepos.add(repo);
     }
 
     @When("^I call \"([^\"]*)\" with an unsupported media type$")
@@ -1225,6 +1280,8 @@ public class WebAPICucumberHooks {
     public void checkRepoNotInitialized(final String repo) throws Exception {
         Repository geogig = context.getRepo(repo);
         assertTrue("Expected repository to NOT EXIST", null == geogig);
+        // add the repo to the set so it can be closed
+        openedRepos.add(repo);
     }
 
     String systemTempPath() throws IOException {

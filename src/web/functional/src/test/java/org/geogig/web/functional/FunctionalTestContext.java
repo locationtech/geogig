@@ -11,6 +11,8 @@ package org.geogig.web.functional;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -142,9 +144,11 @@ public abstract class FunctionalTestContext extends ExternalResource {
     /**
      * Set up multiple repositories for testing.
      * 
+     * @return Collection of repository names created.
+     *
      * @throws Exception
      */
-    public void setUpDefaultMultiRepoServer() throws Exception {
+    public Collection<String> setUpDefaultMultiRepoServer() throws Exception {
         createRepo("repo1")//
                 .init("geogigUser", "repo1_Owner@geogig.org")//
                 .loadDefaultData()//
@@ -154,6 +158,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
                 .init("geogigUser", "repo2_Owner@geogig.org")//
                 .loadDefaultData()//
                 .getRepo().close();
+        return Arrays.asList("repo1", "repo2");
     }
 
     protected abstract void serveHttpRepos() throws Exception;
@@ -163,9 +168,11 @@ public abstract class FunctionalTestContext extends ExternalResource {
     /**
      * Set up multiple repositories with remotes for testing.
      * 
+     * @return Collection of repository names created.
+     *
      * @throws Exception
      */
-    public void setUpDefaultMultiRepoServerWithRemotes(boolean http) throws Exception {
+    public Collection<String> setUpDefaultMultiRepoServerWithRemotes(boolean http) throws Exception {
         if (http) {
             serveHttpRepos();
         }
@@ -221,14 +228,17 @@ public abstract class FunctionalTestContext extends ExternalResource {
         if (!http) {
             repo1.close();
         }
+        return Arrays.asList("repo1", "repo2", "repo3", "repo4");
     }
 
     /**
      * Set up multiple repositories with a shallow clone for testing.
      * 
+     * @return Collection of repository names created.
+     *
      * @throws Exception
      */
-    public void setUpDefaultMultiRepoServerWithShallowClone() throws Exception {
+    public Collection<String> setUpDefaultMultiRepoServerWithShallowClone() throws Exception {
         Repository repo1 = createRepo("full")//
                 .init("geogigUser", "full_Owner@geogig.org")//
                 .loadDefaultData()//
@@ -243,6 +253,7 @@ public abstract class FunctionalTestContext extends ExternalResource {
 
         repo1.close();
         repo2.close();
+        return Arrays.asList("full", "shallow");
     }
     
     /**

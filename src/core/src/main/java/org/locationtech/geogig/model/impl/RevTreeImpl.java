@@ -79,49 +79,6 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         }
     }
 
-    private static final class MixedTree extends RevTreeImpl {
-
-        private final int childTreeCount;
-
-        private final ImmutableList<Node> trees;
-
-        private final ImmutableList<Node> features;
-
-        private final ImmutableSortedMap<Integer, Bucket> buckets;
-
-        public MixedTree(final ObjectId id, final long size, final int childTreeCount,
-                @Nullable final ImmutableList<Node> trees,
-                @Nullable final ImmutableList<Node> features,
-                @Nullable final ImmutableSortedMap<Integer, Bucket> buckets) {
-            super(id, size);
-            this.childTreeCount = childTreeCount;
-
-            this.trees = trees == null ? ImmutableList.of() : trees;
-            this.features = features == null ? ImmutableList.of() : features;
-            this.buckets = buckets == null ? ImmutableSortedMap.of() : buckets;
-        }
-
-        @Override
-        public ImmutableList<Node> features() {
-            return features;
-        }
-
-        @Override
-        public ImmutableList<Node> trees() {
-            return trees;
-        }
-
-        @Override
-        public ImmutableSortedMap<Integer, Bucket> buckets() {
-            return buckets;
-        }
-
-        @Override
-        public int numTrees() {
-            return childTreeCount;
-        }
-    }
-
     private final long size;
 
     private RevTreeImpl(ObjectId id, long size) {
@@ -162,7 +119,9 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         if ((features == null || features.isEmpty()) && (trees == null || trees.isEmpty())) {
             return new NodeTree(id, size, childTreeCount, buckets);
         }
-        return new MixedTree(id, size, childTreeCount, trees, features, buckets);
+
+        throw new IllegalArgumentException(
+                "Mixed (containing nodes and buckets) trees are not supported");
     }
 
     @Override

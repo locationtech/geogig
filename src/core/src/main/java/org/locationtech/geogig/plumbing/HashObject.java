@@ -107,12 +107,4 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
 
         return id;
     }
-
-    public static ObjectId hashTree(Optional<ImmutableList<Node>> trees,
-            Optional<ImmutableList<Node>> features,
-            Optional<ImmutableSortedMap<Integer, Bucket>> buckets) {
-
-        return hashTree(trees.or(ImmutableList.of()), features.or(ImmutableList.of()),
-                buckets.or(ImmutableSortedMap.of()));
-    }
 }

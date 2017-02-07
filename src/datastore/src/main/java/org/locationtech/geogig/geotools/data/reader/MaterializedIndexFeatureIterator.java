@@ -31,7 +31,9 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.geometry.BoundingBox;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -52,18 +54,23 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
 
     private final GeometryFactory geometryFactory;
 
+    private final CoordinateReferenceSystem crs;
+
     private MaterializedIndexFeatureIterator(final SimpleFeatureBuilder builder,
-            AutoCloseableIterator<NodeRef> nodes, GeometryFactory geometryFactory) {
+            AutoCloseableIterator<NodeRef> nodes, GeometryFactory geometryFactory,
+            CoordinateReferenceSystem crs) {
         this.featureBuilder = builder;
         this.nodes = nodes;
         this.geometryFactory = geometryFactory;
+        this.crs = crs;
     }
 
     public static MaterializedIndexFeatureIterator create(SimpleFeatureType outputSchema,
-            AutoCloseableIterator<NodeRef> nodes, GeometryFactory geometryFactory) {
+            AutoCloseableIterator<NodeRef> nodes, GeometryFactory geometryFactory,
+            CoordinateReferenceSystem crs) {
 
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(outputSchema);
-        return new MaterializedIndexFeatureIterator(builder, nodes, geometryFactory);
+        return new MaterializedIndexFeatureIterator(builder, nodes, geometryFactory, crs);
     }
 
     @Override
@@ -92,14 +99,15 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
      * The {@link #featureBuilder} shall be configured with a {@link FeatureType} whose attributes
      * are present in the node's extra data.
      */
-    private SimpleFeature adapt(NodeRef node) {
+    @VisibleForTesting
+    SimpleFeature adapt(NodeRef node) {
 
         final SimpleFeatureType featureType = featureBuilder.getFeatureType();
         final List<AttributeDescriptor> attributeDescriptors = featureType
                 .getAttributeDescriptors();
         if (attributeDescriptors.isEmpty()) {
 
-            return BoundedSimpleFeature.empty(featureType, node.getNode());
+            return BoundedSimpleFeature.empty(featureType, node.getNode(), crs);
 
         } else {
             final Map<String, Object> extraData = node.getNode().getExtraData();
@@ -145,10 +153,11 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
             return bounds;
         }
 
-        static BoundedSimpleFeature empty(SimpleFeatureType type, Node node) {
+        static BoundedSimpleFeature empty(SimpleFeatureType type, Node node,
+                CoordinateReferenceSystem crs) {
 
             FeatureId fid = new FeatureIdImpl(node.getName());
-            ReferencedEnvelope env = new ReferencedEnvelope(type.getCoordinateReferenceSystem());
+            ReferencedEnvelope env = new ReferencedEnvelope(crs);
             node.expand(env);
             return new BoundedSimpleFeature(Collections.emptyList(), type, fid, env);
         }

@@ -19,6 +19,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -129,5 +130,11 @@ public class IndexInfo {
             return ImmutableMap.of();
         }
         return (Map<String, Object>) v;
+    }
+
+    public static @Nullable Object getMaterializedAttribute(String attName, Node n) {
+        Map<String, Object> atts = getMaterializedAttributes(n);
+        Object o = atts.get(attName);
+        return o;
     }
 }

@@ -18,10 +18,10 @@ import com.google.common.base.Predicate;
  * Adapts a GeoTools {@link Filter} to a {@link Predicate} to be applied
  *
  */
-final class FilterPredicate implements Predicate<SimpleFeature> {
+final class PostFilter implements Predicate<SimpleFeature> {
     private Filter filter;
 
-    public FilterPredicate(final Filter filter) {
+    public PostFilter(final Filter filter) {
         this.filter = filter;
     }
 

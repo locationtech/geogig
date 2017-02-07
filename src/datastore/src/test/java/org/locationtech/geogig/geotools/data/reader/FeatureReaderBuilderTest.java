@@ -27,6 +27,7 @@ import org.geotools.factory.Hints;
 import org.geotools.renderer.ScreenMap;
 import org.junit.After;
 import org.junit.Test;
+import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.porcelain.index.CreateQuadTree;
@@ -39,9 +40,13 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.PropertyIsEqualTo;
+import org.opengis.filter.PropertyIsNotEqualTo;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.sort.SortBy;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -195,7 +200,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         query.setPropertyNames(Lists.newArrayList("ip"));
 
         FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
-        Filter filter = ff.equal(ff.property("sp"), ff.literal("something"));
+        PropertyIsEqualTo filter = ff.equals(ff.property("sp"), ff.literal("something"));
 
         query.setFilter(filter);
 
@@ -242,6 +247,44 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         NodeRef typeRef = context.workingTree().getFeatureTypeTrees().get(0);
         ObjectId canonicalTreeId = typeRef.getObjectId();
         verify(difftree).setNewTree(eq(canonicalTreeId));
+    }
+
+    @Test
+    public void testFiltersUsingIndexMaterializedAttributes_FilterFullySupported()
+            throws Exception {
+        Index index = createIndex("ip", "sp");
+        Query query = new Query();
+        query.setPropertyNames(Query.ALL_NAMES);
+        FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
+        PropertyIsNotEqualTo filter = ff.notEqual(ff.property("sp"), ff.literal("StringProp1_1"));
+        query.setFilter(filter);
+        verifyFeatures(query, points2, points3);
+        verifyUsesIndex(index);
+    }
+
+    @Test
+    public void testFiltersUsingIndexMaterializedAttributes_FilterPartiallySupported()
+            throws Exception {
+        Index index = createIndex("ip");
+        Query query = new Query();
+        query.setPropertyNames(Query.ALL_NAMES);
+        FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
+
+        PropertyIsNotEqualTo unsupported = ff.notEqual(ff.property("sp"),
+                ff.literal("StringProp1_1"));
+        
+        PropertyIsEqualTo supported = ff.equals(ff.property("ip"),
+                ff.literal(Integer.valueOf(2000)));
+
+        Filter filter = ff.and(unsupported, supported);
+
+        Predicate<Bounded> preFilter = builder.resolveNodeRefFilter(filter, ImmutableSet.of("ip"));
+        assertTrue(preFilter instanceof PreFilter);
+        assertEquals(supported, ((PreFilter)preFilter).filter);
+        
+        query.setFilter(filter);
+        verifyFeatures(query, points2);
+        verifyUsesIndex(index);
     }
 
     private Map<FeatureId, SimpleFeature> verifyFeatures(Query query, Feature... expectedFeatures)

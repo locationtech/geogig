@@ -63,6 +63,7 @@ import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -295,7 +296,7 @@ public class FeatureReaderBuilder {
         diffOp.setDefaultMetadataId(featureTypeId);
         diffOp.setPreserveIterationOrder(shallPreserveIterationOrder());
         diffOp.setPathFilter(resolveFidFilter(nativeFilter));
-        diffOp.setCustomFilter(resolveNodeRefFilter());
+        diffOp.setCustomFilter(resolveNodeRefFilter(nativeFilter, materializedProperties));
         diffOp.setBoundsFilter(resolveBoundsFilter(nativeFilter, newFeatureTypeTree, treeSource));
         diffOp.setChangeTypeFilter(resolveChangeType());
         diffOp.setOldTree(oldFeatureTypeTree);
@@ -328,15 +329,16 @@ public class FeatureReaderBuilder {
         final SimpleFeatureType resultSchema = resolveOutputSchema(requiredProperties);
 
         if (indexContainsAllRequiredProperties) {
+            CoordinateReferenceSystem nativeCrs = fullSchema.getCoordinateReferenceSystem();
             features = MaterializedIndexFeatureIterator.create(resultSchema, featureRefs,
-                    geometryFactory);
+                    geometryFactory, nativeCrs);
         } else {
             BulkFeatureRetriever retriever = new BulkFeatureRetriever(featureSource);
             features = retriever.getGeoToolsFeatures(featureRefs, fullSchema, geometryFactory);
         }
 
         if (!filterIsFullySupported) {
-            FilterPredicate filterPredicate = new FilterPredicate(nativeFilter);
+            PostFilter filterPredicate = new PostFilter(nativeFilter);
             features = AutoCloseableIterator.filter(features, filterPredicate);
             features = applyOffsetAndLimit(features);
         }
@@ -581,13 +583,19 @@ public class FeatureReaderBuilder {
         }
     }
 
-    private Predicate<Bounded> resolveNodeRefFilter() {
-        Predicate<Bounded> predicate = Predicates.alwaysTrue();
+    @VisibleForTesting
+    Predicate<Bounded> resolveNodeRefFilter(final Filter filter,
+            final Set<String> materializedProperties) {
+
+        Predicate<Bounded> preFilter = new PreFilterBuilder(materializedProperties).build(filter);
+
         final boolean ignore = Boolean.getBoolean("geogig.ignorescreenmap");
         if (screenMap != null && !ignore) {
-            predicate = new ScreenMapPredicate(screenMap);
+            Predicate<Bounded> screenMapFilter;
+            screenMapFilter = new ScreenMapPredicate(screenMap);
+            preFilter = Predicates.and(preFilter, screenMapFilter);
         }
-        return predicate;
+        return preFilter;
     }
 
     private List<String> resolveFidFilter(Filter filter) {

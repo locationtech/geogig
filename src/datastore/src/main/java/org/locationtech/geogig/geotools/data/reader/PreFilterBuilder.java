@@ -14,7 +14,6 @@ import static org.opengis.filter.Filter.INCLUDE;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 
 import org.geotools.factory.CommonFactoryFinder;

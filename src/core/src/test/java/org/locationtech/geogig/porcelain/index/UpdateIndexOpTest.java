@@ -394,4 +394,30 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
                 .setAttributeName("geom")//
                 .call();
     }
+
+    @Test
+    public void testEqualIndexesWithDifferentExtraAttributesHashDifferently() {
+        Index noExtraAtts = createAndBuildIndex();
+        Index xExtraAtts = createAndBuildIndex("x");
+        Index yExtraAtts = createAndBuildIndex("y");
+        assertNotEquals(noExtraAtts, xExtraAtts);
+        assertNotEquals(xExtraAtts, yExtraAtts);
+
+        assertNotEquals(noExtraAtts.indexTreeId(), xExtraAtts.indexTreeId());
+        assertNotEquals(xExtraAtts.indexTreeId(), yExtraAtts.indexTreeId());
+    }
+
+    private Index createAndBuildIndex(@Nullable String... extraAttributes) {
+        IndexInfo indexInfo = createIndex(extraAttributes);
+        List<String> extraAtts = null;
+        if (extraAttributes != null) {
+            extraAtts = Lists.newArrayList(extraAttributes);
+        }
+        Index index = geogig.command(UpdateIndexOp.class)//
+                .setAdd(true)//
+                .setTreeRefSpec(indexInfo.getTreeName())//
+                .setExtraAttributes(extraAtts)//
+                .call();
+        return index;
+    }
 }

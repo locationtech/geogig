@@ -152,10 +152,8 @@ class MaterializedBuilderConsumer extends AbstractConsumer {
                 atts.put(attName, value.orNull());
             });
 
-            Map<String, Object> extraData = node.getExtraData();
-            if (extraData == null) {
-                extraData = new HashMap<>();
-            }
+            Map<String, Object> extraData = new HashMap<>(node.getExtraData());
+
             extraData.put(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA, atts);
 
             String name = node.getName();

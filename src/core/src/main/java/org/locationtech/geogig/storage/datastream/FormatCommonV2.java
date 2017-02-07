@@ -505,14 +505,12 @@ public class FormatCommonV2 {
             boundsMask = BOUNDS_BOX2D_MASK;
         }
 
-        @Nullable
         final Map<String, Object> extraData = node.getExtraData();
 
         metadataMask = node.getMetadataId().isPresent() ? METADATA_PRESENT_MASK
                 : METADATA_ABSENT_MASK;
 
-        extraDataMask = extraData == null || extraData.isEmpty() ? EXTRA_DATA_ABSENT_MASK
-                : EXTRA_DATA_PRESENT_MASK;
+        extraDataMask = extraData.isEmpty() ? EXTRA_DATA_ABSENT_MASK : EXTRA_DATA_PRESENT_MASK;
 
         // encode type and bounds mask together
         final int typeAndMasks = nodeType | boundsMask | metadataMask | extraDataMask;

@@ -141,6 +141,10 @@ final class PreFilterBuilder implements FilterVisitor {
         List<Filter> children = filter.getChildren();
         List<Filter> pre = new ArrayList<>(children.size());
         children.forEach((f) -> pre.add((Filter) f.accept(this, extraData)));
+        if (children.contains(Filter.INCLUDE)) {
+            // if any filter isn't fully supported, we need to short-circuit to INCLUDE
+            return Filter.INCLUDE;
+        }
         return ff.or(pre);
     }
 

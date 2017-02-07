@@ -11,13 +11,14 @@ package org.locationtech.geogig.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -27,6 +28,14 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 1.0
  */
 public abstract class Node implements Bounded, Comparable<Node> {
+
+    /**
+     * "null object" used to shadow {@code null} values in {@link #getExtraData()}
+     * 
+     * @see #shadowNullValues
+     * @see #convertNullObjectValueToNull
+     */
+    private static final Object NULL_VALUE = new Object();
 
     /**
      * The name of the element
@@ -44,7 +53,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
      */
     private ObjectId objectId;
 
-    private Map<String, Object> extraData;
+    private ImmutableMap<String, Object> extraData;
 
     private Node(final String name, final ObjectId oid, final ObjectId metadataId,
             Map<String, Object> extraData) {
@@ -54,7 +63,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
         this.name = name;
         this.objectId = oid;
         this.metadataId = metadataId.isNull() ? null : metadataId;
-        this.extraData = extraData == null ? null : new HashMap<>(extraData);
+        this.extraData = shadowNullValues(extraData);
     }
 
     public Node update(final ObjectId newId) {
@@ -321,12 +330,37 @@ public abstract class Node implements Bounded, Comparable<Node> {
         }
     }
 
-    @Nullable
+    /**
+     * Returns the extra data stored with this node, which shall be considered immutable, regardless
+     * of the concrete Map implementation returned.
+     * <p>
+     * Changes to the returned map, if it's not immutable, will not affect the internal state of the
+     * node.
+     * <p>
+     * The returned map may contain {@code null} values, but not {@code null} key.
+     * 
+     * @return a non-null, possibly empty <b> copy </b> of this node's extra data map
+     */
     public Map<String, Object> getExtraData() {
-        return extraData;
+        return convertNullObjectValueToNull(extraData);
     }
 
-    public void setExtraData(@Nullable Map<String, Object> extraData) {
-        this.extraData = extraData;
+    private Map<String, Object> convertNullObjectValueToNull(
+            ImmutableMap<String, Object> extraData) {
+        return Maps.transformValues(extraData, (v) -> v == NULL_VALUE ? null : v);
+    }
+
+    /**
+     * {@link ImmutableMap} does not allow {@code null} keys nor values, this method replaces any
+     * {@code null} value by a "null object", wich shall be unmasked by
+     * {@link #convertNullObjectValueToNull} by {@link #getExtraData()}
+     */
+    private ImmutableMap<String, Object> shadowNullValues(@Nullable Map<String, Object> original) {
+        if (null == original || original.isEmpty()) {
+            return ImmutableMap.of();
+        }
+        Map<String, Object> nullsMasked = Maps.transformValues(original,
+                (v) -> v == null ? NULL_VALUE : v);
+        return ImmutableMap.copyOf(nullsMasked);
     }
 }

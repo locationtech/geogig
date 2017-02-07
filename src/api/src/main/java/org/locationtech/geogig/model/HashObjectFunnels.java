@@ -300,6 +300,12 @@ public class HashObjectFunnels {
             StringFunnel.funnel((CharSequence) ref.getName(), into);
             ObjectIdFunnel.funnel(ref.getObjectId(), into);
             ObjectIdFunnel.funnel(ref.getMetadataId().or(ObjectId.NULL), into);
+            Map<String, Object> extraData = ref.getExtraData();
+            // consider extraData only if it's not empty to maintain backwards compatibility with
+            // Geogig pre 1.1
+            if (!extraData.isEmpty()) {
+                PropertyValueFunnel.funnel(extraData, into);
+            }
         }
     };
 

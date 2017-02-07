@@ -238,18 +238,6 @@ public class NodeTest {
     }
 
     @Test
-    public void testSetExtraData() {
-        Node node = Node.tree("Points",
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL);
-        assertEquals(null, node.getExtraData());
-        Map<String, Object> extraData = new HashMap<String, Object>();
-        extraData.put("key", "value");
-        node.setExtraData(extraData);
-
-        assertEquals(extraData, node.getExtraData());
-    }
-
-    @Test
     public void testHashCode() {
         Node node = Node.create("Points.1",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,

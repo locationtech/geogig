@@ -110,9 +110,6 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
             return BoundedSimpleFeature.empty(featureType, node.getNode(), crs);
 
         } else {
-            final Map<String, Object> extraData = node.getNode().getExtraData();
-            checkNotNull(extraData);
-
             final Map<String, Object> materializedAttributes;
             materializedAttributes = IndexInfo.getMaterializedAttributes(node.getNode());
             checkNotNull(materializedAttributes);

@@ -21,7 +21,6 @@ Feature: "index create" command
       And the response should not contain "Size: 2"
       And the response should contain the index ID for tree "Points"
 
-
   Scenario: Try to create an index on a nonexistent tree
     Given I have a repository
       And I have several commits
@@ -54,11 +53,7 @@ Feature: "index create" command
       And I have several commits
      When I run the command "index create --tree"
      Then the response should contain "Expected a value after parameter"
-
-  Scenario: Try to create an index with an empty attribute param
-    Given I have a repository
-      And I have several commits
-
+     
   Scenario: Try to create a full history index on an empty repository
     Given I have a repository
      When I run the command "index create --tree Points"

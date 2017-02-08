@@ -34,26 +34,47 @@ public class CreateIndexInfoOp extends AbstractGeoGigOp<IndexInfo> {
 
     private @Nullable Map<String, Object> metadata;
 
+    /**
+     * @param treeName the name of the tree to be indexed
+     * @return {@code this}
+     */
     public CreateIndexInfoOp setTreeName(String treeName) {
         this.treeName = treeName;
         return this;
     }
 
+    /**
+     * @param attributeName the name of the attribute to be indexed
+     * @return {@code this}
+     */
     public CreateIndexInfoOp setAttributeName(String attributeName) {
         this.attributeName = attributeName;
         return this;
     }
 
+    /**
+     * @param indexType the type of index to create
+     * @return {@code this}
+     */
     public CreateIndexInfoOp setIndexType(IndexType indexType) {
         this.indexType = indexType;
         return this;
     }
 
+    /**
+     * @param metadata extra information that may be used by the index
+     * @return {code this}
+     */
     public CreateIndexInfoOp setMetadata(@Nullable Map<String, Object> metadata) {
         this.metadata = metadata != null ? new HashMap<>(metadata) : null;
         return this;
     };
 
+    /**
+     * Performs the operation.
+     * 
+     * @return the newly constructed {@link IndexInfo}
+     */
     @Override
     protected IndexInfo _call() {
         IndexDatabase indexDatabase = indexDatabase();

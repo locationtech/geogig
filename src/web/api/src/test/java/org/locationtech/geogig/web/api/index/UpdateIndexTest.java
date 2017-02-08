@@ -213,7 +213,7 @@ public class UpdateIndexTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("treeRefSpec", "Points", "extraAttributes", "ip");
 
         ex.expect(IllegalStateException.class);
-        ex.expectMessage("A matching index could not be found to update.");
+        ex.expectMessage("No indexes could be found for the specified tree.");
         buildCommand(options).run(testContext.get());
     }
 
@@ -230,8 +230,8 @@ public class UpdateIndexTest extends AbstractWebOpTest {
         ParameterSet options = TestParams.of("treeRefSpec", "Points", "geometryAttributeName", "sp",
                 "extraAttributes", "ip");
 
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("property sp is not a geometry attribute");
+        ex.expect(IllegalStateException.class);
+        ex.expectMessage("A matching index could not be found.");
         buildCommand(options).run(testContext.get());
     }
 

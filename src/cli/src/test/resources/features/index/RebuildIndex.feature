@@ -16,7 +16,7 @@ Feature: "index rebuild" command
     Given I have a repository
       And I have several commits
       And I run the command "index rebuild --tree Points"
-     Then the response should contain "a matching index could not be found"
+     Then the response should contain "No indexes could be found for the specified tree."
 
   Scenario: I rebuild the index for an attribute on a tree
     Given I have a repository
@@ -33,7 +33,7 @@ Feature: "index rebuild" command
       And I run the command "index create --tree Points"
      Then the response should contain "Index created successfully"
      When I run the command "index rebuild --tree Points -a fakeAttrib"
-     Then the response should contain "property fakeAttrib does not exist"
+     Then the response should contain "A matching index could not be found."
 
   Scenario: I try to rebuild the index for an attribute on a non-existent tree
     Given I have a repository
@@ -63,9 +63,3 @@ Feature: "index rebuild" command
     Given I have a repository
      When I run the command "index rebuild --tree Points"
      Then the response should contain "Can't find feature tree"
-
-  Scenario: I try to rebuild the index when there are no indexes
-    Given I have a repository
-      And I have several commits
-     When I run the command "index rebuild --tree Points"
-     Then the response should contain "a matching index could not be found"

@@ -28,6 +28,7 @@ public class PGObjectDatabaseStressTest extends AbstractObjectStoreStressTest {
     protected ObjectDatabase createDb(Platform platform, ConfigDatabase configDb) {
 
         Environment config = testConfig.getEnvironment();
+
         PGStorage.createNewRepo(config);
         PGObjectDatabase db = new PGObjectDatabase(configDb, config, false);
         return db;

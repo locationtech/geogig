@@ -136,7 +136,7 @@ public abstract class AbstractObjectStoreStressTest {
         testPutAll(5000_000);
     }
 
-    // @Ignore
+    @Ignore
     @Test
     public void test06_PutAll_10M() throws Exception {
         testPutAll(10_000_000);
@@ -194,8 +194,8 @@ public abstract class AbstractObjectStoreStressTest {
 
         final int queryCount = count / 10;
 
-        testGettIfPresent(count, queryCount);
-
+//        testGettIfPresent(count, queryCount);
+//
         MemoryUsage getIfPresentTraversedMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
 
         Iterable<ObjectId> ids = randomIds(queryCount, count);

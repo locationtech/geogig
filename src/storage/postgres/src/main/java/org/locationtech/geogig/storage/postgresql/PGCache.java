@@ -17,8 +17,6 @@ import com.google.common.collect.ImmutableMap;
 
 public class PGCache {
 
-    private static ExecutorService writerExecutor = Executors.newSingleThreadExecutor();
-
     private static Weigher<ObjectId, byte[]> weigher = new Weigher<ObjectId, byte[]>() {
 
         private final int ESTIMATED_OBJECTID_SIZE = 8 + ObjectId.NUM_BYTES;
@@ -56,7 +54,7 @@ public class PGCache {
     private static long defaultCacheSize() {
         final long maxMemory = Runtime.getRuntime().maxMemory();
         // Use 20% of the heap by default
-        return (long) (maxMemory * 0.2);
+        return (long) (maxMemory * 0.5);
     }
 
     private Cache<ObjectId, byte[]> cache;
@@ -82,7 +80,7 @@ public class PGCache {
     }
 
     public void put(ObjectId id, byte[] bytes) {
-        writerExecutor.submit(() -> map.putIfAbsent(id, bytes));
+        map.putIfAbsent(id, bytes);
     }
 
     public byte[] getIfPresent(ObjectId id) {
@@ -94,6 +92,6 @@ public class PGCache {
     }
 
     public String toString() {
-        return cache.stats().toString();
+        return String.format("Size: %,d, %s", cache.size(), cache.stats());
     }
 }

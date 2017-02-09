@@ -79,6 +79,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -191,6 +192,11 @@ public class PGObjectStore implements ObjectStore {
         ObjectStoreSharedResources.release(connectionConfig, prefix);
         executor = null;
         sharedCache = null;
+    }
+
+    @VisibleForTesting
+    public PGCache getCache() {
+        return sharedCache;
     }
 
     @VisibleForTesting
@@ -801,50 +807,38 @@ public class PGObjectStore implements ObjectStore {
 
         private final PGObjectStore objectStore;
 
-        private final Iterator<List<EncodedObject>> objects;
+        private List<EncodedObject> batch;
 
-        private final AtomicBoolean eofFlag;
-
-        public InsertDbOp(DataSource ds, AtomicBoolean abortFlag, AtomicBoolean eofFlag,
-                Iterator<List<EncodedObject>> queue, BulkOpListener listener,
-                PGObjectStore objectStore) {
+        public InsertDbOp(DataSource ds, AtomicBoolean abortFlag, List<EncodedObject> batch,
+                BulkOpListener listener, PGObjectStore objectStore) {
             this.ds = ds;
             this.abortFlag = abortFlag;
-            this.eofFlag = eofFlag;
-            this.objects = queue;
+            this.batch = batch;
             this.listener = listener;
             this.objectStore = objectStore;
         }
 
         @Override
         public Void call() {
-            while (!abortFlag.get() && !eofFlag.get()) {
-                final List<EncodedObject> partition;
-                synchronized (objects) {
-                    if (objects.hasNext()) {
-                        partition = objects.next();
+            if (abortFlag.get()) {
+                return null;
+            }
+            try (Connection cx = PGStorage.newConnection(ds)) {
+                cx.setAutoCommit(false);
+                try {
+                    doInsert(cx, batch);
+                    if (abortFlag.get()) {
+                        cx.rollback();
                     } else {
-                        eofFlag.set(true);
-                        return null;
+                        cx.commit();
                     }
+                } catch (Exception executionEx) {
+                    rollbackAndRethrow(cx, executionEx);
+                } finally {
+                    cx.setAutoCommit(true);
                 }
-                try (Connection cx = PGStorage.newConnection(ds)) {
-                    cx.setAutoCommit(false);
-                    try {
-                        doInsert(cx, partition);
-                        if (abortFlag.get()) {
-                            cx.rollback();
-                        } else {
-                            cx.commit();
-                        }
-                    } catch (Exception executionEx) {
-                        rollbackAndRethrow(cx, executionEx);
-                    } finally {
-                        cx.setAutoCommit(true);
-                    }
-                } catch (Exception connectEx) {
-                    abortFlag.set(true);
-                }
+            } catch (Exception connectEx) {
+                abortFlag.set(true);
             }
             return null;
         }
@@ -924,6 +918,8 @@ public class PGObjectStore implements ObjectStore {
 
         Iterator<EncodedObject> encoded;
         {
+            // let the RevObjects be encoded in several threads and then joint on a single iterator
+            // of EncodedObject
             final int characteristics = IMMUTABLE | NONNULL | DISTINCT;
 
             Spliterator<? extends RevObject> spliterator = Spliterators
@@ -936,26 +932,37 @@ public class PGObjectStore implements ObjectStore {
 
         final int maxTasks = Math.min(Runtime.getRuntime().availableProcessors(), threadPoolSize);
 
+        // Insert in batches of putAllBatchSize.
+        // Using several connections for the insert really boosts performance, yet we need to share
+        // the connection pool with other calling threads and make sure a really large insert
+        // doesn't preclude other threads from inserting (by holding the connections for too long or
+        // saturating the I/O thread pool), so each batch is inserted by a single
+        // InsertDbOp
         final Iterator<List<EncodedObject>> partitions;
         partitions = Iterators.partition(encoded, putAllBatchSize);
 
-        AtomicBoolean abortFlag = new AtomicBoolean();
-        AtomicBoolean eofFlag = new AtomicBoolean();
-
-        List<Future<Void>> tasks = new ArrayList<>(maxTasks);
-        for (int i = 0; i < maxTasks; i++) {
-            InsertDbOp task;
-            task = new InsertDbOp(dataSource, abortFlag, eofFlag, partitions, listener, this);
-            tasks.add(executor.submit(task));
-        }
-
-        try {
-            for (Future<Void> f : tasks) {
-                f.get();
+        final AtomicBoolean abortFlag = new AtomicBoolean();
+        while (partitions.hasNext() && !abortFlag.get()) {
+            List<InsertDbOp> tasks = new ArrayList<>(maxTasks);
+            for (int i = 0; i < maxTasks && partitions.hasNext() && !abortFlag.get(); i++) {
+                List<EncodedObject> batch = partitions.next();
+                InsertDbOp task = new InsertDbOp(dataSource, abortFlag, batch, listener, this);
+                tasks.add(task);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw propagate(e);
+            try {
+                List<Future<Void>> results = executor.invokeAll(tasks);
+                if (abortFlag.get()) {
+                    try {
+                        for (Future<Void> r : results) {
+                            r.get();
+                        }
+                    } catch (ExecutionException e) {
+                        throw Throwables.propagate(e);
+                    }
+                }
+            } catch (InterruptedException e) {
+                throw Throwables.propagate(e);
+            }
         }
     }
 

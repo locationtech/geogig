@@ -14,6 +14,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Throwables.propagate;
 import static java.lang.String.format;
+import static java.util.Spliterator.DISTINCT;
+import static java.util.Spliterator.IMMUTABLE;
+import static java.util.Spliterator.NONNULL;
 import static org.locationtech.geogig.storage.postgresql.Environment.KEY_GETALL_BATCH_SIZE;
 import static org.locationtech.geogig.storage.postgresql.Environment.KEY_PUTALL_BATCH_SIZE;
 import static org.locationtech.geogig.storage.postgresql.Environment.KEY_THREADPOOL_SIZE;
@@ -36,8 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -48,6 +51,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.StreamSupport;
 
 import javax.sql.DataSource;
 
@@ -75,9 +79,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.Weigher;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -112,7 +113,7 @@ public class PGObjectStore implements ObjectStore {
 
     private ExecutorService executor = null;
 
-    private Cache<ObjectId, byte[]> byteCache = null;
+    private PGCache sharedCache = null;
 
     private int threadPoolSize = 2;
 
@@ -166,7 +167,7 @@ public class PGObjectStore implements ObjectStore {
         final ConnectionConfig connectionConfig = config.connectionConfig;
         ObjectStoreSharedResources.retain(configdb, connectionConfig, prefix);
         executor = ObjectStoreSharedResources.getExecutor(connectionConfig, prefix);
-        byteCache = ObjectStoreSharedResources.getByteCache(connectionConfig, prefix);
+        sharedCache = ObjectStoreSharedResources.getByteCache(connectionConfig, prefix);
         threadPoolSize = ObjectStoreSharedResources.getThreadPoolSize(connectionConfig, prefix);
         threadGroup = ObjectStoreSharedResources.getThreadGroup(connectionConfig, prefix);
     }
@@ -189,7 +190,7 @@ public class PGObjectStore implements ObjectStore {
         final ConnectionConfig connectionConfig = config.connectionConfig;
         ObjectStoreSharedResources.release(connectionConfig, prefix);
         executor = null;
-        byteCache = null;
+        sharedCache = null;
     }
 
     @VisibleForTesting
@@ -206,7 +207,7 @@ public class PGObjectStore implements ObjectStore {
         checkNotNull(id, "argument id is null");
         checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
-        if (byteCache.getIfPresent(id) != null) {
+        if (sharedCache.contains(id)) {
             return true;
         }
         final String sql = format(
@@ -380,7 +381,7 @@ public class PGObjectStore implements ObjectStore {
         final Set<ObjectId> queryIds = ids instanceof Set ? (Set<ObjectId>) ids
                 : Sets.newHashSet(ids);
 
-        ImmutableMap<ObjectId, byte[]> cached = byteCache.getAllPresent(queryIds);
+        ImmutableMap<ObjectId, byte[]> cached = sharedCache.getAllPresent(queryIds);
 
         Iterator<T> hits = Collections.emptyIterator();
         Iterator<T> stream = Collections.emptyIterator();
@@ -585,7 +586,7 @@ public class PGObjectStore implements ObjectStore {
     @Nullable
     private RevObject getIfPresent(final ObjectId id, final @Nullable RevObject.TYPE type,
             DataSource ds) {
-        byte[] cached = byteCache.getIfPresent(id);
+        byte[] cached = sharedCache.getIfPresent(id);
         if (cached != null) {
             return encoder.read(id, cached, 0, cached.length);
         }
@@ -624,10 +625,7 @@ public class PGObjectStore implements ObjectStore {
         }
 
         RevObject obj = encoder.read(id, bytes, 0, bytes.length);
-        // Only cache tree objects
-        if (obj.getType().equals(TYPE.TREE)) {
-            byteCache.put(id, bytes);
-        }
+        sharedCache.put(id, bytes);
         return obj;
     }
 
@@ -658,18 +656,21 @@ public class PGObjectStore implements ObjectStore {
 
         private final PGObjectStore db;
 
-        private final Cache<ObjectId, byte[]> byteCache;
+        private final PGCache sharedCache;
 
         @Nullable
         private final TYPE type;
+
+        private final boolean notify;
 
         public GetAllOp(Set<ObjectId> ids, BulkOpListener listener, PGObjectStore db,
                 @Nullable TYPE type) {
             this.queryIds = ids;
             this.callback = listener;
+            this.notify = !BulkOpListener.NOOP_LISTENER.equals(listener);
             this.db = db;
             this.type = type;
-            this.byteCache = db.byteCache;
+            this.sharedCache = db.sharedCache;
         }
 
         @Override
@@ -713,10 +714,12 @@ public class PGObjectStore implements ObjectStore {
 
                                     RevObject obj = encoder.read(id, bytes, 0, bytes.length);
                                     if (type == null || type.equals(obj.getType())) {
-                                        queryIds.remove(id);
-                                        callback.found(id, Integer.valueOf(bytes.length));
+                                        if (notify) {
+                                            queryIds.remove(id);
+                                            callback.found(id, Integer.valueOf(bytes.length));
+                                        }
                                         found.add(obj);
-                                        byteCache.put(id, bytes);
+                                        sharedCache.put(id, bytes);
                                     }
                                 }
                             }
@@ -730,8 +733,10 @@ public class PGObjectStore implements ObjectStore {
                     }
                 }
             }
-            for (ObjectId oid : queryIds) {
-                callback.notFound(oid);
+            if (notify) {
+                for (ObjectId oid : queryIds) {
+                    callback.notFound(oid);
+                }
             }
             return found;
         }
@@ -765,7 +770,7 @@ public class PGObjectStore implements ObjectStore {
             try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG, id))) {
                 PGId.valueOf(id).setArgs(stmt, 1);
                 stmt.executeUpdate();
-                byteCache.invalidate(id);
+                sharedCache.invalidate(id);
             }
         } catch (SQLException e) {
             throw propagate(e);
@@ -796,12 +801,12 @@ public class PGObjectStore implements ObjectStore {
 
         private final PGObjectStore objectStore;
 
-        private final BlockingQueue<List<EncodedObject>> objects;
+        private final Iterator<List<EncodedObject>> objects;
 
         private final AtomicBoolean eofFlag;
 
         public InsertDbOp(DataSource ds, AtomicBoolean abortFlag, AtomicBoolean eofFlag,
-                BlockingQueue<List<EncodedObject>> queue, BulkOpListener listener,
+                Iterator<List<EncodedObject>> queue, BulkOpListener listener,
                 PGObjectStore objectStore) {
             this.ds = ds;
             this.abortFlag = abortFlag;
@@ -813,77 +818,73 @@ public class PGObjectStore implements ObjectStore {
 
         @Override
         public Void call() {
-            try (Connection cx = PGStorage.newConnection(ds)) {
-                cx.setAutoCommit(false);
-                try {
-                    doInsert(cx);
-                    if (abortFlag.get()) {
-                        cx.rollback();
+            while (!abortFlag.get() && !eofFlag.get()) {
+                final List<EncodedObject> partition;
+                synchronized (objects) {
+                    if (objects.hasNext()) {
+                        partition = objects.next();
                     } else {
-                        cx.commit();
+                        eofFlag.set(true);
+                        return null;
                     }
-                } catch (Exception executionEx) {
-                    rollbackAndRethrow(cx, executionEx);
-                } finally {
-                    cx.setAutoCommit(true);
                 }
-            } catch (Exception connectEx) {
-                abortFlag.set(true);
+                try (Connection cx = PGStorage.newConnection(ds)) {
+                    cx.setAutoCommit(false);
+                    try {
+                        doInsert(cx, partition);
+                        if (abortFlag.get()) {
+                            cx.rollback();
+                        } else {
+                            cx.commit();
+                        }
+                    } catch (Exception executionEx) {
+                        rollbackAndRethrow(cx, executionEx);
+                    } finally {
+                        cx.setAutoCommit(true);
+                    }
+                } catch (Exception connectEx) {
+                    abortFlag.set(true);
+                }
             }
             return null;
         }
 
-        private void doInsert(Connection cx) throws Exception {
+        private void doInsert(Connection cx, List<EncodedObject> partition) throws Exception {
             Map<String, PreparedStatement> perTableStatements = new HashMap<>();
             ArrayListMultimap<String, ObjectId> perTableIds = ArrayListMultimap.create();
 
-            while (true) {
-                List<EncodedObject> partition = null;
-                while (null == (partition = objects.poll(50, TimeUnit.MILLISECONDS))) {
-                    if (abortFlag.get() || eofFlag.get()) {
-                        break;
-                    }
-                    Thread.yield();
+            // partition the objects into chunks for batch processing
+            for (Iterator<EncodedObject> it = partition.iterator(); it.hasNext()
+                    && !abortFlag.get();) {
+                EncodedObject obj = it.next();
+                final TYPE type = obj.type;
+                final ObjectId id = obj.id;
+                final PGId pgid = PGId.valueOf(id);
+                final byte[] bytes = obj.serialized;
+                {
+                    final String tableName = objectStore.tableNameForType(type, pgid);
+                    perTableIds.put(tableName, id);
+
+                    PreparedStatement stmt = prepare(cx, tableName, perTableStatements);
+                    pgid.setArgs(stmt, 1);
+                    stmt.setBytes(4, bytes);
+                    stmt.addBatch();
                 }
-                if (abortFlag.get() || partition == null) {
-                    break;
+            }
+
+            for (String tableName : new HashSet<String>(perTableIds.keySet())) {
+                if (abortFlag.get()) {
+                    return;
                 }
+                PreparedStatement tableStatement;
+                tableStatement = perTableStatements.get(tableName);
+                List<ObjectId> ids = perTableIds.removeAll(tableName);
+                int[] batchResults = tableStatement.executeBatch();
+                tableStatement.clearParameters();
+                tableStatement.clearBatch();
 
-                // partition the objects into chunks for batch processing
-                for (EncodedObject obj : partition) {
-                    if (abortFlag.get()) {
-                        break;
-                    }
-                    final TYPE type = obj.type;
-                    final ObjectId id = obj.id;
-                    final PGId pgid = PGId.valueOf(id);
-                    final byte[] bytes = obj.serialized;
-                    {
-                        final String tableName = objectStore.tableNameForType(type, pgid);
-                        perTableIds.put(tableName, id);
-
-                        PreparedStatement stmt = prepare(cx, tableName, perTableStatements);
-                        pgid.setArgs(stmt, 1);
-                        stmt.setBytes(4, bytes);
-                        stmt.addBatch();
-                    }
-                }
-
-                for (String tableName : new HashSet<String>(perTableIds.keySet())) {
-                    if (abortFlag.get()) {
-                        break;
-                    }
-                    PreparedStatement tableStatement;
-                    tableStatement = perTableStatements.get(tableName);
-                    List<ObjectId> ids = perTableIds.removeAll(tableName);
-                    int[] batchResults = tableStatement.executeBatch();
-                    tableStatement.clearParameters();
-                    tableStatement.clearBatch();
-
-                    notifyInserted(batchResults, ids, listener);
-                }
-
-            } // while
+                notifyInserted(batchResults, ids, listener);
+            }
 
             for (PreparedStatement tableStatement : perTableStatements.values()) {
                 tableStatement.close();
@@ -904,6 +905,13 @@ public class PGObjectStore implements ObjectStore {
 
     }
 
+    private EncodedObject encode(RevObject o) {
+        ObjectId id = o.getId();
+        TYPE type = o.getType();
+        byte[] serialized = encoder.encode(o);
+        return new EncodedObject(id, type, serialized);
+    }
+
     /**
      * Override to optimize batch insert.
      */
@@ -914,54 +922,32 @@ public class PGObjectStore implements ObjectStore {
         checkWritable();
         config.checkRepositoryExists();
 
-        final int maxTasks = Math.max(1,
-                Math.min(Runtime.getRuntime().availableProcessors(), threadPoolSize) / 2);
+        Iterator<EncodedObject> encoded;
+        {
+            final int characteristics = IMMUTABLE | NONNULL | DISTINCT;
 
-        final Iterator<List<EncodedObject>> encoded = Iterators.partition(Iterators.transform(
-                objects,
-                (obj) -> new EncodedObject(obj.getId(), obj.getType(), encoder.encode(obj))),
-                putAllBatchSize);
+            Spliterator<? extends RevObject> spliterator = Spliterators
+                    .spliteratorUnknownSize(objects, characteristics);
 
-        final BlockingQueue<List<EncodedObject>> queue = new ArrayBlockingQueue<>(2 + maxTasks);
-
-        int numTasks = 0;
-        for (int i = 0; i < maxTasks; i++) {
-            if (encoded.hasNext()) {
-                queue.add(encoded.next());
-                numTasks++;
-            }
+            final boolean parallel = true;
+            encoded = StreamSupport.stream(spliterator, parallel).map((obj) -> encode(obj))
+                    .iterator();
         }
-        if (numTasks == 0) {
-            return;
-        }
-        LOG.debug("putAll(): inserting using {} threads", numTasks);
+
+        final int maxTasks = Math.min(Runtime.getRuntime().availableProcessors(), threadPoolSize);
+
+        final Iterator<List<EncodedObject>> partitions;
+        partitions = Iterators.partition(encoded, putAllBatchSize);
 
         AtomicBoolean abortFlag = new AtomicBoolean();
         AtomicBoolean eofFlag = new AtomicBoolean();
 
-        List<Future<Void>> tasks = new ArrayList<>(numTasks);
-        for (int i = 0; i < numTasks; i++) {
-            InsertDbOp task = new InsertDbOp(dataSource, abortFlag, eofFlag, queue, listener,
-                    this);
+        List<Future<Void>> tasks = new ArrayList<>(maxTasks);
+        for (int i = 0; i < maxTasks; i++) {
+            InsertDbOp task;
+            task = new InsertDbOp(dataSource, abortFlag, eofFlag, partitions, listener, this);
             tasks.add(executor.submit(task));
         }
-
-        while (!abortFlag.get() && encoded.hasNext()) {
-            List<EncodedObject> encodedPartition = encoded.next();
-            try {
-                while (!queue.offer(encodedPartition, 50, TimeUnit.MILLISECONDS)) {
-                    if (abortFlag.get()) {
-                        return;
-                    }
-                }
-            } catch (InterruptedException e) {
-                abortFlag.set(true);
-                e.printStackTrace();
-                return;
-            }
-        }
-
-        eofFlag.set(true);
 
         try {
             for (Future<Void> f : tasks) {
@@ -1048,7 +1034,7 @@ public class PGObjectStore implements ObjectStore {
         long count = 0;
         for (int i = 0; i < deleted.length; i++) {
             ObjectId id = ids.get(i);
-            byteCache.invalidate(id);
+            sharedCache.invalidate(id);
             if (deleted[i] > 0) {
                 count++;
                 listener.deleted(id);
@@ -1114,7 +1100,7 @@ public class PGObjectStore implements ObjectStore {
         private static class SharedResourceReference {
             final ExecutorService executor;
 
-            final Cache<ObjectId, byte[]> byteCache;
+            final PGCache sharedCache;
 
             final int threadPoolSize;
 
@@ -1122,10 +1108,10 @@ public class PGObjectStore implements ObjectStore {
 
             int refCount = 1;
 
-            SharedResourceReference(Cache<ObjectId, byte[]> byteCache, ExecutorService executor,
+            SharedResourceReference(PGCache sharedCache, ExecutorService executor,
                     int threadPoolSize, ThreadGroup threadGroup) {
                 this.executor = executor;
-                this.byteCache = byteCache;
+                this.sharedCache = sharedCache;
                 this.threadPoolSize = threadPoolSize;
                 this.threadGroup = threadGroup;
             }
@@ -1158,7 +1144,7 @@ public class PGObjectStore implements ObjectStore {
                 };
                 ExecutorService databaseExecutor = createExecutorService(threadFactory, config,
                         threadPoolSize);
-                Cache<ObjectId, byte[]> byteCache = createCache(configdb);
+                PGCache byteCache = createCache(configdb);
                 ref = new SharedResourceReference(byteCache, databaseExecutor, threadPoolSize,
                         threadGroup);
                 sharedResources.put(key, ref);
@@ -1175,7 +1161,7 @@ public class PGObjectStore implements ObjectStore {
                 ref.refCount--;
                 if (ref.refCount == 0) {
                     ref.executor.shutdownNow();
-                    ref.byteCache.cleanUp();
+                    ref.sharedCache.dispose();
                     sharedResources.remove(key);
                 }
             }
@@ -1193,10 +1179,10 @@ public class PGObjectStore implements ObjectStore {
             return sharedResources.get(key).threadGroup;
         }
 
-        public static Cache<ObjectId, byte[]> getByteCache(
-                final Environment.ConnectionConfig config, final String tableNamesPrefix) {
+        public static PGCache getByteCache(final Environment.ConnectionConfig config,
+                final String tableNamesPrefix) {
             final Key key = new Key(config, tableNamesPrefix);
-            return sharedResources.get(key).byteCache;
+            return sharedResources.get(key).sharedCache;
         }
 
         public static int getThreadPoolSize(Environment.ConnectionConfig config,
@@ -1205,35 +1191,8 @@ public class PGObjectStore implements ObjectStore {
             return sharedResources.get(key).threadPoolSize;
         }
 
-        private static Cache<ObjectId, byte[]> createCache(ConfigDatabase configdb) {
-            Optional<Long> maxSize = configdb.get(Environment.KEY_ODB_BYTE_CACHE_MAX_SIZE,
-                    Long.class);
-            Optional<Integer> concurrencyLevel = configdb
-                    .get(Environment.KEY_ODB_BYTE_CACHE_CONCURRENCY_LEVEL, Integer.class);
-            Optional<Integer> expireSeconds = configdb
-                    .get(Environment.KEY_ODB_BYTE_CACHE_EXPIRE_SECONDS, Integer.class);
-            Optional<Integer> initialCapacity = configdb
-                    .get(Environment.KEY_ODB_BYTE_CACHE_INITIAL_CAPACITY, Integer.class);
-
-            CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-            Long maxWeightBytes = maxSize.or(defaultCacheSize());
-            cacheBuilder = cacheBuilder.maximumWeight(maxWeightBytes);
-            cacheBuilder.weigher(new Weigher<ObjectId, byte[]>() {
-
-                private final int ESTIMATED_OBJECTID_SIZE = 8 + ObjectId.NUM_BYTES;
-
-                @Override
-                public int weigh(ObjectId key, byte[] value) {
-                    return ESTIMATED_OBJECTID_SIZE + value.length;
-                }
-
-            });
-            cacheBuilder.expireAfterAccess(expireSeconds.or(300), TimeUnit.SECONDS);
-            cacheBuilder.initialCapacity(initialCapacity.or(100_000));
-            cacheBuilder.concurrencyLevel(concurrencyLevel.or(4));
-            cacheBuilder.softValues();
-            return cacheBuilder.build();
-
+        private static PGCache createCache(ConfigDatabase configdb) {
+            return PGCache.build(configdb);
         }
 
         private static ExecutorService createExecutorService(ThreadFactory threadFactory,
@@ -1244,13 +1203,6 @@ public class PGObjectStore implements ObjectStore {
                     new ThreadFactoryBuilder().setThreadFactory(threadFactory)
                             .setNameFormat(poolName).setDaemon(true).build());
         }
-
-        private static long defaultCacheSize() {
-            final long maxMemory = Runtime.getRuntime().maxMemory();
-            // Use 20% of the heap by default
-            return (long) (maxMemory * 0.2);
-        }
-
     }
 
 }

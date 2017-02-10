@@ -84,7 +84,10 @@ class GeogigFeatureSource extends ContentFeatureSource {
     @Override
     protected void addHints(Set<Hints.Key> hints) {
         hints.add(Hints.FEATURE_DETACHED);
-        hints.add(Hints.SCREENMAP);
+        // if the user turned off the screenmap, then don't advertise it (the renderer will do its own)
+        final boolean ignorescreenmap = Boolean.getBoolean("geogig.ignorescreenmap");
+        if (!ignorescreenmap)
+            hints.add(Hints.SCREENMAP);
         hints.add(Hints.JTS_GEOMETRY_FACTORY);
     }
 

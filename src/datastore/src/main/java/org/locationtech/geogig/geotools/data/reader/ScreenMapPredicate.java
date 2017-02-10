@@ -20,6 +20,8 @@ import org.opengis.referencing.operation.TransformException;
 import com.google.common.base.Predicate;
 import com.vividsolutions.jts.geom.Envelope;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * Filters out {@link Bounded} ({@link NodeRef node refs} and {@link Bucket buckets}) based on a
  * geotools {@link ScreenMap}
@@ -28,9 +30,9 @@ import com.vividsolutions.jts.geom.Envelope;
 class ScreenMapPredicate implements Predicate<Bounded> {
 
     static final class Stats {
-        private long skippedTrees, skippedBuckets, skippedFeatures;
+        private AtomicLong skippedTrees = new AtomicLong(), skippedBuckets = new AtomicLong(), skippedFeatures = new AtomicLong();
 
-        private long acceptedTrees, acceptedBuckets, acceptedFeatures;
+        private AtomicLong acceptedTrees = new AtomicLong(), acceptedBuckets = new AtomicLong(), acceptedFeatures = new AtomicLong();
 
         void add(final Bounded b, final boolean skip) {
             NodeRef n = b instanceof NodeRef ? (NodeRef) b : null;
@@ -38,22 +40,22 @@ class ScreenMapPredicate implements Predicate<Bounded> {
             if (skip) {
                 if (bucket == null) {
                     if (n.getType() == TYPE.FEATURE) {
-                        skippedFeatures++;
+                        skippedFeatures.incrementAndGet();
                     } else {
-                        skippedTrees++;
+                        skippedTrees.incrementAndGet();
                     }
                 } else {
-                    skippedBuckets++;
+                    skippedBuckets.incrementAndGet();
                 }
             } else {
                 if (bucket == null) {
                     if (n.getType() == TYPE.FEATURE) {
-                        acceptedFeatures++;
+                        acceptedFeatures.incrementAndGet();
                     } else {
-                        acceptedTrees++;
+                        acceptedTrees.incrementAndGet();
                     }
                 } else {
-                    acceptedBuckets++;
+                    acceptedBuckets.incrementAndGet();
                 }
             }
         }
@@ -69,12 +71,17 @@ class ScreenMapPredicate implements Predicate<Bounded> {
 
     private ScreenMap screenMap;
 
-    private Envelope envelope = new Envelope();
+    private boolean collectStats = false;
 
     private ScreenMapPredicate.Stats stats = new Stats();
 
-    public ScreenMapPredicate(ScreenMap screenMap) {
+    public ScreenMapPredicate(ScreenMap screenMap, boolean collectStats) {
         this.screenMap = screenMap;
+        this.collectStats = collectStats;
+    }
+
+    public ScreenMapPredicate(ScreenMap screenMap) {
+        this(screenMap, false);
     }
 
     public ScreenMapPredicate.Stats stats() {
@@ -86,23 +93,32 @@ class ScreenMapPredicate implements Predicate<Bounded> {
         if (b == null) {
             return false;
         }
-        envelope.setToNull();
+        Envelope envelope = new Envelope( );
+
         b.expand(envelope);
         if (envelope.isNull()) {
             return true;
         }
-        boolean skip;
-        try {
-            if (b instanceof NodeRef && ((NodeRef) b).getType() == TYPE.FEATURE) {
-                skip = screenMap.checkAndSet(envelope);
-            } else {
-                skip = screenMap.get(envelope);
+
+        boolean skip = false;
+        //canSimplify is thread-safe
+        if (screenMap.canSimplify(envelope)) {
+            //these aren't thread safe
+            synchronized (this) {
+                try {
+                    if (b instanceof NodeRef && ((NodeRef) b).getType() == TYPE.FEATURE) {
+                        skip = screenMap.checkAndSet(envelope);
+                    } else {
+                        skip = screenMap.get(envelope);
+                    }
+                } catch (TransformException e) {
+                    e.printStackTrace();
+                    return true;
+                }
             }
-        } catch (TransformException e) {
-            e.printStackTrace();
-            return true;
         }
-        stats.add(b, skip);
+        if (collectStats)
+            stats.add(b, skip);
         return !skip;
     }
 }

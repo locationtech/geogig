@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureReader;
@@ -35,11 +36,15 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.index.IndexUtils;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Geometry;
@@ -431,5 +436,85 @@ public class GeoGigDataStoreTest extends RepositoryTestCase {
             }
         }
         return list;
+    }
+
+    private Optional<IndexInfo> createOrUpdateIndexAndVerify(String layerName, String... extraAttributes) throws Exception {
+        Optional<ObjectId> createOrUpdateIndex = dataStore.createOrUpdateIndex(layerName, extraAttributes);
+        assertTrue("IndexInfo ObjectId should be present", createOrUpdateIndex.isPresent());
+        ObjectId id = createOrUpdateIndex.get();
+        Context resolveContext = dataStore.resolveContext(Transaction.AUTO_COMMIT);
+        List<IndexInfo> indexInfos = resolveContext.indexDatabase().getIndexInfos();
+        assertNotNull("No IndexInfo objects found", indexInfos);
+        assertEquals("Expected exactly 1 IndexInfo", 1, indexInfos.size());
+        IndexInfo index = indexInfos.get(0);
+        assertEquals("Unexpected ObjectID for IndexInfo", id, index.getId());
+        // verify the index contains all the extra Attributes
+        Set<String> materializedAttributeNames = IndexInfo.getMaterializedAttributeNames(index);
+        for (String attribute : extraAttributes) {
+            assertTrue("Index should have contained " + attribute, materializedAttributeNames.contains(attribute));
+        }
+        return Optional.of(index);
+    }
+
+    private void verifyExtraAttributes(IndexInfo index, String... extraAttributes) throws Exception {
+        Set<String> materializedAttributeNames = IndexInfo.getMaterializedAttributeNames(index);
+        if (extraAttributes.length > 0) {
+            assertFalse("There should be extra attributes for the Index", materializedAttributeNames.isEmpty());
+            for (String attr : extraAttributes) {
+                assertTrue("Attribute \"" + attr + "\" should be present in the Index",
+                        materializedAttributeNames.contains(attr));
+            }
+        }
+    }
+
+    @Test
+    public void testCreateOrUpdateIndex() throws Exception {
+        insertAndAdd(lines1);
+        commit();
+        IndexInfo createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[]{}).get();
+        ObjectId id = createOrUpdateIndex.getId();
+        // Index should not have any extra attributes
+        Set<String> materializedAttributeNames = IndexInfo.getMaterializedAttributeNames(createOrUpdateIndex);
+        assertTrue("There should be no extra attributes for the Index", materializedAttributeNames.isEmpty());
+
+        // now update the Index with a non-geometry attribute (sp)
+        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] {"sp"}).get();
+        // id should match the one we got when the Index was created above
+        ObjectId secondId = createOrUpdateIndex.getId();
+        assertEquals("Index does not match", id, secondId);
+        // Index should have a single "sp" extra attribute
+        verifyExtraAttributes(createOrUpdateIndex, new String[] {"sp"});
+
+        // now update the Index with the same "sp" attribute
+        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] {"sp"}).get();
+        // id should match the one we got when the Index was created above
+        ObjectId thirdId = createOrUpdateIndex.getId();
+        assertEquals("Index does not match", id, thirdId);
+        // Index should have a single "sp" extra attribute
+        verifyExtraAttributes(createOrUpdateIndex, new String[] {"sp"});
+
+        // update the Index with two attributes, "sp" and "ip"
+        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] {"sp", "ip"}).get();
+        // id should match the one we got when the Index was created above
+        ObjectId fourthId = createOrUpdateIndex.getId();
+        assertEquals("Index does not match", id, fourthId);
+        // Index should have a single "sp" extra attribute
+        verifyExtraAttributes(createOrUpdateIndex, new String[] {"ip", "sp"});
+
+        // now make sure a call with 1 attribute doesn't clear existing extra attributes
+        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] {"ip"}).get();
+        // id should match the one we got when the Index was created above
+        ObjectId fifthId = createOrUpdateIndex.getId();
+        assertEquals("Index does not match", id, fifthId);
+        // Index should have a single "sp" extra attribute
+        verifyExtraAttributes(createOrUpdateIndex, new String[] {"sp", "ip"});
+
+        // lastly, update the index with no extra attributes and make sure there are still 2
+        createOrUpdateIndex = createOrUpdateIndexAndVerify(linesName, new String[] {}).get();
+        // id should match the one we got when the Index was created above
+        ObjectId sixthId = createOrUpdateIndex.getId();
+        assertEquals("Index does not match", id, sixthId);
+        // Index should have a single "sp" extra attribute
+        verifyExtraAttributes(createOrUpdateIndex, new String[] {"ip", "sp"});
     }
 }

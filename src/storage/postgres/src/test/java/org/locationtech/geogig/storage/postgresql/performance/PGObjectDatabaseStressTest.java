@@ -35,6 +35,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.junit.runners.MethodSorters;
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Platform;
@@ -233,7 +234,7 @@ public class PGObjectDatabaseStressTest {
         CountingListener getAllListener = BulkOpListener.newCountingListener();
         Stopwatch sw = Stopwatch.createStarted();
 
-        final int returnedObjectCount = Iterators.size(db.getAll(ids, getAllListener));
+        final int returnedObjectCount = Iterators.size(db.getAll(ids, getAllListener, RevFeature.class));
 
         sw.stop();
 

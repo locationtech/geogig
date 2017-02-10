@@ -39,8 +39,8 @@ public class PGCache {
         cacheBuilder = cacheBuilder.maximumWeight(maxWeightBytes);
         cacheBuilder.weigher(weigher);
         cacheBuilder.expireAfterAccess(expireSeconds.or(300), TimeUnit.SECONDS);
-        cacheBuilder.initialCapacity(initialCapacity.or(100_000));
-        cacheBuilder.concurrencyLevel(concurrencyLevel.or(4));
+        cacheBuilder.initialCapacity(initialCapacity.or(1_000_000));
+        cacheBuilder.concurrencyLevel(concurrencyLevel.or(16));
         cacheBuilder.softValues();
         cacheBuilder.recordStats();
         Cache<ObjectId, RevObject> byteCache = cacheBuilder.build();

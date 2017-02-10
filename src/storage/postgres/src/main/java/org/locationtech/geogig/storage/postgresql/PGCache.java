@@ -1,9 +1,6 @@
 package org.locationtech.geogig.storage.postgresql;
 
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.locationtech.geogig.model.ObjectId;
@@ -13,7 +10,6 @@ import com.google.common.base.Optional;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.Weigher;
-import com.google.common.collect.ImmutableMap;
 
 public class PGCache {
 
@@ -84,11 +80,7 @@ public class PGCache {
     }
 
     public byte[] getIfPresent(ObjectId id) {
-        return map.get(id);
-    }
-
-    public ImmutableMap<ObjectId, byte[]> getAllPresent(Set<ObjectId> keys) {
-        return cache.getAllPresent(keys);
+        return cache.getIfPresent(id);
     }
 
     public String toString() {

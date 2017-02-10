@@ -13,8 +13,6 @@ import static org.junit.Assert.assertEquals;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.featureForceId;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,7 +20,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.Iterator;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -46,8 +43,6 @@ import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
-import org.locationtech.geogig.storage.impl.PersistedIterable;
-import org.locationtech.geogig.storage.impl.PersistedIterable.Serializer;
 import org.locationtech.geogig.storage.postgresql.Environment;
 import org.locationtech.geogig.storage.postgresql.PGCache;
 import org.locationtech.geogig.storage.postgresql.PGObjectDatabase;
@@ -60,11 +55,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.google.common.hash.BloomFilter;
-import com.google.common.hash.Funnels;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -237,12 +229,7 @@ public class PGObjectDatabaseStressTest {
     }
 
     private void testGetAll(final Iterable<ObjectId> ids, final int expectedSize) {
-        {
-            int itsize = Iterators.size(ids.iterator());
-            Stopwatch sw = Stopwatch.createStarted();
-            System.err.printf("%,d ids traversed in %,dms\n", itsize,
-                    sw.stop().elapsed(TimeUnit.MILLISECONDS));
-        }
+
         CountingListener getAllListener = BulkOpListener.newCountingListener();
         Stopwatch sw = Stopwatch.createStarted();
 
@@ -350,6 +337,10 @@ public class PGObjectDatabaseStressTest {
     }
 
     public static void main(String[] args) {
+        runTest();
+    }
+
+    private static void runTest() {
         PGObjectDatabaseStressTest test = new PGObjectDatabaseStressTest();
         try {
             test.tmp.create();
@@ -364,7 +355,6 @@ public class PGObjectDatabaseStressTest {
             test.tearDown();
             test.tmp.delete();
             test.testConfig.after();
-            System.exit(0);
         }
     }
 }

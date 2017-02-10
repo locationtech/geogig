@@ -31,10 +31,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -77,15 +77,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
+import com.google.common.collect.PeekingIterator;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -384,99 +383,75 @@ public class PGObjectStore implements ObjectStore {
         checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
 
-        final Set<ObjectId> queryIds = ids instanceof Set ? (Set<ObjectId>) ids
-                : Sets.newHashSet(ids);
+        Iterator<T> stream = new GetAllIterator(ids.iterator(), type, listener, this);
 
-        ImmutableMap<ObjectId, byte[]> cached = sharedCache.getAllPresent(queryIds);
-
-        Iterator<T> hits = Collections.emptyIterator();
-        Iterator<T> stream = Collections.emptyIterator();
-
-        if (!cached.isEmpty()) {
-
-            Map<ObjectId, T> cachedObjects = Maps.transformEntries(cached, (id, bytes) -> {
-                RevObject o = encoder.read(id, bytes, 0, bytes.length);
-                if (type.isAssignableFrom(o.getClass())) {
-                    listener.found(id, Integer.valueOf(bytes.length));
-                    return type.cast(o);
-                }
-                listener.notFound(id);
-                return null;
-            });
-
-            hits = Iterators.filter(cachedObjects.values().iterator(), Predicates.notNull());
-        }
-        if (queryIds.size() > cached.size()) {
-            Set<ObjectId> misses = Sets.difference(queryIds, cached.keySet());
-            stream = new GetAllIterator(dataSource, misses.iterator(), type, listener, this);
-        }
-
-        return Iterators.concat(hits, stream);
+        return stream;
     }
 
     private static class GetAllIterator<T extends RevObject> extends AbstractIterator<T> {
 
-        private Iterator<ObjectId> ids;
+        private final PeekingIterator<ObjectId> ids;
 
-        private DataSource dataSource;
+        private final Class<T> type;
 
-        private BulkOpListener listener;
+        private final BulkOpListener listener;
 
-        private PGObjectStore db;
+        private final PGObjectStore store;
 
-        private Iterator<RevObject> delegate = Collections.emptyIterator();
+        private Iterator<T> nextBatch;
 
-        @Nullable
-        private TYPE type;
+        final PGCache cache;
 
-        private final Class<T> classFilter;
-
-        GetAllIterator(DataSource ds, Iterator<ObjectId> ids, Class<T> type,
-                BulkOpListener listener, PGObjectStore db) {
-            this.dataSource = ds;
-            this.ids = ids;
+        public GetAllIterator(Iterator<ObjectId> ids, Class<T> type, BulkOpListener listener,
+                PGObjectStore store) {
+            this.ids = Iterators.peekingIterator(ids);
+            this.type = type;
             this.listener = listener;
-            this.db = db;
-            this.classFilter = type;
-            this.type = type == RevObject.class ? null : TYPE.valueOf(type);
+            this.store = store;
+            cache = store.sharedCache;
         }
 
         @Override
         protected T computeNext() {
-            if (delegate.hasNext()) {
-                return classFilter.cast(delegate.next());
+            if (nextBatch != null && nextBatch.hasNext()) {
+                return nextBatch.next();
             }
-            if (ids.hasNext()) {
-                delegate = nextPartition();
-                return computeNext();
+            if (!ids.hasNext()) {
+                return endOfData();
             }
-            ids = null;
-            dataSource = null;
-            delegate = null;
-            listener = null;
-            db = null;
-            return endOfData();
-        }
-
-        private Iterator<RevObject> nextPartition() {
-            checkState(db.isOpen(), "Database is closed");
-
-            List<Future<List<RevObject>>> list = new ArrayList<>();
-
-            Iterator<ObjectId> ids = this.ids;
-            final int getAllPartitionSize = db.getAllBatchSize;
-
-            int concurrency = db.threadPoolSize;
-            for (int j = 0; j < concurrency && ids.hasNext(); j++) {
-                Set<ObjectId> idList = new HashSet<>();
-                for (int i = 0; i < getAllPartitionSize && ids.hasNext(); i++) {
-                    idList.add(ids.next());
+            {
+                T obj = tryNextCached();
+                if (obj != null) {
+                    return obj;
                 }
-                checkState(db.isOpen(), "Database is closed");
-                Future<List<RevObject>> objects = db.getAll(idList, dataSource, listener, type);
-                list.add(objects);
             }
-            final Function<Future<List<RevObject>>, List<RevObject>> function = (objs) -> {
+
+            final int queryBatchSize = store.getAllBatchSize;
+            final int superPartitionBatchSize = 10 * queryBatchSize;
+
+            List<T> hits = new LinkedList<>();
+            List<ObjectId> cacheMisses = new ArrayList<>(superPartitionBatchSize);
+            for (int i = 0; i < superPartitionBatchSize && ids.hasNext(); i++) {
+                ObjectId id = ids.next();
+                byte[] cached = cache.getIfPresent(id);
+                if (cached == null) {
+                    cacheMisses.add(id);
+                } else {
+                    T obj = cacheHit(id, cached);
+                    if (obj != null) {
+                        hits.add(obj);
+                    }
+                }
+            }
+            List<List<ObjectId>> partitions = Lists.partition(cacheMisses, queryBatchSize);
+            List<Future<List<T>>> futures = new ArrayList<>(partitions.size());
+            for (List<ObjectId> partition : partitions) {
+                Future<List<T>> dbBatch;
+                dbBatch = store.getAll(partition, listener, type);
+                futures.add(dbBatch);
+            }
+
+            final Function<Future<List<T>>, List<T>> futureGetter = (objs) -> {
                 try {
                     return objs.get();
                 } catch (InterruptedException | ExecutionException e) {
@@ -485,10 +460,43 @@ public class PGObjectStore implements ObjectStore {
                 }
             };
 
-            Iterable<List<RevObject>> lists = Iterables.transform(list, function);
-            Iterable<RevObject> concat = Iterables.concat(lists);
-            return concat.iterator();
+            Iterable<List<T>> lists = Iterables.transform(futures, futureGetter);
+            Iterable<T> concat = Iterables.concat(lists);
+            Iterator<T> iterator = concat.iterator();
+
+            nextBatch = Iterators.concat(hits.iterator(), iterator);
+            return computeNext();
         }
+
+        private T tryNextCached() {
+            while (ids.hasNext()) {
+                ObjectId id = ids.peek();
+                byte[] cached = cache.getIfPresent(id);
+                if (cached == null) {
+                    return null;
+                } else {
+                    ids.next();
+                    T obj = cacheHit(id, cached);
+                    if (obj != null) {
+                        return obj;
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Nullable
+        private T cacheHit(ObjectId id, byte[] cached) {
+            RevObject object = store.encoder.decode(id, cached);
+            if (type.isInstance(object)) {
+                listener.found(id, null);
+                return type.cast(object);
+            } else {
+                listener.notFound(id);
+            }
+            return null;
+        }
+
     }
 
     @Override
@@ -554,7 +562,7 @@ public class PGObjectStore implements ObjectStore {
         PGStorage.closeDataSource(ds);
     }
 
-    protected String tableNameForType(RevObject.TYPE type, PGId pgid) {
+    protected String tableNameForType(@Nullable RevObject.TYPE type, PGId pgid) {
         final String tableName;
         final TableNames tables = config.getTables();
         if (type == null) {
@@ -635,26 +643,26 @@ public class PGObjectStore implements ObjectStore {
         return obj;
     }
 
-    private Future<List<RevObject>> getAll(final Set<ObjectId> ids, final DataSource ds,
-            final BulkOpListener listener, final @Nullable TYPE type) {
+    private <T extends RevObject> Future<List<T>> getAll(final Collection<ObjectId> ids,
+            final BulkOpListener listener, final Class<T> type) {
         checkState(isOpen(), "Database is closed");
 
-        GetAllOp getAllOp = new GetAllOp(ids, listener, this, type);
+        GetAllOp<T> getAllOp = new GetAllOp<T>(ids, listener, this, type);
         // Avoid deadlocking by running the task synchronously if we are already in one of the
         // threads on the executor.
         if (Thread.currentThread().getThreadGroup().equals(threadGroup)) {
             try {
-                List<RevObject> objects = getAllOp.call();
+                List<T> objects = getAllOp.call();
                 return Futures.immediateFuture(objects);
             } catch (Exception e) {
                 propagate(e);
             }
         }
-        Future<List<RevObject>> future = executor.submit(getAllOp);
+        Future<List<T>> future = executor.submit(getAllOp);
         return future;
     }
 
-    private static class GetAllOp implements Callable<List<RevObject>> {
+    private static class GetAllOp<T extends RevObject> implements Callable<List<T>> {
 
         private final Set<ObjectId> queryIds;
 
@@ -664,14 +672,13 @@ public class PGObjectStore implements ObjectStore {
 
         private final PGCache sharedCache;
 
-        @Nullable
-        private final TYPE type;
+        private final Class<T> type;
 
         private final boolean notify;
 
-        public GetAllOp(Set<ObjectId> ids, BulkOpListener listener, PGObjectStore db,
-                @Nullable TYPE type) {
-            this.queryIds = ids;
+        public GetAllOp(Collection<ObjectId> ids, BulkOpListener listener, PGObjectStore db,
+                Class<T> type) {
+            this.queryIds = Sets.newHashSet(ids);
             this.callback = listener;
             this.notify = !BulkOpListener.NOOP_LISTENER.equals(listener);
             this.db = db;
@@ -680,12 +687,13 @@ public class PGObjectStore implements ObjectStore {
         }
 
         @Override
-        public List<RevObject> call() throws Exception {
+        public List<T> call() throws Exception {
             checkState(db.isOpen(), "Database is closed");
-            final String tableName = db.tableNameForType(type, null);
+            final TYPE objType = RevObject.class.equals(type) ? null : RevObject.TYPE.valueOf(type);
+            final String tableName = db.tableNameForType(objType, null);
 
             final int queryCount = queryIds.size();
-            List<RevObject> found = new ArrayList<>(queryCount);
+            List<T> found = new ArrayList<>(queryCount);
 
             if (tableName != null) {
                 byte[] bytes;
@@ -719,12 +727,12 @@ public class PGObjectStore implements ObjectStore {
                                     bytes = rs.getBytes(4);
 
                                     RevObject obj = encoder.read(id, bytes, 0, bytes.length);
-                                    if (type == null || type.equals(obj.getType())) {
+                                    if (objType == null || objType.equals(obj.getType())) {
                                         if (notify) {
                                             queryIds.remove(id);
                                             callback.found(id, Integer.valueOf(bytes.length));
                                         }
-                                        found.add(obj);
+                                        found.add(type.cast(obj));
                                         sharedCache.put(id, bytes);
                                     }
                                 }

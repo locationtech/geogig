@@ -35,10 +35,10 @@ import org.locationtech.geogig.geotools.data.reader.ExtraDataPropertyAccessorFac
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.IndexInfo;
-import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.collect.ImmutableMap;
 import com.vividsolutions.jts.geom.Envelope;

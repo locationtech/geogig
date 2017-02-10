@@ -24,16 +24,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
@@ -390,5 +394,96 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         } catch (RocksDBException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
+            Iterator<NodeRef> refs, BulkOpListener listener, Class<T> type) {
+
+        checkNotNull(refs, "refs is null");
+        checkNotNull(listener, "listener is null");
+        checkNotNull(type, "type is null");
+        checkOpen();
+
+        return new AutoCloseableIterator<ObjectInfo<T>>() {
+
+            private Iterator<NodeRef> noderefs = refs;
+
+            private byte[] keybuff = new byte[ObjectId.NUM_BYTES];
+
+            private byte[] valueBuff = new byte[64 * 1024];
+
+            private ReadOptions readOps = bulkReadOptions;
+
+            private boolean closed;
+
+            private ObjectInfo<T> next;
+
+            @Override
+            public void close() {
+                closed = true;
+                noderefs = null;
+                valueBuff = null;
+            }
+
+            @Override
+            public boolean hasNext() {
+                if (closed) {
+                    return false;
+                }
+                if (next == null) {
+                    next = computeNext();
+                }
+                return next != null;
+            }
+
+            @Override
+            public ObjectInfo<T> next() {
+                if (closed) {
+                    throw new NoSuchElementException("Iterator is closed");
+                }
+                final ObjectInfo<T> curr;
+                if (next == null) {
+                    curr = computeNext();
+                } else {
+                    curr = next;
+                    next = null;
+                }
+                if (curr == null) {
+                    throw new NoSuchElementException();
+                }
+                return curr;
+            }
+
+            private @Nullable ObjectInfo<T> computeNext() {
+                checkOpen();
+                try (RocksDBReference dbRef = dbhandle.getReference()) {
+                    while (noderefs.hasNext()) {
+                        final NodeRef ref = noderefs.next();
+                        final ObjectId id = ref.getObjectId();
+                        id.getRawValue(keybuff);
+                        final int size = dbRef.db().get(readOps, keybuff, valueBuff);
+                        if (RocksDB.NOT_FOUND == size) {
+                            listener.notFound(id);
+                            continue;
+                        }
+                        if (size > valueBuff.length) {
+                            valueBuff = dbRef.db().get(readOps, keybuff);
+                        }
+                        RevObject object = serializer().read(id,
+                                new ByteArrayInputStream(valueBuff));
+                        if (type.isInstance(object)) {
+                            listener.found(id, Integer.valueOf(size));
+                            return ObjectInfo.of(ref, type.cast(object));
+                        } else {
+                            listener.notFound(id);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw Throwables.propagate(e);
+                }
+                return null;
+            }
+        };
     }
 }

@@ -27,10 +27,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Preconditions;

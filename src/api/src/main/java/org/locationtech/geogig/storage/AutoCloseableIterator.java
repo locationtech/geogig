@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (Prominent Edge) - initial implementation
  */
-package org.locationtech.geogig.repository;
+package org.locationtech.geogig.storage;
 
 import java.util.ArrayList;
 import java.util.Iterator;

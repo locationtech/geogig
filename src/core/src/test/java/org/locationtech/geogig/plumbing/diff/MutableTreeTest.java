@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
+import static org.locationtech.geogig.model.NodeRef.ROOT;
 import static org.locationtech.geogig.model.ObjectId.NULL;
-import static org.locationtech.geogig.repository.NodeRef.ROOT;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
@@ -19,9 +19,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 

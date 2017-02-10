@@ -10,13 +10,14 @@
 package org.locationtech.geogig.data.retrieve;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.*;
+
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 /**
  * This is a simple producer-consumer based Iterator that pulls using a background thread.

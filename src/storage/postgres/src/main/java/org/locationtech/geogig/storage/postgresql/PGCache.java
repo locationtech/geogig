@@ -50,12 +50,17 @@ public class PGCache {
 
     private static long defaultCacheSize() {
         final long maxMemory = Runtime.getRuntime().maxMemory();
-        // Use 20% of the heap by default
+        // Use up to 50% of the heap by default
         return (long) (maxMemory * 0.5);
     }
 
     private Cache<ObjectId, RevObject> cache;
 
+    /**
+     * ConcurrentMap view of the cache, used to check for existent through containsKey instead of
+     * cache.getIfPresent() (to avoid getting the value unnecessarily), and putIfAbsent instead of
+     * cache.put(), to avoid replacing objects since RevObject instances are immutable
+     */
     private ConcurrentMap<ObjectId, RevObject> map;
 
     public PGCache(Cache<ObjectId, RevObject> byteCache) {
@@ -81,6 +86,8 @@ public class PGCache {
     }
 
     public RevObject getIfPresent(ObjectId id) {
+        // call cache.getIfPresent instead of map.get() or the cache stats don't record the
+        // hits/misses
         return cache.getIfPresent(id);
     }
 

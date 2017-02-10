@@ -12,26 +12,25 @@ package org.locationtech.geogig.data.retrieve;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
 import org.geotools.data.DataUtilities;
 import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectInfo;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.util.Assert;
-import org.locationtech.geogig.repository.FeatureInfo;
 
 public class MultiFeatureTypeBuilderTest {
 
@@ -83,8 +82,7 @@ public class MultiFeatureTypeBuilderTest {
         Node n1 = Node.create("name1", getOID(2), meta1, TYPE.FEATURE, new Envelope());
         NodeRef nr1 = new NodeRef(n1, "testcase", meta1);
 
-        FeatureInfo fi =  FeatureInfo.insert(feat,nr1.getMetadataId(), nr1.path());
-      
+        ObjectInfo<RevFeature> fi = ObjectInfo.of(nr1, feat);
 
         MultiFeatureTypeBuilder builder = new MultiFeatureTypeBuilder(odb);
         SimpleFeature sf = builder.apply(fi);

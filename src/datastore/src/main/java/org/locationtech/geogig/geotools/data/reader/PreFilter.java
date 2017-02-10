@@ -13,8 +13,8 @@ import org.geotools.filter.expression.PropertyAccessorFactory;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.filter.Filter;
 import org.opengis.filter.spatial.BinarySpatialOperator;
 

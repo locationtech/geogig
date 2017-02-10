@@ -18,8 +18,8 @@ import org.locationtech.geogig.plumbing.DiffIndex;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.DiffWorkTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 /**
  * Perform a diff between trees pointed out by two commits

@@ -16,8 +16,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.plumbing.DiffWorkTree;
 import org.locationtech.geogig.porcelain.CleanOp;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.collect.Lists;
 

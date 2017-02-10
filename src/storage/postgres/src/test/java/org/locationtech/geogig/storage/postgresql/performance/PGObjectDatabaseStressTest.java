@@ -34,14 +34,18 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.junit.runners.MethodSorters;
+import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 import org.locationtech.geogig.storage.postgresql.Environment;
@@ -56,6 +60,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Geometry;
@@ -182,8 +187,13 @@ public class PGObjectDatabaseStressTest {
 
         MemoryUsage getIfPresentTraversedMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
 
-        testGetAll(ids, count);
-        testGetAll(ids, count);
+        Iterable<Node> nodes = Iterables.transform(ids,
+                (id) -> Node.create(id.toString(), id, ObjectId.NULL, TYPE.FEATURE, null));
+
+        // testGetAll(ids, count);
+        // testGetAll(ids, count);
+        testGetFeatures(nodes, count);
+        testGetFeatures(nodes, count);
 
         MemoryUsage getAllTraversedMem = MEMORY_MX_BEAN.getHeapMemoryUsage();
 
@@ -234,7 +244,8 @@ public class PGObjectDatabaseStressTest {
         CountingListener getAllListener = BulkOpListener.newCountingListener();
         Stopwatch sw = Stopwatch.createStarted();
 
-        final int returnedObjectCount = Iterators.size(db.getAll(ids, getAllListener, RevFeature.class));
+        final int returnedObjectCount = Iterators
+                .size(db.getAll(ids, getAllListener, RevFeature.class));
 
         sw.stop();
 
@@ -245,6 +256,27 @@ public class PGObjectDatabaseStressTest {
         System.err.printf("----- %s\n", sharedCache);
 
         Assert.assertEquals(getAllListener.toString(), expectedSize, getAllListener.found());
+        assertEquals(expectedSize, returnedObjectCount);
+    }
+
+    private void testGetFeatures(final Iterable<Node> nodes, final int expectedSize) {
+
+        CountingListener listener = BulkOpListener.newCountingListener();
+        Stopwatch sw = Stopwatch.createStarted();
+
+        Iterator<NodeRef> refs = Iterators.transform(nodes.iterator(),
+                (n) -> NodeRef.create("layer", n));
+        
+        Iterator<ObjectInfo<RevFeature>> iterator = db.getObjects(refs, listener, RevFeature.class);
+        final int returnedObjectCount = Iterators.size(iterator);
+
+        sw.stop();
+
+        System.err.printf("----- %,d Features queried (%,d not found) with getObjects() in %,dms\n",
+                listener.found(), listener.notFound(), sw.elapsed(TimeUnit.MILLISECONDS));
+        System.err.printf("----- %s\n", sharedCache);
+
+        Assert.assertEquals(listener.toString(), expectedSize, listener.found());
         assertEquals(expectedSize, returnedObjectCount);
     }
 
@@ -348,7 +380,7 @@ public class PGObjectDatabaseStressTest {
             test.testConfig.before();
             test.setUp();
 
-            test.test05_PutAll_5M();
+            test.test04_PutAll_1M();
 
         } catch (Throwable e) {
             e.printStackTrace();

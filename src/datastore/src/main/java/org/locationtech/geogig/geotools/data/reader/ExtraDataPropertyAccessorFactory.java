@@ -18,9 +18,9 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.util.Converters;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.repository.IndexInfo;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.opengis.filter.expression.PropertyName;
 

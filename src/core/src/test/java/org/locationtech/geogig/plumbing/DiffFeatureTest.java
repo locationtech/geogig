@@ -10,9 +10,9 @@
 package org.locationtech.geogig.plumbing;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.porcelain.FeatureNodeRefFromRefspec;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Suppliers;

@@ -37,6 +37,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
@@ -56,6 +57,7 @@ import java.util.stream.StreamSupport;
 import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
@@ -65,8 +67,10 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.datastream.SerializationFactoryProxy;
 import org.locationtech.geogig.storage.postgresql.Environment.ConnectionConfig;
@@ -388,6 +392,173 @@ public class PGObjectStore implements ObjectStore {
         return stream;
     }
 
+    @Override
+    public <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
+            Iterator<NodeRef> refs, BulkOpListener listener, Class<T> type) {
+        checkNotNull(refs, "refs is null");
+        checkNotNull(listener, "listener is null");
+        checkNotNull(type, "type is null");
+        checkState(isOpen(), "Database is closed");
+        config.checkRepositoryExists();
+
+        AutoCloseableIterator<ObjectInfo<T>> stream = new ObjectIterator<T>(refs, type, listener,
+                this);
+
+        return stream;
+    }
+
+    private static class ObjectIterator<T extends RevObject>
+            implements AutoCloseableIterator<ObjectInfo<T>> {
+
+        private PeekingIterator<NodeRef> nodes;
+
+        private final Class<T> type;
+
+        private final BulkOpListener listener;
+
+        private final PGObjectStore store;
+
+        private Iterator<ObjectInfo<T>> nextBatch;
+
+        final PGCache cache;
+
+        private boolean closed;
+
+        private ObjectInfo<T> next;
+
+        public ObjectIterator(Iterator<NodeRef> refs, Class<T> type, BulkOpListener listener,
+                PGObjectStore store) {
+            this.nodes = Iterators.peekingIterator(refs);
+            this.type = type;
+            this.listener = listener;
+            this.store = store;
+            cache = store.sharedCache;
+        }
+
+        @Override
+        public void close() {
+            closed = true;
+            nodes = null;
+            nextBatch = null;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (closed) {
+                return false;
+            }
+            if (next == null) {
+                next = computeNext();
+            }
+            return next != null;
+        }
+
+        @Override
+        public ObjectInfo<T> next() {
+            if (closed) {
+                throw new NoSuchElementException("Iterator is closed");
+            }
+            final ObjectInfo<T> curr;
+            if (next == null) {
+                curr = computeNext();
+            } else {
+                curr = next;
+                next = null;
+            }
+            if (curr == null) {
+                throw new NoSuchElementException();
+            }
+            return curr;
+        }
+
+        private @Nullable ObjectInfo<T> computeNext() {
+            if (nextBatch != null && nextBatch.hasNext()) {
+                return nextBatch.next();
+            }
+            if (!nodes.hasNext()) {
+                return null;
+            }
+            {
+                ObjectInfo<T> obj = tryNextCached();
+                if (obj != null) {
+                    return obj;
+                }
+            }
+
+            final int queryBatchSize = store.getAllBatchSize;
+            final int superPartitionBatchSize = 10 * queryBatchSize;
+
+            List<ObjectInfo<T>> hits = new LinkedList<>();
+            List<NodeRef> cacheMisses = new ArrayList<>(superPartitionBatchSize);
+            for (int i = 0; i < superPartitionBatchSize && nodes.hasNext(); i++) {
+                NodeRef node = nodes.next();
+                ObjectId id = node.getObjectId();
+                RevObject cached = cache.getIfPresent(id);
+                if (cached == null) {
+                    cacheMisses.add(node);
+                } else {
+                    T obj = cacheHit(id, cached);
+                    if (obj != null) {
+                        hits.add(new ObjectInfo<T>(node, obj));
+                    }
+                }
+            }
+            List<List<NodeRef>> partitions = Lists.partition(cacheMisses, queryBatchSize);
+            List<Future<List<ObjectInfo<T>>>> futures = new ArrayList<>(partitions.size());
+            for (List<NodeRef> partition : partitions) {
+                Future<List<ObjectInfo<T>>> dbBatch;
+                dbBatch = store.getObjects(partition, listener, type);
+                futures.add(dbBatch);
+            }
+
+            final Function<Future<List<ObjectInfo<T>>>, List<ObjectInfo<T>>> futureGetter = (
+                    objs) -> {
+                try {
+                    return objs.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                    throw propagate(e);
+                }
+            };
+
+            Iterable<List<ObjectInfo<T>>> lists = Iterables.transform(futures, futureGetter);
+            Iterable<ObjectInfo<T>> concat = Iterables.concat(lists);
+            Iterator<ObjectInfo<T>> iterator = concat.iterator();
+
+            nextBatch = Iterators.concat(hits.iterator(), iterator);
+            return computeNext();
+        }
+
+        private ObjectInfo<T> tryNextCached() {
+            while (nodes.hasNext()) {
+                NodeRef node = nodes.peek();
+                ObjectId id = node.getObjectId();
+                RevObject cached = cache.getIfPresent(id);
+                if (cached == null) {
+                    return null;
+                } else {
+                    nodes.next();
+                    T obj = cacheHit(id, cached);
+                    if (obj != null) {
+                        return new ObjectInfo<T>(node, obj);
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Nullable
+        private T cacheHit(ObjectId id, RevObject object) {
+            if (type.isInstance(object)) {
+                listener.found(id, null);
+                return type.cast(object);
+            } else {
+                listener.notFound(id);
+            }
+            return null;
+        }
+    }
+
     private static class GetAllIterator<T extends RevObject> extends AbstractIterator<T> {
 
         private final PeekingIterator<ObjectId> ids;
@@ -661,6 +832,25 @@ public class PGObjectStore implements ObjectStore {
         return future;
     }
 
+    private <T extends RevObject> Future<List<ObjectInfo<T>>> getObjects(
+            final Collection<NodeRef> nodes, final BulkOpListener listener, final Class<T> type) {
+        checkState(isOpen(), "Database is closed");
+
+        GetObjectOp<T> getAllOp = new GetObjectOp<T>(nodes, listener, this, type);
+        // Avoid deadlocking by running the task synchronously if we are already in one of the
+        // threads on the executor.
+        if (Thread.currentThread().getThreadGroup().equals(threadGroup)) {
+            try {
+                List<ObjectInfo<T>> objects = getAllOp.call();
+                return Futures.immediateFuture(objects);
+            } catch (Exception e) {
+                propagate(e);
+            }
+        }
+        Future<List<ObjectInfo<T>>> future = executor.submit(getAllOp);
+        return future;
+    }
+
     private static class GetAllOp<T extends RevObject> implements Callable<List<T>> {
 
         private final Set<ObjectId> queryIds;
@@ -761,6 +951,96 @@ public class PGObjectStore implements ObjectStore {
             Iterator<ObjectId> it = queryIds.iterator();
             for (int i = 0; it.hasNext(); i++) {
                 ObjectId id = it.next();
+                arr[i] = Integer.valueOf(PGId.valueOf(id).hash1());
+            }
+            array = cx.createArrayOf("integer", arr);
+            return array;
+        }
+    }
+
+    private static class GetObjectOp<T extends RevObject> implements Callable<List<ObjectInfo<T>>> {
+
+        private final Set<NodeRef> queryNodes;
+
+        private final BulkOpListener callback;
+
+        private final PGObjectStore db;
+
+        private final PGCache sharedCache;
+
+        private final Class<T> type;
+
+        public GetObjectOp(Collection<NodeRef> ids, BulkOpListener listener, PGObjectStore db,
+                Class<T> type) {
+            this.queryNodes = Sets.newHashSet(ids);
+            this.callback = listener;
+            this.db = db;
+            this.type = type;
+            this.sharedCache = db.sharedCache;
+        }
+
+        @Override
+        public List<ObjectInfo<T>> call() throws Exception {
+
+            checkState(db.isOpen(), "Database is closed");
+            final TYPE objType = RevObject.class.equals(type) ? null : RevObject.TYPE.valueOf(type);
+            final String tableName = db.tableNameForType(objType, null);
+
+            final int queryCount = queryNodes.size();
+
+            final String sql = format(
+                    "SELECT ((id).h1), ((id).h2),((id).h3), object FROM %s WHERE ((id).h1) = ANY(?)",
+                    tableName);
+
+            Map<ObjectId, byte[]> queryMatches = new HashMap<>();
+
+            try (Connection cx = PGStorage.newConnection(db.dataSource)) {
+
+                final Array array = toJDBCArray(cx, queryNodes);
+
+                try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, queryNodes))) {
+                    ps.setFetchSize(queryCount);
+                    ps.setArray(1, array);
+
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            ObjectId id = PGId.valueOf(rs, 1).toObjectId();
+                            byte[] bytes = rs.getBytes(4);
+                            queryMatches.put(id, bytes);
+                        }
+                    }
+                }
+            }
+
+            List<ObjectInfo<T>> result = new ArrayList<>(queryCount);
+            for (NodeRef n : queryNodes) {
+                ObjectId id = n.getObjectId();
+                byte[] bytes = queryMatches.get(id);
+                if (bytes == null) {
+                    callback.notFound(n.getObjectId());
+                } else {
+                    RevObject obj = encoder.decode(id, bytes);
+                    if (objType == null || objType.equals(obj.getType())) {
+                        callback.found(id, null/* this arg should be deprecated */);
+                        ObjectInfo<T> info = ObjectInfo.of(n, type.cast(obj));
+                        result.add(info);
+                        sharedCache.put(id, obj);
+                    } else {
+                        callback.notFound(n.getObjectId());
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private Array toJDBCArray(Connection cx, final Collection<NodeRef> queryIds)
+                throws SQLException {
+            Array array;
+            Object[] arr = new Object[queryIds.size()];
+            Iterator<NodeRef> it = queryIds.iterator();
+            for (int i = 0; it.hasNext(); i++) {
+                ObjectId id = it.next().getObjectId();
                 arr[i] = Integer.valueOf(PGId.valueOf(id).hash1());
             }
             array = cx.createArrayOf("integer", arr);
@@ -1017,7 +1297,6 @@ public class PGObjectStore implements ObjectStore {
         final String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
                 objectsTable());
 
-        long count = 0;
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG))) {
@@ -1029,7 +1308,7 @@ public class PGObjectStore implements ObjectStore {
                         PGId.valueOf(id).setArgs(stmt, 1);
                         stmt.addBatch();
                     }
-                    count += notifyDeleted(stmt.executeBatch(), list, listener);
+                    notifyDeleted(stmt.executeBatch(), list, listener);
                     stmt.clearParameters();
                     stmt.clearBatch();
                 }

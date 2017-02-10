@@ -11,8 +11,8 @@ package org.locationtech.geogig.test.integration;
 
 import org.junit.Test;
 import org.locationtech.geogig.hooks.GeoGigAPI;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.feature.Feature;
 
 public class GeogigAPITest extends RepositoryTestCase {

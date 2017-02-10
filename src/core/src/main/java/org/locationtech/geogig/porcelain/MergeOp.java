@@ -34,9 +34,9 @@ import org.locationtech.geogig.plumbing.merge.MergeStatusBuilder;
 import org.locationtech.geogig.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.plumbing.merge.SaveMergeCommitMessageOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;

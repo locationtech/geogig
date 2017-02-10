@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.BoundsFilteringDiffConsumer;
@@ -35,10 +36,9 @@ import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.ForwardingConsumer;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
-import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.slf4j.Logger;
@@ -239,7 +239,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 rightSource, preserveIterationOrder);
         visitor.setDefaultMetadataId(this.metadataId);
 
-        final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(100_000);
+        final BlockingQueue<DiffEntry> queue = new ArrayBlockingQueue<>(1000_000);
         final DiffEntryProducer diffProducer = new DiffEntryProducer(queue);
         diffProducer.setReportTrees(this.reportTrees);
         diffProducer.setRecursive(this.recursive);

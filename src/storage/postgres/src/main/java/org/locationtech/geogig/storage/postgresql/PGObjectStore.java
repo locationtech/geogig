@@ -433,7 +433,7 @@ public class PGObjectStore implements ObjectStore {
             List<ObjectId> cacheMisses = new ArrayList<>(superPartitionBatchSize);
             for (int i = 0; i < superPartitionBatchSize && ids.hasNext(); i++) {
                 ObjectId id = ids.next();
-                byte[] cached = cache.getIfPresent(id);
+                RevObject cached = cache.getIfPresent(id);
                 if (cached == null) {
                     cacheMisses.add(id);
                 } else {
@@ -471,7 +471,7 @@ public class PGObjectStore implements ObjectStore {
         private T tryNextCached() {
             while (ids.hasNext()) {
                 ObjectId id = ids.peek();
-                byte[] cached = cache.getIfPresent(id);
+                RevObject cached = cache.getIfPresent(id);
                 if (cached == null) {
                     return null;
                 } else {
@@ -486,8 +486,7 @@ public class PGObjectStore implements ObjectStore {
         }
 
         @Nullable
-        private T cacheHit(ObjectId id, byte[] cached) {
-            RevObject object = store.encoder.decode(id, cached);
+        private T cacheHit(ObjectId id, RevObject object) {
             if (type.isInstance(object)) {
                 listener.found(id, null);
                 return type.cast(object);
@@ -600,9 +599,9 @@ public class PGObjectStore implements ObjectStore {
     @Nullable
     private RevObject getIfPresent(final ObjectId id, final @Nullable RevObject.TYPE type,
             DataSource ds) {
-        byte[] cached = sharedCache.getIfPresent(id);
+        RevObject cached = sharedCache.getIfPresent(id);
         if (cached != null) {
-            return encoder.read(id, cached, 0, cached.length);
+            return cached;
         }
 
         final PGId pgid = PGId.valueOf(id);
@@ -639,7 +638,7 @@ public class PGObjectStore implements ObjectStore {
         }
 
         RevObject obj = encoder.read(id, bytes, 0, bytes.length);
-        sharedCache.put(id, bytes);
+        sharedCache.put(id, obj);
         return obj;
     }
 
@@ -733,7 +732,7 @@ public class PGObjectStore implements ObjectStore {
                                             callback.found(id, Integer.valueOf(bytes.length));
                                         }
                                         found.add(type.cast(obj));
-                                        sharedCache.put(id, bytes);
+                                        sharedCache.put(id, obj);
                                     }
                                 }
                             }

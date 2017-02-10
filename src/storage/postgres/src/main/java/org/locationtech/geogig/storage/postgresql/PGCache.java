@@ -4,6 +4,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.locationtech.geogig.model.ObjectId;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.base.Optional;
@@ -13,13 +14,13 @@ import com.google.common.cache.Weigher;
 
 public class PGCache {
 
-    private static Weigher<ObjectId, byte[]> weigher = new Weigher<ObjectId, byte[]>() {
+    private static Weigher<ObjectId, RevObject> weigher = new Weigher<ObjectId, RevObject>() {
 
         private final int ESTIMATED_OBJECTID_SIZE = 8 + ObjectId.NUM_BYTES;
 
         @Override
-        public int weigh(ObjectId key, byte[] value) {
-            return ESTIMATED_OBJECTID_SIZE + value.length;
+        public int weigh(ObjectId key, RevObject obj) {
+            return ESTIMATED_OBJECTID_SIZE;// + value.length;
         }
 
     };
@@ -42,7 +43,7 @@ public class PGCache {
         cacheBuilder.concurrencyLevel(concurrencyLevel.or(4));
         cacheBuilder.softValues();
         cacheBuilder.recordStats();
-        Cache<ObjectId, byte[]> byteCache = cacheBuilder.build();
+        Cache<ObjectId, RevObject> byteCache = cacheBuilder.build();
 
         return new PGCache(byteCache);
     }
@@ -53,11 +54,11 @@ public class PGCache {
         return (long) (maxMemory * 0.5);
     }
 
-    private Cache<ObjectId, byte[]> cache;
+    private Cache<ObjectId, RevObject> cache;
 
-    private ConcurrentMap<ObjectId, byte[]> map;
+    private ConcurrentMap<ObjectId, RevObject> map;
 
-    public PGCache(Cache<ObjectId, byte[]> byteCache) {
+    public PGCache(Cache<ObjectId, RevObject> byteCache) {
         this.cache = byteCache;
         this.map = byteCache.asMap();
     }
@@ -75,11 +76,11 @@ public class PGCache {
         cache.invalidate(id);
     }
 
-    public void put(ObjectId id, byte[] bytes) {
-        map.putIfAbsent(id, bytes);
+    public void put(ObjectId id, RevObject obj) {
+        map.putIfAbsent(id, obj);
     }
 
-    public byte[] getIfPresent(ObjectId id) {
+    public RevObject getIfPresent(ObjectId id) {
         return cache.getIfPresent(id);
     }
 

@@ -39,7 +39,7 @@ public class CLIContextBuilder extends ContextBuilder {
     public Context build(Hints hints) {
         return Guice
                 .createInjector(Modules
-                        .override(new GeogigModule(), new CachingModule(), new HintsModule(hints))
+                        .override(new GeogigModule(), /*new CachingModule(),*/ new HintsModule(hints))
                         .with(new PluginsModule(), new DefaultPlugins()))
                 .getInstance(org.locationtech.geogig.repository.Context.class);
     }

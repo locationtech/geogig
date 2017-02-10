@@ -150,4 +150,20 @@ public class VersionInfo {
     public String getBuildTime() {
         return this.buildTime;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Project Version: ").append(getProjectVersion()).append('\n');
+        sb.append("Build Time: ").append(getBuildTime()).append('\n');
+        sb.append("Build User Name: ").append(getBuildUserName()).append('\n');
+        sb.append("Build User Email: ").append(getBuildUserEmail()).append('\n');
+        sb.append("Git Branch: ").append(getBranch()).append('\n');
+        sb.append("Git Commit ID: ").append(getCommitId()).append('\n');
+        sb.append("Git Commit Time: ").append(getCommitTime()).append('\n');
+        sb.append("Git Commit Author Name: ").append(getCommitUserName()).append('\n');
+        sb.append("Git Commit Author Email: ").append(getCommitUserEmail()).append('\n');
+        sb.append("Git Commit Message: ").append(getCommitMessageFull());
+        return sb.toString();
+    }
 }

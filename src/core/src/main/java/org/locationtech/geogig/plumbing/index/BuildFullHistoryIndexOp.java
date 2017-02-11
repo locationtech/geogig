@@ -122,7 +122,8 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
         for (ObjectId oldCommitId : oldCommits) {
             Optional<ObjectId> oldTreeId = command(ResolveTreeish.class)
                     .setTreeish(oldCommitId.toString() + ":" + index.getTreeName()).call();
-            if (oldTreeId.isPresent()) {
+            if (oldTreeId.isPresent()
+                    && indexDatabase().resolveIndexedTree(index, oldTreeId.get()).isPresent()) {
                 oldCanonicalTree = objectDatabase().getTree(oldTreeId.get());
                 break;
             }

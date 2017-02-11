@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -32,12 +33,16 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
+import org.locationtech.geogig.plumbing.LsTreeOp;
+import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.TestPlatform;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
@@ -45,8 +50,10 @@ import org.opengis.feature.type.Name;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.SetMultimap;
 import com.google.common.io.CharSource;
 
 /**
@@ -279,5 +286,28 @@ public class CLIContext {
         } finally {
             geogig.close();
         }
+    }
+
+    /**
+     * List all features in the repository with the given name at the provided ref.
+     * 
+     * @param headRef the ref from which to list the features
+     * @param index {@code true} if the {@code headRef} parameter refers to an index tree
+     * @return a multimap that contains all of the feature types and their features
+     */
+    public SetMultimap<String, String> listRepo(final String headRef, final boolean index) {
+        Context context = geogigCLI.getGeogig().getContext();
+
+        ObjectStore source = index ? context.indexDatabase() : context.objectDatabase();
+
+        Iterator<NodeRef> featureRefs = context.command(LsTreeOp.class).setReference(headRef)
+                .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).setSource(source).call();
+
+        SetMultimap<String, String> features = HashMultimap.create();
+        while (featureRefs.hasNext()) {
+            NodeRef ref = featureRefs.next();
+            features.put(index ? "index" : ref.getParentPath(), ref.name());
+        }
+        return features;
     }
 }

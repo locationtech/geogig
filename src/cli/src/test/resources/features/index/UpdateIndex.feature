@@ -8,10 +8,24 @@ Feature: "index update" command
       And I have several commits
       And I run the command "index create --tree Points"
      Then the response should contain "Index created successfully"
+      And the repository's "HEAD:Points" index should not track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
      When I run the command "index update --tree Points --extra-attributes sp"
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 3"
       And the response should contain the index ID for tree "Points"
+      And the repository's "HEAD:Points" index should track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
 
   Scenario: Try to update a nonexistent index
     Given I have a repository
@@ -21,34 +35,93 @@ Feature: "index update" command
      
   Scenario: Try to update an index with the full history
     Given I have a repository
-      And I have several commits
+      And I have several branches
       And I run the command "index create --tree Points"
      Then the response should contain "Index created successfully"
+      And the repository's "HEAD:Points" index should not track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+      And the repository's "branch1:Points" should not have an index
+      And the repository's "branch2:Points" should not have an index
      When I run the command "index update --tree Points --extra-attributes sp --index-history"
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 3"
       And the response should contain "Size: 2"
       And the response should contain the index ID for tree "Points"
+      And the repository's "HEAD:Points" index should track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+      And the repository's "HEAD~1:Points" index should track the extra attribute "sp"
+      And the repository's "HEAD~1:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD~1:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+      And the repository's "branch2:Points" index should track the extra attribute "sp"
+      And the repository's "branch2:Points" index should not track the extra attribute "ip"
+      And the repository's "branch2:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
+      And the repository's "branch1:Points" index should track the extra attribute "sp"
+      And the repository's "branch1:Points" index should not track the extra attribute "ip"
+      And the repository's "branch1:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
 
   Scenario: Try to add attributes to an index
     Given I have a repository
       And I have several commits
       And I run the command "index create --tree Points --extra-attributes ip"
      Then the response should contain "Index created successfully"
+      And the repository's "HEAD:Points" index should not track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
      When I run the command "index update --tree Points --extra-attributes sp --add"
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 3"
       And the response should contain the index ID for tree "Points"
+      And the repository's "HEAD:Points" index should track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
 
   Scenario: Try to replace attributes of an index
     Given I have a repository
       And I have several commits
       And I run the command "index create --tree Points --extra-attributes ip"
      Then the response should contain "Index created successfully"
+      And the repository's "HEAD:Points" index should not track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
      When I run the command "index update --tree Points --extra-attributes sp --overwrite"
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 3"
       And the response should contain the index ID for tree "Points"
+      And the repository's "HEAD:Points" index should track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
 
   Scenario: Try to change existing attributes without specifying add or overwrite
     Given I have a repository
@@ -108,6 +181,11 @@ Feature: "index update" command
      Then the response should contain "Index updated successfully"
       And the response should contain "Size: 1"
       And the response should contain the index ID for tree "Points"
+      And the repository's "HEAD:Points" index should not track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
 
   Scenario: I try to update the index for the full history without specifying overwrite
     Given I have a repository

@@ -47,11 +47,19 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
 
     private @Nullable String geometryAttributeName;
 
+    /**
+     * @param typeTreeRef the {@link NodeRef} of the canonical tree to build a quadtree from
+     * @return {@code this}
+     */
     public CreateQuadTree setTypeTreeRef(NodeRef typeTreeRef) {
         this.typeTreeRef = typeTreeRef;
         return this;
     }
 
+    /**
+     * @param treeRefSpec the refspec of the tree to build a quadtree from
+     * @return {@code this}
+     */
     public CreateQuadTree setTreeRefSpec(String treeRefSpec) {
         this.treeRefSpec = treeRefSpec;
         return this;
@@ -60,22 +68,40 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
     /**
      * Optional, if given, the geometry attribute to create the quadtree index for, otherwise
      * defaults to the feature type's default geometry attribute
+     * 
+     * @param geometryAttributeName the name of the geometry attribute
+     * @return {@code this}
      */
-    public CreateQuadTree setGeometryAttributeName(String geomAttName) {
-        this.geometryAttributeName = geomAttName;
+    public CreateQuadTree setGeometryAttributeName(String geometryAttributeName) {
+        this.geometryAttributeName = geometryAttributeName;
         return this;
     }
 
+    /**
+     * @param extraAttributes extra attributes to keep track of in the indexed tree
+     * @return {@code this}
+     */
     public CreateQuadTree setExtraAttributes(@Nullable List<String> extraAttributes) {
         this.extraAttributes = extraAttributes;
         return this;
     }
 
+    /**
+     * Build the indexes for the full history of the feature tree.
+     * 
+     * @param indexHistory if {@code true}, the full history of the feature tree will be built
+     * @return {@code this}
+     */
     public CreateQuadTree setIndexHistory(boolean indexHistory) {
         this.indexHistory = indexHistory;
         return this;
     }
 
+    /**
+     * Performs the operation.
+     * 
+     * @return an {@link Index} that represents the newly created index
+     */
     @Override
     protected Index _call() {
 

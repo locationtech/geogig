@@ -42,6 +42,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
 
     /**
      * @param branchRef the refSpec that resolves to a root tree
+     * @return {@code this}
      */
     public UpdateIndexesOp setRef(final Ref branchRef) {
         checkNotNull(branchRef);
@@ -53,6 +54,11 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
         return this;
     }
 
+    /**
+     * Performs the operation.
+     * 
+     * @return a list of {@link Index} objects that represent updated indexes
+     */
     @Override
     protected List<Index> _call() {
         checkNotNull(rootRefSpec, "rootRefSpec not provided");

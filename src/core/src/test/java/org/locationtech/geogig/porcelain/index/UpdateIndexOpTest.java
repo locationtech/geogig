@@ -271,10 +271,33 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     @Test
     public void testUpdateNoExistingIndex() {
         exception.expect(IllegalStateException.class);
-        exception.expectMessage("A matching index could not be found to update.");
+        exception.expectMessage("No indexes could be found for the specified tree.");
         geogig.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setExtraAttributes(Lists.newArrayList("y"))//
+                .call();
+    }
+
+    @Test
+    public void testUpdateNoMatchingIndex() {
+        indexdb.createIndexInfo(worldPointsLayer.getName(), "x", IndexType.QUADTREE, null);
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("A matching index could not be found.");
+        geogig.command(UpdateIndexOp.class)//
+                .setTreeRefSpec(worldPointsLayer.getName())//
+                .setAttributeName("y")//
+                .call();
+    }
+
+    @Test
+    public void testUpdateMultipleMatchingIndexes() {
+        indexdb.createIndexInfo(worldPointsLayer.getName(), "x", IndexType.QUADTREE, null);
+        indexdb.createIndexInfo(worldPointsLayer.getName(), "y", IndexType.QUADTREE, null);
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(
+                "Multiple indexes were found for the specified tree, please specify the attribute.");
+        geogig.command(UpdateIndexOp.class)//
+                .setTreeRefSpec(worldPointsLayer.getName())//
                 .call();
     }
 
@@ -398,8 +421,8 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     @Test
     public void testEqualIndexesWithDifferentExtraAttributesHashDifferently() {
         Index noExtraAtts = createAndBuildIndex();
-        Index xExtraAtts = createAndBuildIndex("x");
-        Index yExtraAtts = createAndBuildIndex("y");
+        Index xExtraAtts = updateIndex(noExtraAtts.info().getTreeName(), "x");
+        Index yExtraAtts = updateIndex(noExtraAtts.info().getTreeName(), "y");
         assertNotEquals(noExtraAtts, xExtraAtts);
         assertNotEquals(xExtraAtts, yExtraAtts);
 
@@ -409,13 +432,18 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
 
     private Index createAndBuildIndex(@Nullable String... extraAttributes) {
         IndexInfo indexInfo = createIndex(extraAttributes);
+        Index index = updateIndex(indexInfo.getTreeName(), extraAttributes);
+        return index;
+    }
+
+    private Index updateIndex(String treeName, @Nullable String... extraAttributes) {
         List<String> extraAtts = null;
         if (extraAttributes != null) {
             extraAtts = Lists.newArrayList(extraAttributes);
         }
         Index index = geogig.command(UpdateIndexOp.class)//
                 .setAdd(true)//
-                .setTreeRefSpec(indexInfo.getTreeName())//
+                .setTreeRefSpec(treeName)//
                 .setExtraAttributes(extraAtts)//
                 .call();
         return index;

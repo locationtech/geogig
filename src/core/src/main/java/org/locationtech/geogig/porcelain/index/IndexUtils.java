@@ -10,6 +10,7 @@
 package org.locationtech.geogig.porcelain.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,19 +20,32 @@ import org.geotools.referencing.CRS;
 import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.impl.SpatialOps;
+import org.locationtech.geogig.storage.IndexDatabase;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Envelope;
 
+/**
+ * Utility functions that are shared between indexing commands.
+ */
 public class IndexUtils {
+    /**
+     * Resolve a tree refspec into a NodeRef.
+     * 
+     * @param context the command context
+     * @param treeRefSpec the tree refspec
+     * @return the {@link NodeRef} that matched the given refspec
+     */
     public static NodeRef resolveTypeTreeRef(Context context, String treeRefSpec) {
         checkArgument(treeRefSpec != null, "type tree was not provided");
         final String rootRef;
@@ -52,6 +66,43 @@ public class IndexUtils {
         return treeRef;
     }
 
+    /**
+     * Resolves a given tree and attribute name into an {@link IndexInfo}
+     * 
+     * @param indexdb the index database
+     * @param treeName the name of the feature tree
+     * @param attributeName the name of the indexed attribute. If {@code null}, this function will
+     *        return the index info associated with the given tree name, as long as there is only
+     *        one.
+     * @return the resolved {@link IndexInfo}
+     */
+    public static IndexInfo resolveIndexInfo(IndexDatabase indexdb, String treeName,
+            @Nullable String attributeName) {
+        IndexInfo indexInfo;
+        if (attributeName == null) {
+            List<IndexInfo> indexInfos = indexdb.getIndexInfos(treeName);
+            checkState(!indexInfos.isEmpty(), "No indexes could be found for the specified tree.");
+            checkState(indexInfos.size() == 1,
+                    "Multiple indexes were found for the specified tree, please specify the attribute.");
+
+            attributeName = indexInfos.get(0).getAttributeName();
+            indexInfo = indexInfos.get(0);
+        } else {
+            Optional<IndexInfo> indexInfoOpt = indexdb.getIndexInfo(treeName, attributeName);
+            checkState(indexInfoOpt.isPresent(), "A matching index could not be found.");
+            indexInfo = indexInfoOpt.get();
+        }
+        return indexInfo;
+    }
+
+    /**
+     * Resolves the given list of extra attributes into an array of materialized attribute names.
+     * 
+     * @param featureType the feature type
+     * @param extraAttributes the extra attributes to materialize
+     * @return the materialized attribute names, or {@code null} if there were no extra attributes
+     *         provided
+     */
     public static @Nullable String[] resolveMaterializedAttributeNames(RevFeatureType featureType,
             @Nullable List<String> extraAttributes) {
         if (extraAttributes == null || extraAttributes.isEmpty()) {
@@ -69,6 +120,12 @@ public class IndexUtils {
         return atts;
     }
 
+    /**
+     * Resolves the maximum bounds of the CRS of a geometry descriptor.
+     * 
+     * @param geometryDescriptor the geometry descriptor
+     * @return the {@link Envelope} with the maximum bounds of the CRS of the geometry descriptor
+     */
     public static Envelope resolveMaxBounds(GeometryDescriptor geometryDescriptor) {
         final CoordinateReferenceSystem crs = geometryDescriptor.getCoordinateReferenceSystem();
         checkArgument(crs != null, "Property %s does not define a Coordinate Reference System",
@@ -90,6 +147,13 @@ public class IndexUtils {
         return maxBounds;
     }
 
+    /**
+     * Resolves the geometry attribute of a feature type.
+     * 
+     * @param featureType the feature type
+     * @param geometryAttributeName the name of the geometry attribute (optional)
+     * @return the {@link GeometryDescriptor} of the geometry attribute
+     */
     public static GeometryDescriptor resolveGeometryAttribute(RevFeatureType featureType,
             @Nullable String geometryAttributeName) {
         GeometryDescriptor descriptor;

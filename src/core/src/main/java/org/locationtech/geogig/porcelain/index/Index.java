@@ -21,6 +21,13 @@ public final class Index {
 
     private final IndexDatabase indexdb;
 
+    /**
+     * Construct a new {@link Index} with the given parameters.
+     * 
+     * @param indexInfo the {@link IndexInfo} of the index
+     * @param indexTree the {@link ObjectId} of the indexed tree
+     * @param indexdb the index database
+     */
     public Index(IndexInfo indexInfo, ObjectId indexTree, IndexDatabase indexdb) {
         checkNotNull(indexInfo);
         checkNotNull(indexTree);
@@ -29,14 +36,23 @@ public final class Index {
         this.indexdb = indexdb;
     }
 
+    /**
+     * @return the {@link IndexInfo} of the index
+     */
     public IndexInfo info() {
         return indexInfo;
     }
 
+    /**
+     * @return the {@link ObjectId} of the indexed tree
+     */
     public ObjectId indexTreeId() {
         return indexTree;
     }
 
+    /**
+     * @return the {@link RevTree} that represents the indexed tree
+     */
     public RevTree indexTree() {
         return indexdb.getTree(indexTree);
     }

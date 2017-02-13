@@ -10,7 +10,6 @@
 package org.locationtech.geogig.plumbing.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Iterator;
 
@@ -18,7 +17,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
@@ -28,14 +26,13 @@ import org.locationtech.geogig.porcelain.index.IndexUtils;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.NodeRef;
-import org.opengis.feature.type.GeometryDescriptor;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**
- * Creates a spatial index for every commit a given type tree is present at.
- *
+ * Builds an index for every commit a given type tree is present at. Returns the number of trees
+ * that were built.
  */
 public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
 
@@ -43,36 +40,49 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
 
     private @Nullable String attributeName;
 
+    /**
+     * @param treeRefSpec the tree refspec of the index to be built
+     * @return {@code this}
+     */
     public BuildFullHistoryIndexOp setTreeRefSpec(String treeRefSpec) {
         this.treeRefSpec = treeRefSpec;
         return this;
     }
 
+    /**
+     * @param attributeName the indexed attribute
+     * @return
+     */
     public BuildFullHistoryIndexOp setAttributeName(String attributeName) {
         this.attributeName = attributeName;
         return this;
     }
 
+    /**
+     * Performs the operation.
+     * 
+     * @return the number of trees that were built
+     */
     @Override
     protected Integer _call() {
         checkArgument(treeRefSpec != null, "treeRefSpec not provided");
 
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(context(), treeRefSpec);
-        RevFeatureType featureType = objectDatabase().getFeatureType(typeTreeRef.getMetadataId());
         String treeName = typeTreeRef.path();
-        final GeometryDescriptor geometryAtt = IndexUtils.resolveGeometryAttribute(featureType,
-                attributeName);
-        final String geometryAttributeName = geometryAtt.getLocalName();
+        IndexInfo index = IndexUtils.resolveIndexInfo(indexDatabase(), treeName, attributeName);
 
-        Optional<IndexInfo> index = indexDatabase().getIndexInfo(treeName, geometryAttributeName);
-        checkState(index.isPresent(), "a matching index could not be found");
-
-        indexDatabase().clearIndex(index.get());
-        int builtTrees = indexHistory(index.get());
+        indexDatabase().clearIndex(index);
+        int builtTrees = indexHistory(index);
         return builtTrees;
     }
 
 
+    /**
+     * Builds an index on every reachable commit in the history.
+     * 
+     * @param index the {@link IndexInfo} to use
+     * @return the number of trees that were built
+     */
     private int indexHistory(IndexInfo index) {
         ImmutableList<Ref> branches = command(BranchListOp.class).setLocal(true).setRemotes(true)
                 .call();
@@ -89,6 +99,13 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
         return builtTrees;
     }
 
+    /**
+     * Builds an index for a single commit.
+     * 
+     * @param index the {@link IndexInfo} to use
+     * @param commit the commit to build the index for
+     * @return {@code true} if an index tree was built, {@code false} otherwise
+     */
     private boolean indexCommit(IndexInfo index, RevCommit commit) {
         RevTree commitTree = objectDatabase().getTree(commit.getTreeId());
         Optional<NodeRef> treeNode = command(FindTreeChild.class).setChildPath(index.getTreeName())

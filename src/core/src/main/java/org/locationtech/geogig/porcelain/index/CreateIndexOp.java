@@ -26,6 +26,9 @@ import org.locationtech.geogig.repository.IndexInfo.IndexType;
 
 import com.google.common.base.Optional;
 
+/**
+ * Creates a new index using the provided parameters and metadata.
+ */
 public class CreateIndexOp extends AbstractGeoGigOp<Index> {
 
     private String treeName;
@@ -42,6 +45,11 @@ public class CreateIndexOp extends AbstractGeoGigOp<Index> {
 
     private boolean indexHistory = false;
 
+    /**
+     * Performs the operation.
+     * 
+     * @return an {@link Index} that represents the newly created index
+     */
     @Override
     protected Index _call() {
         checkArgument(treeName != null, "treeName not provided");
@@ -83,36 +91,67 @@ public class CreateIndexOp extends AbstractGeoGigOp<Index> {
         return new Index(indexInfo, indexedTreeId, indexDatabase());
     }
 
+    /**
+     * @param treeName the name of the feature tree
+     * @return {@code this}
+     */
     public CreateIndexOp setTreeName(String treeName) {
         this.treeName = treeName;
         return this;
     }
 
+    /**
+     * @param attributeName the name of the indexed attribute
+     * @return {@code this}
+     */
     public CreateIndexOp setAttributeName(String attributeName) {
         this.attributeName = attributeName;
         return this;
     }
 
+    /**
+     * @param indexType the type of index to create
+     * @return {@code this}
+     */
     public CreateIndexOp setIndexType(IndexType indexType) {
         this.indexType = indexType;
         return this;
     }
 
+    /**
+     * @param metadata extra data that can be used by the index
+     * @return {@code this}
+     */
     public CreateIndexOp setMetadata(Map<String, Object> metadata) {
         this.metadata = metadata;
         return this;
     }
 
+    /**
+     * @param canonicalTypeTree the canonical {@link RevTree} of the feature type
+     * @return {@code this}
+     */
     public CreateIndexOp setCanonicalTypeTree(RevTree canonicalTypeTree) {
         this.canonicalTypeTree = canonicalTypeTree;
         return this;
     }
 
+    /**
+     * @param featureTypeId the {@link ObjectId} of the feature type
+     * @return {@code this}
+     */
     public CreateIndexOp setFeatureTypeId(ObjectId featureTypeId) {
         this.featureTypeId = featureTypeId;
         return this;
     }
 
+    /**
+     * Build index trees for the full history of the feature tree.
+     * 
+     * @param indexHistory if {@code true}, index trees will be built for every commit that contains
+     *        the given feature type tree
+     * @return {@code this}
+     */
     public CreateIndexOp setIndexHistory(boolean indexHistory) {
         this.indexHistory = indexHistory;
         return this;

@@ -37,6 +37,9 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.vividsolutions.jts.geom.Envelope;
 
+/**
+ * Builds an index tree for the given canonical tree.
+ */
 public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
 
     private IndexInfo index;
@@ -47,26 +50,48 @@ public class BuildIndexOp extends AbstractGeoGigOp<RevTree> {
 
     private ObjectId revFeatureTypeId;
 
+    /**
+     * @param index the {@link IndexInfo} to use
+     * @return {@code this}
+     */
     public BuildIndexOp setIndex(IndexInfo index) {
         this.index = index;
         return this;
     }
 
+    /**
+     * @param oldTree the previous canonical tree, used to optimize the construction of a new
+     *        indexed tree
+     * @return {@code this}
+     */
     public BuildIndexOp setOldCanonicalTree(RevTree oldTree) {
         this.oldCanonicalTree = oldTree;
         return this;
     }
 
+    /**
+     * @param newTree the canonical tree to build an index for
+     * @return {@code this}
+     */
     public BuildIndexOp setNewCanonicalTree(RevTree newTree) {
         this.newCanonicalTree = newTree;
         return this;
     }
 
+    /**
+     * @param id the {@link ObjectId} of the feature type
+     * @return
+     */
     public BuildIndexOp setRevFeatureTypeId(ObjectId id) {
         this.revFeatureTypeId = id;
         return this;
     }
 
+    /**
+     * Performs the operation.
+     * 
+     * @return the {@link RevTree} that represents the indexed version of the canonical tree
+     */
     @Override
     protected RevTree _call() {
         checkState(index != null, "index to update was not provided");

@@ -72,7 +72,7 @@ Feature: "index update" command
     And I run the command "index create --tree Points --extra-attributes ip"
     Then the response should contain "Index created successfully"
     When I run the command "index update --tree Points --attribute fakeAttrib"
-    Then the response should contain "property fakeAttrib does not exist"
+    Then the response should contain "A matching index could not be found."
 
   Scenario: I try to update the index leaving the extra-attribute param empty
     Given I have a repository
@@ -98,14 +98,6 @@ Feature: "index update" command
      When I run the command "index update --tree Points --extra-attributes fakeAttrib --overwrite"
      Then the response should contain "FeatureType Points does not define attribute 'fakeAttrib'"
 
-  Scenario: I try to add a non-existent attribute to the index
-    Given I have a repository
-      And I have several commits
-      And I run the command "index create --tree Points --extra-attributes ip"
-     Then the response should contain "Index created successfully"
-     When I run the command "index update --tree Points --extra-attributes sp"
-     Then the response should contain "Extra attributes already exist on index, specify add or overwrite"
-
   Scenario: I try to update the index for the full history when there is only one commit
     Given I have a repository
       And I have staged "points1"
@@ -123,8 +115,7 @@ Feature: "index update" command
       And I run the command "index create --tree Points --extra-attributes ip"
      Then the response should contain "Index created successfully"
      When I run the command "index update --tree Points --index-history"
-     Then the response should contain "Extra attributes already exist on index"
-      And the response should contain "specify add or overwrite to update"
+     Then the response should contain "Extra attributes already exist on index, specify add or overwrite"
 
   Scenario: I try to update the index in an empty repository
     Given I have a repository

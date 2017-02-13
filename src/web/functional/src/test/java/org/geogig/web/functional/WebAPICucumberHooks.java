@@ -17,6 +17,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -50,6 +51,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
@@ -60,6 +62,8 @@ import org.geotools.geopkg.GeoPackage;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.TransactionBegin;
@@ -71,6 +75,9 @@ import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.RemoteAddOp;
 import org.locationtech.geogig.porcelain.TagCreateOp;
+import org.locationtech.geogig.porcelain.index.IndexUtils;
+import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.rest.AsyncContext;
@@ -244,32 +251,6 @@ public class WebAPICucumberHooks {
         data.addAndCommit("modify point1; add point2, line1, poly1", data.point1_modified,
             data.point2, data.line1, data.poly1);
     }
-
-    /**
-     * Checks that the repository named {@code repositoryName}, at it's commit {@code headRef}, has
-     * the expected features as given by the {@code expectedFeatures} {@link DataTable}.
-     * <p>
-     * The {@code DataTable} top cells represent feature tree paths, and their cells beneath each
-     * feature tree path, the feature ids expected for each layer.
-     * <p>
-     * A {@code question mark} indicates a wild card feature where the feature id may not be known.
-     * <p>
-     * Example:
-     * 
-     * <pre>
-     * <code>
-     *     |  Points   |  Lines   |  Polygons   | 
-     *     |  Points.1 |  Lines.1 |  Polygons.1 | 
-     *     |  Points.2 |  Lines.2 |  Polygons.2 | 
-     *     |  ?        |          |             |
-     *</code>
-     * </pre>
-     * 
-     * @param repositoryName
-     * @param headRef
-     * @param expectedFeatures
-     * @throws Throwable
-     */
     
     /**
      * Checks that the repository named {@code repositoryName}, at it's commit {@code headRef}, has
@@ -296,10 +277,8 @@ public class WebAPICucumberHooks {
      * @param expectedFeatures
      * @throws Throwable
      */
-    @Then("^the ([^\"]*) repository's \"([^\"]*)\" in the (@[^\"]*) transaction should have the following features:$")
-    public void verifyRepositoryContentsTx(String repositoryName, String headRef, String txId,
-            DataTable expectedFeatures) throws Throwable {
-
+    private void verifyRepositoryContents(String repositoryName, String headRef, String txId,
+            DataTable expectedFeatures, boolean index) {
         SetMultimap<String, String> expected = HashMultimap.create();
         {
             List<Map<String, String>> asMaps = expectedFeatures.asMaps(String.class, String.class);
@@ -312,7 +291,7 @@ public class WebAPICucumberHooks {
             }
         }
 
-        SetMultimap<String, String> actual = context.listRepo(repositoryName, headRef, txId);
+        SetMultimap<String, String> actual = context.listRepo(repositoryName, headRef, txId, index);
 
         Map<String, Collection<String>> actualMap = actual.asMap();
         Map<String, Collection<String>> expectedMap = expected.asMap();
@@ -338,11 +317,94 @@ public class WebAPICucumberHooks {
         // add the repo to the set so it can be closed
         openedRepos.add(repositoryName);
     }
+
+    @Then("^the ([^\"]*) repository's \"([^\"]*)\" in the (@[^\"]*) transaction should have the following features:$")
+    public void verifyRepositoryContentsTx(String repositoryName, String headRef, String txId,
+            DataTable expectedFeatures) throws Throwable {
+        verifyRepositoryContents(repositoryName, headRef, txId, expectedFeatures, false);
+
+    }
     
     @Then("^the ([^\"]*) repository's \"([^\"]*)\" should have the following features:$")
     public void verifyRepositoryContents(String repositoryName, String headRef,
             DataTable expectedFeatures) throws Throwable {
-        verifyRepositoryContentsTx(repositoryName, headRef, null, expectedFeatures);
+        verifyRepositoryContents(repositoryName, headRef, null, expectedFeatures, false);
+    }
+
+    private Optional<ObjectId> resolveIndexTreeId(String repositoryName, String headRef,
+            @Nullable String attributeName) {
+        Repository repo = context.getRepo(repositoryName);
+        final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(repo.context(), headRef);
+        String treeName = typeTreeRef.path();
+        IndexInfo indexInfo = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName,
+                attributeName);
+        Optional<ObjectId> indexTreeId = repo.indexDatabase().resolveIndexedTree(indexInfo,
+                typeTreeRef.getObjectId());
+        return indexTreeId;
+    }
+
+    @Then("^the ([^\"]*) repository's \"([^\"]*)\" index on the \"([^\"]*)\" attribute should have the following features:$")
+    public void verifyIndexContents(String repositoryName, String headRef, String attributeName,
+            DataTable expectedFeatures) throws Throwable {
+        Optional<ObjectId> indexTreeId = resolveIndexTreeId(repositoryName, headRef, attributeName);
+        assertTrue(indexTreeId.isPresent());
+        verifyRepositoryContents(repositoryName, indexTreeId.get().toString(), null,
+                expectedFeatures, true);
+    }
+
+    @Then("^the ([^\"]*) repository's \"([^\"]*)\" index should have the following features:$")
+    public void verifyIndexContents(String repositoryName, String headRef,
+            DataTable expectedFeatures) throws Throwable {
+        verifyIndexContents(repositoryName, headRef, null, expectedFeatures);
+    }
+
+    @Then("^the ([^\"]*) repository's \"([^\"]*)\" should not have an index$")
+    public void noIndexAtCommit(String repositoryName, String headRef) throws Throwable {
+        Optional<ObjectId> indexTreeId = resolveIndexTreeId(repositoryName, headRef, null);
+        assertFalse(indexTreeId.isPresent());
+        // add the repo to the set so it can be closed
+        openedRepos.add(repositoryName);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Then("^the ([^\"]*) repository's \"([^\"]*)\" index should track the extra attribute \"([^\"]*)\"$")
+    public void verifyIndexExtraAttributes(String repositoryName, String headRef,
+            String attributeName) throws Throwable {
+        Repository repo = context.getRepo(repositoryName);
+        Optional<ObjectId> indexTreeId = resolveIndexTreeId(repositoryName, headRef, null);
+        assertTrue(indexTreeId.isPresent());
+        RevTree indexTree = repo.indexDatabase().getTree(indexTreeId.get());
+        Set<org.locationtech.geogig.model.Node> nodes = RevObjectTestSupport.getTreeNodes(indexTree,
+                repo.indexDatabase());
+        for (org.locationtech.geogig.model.Node n : nodes) {
+            Map<String, Object> extraData = n.getExtraData();
+            assertTrue(extraData.containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
+            Map<String, Object> attributeData = (Map<String, Object>) extraData
+                    .get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
+            assertTrue(attributeData.containsKey(attributeName));
+        }
+        // add the repo to the set so it can be closed
+        openedRepos.add(repositoryName);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Then("^the ([^\"]*) repository's \"([^\"]*)\" index should not track the extra attribute \"([^\"]*)\"$")
+    public void verifyIndexNotExtraAttributes(String repositoryName, String headRef,
+            String attributeName) throws Throwable {
+        Repository repo = context.getRepo(repositoryName);
+        Optional<ObjectId> indexTreeId = resolveIndexTreeId(repositoryName, headRef, null);
+        assertTrue(indexTreeId.isPresent());
+        RevTree indexTree = repo.indexDatabase().getTree(indexTreeId.get());
+        Set<org.locationtech.geogig.model.Node> nodes = RevObjectTestSupport.getTreeNodes(indexTree,
+                repo.indexDatabase());
+        for (org.locationtech.geogig.model.Node n : nodes) {
+            Map<String, Object> extraData = n.getExtraData();
+            if (extraData.containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA)) {
+                Map<String, Object> attributeData = (Map<String, Object>) extraData
+                        .get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
+                assertFalse(attributeData.containsKey(attributeName));
+            }
+        }
         // add the repo to the set so it can be closed
         openedRepos.add(repositoryName);
     }

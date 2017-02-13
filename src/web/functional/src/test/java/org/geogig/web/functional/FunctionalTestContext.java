@@ -38,6 +38,7 @@ import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.web.api.TestData;
 import org.restlet.data.Method;
 import org.w3c.dom.Document;
@@ -120,23 +121,27 @@ public abstract class FunctionalTestContext extends ExternalResource {
      * 
      * @param repoName the repository to list the features for
      * @param headRef the ref from which to list the features
+     * @param txId the transaction that the tree is on
+     * @param index {@code true} if the {@code headRef} parameter refers to an index tree
      * @return a multimap that contains all of the feature types and their features
      */
     public SetMultimap<String, String> listRepo(final String repoName, final String headRef,
-            final String txId) {
+            final String txId, final boolean index) {
         Context context = getRepo(repoName).context();
         if (txId != null) {
             context = context.command(TransactionResolve.class)
                     .setId(UUID.fromString(getVariable(txId))).call().get();
         }
 
+        ObjectStore source = index ? context.indexDatabase() : context.objectDatabase();
+
         Iterator<NodeRef> featureRefs = context.command(LsTreeOp.class).setReference(headRef)
-                .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
+                .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).setSource(source).call();
 
         SetMultimap<String, String> features = HashMultimap.create();
         while (featureRefs.hasNext()) {
             NodeRef ref = featureRefs.next();
-            features.put(ref.getParentPath(), ref.name());
+            features.put(index ? "index" : ref.getParentPath(), ref.name());
         }
         return features;
     }

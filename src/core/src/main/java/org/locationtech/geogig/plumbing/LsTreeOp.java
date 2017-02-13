@@ -26,7 +26,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.NodeRef;
-import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -87,6 +87,8 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
 
     private Predicate<Bounded> refBoundsFilter;
 
+    private ObjectStore source;
+
     public LsTreeOp() {
         this.strategy = Strategy.CHILDREN;
     }
@@ -115,6 +117,11 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
         return this;
     }
 
+    public LsTreeOp setSource(ObjectStore source) {
+        this.source = source;
+        return this;
+    }
+
     /**
      * @see java.util.concurrent.Callable#call()
      */
@@ -125,6 +132,10 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
             ref = Ref.WORK_HEAD;
         }
 
+        if (source == null) {
+            source = objectDatabase();
+        }
+
         ObjectId metadataId = ObjectId.NULL;
         final String path = ref.lastIndexOf(':') != -1 ? ref.substring(ref.lastIndexOf(':') + 1)
                 : "";
@@ -132,14 +143,14 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
             final String providedRefName = ref.lastIndexOf(':') != -1
                     ? ref.substring(0, ref.lastIndexOf(':')) : null;
             if (providedRefName != null) {
-                Optional<ObjectId> rootTreeId = command(ResolveTreeish.class)
+                Optional<ObjectId> rootTreeId = command(ResolveTreeish.class).setSource(source)
                         .setTreeish(providedRefName).call();
                 if (rootTreeId.isPresent()) {
-                    RevTree rootTree = command(RevObjectParse.class).setObjectId(rootTreeId.get())
-                            .call(RevTree.class).get();
+                    RevTree rootTree = command(RevObjectParse.class).setSource(source)
+                            .setObjectId(rootTreeId.get()).call(RevTree.class).get();
 
-                    Optional<NodeRef> treeRef = command(FindTreeChild.class).setChildPath(path)
-                            .setParent(rootTree).call();
+                    Optional<NodeRef> treeRef = command(FindTreeChild.class).setSource(source)
+                            .setChildPath(path).setParent(rootTree).call();
                     metadataId = treeRef.isPresent() ? treeRef.get().getMetadataId()
                             : ObjectId.NULL;
                 }
@@ -153,7 +164,8 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
                 return Collections.emptyIterator();
             }
         }
-        Optional<RevObject> revObject = command(RevObjectParse.class).setRefSpec(ref)
+        Optional<RevObject> revObject = command(RevObjectParse.class).setSource(source)
+                .setRefSpec(ref)
                 .call(RevObject.class);
 
         Optional<NodeRef> treeRef = Optional.absent();
@@ -166,13 +178,15 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
             // let's try to see if it is a feature type or feature in the working tree
             NodeRef.checkValidPath(ref);
 
-            treeRef = command(FindTreeChild.class).setParent(workingTree().getTree())
+            treeRef = command(FindTreeChild.class).setSource(source)
+                    .setParent(workingTree().getTree())
                     .setChildPath(ref).call();
 
             Preconditions.checkArgument(treeRef.isPresent(), "Invalid reference: %s", ref);
             ObjectId treeId = treeRef.get().getObjectId();
             metadataId = treeRef.get().getMetadataId();
-            revObject = command(RevObjectParse.class).setObjectId(treeId).call(RevObject.class);
+            revObject = command(RevObjectParse.class).setSource(source).setObjectId(treeId)
+                    .call(RevObject.class);
         }
 
         checkArgument(revObject.isPresent(), "Invalid reference: %s", ref);
@@ -187,7 +201,8 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
             if (this.strategy == Strategy.TREES_ONLY) {
                 if (nodeRef != null) {
                     while (!nodeRef.getParentPath().isEmpty()) {
-                        treeRef = command(FindTreeChild.class).setParent(workingTree().getTree())
+                        treeRef = command(FindTreeChild.class).setSource(source)
+                                .setParent(workingTree().getTree())
                                 .setChildPath(nodeRef.getParentPath()).call();
                         nodeRef = treeRef.get();
                         nodeRefs.add(nodeRef);
@@ -198,7 +213,8 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
         case COMMIT:
             RevCommit revCommit = (RevCommit) revObject.get();
             ObjectId treeId = revCommit.getTreeId();
-            revObject = command(RevObjectParse.class).setObjectId(treeId).call(RevObject.class);
+            revObject = command(RevObjectParse.class).setSource(source).setObjectId(treeId)
+                    .call(RevObject.class);
         case TREE:
 
             DepthTreeIterator.Strategy iterStrategy;
@@ -227,8 +243,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
             }
 
             RevTree tree = (RevTree) revObject.get();
-            ObjectDatabase database = objectDatabase();
-            DepthTreeIterator iter = new DepthTreeIterator(path, metadataId, tree, database,
+            DepthTreeIterator iter = new DepthTreeIterator(path, metadataId, tree, source,
                     iterStrategy);
             iter.setBoundsFilter(refBoundsFilter);
             return iter;

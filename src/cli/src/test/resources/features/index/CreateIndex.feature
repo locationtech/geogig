@@ -8,9 +8,19 @@ Feature: "index create" command
       And I have several commits
       And I run the command "index create --tree Points"
      Then the response should contain "Index created successfully"
-    And the response should contain "Size: 3"
-    And the response should not contain "Size: 2"
-    And the response should contain the index ID for tree "Points"
+      And the response should contain "Size: 3"
+      And the response should not contain "Size: 2"
+      And the response should contain the index ID for tree "Points"
+      And the repository's "HEAD:Points" index should not track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
+      And the repository's "HEAD~1:Points" should not have an index
+      And the repository's "HEAD~2:Points" should not have an index
+      And the repository's "HEAD~3:Points" should not have an index
 
   Scenario: Try to create an index with extra attributes
     Given I have a repository
@@ -20,6 +30,16 @@ Feature: "index create" command
       And the response should contain "Size: 3"
       And the response should not contain "Size: 2"
       And the response should contain the index ID for tree "Points"
+      And the repository's "HEAD:Points" index should track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
+      And the repository's "HEAD~1:Points" should not have an index
+      And the repository's "HEAD~2:Points" should not have an index
+      And the repository's "HEAD~3:Points" should not have an index
 
   Scenario: Try to create an index on a nonexistent tree
     Given I have a repository
@@ -41,12 +61,69 @@ Feature: "index create" command
      
   Scenario: Try to create an index with the full history
     Given I have a repository
-      And I have several commits
+      And I have several branches
       And I run the command "index create --tree Points --index-history"
      Then the response should contain "Index created successfully"
       And the response should contain "Size: 3"
       And the response should contain "Size: 2"
       And the response should contain the index ID for tree "Points"
+      And the repository's "HEAD:Points" index should not track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+      And the repository's "HEAD~1:Points" index should not track the extra attribute "sp"
+      And the repository's "HEAD~1:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD~1:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+      And the repository's "branch2:Points" index should not track the extra attribute "sp"
+      And the repository's "branch2:Points" index should not track the extra attribute "ip"
+      And the repository's "branch2:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
+      And the repository's "branch1:Points" index should not track the extra attribute "sp"
+      And the repository's "branch1:Points" index should not track the extra attribute "ip"
+      And the repository's "branch1:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
+          
+  Scenario: Try to create an index with the full history and extra attributes
+    Given I have a repository
+      And I have several branches
+      And I run the command "index create --tree Points --extra-attributes sp,ip --index-history"
+     Then the response should contain "Index created successfully"
+      And the response should contain "Size: 3"
+      And the response should contain "Size: 2"
+      And the response should contain the index ID for tree "Points"
+      And the repository's "HEAD:Points" index should track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+      And the repository's "HEAD~1:Points" index should track the extra attribute "sp"
+      And the repository's "HEAD~1:Points" index should track the extra attribute "ip"
+      And the repository's "HEAD~1:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+      And the repository's "branch2:Points" index should track the extra attribute "sp"
+      And the repository's "branch2:Points" index should track the extra attribute "ip"
+      And the repository's "branch2:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
+      And the repository's "branch1:Points" index should track the extra attribute "sp"
+      And the repository's "branch1:Points" index should track the extra attribute "ip"
+      And the repository's "branch1:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
+          |    Points.2   | 
+          |    Points.3   | 
 
   Scenario: Try to create an index without specifying a tree
     Given I have a repository
@@ -67,6 +144,11 @@ Feature: "index create" command
      Then the response should contain "Index updated"
       And the response should contain "Size: 1"
       And the response should contain the index ID for tree "Points"
+      And the repository's "HEAD:Points" index should not track the extra attribute "sp"
+      And the repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repository's "HEAD:Points" index should have the following features:
+          |     index     | 
+          |    Points.1   | 
 
   Scenario: Try to create an index with an incorrect extra attribute
     Given I have a repository

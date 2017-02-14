@@ -80,7 +80,7 @@ public class RevObjectTestSupport {
         return tree;
     }
 
-    public static RevTree createFeaturesTree(ObjectDatabase source, final String namePrefix,
+    public static RevTree createFeaturesTree(ObjectStore source, final String namePrefix,
             final int numEntries, final int startIndex, boolean randomIds) {
 
         RevTree tree = createFeaturesTreeBuilder(source, namePrefix, numEntries, startIndex,

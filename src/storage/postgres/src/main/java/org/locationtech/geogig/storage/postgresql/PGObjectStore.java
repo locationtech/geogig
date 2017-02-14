@@ -809,7 +809,7 @@ public class PGObjectStore implements ObjectStore {
         }
 
         RevObject obj = encoder.read(id, bytes, 0, bytes.length);
-        sharedCache.put(id, obj);
+        sharedCache.put(obj);
         return obj;
     }
 
@@ -922,7 +922,7 @@ public class PGObjectStore implements ObjectStore {
                                             callback.found(id, Integer.valueOf(bytes.length));
                                         }
                                         found.add(type.cast(obj));
-                                        sharedCache.put(id, obj);
+                                        sharedCache.put(obj);
                                     }
                                 }
                             }
@@ -1024,7 +1024,7 @@ public class PGObjectStore implements ObjectStore {
                         callback.found(id, null/* this arg should be deprecated */);
                         ObjectInfo<T> info = ObjectInfo.of(n, type.cast(obj));
                         result.add(info);
-                        sharedCache.put(id, obj);
+                        sharedCache.put(obj);
                     } else {
                         callback.notFound(n.getObjectId());
                     }

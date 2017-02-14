@@ -132,6 +132,11 @@
       <artifactId>compress-lzf</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>net.jpountz.lz4</groupId>
+      <artifactId>lz4</artifactId>
+    </dependency>
+
     <!-- Test scope dependencies -->
     <dependency>
       <groupId>junit</groupId>

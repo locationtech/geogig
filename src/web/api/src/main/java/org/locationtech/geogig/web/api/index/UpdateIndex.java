@@ -15,6 +15,7 @@ import java.util.List;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.porcelain.index.UpdateIndexOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -23,6 +24,8 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * The interface for the Update Index operation in GeoGig.
@@ -44,6 +47,8 @@ public class UpdateIndex extends AbstractWebAPICommand {
 
     boolean add;
 
+    String bbox;
+
     public UpdateIndex(ParameterSet options) {
         super(options);
         setTreeRefSpec(options.getFirstValue("treeRefSpec", null));
@@ -57,6 +62,7 @@ public class UpdateIndex extends AbstractWebAPICommand {
         setIndexHistory(Boolean.valueOf(options.getFirstValue("indexHistory", "false")));
         setAdd(Boolean.valueOf(options.getFirstValue("add", "false")));
         setOverwrite(Boolean.valueOf(options.getFirstValue("overwrite", "false")));
+        setBBox(options.getFirstValue("bounds", null));
     }
 
     public void setTreeRefSpec(String treeRefSpec) {
@@ -81,6 +87,10 @@ public class UpdateIndex extends AbstractWebAPICommand {
 
     public void setOverwrite(boolean overwrite) {
         this.overwrite = overwrite;
+    }
+
+    public void setBBox(String bbox) {
+        this.bbox = bbox;
     }
 
     @Override
@@ -108,6 +118,9 @@ public class UpdateIndex extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         Repository repository = context.getRepository();
+
+        Envelope bounds = SpatialOps.parseNonReferencedBBOX(bbox);
+
         final Index index = repository.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(treeRefSpec)//
                 .setAttributeName(geometryAttributeName)//
@@ -115,6 +128,7 @@ public class UpdateIndex extends AbstractWebAPICommand {
                 .setIndexHistory(indexHistory)//
                 .setAdd(add)//
                 .setOverwrite(overwrite)//
+                .setBounds(bounds)//
                 .call();
 
         context.setResponseContent(new CommandResponse() {

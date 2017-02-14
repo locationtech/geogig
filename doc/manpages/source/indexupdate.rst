@@ -29,6 +29,8 @@ OPTIONS
 
 --overwrite                     If specified, new attributes will replace the existing set of extra attributes.
 
+--bounds                        If specified, the max bounds of the spatial index will be updated to this parameter. <minx,miny,maxx,maxy>
+
 
 
 SEE ALSO

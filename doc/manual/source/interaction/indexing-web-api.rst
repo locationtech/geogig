@@ -10,7 +10,7 @@ Creates a new index on a specified feature tree using a geometry attribute in th
 
 ::
 
-   PUT /repos/<repo>/index/create[.xml|.json]?treeRefSpec=<treeRefSpec>[&geometryAttributeName=<attributeName>][[&extraAttributes=<attributeName>]+][&indexHistory=<true|false>]
+   PUT /repos/<repo>/index/create[.xml|.json]?treeRefSpec=<treeRefSpec>[&geometryAttributeName=<attributeName>][[&extraAttributes=<attributeName>]+][&indexHistory=<true|false>][&bounds=<minx,miny,maxx,maxy>]
 
 
 Parameters
@@ -27,6 +27,9 @@ Optional. An extra attribute that should be stored in the index to improve perfo
 
 **indexHistory:**
 Optional. Boolean indicating whether or not index trees should be built for every commit in the history of the repository.  By default only the feature tree in commit indicated by the ``treeRefSpec`` will be indexed.
+
+**bounds:**
+Optional.  String indicating the max bounds of the spatial index.  If not specified, the bounds will be set to the extent of the coordinate reference system of the geometry attribute.
 
 Examples   
 ^^^^^^^^
@@ -72,6 +75,26 @@ Create an index with extra attributes:
         </index>
         <indexedTreeId>b3340540d2098ec33b7edab1b38d3ffc18f8e162</indexedTreeId>
     </response>
+    
+Create an index with custom bounds:
+***********************************
+
+::
+
+	$ curl -X PUT -v "http://localhost:8182/repos/repo1/index/create?treeRefSpec=Points&bounds=-60,-45,60,45" | xmllint --format -
+	< HTTP/1.1 201 Created
+	< Content-Type: application/xml
+	<?xml version="1.0" encoding="UTF-8"?>
+    <response>
+        <success>true</success>
+        <index>
+            <treeName>Points</treeName>
+            <attributeName>the_geom</attributeName>
+            <indexType>QUADTREE</indexType>
+            <bounds>Env[-60,60,-45,45]</bounds>
+        </index>
+        <indexedTreeId>b3340540d2098ec33b7edab1b38d3ffc18f8e162</indexedTreeId>
+    </response>
 
 
 Index Update
@@ -104,6 +127,9 @@ Optional. If extra attributes already exist on the index, you must specify eithe
 
 **overwrite:**
 Optional: See ``add``.  If ``overwrite`` is specified, the extra attributes in the indexed will be replaced with those specified in the parameters.  If no extra attributes are supplied, all extra attributes will be removed from the index.
+
+**bounds:**
+Optional.  String indicating the new max bounds of the spatial index.
 
 Examples   
 ^^^^^^^^
@@ -173,6 +199,26 @@ In this case Points already has an extra attribute of ``sp``.  If we want to rem
             <attributeName>the_geom</attributeName>
             <indexType>QUADTREE</indexType>
             <bounds>Env[-180,180,-90,90]</bounds>
+        </index>
+        <indexedTreeId>b3340540d2098ec33b7edab1b38d3ffc18f8e162</indexedTreeId>
+    </response>
+    
+Update the max bounds of the Points index:
+******************************************
+
+::
+
+	$ curl -X POST -v "http://localhost:8182/repos/repo1/index/update?treeRefSpec=Points&bounds=-60,-45,60,45" | xmllint --format -
+	< HTTP/1.1 201 Created
+	< Content-Type: application/xml
+	<?xml version="1.0" encoding="UTF-8"?>
+    <response>
+        <success>true</success>
+        <index>
+            <treeName>Points</treeName>
+            <attributeName>the_geom</attributeName>
+            <indexType>QUADTREE</indexType>
+            <bounds>Env[-60,60,-45,45]</bounds>
         </index>
         <indexedTreeId>b3340540d2098ec33b7edab1b38d3ffc18f8e162</indexedTreeId>
     </response>

@@ -21,9 +21,11 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.vividsolutions.jts.geom.Envelope;
 
 @RequiresRepository(true)
 @Parameters(commandNames = {
@@ -44,17 +46,23 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
             "--extra-attributes" }, description = "Comma separated list of extra attribute names to hold inside index")
     private List<String> extraAttributes;
 
+    @Parameter(names = "--bounds", description = "If specified, the max bounds of the spatial index will be set to this parameter. <minx,miny,maxx,maxy>")
+    private String bbox;
+
     @Override
     protected void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
 
         Repository repo = cli.getGeogig().getRepository();
 
+        Envelope envelope = SpatialOps.parseNonReferencedBBOX(bbox);
+
         Index index = repo.command(CreateQuadTree.class)//
                 .setTreeRefSpec(treeRefSpec)//
                 .setGeometryAttributeName(attribute)//
                 .setExtraAttributes(extraAttributes)//
                 .setIndexHistory(indexHistory)//
+                .setBounds(envelope)//
                 .setProgressListener(cli.getProgressListener())//
                 .call();
 

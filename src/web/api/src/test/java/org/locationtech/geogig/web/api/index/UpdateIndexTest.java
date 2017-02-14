@@ -10,6 +10,7 @@
 package org.locationtech.geogig.web.api.index;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -34,6 +35,7 @@ import org.locationtech.geogig.web.api.WebAPICommand;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import com.vividsolutions.jts.geom.Envelope;
 
 public class UpdateIndexTest extends AbstractWebOpTest {
 
@@ -186,6 +188,66 @@ public class UpdateIndexTest extends AbstractWebOpTest {
     }
 
     @Test
+    public void testUpdateIndexBounds() throws Exception {
+        Repository geogig = testContext.get().getRepository();
+        TestData testData = new TestData(geogig);
+        testData.init();
+        testData.loadDefaultData();
+
+        geogig.command(CreateQuadTree.class).setTreeRefSpec("Points").call();
+
+        ObjectId canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+                .setTreeish("HEAD:Points").call().get();
+
+        ParameterSet options = TestParams.of("treeRefSpec", "Points", "indexHistory", "true",
+                "bounds", "-60,-45,60,45");
+
+        buildCommand(options).run(testContext.get());
+
+        Envelope expectedBounds = new Envelope(-60, 60, -45, 45);
+
+        JsonObject response = getJSONResponse().getJsonObject("response");
+        assertTrue(response.getBoolean("success"));
+        JsonObject index = response.getJsonObject("index");
+        assertEquals("Points", index.getString("treeName"));
+        assertEquals("geom", index.getString("attributeName"));
+        assertEquals("QUADTREE", index.getString("indexType"));
+        assertEquals(expectedBounds.toString(), index.getString("bounds"));
+        ObjectId treeId = ObjectId.valueOf(response.getString("indexedTreeId"));
+
+        IndexInfo indexInfo = geogig.indexDatabase().getIndexInfo("Points", "geom").get();
+        assertEquals("Points", indexInfo.getTreeName());
+        assertEquals("geom", indexInfo.getAttributeName());
+        assertEquals(IndexType.QUADTREE, indexInfo.getIndexType());
+        assertFalse(indexInfo.getMetadata().containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
+
+        Optional<ObjectId> indexedTreeId = geogig.indexDatabase().resolveIndexedTree(indexInfo,
+                canonicalFeatureTreeId);
+        assertTrue(indexedTreeId.isPresent());
+
+        assertEquals(indexedTreeId.get(), treeId);
+
+        // make sure old commits are indexed
+        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class).setTreeish("HEAD~1:Points")
+                .call().get();
+        indexedTreeId = geogig.indexDatabase().resolveIndexedTree(indexInfo,
+                canonicalFeatureTreeId);
+        assertTrue(indexedTreeId.isPresent());
+
+        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class).setTreeish("branch1:Points")
+                .call().get();
+        indexedTreeId = geogig.indexDatabase().resolveIndexedTree(indexInfo,
+                canonicalFeatureTreeId);
+        assertTrue(indexedTreeId.isPresent());
+
+        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class).setTreeish("branch2:Points")
+                .call().get();
+        indexedTreeId = geogig.indexDatabase().resolveIndexedTree(indexInfo,
+                canonicalFeatureTreeId);
+        assertTrue(indexedTreeId.isPresent());
+    }
+
+    @Test
     public void testUpdateIndexExistingAttributes() throws Exception {
         Repository geogig = testContext.get().getRepository();
         TestData testData = new TestData(geogig);
@@ -232,6 +294,23 @@ public class UpdateIndexTest extends AbstractWebOpTest {
 
         ex.expect(IllegalStateException.class);
         ex.expectMessage("A matching index could not be found.");
+        buildCommand(options).run(testContext.get());
+    }
+
+    @Test
+    public void testUpdateIndexNothingToChange() throws Exception {
+        Repository geogig = testContext.get().getRepository();
+        TestData testData = new TestData(geogig);
+        testData.init();
+        testData.loadDefaultData();
+
+        geogig.command(CreateQuadTree.class).setTreeRefSpec("Points")
+                .setExtraAttributes(Lists.newArrayList("sp")).call();
+
+        ParameterSet options = TestParams.of("treeRefSpec", "Points");
+
+        ex.expect(IllegalStateException.class);
+        ex.expectMessage("Nothing to update...");
         buildCommand(options).run(testContext.get());
     }
 

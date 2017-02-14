@@ -10,7 +10,6 @@
 package org.locationtech.geogig.web.api.index;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import javax.json.JsonObject;
@@ -29,6 +28,7 @@ import org.locationtech.geogig.web.api.TestParams;
 import org.locationtech.geogig.web.api.WebAPICommand;
 
 import com.google.common.base.Optional;
+import com.vividsolutions.jts.geom.Envelope;
 
 public class CreateIndexTest extends AbstractWebOpTest {
 
@@ -57,7 +57,7 @@ public class CreateIndexTest extends AbstractWebOpTest {
     public void testBuildParameters() {
         ParameterSet options = TestParams.of("treeRefSpec", "points", "geometryAttributeName",
                 "the_geom", "indexHistory", "true", "extraAttributes", "sp", "extraAttributes",
-                "ip");
+                "ip", "bounds", "-90,-90,90,90");
 
         CreateIndex op = (CreateIndex) buildCommand(options);
         assertEquals("points", op.treeRefSpec);
@@ -66,6 +66,7 @@ public class CreateIndexTest extends AbstractWebOpTest {
         assertTrue(op.extraAttributes.contains("sp"));
         assertTrue(op.extraAttributes.contains("ip"));
         assertEquals(2, op.extraAttributes.size());
+        assertEquals("-90,-90,90,90", op.bbox);
     }
 
     @Test
@@ -82,13 +83,58 @@ public class CreateIndexTest extends AbstractWebOpTest {
 
         buildCommand(options).run(testContext.get());
 
+        Envelope expectedBounds = new Envelope(-90, 90, -180, 180);
+
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         JsonObject index = response.getJsonObject("index");
         assertEquals("Points", index.getString("treeName"));
         assertEquals("geom", index.getString("attributeName"));
         assertEquals("QUADTREE", index.getString("indexType"));
-        assertNotNull(index.getString("bounds"));
+        assertEquals(expectedBounds.toString(), index.getString("bounds"));
+        ObjectId treeId = ObjectId.valueOf(response.getString("indexedTreeId"));
+
+        IndexInfo indexInfo = geogig.indexDatabase().getIndexInfo("Points", "geom").get();
+        assertEquals("Points", indexInfo.getTreeName());
+        assertEquals("geom", indexInfo.getAttributeName());
+        assertEquals(IndexType.QUADTREE, indexInfo.getIndexType());
+        assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
+        String[] extraAttributes = (String[]) indexInfo.getMetadata()
+                .get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
+        assertEquals(1, extraAttributes.length);
+        assertEquals("sp", extraAttributes[0]);
+
+        Optional<ObjectId> indexedTreeId = geogig.indexDatabase().resolveIndexedTree(indexInfo,
+                canonicalFeatureTreeId);
+        assertTrue(indexedTreeId.isPresent());
+
+        assertEquals(indexedTreeId.get(), treeId);
+    }
+
+    @Test
+    public void testCreateIndexWithBounds() throws Exception {
+        Repository geogig = testContext.get().getRepository();
+        TestData testData = new TestData(geogig);
+        testData.init();
+        testData.loadDefaultData();
+
+        ObjectId canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+                .setTreeish("HEAD:Points").call().get();
+
+        ParameterSet options = TestParams.of("treeRefSpec", "Points", "extraAttributes", "sp",
+                "bounds", "-60,-45,60,45");
+
+        buildCommand(options).run(testContext.get());
+
+        Envelope expectedBounds = new Envelope(-60, 60, -45, 45);
+
+        JsonObject response = getJSONResponse().getJsonObject("response");
+        assertTrue(response.getBoolean("success"));
+        JsonObject index = response.getJsonObject("index");
+        assertEquals("Points", index.getString("treeName"));
+        assertEquals("geom", index.getString("attributeName"));
+        assertEquals("QUADTREE", index.getString("indexType"));
+        assertEquals(expectedBounds.toString(), index.getString("bounds"));
         ObjectId treeId = ObjectId.valueOf(response.getString("indexedTreeId"));
 
         IndexInfo indexInfo = geogig.indexDatabase().getIndexInfo("Points", "geom").get();
@@ -123,13 +169,15 @@ public class CreateIndexTest extends AbstractWebOpTest {
 
         buildCommand(options).run(testContext.get());
 
+        Envelope expectedBounds = new Envelope(-90, 90, -180, 180);
+
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
         JsonObject index = response.getJsonObject("index");
         assertEquals("Points", index.getString("treeName"));
         assertEquals("geom", index.getString("attributeName"));
         assertEquals("QUADTREE", index.getString("indexType"));
-        assertNotNull(index.getString("bounds"));
+        assertEquals(expectedBounds.toString(), index.getString("bounds"));
         ObjectId treeId = ObjectId.valueOf(response.getString("indexedTreeId"));
 
         IndexInfo indexInfo = geogig.indexDatabase().getIndexInfo("Points", "geom").get();

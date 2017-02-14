@@ -71,6 +71,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.slf4j.Logger;
@@ -83,6 +84,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.io.Files;
+import com.vividsolutions.jts.geom.Envelope;
 
 import cucumber.api.DataTable;
 import cucumber.api.Scenario;
@@ -832,6 +834,23 @@ public class DefaultStepDefinitions {
     public void noIndexAtCommit(String headRef) throws Throwable {
         Optional<ObjectId> indexTreeId = resolveIndexTreeId(headRef, null);
         assertFalse(indexTreeId.isPresent());
+    }
+
+    @Then("^the repository's \"([^\"]*)\" index bounds should be \"([^\"]*)\"$")
+    public void verifyIndexBounds(String headRef, String bbox) throws Throwable {
+        Repository repo = localRepo.geogigCLI.getGeogig().getRepository();
+        final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(repo.context(), headRef);
+        String treeName = typeTreeRef.path();
+        IndexInfo indexInfo = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName, null);
+        Map<String, Object> metadata = indexInfo.getMetadata();
+        assertTrue(metadata.containsKey(IndexInfo.MD_QUAD_MAX_BOUNDS));
+        Envelope indexBounds = (Envelope) metadata.get(IndexInfo.MD_QUAD_MAX_BOUNDS);
+        Envelope expected = SpatialOps.parseNonReferencedBBOX(bbox);
+        final double EPSILON = 0.00001;
+        assertEquals(expected.getMinX(), indexBounds.getMinX(), EPSILON);
+        assertEquals(expected.getMaxX(), indexBounds.getMaxX(), EPSILON);
+        assertEquals(expected.getMinY(), indexBounds.getMinY(), EPSILON);
+        assertEquals(expected.getMaxY(), indexBounds.getMaxY(), EPSILON);
     }
 
     @SuppressWarnings("unchecked")

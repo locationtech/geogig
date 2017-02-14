@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -25,8 +26,9 @@ import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.NodeRef;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * Updates an {@link IndexInfo} with new metadata.
@@ -44,6 +46,8 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
     private boolean add = false;
 
     private boolean indexHistory = false;
+
+    private Envelope bounds = null;
 
     /**
      * @param treeRefSpec the tree refspec of the index to be updated
@@ -109,6 +113,17 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
     }
 
     /**
+     * Sets the bounds of the spatial index.
+     * 
+     * @param bounds the {@link Envelope} that represents the bounds of the spatial index
+     * @return {@code this}
+     */
+    public UpdateIndexOp setBounds(Envelope bounds) {
+        this.bounds = bounds;
+        return this;
+    }
+
+    /**
      * Performs the operation.
      * 
      * @return an {@link Index} that represents the updated index
@@ -130,39 +145,45 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
         Map<String, Object> newMetadata = Maps.newHashMap(oldIndexInfo.getMetadata());
         String[] oldAttributes = (String[]) newMetadata
                 .get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
-        List<String> updatedAttributes;
-        if (oldAttributes == null || oldAttributes.length == 0) {
-            if (newAttributes == null) {
-                updatedAttributes = null;
+        String[] updatedAttributes;
+        if (add) {
+            if (oldAttributes == null) {
+                updatedAttributes = newAttributes;
+            } else if (newAttributes == null) {
+                updatedAttributes = oldAttributes;
             } else {
-                updatedAttributes = Lists.newArrayList(newAttributes);
+                Set<String> oldSet = Sets.newHashSet(oldAttributes);
+                Set<String> newSet = Sets.newHashSet(newAttributes);
+                oldSet.addAll(newSet);
+                updatedAttributes = oldSet.toArray(new String[oldSet.size()]);
             }
-        } else {
-            checkState(overwrite || add,
+        } else if (overwrite) {
+            updatedAttributes = newAttributes;
+        } else if (newAttributes != null) {
+            checkState(oldAttributes == null,
                     "Extra attributes already exist on index, specify add or overwrite to update.");
-            if (overwrite) {
-                if (newAttributes == null) {
-                    updatedAttributes = null;
-                } else {
-                    updatedAttributes = Lists.newArrayList(newAttributes);
-                }
-            } else {
-                updatedAttributes = Lists.newArrayList(oldAttributes);
-                if (newAttributes != null) {
-                    for (int i = 0; i < newAttributes.length; i++) {
-                        if (!updatedAttributes.contains(newAttributes[i])) {
-                            updatedAttributes.add(newAttributes[i]);
-                        }
-                    }
-                }
-            }
-        }
-        if (updatedAttributes == null) {
-            newMetadata.remove(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
+            updatedAttributes = newAttributes;
         } else {
-            newMetadata.put(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA,
-                updatedAttributes.toArray(new String[updatedAttributes.size()]));
+            updatedAttributes = oldAttributes;
         }
+
+        boolean updated = false;
+        if (!contentsEqual(updatedAttributes, oldAttributes)) {
+            if (updatedAttributes == null) {
+                newMetadata.remove(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
+            } else {
+                newMetadata.put(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA, updatedAttributes);
+            }
+            updated = true;
+        }
+
+        if (bounds != null) {
+            newMetadata.put(IndexInfo.MD_QUAD_MAX_BOUNDS, bounds);
+            updated = true;
+        }
+
+        checkState(updated, "Nothing to update...");
+
         newIndexInfo = indexDatabase().updateIndexInfo(treeName, oldIndexInfo.getAttributeName(),
                 oldIndexInfo.getIndexType(), newMetadata);
 
@@ -192,5 +213,17 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
         }
 
         return new Index(newIndexInfo, indexedTreeId, indexDatabase());
+    }
+
+    private boolean contentsEqual(@Nullable String[] left, @Nullable String[] right) {
+        if (left == right) {
+            return true;
+        }
+        if (left == null || right == null) {
+            return false;
+        }
+        Set<String> leftSet = Sets.newHashSet(left);
+        Set<String> rightSet = Sets.newHashSet(right);
+        return leftSet.containsAll(rightSet) && rightSet.containsAll(leftSet);
     }
 }

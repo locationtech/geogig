@@ -25,7 +25,6 @@ import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.Hints;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
-import org.geotools.geometry.Envelope2D;
 import org.geotools.renderer.ScreenMap;
 import org.junit.After;
 import org.junit.Test;
@@ -54,7 +53,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import org.opengis.geometry.BoundingBox;
 
 public class FeatureReaderBuilderTest extends RepositoryTestCase {
 
@@ -281,7 +279,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
 
         Filter filter = ff.and(unsupported, supported);
 
-        Predicate<Bounded> preFilter = builder.resolveNodeRefFilter(filter, ImmutableSet.of("ip"), true);
+        Predicate<Bounded> preFilter = builder.createIndexPreFilter(filter, ImmutableSet.of("ip"), true);
         assertTrue(preFilter instanceof PreFilter);
         assertEquals(supported, ((PreFilter)preFilter).filter);
         

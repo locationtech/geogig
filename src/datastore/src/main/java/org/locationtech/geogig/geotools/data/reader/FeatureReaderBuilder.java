@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.notNull;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -55,7 +56,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.Id;
@@ -297,27 +297,21 @@ public class FeatureReaderBuilder {
         // TODO: for some reason setting the default metadata id is making several tests fail,
         // though it's not really needed here because we have the FeatureType already. Nonetheless
         // this is strange and needs to be revisited.
-        diffOp.setDefaultMetadataId(featureTypeId);
-        diffOp.setPreserveIterationOrder(shallPreserveIterationOrder());
-        diffOp.setPathFilter(resolveFidFilter(nativeFilter));
-        diffOp.setCustomFilter(resolveNodeRefFilter(nativeFilter, materializedIndexProperties,filterIsFullySupportedByIndex));
-        diffOp.setBoundsFilter(resolveBoundsFilter(nativeFilter, newFeatureTypeTree, treeSource));
-        diffOp.setChangeTypeFilter(resolveChangeType());
-        diffOp.setOldTree(oldFeatureTypeTree);
-        diffOp.setNewTree(newFeatureTypeTree);
-        diffOp.setLeftSource(treeSource);
-        diffOp.setRightSource(treeSource);
-        diffOp.recordStats();
+        diffOp.setDefaultMetadataId(featureTypeId) //
+              .setPreserveIterationOrder(shallPreserveIterationOrder())//
+              .setPathFilter(createFidFilter(nativeFilter)) //
+              .setCustomFilter(createIndexPreFilter(nativeFilter, materializedIndexProperties,filterIsFullySupportedByIndex)) //
+              .setBoundsFilter(createBoundsFilter(nativeFilter, newFeatureTypeTree, treeSource)) //
+              .setChangeTypeFilter(resolveChangeType()) //
+              .setOldTree(oldFeatureTypeTree) //
+              .setNewTree(newFeatureTypeTree)  //
+              .setLeftSource(treeSource)   //
+              .setRightSource(treeSource) //
+              .recordStats();
 
         AutoCloseableIterator<DiffEntry> diffs;
         diffs = diffOp.call();
-        {
-            // Stopwatch sw = Stopwatch.createStarted();
-            // int size = Iterators.size(diffs);
-            // diffs.close();
-            // System.err.printf("traversed %,d noderefs in %s\n", size, sw.stop());
-            // diffs = diffOp.call();
-        }
+
         AutoCloseableIterator<NodeRef> featureRefs = toFeatureRefs(diffs, changeType);
 
         // post-processing
@@ -342,17 +336,30 @@ public class FeatureReaderBuilder {
         }
 
         if (!filterIsFullySupportedByIndex) {
-            PostFilter filterPredicate = new PostFilter(nativeFilter);
-            features = AutoCloseableIterator.filter(features, filterPredicate);
-            features = applyOffsetAndLimit(features);
+            features = applyPostFilter(nativeFilter,features);
+        }
+
+        if (screenMap != null) {
+            features = AutoCloseableIterator.transform(features, new ScreenMapGeometryReplacer(screenMap));
         }
 
         FeatureReader<SimpleFeatureType, SimpleFeature> featureReader;
-
         featureReader = new FeatureReaderAdapter<SimpleFeatureType, SimpleFeature>(resultSchema,
                 features);
 
         return featureReader;
+    }
+
+    private AutoCloseableIterator<SimpleFeature> applyPostFilter(Filter nativeFilter, AutoCloseableIterator<SimpleFeature> features) {
+        PostFilter filterPredicate = new PostFilter(nativeFilter);
+        features = AutoCloseableIterator.filter(features, filterPredicate);
+        if (screenMap != null) {
+            Predicate<SimpleFeature> screenMapFilter = new FeatureScreenMapPredicate(screenMap);
+            features = AutoCloseableIterator.filter(features, screenMapFilter);
+        }
+
+        features = applyOffsetAndLimit(features);
+        return features;
     }
 
     private SimpleFeatureType resolveOutputSchema(Set<String> requiredProperties) {
@@ -570,8 +577,8 @@ public class FeatureReaderBuilder {
         }
     }
 
-    private @Nullable ReferencedEnvelope resolveBoundsFilter(Filter filterInNativeCrs,
-            ObjectId featureTypeTreeId, ObjectStore treeSource) {
+    private @Nullable ReferencedEnvelope createBoundsFilter(Filter filterInNativeCrs,
+                                                            ObjectId featureTypeTreeId, ObjectStore treeSource) {
         if (RevTree.EMPTY_TREE_ID.equals(featureTypeTreeId)) {
             return null;
         }
@@ -603,9 +610,16 @@ public class FeatureReaderBuilder {
         }
     }
 
+    /**
+     *
+     * @param filter
+     * @param materializedProperties
+     * @param indexFullySupportsQuery  -- if fully supported, use the screenmap
+     * @return
+     */
     @VisibleForTesting
-    Predicate<Bounded> resolveNodeRefFilter(final Filter filter,
-            final Set<String> materializedProperties, boolean indexFullySupportsQuery) {
+    Predicate<Bounded> createIndexPreFilter(final Filter filter,
+                                            final Set<String> materializedProperties, boolean indexFullySupportsQuery) {
 
         Predicate<Bounded> preFilter = new PreFilterBuilder(materializedProperties).build(filter);
 
@@ -613,14 +627,13 @@ public class FeatureReaderBuilder {
         //if the index is not fully supported, do not apply the screenmap filter at this stage
         // otherwise we will remove too many features
         if (screenMap != null && !ignore && indexFullySupportsQuery) {
-            Predicate<Bounded> screenMapFilter;
-            screenMapFilter = new ScreenMapPredicate(screenMap);
+            Predicate<Bounded> screenMapFilter = new ScreenMapPredicate(screenMap);
             preFilter = Predicates.and(preFilter, screenMapFilter);
         }
         return preFilter;
     }
 
-    private List<String> resolveFidFilter(Filter filter) {
+    private List<String> createFidFilter(Filter filter) {
         List<String> pathFilters = ImmutableList.of();
         if (filter instanceof Id) {
             final Set<Identifier> identifiers = ((Id) filter).getIdentifiers();

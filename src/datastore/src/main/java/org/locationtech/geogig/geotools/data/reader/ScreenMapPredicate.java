@@ -104,7 +104,7 @@ class ScreenMapPredicate implements Predicate<Bounded> {
         //canSimplify is thread-safe
         if (screenMap.canSimplify(envelope)) {
             //these aren't thread safe
-            synchronized (this) {
+            synchronized (screenMap) {
                 try {
                     if (b instanceof NodeRef && ((NodeRef) b).getType() == TYPE.FEATURE) {
                         skip = screenMap.checkAndSet(envelope);

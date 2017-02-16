@@ -29,4 +29,6 @@ public interface ObjectSerializingFactory {
     RevObject read(@Nullable ObjectId id, InputStream in) throws IOException;
 
     RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length) throws IOException;
+
+    String getDisplayName();
 }

@@ -232,4 +232,8 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
         }
     }
 
+    @Override
+    public String getDisplayName() {
+        return "Binary 2.0";
+    }
 }

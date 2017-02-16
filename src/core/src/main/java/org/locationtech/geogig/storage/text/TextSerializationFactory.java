@@ -913,4 +913,9 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
         }
         return (TextWriter<T>) serializer;
     }
+
+    @Override
+    public String getDisplayName() {
+        return "Text 1.0";
+    }
 }

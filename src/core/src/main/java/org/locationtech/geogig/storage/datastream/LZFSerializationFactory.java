@@ -57,4 +57,9 @@ public class LZFSerializationFactory implements ObjectSerializingFactory {
             factory.write(o, deflatedOutputStream);
         }
     }
+
+    @Override
+    public String getDisplayName() {
+        return factory.getDisplayName() + "/LZF";
+    }
 }

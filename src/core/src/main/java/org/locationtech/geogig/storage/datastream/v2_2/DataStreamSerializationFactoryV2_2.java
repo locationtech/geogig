@@ -48,4 +48,8 @@ public class DataStreamSerializationFactoryV2_2 extends DataStreamSerializationF
         return super.read(id, new ByteArrayInputStream(data, offset, length));
     }
 
+    @Override
+    public String getDisplayName() {
+        return "Binary 2.2";
+    }
 }

@@ -21,4 +21,10 @@ public class DataStreamSerializationFactoryV2_1 extends DataStreamSerializationF
     public DataStreamSerializationFactoryV2_1() {
         super(FormatCommonV2_1.INSTANCE);
     }
+
+    @Override
+    public String getDisplayName() {
+        return "Binary 2.1";
+    }
+
 }

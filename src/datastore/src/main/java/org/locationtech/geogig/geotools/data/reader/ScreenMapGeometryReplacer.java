@@ -29,7 +29,7 @@ import org.opengis.feature.simple.SimpleFeature;
  *       as the ScreenMapPredicate or FeatureScreenMapPredicate.  However, the features
  *       handed to this class will have already go through the filtering.
  */
-public class ScreenMapGeometryReplacer implements Function<SimpleFeature, SimpleFeature> {
+ class ScreenMapGeometryReplacer implements Function<SimpleFeature, SimpleFeature> {
 
     ScreenMap screenMap;
 

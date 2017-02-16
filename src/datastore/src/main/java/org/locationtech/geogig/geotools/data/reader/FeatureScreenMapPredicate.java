@@ -21,7 +21,7 @@ import org.opengis.referencing.operation.TransformException;
  * This is a simple class that is very much like the ScreenMapPredicate class.
  * This works on SimpleFeatures only.
  */
-public class FeatureScreenMapPredicate implements Predicate<SimpleFeature> {
+class FeatureScreenMapPredicate implements Predicate<SimpleFeature> {
     ScreenMap screenMap;
 
     public FeatureScreenMapPredicate(ScreenMap screenMap) {

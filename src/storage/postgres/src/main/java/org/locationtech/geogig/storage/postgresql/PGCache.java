@@ -38,6 +38,8 @@ public class PGCache {
         }
 
     };
+    
+
 
     public static PGCache build(ConfigDatabase configdb) {
         Optional<Long> maxSize = configdb.get(Environment.KEY_ODB_BYTE_CACHE_MAX_SIZE, Long.class);
@@ -66,6 +68,7 @@ public class PGCache {
         cacheBuilder.initialCapacity(initialCapacityCount);
         cacheBuilder.concurrencyLevel(concurrencyLevel2);
         cacheBuilder.recordStats();
+        
         Cache<ObjectId, byte[]> byteCache = cacheBuilder.build();
 
         return new PGCache(byteCache);
@@ -113,8 +116,12 @@ public class PGCache {
         return map.containsKey(id);
     }
 
-    public void dispose() {
+    public void invalidateAll() {
         cache.invalidateAll();
+    }
+
+    public void dispose() {
+        invalidateAll();
         cache.cleanUp();
     }
 

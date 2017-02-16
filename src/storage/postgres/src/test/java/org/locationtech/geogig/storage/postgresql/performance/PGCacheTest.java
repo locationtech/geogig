@@ -7,7 +7,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
+import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -20,13 +23,13 @@ import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2_1;
 import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
+import org.locationtech.geogig.storage.datastream.v2_2.DataStreamSerializationFactoryV2_2;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.postgresql.PGCache;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -36,19 +39,23 @@ public class PGCacheTest {
 
     final int featureCount = 10_000;
 
-    final int treeCount = 10_000;
+    final int treeCount = 2_000;
 
     private PGCache cache;
 
     List<RevFeature> features;// = createFeatures(ids);
 
-    private List<RevTree> trees;
+    private List<RevTree> leafTrees;
 
-    private static final Map<String, ObjectSerializingFactory> encoders = ImmutableMap.of(//
-            "V2.0", DataStreamSerializationFactoryV2.INSTANCE //
-            ,"V2.0/LZF", new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
-            ,"V2.1", DataStreamSerializationFactoryV2_1.INSTANCE//
-            ,"V2.1/LZF", new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)
+    private List<RevTree> bucketTrees;
+
+    private static final List<ObjectSerializingFactory> encoders = ImmutableList.of(//
+            DataStreamSerializationFactoryV2.INSTANCE //
+            , new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
+            , DataStreamSerializationFactoryV2_1.INSTANCE//
+            , new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
+            , DataStreamSerializationFactoryV2_2.INSTANCE//
+            , new LZFSerializationFactory(DataStreamSerializationFactoryV2_2.INSTANCE)//
     );
 
     public static void main(String[] args) {
@@ -56,56 +63,58 @@ public class PGCacheTest {
         System.err.println("set up...");
         test.setUp();
 
-        final int runCount = 5;
+        final int runCount = 1;
 
-        System.err.println("Trees test:");
+        System.err.println("Leaf Trees test:");
         for (int i = 1; i <= runCount; i++) {
-            test.treesTest();
-            if (i < runCount) {
-                test.tearDown();
-            }
+            test.runTest(test.leafTrees);
         }
         System.err.println(test.cache);
         test.tearDown();
-        //
-        // System.err.println("Features test:");
-        // for (int i = 1; i <= runCount; i++) {
-        // test.featuresTest();
-        // if (i < runCount) {
-        // test.tearDown();
-        // }
-        // }
-        // System.err.println(test.cache);
-        // test.tearDown();
+
+        System.err.println("Bucket Trees test:");
+        for (int i = 1; i <= runCount; i++) {
+            test.runTest(test.bucketTrees);
+        }
+        System.err.println(test.cache);
+        test.tearDown();
+
+        System.err.println("Features test:");
+        for (int i = 1; i <= runCount; i++) {
+            test.runTest(test.features);
+        }
+        System.err.println(test.cache);
+        test.tearDown();
     }
 
     public void setUp() {
         cache = PGCache.build();
         features = createFeatures(featureCount);
-        trees = createTrees(treeCount);
+        leafTrees = createLeafTrees(treeCount);
+        bucketTrees = createBucketTrees(treeCount);
     }
 
     public void tearDown() {
         cache.dispose();
     }
 
-    public void treesTest() {
-        run(trees);
+    public void runTest(List<? extends RevObject> objects) {
+        for (ObjectSerializingFactory encoder : encoders) {
+            cache.invalidateAll();
+            run(encoder, objects);
+        }
     }
 
-    public void featuresTest() {
-        run(features);
-    }
-
-    public void run(List<? extends RevObject> objects) {
+    public void run(ObjectSerializingFactory encoder, List<? extends RevObject> objects) {
+        cache.setEncoder(encoder);
         final Stopwatch put = put(objects);
 
         Collections.shuffle(objects);
         final Stopwatch get = Stopwatch.createStarted();
         int hits = query(Lists.transform(objects, (f) -> f.getId()));
         get.stop();
-        System.err.printf("Count: %,d, hits: %,d, Insert: %s, Query: %s\n", objects.size(), hits,
-                put, get);
+        System.err.printf("%s: Count: %,d, hits: %,d, Insert: %s, Query: %s\n",
+                encoder.getDisplayName(), objects.size(), hits, put, get);
     }
 
     private int query(List<ObjectId> ids) {
@@ -127,13 +136,36 @@ public class PGCacheTest {
         return sw.stop();
     }
 
-    private List<RevTree> createTrees(int count) {
+    private List<RevTree> createLeafTrees(int count) {
         List<RevTree> trees = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             RevTree tree = createLeafTree(i);
             trees.add(tree);
         }
         return trees;
+    }
+
+    private List<RevTree> createBucketTrees(int count) {
+        List<RevTree> trees = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            RevTree tree = createBucketTree(i);
+            trees.add(tree);
+        }
+        return trees;
+    }
+
+    private RevTree createBucketTree(int i) {
+        final int bucketCount = 32;
+        SortedMap<Integer, Bucket> buckets = new TreeMap<>();
+        for (int b = 0; b < bucketCount; b++) {
+            ObjectId bucketTree = RevObjectTestSupport.hashString("b" + b);
+            Envelope bounds = new Envelope(0, b, 0, b);
+            Bucket bucket = Bucket.create(bucketTree, bounds);
+            buckets.put(b, bucket);
+        }
+        final ObjectId fakeId = RevObjectTestSupport.hashString(String.valueOf(i));
+        RevTree tree = RevTreeBuilder.create(fakeId, 1024, 0, null, null, buckets);
+        return tree;
     }
 
     private RevTree createLeafTree(int i) {

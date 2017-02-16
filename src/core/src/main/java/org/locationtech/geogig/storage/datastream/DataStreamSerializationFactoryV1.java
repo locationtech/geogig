@@ -25,6 +25,7 @@ import static org.locationtech.geogig.storage.datastream.FormatCommonV1.writeBuc
 import static org.locationtech.geogig.storage.datastream.FormatCommonV1.writeHeader;
 import static org.locationtech.geogig.storage.datastream.FormatCommonV1.writeNode;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
@@ -34,6 +35,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EnumMap;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.CRS.AxisOrder;
 import org.geotools.referencing.wkt.Formattable;
@@ -43,8 +45,8 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.impl.ObjectReader;
@@ -83,6 +85,12 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
     @Override
     public void write(RevObject o, OutputStream out) throws IOException {
         serializer(o.getType()).write(o, out);
+    }
+
+    @Override
+    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+            throws IOException {
+        return read(id, new ByteArrayInputStream(data, offset, length));
     }
 
     @Override
@@ -176,11 +184,10 @@ public class DataStreamSerializationFactoryV1 implements ObjectSerializingFactor
                 writeHeader(data, "feature");
                 data.writeInt(feature.size());
                 for (Optional<Object> field : feature.getValues()) {
-                    FieldType type = FieldType.forValue(field);
+                    Object value = field.orNull();
+                    FieldType type = FieldType.forValue(value);
                     data.writeByte(type.getTag());
-                    if (type != FieldType.NULL) {
-                        DataStreamValueSerializerV1.write(field, data);
-                    }
+                    DataStreamValueSerializerV1.INSTANCE.encode(type, value, data);
                 }
             } finally {
                 data.flush();

@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.repository.Hints;
@@ -42,6 +41,7 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
+import org.locationtech.geogig.storage.datastream.ValueSerializer;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
@@ -57,6 +57,8 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     private final boolean readOnly;
 
     private int repositoryId;
+
+    private final ValueSerializer valueEncoder = DataStreamValueSerializerV2.INSTANCE;
 
     @Inject
     public PGIndexDatabase(final ConfigDatabase configdb, final Hints hints)
@@ -167,12 +169,13 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 ps.setString(2, treeName);
                 ps.setString(3, attributeName);
                 ps.setString(4, strategy.toString());
-                if (index.getMetadata() != null) {
-                    DataOutput out = ByteStreams.newDataOutput(outStream);
-                    DataStreamValueSerializerV2.write(index.getMetadata(), out);
-                    ps.setBytes(5, outStream.toByteArray());
-                } else {
+                final Map<String, Object> indexMetadata = index.getMetadata();
+                if (indexMetadata.isEmpty()) {
                     ps.setNull(5, java.sql.Types.OTHER, "bytea");
+                } else {
+                    DataOutput out = ByteStreams.newDataOutput(outStream);
+                    valueEncoder.writeMap(indexMetadata, out);
+                    ps.setBytes(5, outStream.toByteArray());
                 }
                 ps.executeUpdate();
                 cx.commit();
@@ -215,12 +218,13 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                     ps.setString(2, treeName);
                     ps.setString(3, attributeName);
                     ps.setString(4, strategy.toString());
-                    if (index.getMetadata() != null) {
-                        DataOutput out = ByteStreams.newDataOutput(outStream);
-                        DataStreamValueSerializerV2.write(index.getMetadata(), out);
-                        ps.setBytes(5, outStream.toByteArray());
-                    } else {
+                    final Map<String, Object> indexMetadata = index.getMetadata();
+                    if (indexMetadata.isEmpty()) {
                         ps.setNull(5, java.sql.Types.OTHER, "bytea");
+                    } else {
+                        DataOutput out = ByteStreams.newDataOutput(outStream);
+                        valueEncoder.writeMap(indexMetadata, out);
+                        ps.setBytes(5, outStream.toByteArray());
                     }
                     ps.executeUpdate();
                 } catch (IOException e) {
@@ -262,8 +266,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                             try (ByteArrayInputStream metadataStream = new ByteArrayInputStream(
                                     metadataBytes)) {
                                 DataInput in = new DataInputStream(metadataStream);
-                                metadata = (Map<String, Object>) DataStreamValueSerializerV2
-                                        .read(FieldType.MAP, in);
+                                metadata = valueEncoder.readMap(in);
                             }
                         }
                         index = new IndexInfo(treeName, attributeName, strategy, metadata);
@@ -301,8 +304,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                             try (ByteArrayInputStream metadataStream = new ByteArrayInputStream(
                                     metadataBytes)) {
                                 DataInput in = new DataInputStream(metadataStream);
-                                metadata = (Map<String, Object>) DataStreamValueSerializerV2
-                                        .read(FieldType.MAP, in);
+                                metadata = valueEncoder.readMap(in);
                             }
                         }
                         indexes.add(new IndexInfo(treeName, attributeName, strategy, metadata));
@@ -339,8 +341,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                             try (ByteArrayInputStream metadataStream = new ByteArrayInputStream(
                                     metadataBytes)) {
                                 DataInput in = new DataInputStream(metadataStream);
-                                metadata = (Map<String, Object>) DataStreamValueSerializerV2
-                                        .read(FieldType.MAP, in);
+                                metadata = valueEncoder.readMap(in);
                             }
                         }
                         indexes.add(new IndexInfo(treeName, attributeName, strategy, metadata));

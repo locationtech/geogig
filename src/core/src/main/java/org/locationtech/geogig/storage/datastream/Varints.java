@@ -21,6 +21,7 @@ import static org.locationtech.geogig.storage.datastream.Varint.writeUnsignedVar
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class Varints {
 
@@ -30,7 +31,8 @@ public final class Varints {
 
     public static void writeSignedIntArray(int[] values, DataOutput out) throws IOException {
 
-        final int length = writeLength(values, out);
+        final int length = values.length;
+        writeLength(values, out);
 
         for (int i = 0; i < length; i++) {
             writeSignedVarInt(values[i], out);
@@ -66,14 +68,15 @@ public final class Varints {
 
     public static void writeUnignedIntArray(int[] values, DataOutput out) throws IOException {
 
-        final int length = writeLength(values, out);
+        final int length = values.length;
+        writeLength(values, out);
 
         for (int i = 0; i < length; i++) {
             writeUnsignedVarInt(values[i], out);
         }
     }
 
-    public static int[] readUnsignedIntArray(DataInput in) throws IOException {
+    public static int[] readUnsignedIntArray(DataInput in, AtomicInteger outBytesRead) throws IOException {
         final int length = readLength(in);
         int[] values = new int[length];
         for (int i = 0; i < length; i++) {
@@ -102,7 +105,8 @@ public final class Varints {
 
     public static void writeIntArrayDeltaEncoded(int[] values, DataOutput out) throws IOException {
 
-        final int length = writeLength(values, out);
+        final int length = values.length;
+        writeLength(values, out);
 
         int prev = 0;
         for (int i = 0; i < length; i++) {
@@ -218,11 +222,16 @@ public final class Varints {
         return length;
     }
 
+    /**
+     * Writes the length of the array
+     * 
+     * @return the number of bytes written
+     * @throws IOException
+     */
     private static int writeLength(int[] values, DataOutput out) throws IOException {
         final int length = values.length;
 
-        writeUnsignedVarInt(length, out);
-        return length;
+        return writeUnsignedVarInt(length, out);
     }
 
     private static int writeLength(long[] values, DataOutput out) throws IOException {

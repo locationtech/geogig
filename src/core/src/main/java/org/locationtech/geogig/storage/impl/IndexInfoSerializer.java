@@ -18,34 +18,35 @@ import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
+import org.locationtech.geogig.storage.datastream.ValueSerializer;
 
 import com.google.common.base.Throwables;
 
 public class IndexInfoSerializer {
 
+    private static final ValueSerializer valueEncoder = DataStreamValueSerializerV2.INSTANCE;
+
     public static void serialize(IndexInfo index, DataOutput out) {
         try {
-            DataStreamValueSerializerV2.write(index.getTreeName(), out);
-            DataStreamValueSerializerV2.write(index.getAttributeName(), out);
-            DataStreamValueSerializerV2.write(index.getIndexType().toString(), out);
-            DataStreamValueSerializerV2.write(index.getMetadata(), out);
+            valueEncoder.encode(FieldType.STRING, index.getTreeName(), out);
+            valueEncoder.encode(FieldType.STRING, index.getAttributeName(), out);
+            valueEncoder.encode(FieldType.STRING, index.getIndexType().toString(), out);
+            valueEncoder.encode(FieldType.MAP, index.getMetadata(), out);
         } catch (IOException e) {
             Throwables.propagate(e);
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static IndexInfo deserialize(DataInput in) {
         String treeName;
         String attributeName;
         IndexType indexType;
         Map<String, Object> metadata;
         try {
-            treeName = (String) DataStreamValueSerializerV2.read(FieldType.STRING, in);
-            attributeName = (String) DataStreamValueSerializerV2.read(FieldType.STRING, in);
-            indexType = IndexType
-                    .valueOf((String) DataStreamValueSerializerV2.read(FieldType.STRING, in));
-            metadata = (Map<String, Object>) DataStreamValueSerializerV2.read(FieldType.MAP, in);
+            treeName = valueEncoder.readString(in);
+            attributeName = valueEncoder.readString(in);
+            indexType = IndexType.valueOf(valueEncoder.readString(in));
+            metadata = valueEncoder.readMap(in);
         } catch (IOException ioe) {
             throw Throwables.propagate(ioe);
         }

@@ -78,13 +78,13 @@ class NodeId {
 
         out.writeUTF(name);
         out.writeByte(valueType.ordinal());
-        DataStreamValueSerializerV2.write(valueType, value, out);
+        DataStreamValueSerializerV2.INSTANCE.encode(valueType, value, out);
     }
 
     public static NodeId read(DataInput in) throws IOException {
         final String name = in.readUTF();
         FieldType type = FieldType.valueOf(in.readUnsignedByte());
-        final Object val = DataStreamValueSerializerV2.read(type, in);
+        final Object val = DataStreamValueSerializerV2.INSTANCE.decode(type, in);
         return new NodeId(name, val);
     }
 }

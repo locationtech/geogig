@@ -44,17 +44,17 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevObjects;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevPersonBuilder;
 import org.locationtech.geogig.model.impl.RevTagBuilder;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
-import org.locationtech.geogig.model.RevPerson;
-import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.NodeRef;
@@ -84,7 +84,14 @@ public class FormatCommonV2 {
 
     public final static byte NUL = 0x00;
 
-    public static final FormatCommonV2 INSTANCE = new FormatCommonV2();
+    public static final FormatCommonV2 INSTANCE = new FormatCommonV2(
+            DataStreamValueSerializerV2.INSTANCE);
+
+    protected final ValueSerializer valueEncoder;
+
+    public FormatCommonV2(ValueSerializer valueEncoder) {
+        this.valueEncoder = valueEncoder;
+    }
 
     public final String readToMarker(DataInput in, byte marker) throws IOException {
         StringBuilder buff = new StringBuilder();
@@ -305,12 +312,10 @@ public class FormatCommonV2 {
         writeUnsignedVarInt(feature.size(), data);
 
         for (int i = 0; i < feature.size(); i++) {
-            Optional<Object> field = feature.get(i);
+            Object field = feature.get(i).orNull();
             FieldType type = FieldType.forValue(field);
             data.writeByte(type.getTag());
-            if (type != FieldType.NULL) {
-                DataStreamValueSerializerV2.write(field, data);
-            }
+            valueEncoder.encode(type, field, data);
         }
     }
 
@@ -321,7 +326,7 @@ public class FormatCommonV2 {
         for (int i = 0; i < count; i++) {
             final byte fieldTag = in.readByte();
             final FieldType fieldType = FieldType.valueOf(fieldTag);
-            Object value = DataStreamValueSerializerV2.read(fieldType, in);
+            Object value = valueEncoder.decode(fieldType, in);
             builder.addValueNoCopy(value);
         }
 
@@ -527,7 +532,7 @@ public class FormatCommonV2 {
             writePointBoundingBox(env.getMinX(), env.getMinY(), data);
         }
         if (extraDataMask == EXTRA_DATA_PRESENT_MASK) {
-            DataStreamValueSerializerV2.write(extraData, data);
+            valueEncoder.encode(extraData, data);
         }
     }
 
@@ -562,7 +567,7 @@ public class FormatCommonV2 {
         }
         Map<String, Object> extraData = null;
         if (extraDataMask == EXTRA_DATA_PRESENT_MASK) {
-            Object extra = DataStreamValueSerializerV2.read(FieldType.MAP, in);
+            Object extra = valueEncoder.decode(FieldType.MAP, in);
             Preconditions.checkState(extra instanceof Map);
             extraData = (Map<String, Object>) extra;
         }

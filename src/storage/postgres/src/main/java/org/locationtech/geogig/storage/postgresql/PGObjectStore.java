@@ -388,7 +388,7 @@ public class PGObjectStore implements ObjectStore {
         if (!cached.isEmpty()) {
 
             Map<ObjectId, T> cachedObjects = Maps.transformEntries(cached, (id, bytes) -> {
-                RevObject o = encoder.decode(id, bytes);
+                RevObject o = encoder.read(id, bytes, 0, bytes.length);
                 if (type.isAssignableFrom(o.getClass())) {
                     listener.found(id, Integer.valueOf(bytes.length));
                     return type.cast(o);
@@ -587,7 +587,7 @@ public class PGObjectStore implements ObjectStore {
             DataSource ds) {
         byte[] cached = byteCache.getIfPresent(id);
         if (cached != null) {
-            return encoder.decode(id, cached);
+            return encoder.read(id, cached, 0, cached.length);
         }
 
         final PGId pgid = PGId.valueOf(id);
@@ -623,7 +623,7 @@ public class PGObjectStore implements ObjectStore {
             return null;
         }
 
-        RevObject obj = encoder.decode(id, bytes);
+        RevObject obj = encoder.read(id, bytes, 0, bytes.length);
         // Only cache tree objects
         if (obj.getType().equals(TYPE.TREE)) {
             byteCache.put(id, bytes);
@@ -711,7 +711,7 @@ public class PGObjectStore implements ObjectStore {
                                 if (queryIds.contains(id)) {
                                     bytes = rs.getBytes(4);
 
-                                    RevObject obj = encoder.decode(id, bytes);
+                                    RevObject obj = encoder.read(id, bytes, 0, bytes.length);
                                     if (type == null || type.equals(obj.getType())) {
                                         queryIds.remove(id);
                                         callback.found(id, Integer.valueOf(bytes.length));

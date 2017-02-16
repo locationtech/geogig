@@ -9,22 +9,23 @@
  */
 package org.locationtech.geogig.storage.text;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.UUID;
 
 import org.junit.Test;
-import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.storage.impl.ObjectSerializationFactoryTest;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.impl.RevFeatureSerializationTest;
-import org.opengis.feature.Feature;
 
-public class RevFeatureTextSerializationTest extends RevFeatureSerializationTest {
+/**
+ *
+ */
+public class TextSerializationFactoryTest extends ObjectSerializationFactoryTest {
 
     @Override
     protected ObjectSerializingFactory getObjectSerializingFactory() {
@@ -32,24 +33,17 @@ public class RevFeatureTextSerializationTest extends RevFeatureSerializationTest
     }
 
     @Test
-    public void testNonAsciiCharacters() throws Exception {
-
-        Feature feature = feature(featureType1, "TestType.feature.1", "геогит", Boolean.TRUE,
-                Byte.valueOf("18"), new Double(100.01), new BigDecimal("1.89e1021"),
-                new Float(12.5), new Integer(1000), new BigInteger("90000000"), "POINT(1 1)",
-                new Long(800000), UUID.fromString("bd882d24-0fe9-11e1-a736-03b3c0d0d06d"));
-
-        testFeatureReadWrite(feature);
-    }
-
-    @Test
     public void testMalformedSerializedObject() throws Exception {
 
-        // a wrong value
+        // a missing entry
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8");
-        writer.write(TYPE.FEATURE.name() + "\n");
-        writer.write(FieldType.FLOAT.name() + "\tNUMBER" + "\n");
+        writer.write(TYPE.COMMIT.name() + "\n");
+        writer.write("tree\t" + RevObjectTestSupport.hashString("TREE_ID_STRING") + "\n");
+        writer.write("author\tvolaya\tvolaya@boundlessgeo.com\n");
+        writer.write("commiter\tvolaya<volaya@boundlessgeo.com>\n");
+        writer.write("timestamp\t" + Long.toString(12345678) + "\n");
+        writer.write("message\tMy message\n");
         writer.flush();
 
         try {
@@ -57,14 +51,19 @@ public class RevFeatureTextSerializationTest extends RevFeatureSerializationTest
                     new ByteArrayInputStream(out.toByteArray()));
             fail();
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("wrong value"));
+            assertTrue(e.getMessage().contains("Expected parents"));
         }
 
-        // an unrecognized class
+        // a wrongly formatted author
         out = new ByteArrayOutputStream();
         writer = new OutputStreamWriter(out, "UTF-8");
-        writer.write(TYPE.FEATURE.name() + "\n");
-        writer.write(this.getClass().getName() + "\tvalue" + "\n");
+        writer.write(TYPE.COMMIT.name() + "\n");
+        writer.write("tree\t" + RevObjectTestSupport.hashString("TREE_ID_STRING") + "\n");
+        writer.write("parents\t" + RevObjectTestSupport.hashString("PARENT_ID_STRING") + "\n");
+        writer.write("author\tvolaya volaya@boundlessgeo.com\n");
+        writer.write("commiter\tvolaya volaya@boundlessgeo.com\n");
+        writer.write("timestamp\t" + Long.toString(12345678) + "\n");
+        writer.write("message\tMy message\n");
         writer.flush();
 
         try {
@@ -72,9 +71,8 @@ public class RevFeatureTextSerializationTest extends RevFeatureSerializationTest
                     new ByteArrayInputStream(out.toByteArray()));
             fail();
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Wrong type name"));
+            assertTrue(true);
         }
-
     }
 
 }

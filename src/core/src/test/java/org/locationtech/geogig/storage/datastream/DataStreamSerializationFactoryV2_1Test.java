@@ -1,22 +1,22 @@
-/* Copyright (c) 2013-2016 Boundless and others.
+/* Copyright (c) 2017 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/org/documents/edl-v10.html
  *
  * Contributors:
- * David Winslow (Boundless) - initial implementation
+ * Gabriel Roldan (Boundless) - initial implementation
  */
 package org.locationtech.geogig.storage.datastream;
 
+import org.locationtech.geogig.storage.impl.ObjectSerializationFactoryTest;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
-import org.locationtech.geogig.storage.impl.RevCommitSerializationTest;
 
-public class DataStreamCommitSerializationTest extends RevCommitSerializationTest {
+public class DataStreamSerializationFactoryV2_1Test extends ObjectSerializationFactoryTest {
 
     @Override
     protected ObjectSerializingFactory getObjectSerializingFactory() {
-        return new DataStreamSerializationFactoryV1();
+        return DataStreamSerializationFactoryV2_1.INSTANCE;
     }
 
 }

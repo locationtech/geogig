@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage.datastream;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
@@ -51,7 +52,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
         this(FormatCommonV2.INSTANCE);
     }
 
-    DataStreamSerializationFactoryV2(FormatCommonV2 format) {
+    protected DataStreamSerializationFactoryV2(FormatCommonV2 format) {
         Preconditions.checkNotNull(format);
         this.format = format;
         serializers.put(TYPE.COMMIT, new CommitSerializer(format));
@@ -66,12 +67,17 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
     }
 
     @Override
-    public RevObject read(ObjectId id, InputStream rawData) throws IOException {
-        Preconditions.checkNotNull(id);
+    public RevObject read(@Nullable ObjectId id, InputStream rawData) throws IOException {
         return readInternal(id, rawData);
     }
 
-    public RevObject readInternal(@Nullable ObjectId id, InputStream rawData) throws IOException {
+    @Override
+    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+            throws IOException {
+        return read(id, new ByteArrayInputStream(data, offset, length));
+    }
+
+    private RevObject readInternal(@Nullable ObjectId id, InputStream rawData) throws IOException {
         DataInput in = new DataInputStream(rawData);
         final TYPE type = format.readHeader(in);
         Serializer<RevObject> serializer = serializer(type);

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 
@@ -25,5 +26,7 @@ public interface ObjectSerializingFactory {
 
     void write(RevObject o, OutputStream out) throws IOException;
 
-    RevObject read(ObjectId id, InputStream in) throws IOException;
+    RevObject read(@Nullable ObjectId id, InputStream in) throws IOException;
+
+    RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length) throws IOException;
 }

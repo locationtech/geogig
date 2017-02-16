@@ -13,11 +13,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.base.Preconditions;
+import com.ning.compress.lzf.LZFDecoder;
 import com.ning.compress.lzf.LZFInputStream;
 import com.ning.compress.lzf.LZFOutputStream;
 
@@ -39,6 +41,13 @@ public class LZFSerializationFactory implements ObjectSerializingFactory {
         try (LZFInputStream inflatedInputeStream = new LZFInputStream(rawData)) {
             return factory.read(id, inflatedInputeStream);
         }
+    }
+
+    @Override
+    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+            throws IOException {
+        byte[] decoded = LZFDecoder.decode(data, offset, length);
+        return factory.read(id, decoded, 0, decoded.length);
     }
 
     @Override

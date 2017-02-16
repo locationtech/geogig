@@ -15,8 +15,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.storage.datastream.v2_2.DataStreamSerializationFactoryV2_2;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 /**
@@ -44,7 +46,7 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
     private static final ObjectSerializingFactory[] SUPPORTED_FORMATS = { //
             new LZFSerializationFactory(DataStreamSerializationFactoryV1.INSTANCE), //
             new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE), //
-            new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE) //
+            new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
     };
 
     private static final int MAX_FORMAT_CODE = SUPPORTED_FORMATS.length - 1;
@@ -67,6 +69,20 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
         assert serialVersionHeader >= 0 && serialVersionHeader <= MAX_FORMAT_CODE;
         final ObjectSerializingFactory serializer = SUPPORTED_FORMATS[serialVersionHeader];
         RevObject revObject = serializer.read(id, in);
+        return revObject;
+    }
+
+    @Override
+    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length) {
+        final int serialVersionHeader = data[offset] & 0xFF;
+        assert serialVersionHeader >= 0 && serialVersionHeader <= MAX_FORMAT_CODE;
+        final ObjectSerializingFactory serializer = SUPPORTED_FORMATS[serialVersionHeader];
+        RevObject revObject;
+        try {
+            revObject = serializer.read(id, data, offset + 1, length - 1);
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading object " + id, e);
+        }
         return revObject;
     }
 

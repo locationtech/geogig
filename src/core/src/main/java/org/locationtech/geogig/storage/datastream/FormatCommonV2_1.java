@@ -57,6 +57,10 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  */
 public class FormatCommonV2_1 extends FormatCommonV2 {
 
+    public FormatCommonV2_1() {
+        super(DataStreamValueSerializerV2.INSTANCE);
+    }
+
     public static final FormatCommonV2_1 INSTANCE = new FormatCommonV2_1();
 
     private static final class InternalByteArrayOutputStream extends ByteArrayOutputStream {
@@ -82,7 +86,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
                 Object value = feature.get(i).orNull();
                 FieldType type = FieldType.forValue(value);
                 data.writeByte(type.getTag() & 0xFF);
-                DataStreamValueSerializerV2.write(value, data);
+                valueEncoder.encode(type, value, data);
                 dataOffsets[i] = offset;
                 offset = out.size();
             }
@@ -134,7 +138,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
         return f;
     }
 
-    private static final class LazyRevFeature implements RevFeature {
+    private final class LazyRevFeature implements RevFeature {
 
         private final int[] offsets;
 
@@ -200,7 +204,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             Geometry value;
             try {
                 in.skipBytes(offset + 1);
-                value = DataStreamValueSerializerV2.read(in, gf);
+                value = valueEncoder.readGeometry(in, gf);
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
@@ -228,7 +232,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             Object value;
             try {
                 in.skipBytes(offset + 1);
-                value = DataStreamValueSerializerV2.read(type, in);
+                value = valueEncoder.decode(type, in);
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }

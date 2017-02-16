@@ -262,8 +262,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                         if (size > valueBuff.length) {
                             valueBuff = dbRef.db().get(readOps, keybuff);
                         }
-                        RevObject object = serializer().read(id,
-                                new ByteArrayInputStream(valueBuff));
+                        RevObject object;
+                        object = serializer().read(id, valueBuff, 0, size);
                         if (type.isInstance(object)) {
                             listener.found(id, Integer.valueOf(size));
                             return type.cast(object);

@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.text;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,12 +25,14 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.util.Converters;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
@@ -39,6 +42,9 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevPerson;
+import org.locationtech.geogig.model.RevTag;
+import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.CommitBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
@@ -48,9 +54,6 @@ import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
-import org.locationtech.geogig.model.RevPerson;
-import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.model.RevTree;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
@@ -196,6 +199,12 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
             print(w, "\t");
             Envelope envHelper = new Envelope();
             writeBBox(w, node, envHelper);
+            Map<String, Object> extraData = node.getExtraData();
+            if (!extraData.isEmpty()) {
+                String extraDataAsString = Converters.convert(extraData, String.class);
+                print(w, "\t");
+                print(w, extraDataAsString);
+            }
             println(w);
         }
 
@@ -491,16 +500,23 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
 
         protected Node parseNodeLine(String line) {
             List<String> tokens = newArrayList(Splitter.on('\t').split(line));
-            Preconditions.checkArgument(tokens.size() == 6, "Wrong tree element definition: %s",
-                    line);
+            final int numTokens = tokens.size();
+            Preconditions.checkArgument(numTokens == 6 || numTokens == 7,
+                    "Wrong tree element definition: %s", line);
             TYPE type = TYPE.valueOf(tokens.get(1));
             String name = tokens.get(2);
             ObjectId id = ObjectId.valueOf(tokens.get(3));
             ObjectId metadataId = ObjectId.valueOf(tokens.get(4));
             Envelope bbox = parseBBox(tokens.get(5));
 
+            Map<String, Object> extraData = null;
+            if (numTokens == 7) {
+                String extraDataAsString = tokens.get(6);
+                extraData = Converters.convert(extraDataAsString, Map.class);
+            }
+
             org.locationtech.geogig.model.Node ref = org.locationtech.geogig.model.Node.create(name,
-                    id, metadataId, type, bbox);
+                    id, metadataId, type, bbox, extraData);
 
             return ref;
 
@@ -876,6 +892,12 @@ public class TextSerializationFactory implements ObjectSerializingFactory {
     @Override
     public RevObject read(@Nullable ObjectId id, InputStream in) throws IOException {
         return OBJECT_READER.read(id, in);
+    }
+
+    @Override
+    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+            throws IOException {
+        return read(id, new ByteArrayInputStream(data, offset, length));
     }
 
     @Override

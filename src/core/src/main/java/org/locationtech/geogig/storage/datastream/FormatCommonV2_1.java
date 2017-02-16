@@ -227,11 +227,10 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
                 throw new IllegalStateException();
             }
             final FieldType type = FieldType.valueOf(tagValue);
-            DataInput in = ByteStreams.newDataInput(data);
+            final DataInput in = ByteStreams.newDataInput(data, offset + 1);
             @Nullable
             Object value;
             try {
-                in.skipBytes(offset + 1);
                 value = valueEncoder.decode(type, in);
             } catch (IOException e) {
                 throw Throwables.propagate(e);

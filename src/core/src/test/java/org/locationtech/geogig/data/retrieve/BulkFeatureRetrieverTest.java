@@ -29,66 +29,78 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.impl.RevFeatureTypeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.ObjectInfo;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.util.Assert;
 
 public class BulkFeatureRetrieverTest {
 
     @Test
-    public void testGet() throws Exception{
+    public void testGet() throws Exception {
         ObjectId meta1 = getOID(1);
 
         RevFeatureTypeBuilder ftbuilder = new RevFeatureTypeBuilder();
         SimpleFeatureType fType1 = DataUtilities.createType("location",
                 "the_geom:Point:srid=4326,name:String,name2:String");
         RevFeatureType revft1 = ftbuilder.build(meta1, fType1);
-        
+
         WKTReader2 wkt = new WKTReader2();
-        RevFeature f1 = RevObjectTestSupport.featureForceId(getOID(2) ,wkt.read("POINT(0 0)"), "abc", "def");
-        RevFeature f2 = RevObjectTestSupport.featureForceId(getOID(3) ,wkt.read("POINT(0 0)"), "rrr", "ddd");
-        
+        RevFeature f1 = RevObjectTestSupport.featureForceId(getOID(2), wkt.read("POINT(0 0)"),
+                "abc", "def");
+        RevFeature f2 = RevObjectTestSupport.featureForceId(getOID(3), wkt.read("POINT(0 0)"),
+                "rrr", "ddd");
 
         ObjectDatabase odb = mock(ObjectDatabase.class);
         when(odb.getFeatureType(meta1)).thenReturn(revft1);
-        
-        when(odb.getAll(anyObject(), anyObject(), anyObject()))
-        .thenReturn((Arrays.asList((RevObject) f1, (RevObject) f2)).iterator());
 
-       
+        Iterator<RevObject> iterator = (Arrays.asList((RevObject) f1, (RevObject) f2)).iterator();
+        when(odb.getAll(anyObject(), anyObject(), anyObject())).thenReturn(iterator);
 
         Node n1 = Node.create("name1", getOID(2), meta1, TYPE.FEATURE, new Envelope());
         NodeRef nr1 = new NodeRef(n1, "testcase", meta1);
-        
+
         Node n2 = Node.create("name1", getOID(3), meta1, TYPE.FEATURE, new Envelope());
         NodeRef nr2 = new NodeRef(n2, "testcase", meta1);
 
-        Iterator<NodeRef>  input = Arrays.asList(nr1, nr2).iterator();
+        List<ObjectInfo<RevObject>> objs = Lists.newArrayList(ObjectInfo.of(nr1, f1),
+                ObjectInfo.of(nr2, f2));
+
+        AutoCloseableIterator<ObjectInfo<RevObject>> objects = AutoCloseableIterator
+                .fromIterator(objs.iterator());
         
-        BulkFeatureRetriever  getter = new BulkFeatureRetriever(odb);
-        
-        Iterator<SimpleFeature> results =  getter.getGeoToolsFeatures(input);
-        
-        List<SimpleFeature> feats = Arrays.asList(results.next(), results.next() );
-        
+        when(odb.getObjects(anyObject(), anyObject(), anyObject())).thenReturn(objects);
+
+        Iterator<NodeRef> input = Arrays.asList(nr1, nr2).iterator();
+
+        BulkFeatureRetriever getter = new BulkFeatureRetriever(odb);
+
+        Iterator<SimpleFeature> results = getter.getGeoToolsFeatures(input);
+
+        List<SimpleFeature> feats = Arrays.asList(results.next(), results.next());
+
         Assert.isTrue(feats.size() == 2);
-        
-        SimpleFeature feat1 = feats.get(0).getAttribute("name") == "abc" ? feats.get(0) : feats.get(1);
-        SimpleFeature feat2 = feats.get(0).getAttribute("name") == "rrr" ? feats.get(0) : feats.get(1);
-        
+
+        SimpleFeature feat1 = feats.get(0).getAttribute("name") == "abc" ? feats.get(0)
+                : feats.get(1);
+        SimpleFeature feat2 = feats.get(0).getAttribute("name") == "rrr" ? feats.get(0)
+                : feats.get(1);
+
         Assert.isTrue(feat1.getAttribute("name") == "abc");
         Assert.isTrue(feat2.getAttribute("name") == "rrr");
-        
-        int tt =0;
+
+        int tt = 0;
     }
-    
+
     public ObjectId getOID(int b) {
         byte n = (byte) b;
         return new ObjectId(
                 new byte[] { n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n });
     }
-      
+
 }

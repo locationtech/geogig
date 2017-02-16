@@ -66,7 +66,7 @@ public class ScreenMapTests {
         ScreenMapGeometryReplacer replacer = new ScreenMapGeometryReplacer(sm);
 
         SimpleFeature feature1b = replacer.apply(feature1);
-        assertNotEquals(feature1, feature1b);
+        assertSame(feature1, feature1b);
         Geometry newGeom = (Geometry) feature1b.getDefaultGeometry();
         assertTrue(newGeom instanceof LineString);
 

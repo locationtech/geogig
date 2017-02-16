@@ -39,11 +39,8 @@ import org.opengis.feature.simple.SimpleFeature;
 
     /**
      * if the features is fully inside a pixel (screenMap.canSimplify()), then
-     * we create a new feature with a geometry that takes up the entire pixels
+     * we replace it's geometry with a one that takes up the entire pixels
      * (screenMap.getSimplifiedShape()).
-     * <p>
-     * NOTE: this makes a copy of the original feature - we could make a feature that
-     * wraps the original geometry.  However, that can get quite complex.
      * <p>
      * TODO: allow to specify the geometry attribute.
      *
@@ -53,8 +50,9 @@ import org.opengis.feature.simple.SimpleFeature;
     @Override
     public SimpleFeature apply(SimpleFeature feature) {
         Geometry g = (Geometry) feature.getDefaultGeometry();
-        if (g instanceof Point)
-            return feature; //cannot simplify a point
+        if (g == null || g instanceof Point) {
+            return feature; // cannot simplify a point
+        }
         Envelope e = g.getEnvelopeInternal();
         // this is safe to call multi-threaded
         if (!screenMap.canSimplify(e)) {
@@ -64,12 +62,8 @@ import org.opengis.feature.simple.SimpleFeature;
                     e.getMinX(), e.getMinY(),
                     e.getMaxX(), e.getMaxY(),
                     g.getFactory(), g.getClass());
-            SimpleFeatureImpl newFeat = new SimpleFeatureImpl(
-                    feature.getAttributes(),
-                    feature.getFeatureType(),
-                    feature.getIdentifier());
-            newFeat.setDefaultGeometry(newGeom);
-            return newFeat;
+            feature.setDefaultGeometry(newGeom);
         }
+        return feature;
     }
 }

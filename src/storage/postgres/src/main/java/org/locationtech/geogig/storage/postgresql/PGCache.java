@@ -25,6 +25,7 @@ import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -80,21 +81,23 @@ public class PGCache {
         Optional<Integer> initialCapacity = configdb
                 .get(Environment.KEY_ODB_BYTE_CACHE_INITIAL_CAPACITY, Integer.class);
 
-        Integer expireAfterAccessSeconds = expireSeconds.or(300);
         Integer initialCapacityCount = initialCapacity.or(1_000_000);
         Integer concurrencyLevel2 = concurrencyLevel.or(16);
         Long maxWeightBytes = maxSize.or(defaultCacheSize());
 
-        return build(initialCapacityCount, concurrencyLevel2, maxWeightBytes,
-                expireAfterAccessSeconds);
+        return build(initialCapacityCount, concurrencyLevel2, maxWeightBytes, expireSeconds);
     }
 
     private static PGCache build(Integer initialCapacityCount, Integer concurrencyLevel2,
-            Long maxWeightBytes, Integer expireAfterAccessSeconds) {
+            Long maxWeightBytes, Optional<Integer> expireSeconds) {
         CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
         cacheBuilder = cacheBuilder.maximumWeight(maxWeightBytes);
         cacheBuilder.weigher(weigher);
-        cacheBuilder.expireAfterAccess(expireAfterAccessSeconds, TimeUnit.SECONDS);
+        if (expireSeconds.isPresent()) {
+            long seconds = expireSeconds.get();
+            Preconditions.checkArgument(seconds > -1);
+            cacheBuilder.expireAfterAccess(seconds, TimeUnit.SECONDS);
+        }
         cacheBuilder.initialCapacity(initialCapacityCount);
         cacheBuilder.concurrencyLevel(concurrencyLevel2);
         cacheBuilder.recordStats();
@@ -109,7 +112,7 @@ public class PGCache {
 
     @VisibleForTesting
     public static PGCache build() {
-        Integer expireAfterAccessSeconds = 300;
+        Optional<Integer> expireAfterAccessSeconds = Optional.absent();
         Integer initialCapacityCount = 1_000_000;
         Integer concurrencyLevel2 = 16;
         Long maxWeightBytes = defaultCacheSize();

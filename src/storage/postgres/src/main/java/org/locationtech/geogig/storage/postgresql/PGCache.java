@@ -1,3 +1,12 @@
+/* Copyright (c) 2017 Boundless and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/org/documents/edl-v10.html
+ *
+ * Contributors:
+ * Gabriel Roldan (Boundless) - initial implementation
+ */
 package org.locationtech.geogig.storage.postgresql;
 
 import java.io.ByteArrayInputStream;
@@ -10,7 +19,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2_1;
+import org.locationtech.geogig.storage.datastream.LZ4SerializationFactory;
+import org.locationtech.geogig.storage.datastream.v2_2.DataStreamSerializationFactoryV2_2;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -18,11 +28,15 @@ import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
 
 public class PGCache {
 
-    private static final ObjectSerializingFactory ENCODER = DataStreamSerializationFactoryV2_1.INSTANCE;
+    private static final ObjectSerializingFactory ENCODER = new LZ4SerializationFactory(//
+            DataStreamSerializationFactoryV2_2.INSTANCE//
+    );
 
     protected static final int ESTIMATED_OBJECTID_SIZE = 28;
 
@@ -38,8 +52,24 @@ public class PGCache {
         }
 
     };
-    
 
+    private static class SizeTracker implements RemovalListener<ObjectId, byte[]> {
+
+        public final AtomicLong size = new AtomicLong();
+
+        @Override
+        public void onRemoval(RemovalNotification<ObjectId, byte[]> notification) {
+            ObjectId key = notification.getKey();
+            byte[] value = notification.getValue();
+            int weigh = weigher.weigh(key, value);
+            size.addAndGet(-weigh);
+        }
+
+        public void inserted(ObjectId id, byte[] value) {
+            int weigh = weigher.weigh(id, value);
+            size.addAndGet(weigh);
+        }
+    }
 
     public static PGCache build(ConfigDatabase configdb) {
         Optional<Long> maxSize = configdb.get(Environment.KEY_ODB_BYTE_CACHE_MAX_SIZE, Long.class);
@@ -68,10 +98,13 @@ public class PGCache {
         cacheBuilder.initialCapacity(initialCapacityCount);
         cacheBuilder.concurrencyLevel(concurrencyLevel2);
         cacheBuilder.recordStats();
-        
+
+        SizeTracker sizeTracker = new SizeTracker();
+        cacheBuilder.removalListener(sizeTracker);
+
         Cache<ObjectId, byte[]> byteCache = cacheBuilder.build();
 
-        return new PGCache(byteCache);
+        return new PGCache(byteCache, sizeTracker);
     }
 
     @VisibleForTesting
@@ -105,10 +138,11 @@ public class PGCache {
      */
     private Map<ObjectId, byte[]> map;
 
-    private AtomicLong sizeBytes = new AtomicLong();
+    private SizeTracker sizeTracker;
 
-    public PGCache(Cache<ObjectId, byte[]> byteCache) {
+    public PGCache(Cache<ObjectId, byte[]> byteCache, SizeTracker sizeTracker) {
         this.cache = byteCache;
+        this.sizeTracker = sizeTracker;
         this.map = cache.asMap();
     }
 
@@ -118,11 +152,11 @@ public class PGCache {
 
     public void invalidateAll() {
         cache.invalidateAll();
+        cache.cleanUp();
     }
 
     public void dispose() {
         invalidateAll();
-        cache.cleanUp();
     }
 
     public void invalidate(ObjectId id) {
@@ -133,7 +167,7 @@ public class PGCache {
         byte[] value = encode(obj);
         byte[] prev = map.putIfAbsent(obj.getId(), value);
         if (prev == null) {
-            sizeBytes.addAndGet(weigher.weigh(obj.getId(), value));
+            sizeTracker.inserted(obj.getId(), value);
         }
     }
 
@@ -165,9 +199,13 @@ public class PGCache {
 
     public String toString() {
         long size = cache.size();
-        long bytes = sizeBytes.get();
+        long bytes = sizeTracker.size.get();
         long avg = size == 0 ? 0 : bytes / size;
         return String.format("Size: %,d, bytes: %,d, avg: %,d bytes/entry, %s", size, bytes, avg,
                 cache.stats());
+    }
+
+    public long sizeBytes() {
+        return sizeTracker.size.get();
     }
 }

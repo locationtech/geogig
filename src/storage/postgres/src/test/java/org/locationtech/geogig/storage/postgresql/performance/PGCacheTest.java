@@ -20,8 +20,10 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.model.impl.RevTreeBuilder;
 import org.locationtech.geogig.repository.IndexInfo;
+import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV1;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2_1;
+import org.locationtech.geogig.storage.datastream.LZ4SerializationFactory;
 import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
 import org.locationtech.geogig.storage.datastream.v2_2.DataStreamSerializationFactoryV2_2;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
@@ -39,7 +41,7 @@ public class PGCacheTest {
 
     final int featureCount = 10_000;
 
-    final int treeCount = 2_000;
+    final int treeCount = 10_000;
 
     private PGCache cache;
 
@@ -50,12 +52,21 @@ public class PGCacheTest {
     private List<RevTree> bucketTrees;
 
     private static final List<ObjectSerializingFactory> encoders = ImmutableList.of(//
-            DataStreamSerializationFactoryV2.INSTANCE //
-            , new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
+            // raw encoders
+            DataStreamSerializationFactoryV1.INSTANCE //
+            , DataStreamSerializationFactoryV2.INSTANCE //
             , DataStreamSerializationFactoryV2_1.INSTANCE//
-            , new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
             , DataStreamSerializationFactoryV2_2.INSTANCE//
+            // LZF encoders
+            , new LZFSerializationFactory(DataStreamSerializationFactoryV1.INSTANCE)//
+            , new LZFSerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
+            , new LZFSerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
             , new LZFSerializationFactory(DataStreamSerializationFactoryV2_2.INSTANCE)//
+            // LZ4 encoders
+            , new LZ4SerializationFactory(DataStreamSerializationFactoryV1.INSTANCE)//
+            , new LZ4SerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
+            , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
+            , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_2.INSTANCE)//
     );
 
     public static void main(String[] args) {
@@ -63,7 +74,7 @@ public class PGCacheTest {
         System.err.println("set up...");
         test.setUp();
 
-        final int runCount = 1;
+        final int runCount = 5;
 
         System.err.println("Leaf Trees test:");
         for (int i = 1; i <= runCount; i++) {
@@ -99,6 +110,9 @@ public class PGCacheTest {
     }
 
     public void runTest(List<? extends RevObject> objects) {
+        System.err.println(
+                "----------------------------------------------------------------------------------");
+        System.err.printf("Format\t\t Count\t Hits\t Insert\t\t Query\t\t Size\t\t Stats\n");
         for (ObjectSerializingFactory encoder : encoders) {
             cache.invalidateAll();
             run(encoder, objects);
@@ -113,8 +127,8 @@ public class PGCacheTest {
         final Stopwatch get = Stopwatch.createStarted();
         int hits = query(Lists.transform(objects, (f) -> f.getId()));
         get.stop();
-        System.err.printf("%s: Count: %,d, hits: %,d, Insert: %s, Query: %s\n",
-                encoder.getDisplayName(), objects.size(), hits, put, get);
+        System.err.printf("%s\t %,d\t %,d\t %s\t %s\t %,d\t %s\n", encoder.getDisplayName(),
+                objects.size(), hits, put, get, cache.sizeBytes(), ""/* cache.toString() */);
     }
 
     private int query(List<ObjectId> ids) {

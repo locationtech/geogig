@@ -35,9 +35,10 @@ import com.google.common.cache.Weigher;
 
 public class PGCache {
 
-    private static final ObjectSerializingFactory ENCODER = new LZ4SerializationFactory(//
-            DataStreamSerializationFactoryV2_2.INSTANCE//
-    );
+    private static final ObjectSerializingFactory ENCODER = //
+            new LZ4SerializationFactory(//
+                    DataStreamSerializationFactoryV2_2.INSTANCE//
+            );
 
     protected static final int ESTIMATED_OBJECTID_SIZE = 28;
 
@@ -167,10 +168,12 @@ public class PGCache {
     }
 
     public void put(RevObject obj) {
-        byte[] value = encode(obj);
-        byte[] prev = map.putIfAbsent(obj.getId(), value);
-        if (prev == null) {
-            sizeTracker.inserted(obj.getId(), value);
+        if (!map.containsKey(obj.getId())) {
+            byte[] value = encode(obj);
+            byte[] prev = map.putIfAbsent(obj.getId(), value);
+            if (prev == null) {
+                sizeTracker.inserted(obj.getId(), value);
+            }
         }
     }
 

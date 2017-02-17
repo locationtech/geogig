@@ -39,7 +39,7 @@ import com.vividsolutions.jts.io.WKTReader;
 
 public class PGCacheTest {
 
-    final int featureCount = 10_000;
+    final int featureCount = 1000_000;
 
     final int treeCount = 10_000;
 
@@ -74,7 +74,7 @@ public class PGCacheTest {
         System.err.println("set up...");
         test.setUp();
 
-        final int runCount = 5;
+        final int runCount = 2;
 
         System.err.println("Leaf Trees test:");
         for (int i = 1; i <= runCount; i++) {

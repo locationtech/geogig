@@ -14,12 +14,16 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.SortedMap;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.HashObject;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Throwables;
@@ -159,11 +163,11 @@ class RevTreeFormat {
                 offsetOfTail);
     }
 
-    public static RevTree decode(ObjectId id, byte[] data) {
+    public static RevTree decode(@Nullable ObjectId id, byte[] data) {
         return decode(id, data, 0, data.length);
     }
 
-    public static RevTree decode(ObjectId id, byte[] data, int offset, int length) {
+    public static RevTree decode(@Nullable ObjectId id, byte[] data, int offset, int length) {
         ByteBuffer buffer = ByteBuffer.wrap(data, offset, length);
         if (offset != 0 || length != 0) {
             buffer = buffer.slice();
@@ -171,14 +175,19 @@ class RevTreeFormat {
         return decode(id, buffer);
     }
 
-    public static RevTree decode(ObjectId id, ByteBuffer data) {
+    public static RevTree decode(@Nullable ObjectId id, ByteBuffer data) {
         final DataBuffer dataBuffer = DataBuffer.of(data);
         final long totalSize = dataBuffer.header().size();
         final int numTrees = dataBuffer.header().numTrees();
         if (totalSize == 0L && numTrees == 0) {
             return RevTree.EMPTY;
         }
-
+        if (null == id) {
+            List<Node> trees = RevTreeFormat.trees(dataBuffer);
+            List<Node> features = RevTreeFormat.features(dataBuffer);
+            SortedMap<Integer, Bucket> buckets = RevTreeFormat.buckets(dataBuffer);
+            id = HashObject.hashTree(trees, features, buckets);
+        }
         return new RevTreeImpl(id, dataBuffer);
     }
 

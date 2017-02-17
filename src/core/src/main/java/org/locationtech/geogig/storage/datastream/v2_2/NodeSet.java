@@ -419,7 +419,7 @@ class NodeSet {
 
     public Optional<ObjectId> getMetadataId(final int objectIdIndex) {
         Optional<ObjectId> mdId = Optional.absent();
-        if (objectIdIndex > 0) {
+        if (objectIdIndex > -1) {
             mdId = Optional.of(getObjectId(objectIdIndex));
         }
         return mdId;

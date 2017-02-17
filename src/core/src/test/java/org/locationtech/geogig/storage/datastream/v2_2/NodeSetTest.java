@@ -71,7 +71,7 @@ public class NodeSetTest {
 
     @Test
     public void severalFeatures() throws IOException {
-        encodedDecode(nodes(TYPE.FEATURE, 1, false, false, false), TYPE.FEATURE);
+        encodedDecode(nodes(TYPE.FEATURE, 1024, false, false, false), TYPE.FEATURE);
         encodedDecode(nodes(TYPE.FEATURE, 1024, false, false, true), TYPE.FEATURE);
         encodedDecode(nodes(TYPE.FEATURE, 1024, false, true, true), TYPE.FEATURE);
         encodedDecode(nodes(TYPE.FEATURE, 1024, true, true, true), TYPE.FEATURE);

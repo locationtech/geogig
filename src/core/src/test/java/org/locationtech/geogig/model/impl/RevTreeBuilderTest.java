@@ -24,7 +24,6 @@ import java.util.TreeMap;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
@@ -278,38 +277,6 @@ public abstract class RevTreeBuilderTest {
         checkTreeBounds(1000);
         checkTreeBounds(10 * 1000);
         checkTreeBounds(100 * 1000);
-    }
-
-    @Ignore // we're no longer supporting mixed trees
-    @Test
-    public void testBuildWithChildTreesUnsplittedRoot() {
-        // create a somewhat uncommon tree in that it contains both trees and features. Despite
-        // not commonly used, it's a perfectly valid tree wrt the object model.
-        final int rootFeatureCount = 10;
-        final int numSubTrees = 4;
-
-        RevTreeBuilder builder = createTree(rootFeatureCount, false);
-        long totalSize = rootFeatureCount;
-
-        for (int i = 0; i < numSubTrees; i++) {
-            int size = 2 * i;
-            totalSize += size;
-            RevTree subtree = createTree(size, false).build();
-            assertEquals(size, subtree.size());
-            String name = "tree-" + i;
-            ObjectId metadataId = RevObjectTestSupport.hashString(name);
-            Node node = Node.create(name, subtree.getId(), metadataId, TYPE.TREE,
-                    SpatialOps.boundsOf(subtree));
-            builder.put(node);
-        }
-        RevTree root = builder.build();
-        assertEquals(totalSize, root.size());
-        assertEquals(numSubTrees, root.numTrees());
-        // This root tree won't be split into buckets since the sum of direct features and trees
-        // does not exceed the normalization limit
-        assertFalse(root.trees().isEmpty());
-        assertFalse(root.features().isEmpty());
-        assertTrue(root.buckets().isEmpty());
     }
 
     private void checkTreeBounds(int size) {

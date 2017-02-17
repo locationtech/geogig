@@ -18,6 +18,7 @@ import static org.locationtech.geogig.storage.datastream.v2_2.TestSupport.nodes;
 import static org.locationtech.geogig.storage.datastream.v2_2.TestSupport.tree;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -30,11 +31,13 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 
 import com.google.common.collect.ImmutableList;
+import com.vividsolutions.jts.geom.Envelope;
 
 public class RevTreeFormatTest {
 
@@ -121,16 +124,50 @@ public class RevTreeFormatTest {
 
     @Test
     public void testConsistentHashing() throws IOException {
-        List<Node> tNodes = nodes(TYPE.TREE, 512, true, true, true);
-        List<Node> fNodes = nodes(TYPE.FEATURE, 512, false, true, true);
+        testConsistentHashing(false, false, false);
+        testConsistentHashing(false, false, true);
+        testConsistentHashing(false, true, true);
+        testConsistentHashing(true, true, true);
+        testConsistentHashing(true, true, false);
+        testConsistentHashing(true, false, false);
+    }
+
+    @Test
+    public void testConsistentHashing2() throws Exception {
+        List<Node> nodes = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            nodes.add(node(i));
+        }
+        RevTree orig = tree(nodes.size(), null, nodes, null);
+        assertHashing(orig);
+    }
+
+    private static final ObjectId FAKE_ID = RevObjectTestSupport.hashString("fake");
+
+    private Node node(int i) {
+        return Node.create("name", FAKE_ID, FAKE_ID, TYPE.FEATURE,
+                new Envelope(i, i + 1, i, i + 1));
+    }
+
+    public void testConsistentHashing(boolean withMetadataId, boolean withBounds,
+            boolean withExtraData) throws IOException {
+
+        List<Node> tNodes = nodes(TYPE.TREE, 512, withMetadataId, withBounds, withExtraData);
+        List<Node> fNodes = nodes(TYPE.FEATURE, 512, withMetadataId, withBounds, withExtraData);
         final RevTree orig = tree(2048, tNodes, fNodes, null);
 
+        assertHashing(orig);
+    }
+
+    private void assertHashing(final RevTree orig) {
         final byte[] encoded = RevTreeFormat.encode(orig);
         assertNotNull(encoded);
-        RevTree decoded = RevTreeFormat.decode(orig.getId(), encoded);
-        
+        RevTree decoded = RevTreeFormat.decode(null, encoded);
+
         ObjectId expected = new HashObject().setObject(orig).call();
         ObjectId actual = new HashObject().setObject(decoded).call();
+
+        assertEqualsFully(orig, decoded);
         assertEquals(expected, actual);
     }
 

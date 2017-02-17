@@ -18,7 +18,6 @@ import java.io.OutputStream;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.storage.datastream.v2_2.DataStreamSerializationFactoryV2_2;
 import org.locationtech.geogig.storage.impl.ObjectSerializingFactory;
 
 /**
@@ -105,6 +104,19 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
         } catch (Exception e) {
             throw new RuntimeException("Error encoding object " + o, e);
         }
+    }
+
+    @Override
+    public String getDisplayName() {
+        StringBuilder sb = new StringBuilder("Proxy[");
+        for (ObjectSerializingFactory f : SUPPORTED_FORMATS) {
+            sb.append(f.getDisplayName()).append(", ");
+        }
+        if (sb.length() > 2) {
+            sb.setLength(sb.length() - 2);
+        }
+        sb.append(']');
+        return sb.toString();
     }
 
 }

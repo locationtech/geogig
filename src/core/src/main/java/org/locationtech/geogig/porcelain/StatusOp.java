@@ -18,11 +18,11 @@ import org.locationtech.geogig.plumbing.DiffIndex;
 import org.locationtech.geogig.plumbing.DiffWorkTree;
 import org.locationtech.geogig.plumbing.merge.ConflictsQueryOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;

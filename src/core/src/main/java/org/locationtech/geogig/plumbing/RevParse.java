@@ -16,6 +16,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -23,7 +24,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Optional;

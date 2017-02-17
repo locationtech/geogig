@@ -22,9 +22,9 @@ import org.locationtech.geogig.plumbing.diff.Patch;
 import org.locationtech.geogig.plumbing.diff.PatchSerializer;
 import org.locationtech.geogig.porcelain.CreatePatchOp;
 import org.locationtech.geogig.porcelain.DiffOp;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

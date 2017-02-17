@@ -12,6 +12,7 @@ package org.locationtech.geogig.web.api.commands;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;

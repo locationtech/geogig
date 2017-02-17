@@ -10,18 +10,18 @@
 package org.locationtech.geogig.data.retrieve;
 
 import java.util.Iterator;
-import java.util.List;
 
 import org.locationtech.geogig.data.FeatureBuilder;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
-import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.model.NodeRef;
+import org.locationtech.geogig.model.RevFeature;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
@@ -38,12 +38,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 public class BulkFeatureRetriever {
     ObjectStore odb;
 
-    int nodeFetchSize = 10_000;
-
-    int featureFetchSize = 201;
-
-    int featureSize = featureFetchSize / 5;
-
     public BulkFeatureRetriever(ObjectStore odb) {
         this.odb = odb;
     }
@@ -55,26 +49,11 @@ public class BulkFeatureRetriever {
      * @param refs
      * @return
      */
-    public AutoCloseableIterator<FeatureInfo> getGeoGIGFeatures(Iterator<NodeRef> refs, boolean wrapResultInBackgroundingIterator) {
-        // this will get the refs (from the tree) in the background
-        BackgroundingIterator<NodeRef> featureRefs = new BackgroundingIterator<NodeRef>(refs,
-                nodeFetchSize);
-        // this partitions the featureids into groups for bulk retrieving from the DB
-        AutoCloseableIterator<List<NodeRef>> partition = AutoCloseableIterator.partition(featureRefs, featureFetchSize);
+    public AutoCloseableIterator<ObjectInfo<RevFeature>> getGeoGIGFeatures(Iterator<NodeRef> refs) {
+        AutoCloseableIterator<ObjectInfo<RevFeature>> objects;
+        objects = odb.getObjects(refs, BulkOpListener.NOOP_LISTENER, RevFeature.class);
 
-        // used to get a group of features from the DB
-        BulkObjectDatabaseFeatureRetriever bulkFeatureRetriever = new BulkObjectDatabaseFeatureRetriever(
-                odb);
-
-        AutoCloseableIterator<Iterator<FeatureInfo>> transformed = AutoCloseableIterator.transform(partition,
-                bulkFeatureRetriever);
-        // simplify from Iterator<Iterator<SF>> to Iterator<SF>
-        AutoCloseableIterator<FeatureInfo> allFeatures = AutoCloseableIterator.concat(transformed);
-
-        if (wrapResultInBackgroundingIterator)
-            return new BackgroundingIterator<>(allFeatures, featureSize);
-        else
-            return allFeatures;
+        return objects;
     }
 
     /**
@@ -88,11 +67,11 @@ public class BulkFeatureRetriever {
      * @param refs
      * @return
      */
-    public Iterator<SimpleFeature> getGeoToolsFeatures(Iterator<NodeRef> refs) {
-        AutoCloseableIterator<FeatureInfo> fis = getGeoGIGFeatures(refs,false);
+    public AutoCloseableIterator<SimpleFeature> getGeoToolsFeatures(Iterator<NodeRef> refs) {
+        AutoCloseableIterator<ObjectInfo<RevFeature>> fis = getGeoGIGFeatures(refs);
         MultiFeatureTypeBuilder builder = new MultiFeatureTypeBuilder(odb);
         AutoCloseableIterator<SimpleFeature> result = AutoCloseableIterator.transform(fis, builder);
-        return new BackgroundingIterator<>(result, featureSize);
+        return result;
     }
 
     /**
@@ -108,38 +87,19 @@ public class BulkFeatureRetriever {
     public AutoCloseableIterator<SimpleFeature> getGeoToolsFeatures(
             AutoCloseableIterator<NodeRef> refs, SimpleFeatureType schema,
             GeometryFactory geometryFactory) {
+
         // builder for this particular schema
         FeatureBuilder featureBuilder = new FeatureBuilder(schema);
 
         // function that converts the FeatureInfo a feature of the given schema
-        Function<FeatureInfo, SimpleFeature> funcBuildFeature = (input -> MultiFeatureTypeBuilder
+        Function<ObjectInfo<RevFeature>, SimpleFeature> funcBuildFeature = (input -> MultiFeatureTypeBuilder
                 .build(featureBuilder, input, geometryFactory));
 
-        AutoCloseableIterator<FeatureInfo> fis = getGeoGIGFeatures(refs,false);
-        AutoCloseableIterator<SimpleFeature> result = AutoCloseableIterator.transform(fis, funcBuildFeature);
-        final BackgroundingIterator<SimpleFeature> backgroundingIterator = new BackgroundingIterator<>(
-                result, featureSize);
+        AutoCloseableIterator<ObjectInfo<RevFeature>> fis = getGeoGIGFeatures(refs);
 
-        return new AutoCloseableIterator<SimpleFeature>() {
+        AutoCloseableIterator<SimpleFeature> result = AutoCloseableIterator.transform(fis,
+                funcBuildFeature);
 
-            @Override
-            public void close() {
-                try {
-                    backgroundingIterator.close();
-                } finally {
-                    refs.close();
-                }
-            }
-
-            @Override
-            public boolean hasNext() {
-                return backgroundingIterator.hasNext();
-            }
-
-            @Override
-            public SimpleFeature next() {
-                return backgroundingIterator.next();
-            }
-        };
+        return result;
     }
 }

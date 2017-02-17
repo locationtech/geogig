@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.repository;
+package org.locationtech.geogig.model;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -15,10 +15,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.Bounded;
-import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.RevObject;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
@@ -28,7 +24,9 @@ import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
- * The basic leaf element of a revision tree.
+ * A reference to a {@link Node} with extra data to fully address it on a revision tree, including
+ * the parent tree path and the default metadata id (i.e. the {@link RevFeatureType} the node
+ * belongs to.
  * 
  * @since 1.0
  */

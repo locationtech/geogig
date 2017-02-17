@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 
 import org.geotools.data.FeatureReader;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 

@@ -17,8 +17,8 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;

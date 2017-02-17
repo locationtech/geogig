@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.GeometryAttributeImpl;
@@ -55,73 +54,41 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  */
 public class GeogigSimpleFeature implements SimpleFeature {
 
-    static abstract class State {
+    static final class State {
+        private static final Object NULL = new Object();
 
-        final AtomicReference<State> currentState;
+        private final RevFeature feature;
 
-        State(AtomicReference<State> currentState) {
-            this.currentState = currentState;
-            this.currentState.set(this);
-        }
+        private final Object[] values;
 
-        public abstract void set(int index, Object value);
-
-        public abstract Object get(int index);
-
-        public abstract Geometry get(int index, GeometryFactory geomFac);
-
-        public abstract void getBounds(Envelope bounds);
-
-        protected State setNext(State newState) {
-            currentState.set(newState);
-            return newState;
-        }
-    }
-
-    static final class ImmutableState extends State {
-
-        private RevFeature feature;
-
-        private Object[] values;
-
-        ImmutableState(RevFeature feature) {
-            this(new AtomicReference<>(), feature);
-        }
-
-        ImmutableState(AtomicReference<State> currentState, RevFeature feature) {
-            super(currentState);
+        State(RevFeature feature) {
             this.feature = feature;
             this.values = new Object[feature.size()];
+            Arrays.fill(values, NULL);
         }
 
-        @Override
         public void set(int index, Object value) {
-            List<Object> values = new ArrayList<>(feature.size());
-            feature.forEach((v) -> values.add(v));
-            new MutableState(currentState, values).set(index, value);
+            values[index] = value;
         }
 
-        @Override
         public Object get(int index) {
             Object v = values[index];
-            if (v == null) {
+            if (v == NULL) {
                 v = feature.get(index).orNull();
                 values[index] = v;
             }
             return v;
         }
 
-        @Override
         public Geometry get(int index, GeometryFactory gf) {
-            Geometry v = (Geometry) values[index];
-            if (v == null) {
+            Object v = values[index];
+            if (v == NULL) {
                 v = feature.get(index, gf).orNull();
                 values[index] = v;
             }
-            return v;
+            return (Geometry) v;
         }
 
-        @Override
         public void getBounds(Envelope bounds) {
             feature.forEach((v) -> {
                 if (v instanceof Geometry)
@@ -131,46 +98,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
 
     }
 
-    static final class MutableState extends State {
-
-        private List<Object> values;
-
-        MutableState(AtomicReference<State> currentState, List<Object> values) {
-            super(currentState);
-            this.values = values;
-        }
-
-        @Override
-        public void set(int index, Object value) {
-            values.set(index, value);
-        }
-
-        @Override
-        public Object get(int index) {
-            return values.get(index);
-        }
-
-        @Override
-        public Geometry get(int index, GeometryFactory geomFac) {
-            Geometry geom = (Geometry) get(index);
-            if (geom != null) {
-                if (geom.getFactory() != geomFac) {
-                    geom = geomFac.createGeometry(geom);
-                }
-            }
-            return geom;
-        }
-
-        @Override
-        public void getBounds(Envelope bounds) {
-            values.forEach((v) -> {
-                if (v instanceof Geometry)
-                    bounds.expandToInclude(((Geometry) v).getEnvelopeInternal());
-            });
-        }
-    }
-
-    private final AtomicReference<State> state;
+    private final State state;
 
     private final FeatureId id;
 
@@ -207,7 +135,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
         this.id = id;
         this.featureType = featureType;
         this.geomFac = geomFac;
-        this.state = new GeogigSimpleFeature.ImmutableState(feature).currentState;
+        this.state = new GeogigSimpleFeature.State(feature);
 
         this.nameToRevTypeIndex = nameToRevTypeInded;
         Integer defaultGeomIndex = nameToRevTypeInded.get(null);
@@ -245,7 +173,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
         // return DEFAULT_GEOM_FACTORY.createPoint(new Coordinate(e.getMinX(), e.getMinY()));
         // }
         Object value;
-        State state = this.state.get();
+        State state = this.state;
         if (index == defaultGeomIndex && geomFac != null) {
             value = state.get(index, geomFac);
         } else {
@@ -326,7 +254,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
                     converted.getClass().getName(), binding.getName(), value));
         }
         // finally set the value into the feature
-        state.get().set(index, converted);
+        state.set(index, converted);
     }
 
     @Override
@@ -368,7 +296,7 @@ public class GeogigSimpleFeature implements SimpleFeature {
     public BoundingBox getBounds() {
         CoordinateReferenceSystem crs = featureType.getCoordinateReferenceSystem();
         Envelope bounds = ReferencedEnvelope.create(crs);
-        state.get().getBounds(bounds);
+        state.getBounds(bounds);
         // {
         // if (node == null) {
         // Optional<Object> o;

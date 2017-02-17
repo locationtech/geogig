@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.impl;
 import java.util.Iterator;
 import java.util.List;
 
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
@@ -19,7 +20,9 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
@@ -176,5 +179,11 @@ public class ForwardingObjectStore implements ObjectStore {
     @Override
     public String toString() {
         return String.format("%s[%s]", getClass().getSimpleName(), subject);
+    }
+
+    @Override
+    public <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
+            Iterator<NodeRef> refs, BulkOpListener listener, Class<T> type) {
+        return subject.get().getObjects(refs, listener, type);
     }
 }

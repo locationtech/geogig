@@ -24,11 +24,11 @@ import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportCommitConflictsOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

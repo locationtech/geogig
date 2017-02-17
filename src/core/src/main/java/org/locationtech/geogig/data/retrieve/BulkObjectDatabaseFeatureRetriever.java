@@ -18,11 +18,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.repository.NodeRef;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Function;

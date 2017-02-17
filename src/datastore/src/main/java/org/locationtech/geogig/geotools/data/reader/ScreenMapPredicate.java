@@ -13,8 +13,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.renderer.ScreenMap;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Predicate;

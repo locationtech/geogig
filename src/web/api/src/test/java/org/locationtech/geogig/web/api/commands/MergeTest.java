@@ -18,6 +18,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -26,7 +27,6 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;

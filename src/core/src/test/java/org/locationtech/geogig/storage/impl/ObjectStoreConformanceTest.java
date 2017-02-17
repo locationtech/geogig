@@ -21,8 +21,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createFeaturesTree;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createTreesTree;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.feature;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.featureForceId;
+import static org.locationtech.geogig.model.impl.RevObjectTestSupport.hashString;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.io.File;
@@ -39,22 +41,28 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.plumbing.diff.DepthTreeIterator;
+import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
-import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.BulkOpListener.CountingListener;
+import org.locationtech.geogig.storage.ObjectInfo;
+import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -362,8 +370,7 @@ public abstract class ObjectStoreConformanceTest {
     public void testGetAll() {
 
         ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
-                feature(1, "value", new Integer(111)), feature(2, (Object) null),
-                RevTree.EMPTY);
+                feature(1, "value", new Integer(111)), feature(2, (Object) null), RevTree.EMPTY);
 
         for (RevObject o : expected) {
             assertTrue(db.put(o));
@@ -385,8 +392,7 @@ public abstract class ObjectStoreConformanceTest {
     public void testGetAllWithListener() {
 
         ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
-                feature(1, "value", new Integer(111)), feature(2, (Object) null),
-                RevTree.EMPTY);
+                feature(1, "value", new Integer(111)), feature(2, (Object) null), RevTree.EMPTY);
 
         for (RevObject o : expected) {
             assertTrue(db.put(o));
@@ -454,8 +460,7 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testGetIfPresent() {
         ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
-                feature(1, "value", new Integer(111)), feature(2, (Object) null),
-                RevTree.EMPTY);
+                feature(1, "value", new Integer(111)), feature(2, (Object) null), RevTree.EMPTY);
 
         for (RevObject o : expected) {
             assertTrue(db.put(o));
@@ -470,8 +475,7 @@ public abstract class ObjectStoreConformanceTest {
     public void testGetIfPresentWithCasting() {
         assertTrue(db.put(RevTree.EMPTY));
 
-        assertEquals(RevTree.EMPTY,
-                db.getIfPresent(RevTree.EMPTY_TREE_ID, RevTree.class));
+        assertEquals(RevTree.EMPTY, db.getIfPresent(RevTree.EMPTY_TREE_ID, RevTree.class));
 
         assertNull(db.getIfPresent(RevTree.EMPTY_TREE_ID, RevTag.class));
     }
@@ -554,8 +558,7 @@ public abstract class ObjectStoreConformanceTest {
     public void testPutAll() {
 
         ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
-                feature(1, "value", new Integer(111)), feature(2, (Object) null),
-                RevTree.EMPTY);
+                feature(1, "value", new Integer(111)), feature(2, (Object) null), RevTree.EMPTY);
 
         db.putAll(expected.iterator());
         for (RevObject o : expected) {
@@ -567,8 +570,7 @@ public abstract class ObjectStoreConformanceTest {
     public void testPutAllWithListener() {
 
         ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
-                feature(1, "value", new Integer(111)), feature(2, (Object) null),
-                RevTree.EMPTY);
+                feature(1, "value", new Integer(111)), feature(2, (Object) null), RevTree.EMPTY);
 
         Function<RevObject, ObjectId> toId = p -> p.getId();
         final Iterable<ObjectId> ids = Iterables.transform(expected, toId);
@@ -603,4 +605,63 @@ public abstract class ObjectStoreConformanceTest {
         assertEquals(Sets.newHashSet(ids), Sets.newHashSet(found));
     }
 
+    @Test
+    public void testGetObjects() throws Exception {
+        final int numSubTrees = 512;
+        final int featuresPerSubtre = 2;
+        final int totalFeatures = numSubTrees * featuresPerSubtre;
+        final ObjectId metadataId = hashString("fakeid");
+        final RevTree tree = createTreesTree(db, numSubTrees, featuresPerSubtre, metadataId);
+        final List<NodeRef> treeNodes;
+        final List<NodeRef> featureNodes;
+        treeNodes = Lists.newArrayList(
+                new DepthTreeIterator("", metadataId, tree, db, Strategy.RECURSIVE_TREES_ONLY));
+        featureNodes = Lists.newArrayList(
+                new DepthTreeIterator("", metadataId, tree, db, Strategy.RECURSIVE_FEATURES_ONLY));
+        // preflight checks
+        assertEquals(numSubTrees, treeNodes.size());
+        assertEquals(totalFeatures, featureNodes.size());
+        // make sure the features do exist in the db
+        {
+            Iterator<RevFeature> fakeFeatures = Iterators.transform(featureNodes.iterator(),
+                    (fr) -> RevObjectTestSupport.featureForceId(fr.getObjectId(),
+                            fr.getObjectId().toString()));
+            db.putAll(fakeFeatures);
+        }
+
+        // assertions
+        {
+            CountingListener listener = BulkOpListener.newCountingListener();
+            AutoCloseableIterator<ObjectInfo<RevTree>> treeInfos;
+            treeInfos = db.getObjects(treeNodes.iterator(), listener, RevTree.class);
+            assertEquals(numSubTrees, Iterators.size(treeInfos));
+            assertEquals(numSubTrees, listener.found());
+            assertEquals(0, listener.notFound());
+        }
+        {
+            CountingListener listener = BulkOpListener.newCountingListener();
+            AutoCloseableIterator<ObjectInfo<RevFeature>> featureInfos;
+            featureInfos = db.getObjects(treeNodes.iterator(), listener, RevFeature.class);
+            assertEquals(0, Iterators.size(featureInfos));
+            assertEquals(0, listener.found());
+            assertEquals(numSubTrees, listener.notFound());
+        }
+
+        {
+            CountingListener listener = BulkOpListener.newCountingListener();
+            AutoCloseableIterator<ObjectInfo<RevFeature>> featureInfos;
+            featureInfos = db.getObjects(featureNodes.iterator(), listener, RevFeature.class);
+            assertEquals(totalFeatures, Iterators.size(featureInfos));
+            assertEquals(totalFeatures, listener.found());
+            assertEquals(0, listener.notFound());
+        }
+        {
+            CountingListener listener = BulkOpListener.newCountingListener();
+            AutoCloseableIterator<ObjectInfo<RevTree>> treeInfos;
+            treeInfos = db.getObjects(featureNodes.iterator(), listener, RevTree.class);
+            assertEquals(0, Iterators.size(treeInfos));
+            assertEquals(0, listener.found());
+            assertEquals(totalFeatures, listener.notFound());
+        }
+    }
 }

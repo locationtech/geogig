@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.repository;
+package org.locationtech.geogig.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -15,16 +15,14 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.locationtech.geogig.repository.NodeRef.allPathsTo;
-import static org.locationtech.geogig.repository.NodeRef.isChild;
-import static org.locationtech.geogig.repository.NodeRef.isDirectChild;
-import static org.locationtech.geogig.repository.NodeRef.parentPath;
+import static org.locationtech.geogig.model.NodeRef.allPathsTo;
+import static org.locationtech.geogig.model.NodeRef.isChild;
+import static org.locationtech.geogig.model.NodeRef.isDirectChild;
+import static org.locationtech.geogig.model.NodeRef.parentPath;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.collect.ImmutableList;

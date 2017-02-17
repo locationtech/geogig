@@ -25,6 +25,7 @@ import java.util.Set;
 import org.fusesource.jansi.Ansi;
 import org.locationtech.geogig.cli.AnsiDecorator;
 import org.locationtech.geogig.cli.Console;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -39,7 +40,6 @@ import org.locationtech.geogig.plumbing.diff.LCSGeometryDiffImpl;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
 import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.opengis.feature.type.PropertyDescriptor;
 

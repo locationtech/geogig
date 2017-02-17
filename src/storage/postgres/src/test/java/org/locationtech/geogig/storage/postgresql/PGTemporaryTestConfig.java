@@ -35,14 +35,18 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     private String repositoryId;
 
+    private DataSource dataSource;
+
     public PGTemporaryTestConfig(String repositoryId) {
         this.repositoryId = repositoryId;
     }
 
     @Override
     public void before() throws Throwable {
-        create();
+        loadConfig();
         org.junit.Assume.assumeTrue(isEnabled());
+        environment = getEnvironment();
+        dataSource = PGStorage.newDataSource(environment);
     }
 
     private boolean isEnabled() {
@@ -58,14 +62,19 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     @Override
     public void after() {
+        if (environment == null) {
+            return;
+        }
         try {
             delete();
         } catch (Exception e) {
             throw Throwables.propagate(e);
+        } finally {
+            PGStorage.closeDataSource(dataSource);
         }
     }
 
-    private void create() {
+    private void loadConfig() {
         this.props = new PGTestProperties();
     }
 
@@ -73,30 +82,27 @@ public class PGTemporaryTestConfig extends ExternalResource {
         if (environment == null) {
             return;
         }
-        DataSource dataSource = PGStorage.newDataSource(environment);
-        try {
-            TableNames tables = environment.getTables();
-            Connection cx = dataSource.getConnection();
-            execute(cx, String.format("DROP VIEW IF EXISTS %s", tables.repositoryNamesView()));
-            delete(cx, tables.objects(), true);
-            delete(cx, tables.conflicts());
-            delete(cx, tables.blobs());
 
-            delete(cx, tables.index());
-            delete(cx, tables.indexMappings());
-            delete(cx, tables.indexObjects());
+        TableNames tables = environment.getTables();
+        Connection cx = dataSource.getConnection();
+        execute(cx, String.format("DROP VIEW IF EXISTS %s", tables.repositoryNamesView()));
+        delete(cx, tables.objects(), true);
+        delete(cx, tables.conflicts());
+        delete(cx, tables.blobs());
 
-            delete(cx, tables.graphMappings());
-            delete(cx, tables.graphEdges());
-            delete(cx, tables.graphMappings());
-            delete(cx, tables.graphProperties());
+        delete(cx, tables.index());
+        delete(cx, tables.indexMappings());
+        delete(cx, tables.indexObjects());
 
-            delete(cx, tables.refs());
-            delete(cx, tables.config());
-            delete(cx, tables.repositories());
-        } finally {
-            PGStorage.closeDataSource(dataSource);
-        }
+        delete(cx, tables.graphMappings());
+        delete(cx, tables.graphEdges());
+        delete(cx, tables.graphMappings());
+        delete(cx, tables.graphProperties());
+
+        delete(cx, tables.refs());
+        delete(cx, tables.config());
+        delete(cx, tables.repositories());
+
     }
 
     private void delete(Connection cx, String table) throws SQLException {

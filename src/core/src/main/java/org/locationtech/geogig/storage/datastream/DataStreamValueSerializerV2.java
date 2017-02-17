@@ -18,6 +18,7 @@ import static org.locationtech.geogig.storage.datastream.Varint.writeUnsignedVar
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.EOFException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -34,6 +35,7 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.InStream;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
@@ -60,22 +62,50 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
         data.write(field);
     }
 
-    @Override
-    public Geometry readGeometry(DataInput in, GeometryFactory geomFac) throws IOException {
-        byte[] bytes = readByteArray(in);
-        WKBReader wkbReader = new WKBReader(geomFac);
-        try {
-            return wkbReader.read(bytes);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @Override
     public void writeGeometry(Geometry field, DataOutput data) throws IOException {
         WKBWriter wkbWriter = new WKBWriter();
         byte[] bytes = wkbWriter.write(field);
         writeByteArray(bytes, data);
+    }
+
+    @Override
+    public Geometry readGeometry(DataInput in, GeometryFactory geomFac) throws IOException {
+        final int len = readUnsignedVarInt(in);
+        final DataInputInStream inStream = new DataInputInStream(in, len);
+        WKBReader wkbReader = new WKBReader(geomFac);
+        try {
+            return wkbReader.read(inStream);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static class DataInputInStream implements InStream {
+
+        private final DataInput in;
+
+        private final int limit;
+
+        private int read;
+
+        DataInputInStream(DataInput in, int limit) {
+            this.in = in;
+            this.limit = limit;
+
+        }
+
+        @Override
+        public void read(byte[] buf) throws IOException {
+            read += buf.length;
+            if (read > limit) {
+                throw new EOFException(
+                        String.format("Trying to read %,d bytes, limit is %,d", read, limit));
+            }
+            this.in.readFully(buf);
+        }
+
     }
 
     @Override

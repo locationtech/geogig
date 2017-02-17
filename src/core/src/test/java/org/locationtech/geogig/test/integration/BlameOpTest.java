@@ -15,6 +15,7 @@ import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.BlameException;
 import org.locationtech.geogig.porcelain.BlameException.StatusCode;
@@ -22,7 +23,6 @@ import org.locationtech.geogig.porcelain.BlameOp;
 import org.locationtech.geogig.porcelain.BlameReport;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ValueAndCommit;
-import org.locationtech.geogig.repository.NodeRef;
 import org.opengis.feature.Feature;
 
 public class BlameOpTest extends RepositoryTestCase {

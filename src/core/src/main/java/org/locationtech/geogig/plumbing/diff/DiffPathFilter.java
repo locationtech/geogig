@@ -16,8 +16,8 @@ import java.util.List;
 
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
-import org.locationtech.geogig.repository.NodeRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

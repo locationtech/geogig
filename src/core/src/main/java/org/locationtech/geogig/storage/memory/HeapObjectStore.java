@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage.memory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterators.getNext;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -20,9 +21,12 @@ import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
+import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.datastream.DataStreamSerializationFactoryV2;
 import org.locationtech.geogig.storage.datastream.LZFSerializationFactory;
 import org.locationtech.geogig.storage.impl.AbstractObjectStore;
@@ -228,6 +232,37 @@ public class HeapObjectStore extends AbstractObjectStore {
         final AtomicLong size = new AtomicLong();
         this.objects.values().forEach((ba) -> size.addAndGet(ba.length));
         return size.get();
+    }
+
+    @Override
+    public <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
+            Iterator<NodeRef> refs, BulkOpListener listener, Class<T> type) {
+
+        checkNotNull(refs, "refs is null");
+        checkNotNull(listener, "listener is null");
+        checkNotNull(type, "type is null");
+        checkState(isOpen(), "Database is closed");
+
+        Iterator<ObjectInfo<T>> it = new AbstractIterator<ObjectInfo<T>>() {
+            @Override
+            protected ObjectInfo<T> computeNext() {
+                checkState(isOpen(), "Database is closed");
+                NodeRef ref;
+                while ((ref = getNext(refs, null)) != null) {
+                    ObjectId id = ref.getObjectId();
+                    RevObject obj = getIfPresent(id);
+                    if (obj == null || !type.isInstance(obj)) {
+                        listener.notFound(id);
+                    } else {
+                        listener.found(id, null);
+                        return ObjectInfo.of(ref, type.cast(obj));
+                    }
+                }
+                return endOfData();
+            }
+        };
+
+        return AutoCloseableIterator.fromIterator(it);
     }
 
 }

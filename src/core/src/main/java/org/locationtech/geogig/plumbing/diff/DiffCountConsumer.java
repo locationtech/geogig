@@ -10,12 +10,12 @@
 package org.locationtech.geogig.plumbing.diff;
 
 import org.locationtech.geogig.model.Bucket;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.storage.ObjectStore;
 
 /**

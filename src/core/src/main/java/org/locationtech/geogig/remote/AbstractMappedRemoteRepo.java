@@ -28,12 +28,12 @@ import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.WriteTree;
 import org.locationtech.geogig.porcelain.SynchronizationException;
 import org.locationtech.geogig.porcelain.SynchronizationException.StatusCode;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.IniRepositoryFilter;
 import org.locationtech.geogig.repository.impl.RepositoryFilter;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 

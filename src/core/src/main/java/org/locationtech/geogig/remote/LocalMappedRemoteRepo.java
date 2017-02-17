@@ -31,11 +31,11 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.plumbing.WriteTree;
 import org.locationtech.geogig.porcelain.DiffOp;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;

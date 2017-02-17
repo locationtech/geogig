@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.impl.RevFeatureBuilder;
@@ -38,7 +39,6 @@ import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;

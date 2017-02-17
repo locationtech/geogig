@@ -14,11 +14,13 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.type.FeatureType;
 
 import com.google.common.base.Optional;

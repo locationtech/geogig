@@ -27,9 +27,9 @@ import org.locationtech.geogig.plumbing.ParseTimestamp;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.porcelain.LogOp;
-import org.locationtech.geogig.repository.AutoCloseableIterator;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;

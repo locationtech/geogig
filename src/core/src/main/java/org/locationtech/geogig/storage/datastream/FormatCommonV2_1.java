@@ -199,11 +199,10 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             if (FieldType.NULL.equals(type)) {
                 return Optional.absent();
             }
-            DataInput in = ByteStreams.newDataInput(data);
+            DataInput in = ByteStreams.newDataInput(data,offset + 1);
 
             Geometry value;
             try {
-                in.skipBytes(offset + 1);
                 value = valueEncoder.readGeometry(in, gf);
             } catch (IOException e) {
                 throw Throwables.propagate(e);
@@ -227,11 +226,10 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
                 throw new IllegalStateException();
             }
             final FieldType type = FieldType.valueOf(tagValue);
-            DataInput in = ByteStreams.newDataInput(data);
+            final DataInput in = ByteStreams.newDataInput(data, offset + 1);
             @Nullable
             Object value;
             try {
-                in.skipBytes(offset + 1);
                 value = valueEncoder.decode(type, in);
             } catch (IOException e) {
                 throw Throwables.propagate(e);

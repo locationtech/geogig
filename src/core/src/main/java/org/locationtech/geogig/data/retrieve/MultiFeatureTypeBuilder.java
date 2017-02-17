@@ -18,7 +18,7 @@ import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.repository.FeatureInfo;
+import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -26,7 +26,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import com.google.common.base.Function;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
-public class MultiFeatureTypeBuilder implements Function<FeatureInfo, SimpleFeature> {
+public class MultiFeatureTypeBuilder implements Function<ObjectInfo<RevFeature>, SimpleFeature> {
 
     Map<ObjectId, FeatureBuilder> cache = new HashMap<ObjectId, FeatureBuilder>();
 
@@ -47,16 +47,16 @@ public class MultiFeatureTypeBuilder implements Function<FeatureInfo, SimpleFeat
     }
 
     @Override
-    public SimpleFeature apply(FeatureInfo info) {
-        FeatureBuilder featureBuilder = get(info.getFeatureTypeId());
+    public SimpleFeature apply(ObjectInfo<RevFeature> info) {
+        FeatureBuilder featureBuilder = get(info.ref().getMetadataId());
         return build(featureBuilder, info, null);
     }
 
-    public static SimpleFeature build(FeatureBuilder featureBuilder, FeatureInfo info,
+    public static SimpleFeature build(FeatureBuilder featureBuilder, ObjectInfo<RevFeature> info,
             @Nullable GeometryFactory geometryFactory) {
 
-        String fid = info.getName();
-        RevFeature revFeature = info.getFeature();
+        String fid = info.node().getName();
+        RevFeature revFeature = info.object();
         Feature feature = featureBuilder.build(fid, revFeature, geometryFactory);
         feature.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
         feature.getUserData().put(Hints.PROVIDED_FID, fid);

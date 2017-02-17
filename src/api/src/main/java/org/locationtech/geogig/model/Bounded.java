@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.model;
 
-import org.locationtech.geogig.repository.NodeRef;
-
 import com.google.common.base.Optional;
 import com.vividsolutions.jts.geom.Envelope;
 

@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.web.api.commands;
 
+import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.porcelain.RemoveOp;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.NodeRef;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;

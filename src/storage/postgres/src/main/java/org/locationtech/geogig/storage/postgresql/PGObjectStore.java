@@ -600,7 +600,7 @@ public class PGObjectStore implements ObjectStore {
         // NOTE: the AND clause is for the ((id).h1) = ? comparison to use the hash index
         // and enable constraint exclusion
         final String sql = format(
-                "SELECT object FROM %s WHERE ((id).h1) = ? AND id = CAST(ROW(?,?,?) AS OBJECTID)",
+                "SELECT encode(object,'base64') FROM %s WHERE ((id).h1) = ? AND id = CAST(ROW(?,?,?) AS OBJECTID)",
                 tableName);
 
         byte[] bytes = null;
@@ -611,7 +611,8 @@ public class PGObjectStore implements ObjectStore {
                 pgid.setArgs(ps, 2);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        bytes = rs.getBytes(1);
+                        byte[] bytesBase64 = rs.getBytes(1);
+                        bytes = Base64.getMimeDecoder().decode(bytesBase64);
                     }
                 }
             }
@@ -685,11 +686,12 @@ public class PGObjectStore implements ObjectStore {
                 ObjectId id;
 
                 final String sql = format(
-                        "SELECT ((id).h1), ((id).h2),((id).h3), object FROM %s WHERE ((id).h1) = ANY(?)",
+                        "SELECT ((id).h1), ((id).h2),((id).h3), encode(object,'base64') FROM %s WHERE ((id).h1) = ANY(?)",
                         tableName);
 
                 try (Connection cx = PGStorage.newConnection(db.dataSource)) {
                     try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, queryIds))) {
+                        Base64.Decoder base64Decoder = Base64.getMimeDecoder();
 
                         final Array array = toJDBCArray(cx, queryIds);
                         ps.setFetchSize(queryCount);
@@ -709,7 +711,9 @@ public class PGObjectStore implements ObjectStore {
                                 // contain
                                 // more due to hash1 clashes
                                 if (queryIds.contains(id)) {
-                                    bytes = rs.getBytes(4);
+                                    byte[] bytesBase64 = rs.getBytes(4);
+
+                                    bytes = base64Decoder.decode(bytesBase64);
 
                                     RevObject obj = encoder.read(id, bytes, 0, bytes.length);
                                     if (type == null || type.equals(obj.getType())) {

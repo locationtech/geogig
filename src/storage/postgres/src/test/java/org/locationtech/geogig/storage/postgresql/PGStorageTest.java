@@ -125,6 +125,7 @@ public class PGStorageTest {
         try (PGConfigDatabase globalOnlydb = new PGConfigDatabase(config)) {
             globalOnlydb.putGlobal(Environment.KEY_MAX_CONNECTIONS, "1");
         }
+        testConfig.closeDataSource();
         DataSource source = PGStorage.newDataSource(config);
         try (Connection c1 = PGStorage.newConnection(source)) {
             try {
@@ -151,6 +152,7 @@ public class PGStorageTest {
                 }
             }
         }
+        testConfig.openDataSource();
         PGStorage.closeDataSource(source);
     }
 

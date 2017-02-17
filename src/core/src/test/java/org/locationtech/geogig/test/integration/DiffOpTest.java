@@ -26,11 +26,10 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.DiffEntry;
 import org.locationtech.geogig.repository.DiffEntry.ChangeType;
-import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
 import com.google.common.collect.Collections2;
@@ -207,11 +206,7 @@ public class DiffOpTest extends RepositoryTestCase {
         final ObjectId oldOid = insertAndAdd(points1);
         final RevCommit insertCommit = geogig.command(CommitOp.class).setAll(true).call();
 
-        final String featureId = points1.getIdentifier().getID();
-        final Feature modifiedFeature = feature((SimpleFeatureType) points1.getType(), featureId,
-                "changedProp", new Integer(1500), null);
-
-        final ObjectId newOid = insertAndAdd(modifiedFeature);
+        final ObjectId newOid = insertAndAdd(points1_modified);
 
         final RevCommit changeCommit = geogig.command(CommitOp.class).setAll(true).call();
 
@@ -221,7 +216,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertNotNull(difflist);
         assertEquals(1, difflist.size());
         DiffEntry de = difflist.get(0);
-        String expectedPath = NodeRef.appendChild(pointsName, featureId);
+        String expectedPath = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
         assertEquals(expectedPath, de.newPath());
 
         assertEquals(DiffEntry.ChangeType.MODIFIED, de.changeType());

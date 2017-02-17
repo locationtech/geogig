@@ -46,7 +46,7 @@ public class PGTemporaryTestConfig extends ExternalResource {
         loadConfig();
         org.junit.Assume.assumeTrue(isEnabled());
         environment = getEnvironment();
-        dataSource = PGStorage.newDataSource(environment);
+        openDataSource();
     }
 
     private boolean isEnabled() {
@@ -76,6 +76,17 @@ public class PGTemporaryTestConfig extends ExternalResource {
 
     private void loadConfig() {
         this.props = new PGTestProperties();
+    }
+
+    public void closeDataSource() {
+        PGStorage.closeDataSource(dataSource);
+        dataSource = null;
+    }
+
+    public void openDataSource() {
+        if (dataSource == null) {
+            dataSource = PGStorage.newDataSource(environment);
+        }
     }
 
     private void delete() throws SQLException {

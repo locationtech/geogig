@@ -27,6 +27,7 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.HashObject;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -75,7 +76,10 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
 
     @Override
     public void writeFeature(RevFeature feature, DataOutput target) throws IOException {
-
+        if (feature instanceof LazyRevFeature) {
+            fastEncode((LazyRevFeature) feature, target);
+            return;
+        }
         try (InternalByteArrayOutputStream out = new InternalByteArrayOutputStream()) {
             final DataOutput data = ByteStreams.newDataOutput(out);
             final int attrCount = feature.size();
@@ -110,6 +114,29 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
         }
     }
 
+    @VisibleForTesting
+    void fastEncode(LazyRevFeature feature, DataOutput target) throws IOException {
+        final int attrCount = feature.size();
+        final byte[] data = feature.data;
+        final int[] offsets = feature.offsets;
+        // <HEADER>
+        // - unsigned varint: number of attributes
+        writeUnsignedVarInt(attrCount, target);
+
+        // - unsigned varint: size of <DATA>
+        final int dataSize = data.length;
+        writeUnsignedVarInt(dataSize, target);
+
+        // - unsigned varint[number of attributes]: attribute offsets (starting form zero at
+        // <DATA>, not including the header)
+        for (int i = 0; i < attrCount; i++) {
+            writeUnsignedVarInt(offsets[i], target);
+        }
+
+        // <DATA>
+        target.write(data);
+    }
+
     @Override
     public RevFeature readFeature(@Nullable ObjectId id, DataInput in) throws IOException {
         // <HEADER>
@@ -130,7 +157,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
         byte[] data = new byte[dataSize];
         in.readFully(data);
 
-        LazyRevFeature f = new LazyRevFeature(id, dataOffsets, data);
+        LazyRevFeature f = new LazyRevFeature(id, dataOffsets, data, valueEncoder);
         if (id == null) {
             id = HashObject.hashFeature(f.values());
             f.id = id;
@@ -138,7 +165,9 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
         return f;
     }
 
-    private final class LazyRevFeature implements RevFeature {
+    static final class LazyRevFeature implements RevFeature {
+
+        private final ValueSerializer valueParser;
 
         private final int[] offsets;
 
@@ -146,10 +175,11 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
 
         private ObjectId id;
 
-        LazyRevFeature(ObjectId id, int[] offsets, byte[] data) {
+        LazyRevFeature(ObjectId id, int[] offsets, byte[] data, final ValueSerializer valueParser) {
             this.id = id;
             this.offsets = offsets;
             this.data = data;
+            this.valueParser = valueParser;
         }
 
         @Override
@@ -199,11 +229,11 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             if (FieldType.NULL.equals(type)) {
                 return Optional.absent();
             }
-            DataInput in = ByteStreams.newDataInput(data,offset + 1);
+            DataInput in = ByteStreams.newDataInput(data, offset + 1);
 
             Geometry value;
             try {
-                value = valueEncoder.readGeometry(in, gf);
+                value = valueParser.readGeometry(in, gf);
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
@@ -230,7 +260,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             @Nullable
             Object value;
             try {
-                value = valueEncoder.decode(type, in);
+                value = valueParser.decode(type, in);
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }

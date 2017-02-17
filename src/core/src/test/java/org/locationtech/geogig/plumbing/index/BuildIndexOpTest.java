@@ -75,6 +75,8 @@ public class BuildIndexOpTest extends RepositoryTestCase {
 
         assertNotEquals(RevTree.EMPTY, indexTree);
         assertEquals(newCanonicalTree.size(), indexTree.size());
+
+        IndexTestSupport.verifyIndex(geogig, indexTree.getId(), newCanonicalTree.getId());
     }
 
     @Test
@@ -88,7 +90,8 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         assertNotEquals(RevTree.EMPTY, indexTree);
         assertEquals(newCanonicalTree.size(), indexTree.size());
 
-        verifyMaterializedNodes(indexTree);
+        IndexTestSupport.verifyIndex(geogig, indexTree.getId(), newCanonicalTree.getId(), "x", "y",
+                "xystr");
     }
 
     @Test
@@ -108,14 +111,22 @@ public class BuildIndexOpTest extends RepositoryTestCase {
     @Test
     public void testUpdatesNodes() {
         indexInfo = createIndex();
-        checkUpdatesNodes();
+        RevTree newCanonicalTree = checkUpdatesNodes();
+        Optional<ObjectId> indexId = indexdb.resolveIndexedTree(indexInfo,
+                newCanonicalTree.getId());
+        assertTrue(indexId.isPresent());
+        IndexTestSupport.verifyIndex(geogig, indexId.get(), newCanonicalTree.getId());
     }
 
     @Test
     public void testUpdatesMaterializedNodes() {
         indexInfo = createIndex("x", "y", "xystr");
-        RevTree newIndexTree = checkUpdatesNodes();
-        verifyMaterializedNodes(newIndexTree);
+        RevTree newCanonicalTree = checkUpdatesNodes();
+        Optional<ObjectId> indexId = indexdb.resolveIndexedTree(indexInfo,
+                newCanonicalTree.getId());
+        assertTrue(indexId.isPresent());
+        IndexTestSupport.verifyIndex(geogig, indexId.get(), newCanonicalTree.getId(), "x",
+                "y", "xystr");
     }
 
     private RevTree checkUpdatesNodes() {
@@ -159,7 +170,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
 
         SetView<Node> difference = Sets.difference(newIndexNodes, oldIndexNodes);
         assertEquals(changedNodes, difference);
-        return updatedIndexTree;
+        return newCanonicalTree;
     }
 
     private RevTree createIndexFor(final RevTree canonicalTree) {
@@ -182,21 +193,6 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         assertTrue(resolveIndexedTree.isPresent());
         assertEquals(indexTree.getId(), resolveIndexedTree.get());
         return indexTree;
-    }
-
-    private void verifyMaterializedNodes(RevTree indexTree) {
-        Set<Node> nodes = getTreeNodes(indexTree, indexdb);
-        assertEquals(indexTree.size(), nodes.size());
-
-        for (Node n : nodes) {
-            Map<String, Object> extraData = n.getExtraData();
-            assertNotNull("Node has no extra data: " + n, extraData);
-            Map<String, Object> values = IndexInfo.getMaterializedAttributes(n);
-            assertFalse("Node has no @attributes values: " + n, values.isEmpty());
-            assertTrue(values.containsKey("x"));
-            assertTrue(values.containsKey("y"));
-            assertTrue(values.containsKey("xystr"));
-        }
     }
 
 }

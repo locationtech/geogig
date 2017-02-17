@@ -25,6 +25,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
+import org.locationtech.geogig.plumbing.index.IndexTestSupport;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.RemoveOp;
@@ -124,6 +125,8 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         assertTrue(indexedTreeId.isPresent());
 
         assertEquals(indexedTreeId.get(), index.indexTreeId());
+
+        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x", "y");
     }
 
     @Test
@@ -160,6 +163,8 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         assertTrue(indexedTreeId.isPresent());
 
         assertEquals(indexedTreeId.get(), index.indexTreeId());
+
+        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x", "y");
     }
 
     @Test
@@ -194,6 +199,8 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         assertTrue(indexedTreeId.isPresent());
 
         assertEquals(indexedTreeId.get(), index.indexTreeId());
+
+        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "y");
     }
 
     @Test
@@ -224,6 +231,8 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         assertTrue(indexedTreeId.isPresent());
 
         assertEquals(indexedTreeId.get(), index.indexTreeId());
+
+        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId);
     }
 
     @Test
@@ -261,6 +270,8 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         assertTrue(indexedTreeId.isPresent());
 
         assertEquals(indexedTreeId.get(), index.indexTreeId());
+
+        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId);
     }
 
     @Test
@@ -381,26 +392,36 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
 
         assertEquals(indexedTreeId.get(), index.indexTreeId());
 
+        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x", "y");
+
         // make sure old commits are indexed
         canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
                 .setTreeish("HEAD~1:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
+        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x", "y");
+
         canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
                 .setTreeish("HEAD~1:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
+
+        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x", "y");
 
         canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
                 .setTreeish("HEAD~2:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
+        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x", "y");
+
         canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
                 .setTreeish("branch1:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
+
+        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x", "y");
     }
 
     @Test

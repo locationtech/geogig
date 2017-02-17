@@ -17,7 +17,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.EnumMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -34,7 +33,7 @@ import org.locationtech.geogig.storage.impl.ObjectWriter;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
 
 /**
  * Serialization factory for serial version 2
@@ -45,8 +44,9 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
 
     private final FormatCommonV2 format;
 
-    private final EnumMap<TYPE, Serializer<? extends RevObject>> serializers = Maps
-            .newEnumMap(TYPE.class);
+    @SuppressWarnings("unchecked")
+    private final Serializer<? extends RevObject>[] serializers = new Serializer[TYPE
+            .values().length];
 
     public DataStreamSerializationFactoryV2() {
         this(FormatCommonV2.INSTANCE);
@@ -55,30 +55,36 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
     protected DataStreamSerializationFactoryV2(FormatCommonV2 format) {
         Preconditions.checkNotNull(format);
         this.format = format;
-        serializers.put(TYPE.COMMIT, new CommitSerializer(format));
-        serializers.put(TYPE.FEATURE, new FeatureSerializer(format));
-        serializers.put(TYPE.FEATURETYPE, new FeatureTypeSerializer(format));
-        serializers.put(TYPE.TAG, new TagSerializer(format));
-        serializers.put(TYPE.TREE, new TreeSerializer(format));
+        serializers[TYPE.COMMIT.ordinal()] = new CommitSerializer(format);
+        serializers[TYPE.FEATURE.ordinal()] = new FeatureSerializer(format);
+        serializers[TYPE.FEATURETYPE.ordinal()] = new FeatureTypeSerializer(format);
+        serializers[TYPE.TAG.ordinal()] = new TagSerializer(format);
+        serializers[TYPE.TREE.ordinal()] = new TreeSerializer(format);
     }
 
     public RevObject read(InputStream rawData) throws IOException {
-        return readInternal(null, rawData);
+        return read(null, rawData);
     }
 
     @Override
     public RevObject read(@Nullable ObjectId id, InputStream rawData) throws IOException {
-        return readInternal(id, rawData);
+        return readInternal(id, newDataInput(rawData));
+    }
+
+    private DataInput newDataInput(InputStream in) {
+        if (in instanceof ByteArrayInputStream) {
+            return ByteStreams.newDataInput((ByteArrayInputStream) in);
+        }
+        return new DataInputStream(in);
     }
 
     @Override
     public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
             throws IOException {
-        return read(id, new ByteArrayInputStream(data, offset, length));
+        return readInternal(id, ByteStreams.newDataInput(data, offset));
     }
 
-    private RevObject readInternal(@Nullable ObjectId id, InputStream rawData) throws IOException {
-        DataInput in = new DataInputStream(rawData);
+    private RevObject readInternal(@Nullable ObjectId id, DataInput in) throws IOException {
         final TYPE type = format.readHeader(in);
         Serializer<RevObject> serializer = serializer(type);
         RevObject object = serializer.readBody(id, in);
@@ -92,10 +98,7 @@ public class DataStreamSerializationFactoryV2 implements ObjectSerializingFactor
 
     @SuppressWarnings("unchecked")
     private <T extends RevObject> Serializer<T> serializer(TYPE type) {
-        Serializer<? extends RevObject> serializer = serializers.get(type);
-        if (serializer == null) {
-            throw new UnsupportedOperationException("No serializer for " + type);
-        }
+        Serializer<? extends RevObject> serializer = serializers[type.ordinal()];
         return (Serializer<T>) serializer;
     }
 

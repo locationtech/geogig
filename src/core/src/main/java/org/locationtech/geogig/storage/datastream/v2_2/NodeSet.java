@@ -102,9 +102,10 @@ class NodeSet {
             if (numNodes == 0) {
                 return EMPTY;
             }
+            int logicalSize = in.readInt();
             final int length = (int) Math.ceil(numNodes / 2D);
             byte[] bitsetData = new byte[length];
-            in.readFully(bitsetData);
+            in.readFully(bitsetData, 0, logicalSize);
             BitSet bitset = BitSet.valueOf(bitsetData);
             return new NodeFlags(bitset);
         }
@@ -254,6 +255,7 @@ class NodeSet {
 
         // * HEADER = <int>, // size of this header
         // * <int>, //size, number of nodes
+        // * <int>, //logical size of flags
         // * <byte[]>, // node flags (4 bits per node)
         // * <uvarint>, //size in bytes of node data section
         // * <uvarint>, //size in bytes of objectids array
@@ -261,6 +263,7 @@ class NodeSet {
         // * <uvarint>, //size in bytes of extra data section
         header.writeInt(size);
         final byte[] flagsData = flags.bitset.toByteArray();
+        header.writeInt(flagsData.length);
         header.write(flagsData);
         int nodeDataSize = nodeData.size();
         writeUnsignedVarInt(nodeDataSize, header);

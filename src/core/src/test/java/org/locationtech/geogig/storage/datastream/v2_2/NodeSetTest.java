@@ -26,9 +26,6 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
-import org.locationtech.geogig.storage.datastream.v2_2.DataBuffer;
-import org.locationtech.geogig.storage.datastream.v2_2.NodeSet;
-import org.locationtech.geogig.storage.datastream.v2_2.StringTable;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -74,7 +71,12 @@ public class NodeSetTest {
 
     @Test
     public void severalFeatures() throws IOException {
-        encodedDecode(featureNodes(1024), TYPE.FEATURE);
+        encodedDecode(nodes(TYPE.FEATURE, 1, false, false, false), TYPE.FEATURE);
+        encodedDecode(nodes(TYPE.FEATURE, 1024, false, false, true), TYPE.FEATURE);
+        encodedDecode(nodes(TYPE.FEATURE, 1024, false, true, true), TYPE.FEATURE);
+        encodedDecode(nodes(TYPE.FEATURE, 1024, true, true, true), TYPE.FEATURE);
+        encodedDecode(nodes(TYPE.FEATURE, 1024, true, false, false), TYPE.FEATURE);
+        encodedDecode(nodes(TYPE.FEATURE, 1024, true, true, false), TYPE.FEATURE);
     }
 
     @Test

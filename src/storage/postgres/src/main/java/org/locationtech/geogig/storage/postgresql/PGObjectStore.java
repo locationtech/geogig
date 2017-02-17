@@ -918,7 +918,7 @@ public class PGObjectStore implements ObjectStore {
                                     byte[] bytesBase64 = rs.getBytes(4);
                                     bytes = base64Decoder.decode(bytesBase64);
 
-                                    RevObject obj = encoder.read(id, bytes, 0, bytes.length);
+                                    RevObject obj = encoder.decode(id, bytes);
                                     if (objType == null || objType.equals(obj.getType())) {
                                         if (notify) {
                                             queryIds.remove(id);

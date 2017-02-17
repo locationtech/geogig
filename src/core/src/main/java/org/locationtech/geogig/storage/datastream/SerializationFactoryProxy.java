@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.datastream;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,11 +88,7 @@ public class SerializationFactoryProxy implements ObjectSerializingFactory {
      * Reads object from its binary representation as stored in the database.
      */
     public RevObject decode(final ObjectId id, final byte[] bytes) {
-        try (ByteArrayInputStream in = new ByteArrayInputStream(bytes)) {
-            return read(id, in);
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading object " + id, e);
-        }
+        return read(id, bytes, 0, bytes.length);
     }
 
     public byte[] encode(final RevObject o) {

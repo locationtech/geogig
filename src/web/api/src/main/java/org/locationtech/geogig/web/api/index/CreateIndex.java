@@ -15,6 +15,7 @@ import java.util.List;
 import org.locationtech.geogig.porcelain.index.CreateQuadTree;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.web.api.AbstractWebAPICommand;
 import org.locationtech.geogig.web.api.CommandContext;
 import org.locationtech.geogig.web.api.CommandResponse;
@@ -23,6 +24,8 @@ import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * The interface for the Create Quad Tree operation in GeoGig.
@@ -40,6 +43,8 @@ public class CreateIndex extends AbstractWebAPICommand {
 
     boolean indexHistory;
 
+    String bbox;
+
     public CreateIndex(ParameterSet options) {
         super(options);
         setTreeRefSpec(options.getFirstValue("treeRefSpec", null));
@@ -51,6 +56,7 @@ public class CreateIndex extends AbstractWebAPICommand {
             setExtraAttributes(Arrays.asList(extraAttributes));
         }
         setIndexHistory(Boolean.valueOf(options.getFirstValue("indexHistory", "false")));
+        setBBox(options.getFirstValue("bounds", null));
     }
 
     public void setTreeRefSpec(String treeRefSpec) {
@@ -67,6 +73,10 @@ public class CreateIndex extends AbstractWebAPICommand {
 
     public void setIndexHistory(boolean indexHistory) {
         this.indexHistory = indexHistory;
+    }
+
+    public void setBBox(String bbox) {
+        this.bbox = bbox;
     }
 
     @Override
@@ -94,11 +104,15 @@ public class CreateIndex extends AbstractWebAPICommand {
     @Override
     protected void runInternal(CommandContext context) {
         Repository repository = context.getRepository();
+
+        Envelope bounds = SpatialOps.parseNonReferencedBBOX(bbox);
+
         final Index index = repository.command(CreateQuadTree.class)//
                 .setTreeRefSpec(treeRefSpec)//
                 .setGeometryAttributeName(geometryAttributeName)//
                 .setExtraAttributes(extraAttributes)//
                 .setIndexHistory(indexHistory)//
+                .setBounds(bounds)//
                 .call();
 
         context.setResponseContent(new CommandResponse() {

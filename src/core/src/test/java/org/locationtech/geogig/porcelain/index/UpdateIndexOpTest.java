@@ -197,35 +197,6 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testUpdateIndexNoAttributes() {
-        createIndex();
-
-        Index index = geogig.command(UpdateIndexOp.class)//
-                .setTreeRefSpec(worldPointsLayer.getName())//
-                .setExtraAttributes(null)//
-                .call();
-
-        IndexInfo indexInfo = indexdb.getIndexInfo(worldPointsLayer.getName(), "geom").get();
-        assertEquals(indexInfo, index.info());
-        assertEquals(worldPointsLayer.getName(), indexInfo.getTreeName());
-        assertEquals("geom", indexInfo.getAttributeName());
-        assertEquals(IndexType.QUADTREE, indexInfo.getIndexType());
-        assertEquals(1, indexInfo.getMetadata().size());
-        assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.MD_QUAD_MAX_BOUNDS));
-        assertEquals(new Envelope(-180, 180, -90, 90),
-                indexInfo.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS));
-        assertFalse(indexInfo.getMetadata().containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
-
-        ObjectId canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
-                .setTreeish("HEAD:" + worldPointsLayer.getName()).call().get();
-        Optional<ObjectId> indexedTreeId = indexdb.resolveIndexedTree(indexInfo,
-                canonicalFeatureTreeId);
-        assertTrue(indexedTreeId.isPresent());
-
-        assertEquals(indexedTreeId.get(), index.indexTreeId());
-    }
-
-    @Test
     public void testUpdateIndexRemoveExistingAttributes() {
         createIndex("x");
 
@@ -256,6 +227,43 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     }
 
     @Test
+    public void testUpdateIndexBounds() {
+        IndexInfo info = createIndex("x");
+        Envelope oldBounds = (Envelope) info.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS);
+        assertEquals(new Envelope(-180, 180, -90, 90), oldBounds);
+
+        Envelope newBounds = new Envelope(-60, 60, -45, 45);
+
+        Index index = geogig.command(UpdateIndexOp.class)//
+                .setTreeRefSpec(worldPointsLayer.getName())//
+                .setBounds(newBounds)//
+                .call();
+
+        IndexInfo indexInfo = indexdb.getIndexInfo(worldPointsLayer.getName(), "geom").get();
+        assertEquals(indexInfo, index.info());
+        assertEquals(worldPointsLayer.getName(), indexInfo.getTreeName());
+        assertEquals("geom", indexInfo.getAttributeName());
+        assertEquals(IndexType.QUADTREE, indexInfo.getIndexType());
+        assertEquals(2, indexInfo.getMetadata().size());
+        assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.MD_QUAD_MAX_BOUNDS));
+        assertEquals(newBounds,
+                indexInfo.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS));
+        assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
+        List<String> extraAttributes = Lists.newArrayList(
+                (String[]) indexInfo.getMetadata().get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
+        assertEquals(1, extraAttributes.size());
+        assertTrue(extraAttributes.contains("x"));
+
+        ObjectId canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+                .setTreeish("HEAD:" + worldPointsLayer.getName()).call().get();
+        Optional<ObjectId> indexedTreeId = indexdb.resolveIndexedTree(indexInfo,
+                canonicalFeatureTreeId);
+        assertTrue(indexedTreeId.isPresent());
+
+        assertEquals(indexedTreeId.get(), index.indexTreeId());
+    }
+
+    @Test
     public void testUpdateIndexAttributesNoFlagSpecified() {
         createIndex("x");
 
@@ -265,6 +273,43 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         geogig.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setExtraAttributes(Lists.newArrayList("y"))//
+                .call();
+    }
+
+    @Test
+    public void testUpdateIndexOverwriteSameAttribute() {
+        createIndex("x");
+
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("Nothing to update...");
+        geogig.command(UpdateIndexOp.class)//
+                .setTreeRefSpec(worldPointsLayer.getName())//
+                .setExtraAttributes(Lists.newArrayList("x"))//
+                .setOverwrite(true)//
+                .call();
+    }
+
+    @Test
+    public void testUpdateIndexAddSameAttribute() {
+        createIndex("x", "y");
+
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("Nothing to update...");
+        geogig.command(UpdateIndexOp.class)//
+                .setTreeRefSpec(worldPointsLayer.getName())//
+                .setExtraAttributes(Lists.newArrayList("x"))//
+                .setAdd(true)//
+                .call();
+    }
+
+    @Test
+    public void testUpdateIndexDoNothing() {
+        createIndex("x");
+
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("Nothing to update...");
+        geogig.command(UpdateIndexOp.class)//
+                .setTreeRefSpec(worldPointsLayer.getName())//
                 .call();
     }
 
@@ -442,9 +487,10 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
             extraAtts = Lists.newArrayList(extraAttributes);
         }
         Index index = geogig.command(UpdateIndexOp.class)//
-                .setAdd(true)//
+                .setOverwrite(true)//
                 .setTreeRefSpec(treeName)//
                 .setExtraAttributes(extraAtts)//
+                .setBounds(new Envelope(-180, 180, -90, 90))//
                 .call();
         return index;
     }

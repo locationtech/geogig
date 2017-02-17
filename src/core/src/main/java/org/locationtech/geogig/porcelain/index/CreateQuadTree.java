@@ -47,6 +47,8 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
 
     private @Nullable String geometryAttributeName;
 
+    private @Nullable Envelope bounds;
+
     /**
      * @param typeTreeRef the {@link NodeRef} of the canonical tree to build a quadtree from
      * @return {@code this}
@@ -98,6 +100,17 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
     }
 
     /**
+     * Sets the bounds of the quad tree.
+     * 
+     * @param bounds the {@link Envelope} that represents the bounds of the quad tree
+     * @return {@code this}
+     */
+    public CreateQuadTree setBounds(Envelope bounds) {
+        this.bounds = bounds;
+        return this;
+    }
+
+    /**
      * Performs the operation.
      * 
      * @return an {@link Index} that represents the newly created index
@@ -115,7 +128,8 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
 
         final GeometryDescriptor geometryAtt = IndexUtils
                 .resolveGeometryAttribute(featureType, geometryAttributeName);
-        final Envelope maxBounds = IndexUtils.resolveMaxBounds(geometryAtt);
+        final Envelope maxBounds = this.bounds != null ? this.bounds
+                : IndexUtils.resolveMaxBounds(geometryAtt);
         final @Nullable String[] extraAttributes = IndexUtils
                 .resolveMaterializedAttributeNames(featureType, this.extraAttributes);
 

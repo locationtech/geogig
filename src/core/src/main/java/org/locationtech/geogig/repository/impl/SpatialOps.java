@@ -157,6 +157,43 @@ public class SpatialOps {
         return env;
     }
 
+    /**
+     * Parses a bounding box in the format {@code <minx,miny,maxx,maxy>}
+     * <p>
+     * The oridinates must be given in "longitude first" format
+     * 
+     * @throws IllegalArgumentException if the argument doesn't match the expected format
+     */
+    @Nullable
+    public static Envelope parseNonReferencedBBOX(final @Nullable String bboxArg) {
+        if (bboxArg == null) {
+            return null;
+        }
+        List<String> split = Splitter.on(',').omitEmptyStrings().splitToList(bboxArg);
+        if (split.size() != 4) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid bbox parameter: '%s'. Expected format: <minx,miny,maxx,maxy>",
+                    bboxArg));
+        }
+        double minx;
+        double miny;
+        double maxx;
+        double maxy;
+        try {
+            minx = Double.parseDouble(split.get(0));
+            miny = Double.parseDouble(split.get(1));
+            maxx = Double.parseDouble(split.get(2));
+            maxy = Double.parseDouble(split.get(3));
+        } catch (NumberFormatException nfe) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid bbox parameter: '%s'. Expected format: <minx,miny,maxx,maxy>",
+                    bboxArg));
+        }
+
+        Envelope env = new Envelope(minx, maxx, miny, maxy);
+        return env;
+    }
+
     public static CoordinateReferenceSystem findIdentifier(GeometryDescriptor geometryDescriptor) throws FactoryException, CRSException {
         CoordinateReferenceSystem crs = null;
         if (geometryDescriptor != null) {

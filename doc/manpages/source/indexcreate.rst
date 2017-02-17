@@ -25,6 +25,8 @@ OPTIONS
 
 --index-history					If specified, indexes will be created for all commits in the history.
 
+--bounds                        If specified, the max bounds of the spatial index will be set to this parameter. <minx,miny,maxx,maxy>
+
 
 
 SEE ALSO

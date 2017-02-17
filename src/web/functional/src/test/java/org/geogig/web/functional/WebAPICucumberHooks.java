@@ -80,6 +80,7 @@ import org.locationtech.geogig.porcelain.index.IndexUtils;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.rest.AsyncContext;
 import org.locationtech.geogig.rest.Variants;
 import org.locationtech.geogig.rest.geopkg.GeoPackageWebAPITestSupport;
@@ -109,6 +110,7 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
+import com.vividsolutions.jts.geom.Envelope;
 
 import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;
@@ -407,6 +409,24 @@ public class WebAPICucumberHooks {
         }
         // add the repo to the set so it can be closed
         openedRepos.add(repositoryName);
+    }
+
+    @Then("^the ([^\"]*) repository's \"([^\"]*)\" index bounds should be \"([^\"]*)\"$")
+    public void verifyIndexBounds(String repositoryName, String headRef, String bbox)
+            throws Throwable {
+        Repository repo = context.getRepo(repositoryName);
+        final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(repo.context(), headRef);
+        String treeName = typeTreeRef.path();
+        IndexInfo indexInfo = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName, null);
+        Map<String, Object> metadata = indexInfo.getMetadata();
+        assertTrue(metadata.containsKey(IndexInfo.MD_QUAD_MAX_BOUNDS));
+        Envelope indexBounds = (Envelope) metadata.get(IndexInfo.MD_QUAD_MAX_BOUNDS);
+        Envelope expected = SpatialOps.parseNonReferencedBBOX(bbox);
+        final double EPSILON = 0.00001;
+        assertEquals(expected.getMinX(), indexBounds.getMinX(), EPSILON);
+        assertEquals(expected.getMaxX(), indexBounds.getMaxX(), EPSILON);
+        assertEquals(expected.getMinY(), indexBounds.getMinY(), EPSILON);
+        assertEquals(expected.getMaxY(), indexBounds.getMaxY(), EPSILON);
     }
 
     @Given("^There are multiple branches on the \"([^\"]*)\" repo$")

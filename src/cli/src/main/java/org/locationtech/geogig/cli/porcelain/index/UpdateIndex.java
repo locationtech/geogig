@@ -21,9 +21,11 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.porcelain.index.UpdateIndexOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.vividsolutions.jts.geom.Envelope;
 
 @RequiresRepository(true)
 @Parameters(commandNames = {
@@ -49,6 +51,9 @@ public class UpdateIndex extends AbstractCommand implements CLICommand {
             "--add" }, description = "Add new attributes to existing list of extra attributes held by the index")
     private boolean add;
 
+    @Parameter(names = "--bounds", description = "If specified, the max bounds of the spatial index will be updated to this parameter. <minx,miny,maxx,maxy>")
+    private String bbox;
+
     @Parameter(names = "--index-history", description = "If specified, indexes will be rebuilt for all commits in the history.")
     private boolean indexHistory = false;
 
@@ -58,13 +63,16 @@ public class UpdateIndex extends AbstractCommand implements CLICommand {
 
         Repository repo = cli.getGeogig().getRepository();
 
+        Envelope envelope = SpatialOps.parseNonReferencedBBOX(bbox);
+
         Index index = repo.command(UpdateIndexOp.class)//
-                .setTreeRefSpec(treeRefSpec)
+                .setTreeRefSpec(treeRefSpec)//
                 .setAttributeName(attribute)//
                 .setExtraAttributes(extraAttributes)//
                 .setOverwrite(overwrite)//
                 .setAdd(add)//
                 .setIndexHistory(indexHistory)//
+                .setBounds(envelope)//
                 .setProgressListener(cli.getProgressListener())//
                 .call();
 

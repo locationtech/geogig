@@ -17,8 +17,9 @@ Feature: IndexUpdate
 
   Scenario: Verify updating spatial index by adding attributes
     Given There is a repo with some data
-      And I call "PUT /repos/repo1/index/create?treeRefSpec=Points"
-     Then the repo1 repository's "HEAD:Points" index should not track the extra attribute "sp"
+     When I call "PUT /repos/repo1/index/create?treeRefSpec=Points"
+     Then the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repo1 repository's "HEAD:Points" index should not track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:
           |     index    | 
@@ -44,8 +45,9 @@ Feature: IndexUpdate
 
   Scenario: Verify success when overwriting the attributes of an index
     Given There is a repo with some data
-      And I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp"
-     Then the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
+     When I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp"
+     Then the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:
           |     index    | 
@@ -53,6 +55,7 @@ Feature: IndexUpdate
      When I call "POST /repos/repo1/index/update?treeRefSpec=Points&extraAttributes=ip&overwrite=true"
      Then the xpath "/response/success/text()" equals "true"
       And the xpath "/response/index/treeName/text()" equals "Points"
+      And the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:
@@ -60,10 +63,11 @@ Feature: IndexUpdate
           |    Point.1   | 
       And the response status should be '201'
       
-   Scenario: Verify success when removing the attributes of an index
+  Scenario: Verify success when removing the attributes of an index
     Given There is a repo with some data
-      And I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp"
-     Then the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
+     When I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp"
+     Then the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:
           |     index    | 
@@ -71,7 +75,28 @@ Feature: IndexUpdate
      When I call "POST /repos/repo1/index/update?treeRefSpec=Points&overwrite=true"
      Then the xpath "/response/success/text()" equals "true"
       And the xpath "/response/index/treeName/text()" equals "Points"
+      And the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "sp"
+      And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repo1 repository's "HEAD:Points" index should have the following features:
+          |     index    | 
+          |    Point.1   | 
+      And the response status should be '201'
+      
+  Scenario: Verify success when updating the bounds
+    Given There is a repo with some data
+     When I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp"
+     Then the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
+      And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
+      And the repo1 repository's "HEAD:Points" index should have the following features:
+          |     index    | 
+          |    Point.1   | 
+     When I call "POST /repos/repo1/index/update?treeRefSpec=Points&bounds=-60,-45,60,45"
+     Then the xpath "/response/success/text()" equals "true"
+      And the xpath "/response/index/treeName/text()" equals "Points"
+      And the repo1 repository's "HEAD:Points" index bounds should be "-60,-45,60,45"
+      And the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:
           |     index    | 
@@ -80,8 +105,9 @@ Feature: IndexUpdate
       
   Scenario: Verify success when updating the whole history of an index
     Given There is a default multirepo server
-      And I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp&indexHistory=true"
-     Then the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
+     When I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp&indexHistory=true"
+     Then the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:
           |     index    | 
@@ -108,6 +134,7 @@ Feature: IndexUpdate
      When I call "POST /repos/repo1/index/update?treeRefSpec=Points&extraAttributes=ip&overwrite=true&indexHistory=true"
      Then the xpath "/response/success/text()" equals "true"
       And the xpath "/response/index/treeName/text()" equals "Points"
+      And the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:
@@ -137,8 +164,9 @@ Feature: IndexUpdate
 
   Scenario: Verify success when updating only the head commit of an index
     Given There is a default multirepo server
-      And I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp&indexHistory=true"
-     Then the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
+     When I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp&indexHistory=true"
+     Then the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+      And the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:
           |     index    | 
@@ -165,6 +193,7 @@ Feature: IndexUpdate
      When I call "POST /repos/repo1/index/update?treeRefSpec=Points&extraAttributes=ip&overwrite=true"
      Then the xpath "/response/success/text()" equals "true"
       And the xpath "/response/index/treeName/text()" equals "Points"
+      And the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:

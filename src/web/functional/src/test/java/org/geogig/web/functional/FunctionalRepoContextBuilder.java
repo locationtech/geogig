@@ -13,7 +13,6 @@ import org.locationtech.geogig.cli.CLIContextBuilder;
 import org.locationtech.geogig.di.GeogigModule;
 import org.locationtech.geogig.di.HintsModule;
 import org.locationtech.geogig.di.PluginsModule;
-import org.locationtech.geogig.di.caching.CachingModule;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
@@ -37,7 +36,7 @@ public class FunctionalRepoContextBuilder extends ContextBuilder {
         FunctionalTestModule functionalTestModule = new FunctionalTestModule(platform.clone());
 
         Context context = Guice.createInjector(
-                Modules.override(new GeogigModule(), new CachingModule(), new HintsModule(hints))
+                Modules.override(new GeogigModule(), new HintsModule(hints))
                         .with(new PluginsModule(), new CLIContextBuilder.DefaultPlugins(),
                                 functionalTestModule))
                 .getInstance(Context.class);

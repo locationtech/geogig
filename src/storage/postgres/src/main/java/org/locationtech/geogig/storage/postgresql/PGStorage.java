@@ -22,9 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTransientConnectionException;
 import java.sql.Statement;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -44,8 +42,6 @@ import com.google.common.collect.Lists;
 public class PGStorage {
 
     private static final Logger LOG = LoggerFactory.getLogger(PGStorage.class);
-
-    static Map<Connection, Map<String, PreparedStatement>> OPEN_STATEMENTS = new IdentityHashMap<>();
 
     private static final DataSourceManager DATASOURCE_POOL = new DataSourceManager();
 
